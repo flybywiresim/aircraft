@@ -11,6 +11,7 @@
   - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
+  - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
 
@@ -628,6 +629,16 @@
 - A32NX_IOM_<NAME>_AVAIL
   - Bool
   - Indicates if a specific IOM system is available
+
+## Auxiliary Power Unit ATA 49
+
+- A32NX_APU_N2
+  - `Arinc429Word<Percent>`
+  - The APU's N2 rotations per minute in percentage of the maximum RPM
+
+- A32NX_APU_FUEL_USED
+  - `Arinc429Word<Mass>`
+  - The APU fuel used, in kilograms
 
 ## Hydraulics
 

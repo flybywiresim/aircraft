@@ -1,8 +1,11 @@
 use std::time::Duration;
 
-use uom::si::{
-    electric_potential::volt, f64::*, frequency::hertz, power::watt, pressure::psi, ratio::percent,
-    temperature_interval, thermodynamic_temperature::degree_celsius,
+use uom::{
+    si::{
+        electric_potential::volt, f64::*, frequency::hertz, power::watt, pressure::psi,
+        ratio::percent, temperature_interval, thermodynamic_temperature::degree_celsius,
+    },
+    ConstZero,
 };
 
 use crate::{
@@ -14,39 +17,40 @@ use crate::{
     failures::{Failure, FailureType},
     shared::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+        ElectricalBusType, ElectricalBuses, InternationalStandardAtmosphere, PotentialOrigin,
+        PowerConsumptionReport,
     },
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
 use super::{ApuConstants, ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 
-pub struct Aps3200Constants;
+pub struct Pw980Constants;
 
-impl ApuConstants for Aps3200Constants {
-    const RUNNING_WARNING_EGT: f64 = 682.; // Deg C
-    const BLEED_AIR_COOLDOWN_DURATION: Duration = Duration::from_secs(120);
-    const COOLDOWN_DURATION: Duration = Duration::ZERO;
-    const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 7.;
-    const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = true;
-    const FUEL_LINE_ID: u8 = 18;
+impl ApuConstants for Pw980Constants {
+    const RUNNING_WARNING_EGT: f64 = 900.; // Deg C
+    const BLEED_AIR_COOLDOWN_DURATION: Duration = Duration::ZERO;
+    const COOLDOWN_DURATION: Duration = Duration::from_secs(60);
+    const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 8.;
+    const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = false;
+    const FUEL_LINE_ID: u8 = 141;
 }
 
-pub struct ShutdownAps3200Turbine {
+pub struct ShutdownPw980Turbine {
     egt: ThermodynamicTemperature,
 }
-impl ShutdownAps3200Turbine {
+impl ShutdownPw980Turbine {
     pub fn new() -> Self {
-        ShutdownAps3200Turbine {
+        ShutdownPw980Turbine {
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
         }
     }
 
     fn new_with_egt(egt: ThermodynamicTemperature) -> Self {
-        ShutdownAps3200Turbine { egt }
+        ShutdownPw980Turbine { egt }
     }
 }
-impl Turbine for ShutdownAps3200Turbine {
+impl Turbine for ShutdownPw980Turbine {
     fn update(
         mut self: Box<Self>,
         context: &UpdateContext,
@@ -63,7 +67,11 @@ impl Turbine for ShutdownAps3200Turbine {
     }
 
     fn n(&self) -> Ratio {
-        Ratio::new::<percent>(0.)
+        Ratio::default()
+    }
+
+    fn n2(&self) -> Ratio {
+        Ratio::default()
     }
 
     fn egt(&self) -> ThermodynamicTemperature {
@@ -82,6 +90,7 @@ impl Turbine for ShutdownAps3200Turbine {
 struct Starting {
     since: Duration,
     n: Ratio,
+    n2: Ratio,
     egt: ThermodynamicTemperature,
     ignore_calculated_egt: bool,
 }
@@ -89,30 +98,32 @@ impl Starting {
     fn new(egt: ThermodynamicTemperature) -> Starting {
         Starting {
             since: Duration::from_secs(0),
-            n: Ratio::new::<percent>(0.),
+            n: Ratio::default(),
+            n2: Ratio::default(),
             egt,
             ignore_calculated_egt: true,
         }
     }
 
     fn calculate_egt(&mut self, context: &UpdateContext) -> ThermodynamicTemperature {
-        // Refer to APS3200.md for details on the values below and source data.
-        const APU_N_TEMP_CONST: f64 = -92.3417137705543;
-        const APU_N_TEMP_X: f64 = -14.36417426895237;
-        const APU_N_TEMP_X2: f64 = 12.210567963472547;
-        const APU_N_TEMP_X3: f64 = -3.005504263233662;
-        const APU_N_TEMP_X4: f64 = 0.3808066398934025;
-        const APU_N_TEMP_X5: f64 = -0.02679731462093699;
-        const APU_N_TEMP_X6: f64 = 0.001163901295794232;
-        const APU_N_TEMP_X7: f64 = -0.0000332668380497951;
-        const APU_N_TEMP_X8: f64 = 0.00000064601180727581;
-        const APU_N_TEMP_X9: f64 = -0.00000000859285727074;
-        const APU_N_TEMP_X10: f64 = 0.00000000007717119413;
-        const APU_N_TEMP_X11: f64 = -0.00000000000044761099;
-        const APU_N_TEMP_X12: f64 = 0.00000000000000151429;
-        const APU_N_TEMP_X13: f64 = -0.00000000000000000227;
+        // Refer to PW980.md for details on the values below and source data.
+        const APU_N_TEMP_CONST: f64 = -67.85561068313169;
+        const APU_N_TEMP_X: f64 = -19.73523738237853;
+        const APU_N_TEMP_X2: f64 = 6.783591758864128;
+        const APU_N_TEMP_X3: f64 = -1.354053749875857;
+        const APU_N_TEMP_X4: f64 = 0.199775433274065;
+        const APU_N_TEMP_X5: f64 = -0.016572248620575;
+        const APU_N_TEMP_X6: f64 = 0.000825776909269339;
+        const APU_N_TEMP_X7: f64 = -0.0000265086884405999;
+        const APU_N_TEMP_X8: f64 = 0.00000057022185938753;
+        const APU_N_TEMP_X9: f64 = -0.00000000833200627317;
+        const APU_N_TEMP_X10: f64 = 0.00000000008183640106;
+        const APU_N_TEMP_X11: f64 = -0.00000000000051825045;
+        const APU_N_TEMP_X12: f64 = 0.00000000000000191477;
+        const APU_N_TEMP_X13: f64 = -0.00000000000000000314;
 
-        let n = self.n.get::<percent>();
+        // We use N2 for this calculation
+        let n = self.n2.get::<percent>();
 
         let temperature = ThermodynamicTemperature::new::<degree_celsius>(
             APU_N_TEMP_CONST
@@ -148,48 +159,124 @@ impl Starting {
     }
 
     fn calculate_n(&self) -> Ratio {
-        const APU_N_CONST: f64 = -0.08013606018640967;
-        const APU_N_X: f64 = 2.129832736394534;
-        const APU_N_X2: f64 = 3.928273438786404;
-        const APU_N_X3: f64 = -1.88613299921213;
-        const APU_N_X4: f64 = 0.42749452749180916;
-        const APU_N_X5: f64 = -0.05757707967690426;
-        const APU_N_X6: f64 = 0.005022142795451004;
-        const APU_N_X7: f64 = -0.00029612873626050866;
-        const APU_N_X8: f64 = 0.00001204152497871946;
-        const APU_N_X9: f64 = -0.00000033829604438116;
-        const APU_N_X10: f64 = 0.00000000645140818528;
-        const APU_N_X11: f64 = -0.00000000007974743535;
-        const APU_N_X12: f64 = 0.00000000000057654695;
-        const APU_N_X13: f64 = -0.00000000000000185126;
+        /// N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
+        /// to capture the changes in N1 at the "top of the range" for little N2 change.
+
+        // N2 to N1 constants
+        const APU_N_N2_CONST: f64 = -1.980342480028972;
+        const APU_N_N2_X: f64 = 3.042566978305871;
+        const APU_N_N2_X2: f64 = -1.540881433592518;
+        const APU_N_N2_X3: f64 = 0.3718632222716785;
+        const APU_N_N2_X4: f64 = -0.05012708901533932;
+        const APU_N_N2_X5: f64 = 0.004113538145844002;
+        const APU_N_N2_X6: f64 = -0.000217068158239272;
+        const APU_N_N2_X7: f64 = 0.0000076482322527515;
+        const APU_N_N2_X8: f64 = -0.00000018368358856566;
+        const APU_N_N2_X9: f64 = 0.00000000301784702552;
+        const APU_N_N2_X10: f64 = -0.00000000003338059452;
+        const APU_N_N2_X11: f64 = 0.00000000000023768495;
+        const APU_N_N2_X12: f64 = -0.00000000000000098402;
+        const APU_N_N2_X13: f64 = 0.00000000000000000180;
+
+        // Time to N1 constants
+        const APU_N_CONST: f64 = 20346.47871003967;
+        const APU_N_X: f64 = -10589.258178152319;
+        const APU_N_X2: f64 = 2431.729387231063;
+        const APU_N_X3: f64 = -325.5237277312483;
+        const APU_N_X4: f64 = 28.2488372642810;
+        const APU_N_X5: f64 = -1.669888674851867;
+        const APU_N_X6: f64 = 0.06866582085373031;
+        const APU_N_X7: f64 = -0.00196551590823214;
+        const APU_N_X8: f64 = 0.000038410143909137;
+        const APU_N_X9: f64 = -0.00000048843308292031;
+        const APU_N_X10: f64 = 0.00000000364059072727;
+        const APU_N_X11: f64 = -0.00000000001206089876;
 
         // Protect against the formula returning decreasing results after this value.
-        const TIME_LIMIT: f64 = 45.12;
-        const START_IGNITION_AFTER_SECONDS: f64 = 1.5;
-        let ignition_turned_on_secs =
-            (self.since.as_secs_f64() - START_IGNITION_AFTER_SECONDS).min(TIME_LIMIT);
+        const TIME_LIMIT: f64 = 45.;
+        let since_secs = self.since.as_secs_f64().min(TIME_LIMIT);
 
-        if ignition_turned_on_secs > 0. {
-            let n = (APU_N_CONST
-                + (APU_N_X * ignition_turned_on_secs)
-                + (APU_N_X2 * ignition_turned_on_secs.powi(2))
-                + (APU_N_X3 * ignition_turned_on_secs.powi(3))
-                + (APU_N_X4 * ignition_turned_on_secs.powi(4))
-                + (APU_N_X5 * ignition_turned_on_secs.powi(5))
-                + (APU_N_X6 * ignition_turned_on_secs.powi(6))
-                + (APU_N_X7 * ignition_turned_on_secs.powi(7))
-                + (APU_N_X8 * ignition_turned_on_secs.powi(8))
-                + (APU_N_X9 * ignition_turned_on_secs.powi(9))
-                + (APU_N_X10 * ignition_turned_on_secs.powi(10))
-                + (APU_N_X11 * ignition_turned_on_secs.powi(11))
-                + (APU_N_X12 * ignition_turned_on_secs.powi(12))
-                + (APU_N_X13 * ignition_turned_on_secs.powi(13)))
-            .min(100.)
-            .max(0.);
+        let n2 = self.n2.get::<percent>();
 
+        let n = if self.n2.get::<percent>() < 75. {
+            APU_N_N2_CONST
+                + (APU_N_N2_X * n2)
+                + (APU_N_N2_X2 * n2.powi(2))
+                + (APU_N_N2_X3 * n2.powi(3))
+                + (APU_N_N2_X4 * n2.powi(4))
+                + (APU_N_N2_X5 * n2.powi(5))
+                + (APU_N_N2_X6 * n2.powi(6))
+                + (APU_N_N2_X7 * n2.powi(7))
+                + (APU_N_N2_X8 * n2.powi(8))
+                + (APU_N_N2_X9 * n2.powi(9))
+                + (APU_N_N2_X10 * n2.powi(10))
+                + (APU_N_N2_X11 * n2.powi(11))
+                + (APU_N_N2_X12 * n2.powi(12))
+                + (APU_N_N2_X13 * n2.powi(13))
+        } else {
+            APU_N_CONST
+                + (APU_N_X * since_secs)
+                + (APU_N_X2 * since_secs.powi(2))
+                + (APU_N_X3 * since_secs.powi(3))
+                + (APU_N_X4 * since_secs.powi(4))
+                + (APU_N_X5 * since_secs.powi(5))
+                + (APU_N_X6 * since_secs.powi(6))
+                + (APU_N_X7 * since_secs.powi(7))
+                + (APU_N_X8 * since_secs.powi(8))
+                + (APU_N_X9 * since_secs.powi(9))
+                + (APU_N_X10 * since_secs.powi(10))
+                + (APU_N_X11 * since_secs.powi(11))
+        }
+        .clamp(0., 100.);
+
+        if since_secs > 0. {
             Ratio::new::<percent>(n)
         } else {
-            Ratio::new::<percent>(0.)
+            Ratio::default()
+        }
+    }
+
+    fn calculate_n2(&self) -> Ratio {
+        /// N2 starts spinning after flap is open, or start button is pressed
+        const APU_N2_CONST: f64 = 0.102461912951123;
+        const APU_N2_X: f64 = -4.213276063673831;
+        const APU_N2_X2: f64 = 4.904714363158679;
+        const APU_N2_X3: f64 = -1.580490532662764;
+        const APU_N2_X4: f64 = 0.2609079965518872;
+        const APU_N2_X5: f64 = -0.0245239023843422;
+        const APU_N2_X6: f64 = 0.001333286573520723;
+        const APU_N2_X7: f64 = -0.0000368228114602448;
+        const APU_N2_X8: f64 = 0.00000000978478072071;
+        const APU_N2_X9: f64 = 0.00000003595869237689;
+        const APU_N2_X10: f64 = -0.00000000127836115070;
+        const APU_N2_X11: f64 = 0.00000000002201303409;
+        const APU_N2_X12: f64 = -0.00000000000019674992;
+        const APU_N2_X13: f64 = 0.00000000000000073146;
+
+        // Protect against the formula returning decreasing results after this value.
+        const TIME_LIMIT: f64 = 45.;
+        let since_secs = self.since.as_secs_f64().min(TIME_LIMIT);
+
+        if since_secs > 0. {
+            let n2 = (APU_N2_CONST
+                + (APU_N2_X * since_secs)
+                + (APU_N2_X2 * since_secs.powi(2))
+                + (APU_N2_X3 * since_secs.powi(3))
+                + (APU_N2_X4 * since_secs.powi(4))
+                + (APU_N2_X5 * since_secs.powi(5))
+                + (APU_N2_X6 * since_secs.powi(6))
+                + (APU_N2_X7 * since_secs.powi(7))
+                + (APU_N2_X8 * since_secs.powi(8))
+                + (APU_N2_X9 * since_secs.powi(9))
+                + (APU_N2_X10 * since_secs.powi(10))
+                + (APU_N2_X11 * since_secs.powi(11))
+                + (APU_N2_X12 * since_secs.powi(12))
+                + (APU_N2_X13 * since_secs.powi(13)))
+            .clamp(0., 100.);
+
+            Ratio::new::<percent>(n2)
+        } else {
+            Ratio::default()
         }
     }
 }
@@ -202,11 +289,12 @@ impl Turbine for Starting {
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
+        self.n2 = self.calculate_n2();
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
         match controller.signal() {
-            Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(self.egt, self.n)),
+            Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(self.egt, self.n, self.n2)),
             Some(TurbineSignal::StartOrContinue)
                 if { (self.n.get::<percent>() - 100.).abs() < f64::EPSILON } =>
             {
@@ -218,6 +306,10 @@ impl Turbine for Starting {
 
     fn n(&self) -> Ratio {
         self.n
+    }
+
+    fn n2(&self) -> Ratio {
+        self.n2
     }
 
     fn egt(&self) -> ThermodynamicTemperature {
@@ -246,7 +338,7 @@ impl BleedAirUsageEgtDelta {
         Self {
             current: 0.,
             target: 0.,
-            max: 90. * randomisation,
+            max: 45. * randomisation,
             min: 0.,
         }
     }
@@ -266,7 +358,7 @@ impl BleedAirUsageEgtDelta {
             }
         }
 
-        self.current = self.current.max(self.min).min(self.max);
+        self.current = self.current.clamp(self.min, self.max);
     }
 
     fn egt_delta(&self) -> TemperatureInterval {
@@ -274,9 +366,7 @@ impl BleedAirUsageEgtDelta {
     }
 
     fn delta_per_second(&self) -> f64 {
-        // Loosely based on bleed on data provided in a video by Komp.
-        // The very much relates to pneumatics and thus could be improved further
-        // once we built that.
+        // Fixme: This curve has not been changed from APS3200. It can be improved in the future based on references.
         const BLEED_AIR_DELTA_TEMP_CONST: f64 = 0.46763348242588143;
         const BLEED_AIR_DELTA_TEMP_X: f64 = 0.43114440400626697;
         const BLEED_AIR_DELTA_TEMP_X2: f64 = -0.11064487957454393;
@@ -337,27 +427,62 @@ impl ApuGenUsageEgtDelta {
     }
 }
 
+struct ApuBleedUsageN2Delta {
+    time: Duration,
+    base_n2_delta_per_second: f64,
+}
+impl ApuBleedUsageN2Delta {
+    // We assume it takes 8 seconds to get to our target.
+    const SECONDS_TO_REACH_TARGET: u64 = 8;
+    // N2 goes from 85 to 87 when bleed is on
+    const N2_CHANGE_WHEN_BLEED_ON: f64 = 2.;
+
+    fn new() -> Self {
+        Self {
+            time: Duration::from_secs(0),
+            base_n2_delta_per_second: ApuBleedUsageN2Delta::N2_CHANGE_WHEN_BLEED_ON
+                / ApuBleedUsageN2Delta::SECONDS_TO_REACH_TARGET as f64,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, apu_bleed_is_used: bool) {
+        self.time = if apu_bleed_is_used {
+            (self.time + context.delta()).min(Duration::from_secs(
+                ApuBleedUsageN2Delta::SECONDS_TO_REACH_TARGET,
+            ))
+        } else {
+            Duration::from_secs_f64((self.time.as_secs_f64() - context.delta_as_secs_f64()).max(0.))
+        };
+    }
+
+    fn n2_delta(&self) -> Ratio {
+        Ratio::new::<percent>(self.time.as_secs_f64() * self.base_n2_delta_per_second)
+    }
+}
+
 struct Running {
     egt: ThermodynamicTemperature,
     base_egt: ThermodynamicTemperature,
     base_egt_deviation: TemperatureInterval,
     bleed_air_usage: BleedAirUsageEgtDelta,
     apu_gen_usage: ApuGenUsageEgtDelta,
+    n2: Ratio,
+    bleed_air_n2_delta: ApuBleedUsageN2Delta,
 }
 impl Running {
     fn new(egt: ThermodynamicTemperature) -> Running {
-        let base_egt = 340. + ((random_number() % 11) as f64);
+        let base_egt = 480. + ((random_number() % 11) as f64);
         Running {
             egt,
             base_egt: ThermodynamicTemperature::new::<degree_celsius>(base_egt),
             // This contains the deviation from the base EGT at the moment of entering the running state.
-            // This code assumes the base EGT is lower than the EGT at this point in time, which is always the case.
-            // Should this change in the future, then changes have to be made here.
             base_egt_deviation: TemperatureInterval::new::<temperature_interval::degree_celsius>(
                 egt.get::<degree_celsius>() - base_egt,
             ),
             bleed_air_usage: BleedAirUsageEgtDelta::new(),
             apu_gen_usage: ApuGenUsageEgtDelta::new(),
+            n2: Ratio::default(),
+            bleed_air_n2_delta: ApuBleedUsageN2Delta::new(),
         }
     }
 
@@ -384,6 +509,16 @@ impl Running {
 
         target
     }
+
+    fn calculate_n2(&mut self, context: &UpdateContext, apu_bleed_is_used: bool) -> Ratio {
+        // Base N2 is 85%
+        let mut target = Ratio::new::<percent>(85.);
+
+        self.bleed_air_n2_delta.update(context, apu_bleed_is_used);
+        target += self.bleed_air_n2_delta.n2_delta();
+
+        target
+    }
 }
 impl Turbine for Running {
     fn update(
@@ -394,17 +529,24 @@ impl Turbine for Running {
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
+        self.n2 = self.calculate_n2(context, apu_bleed_is_used);
 
         match controller.signal() {
             Some(TurbineSignal::StartOrContinue) => self,
-            Some(TurbineSignal::Stop) | None => {
-                Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
-            }
+            Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(
+                self.egt,
+                Ratio::new::<percent>(100.),
+                self.n2(),
+            )),
         }
     }
 
     fn n(&self) -> Ratio {
         Ratio::new::<percent>(100.)
+    }
+
+    fn n2(&self) -> Ratio {
+        self.n2
     }
 
     fn egt(&self) -> ThermodynamicTemperature {
@@ -416,8 +558,9 @@ impl Turbine for Running {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        // TODO: Figure out what value this is supposed to be.
-        Pressure::new::<psi>(50.)
+        // Value from refs, we add standard pressure at sea level as state of unpressurized system
+        Pressure::new::<psi>(22.)
+            + InternationalStandardAtmosphere::pressure_at_altitude(Length::ZERO)
     }
 }
 
@@ -429,43 +572,48 @@ struct Stopping {
     // the resulting N calculated by this state, to ensure N doesn't
     // suddenly go from 30 to 100.
     n_factor: f64,
+    n2_factor: f64,
     // When the APU start is unsuccessful the stopping state
     // is entered with N < 100%. As EGT in this state is a function of N,
     // we need to adapt the EGT calculation to this. This ensures EGT
     // doesn't just suddenly drop by e.g. 80 degrees due to the low N.
     egt_delta_at_entry: TemperatureInterval,
     n: Ratio,
+    n2: Ratio,
     egt: ThermodynamicTemperature,
 }
 impl Stopping {
-    fn new(egt: ThermodynamicTemperature, n: Ratio) -> Stopping {
+    fn new(egt: ThermodynamicTemperature, n: Ratio, n2: Ratio) -> Stopping {
         Stopping {
             since: Duration::from_secs(0),
             base_temperature: egt,
             n_factor: n.get::<percent>() / 100.,
-            egt_delta_at_entry: Stopping::calculate_egt_delta(n),
+            n2_factor: n2.get::<percent>() / 85.,
+            egt_delta_at_entry: Stopping::calculate_egt_delta(n2),
             n,
+            n2,
             egt,
         }
     }
 
-    fn calculate_egt_delta(n: Ratio) -> TemperatureInterval {
-        // Refer to APS3200.md for details on the values below and source data.
-        const APU_N_TEMP_DELTA_CONST: f64 = -125.73137672208446;
-        const APU_N_TEMP_DELTA_X: f64 = 2.7141683591219037;
-        const APU_N_TEMP_DELTA_X2: f64 = -0.8102923071483102;
-        const APU_N_TEMP_DELTA_X3: f64 = 0.08890509495240731;
-        const APU_N_TEMP_DELTA_X4: f64 = -0.003509532681984154;
-        const APU_N_TEMP_DELTA_X5: f64 = -0.00002709133732344767;
-        const APU_N_TEMP_DELTA_X6: f64 = 0.00000749250123766767;
-        const APU_N_TEMP_DELTA_X7: f64 = -0.00000030306978045244;
-        const APU_N_TEMP_DELTA_X8: f64 = 0.00000000641099706269;
-        const APU_N_TEMP_DELTA_X9: f64 = -0.00000000008068326110;
-        const APU_N_TEMP_DELTA_X10: f64 = 0.00000000000060754088;
-        const APU_N_TEMP_DELTA_X11: f64 = -0.00000000000000253354;
-        const APU_N_TEMP_DELTA_X12: f64 = 0.00000000000000000451;
+    fn calculate_egt_delta(n2: Ratio) -> TemperatureInterval {
+        // Refer to PW980.md for details on the values below and source data.
+        const APU_N_TEMP_DELTA_CONST: f64 = -317.3365888515821;
+        const APU_N_TEMP_DELTA_X: f64 = 1.577233364899279;
+        const APU_N_TEMP_DELTA_X2: f64 = 1.307370019793173;
+        const APU_N_TEMP_DELTA_X3: f64 = -0.2172559274800074;
+        const APU_N_TEMP_DELTA_X4: f64 = 0.01856814711790658;
+        const APU_N_TEMP_DELTA_X5: f64 = -0.000892142622903575;
+        const APU_N_TEMP_DELTA_X6: f64 = 0.0000248975205311778;
+        const APU_N_TEMP_DELTA_X7: f64 = -0.00000037194070258243;
+        const APU_N_TEMP_DELTA_X8: f64 = 0.00000000135120627984;
+        const APU_N_TEMP_DELTA_X9: f64 = 0.00000000004879602478;
+        const APU_N_TEMP_DELTA_X10: f64 = -0.00000000000087688843;
+        const APU_N_TEMP_DELTA_X11: f64 = 0.00000000000000611631;
+        const APU_N_TEMP_DELTA_X12: f64 = -0.00000000000000001623;
 
-        let n = n.get::<percent>();
+        // Note this uses N2 for the calculation
+        let n = n2.get::<percent>();
         TemperatureInterval::new::<temperature_interval::degree_celsius>(
             APU_N_TEMP_DELTA_CONST
                 + (APU_N_TEMP_DELTA_X * n)
@@ -483,23 +631,24 @@ impl Stopping {
         )
     }
 
-    fn calculate_n(since: Duration) -> Ratio {
-        // Refer to APS3200.md for details on the values below and source data.
-        const APU_N_CONST: f64 = 100.22975364965701;
-        const APU_N_X: f64 = -24.692008355859773;
-        const APU_N_X2: f64 = 2.6116524551318787;
-        const APU_N_X3: f64 = 0.006812541903222142;
-        const APU_N_X4: f64 = -0.03134644787752123;
-        const APU_N_X5: f64 = 0.0036345606954833213;
-        const APU_N_X6: f64 = -0.00021794252200618456;
-        const APU_N_X7: f64 = 0.00000798097055109138;
-        const APU_N_X8: f64 = -0.00000018481154462604;
-        const APU_N_X9: f64 = 0.00000000264691628669;
-        const APU_N_X10: f64 = -0.00000000002143677577;
-        const APU_N_X11: f64 = 0.00000000000007515448;
+    fn calculate_n1(since: Duration) -> Ratio {
+        // Refer to PW980.md for details on the values below and source data.
+        const APU_N_CONST: f64 = 101.2793953502211;
+        const APU_N_X: f64 = -7.046603616716463;
+        const APU_N_X2: f64 = 2.720645871014408;
+        const APU_N_X3: f64 = -0.5598348705144645;
+        const APU_N_X4: f64 = 0.05333946247710394;
+        const APU_N_X5: f64 = -0.002912738145135647;
+        const APU_N_X6: f64 = 0.0001009025994427405;
+        const APU_N_X7: f64 = -0.00000232434829734961;
+        const APU_N_X8: f64 = 0.00000003616620771100;
+        const APU_N_X9: f64 = -0.00000000037630807292;
+        const APU_N_X10: f64 = 0.00000000000251143967;
+        const APU_N_X11: f64 = -0.00000000000000972688;
+        const APU_N_X12: f64 = 0.00000000000000001663;
 
         // Protect against the formula returning increasing results after this value.
-        const TIME_LIMIT: f64 = 49.411;
+        const TIME_LIMIT: f64 = 86.1;
         let since = since.as_secs_f64().min(TIME_LIMIT);
 
         let n = (APU_N_CONST
@@ -513,9 +662,78 @@ impl Stopping {
             + (APU_N_X8 * since.powi(8))
             + (APU_N_X9 * since.powi(9))
             + (APU_N_X10 * since.powi(10))
-            + (APU_N_X11 * since.powi(11)))
-        .min(100.)
-        .max(0.);
+            + (APU_N_X11 * since.powi(11))
+            + (APU_N_X12 * since.powi(12)))
+        .clamp(0., 100.);
+
+        Ratio::new::<percent>(n)
+    }
+
+    fn calculate_n2(since: Duration) -> Ratio {
+        // Refer to PW980.md for details on the values below and source data.
+        // Protect against the formula returning increasing results after this value.
+        const TIME_LIMIT: f64 = 86.1;
+        let since = since.as_secs_f64().min(TIME_LIMIT);
+
+        let apu_n2_const: f64;
+        let apu_n2_x: f64;
+        let apu_n2_x2: f64;
+        let apu_n2_x3: f64;
+        let apu_n2_x4: f64;
+        let apu_n2_x5: f64;
+        let apu_n2_x6: f64;
+        let apu_n2_x7: f64;
+        let apu_n2_x8: f64;
+        let apu_n2_x9: f64;
+        let apu_n2_x10: f64;
+        let apu_n2_x11: f64;
+        let apu_n2_x12: f64;
+
+        // To avoid N2 oscilating
+        if since < 8. {
+            apu_n2_const = 84.98989898989898;
+            apu_n2_x = -1.026936026936026;
+            apu_n2_x2 = 0.03282828282828282;
+            apu_n2_x3 = -0.005892255892255892;
+            apu_n2_x4 = 0.;
+            apu_n2_x5 = 0.;
+            apu_n2_x6 = 0.;
+            apu_n2_x7 = 0.;
+            apu_n2_x8 = 0.;
+            apu_n2_x9 = 0.;
+            apu_n2_x10 = 0.;
+            apu_n2_x11 = 0.;
+            apu_n2_x12 = 0.;
+        } else {
+            apu_n2_const = 86.64042983954318;
+            apu_n2_x = -8.396890071756419;
+            apu_n2_x2 = 4.265566873959583;
+            apu_n2_x3 = -0.8713377975625458;
+            apu_n2_x4 = 0.08440922199990456;
+            apu_n2_x5 = -0.004751685242570211;
+            apu_n2_x6 = 0.0001707504726515346;
+            apu_n2_x7 = -0.00000409191213933807;
+            apu_n2_x8 = 0.00000006632366421256;
+            apu_n2_x9 = -0.00000000071927363877;
+            apu_n2_x10 = 0.00000000000500426125;
+            apu_n2_x11 = -0.00000000000002020512;
+            apu_n2_x12 = 0.00000000000000003601;
+        }
+
+        let n = (apu_n2_const
+            + (apu_n2_x * since)
+            + (apu_n2_x2 * since.powi(2))
+            + (apu_n2_x3 * since.powi(3))
+            + (apu_n2_x4 * since.powi(4))
+            + (apu_n2_x5 * since.powi(5))
+            + (apu_n2_x6 * since.powi(6))
+            + (apu_n2_x7 * since.powi(7))
+            + (apu_n2_x8 * since.powi(8))
+            + (apu_n2_x9 * since.powi(9))
+            + (apu_n2_x10 * since.powi(10))
+            + (apu_n2_x11 * since.powi(11))
+            + (apu_n2_x12 * since.powi(12)))
+        .clamp(0., 85.);
 
         Ratio::new::<percent>(n)
     }
@@ -529,12 +747,13 @@ impl Turbine for Stopping {
         _: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
-        self.n = Stopping::calculate_n(self.since) * self.n_factor;
-        self.egt =
-            self.base_temperature + Stopping::calculate_egt_delta(self.n) - self.egt_delta_at_entry;
+        self.n = Stopping::calculate_n1(self.since) * self.n_factor;
+        self.n2 = Stopping::calculate_n2(self.since) * self.n2_factor;
+        self.egt = self.base_temperature + Stopping::calculate_egt_delta(self.n2)
+            - self.egt_delta_at_entry;
 
-        if self.n.get::<percent>() == 0. {
-            Box::new(ShutdownAps3200Turbine::new_with_egt(self.egt))
+        if self.n.get::<percent>() < 0.5 {
+            Box::new(ShutdownPw980Turbine::new_with_egt(self.egt))
         } else {
             self
         }
@@ -542,6 +761,10 @@ impl Turbine for Stopping {
 
     fn n(&self) -> Ratio {
         self.n
+    }
+
+    fn n2(&self) -> Ratio {
+        self.n2
     }
 
     fn egt(&self) -> ThermodynamicTemperature {
@@ -570,8 +793,8 @@ fn calculate_towards_ambient_egt(
     )
 }
 
-/// APS3200 APU Generator
-pub struct Aps3200ApuGenerator {
+/// PW980 APU Generator
+pub struct Pw980ApuGenerator {
     number: usize,
     identifier: ElectricalElementIdentifier,
     n: Ratio,
@@ -582,18 +805,18 @@ pub struct Aps3200ApuGenerator {
     is_emergency_shutdown: bool,
     failure: Failure,
 }
-impl Aps3200ApuGenerator {
-    pub(super) const APU_GEN_POWERED_N: f64 = 84.;
+impl Pw980ApuGenerator {
+    pub(super) const APU_GEN_POWERED_N: f64 = 77.;
 
-    pub fn new(context: &mut InitContext, number: usize) -> Aps3200ApuGenerator {
-        Aps3200ApuGenerator {
+    pub fn new(context: &mut InitContext, number: usize) -> Pw980ApuGenerator {
+        Pw980ApuGenerator {
             number,
             identifier: context.next_electrical_identifier(),
-            n: Ratio::new::<percent>(0.),
+            n: Ratio::default(),
             writer: ElectricalStateWriter::new(context, &format!("APU_GEN_{}", number)),
-            output_potential: ElectricPotential::new::<volt>(0.),
-            output_frequency: Frequency::new::<hertz>(0.),
-            load: Ratio::new::<percent>(0.),
+            output_potential: ElectricPotential::default(),
+            output_frequency: Frequency::default(),
+            load: Ratio::default(),
             is_emergency_shutdown: false,
             failure: Failure::new(FailureType::ApuGenerator(number)),
         }
@@ -602,10 +825,9 @@ impl Aps3200ApuGenerator {
     fn calculate_potential(&self, n: Ratio) -> ElectricPotential {
         let n = n.get::<percent>();
 
-        if n < Aps3200ApuGenerator::APU_GEN_POWERED_N {
+        // The voltage "switches on" after 78% N1 at 115V and stays there throughout
+        if n < Pw980ApuGenerator::APU_GEN_POWERED_N {
             panic!("Should not be invoked for APU N below {}", n);
-        } else if n < 85. {
-            ElectricPotential::new::<volt>(105.)
         } else {
             ElectricPotential::new::<volt>(115.)
         }
@@ -614,17 +836,17 @@ impl Aps3200ApuGenerator {
     fn calculate_frequency(&self, n: Ratio) -> Frequency {
         let n = n.get::<percent>();
 
-        // Refer to APS3200.md for details on the values below and source data.
-        if n < Aps3200ApuGenerator::APU_GEN_POWERED_N {
+        // Refer to PW980.md for details on the values below and source data.
+        if n < Pw980ApuGenerator::APU_GEN_POWERED_N {
             panic!("Should not be invoked for APU N below {}", n);
         } else if n < 100. {
-            const APU_FREQ_CONST: f64 = -6798871.803967841;
-            const APU_FREQ_X: f64 = 461789.45241984475;
-            const APU_FREQ_X2: f64 = -13021.412660356296;
-            const APU_FREQ_X3: f64 = 195.15835365339123;
-            const APU_FREQ_X4: f64 = -1.639931967033938;
-            const APU_FREQ_X5: f64 = 0.007326808864133604;
-            const APU_FREQ_X6: f64 = -0.00001359879185066017;
+            const APU_FREQ_CONST: f64 = -7946988.668472081;
+            const APU_FREQ_X: f64 = 536340.196388485;
+            const APU_FREQ_X2: f64 = -15054.60305885912;
+            const APU_FREQ_X3: f64 = 224.9581339994097;
+            const APU_FREQ_X4: f64 = -1.887344238031437;
+            const APU_FREQ_X5: f64 = 0.008429263577308244;
+            const APU_FREQ_X6: f64 = -0.00001565694620869725;
 
             Frequency::new::<hertz>(
                 APU_FREQ_CONST
@@ -643,10 +865,10 @@ impl Aps3200ApuGenerator {
     fn should_provide_output(&self) -> bool {
         !self.failure.is_active()
             && !self.is_emergency_shutdown
-            && self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
+            && self.n.get::<percent>() >= Pw980ApuGenerator::APU_GEN_POWERED_N
     }
 }
-impl ApuGenerator for Aps3200ApuGenerator {
+impl ApuGenerator for Pw980ApuGenerator {
     fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {
         self.n = n;
         self.is_emergency_shutdown = is_emergency_shutdown;
@@ -662,10 +884,10 @@ impl ApuGenerator for Aps3200ApuGenerator {
         self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
 }
-provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
-provide_frequency!(Aps3200ApuGenerator, (390.0..=410.0));
-provide_load!(Aps3200ApuGenerator);
-impl ElectricalElement for Aps3200ApuGenerator {
+provide_potential!(Pw980ApuGenerator, (110.0..=120.0));
+provide_frequency!(Pw980ApuGenerator, (390.0..=410.0));
+provide_load!(Pw980ApuGenerator);
+impl ElectricalElement for Pw980ApuGenerator {
     fn input_identifier(&self) -> ElectricalElementIdentifier {
         self.identifier
     }
@@ -678,7 +900,7 @@ impl ElectricalElement for Aps3200ApuGenerator {
         true
     }
 }
-impl ElectricitySource for Aps3200ApuGenerator {
+impl ElectricitySource for Pw980ApuGenerator {
     fn output_potential(&self) -> Potential {
         if self.should_provide_output() {
             Potential::new(
@@ -690,7 +912,7 @@ impl ElectricitySource for Aps3200ApuGenerator {
         }
     }
 }
-impl SimulationElement for Aps3200ApuGenerator {
+impl SimulationElement for Pw980ApuGenerator {
     fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.failure.accept(visitor);
         visitor.visit(self);
@@ -708,58 +930,58 @@ impl SimulationElement for Aps3200ApuGenerator {
         self.output_potential = if self.should_provide_output() {
             self.calculate_potential(self.n)
         } else {
-            ElectricPotential::new::<volt>(0.)
+            ElectricPotential::default()
         };
 
         self.output_frequency = if self.should_provide_output() {
             self.calculate_frequency(self.n)
         } else {
-            Frequency::new::<hertz>(0.)
+            Frequency::default()
         };
 
         let power_consumption = report
             .total_consumption_of(PotentialOrigin::ApuGenerator(self.number))
             .get::<watt>();
         let power_factor_correction = 0.8;
-        let maximum_load = 90000.;
+        let maximum_load = 120000.;
         self.load = Ratio::new::<percent>(
             (power_consumption * power_factor_correction / maximum_load) * 100.,
         );
     }
 }
 
-pub struct Aps3200StartMotor {
-    /// On the A320, the start motor is powered through the DC BAT BUS.
+pub struct Pw980StartMotor {
+    /// On the A380, the start motor is powered through the DC APU STARTING BUS.
     /// There are however additional contactors which open and close based on
     /// overhead panel push button positions. Therefore we cannot simply look
-    /// at whether or not DC BAT BUS is powered, but must instead handle
+    /// at whether or not DC APU STARTING BUS is powered, but must instead handle
     /// potential coming in via those contactors.
     powered_by: ElectricalBusType,
     is_powered: bool,
     powered_since: Duration,
 }
-impl Aps3200StartMotor {
+impl Pw980StartMotor {
     pub fn new(powered_by: ElectricalBusType) -> Self {
-        Aps3200StartMotor {
+        Pw980StartMotor {
             powered_by,
             is_powered: false,
-            powered_since: Duration::from_secs(0),
+            powered_since: Duration::ZERO,
         }
     }
 }
-impl ApuStartMotor for Aps3200StartMotor {
+impl ApuStartMotor for Pw980StartMotor {
     fn is_powered(&self) -> bool {
         self.is_powered
     }
 }
-impl SimulationElement for Aps3200StartMotor {
+impl SimulationElement for Pw980StartMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
 
     fn consume_power<T: ConsumePower>(&mut self, context: &UpdateContext, consumption: &mut T) {
         if !self.is_powered {
-            self.powered_since = Duration::from_secs(0);
+            self.powered_since = Duration::ZERO;
         } else {
             self.powered_since += context.delta();
 
@@ -795,7 +1017,7 @@ mod apu_generator_tests {
     use uom::si::frequency::hertz;
 
     use crate::{
-        apu::tests::{test_bed, test_bed_with},
+        apu::tests::test_bed_pw980 as test_bed_with,
         shared,
         simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
     };
@@ -895,7 +1117,7 @@ mod apu_generator_tests {
 
     #[test]
     fn when_shutdown_frequency_not_normal() {
-        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed_with().run(Duration::from_secs(1_000));
 
         assert!(!test_bed.frequency_within_normal_range());
     }
@@ -911,7 +1133,7 @@ mod apu_generator_tests {
 
     #[test]
     fn when_shutdown_potential_not_normal() {
-        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed_with().run(Duration::from_secs(1_000));
 
         assert!(!test_bed.potential_within_normal_range());
     }
@@ -927,19 +1149,19 @@ mod apu_generator_tests {
 
     #[test]
     fn when_shutdown_has_no_load() {
-        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed_with().run(Duration::from_secs(1_000));
 
-        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        assert_eq!(test_bed.load(), Ratio::default());
     }
 
     #[test]
     fn when_running_but_potential_unused_has_no_load() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>(0.))
+            .power_demand(Power::default())
             .run(Duration::from_secs(1_000));
 
-        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        assert_eq!(test_bed.load(), Ratio::default());
     }
 
     #[test]
@@ -949,14 +1171,14 @@ mod apu_generator_tests {
             .power_demand(Power::new::<watt>(50000.))
             .run(Duration::from_secs(1_000));
 
-        assert!(test_bed.load() > Ratio::new::<percent>(0.));
+        assert!(test_bed.load() > Ratio::default());
     }
 
     #[test]
     fn when_load_below_maximum_it_is_normal() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>(90000. / 0.8))
+            .power_demand(Power::new::<watt>(120000. / 0.8))
             .run(Duration::from_secs(1_000));
 
         assert!(test_bed.load_within_normal_range());
@@ -966,7 +1188,7 @@ mod apu_generator_tests {
     fn when_load_exceeds_maximum_not_normal() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>((90000. / 0.8) + 1.))
+            .power_demand(Power::new::<watt>((120000. / 0.8) + 1.))
             .run(Duration::from_secs(1_000));
 
         assert!(!test_bed.load_within_normal_range());
@@ -997,11 +1219,11 @@ mod apu_generator_tests {
         assert!(test_bed.contains_variable_with_name("ELEC_APU_GEN_1_LOAD_NORMAL"));
     }
 
-    fn apu_generator(context: &mut InitContext) -> Aps3200ApuGenerator {
-        Aps3200ApuGenerator::new(context, 1)
+    fn apu_generator(context: &mut InitContext) -> Pw980ApuGenerator {
+        Pw980ApuGenerator::new(context, 1)
     }
 
-    fn update_above_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+    fn update_above_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Pw980ApuGenerator>>) {
         test_bed.set_update_before_power_distribution(|generator, _, electricity| {
             generator.update(Ratio::new::<percent>(100.), false);
             electricity.supplied_by(generator);
@@ -1009,9 +1231,9 @@ mod apu_generator_tests {
         test_bed.run();
     }
 
-    fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+    fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Pw980ApuGenerator>>) {
         test_bed.set_update_before_power_distribution(|generator, _, electricity| {
-            generator.update(Ratio::new::<percent>(0.), false);
+            generator.update(Ratio::default(), false);
             electricity.supplied_by(generator);
         });
         test_bed.run();
