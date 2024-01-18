@@ -99,4 +99,6 @@ export const A320Failure = Object.freeze({
 
     RadioAltimeter1: 34000,
     RadioAltimeter2: 34001,
+
+    ApuStartMotor: 49000,
 });

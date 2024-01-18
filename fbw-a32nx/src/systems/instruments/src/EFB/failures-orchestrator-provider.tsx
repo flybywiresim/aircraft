@@ -112,6 +112,8 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
 
     [34, A320Failure.RadioAltimeter1, 'RA 1'],
     [34, A320Failure.RadioAltimeter2, 'RA 2'],
+
+    [49, A320Failure.ApuStartMotor, 'APU start motor'],
 ]);
 
 const Context = React.createContext<FailuresOrchestratorContext>({

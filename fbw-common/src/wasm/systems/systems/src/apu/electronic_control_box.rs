@@ -5,6 +5,7 @@ use super::{
 };
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
+    failures::{Failure, FailureType},
     pneumatic::PneumaticValveSignal,
     shared::{
         arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
@@ -47,6 +48,7 @@ pub(super) struct ElectronicControlBox {
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
     fire_button_is_released: bool,
+    start_motor_failure: Failure,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
 }
@@ -77,6 +79,7 @@ impl ElectronicControlBox {
             master_is_on: false,
             start_is_on: false,
             start_motor_is_powered: false,
+            start_motor_failure: Failure::new(FailureType::ApuStartMotor),
             n: Ratio::new::<percent>(0.),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
@@ -137,6 +140,14 @@ impl ElectronicControlBox {
         ) && !self.start_motor_is_powered
         {
             self.fault = Some(ApuFault::DcPowerLoss);
+        }
+
+        if self.start_motor_failure.is_active()
+            && self.master_is_on
+            && self.start_is_on
+            && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N
+        {
+            self.fault = Some(ApuFault::ApuStartMotor);
         }
     }
 
@@ -282,7 +293,10 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
         match self.turbine_state {
             TurbineState::Shutdown
                 if {
-                    self.master_is_on && self.start_is_on && self.air_intake_flap_is_fully_open()
+                    self.master_is_on
+                        && self.start_is_on
+                        && self.air_intake_flap_is_fully_open()
+                        && !self.start_motor_failure.is_active()
                 } =>
             {
                 Some(ContactorSignal::Close)
@@ -291,6 +305,7 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
                 if {
                     self.turbine_state == TurbineState::Starting
                         && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N
+                        && !self.start_motor_failure.is_active()
                 } =>
             {
                 Some(ContactorSignal::Close)
@@ -358,6 +373,10 @@ impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
     }
 }
 impl SimulationElement for ElectronicControlBox {
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.start_motor_failure.accept(visitor);
+        visitor.visit(self);
+    }
     fn write(&self, writer: &mut SimulatorWriter) {
         let ssm = if self.is_on() {
             SignStatus::NormalOperation
@@ -417,4 +436,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
+    ApuStartMotor,
 }

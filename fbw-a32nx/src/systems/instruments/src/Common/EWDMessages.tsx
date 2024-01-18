@@ -369,6 +369,8 @@ const EWDMessages = {
     '340023502': '\x1b<2m -VFE...............215',
     '340024001': '\x1b<2m\x1b4mOVERSPEED\x1bm',
     '340024002': '\x1b<2m -VFE...............230',
+    '490001001': '\x1b<4m\x1b4mAPU\x1bm AUTO SHUT DOWN',
+    '490001002': '\x1b<5m -MASTER SW..........OFF',
     '770002701': '\x1b<2m\x1b4mENG\x1bm ALL ENGINES FAILURE',
     '770002702': '\x1b<5m -EMER ELEC PWR...MAN ON',
     '770002703': '\x1b<5m OPT RELIGHT SPD.280/.77',
