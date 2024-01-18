@@ -624,7 +624,7 @@
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "overlaps with",
       "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
-      "IndependentAxis": "Independent Axis",
+      "IndependentAxis": "Independent Axes",
       "LoadFromFile": "Load from File",
       "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
       "ResetToDefaults": "Reset to Defaults",
