@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { NXUnits } from '@shared/NXUnits';
+import { Layer } from '@instruments/common/utils';
 
-export const StatusArea = () => {
+export const StatusArea: FC = () => {
     const [airDataSwitchingKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum');
 
     const getStatusAirDataReferenceSource = () => {
@@ -13,10 +14,13 @@ export const StatusArea = () => {
         return airDataSwitchingKnob === ADIRS_3_TO_CAPTAIN ? 3 : 1;
     };
 
-    const [gLoad] = useSimVar('G FORCE', 'GFORCE');
-    const [gLoadIsAbnormal, setGLoadIsAbnormal] = useState(false);
-
     const getValuePrefix = (value: number) => (value >= 0 ? '+' : '');
+
+
+    // Somehow requesting this SimVar makes the React updates break
+    // const [gLoad] = useSimVar('G FORCE', 'number');
+    const gLoad = 1.0;
+    const [gLoadIsAbnormal, setGLoadIsAbnormal] = useState(false);
 
     useEffect(() => {
         if (gLoad < 0.7 || gLoad > 1.4) {
@@ -33,7 +37,6 @@ export const StatusArea = () => {
     const airDataReferenceSource = getStatusAirDataReferenceSource();
     const sat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`);
     const tat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`);
-
     const [cg] = useSimVar('CG PERCENT', 'percent');
 
     const userWeightUnit = NXUnits.userWeightUnit();
@@ -67,7 +70,7 @@ export const StatusArea = () => {
     };
 
     return (
-        <g id='status'>
+        <Layer x={0} y={0}>
             {/* Frame */}
             <path className='SW4 White StrokeRound' d='M 7,667 l 754,0' />
             <path className='SW4 White' d='M 0,765 l 768,0' />
@@ -121,6 +124,6 @@ export const StatusArea = () => {
             <text x={711} y={696} className='F22 Cyan'>{userWeightUnit}</text>
             <text x={711} y={724} className='F22 Cyan'>%</text>
             <text x={711} y={752} className='F22 Cyan'>{userWeightUnit}</text>
-        </g>
+        </Layer>
     );
 };
