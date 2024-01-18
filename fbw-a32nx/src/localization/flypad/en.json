@@ -629,6 +629,7 @@
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
       "ReverserOnAxis": "Reverser On Axis",
+      "TogaOnAxis": "TOGA On Axis",
       "SaveAndApply": "Save and Apply",
       "SetFromThrottle": "Set from Throttle",
       "ThrottleConfigurationReset": "Throttle Configuration Reset"
