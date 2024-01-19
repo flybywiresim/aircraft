@@ -32,6 +32,23 @@
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
 1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
+1. [EWD] Fixed PACKS indication when no FADECS - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
+1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
+1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mi
+1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
+1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
+1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
+1. [FCU] Fixed SPD display in MACH mode to include decimal - @budzique (Joe Jackson)
+1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
 
 ## 0.11.0
 

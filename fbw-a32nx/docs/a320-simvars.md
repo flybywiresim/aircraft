@@ -296,10 +296,6 @@
     - Number
     - Flaps config for TakeOff, 1, 2 or 3
 
-- A32NX_SPEEDS_V2
-    - Number
-    - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
-
 - A32NX_SPEEDS_VLS_APP
     - Number
     - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
@@ -598,6 +594,13 @@
 - A32NX_OVHD_{name}_PB_IS_RELEASED
     - Bool
     - True when the push button is RELEASED
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+
+- A32NX_OVHD_{name}_PB_IS_DISC
+    - Bool
+    - True when the idg is disconnected
     - {name}
         - ELEC_IDG_1
         - ELEC_IDG_2

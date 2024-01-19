@@ -1,0 +1,144 @@
+{
+  "LocalisationFile": {
+    "Version": 2,
+    "UUID": "1c2a173a-3d4a-4852-a55a-ba3ecbc95f3b",
+    "Languages": [
+      "en-US",
+      "fr-FR",
+      "es-ES",
+      "de-DE",
+      "it-IT",
+      "pl-PL",
+      "pt-BR",
+      "ru-RU"
+    ],
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": {
+        "UUID": "f7f14f45-2391-4a27-84ac-c789501eafd6",
+        "LastModifiedBy": "dmedina",
+        "LastModifiedDate": "2020-07-01 11:54:59",
+        "LocalizationStatus": "TranslationNeeded",
+        "Languages": {
+          "en-US": {
+            "Text": "Airbus launched their first A320 in March of 1984. Nearly 26 years later, in 2010, they announced the A320neo (\"new engine option\") as the newest member of the family, to revitalize and sustain their line of world-leading, narrow-body, twin-turbofan airliners.</br></br>After an extended development process, the A320neo officially entered service in early 2016 with Lufthansa, and quickly became the fastest-selling commercial aircraft ever, with more than 7,000 planes ordered by more than 115 airlines to date.</br></br>Continuing the tradition established by the original A320, which was the first airliner other than Concorde to use fly-by-wire control for normal operations, the A320neo shares over 95 percent airframe commonality with predecessor models. However, it's the introduction of two new-generation engine types, paired with the company's proprietary 'Sharklet' wing-tips, that really sets the neo apart.</br></br>Fuel savings, extended range, increased max payload and shortened landing distance; these key advances -- along with a dramatic reduction in noise and CO₂ emissions -- prove why the A320neo is a not only a commercial success, but also a significant step forward on aviation's path to greater environmental responsibility.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "fr-FR": {
+            "Text": "Airbus a lancé son premier A320 en mars 1984. Presque 26 ans plus tard, en 2010, l'entreprise dévoile son A320neo (pour « new engine option », nouvelle option de moteur) comme nouveau membre de la famille, afin de revigorer et d'entretenir leur gamme d'avions de ligne de classe mondiale, à fuselage étroit et turboréacteur à double flux.</br></br>Après un processus de développement particulièrement long, l'A320neo entre en service début 2016 avec Lufthansa, et bat rapidement les records de vente pour un avion commercial, avec plus de 7 000 avions commandés par plus de 115 compagnies aériennes à ce jour.</br></br>Suivant la tradition établie par l'A320 original, qui a été le premier avion de ligne autre que Concorde à utiliser les commandes de vol électriques, l'A320neo partage 95 % de son fuselage avec les modèles précédents. Cependant, c'est l'introduction de deux nouveaux types de moteurs nouvelle génération, couplés aux saumons d'aile exclusifs « Sharklet » de l'entreprise, qui fait du neo un aéronef à part.</br></br>Économies de carburant, rayon d'action étendu, charge utile maximale améliorée et distance d'atterrissage raccourcie ; ces avancées clés -- ainsi qu'une réduction drastique du bruit et des émissions de dioxyde de carbone -- montrent en quoi l'A320neo n'est pas seulement un succès commercial, mais également un grand pas en avant en matière de responsabilité environnementale pour l'aviation."
+          },
+          "es-ES": {
+            "Text": "Airbus lanzó su primer A320 en marzo de 1984. Casi 26 años después, en 2010, anunciaron el A320neo (New Engine Option) como el miembro de la familia más reciente, para revitalizar y mantener el liderazgo mundial en aviones de pasajeros de turboventilador doble y cuerpo estrecho.</br></br>Tras un amplio proceso de desarrollo, el A320neo entró oficialmente en servicio a principios de 2016 con Lufthansa y enseguida se convirtió en la aeronave comercial con las ventas más rápidas de la historia: más de 7000 aviones encargados por más de 115 aerolíneas hasta la fecha.</br></br>Continuando la tradición establecida por el A320 original, que fue el primer avión de pasajeros en utilizar el control de vuelo electrónico para las operaciones normales (exceptuando el Concorde), la célula del A320neo comparte más del 95 por ciento de similitudes con la de los modelos anteriores. Sin embargo, lo que realmente distingue al neo es la incorporación de dos tipos de motores de nueva generación, junto con los dispositivos de punta de ala Sharklet patentados por la compañía.</br></br>Sus avances clave —como el ahorro de combustible, un mayor alcance, un incremento de la carga útil máxima y una menor distancia de aterrizaje— junto con la drástica reducción del ruido y de las emisiones de dióxido de carbono demuestran por qué el A320neo no solo es un éxito comercial, sino también un importante paso adelante en el camino de la aviación hacia una mayor responsabilidad medioambiental."
+          },
+          "de-DE": {
+            "Text": "Die erste A320 von Airbus wurde 1984 der Weltöffentlichkeit präsentiert. 26 Jahre später, 2010, verkündete das Unternehmen, dass die Familie ein neues Mitglied in ihrer Mitte begrüßen kann, die A320neo (neo: neue Triebwerksoption), die dazu beitragen soll, die Unternehmenslinie der weltweit führenden Schmalrumpfflugzeuge mit Doppel-Mantelstromtriebwerk zu revitalisieren und in die Zukunft zu führen.</br></br>Nach einem ausgedehnten Entwicklungsprozess wurde die A320neo von der Lufthansa 2016 in Betrieb genommen und entwickelte sich rasch zum am meisten verkauften Flugzeug aller Zeiten, wobei bis zum heutigen Tag 115 verschiedene Airlines insgesamt 7.000 Flugzeuge orderten.</br></br>Ganz im Sinne der Tradition, die mit der ursprünglichen A320 begründet wurde – diese war die erste Passagiermaschine, mit Ausnahme der Concorde, die für normale Operationen auf die Fly-by-Wire-Steuerung setzte – teilt die A320neo eine mehr als 95 %ige Gemeinsamkeit der Flugzeugzelle mit ihren Vorgängern. Allerdings versteht es die A320neo ebenfalls, sich entsprechend abzugrenzen: und zwar durch die Einführung zweier Triebwerke der neuesten Generation, die mit den unternehmenseigenen „Sharklet“-Flügelspitzen kombiniert werden.</br></br>Zu den Schlüsselverbesserungen der neo zählen unter anderem Treibstoffersparnis, eine größere Reichweite und erhöhte max. Ladung sowie eine verkürzte Landedistanz als auch eine dramatische Reduzierung der Lautstärke und der Kohlenstoffdioxid-Emissionen. All dies bezeugt, dass die A320 nicht nur ein kommerzieller Erfolg, sondern auch ein wichtiger Schritt hin zu einem Kurs der Luftfahrt ist, bei dem es um eine größere Umweltverantwortlichkeit geht."
+          },
+          "it-IT": {
+            "Text": "Airbus lancia il primo A320 nel marzo del 1984. Nel 2010, quasi 26 anni dopo, annuncia l'ingresso dell'A320neo (\"new engine option\", nuova opzione per il motore) nella famiglia, con l'obiettivo di dare nuova vita e sostenere la linea di slanciati aerei di linea a doppia turboventola, in cui Airbus è leader a livello mondiale.</br></br>In seguito a un lungo processo di sviluppo, l'A320neo entra ufficialmente in servizio all'inizio del 2016 con Lufthansa e diventa rapidamente l'aeromobile commerciale più venduto della storia, con oltre 7000 unità ad oggi ordinate da oltre 115 compagnie aeree.</br></br>Continuando la tradizione iniziata dall'originale A320, il primo aereo di linea dopo il Concorde a utilizzare i comandi fly-by-wire per nel normale funzionamento, l'A320neo riprende il design della cellula dei modelli precedenti al 95%. Ciò che realmente contraddistingue questa versione è tuttavia l'introduzione di due tipi di motori di nuova generazione, abbinati ai parafanghi proprietari \"Sharklet\" dell'azienda.</br></br>Risparmio di carburante, ampia portata, carico utile massimo aumentato e distanza di atterraggio ridotta: questi elementi chiave, uniti alla drastica riduzione del rumore e delle emissioni di di anidride carbonica, dimostrano il motivo per cui l'A320neo non è solo un successo commerciale, ma rappresenta anche un significativo progresso nel percorso dell'aviazione verso una maggiore responsabilità ambientale."
+          },
+          "pl-PL": {
+            "Text": "Pierwszy model samolotu A320 został oddany do użytku przez firmę Airbus w marcu 1984 roku. Niemal 26 lat później, w roku 2010, firma ogłosiła narodziny najnowszego członka rodziny: modelu A320neo (ang. „new engine option” – nowy rodzaj silnika), którego celem była rewitalizacja linii wąskokadłubowych samolotów pasażerskich o dwóch silnikach turbowentylatorowych i utrzymanie pozycji lidera na rynku.</br></br>Po długim okresie przygotowawczym model A320neo został oficjalnie oddany do użytku w liniach Lufthansa na początku 2016 roku. Niemal natychmiast został najszybciej sprzedającym się komercyjnym statkiem powietrznym w historii – do dziś sprzedało się ponad 7000 egzemplarzy wykorzystywanych przez ponad 115 linii lotniczych.</br></br>Zgodnie z tradycją płatowiec modelu A320neo został zaprojektowany tak, by w ponad 95% przypominać formę wcześniejszych modeli z tej serii, w tym oryginalnego modelu A320, który obok Concorde'a był pierwszym samolotem pasażerskim z elektronicznym systemem sterowania FBW („fly-by-wire”) używanym podczas standardowych manewrów. Wyróżniały go jednak dwa silniki nowej generacji oraz zastrzeżone przez firmę końcówki skrzydeł typu „Sharklet”.</br></br>Dzięki zmniejszonemu zużyciu paliwa, krótszej odległości wymaganej do lądowania, zwiększonemu zasięgowi i większym możliwościom załadunkowym – a także dzięki znaczącej redukcji w zakresie emisji hałasu i dwutlenku węgla – model A320neo odniósł wielki sukces komercyjny i uznawany jest za milowy krok na drodze do zwiększenia odpowiedzialności za środowisko w sektorze lotniczym."
+          },
+          "pt-BR": {
+            "Text": "A Airbus lançou seu primeiro A320 em março de 1984. Quase 26 anos depois, em 2010, eles anunciaram o A320neo (\"new engine option\", nova opção de motor) como o membro mais recente da família, para revitalizar e sustentar sua linha de aviões de passageiros líder mundial com turbofan duplo e corpo estreito.</br></br>Depois de um extenso processo de desenvolvimento, o A320neo entrou oficialmente em serviço no início de 2016 com a Lufthansa, e logo se tornou a aeronave comercial mais rapidamente vendida do mundo, com mais de 7.000 aviões encomendados por mais de 115 linhas aéreas até hoje.</br></br>Dando continuidade à tradição estabelecida pelo A320 original, que foi o primeiro avião de passageiros além do Concorde a usar o controle fly-by-wire para operações normais, o A320neo compartilha mais de 95% de uniformidade de componentes estruturais com os modelos predecessores. Entretanto, é a introdução de dois tipos de motor de nova geração, além das pontas de asa \"Sharklet\" proprietárias da empresa, que realmente destaca o neo.</br></br>Economia de combustível, alcance estendido, carga máxima ampliada e distância de aterrissagem encurtada; esses avanços fundamentais, junto com uma redução drástica de ruídos e emissões de dióxido de carbono, comprovam porque o A320neo não só é um sucesso comercial, como também um passo à frente significativo no caminho para maior responsabilidade ambiental."
+          },
+          "ru-RU": {
+            "Text": "Первый A320 компания Airbus представила в марте 1984 года. В 2010 году, спустя почти 26 лет, она объявила о выпуске A320neo — это новый представитель популярной линейки узкофюзеляжных самолётов с двумя турбовентиляторными двигателями.</br></br>В начале 2016 года A320neo наконец вошёл в состав флота авиакомпании Lufthansa. Вскоре он стал самым быстро продаваемым коммерческим воздушным судном: на конец января 2020 года 113 компаний суммарно заказали более чем 7000 бортов этой модели.</br></br>A320neo продолжает традиции своего предшественника, A320, ставшего первым самолётом после знаменитого «Конкорда», который в нормальном режиме полёта использует только электродистанционную систему управления. Преемственность модели A320neo обеспечивает планер, который на 95% повторяет предыдущие модели. За инновации отвечают двигатели нового поколения, а также фирменные «шарклеты» — аэродинамические законцовки крыла.</br></br>A320neo лучше своих предшественников во всём: он экономичнее, обладает большей дальностью и коммерческой загрузкой, способен приземляться на более короткой полосе, производит значительно меньше шума и углекислого газа. Все эти качества сделали его не только настоящим бестселлером среди коммерческих самолётов, но и важнейшим представителем нового поколения самолётов — экономичных и экологичных."
+          }
+        }
+      },
+      "AIRCRAFT.UI_MANUFACTURER": {
+        "UUID": "a5e3aa09-a086-420d-9785-16e427be2cf9",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-03-08 15:45:12",
+        "Languages": {
+          "en-US": {
+            "Text": "Airbus"
+          },
+          "fr-FR": {
+            "Text": "Airbus"
+          },
+          "es-ES": {
+            "Text": "Airbus"
+          },
+          "de-DE": {
+            "Text": "Airbus"
+          },
+          "it-IT": {
+            "Text": "Airbus"
+          },
+          "pl-PL": {
+            "Text": "Airbus"
+          },
+          "pt-BR": {
+            "Text": "Airbus"
+          },
+          "ru-RU": {
+            "Text": "Airbus"
+          }
+        }
+      },
+      "AIRCRAFT.UI_MODEL": {
+        "UUID": "ebd79731-84d8-4553-be6f-b94c7e4a6a7e",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-03-08 15:45:12",
+        "Languages": {
+          "en-US": {
+            "Text": "A320neo"
+          },
+          "fr-FR": {
+            "Text": "A320neo"
+          },
+          "es-ES": {
+            "Text": "A320neo"
+          },
+          "de-DE": {
+            "Text": "A320neo"
+          },
+          "it-IT": {
+            "Text": "A320neo"
+          },
+          "pl-PL": {
+            "Text": "A320neo"
+          },
+          "pt-BR": {
+            "Text": "A320neo"
+          },
+          "ru-RU": {
+            "Text": "A320neo"
+          }
+        }
+      },
+      "AIRCRAFT.UI_VARIATION": {
+        "UUID": "e40280bb-b5c0-4ee4-a2b9-5f9e3fe07235",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-03-08 15:45:12",
+        "Languages": {
+          "en-US": {
+            "Text": "Airbus"
+          },
+          "fr-FR": {
+            "Text": "Airbus"
+          },
+          "es-ES": {
+            "Text": "Airbus"
+          },
+          "de-DE": {
+            "Text": "Airbus"
+          },
+          "it-IT": {
+            "Text": "Airbus"
+          },
+          "pl-PL": {
+            "Text": "Airbus"
+          },
+          "pt-BR": {
+            "Text": "Airbus"
+          },
+          "ru-RU": {
+            "Text": "Airbus"
+          }
+        }
+      }
+    }
+  }
+}

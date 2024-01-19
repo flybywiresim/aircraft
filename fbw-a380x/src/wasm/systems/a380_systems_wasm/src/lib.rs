@@ -280,6 +280,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
+    .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -375,6 +376,14 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
+    .provides_named_variable("FSDT_GSX_BYPASS_PIN")?
+    .with_aspect(|builder| {
+        builder.copy(
+            Variable::named("FSDT_GSX_BYPASS_PIN"),
+            Variable::aspect("EXTERNAL_BYPASS_PIN_INSERTED"),
+        );
+        Ok(())
+    })?
     .with_aspect(|builder| {
         for i in 1..=2 {
             builder.copy(

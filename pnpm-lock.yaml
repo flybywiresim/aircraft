@@ -18,8 +18,8 @@ dependencies:
     specifier: ^1.6.0
     version: 1.7.5
   '@microsoft/msfs-sdk':
-    specifier: ^0.6.0
-    version: 0.6.0
+    specifier: ^0.7.0
+    version: 0.7.0
   '@react-hook/mouse-position':
     specifier: ~4.1.0
     version: 4.1.3(react@17.0.2)
@@ -2505,8 +2505,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@microsoft/msfs-sdk@0.6.0:
-    resolution: {integrity: sha512-fEOg+IynDit88HDKAZkgEoRIrbrTfIQioNO1Ka42PJ+HdjyYC+4neVvs8ohfJyCi7rLzIwlCe3VcsSnNIGUNig==}
+  /@microsoft/msfs-sdk@0.7.0:
+    resolution: {integrity: sha512-IWPuI0cKrybcB1xScZx+hTekXyAMFb3wQLjcS6sLXyDygsitH4M0VvpuIfL3KCKRfUUaQRgFhZCXymJ28qWnqA==}
     dev: false
 
   /@navigraph/pkce@1.0.3:
