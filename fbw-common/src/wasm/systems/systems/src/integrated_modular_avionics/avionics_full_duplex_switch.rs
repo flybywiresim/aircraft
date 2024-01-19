@@ -3,17 +3,14 @@ use super::{
     AvionicsDataCommunicationNetworkMessageIdentifier,
 };
 use crate::{
-    shared::{
-        power_supply_relay::PowerSupplyRelay, ConsumePower, ElectricalBusType, ElectricalBuses,
-    },
+    shared::{power_supply_relay::PowerSupplyRelay, ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        SimulatorWriter, VariableIdentifier, Write,
     },
 };
 use fxhash::FxHashMap;
 use std::{cell::RefCell, rc::Rc};
-use uom::si::{f64::Power, power::watt};
 
 enum PowerSupply {
     Single(ElectricalBusType),

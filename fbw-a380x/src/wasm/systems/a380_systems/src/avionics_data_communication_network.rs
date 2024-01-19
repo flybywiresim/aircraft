@@ -921,11 +921,11 @@ mod tests {
             let message = test_bed.query(|a| a.recv_message(i, &message_id));
             assert_eq!(message, Some(message1.clone()));
         }
-        for i in (3..=4) {
+        for i in 3..=4 {
             let message = test_bed.query(|a| a.recv_message(i, &message_id));
             assert_eq!(message, None);
         }
-        for i in (5..=7) {
+        for i in 5..=7 {
             let message = test_bed.query(|a| a.recv_message(i, &message_id));
             assert_eq!(message, Some(message2.clone()));
         }
