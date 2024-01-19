@@ -407,16 +407,16 @@ impl A380AvionicsDataCommunicationNetwork {
                     (initialised[id] && self.afdx_switches[id].borrow().is_available())
                         .then_some(id)
                 }) {
-                    self.afdx_switches[neighboor].borrow().get_acdn_messages()
+                    self.afdx_switches[neighboor].borrow().get_adcn_messages()
                 } else {
                     Rc::new(FxHashMap::default().into())
                 };
-                RefCell::borrow_mut(&self.afdx_switches[switch_id]).set_acdn_messages(messages);
+                RefCell::borrow_mut(&self.afdx_switches[switch_id]).set_adcn_messages(messages);
             }
 
             let current_switch = &mut self.afdx_switches[switch_id];
             if current_switch.borrow().is_available() {
-                let current_messages = current_switch.borrow().get_acdn_messages();
+                let current_messages = current_switch.borrow().get_adcn_messages();
 
                 for &neighbour in neighbours {
                     let neighbour = neighbour as usize;
@@ -427,7 +427,7 @@ impl A380AvionicsDataCommunicationNetwork {
                         } else {
                             Rc::new(FxHashMap::default().into())
                         };
-                        RefCell::borrow_mut(neighbouring_switch).set_acdn_messages(messages);
+                        RefCell::borrow_mut(neighbouring_switch).set_adcn_messages(messages);
                         initialised[neighbour] = true;
                     }
                 }

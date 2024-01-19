@@ -26,7 +26,7 @@ pub struct AvionicsFullDuplexSwitch {
     failure_indication: bool,
     available_id: VariableIdentifier,
     routing_update_required: bool,
-    acdn_messages: Rc<
+    adcn_messages: Rc<
         RefCell<
             FxHashMap<
                 AvionicsDataCommunicationNetworkMessageIdentifier,
@@ -51,7 +51,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
-            acdn_messages: Rc::new(FxHashMap::default().into()),
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -73,7 +73,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
-            acdn_messages: Rc::new(FxHashMap::default().into()),
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -98,7 +98,7 @@ impl AvionicsFullDuplexSwitch {
         self.routing_update_required
     }
 
-    pub fn get_acdn_messages(
+    pub fn get_adcn_messages(
         &self,
     ) -> Rc<
         RefCell<
@@ -108,12 +108,12 @@ impl AvionicsFullDuplexSwitch {
             >,
         >,
     > {
-        self.acdn_messages.clone()
+        self.adcn_messages.clone()
     }
 
-    pub fn set_acdn_messages(
+    pub fn set_adcn_messages(
         &mut self,
-        acdn_messages: Rc<
+        adcn_messages: Rc<
             RefCell<
                 FxHashMap<
                     AvionicsDataCommunicationNetworkMessageIdentifier,
@@ -122,7 +122,7 @@ impl AvionicsFullDuplexSwitch {
             >,
         >,
     ) {
-        self.acdn_messages = acdn_messages;
+        self.adcn_messages = adcn_messages;
     }
 }
 impl AvionicsDataCommunicationNetworkEndpoint for AvionicsFullDuplexSwitch {
@@ -130,7 +130,7 @@ impl AvionicsDataCommunicationNetworkEndpoint for AvionicsFullDuplexSwitch {
         &self,
         id: &AvionicsDataCommunicationNetworkMessageIdentifier,
     ) -> Option<AvionicsDataCommunicationNetworkMessageData> {
-        self.acdn_messages.borrow().get(id).cloned()
+        self.adcn_messages.borrow().get(id).cloned()
     }
 
     fn send_value(
@@ -138,7 +138,7 @@ impl AvionicsDataCommunicationNetworkEndpoint for AvionicsFullDuplexSwitch {
         id: &AvionicsDataCommunicationNetworkMessageIdentifier,
         value: AvionicsDataCommunicationNetworkMessageData,
     ) {
-        self.acdn_messages.borrow_mut().insert(*id, value);
+        self.adcn_messages.borrow_mut().insert(*id, value);
     }
 }
 impl SimulationElement for AvionicsFullDuplexSwitch {
