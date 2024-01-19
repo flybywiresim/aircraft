@@ -4,18 +4,6 @@ import useMouse from '@react-hook/mouse-position';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer } from '@instruments/common/utils';
 
-const buttonStyle = {
-    display: "flex",
-    fontSize: "22px",
-    backgroundColor: "#3c3c3c",
-    color: "white",
-    fontFamily: "Ecam, monospace",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "2px outset lightgray",
-    padding: "9px 12px 5px 12px",
-};
-
 export const Mailbox = () => {
     const ref = useRef(null);
 
@@ -24,14 +12,6 @@ export const Mailbox = () => {
         enterDelay: 100,
         leaveDelay: 100,
     });
-
-    const [seconds] = useSimVar('E:ZULU TIME', 'seconds');
-
-    const getCurrentHHMMZ = () => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}Z`;
-    };
 
     return (
         <>
@@ -43,8 +23,8 @@ export const Mailbox = () => {
             <path className='SW2 White' d='m 617 768 v 256' />
             <path className='SW2 White' d='m 99 992 h 518' />
 
-            {/* ATC thing */}
-            <text className='F26 Green' x={110} y={795}>{getCurrentHHMMZ()}</text>
+            {/* Message area */}
+            <text className='F26 Green' x={110} y={795} />
             <text className='F26 Amber' x={110} y={833}>ATC DATALINK COM</text>
             <text className='F26 Amber' x={110} y={870}>NOT AVAIL</text>
 
