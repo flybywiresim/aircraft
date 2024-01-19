@@ -1,3 +1,9 @@
+use self::{
+    core_processing_input_output_module::CoreProcessingInputOutputModule,
+    input_output_module::InputOutputModule,
+};
+use std::ops::Deref;
+
 pub mod avionics_full_duplex_switch;
 pub mod core_processing_input_output_module;
 pub mod input_output_module;
@@ -22,14 +28,22 @@ pub trait AvionicsDataCommunicationNetworkEndpoint {
     );
 }
 
-pub trait AvionicsDataCommunicationNetwork {
-    type NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint;
+pub trait AvionicsDataCommunicationNetwork<
+    'a,
+    NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint,
+    NetworkEndpointRef: Deref<Target = NetworkEndpoint>,
+>
+{
     fn get_message_identifier(
         &mut self,
         name: String,
     ) -> AvionicsDataCommunicationNetworkMessageIdentifier;
-    fn get_endpoint(&self, id: u8) -> &Self::NetworkEndpoint;
+    fn get_endpoint(&'a self, id: u8) -> NetworkEndpointRef;
+    fn get_cpiom(&self, name: &str) -> &CoreProcessingInputOutputModule;
+    fn get_iom(&self, name: &str) -> &InputOutputModule;
 }
 
-#[derive(Clone)]
-pub enum AvionicsDataCommunicationNetworkMessageData {}
+#[derive(Clone, Debug, PartialEq)]
+pub enum AvionicsDataCommunicationNetworkMessageData {
+    Str(&'static str),
+}
