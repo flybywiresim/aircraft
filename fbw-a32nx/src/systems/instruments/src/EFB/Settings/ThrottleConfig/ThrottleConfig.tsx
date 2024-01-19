@@ -107,14 +107,19 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     }, [reverserOnAxis1, selectedDetent]);
 
     // checks if there are any overlaps in the throttle mappings and returns an array of errors
-    const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
+    const getOverlapErrors = (axis: number, mappingsAxis: ThrottleSimvar[]) => {
         const overlapErrors: string[] = [];
         for (let index = reverserOnAxis1 ? 0 : 2; index < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); index++) {
+            // A380 has 4 throttles but only throttles 2 + 3 are used for Reverse Full and Reverse Idle - therefore we skip
+            // these checks as the UI does not even allow to set these mappings from the throttles
+            if (numberOfThrottles === 4 && (axis === 1 || axis === 4) && index < 2) {
+                continue;
+            }
             const element = mappingsAxis[index];
             for (let nextIndex = index + 1; nextIndex < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); nextIndex++) {
                 const nextElement = mappingsAxis[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    overlapErrors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) ${t('Settings.ThrottleConfig.ErrorOverlapMsg')} ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
+                    overlapErrors.push(`${t('Settings.ThrottleConfig.Axis')} ${axis}: ${element.readableName} (${element.getLowGetter().toFixed(2)}) ${t('Settings.ThrottleConfig.ErrorOverlapMsg')} ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
                 }
             }
         }
@@ -125,13 +130,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     // and sets the validation error and valid config
     useEffect(() => {
         const errors: string[] = [
-            ...getOverlapErrors(throttleOneSimvars),
-            ...getOverlapErrors(throttleTwoSimvars),
+            ...getOverlapErrors(1, throttleOneSimvars),
+            ...getOverlapErrors(2, throttleTwoSimvars),
         ];
         // to avoid false errors on the A320 when only 2 axis are used
         if (airframe === 'A380_842') {
-            errors.push(...getOverlapErrors(throttleThreeSimvars));
-            errors.push(...getOverlapErrors(throttleFourSimvars));
+            errors.push(...getOverlapErrors(3, throttleThreeSimvars));
+            errors.push(...getOverlapErrors(4, throttleFourSimvars));
         }
         setValidationError(errors[0]);
         setValidConfig(errors.length === 0);
@@ -289,8 +294,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 axisNumber={2}
                 numberOfAxis={2}
                 numberOfThrottles={numberOfThrottles}
-                throttleSimvarsSet3={throttleThreeSimvars}
-                throttleSimvarsSet4={throttleFourSimvars}
+                throttleSimvarsSet1={throttleThreeSimvars}
+                throttleSimvarsSet2={throttleFourSimvars}
                 activeDetent={selectedDetent}
             />
         </div>

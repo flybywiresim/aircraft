@@ -129,8 +129,9 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
         }
         // case when two axis are mapped and this setting is for axis 1 for throttle 1 and 2
         else if (numberOfAxis === 2 && axisNumber === 1) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2' }]);
-            // throttle 1 and 2 are mapped from axis 1
+            const throttlesString = axisNumber === 1 ? '1 + 2' : '3 + 4';
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: throttlesString }]);
+            // throttle 1 and 2 are mapped from axis 1, 3 and 4 are mapped from axis 2
             upperBoundDetentSetter = [
                 throttleSimvarsSet1[activeDetent].getHiSetter(),
                 throttleSimvarsSet2[activeDetent].getHiSetter(),
@@ -141,23 +142,6 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             ];
             lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
-            // eslint-disable-next-line brace-style
-        }
-        // case when two axis are mapped and this setting is axis 2 for throttle 3 and 4
-        else if (numberOfAxis === 2 && axisNumber === 2) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '3 + 4' }]);
-            // throttle 3 and 4 are mapped from axis 2
-            upperBoundDetentSetter = [
-                throttleSimvarsSet3[activeDetent].getHiSetter(),
-                throttleSimvarsSet4[activeDetent].getHiSetter(),
-            ];
-            lowerBoundDetentSetter = [
-                throttleSimvarsSet3[activeDetent].getLowSetter(),
-                throttleSimvarsSet4[activeDetent].getLowSetter(),
-            ];
-            // take the getter from throttle 3 to display the current detent values
-            lowerBoundDetentGetter = throttleSimvarsSet3[activeDetent].getLowGetter();
-            upperBoundDetentGetter = throttleSimvarsSet3[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
         // case when four axis are mapped to four throttles
