@@ -6,7 +6,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService } from 'instruments/src/MFD/fmgc';
+import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { Fix, Waypoint } from 'msfs-navdata';
@@ -21,6 +21,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 
 export interface FmsErrorMessage {
     message: McduMessage;
@@ -856,13 +857,26 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
+        const numLinesPerPage = this.flightPlanService.hasTemporary ? 7 : 8;
+        const numPseudoDisplayed = this.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.filter((wpt) => {
+            // How many pseudo waypoints are displayed on page?
+            return wpt.displayedOnMcdu && wpt.alongLegIndex > planDisplayLegIndex && wpt.alongLegIndex < (planDisplayLegIndex + numLinesPerPage);
+        }).length;
+        const flightPlan = this.flightPlanService.get(planDisplayForPlan);
+
         // Update ND map center
         this.efisInterface.setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
-        this.efisInterface.setAlternateLegVisible(this.flightPlanService.get(planDisplayForPlan).alternateFlightPlan.legCount > 0, planDisplayForPlan);
-        this.efisInterface.setMissedLegVisible((planDisplayLegIndex + 8) >= this.flightPlanService.get(planDisplayForPlan).firstMissedApproachLegIndex, planDisplayForPlan);
-        this.efisInterface.setAlternateMissedLegVisible(
-            this.flightPlanService.get(planDisplayForPlan).alternateFlightPlan && (planDisplayLegIndex + 8)
-            >= this.flightPlanService.get(planDisplayForPlan).alternateFlightPlan.firstMissedApproachLegIndex,
+        this.efisInterface.setMissedLegVisible(
+            (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= flightPlan.firstMissedApproachLegIndex,
+            planDisplayForPlan);
+        this.efisInterface.setAlternateLegVisible(planDisplayInAltn ||
+            (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
+            planDisplayForPlan);
+        this.efisInterface.setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex) ||
+            (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
             planDisplayForPlan,
         );
         this.efisInterface.setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);

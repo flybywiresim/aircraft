@@ -154,6 +154,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         jointFlightPlan.forEach((el, index) => {
             const newEl: DerivedFplnLegData = { distanceFromLastWpt: undefined, trackFromLastWpt: undefined, windPrediction: undefined };
 
+            if (index === this.loadedFlightPlan.allLegs.length) {
+                // Reset distance accumulation for ALTN flight plan
+                lastDistanceFromStart = 0;
+            }
+
             if (el instanceof FlightPlanLeg && index < this.loadedFlightPlan.legCount + this.loadedFlightPlan.alternateFlightPlan.legCount) {
                 if (index === 0 || el.calculated === undefined) {
                     newEl.distanceFromLastWpt = null;
@@ -280,10 +285,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     annotation,
                     etaOrSecondsFromPresent: predictionTimestamp(pred?.secondsFromPresent),
                     transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
-                    altitudePrediction: pred?.altitude ?? 0,
+                    altitudePrediction: pred?.altitudeConstraint ? pred?.altitudeConstraint.altitude1 : (pred?.altitude ?? 0),
                     hasAltitudeConstraint: pred?.altitudeConstraint !== undefined,
                     altitudeConstraintIsRespected: pred?.isAltitudeConstraintMet ?? true,
-                    speedPrediction: pred?.speed ?? 0,
+                    speedPrediction: pred?.speedConstraint ? pred?.speedConstraint.speed : (pred?.speed ?? 0),
                     hasSpeedConstraint: pred?.speedConstraint !== undefined,
                     speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
                     efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) / 1000.0 : 0,
@@ -580,8 +585,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private scrollToDest() {
-        const fromLegIndex = Math.max(this.loadedFlightPlan.activeLegIndex - 1, 0);
-        const whichLineIndex = this.lineData.findIndex((it) => it.originalLegIndex === fromLegIndex);
+        const whichLineIndex = this.lineData.findIndex((it) => it.originalLegIndex === this.loadedFlightPlan.destinationLegIndex) + 1;
         this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
     }
 
@@ -1125,7 +1129,6 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             const isBelowTransAlt = data.altitudePrediction < (data.transitionAltitude ?? 18_000);
             if (previousRow
                 && isWaypoint(previousRow)
-                // eslint-disable-next-line max-len
                 && Math.abs(previousRow.altitudePrediction - data.altitudePrediction) < 100
                 && !data.hasAltitudeConstraint
                 && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
@@ -1160,7 +1163,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         const previousRow = this.props.previousRow.get();
         if (previousRow
             && isWaypoint(previousRow)
-            && previousRow.speedPrediction === data.speedPrediction
+            && ((data.speedPrediction >= 2 && Math.abs(previousRow.speedPrediction - data.speedPrediction) < 1)
+                || (data.speedPrediction < 2 && Math.abs(previousRow.speedPrediction - data.speedPrediction) < 0.01))
             && !data.hasSpeedConstraint
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
             speedStr = <span style="font-family: HoneywellMCDU, monospace; padding-left: 3px; padding-right: 3px;">"</span>;
