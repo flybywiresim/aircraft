@@ -22,22 +22,23 @@ use systems::{
         EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource,
         GeneratorControlUnit, RamAirTurbine, StaticInverter, TransformerRectifier,
     },
+    engine::Engine,
     overhead::{
-        AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
-        NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
+        AutoOffFaultPushButton, FaultDisconnectReleasePushButton, FaultIndication,
+        MomentaryPushButton, NormalAltnFaultPushButton, OnOffAvailablePushButton,
+        OnOffFaultPushButton,
     },
     shared::{
         update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AuxiliaryPowerUnitElectrical,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        EmergencyElectricalState, EngineFirePushButtons, LatchedTrueLogicGate, LgciuWeightOnWheels,
         RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        Write,
+        VariableIdentifier, Write,
     },
 };
-use systems::{shared::LatchedTrueLogicGate, simulation::VariableIdentifier};
 
 pub(super) struct A380Electrical {
     galley_is_shed_id: VariableIdentifier,
@@ -101,7 +102,7 @@ impl A380Electrical {
         emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
         lgciu1: &impl LgciuWeightOnWheels,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
@@ -113,6 +114,7 @@ impl A380Electrical {
             apu,
             engine_fire_push_buttons,
             engines,
+            adirs,
         );
 
         self.emergency_elec
@@ -272,6 +274,10 @@ impl A380Electrical {
         self.alternating_current.gen_contactor_open(number)
     }
 
+    pub fn gen_drive_connected(&self, number: usize) -> bool {
+        self.alternating_current.gen_drive_connected(number)
+    }
+
     pub fn in_emergency_elec(&self) -> bool {
         self.emergency_elec.is_in_emergency_elec()
     }
@@ -309,7 +315,7 @@ trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
 
 pub(super) struct A380ElectricalOverheadPanel {
     batteries: [AutoOffFaultPushButton; 4],
-    idgs: [FaultReleasePushButton; 4],
+    idgs: [FaultDisconnectReleasePushButton; 4],
     generators: [OnOffFaultPushButton; 4],
     apu_gens: [OnOffFaultPushButton; 2],
     bus_tie: AutoOffFaultPushButton,
@@ -327,8 +333,9 @@ impl A380ElectricalOverheadPanel {
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_ESS"),
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_APU"),
             ],
-            idgs: [1, 2, 3, 4]
-                .map(|i| FaultReleasePushButton::new_in(context, &format!("ELEC_IDG_{i}"))),
+            idgs: [1, 2, 3, 4].map(|i| {
+                FaultDisconnectReleasePushButton::new_in(context, &format!("ELEC_IDG_{i}"))
+            }),
             generators: [1, 2, 3, 4]
                 .map(|i| OnOffFaultPushButton::new_on(context, &format!("ELEC_ENG_GEN_{i}"))),
             apu_gens: [1, 2]
@@ -356,6 +363,10 @@ impl A380ElectricalOverheadPanel {
             .for_each(|(index, gen)| {
                 gen.set_fault(electrical.gen_contactor_open(index + 1) && gen.is_on());
             });
+
+        self.idgs.iter_mut().enumerate().for_each(|(index, drive)| {
+            drive.set_disconnected(!electrical.gen_drive_connected(index + 1))
+        });
     }
 
     pub fn external_power_is_available(&self, number: usize) -> bool {
@@ -545,23 +556,28 @@ mod a380_electrical_circuit_tests {
         electrical::{
             ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
             Electricity, ElectricitySource, ExternalPowerSource, Potential, ProvideFrequency,
-            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
         },
         failures::FailureType,
         shared::{
             ApuAvailable, ApuMaster, ApuStart, ContactorSignal, ControllerSignal,
-            ElectricalBusType, ElectricalBuses, PotentialOrigin,
+            ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2,
+            EngineUncorrectedN2, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft,
         },
     };
-
     use uom::si::{
-        angular_velocity::revolution_per_minute, electric_potential::volt, frequency::hertz,
-        length::foot, mass_density::slug_per_cubic_foot, ratio::percent,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        angular_velocity::revolution_per_minute,
+        electric_potential::volt,
+        frequency::hertz,
+        length::foot,
+        mass_density::slug_per_cubic_foot,
+        ratio::{percent, ratio},
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     #[test]
@@ -1780,7 +1796,6 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .ac_bus_output(3)
             .is_single(PotentialOrigin::EngineGenerator(3)));
-        println!("{:?}", test_bed.ac_bus_output(4));
         assert!(test_bed
             .ac_bus_output(4)
             .is_single(PotentialOrigin::EngineGenerator(3)));
@@ -2889,9 +2904,42 @@ mod a380_electrical_circuit_tests {
             self.is_running = true;
         }
     }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
     impl EngineCorrectedN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
             Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
+        }
+    }
+    impl EngineUncorrectedN2 for TestEngine {
+        fn uncorrected_n2(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
+    impl Engine for TestEngine {
+        fn hydraulic_pump_output_speed(&self) -> AngularVelocity {
+            unimplemented!()
+        }
+
+        fn oil_pressure_is_low(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn is_above_minimum_idle(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn net_thrust(&self) -> Mass {
+            unimplemented!()
+        }
+
+        fn gearbox_speed(&self) -> AngularVelocity {
+            AngularVelocity::new::<revolution_per_minute>(
+                self.corrected_n2().get::<ratio>() * 12200.,
+            )
         }
     }
 
@@ -3021,7 +3069,7 @@ mod a380_electrical_circuit_tests {
         }
 
         fn low_speed_warning_2_54kts(&self, _adiru_number: usize) -> bool {
-            false
+            self.airspeed.get::<knot>() > 50.
         }
 
         fn low_speed_warning_3_159kts(&self, _adiru_number: usize) -> bool {
@@ -3207,9 +3255,7 @@ mod a380_electrical_circuit_tests {
             self.command(|a| a.running_engine(number));
 
             self = self.without_triggering_emergency_elec(|x| {
-                x.run_waiting_for(Duration::from_millis(
-                    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
-                ))
+                x.run_waiting_for(INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME)
             });
 
             self
