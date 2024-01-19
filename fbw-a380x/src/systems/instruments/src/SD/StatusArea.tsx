@@ -1,11 +1,11 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { NXUnits } from '@shared/NXUnits';
 import { Layer } from '@instruments/common/utils';
 
-export const StatusArea: FC = () => {
+export const StatusArea = () => {
     const [airDataSwitchingKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum');
 
     const getStatusAirDataReferenceSource = () => {
@@ -17,7 +17,7 @@ export const StatusArea: FC = () => {
     const getValuePrefix = (value: number) => (value >= 0 ? '+' : '');
 
 
-    // Somehow requesting this SimVar makes the React updates break
+    // Somehow requesting this SimVar makes the React updates break. TODO FIXME
     // const [gLoad] = useSimVar('G FORCE', 'number');
     const gLoad = 1.0;
     const [gLoadIsAbnormal, setGLoadIsAbnormal] = useState(false);
