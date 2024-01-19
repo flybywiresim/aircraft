@@ -71,7 +71,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         <span class="mfd-label">
                             NEW DEST FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value bigger">{this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}</span>
                         </span>
                         <div style="align-self: center; margin-top: 50px;">
                             <InputField<string>

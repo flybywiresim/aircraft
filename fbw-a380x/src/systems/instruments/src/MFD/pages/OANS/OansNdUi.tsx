@@ -163,12 +163,12 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                         <span class="mfd-label">
                             GS
                             {' '}
-                            <span class="mfd-value-green">0</span>
+                            <span class="mfd-value">0</span>
                         </span>
                         <span class="mfd-label">
-                            <span class="mfd-value-green">---</span>
+                            <span class="mfd-value">---</span>
                             {' / '}
-                            <span class="mfd-value-green">---</span>
+                            <span class="mfd-value">---</span>
                         </span>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end">
@@ -217,7 +217,7 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                                     <div style="flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                         <div class="mfd-label-value-container" style="padding: 15px;">
                                             <span class="mfd-label mfd-spacing-right">RWY</span>
-                                            <span class="mfd-value-green">{this.selectedEntityString}</span>
+                                            <span class="mfd-value">{this.selectedEntityString}</span>
                                         </div>
                                     </div>
                                     <div style="flex: 5; display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
@@ -292,9 +292,9 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                                 </div>
                                 <div id="ArptSelMiddle" style="display: flex; flex: 2; flex-direction: column; margin: 5px 20px 5px 20px;">
                                     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: center; margin: 30px;">
-                                        <span class="mfd-value-green">MUNICH INTL</span>
-                                        <span class="mfd-value-green">EDDM MUC</span>
-                                        <span class="mfd-value-green">48°21.5N/011°47.0E</span>
+                                        <span class="mfd-value">MUNICH INTL</span>
+                                        <span class="mfd-value">EDDM MUC</span>
+                                        <span class="mfd-value">48°21.5N/011°47.0E</span>
                                     </div>
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
@@ -320,21 +320,21 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                             >
                                 <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
                                     <span class="mfd-label" style="margin-bottom: 10px;">ACTIVE DATABASE</span>
-                                    <span class="mfd-value-green bigger">7MAR-3APR</span>
+                                    <span class="mfd-value bigger">7MAR-3APR</span>
                                 </div>
                                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                                     <Button label="SWAP" onClick={() => console.log('SWAP')} buttonStyle="padding: 20px 30px 20px 30px;" />
                                 </div>
                                 <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
                                     <span class="mfd-label" style="margin-bottom: 10px;">SECOND DATABASE</span>
-                                    <span class="mfd-value-green smaller">7FEB-6MAR</span>
+                                    <span class="mfd-value smaller">7FEB-6MAR</span>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: row; justify-content: space-between;
                             border-bottom: 2px solid lightgray; margin: 0px 15px 0px 15px; padding: 25px 10px 25px 10px;"
                             >
                                 <span class="mfd-label">AIRPORT DATABASE</span>
-                                <span class="mfd-value-green">SXT59027250AA04</span>
+                                <span class="mfd-value">SXT59027250AA04</span>
                             </div>
                             <div style="display: flex; flex-direction: row; justify-content: space-between; justify-content: center; margin-top: 20px;">
                                 <span class="mfd-label bigger">DATABASE CYCLE NOT VALID</span>

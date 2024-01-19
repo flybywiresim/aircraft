@@ -157,7 +157,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                 <div class="mfd-fms-direct-to-utc-label"><span class="mfd-label">UTC</span></div>
                                 <div class="mfd-fms-direct-to-utc-value">
                                     <span class={{
-                                        'mfd-value-green': true,
+                                        'mfd-value': true,
                                         'bigger': true,
                                         'mfd-fms-yellow-text': this.tmpyActive,
                                     }}
@@ -170,7 +170,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                 <div class="mfd-fms-direct-to-utc-label"><span class="mfd-label">DIST</span></div>
                                 <div class="mfd-fms-direct-to-utc-value">
                                     <span class={{
-                                        'mfd-value-green': true,
+                                        'mfd-value': true,
                                         'bigger': true,
                                         'mfd-fms-yellow-text': this.tmpyActive,
                                     }}

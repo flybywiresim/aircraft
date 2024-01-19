@@ -253,7 +253,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             <span class="mfd-label" style="color: #e68000">{this.alignmentLabel}</span>
                         </div>
                         <div style="flex: 1 display: flex; justify-content: center; align-items: center;">
-                            <span class="mfd-value-green bigger">{this.alignmentPosition}</span>
+                            <span class="mfd-value bigger">{this.alignmentPosition}</span>
                         </div>
                     </div>
                     <div class="fr" style="padding-bottom: 20px; border-bottom: 2px solid lightgrey;">
@@ -264,13 +264,13 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             <span class="mfd-label">IRS 1</span>
                         </div>
                         <div class="mfd-position-irs-table-col2">
-                            <span class="mfd-value-green bigger">{this.irs1Status}</span>
+                            <span class="mfd-value bigger">{this.irs1Status}</span>
                         </div>
                         <div class="mfd-position-irs-table-col3">
-                            <span class="mfd-value-green">{this.irs1SecondColumn}</span>
+                            <span class="mfd-value">{this.irs1SecondColumn}</span>
                         </div>
                         <div class="mfd-position-irs-table-col4">
-                            <span class="mfd-value-green">{this.irs1ThirdColumn}</span>
+                            <span class="mfd-value">{this.irs1ThirdColumn}</span>
                         </div>
                     </div>
                     <div class="fr">
@@ -278,13 +278,13 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             <span class="mfd-label">IRS 2</span>
                         </div>
                         <div class="mfd-position-irs-table-col2">
-                            <span class="mfd-value-green bigger">{this.irs2Status}</span>
+                            <span class="mfd-value bigger">{this.irs2Status}</span>
                         </div>
                         <div class="mfd-position-irs-table-col3">
-                            <span class="mfd-value-green">{this.irs2SecondColumn}</span>
+                            <span class="mfd-value">{this.irs2SecondColumn}</span>
                         </div>
                         <div class="mfd-position-irs-table-col4">
-                            <span class="mfd-value-green">{this.irs2ThirdColumn}</span>
+                            <span class="mfd-value">{this.irs2ThirdColumn}</span>
                         </div>
                     </div>
                     <div class="fr">
@@ -292,13 +292,13 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             <span class="mfd-label">IRS 3</span>
                         </div>
                         <div class="mfd-position-irs-table-col2 mfd-position-irs-table-last-row">
-                            <span class="mfd-value-green bigger">{this.irs3Status}</span>
+                            <span class="mfd-value bigger">{this.irs3Status}</span>
                         </div>
                         <div class="mfd-position-irs-table-col3 mfd-position-irs-table-last-row">
-                            <span class="mfd-value-green">{this.irs3SecondColumn}</span>
+                            <span class="mfd-value">{this.irs3SecondColumn}</span>
                         </div>
                         <div class="mfd-position-irs-table-col4 mfd-position-irs-table-last-row">
-                            <span class="mfd-value-green">{this.irs3ThirdColumn}</span>
+                            <span class="mfd-value">{this.irs3ThirdColumn}</span>
                         </div>
                     </div>
                     <div ref={this.setHdgDivRef} class="fr" style="justify-content: flex-end; align-items: center; margin-top: 10px; margin-bottom: 20px;">
@@ -339,7 +339,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             </div>
                             <div style="align-self: flex-end;">
                                 <span class="mfd-label" style="margin-right: 20px;">POSITION</span>
-                                <span class="mfd-value-green bigger">{this.irsDataPosition}</span>
+                                <span class="mfd-value bigger">{this.irsDataPosition}</span>
                             </div>
                         </div>
                         <div class="fr">
@@ -347,14 +347,14 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                                 <span class="mfd-label">T.TRK</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1.5; justify-content: flex-end; align-items: center;">
-                                <span class="mfd-value-green bigger">{this.irsDataTrueTrack}</span>
+                                <span class="mfd-value bigger">{this.irsDataTrueTrack}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">°T</span>
                             </div>
                             <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding: 7px;">
                                 <span class="mfd-label">T.HDG</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1; justify-content: flex-end;">
-                                <span class="mfd-value-green bigger">{this.irsDataTrueHeading}</span>
+                                <span class="mfd-value bigger">{this.irsDataTrueHeading}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">°T</span>
                             </div>
                         </div>
@@ -363,14 +363,14 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                                 <span class="mfd-label">GND SPD</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1.5; justify-content: flex-end;">
-                                <span class="mfd-value-green bigger">{this.irsDataGroundSpeed}</span>
+                                <span class="mfd-value bigger">{this.irsDataGroundSpeed}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                             </div>
                             <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding: 7px;">
                                 <span class="mfd-label">MAG HDG</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1; justify-content: flex-end;">
-                                <span class="mfd-value-green bigger">{this.irsDataMagneticHeading}</span>
+                                <span class="mfd-value bigger">{this.irsDataMagneticHeading}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">
                                     °
                                     {'\xa0'}
@@ -382,27 +382,27 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                                 <span class="mfd-label">T.WIND</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1.5; justify-content: flex-end;">
-                                <span class="mfd-value-green bigger">{this.irsDataTrueWindDirection}</span>
+                                <span class="mfd-value bigger">{this.irsDataTrueWindDirection}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">°</span>
-                                <span class="mfd-value-green bigger">{this.irsDataTrueWindSpeed}</span>
+                                <span class="mfd-value bigger">{this.irsDataTrueWindSpeed}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                             </div>
                             <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding: 7px;">
                                 <span class="mfd-label">MAG VAR</span>
                             </div>
                             <div class="mfd-label-value-container" style="flex: 1; justify-content: flex-end;">
-                                <span class="mfd-value-green bigger">{this.irsDataMagneticVariation}</span>
+                                <span class="mfd-value bigger">{this.irsDataMagneticVariation}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">{this.irsDataMagneticVariationUnit}</span>
                             </div>
                         </div>
                         <div class="fc" style="display: flex; align-items: flex-end; padding-right: 15px;">
                             <div class="mfd-label-value-container">
                                 <span class="mfd-label mfd-spacing-right">GPIRS POSITION</span>
-                                <span class="mfd-value-green bigger" style="width: 325px;">{this.irsDataGpirsPosition}</span>
+                                <span class="mfd-value bigger" style="width: 325px;">{this.irsDataGpirsPosition}</span>
                             </div>
                             <div class="mfd-label-value-container">
                                 <span class="mfd-label mfd-spacing-right">ACCURACY</span>
-                                <span class="mfd-value-green bigger" style="width: 300px; text-align: right;">{this.irsDataAccuracy}</span>
+                                <span class="mfd-value bigger" style="width: 300px; text-align: right;">{this.irsDataAccuracy}</span>
                                 <span class="mfd-label-unit" style="width: 25px;">FT</span>
                             </div>
                         </div>

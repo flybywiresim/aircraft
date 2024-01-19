@@ -89,8 +89,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
 
-    private fmsErrorsSubject = ArraySubject.create<FmsErrorMessage>();
-
     // Necessary to enable mouse interaction
     get isInteractive(): boolean {
         return true;

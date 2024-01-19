@@ -109,10 +109,10 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         <span class="mfd-label">
                             INSERT NEXT WPT FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger" />
+                            <span ref={this.identRef} class="mfd-value bigger" />
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">
-                            <span ref={this.coordinatesRef} class="mfd-value-green bigger" />
+                            <span ref={this.coordinatesRef} class="mfd-value bigger" />
                         </span>
                         <div style="margin-left: 50px; margin-top: 10px;">
                             <DropdownMenu

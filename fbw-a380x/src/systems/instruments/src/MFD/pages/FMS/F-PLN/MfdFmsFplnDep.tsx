@@ -164,9 +164,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <div style="flex: 3; display: flex; flex-direction: row; align-items: center;">
                             <span class="mfd-label mfd-spacing-right">FROM</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.fromIcao}
@@ -175,9 +175,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <div style="flex: 1; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">RWY</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.rwyIdent}
@@ -187,9 +187,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">LENGTH</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyLength}
@@ -201,9 +201,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">CRS</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyCrs}
@@ -216,9 +216,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <div style="flex: 0.25; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">EOSID</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.rwyEoSid}
@@ -227,9 +227,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <div style="flex: 0.3; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">FREQ/CHAN</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.rwyFreq}
@@ -239,9 +239,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">SID</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwySid}
@@ -252,9 +252,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">TRANS</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyTrans}

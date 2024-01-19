@@ -106,16 +106,16 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                 const node: VNode = (
                     <div class="mfd-fms-fpln-duplicate-table-row" id={`mfd-fms-dupl-${i}`}>
                         <div style="width: 20%">
-                            <span class="mfd-value-green bigger">{fix.ident ?? '\u00A0'}</span>
+                            <span class="mfd-value bigger">{fix.ident ?? '\u00A0'}</span>
                         </div>
                         <div style="width: 20%">
-                            <span class="mfd-value-green bigger">{Math.round(fix.distance).toFixed(0) ?? '\u00A0'}</span>
+                            <span class="mfd-value bigger">{Math.round(fix.distance).toFixed(0) ?? '\u00A0'}</span>
                         </div>
                         <div style="width: 30%">
-                            <span class="mfd-value-green bigger">{latLonString ?? '\u00A0'}</span>
+                            <span class="mfd-value bigger">{latLonString ?? '\u00A0'}</span>
                         </div>
                         <div style="width: 30%">
-                            <span class="mfd-value-green bigger">{(fix.freqChan > 120) ? fix.freqChan.toFixed(0) : fix.freqChan?.toFixed(2) ?? '\u00A0'}</span>
+                            <span class="mfd-value bigger">{(fix.freqChan > 120) ? fix.freqChan.toFixed(0) : fix.freqChan?.toFixed(2) ?? '\u00A0'}</span>
                         </div>
                     </div>
                 );

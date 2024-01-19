@@ -279,7 +279,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
-                                    <div class="mfd-position-navaids-row"><span class="mfd-value-green">{this.vor1Class}</span></div>
+                                    <div class="mfd-position-navaids-row"><span class="mfd-value">{this.vor1Class}</span></div>
                                 </div>
                                 <div style="display: flex; flex-direction: column; width: 20%; margin-left: 40px; margin-right: 40px;">
                                     <div class="mfd-label mfd-position-navaids-row" />
@@ -327,7 +327,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
-                                    <div class="mfd-position-navaids-row"><span class="mfd-value-green">{this.vor2Class}</span></div>
+                                    <div class="mfd-position-navaids-row"><span class="mfd-value">{this.vor2Class}</span></div>
                                 </div>
                             </div>
                             <div style="height: 5px; width: 100%; border-bottom: 2px solid darkgrey;" />
@@ -339,11 +339,11 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                                 <div class="mfd-label br bb">FREQ/CHAN</div>
                                 <div class="mfd-label bb">CLASS</div>
                                 <div class="mfd-label br">{this.firstRowIdent}</div>
-                                <div class="mfd-value-green br">{this.firstRowFrequency}</div>
-                                <div class="mfd-value-green">{this.firstRowClass}</div>
+                                <div class="mfd-value br">{this.firstRowFrequency}</div>
+                                <div class="mfd-value">{this.firstRowClass}</div>
                                 <div class="mfd-label br">{this.secondRowIdent}</div>
-                                <div class="mfd-value-green br">{this.secondRowFrequency}</div>
-                                <div class="mfd-value-green">{this.secondRowClass}</div>
+                                <div class="mfd-value br">{this.secondRowFrequency}</div>
+                                <div class="mfd-value">{this.secondRowClass}</div>
                                 <div class="mfd-label br">
                                     <div ref={this.thirdRowIdentRef}>
                                         <Button
@@ -351,12 +351,13 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                                             onClick={() => {}}
                                             showArrow
                                             menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
+                                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
                                             disabled={Subject.create(true)}
                                         />
                                     </div>
                                 </div>
-                                <div class="mfd-value-green br">{this.thirdRowFrequency}</div>
-                                <div class="mfd-value-green">{this.thirdRowClass}</div>
+                                <div class="mfd-value br">{this.thirdRowFrequency}</div>
+                                <div class="mfd-value">{this.thirdRowClass}</div>
                             </div>
                             <div class="mfd-label" style="padding-left: 30px; margin-bottom: 20px;">RADIO NAV MODE</div>
                             <div class="mfd-label" style="padding-left: 30px; margin-bottom: 10px;">RADIO POSITION</div>
@@ -520,11 +521,11 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                             </div>
                             <div class="mfd-position-navaids-row">
                                 <div class="mfd-label-value-container">
-                                    <span class="mfd-value-green">{this.lsSlope}</span>
+                                    <span class="mfd-value">{this.lsSlope}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">°</span>
                                 </div>
                             </div>
-                            <div class="mfd-position-navaids-row"><span class="mfd-value-green">{this.lsClass}</span></div>
+                            <div class="mfd-position-navaids-row"><span class="mfd-value">{this.lsClass}</span></div>
                         </div>
                         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 15px;">
                             <Button

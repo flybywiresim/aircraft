@@ -44,15 +44,15 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
                 <div ref={this.rwyDivRef} class="oans-info-box" style="display: none; grid-template-columns: 2fr 1fr 1fr; width: 75%; margin: 10px; align-self: center;">
                     <div>
                         <span class="mfd-label">RWY: </span>
-                        <span class="mfd-value-green smaller" style="text-align: left;">{this.props.selectedEntity}</span>
+                        <span class="mfd-value smaller" style="text-align: left;">{this.props.selectedEntity}</span>
                     </div>
                     <span class="mfd-label" style="text-align: right; margin-right: 15px;">TORA: </span>
-                    <span class="mfd-value-green smaller">
+                    <span class="mfd-value smaller">
                         {`${this.props.tora.get().toString()} `}
                         <span style="color: rgb(33, 33, 255)">M</span>
                     </span>
                     <span class="mfd-label" style="grid-column: span 2; text-align: right; margin-right: 15px;">{`${this.props.ldaIsReduced.get() ? 'REDUCED ' : ''}LDA: `}</span>
-                    <span class="mfd-value-green smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
+                    <span class="mfd-value smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
                         {`${this.props.lda.get().toString()} `}
                         <span style="color: rgb(33, 33, 255)">M</span>
                     </span>

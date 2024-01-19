@@ -33,7 +33,7 @@ import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformati
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/fmgc';
+import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
 import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -784,12 +784,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">OPT</span>
                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                            <span class="mfd-value-green">{this.optFl}</span>
+                            <span class="mfd-value">{this.optFl}</span>
                         </div>
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">REC MAX</span>
                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                            <span class="mfd-value-green">{this.recMaxFl}</span>
+                            <span class="mfd-value">{this.recMaxFl}</span>
                         </div>
                     </div>
                     <TopTabNavigator
@@ -804,7 +804,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div class="mfd-fms-perf-to-first">
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">RWY</span>
-                                    <span class="mfd-value-green">{this.originRunwayIdent}</span>
+                                    <span class="mfd-value">{this.originRunwayIdent}</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
@@ -837,7 +837,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[0]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.v1ToBeConfirmed}</span>
+                                            <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.v1ToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -870,7 +870,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">F</span>
-                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -890,13 +890,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[1]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.vrToBeConfirmed}</span>
+                                            <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.vrToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
                                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">S</span>
-                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -916,7 +916,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[2]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.v2ToBeConfirmed}</span>
+                                            <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.v2ToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -924,7 +924,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="margin-right: 15px; justify-content: center;">
                                             <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                         </span>
-                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
@@ -1330,17 +1330,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         )}
                                         componentIfFalse={(
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green">{this.clbTableSpdLine1}</span>
+                                                <span class="mfd-value">{this.clbTableSpdLine1}</span>
                                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                         )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.clbTableMachLine1}</span>
+                                    <span class="mfd-value">{this.clbTableMachLine1}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.clbTablePredLine1}</span>
+                                    <span class="mfd-value">{this.clbTablePredLine1}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                                     <div class={{
@@ -1356,27 +1356,27 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.clbTableSpdLine2}</span>
+                                        <span class="mfd-value">{this.clbTableSpdLine2}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.clbTableMachLine2}</span>
+                                    <span class="mfd-value">{this.clbTableMachLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.clbTablePredLine2}</span>
+                                    <span class="mfd-value">{this.clbTablePredLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label">{this.clbTableModeLine3}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.clbTableSpdLine3}</span>
+                                        <span class="mfd-value">{this.clbTableSpdLine3}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">{this.clbTableSpdLine3.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                                    <span class="mfd-value-green">{this.clbTableMachLine3}</span>
+                                    <span class="mfd-value">{this.clbTableMachLine3}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;" />
                                 <div style="border-right: 1px solid lightgrey; height: 40px;" />
@@ -1485,13 +1485,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="grid-column-start: span 4; width: 300px;">
                                     <div ref={this.clbSpdLimValueRef} style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;">
                                         <div class="mfd-label-value-container">
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
-                                        <span class="mfd-value-green">/</span>
+                                        <span class="mfd-value">/</span>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                            <span class="mfd-value-green">{(this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
+                                            <span class="mfd-value">{(this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
@@ -1589,13 +1589,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div ref={this.crzPredStepRef}>
                                         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                                             <div class="mfd-label mfd-spacing-right">AT</div>
-                                            <div class="mfd-value-green bigger">{this.crzPredWaypoint}</div>
+                                            <div class="mfd-value bigger">{this.crzPredWaypoint}</div>
                                         </div>
                                         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                                             <div class="mfd-label mfd-spacing-right">STEP TO</div>
                                             <div class="mfd-label-value-container">
                                                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                                <span class="mfd-value-green bigger">{this.crzPredAltitudeTarget}</span>
+                                                <span class="mfd-value bigger">{this.crzPredAltitudeTarget}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1603,7 +1603,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                                             <div class="mfd-label mfd-spacing-right">PRED TO</div>
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green bigger">T/D</span>
+                                                <span class="mfd-value bigger">T/D</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1620,7 +1620,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <div class="mfd-label mfd-spacing-right">TO</div>
                                             <div class="mfd-label-value-container">
                                                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                                <span class="mfd-value-green bigger">{this.crzPredAltitudeTarget}</span>
+                                                <span class="mfd-value bigger">{this.crzPredAltitudeTarget}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1655,7 +1655,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         )}
                                         componentIfFalse={(
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green">{this.crzTableMachLine1}</span>
+                                                <span class="mfd-value">{this.crzTableMachLine1}</span>
                                             </div>
                                         )}
                                     />
@@ -1675,7 +1675,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         )}
                                         componentIfFalse={(
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green">{this.crzTableSpdLine1}</span>
+                                                <span class="mfd-value">{this.crzTableSpdLine1}</span>
                                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                         )}
@@ -1698,27 +1698,27 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.crzTableMachLine2}</span>
+                                    <span class="mfd-value">{this.crzTableMachLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.crzTableSpdLine2}</span>
+                                        <span class="mfd-value">{this.crzTableSpdLine2}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine2.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.crzTablePredLine2}</span>
+                                    <span class="mfd-value">{this.crzTablePredLine2}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">{this.crzTablePredLine2.map((it) => (it ? 'NM' : ''))}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label">{this.crzTableModeLine3}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                                    <span class="mfd-value-green">{this.crzTableMachLine3}</span>
+                                    <span class="mfd-value">{this.crzTableMachLine3}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.crzTableSpdLine3}</span>
+                                        <span class="mfd-value">{this.crzTableSpdLine3}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine3.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
@@ -1727,11 +1727,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">LRC</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
-                                    <span class="mfd-value-green">.84</span>
+                                    <span class="mfd-value">.84</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">---</span>
+                                        <span class="mfd-value">---</span>
                                         <span class="mfd-label-unit mfd-unit-trailing"> </span>
                                     </div>
                                 </div>
@@ -1740,11 +1740,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">MAX TURB</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
-                                    <span class="mfd-value-green">.85</span>
+                                    <span class="mfd-value">.85</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">---</span>
+                                        <span class="mfd-value">---</span>
                                         <span class="mfd-label-unit mfd-unit-trailing"> </span>
                                     </div>
                                 </div>
@@ -1757,7 +1757,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                                 <span class="mfd-label green bigger">{this.destEta}</span>
                                 <div class="mfd-label-value-container">
-                                    <span class="mfd-value-green">{this.destEfob}</span>
+                                    <span class="mfd-value">{this.destEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
@@ -1857,7 +1857,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         )}
                                         componentIfTrue={(
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green">{this.desTableMachLine1}</span>
+                                                <span class="mfd-value">{this.desTableMachLine1}</span>
                                             </div>
                                         )}
                                     />
@@ -1878,14 +1878,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         )}
                                         componentIfFalse={(
                                             <div class="mfd-label-value-container">
-                                                <span class="mfd-value-green">{this.desTableSpdLine1}</span>
+                                                <span class="mfd-value">{this.desTableSpdLine1}</span>
                                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                         )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">--:--   ----</span>
+                                    <span class="mfd-value">--:--   ----</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                                     <div class={{
@@ -1901,16 +1901,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.desTableMachLine2}</span>
+                                    <span class="mfd-value">{this.desTableMachLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.desTableSpdLine2}</span>
+                                        <span class="mfd-value">{this.desTableSpdLine2}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">{this.desTableSpdLine2.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">{this.desTablePredLine2}</span>
+                                    <span class="mfd-value">{this.desTablePredLine2}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">{this.desTablePredLine2.map((it) => (it ? 'NM' : ''))}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="border-bottom: none; justify-content: flex-end; height: 75px;" />
@@ -1925,7 +1925,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                                 <span class="mfd-label green bigger">{this.destEta}</span>
                                 <div class="mfd-label-value-container">
-                                    <span class="mfd-value-green">{this.destEfob}</span>
+                                    <span class="mfd-value">{this.destEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
@@ -1938,14 +1938,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">APPR</span>
-                                    <span class="mfd-value-green">{this.apprIdent}</span>
+                                    <span class="mfd-value">{this.apprIdent}</span>
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
-                                    <span class="mfd-value-green">{this.destAirportIdent}</span>
+                                    <span class="mfd-value">{this.destAirportIdent}</span>
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">LW</span>
-                                    <span class="mfd-value-green">{this.apprLandingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                                    <span class="mfd-value">{this.apprLandingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                             </div>
@@ -1982,12 +1982,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
                                             <div class="mfd-label-value-container" style="padding: 15px;">
                                                 <span class="mfd-label mfd-spacing-right">HD</span>
-                                                <span class="mfd-value-green">{this.apprHeadwind}</span>
+                                                <span class="mfd-value">{this.apprHeadwind}</span>
                                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                             <div class="mfd-label-value-container" style="padding: 15px;">
                                                 <span class="mfd-label mfd-spacing-right">CROSS</span>
-                                                <span class="mfd-value-green">{this.apprCrosswind}</span>
+                                                <span class="mfd-value">{this.apprCrosswind}</span>
                                                 <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                         </div>
@@ -2068,22 +2068,22 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-fms-perf-appr-flap-speeds">
                                                 <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                             </span>
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container" style="padding-top: 15px;">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.approachVref}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachVref}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -2104,7 +2104,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         />
                                         <div class="mfd-label-value-container" style="margin-top: 10px;">
                                             <span class="mfd-label mfd-spacing-right">VLS</span>
-                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.approachVls}</span>
+                                            <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachVls}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -2143,7 +2143,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">VERT DEV</span>
-                                    <span class="mfd-value-green">+-----</span>
+                                    <span class="mfd-value">+-----</span>
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -2152,19 +2152,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div style="margin: 60px 0px 100px 200px; display: flex; flex-direction: column;">
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">F</span>
-                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">S</span>
-                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span style="margin-right: 15px; text-align: right;">
                                         <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                     </span>
-                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                             </div>
@@ -2229,7 +2229,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             {/* fill space vertically */}
                             <div class="mfd-label-value-container">
                                 <span class="mfd-label mfd-spacing-right" style="width: 150px; text-align: right;">TRANS</span>
-                                <span class="mfd-value-green">{this.transAlt}</span>
+                                <span class="mfd-value">{this.transAlt}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                             </div>
                         </TopTabNavigatorPage>

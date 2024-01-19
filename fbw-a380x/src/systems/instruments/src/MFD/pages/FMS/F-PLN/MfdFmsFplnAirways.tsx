@@ -89,7 +89,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                         <span class="mfd-label" style="margin-left: 15px;">AIRWAYS FROM</span>
                         <span
                             class={{
-                                'mfd-value-green': true,
+                                'mfd-value': true,
                                 'bigger': true,
                                 'mfd-fms-yellow-text': this.tmpyActive,
                             }}

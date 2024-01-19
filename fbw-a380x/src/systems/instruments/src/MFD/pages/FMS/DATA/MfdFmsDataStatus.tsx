@@ -145,23 +145,23 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                     >
                         <TopTabNavigatorPage>
                             {/* ACFT STATUS */}
-                            <div class="mfd-data-status-airframe-label mfd-value-green bigger">A380-800</div>
+                            <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800</div>
                             <div class="mfd-data-status-first-section">
                                 <div>
                                     <span class="mfd-label" style="margin-right: 50px;">ENGINE</span>
-                                    <span class="mfd-value-green bigger">TRENT 972</span>
+                                    <span class="mfd-value bigger">TRENT 972</span>
                                 </div>
                                 <div>
                                     <div style="border: 1px solid lightgrey; padding: 10px; display: flex; flex-direction: column;">
                                         <div style="margin-bottom: 10px;">
                                             <span class="mfd-label" style="margin-right: 10px;">IDLE</span>
-                                            <span class="mfd-value-green bigger">
+                                            <span class="mfd-value bigger">
                                                 {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
                                             </span>
                                         </div>
                                         <div>
                                             <span class="mfd-label" style="margin-right: 10px;">PERF</span>
-                                            <span class="mfd-value-green bigger">
+                                            <span class="mfd-value bigger">
                                                 {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
                                             </span>
                                         </div>
@@ -174,7 +174,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                             <div class="mfd-data-status-second-section">
                                 <div style="margin-bottom: 15px;">
                                     <span class="mfd-label" style="margin-right: 25px;">NAV DATABASE</span>
-                                    <span class="mfd-value-green bigger">{this.navDatabase}</span>
+                                    <span class="mfd-value bigger">{this.navDatabase}</span>
                                 </div>
                                 <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                                     <div style="border: 1px solid lightgrey; padding: 15px; display: flex; flex-direction: column;">
@@ -182,7 +182,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                             ACTIVE
                                         </div>
                                         <div>
-                                            <span class="mfd-value-green bigger">{this.activeDatabase}</span>
+                                            <span class="mfd-value bigger">{this.activeDatabase}</span>
                                         </div>
                                     </div>
                                     <div>
@@ -204,7 +204,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                             SECOND
                                         </div>
                                         <div>
-                                            <span class="mfd-value-green">{this.secondDatabase}</span>
+                                            <span class="mfd-value">{this.secondDatabase}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -216,13 +216,13 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                 <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                                     <div style="flex: 3; display: grid; grid-template-columns: 40% 10% 40% 10%; margin-right: 200px;">
                                         <div class="mfd-label mfd-data-status-pse-label">WAYPOINTS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedWaypoints}</div>
+                                        <div class="mfd-value mfd-data-status-pse-value">{this.storedWaypoints}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">ROUTES</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedRoutes}</div>
+                                        <div class="mfd-value mfd-data-status-pse-value">{this.storedRoutes}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">NAVAIDS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedNavaids}</div>
+                                        <div class="mfd-value mfd-data-status-pse-value">{this.storedNavaids}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">RUNWAYS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedRunways}</div>
+                                        <div class="mfd-value mfd-data-status-pse-value">{this.storedRunways}</div>
                                     </div>
                                     <div style="flex: 1;">
                                         <Button

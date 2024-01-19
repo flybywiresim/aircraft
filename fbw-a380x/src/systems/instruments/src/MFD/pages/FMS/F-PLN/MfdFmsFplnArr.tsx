@@ -319,9 +319,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <div style="flex: 0.2; display: flex; flex-direction: row; align-items: center;">
                             <span class="mfd-label mfd-spacing-right">TO</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.toIcao}
@@ -330,9 +330,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">LS</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.rwyLs}
@@ -342,9 +342,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">RWY</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyIdent}
@@ -355,9 +355,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">LENGTH</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyLength}
@@ -369,9 +369,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">CRS</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.rwyCrs}
@@ -384,9 +384,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">APPR</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.appr}
@@ -395,9 +395,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">FREQ/CHAN</span>
                             <span class={{
-                                'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyActive,
-                                'mfd-value-sec': this.secActive,
+                                'mfd-value': true,
+                                'tmpy': this.tmpyActive,
+                                'sec': this.secActive,
                             }}
                             >
                                 {this.rwyFreq}
@@ -407,9 +407,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">VIA</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.via}
@@ -420,9 +420,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">STAR</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.star}
@@ -433,9 +433,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">TRANS</span>
                             <div>
                                 <span class={{
-                                    'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyActive,
-                                    'mfd-value-sec': this.secActive,
+                                    'mfd-value': true,
+                                    'tmpy': this.tmpyActive,
+                                    'sec': this.secActive,
                                 }}
                                 >
                                     {this.trans}

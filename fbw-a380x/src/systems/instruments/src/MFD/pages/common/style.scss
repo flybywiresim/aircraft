@@ -49,37 +49,40 @@
   font-size: 20px;
 }
 
-.mfd-value-green {
+.mfd-value {
   color: $display-green;
   font-size: 25px;
 }
 
-.mfd-value-green.smaller {
-  font-size: 20px;
+.mfd-value.amber {
+  color: $display-amber;
 }
 
-.mfd-value-green.bigger {
-  font-size: 30px;
-}
-
-.mfd-value-cyan {
+.mfd-value.cyan {
   color: $display-cyan;
-  font-size: 25px;
 }
 
-.mfd-value-magenta {
+.mfd-value.magenta {
   color: $display-magenta;
   font-size: 25px;
 }
 
-.mfd-value-tmpy {
+.mfd-value.tmpy {
   color: $display-yellow;
   font-size: 25px;
 }
 
-.mfd-value-sec {
+.mfd-value.sec {
   color: $display-white;
   font-size: 25px;
+}
+
+.mfd-value.smaller {
+  font-size: 20px;
+}
+
+.mfd-value.bigger {
+  font-size: 30px;
 }
 
 .mfd-button {

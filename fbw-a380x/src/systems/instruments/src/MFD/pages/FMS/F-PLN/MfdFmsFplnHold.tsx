@@ -200,10 +200,10 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                             <div class="mfd-label" style="align-self: center;">UTC</div>
                             <div class="mfd-label">EFOB</div>
                             <div />
-                            <div class="mfd-value-magenta">{this.lastExitUtc}</div>
+                            <div class="mfd-value magenta">{this.lastExitUtc}</div>
                             <div class="mfd-label-value-container">
 
-                                <span class="mfd-value-magenta">{this.lastExitEfob}</span>
+                                <span class="mfd-value magenta">{this.lastExitEfob}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
                             </div>
                         </div>

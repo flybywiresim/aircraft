@@ -43,11 +43,15 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     private destEfob = Subject.create<string>('--.-');
 
+    private destEfobBelowMin = Subject.create(false);
+
     private altnIcao = Subject.create<string>('----');
 
     private altnEta = Subject.create<string>('--:--');
 
     private altnEfob = Subject.create<string>('--.-');
+
+    private altnEfobBelowMin = Subject.create(false);
 
     private extraFuelWeight = Subject.create<number>(null);
 
@@ -78,6 +82,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         // TODO calculate altn fuel
         this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(650);
 
+        this.updateDestAndAltnPredictions();
+
+        console.timeEnd('FUEL_LOAD:onNewData');
+    }
+
+    updateDestAndAltnPredictions() {
         if (this.loadedFlightPlan.destinationAirport) {
             this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
 
@@ -89,19 +99,20 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             }
             const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
             this.destEfob.set(destEfob ? destEfob.toFixed(1) : '--.-');
+            this.destEfobBelowMin.set(destEfob * 1_000 < this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get());
         }
 
         if (this.loadedFlightPlan.alternateDestinationAirport) {
             this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
             this.altnEta.set('--:--');
             this.altnEfob.set('--.-');
+            this.altnEfobBelowMin.set(false);
         } else {
             this.altnIcao.set('NONE');
             this.altnEta.set('--:--');
             this.altnEfob.set('--.-');
+            this.altnEfobBelowMin.set(false);
         }
-
-        console.timeEnd('FUEL_LOAD:onNewData');
     }
 
     public onAfterRender(node: VNode): void {
@@ -146,6 +157,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 // EXTRA = FOB - TRIP - MIN FUEL DEST
                 this.extraFuelWeight.set(this.fuelOnBoard.get() - this.tripFuelWeight.get() - this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get());
             }
+
+            this.updateDestAndAltnPredictions();
         }));
 
         this.subs.push(this.enginesWereStarted.sub((val) => {
@@ -164,17 +177,17 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px 25px 10px 25px;">
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">GW</span>
-                            <span class="mfd-value-green">{this.grossWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                            <span class="mfd-value">{this.grossWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">CG</span>
-                            <span class="mfd-value-green">{this.centerOfGravity.map((it) => (it ? (it).toFixed(1) : '--.-'))}</span>
+                            <span class="mfd-value">{this.centerOfGravity.map((it) => (it ? (it).toFixed(1) : '--.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">%</span>
                         </div>
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">FOB</span>
-                            <span class="mfd-value-green">{this.fuelOnBoard.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                            <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                     </div>
@@ -270,11 +283,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             TRIP
                         </div>
                         <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="mfd-value-green">{this.tripFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                            <span class="mfd-value">{this.tripFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                            <span class="mfd-value-green">{this.tripFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
+                            <span class="mfd-value">{this.tripFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
                             CI
@@ -349,13 +362,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             />
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                            <span class="mfd-value-green">--:--</span>
+                            <span class="mfd-value">--:--</span>
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
                             TOW
                         </div>
                         <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="mfd-value-green">{this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                            <span class="mfd-value">{this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -393,7 +406,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             LW
                         </div>
                         <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="mfd-value-green">{this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                            <span class="mfd-value">{this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                     </div>
@@ -418,7 +431,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     {this.destEta}
                                 </div>
                                 <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                                    <span class="mfd-value-green">{this.destEfob}</span>
+                                    <span class={{"mfd-value": true, 'amber': this.destEfobBelowMin }}>{this.destEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div class="mfd-label" style="text-align: center; align-self: center;">
@@ -431,7 +444,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     {this.altnEta}
                                 </div>
                                 <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                                    <span class="mfd-value-green">{this.altnEfob}</span>
+                                    <span class={{"mfd-value": true, 'amber': this.altnEfobBelowMin }}>{this.altnEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                             </div>
@@ -452,10 +465,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             <div class="mfd-label" style="margin-bottom: 5px; text-align: center;">EXTRA</div>
                             <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                                 <div class="mfd-label-value-container" style="margin-right: 20px;">
-                                    <span class="mfd-value-green">{this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '--.-'))}</span>
+                                    <span class="mfd-value">{this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '--.-'))}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
-                                <span class="mfd-value-green">{this.extraFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
+                                <span class="mfd-value">{this.extraFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
                             </div>
                         </div>
                     </div>
