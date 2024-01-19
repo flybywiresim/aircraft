@@ -614,7 +614,7 @@
       "CurrentValue": "Current Value",
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "overlaps with",
-      "IndependentAxis": "Independent Axis",
+      "IndependentAxis": "Independent Axes",
       "LoadFromFile": "Load from File",
       "PleaseEnterAValidDeadzone": "Please enter a valid deadband",
       "ResetToDefaults": "Reset to Defaults",
