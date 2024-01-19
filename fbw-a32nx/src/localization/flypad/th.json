@@ -4,7 +4,7 @@
     "ChangeATISATCSourceButton": "เปลี่ยนแหล่งที่มา ATIS/ATC",
     "ConnectHoppieACARS": "เชื่อมต่อ Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "ไม่มีข้อมูลให้สำหรับความถี่นี้",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "ค้นหา",
     "SelectCorrectATISATCSource": "หน้านี้จะใช้ได้เฉพาะเมื่อเลือก IVAO หรือ VATSIM เป็นแหล่งข้อมูล ATIS/ATC ในหน้าการตั้งค่า",
     "SetActive": "ตั้งค่าเป็นใช้งานอยู่",
     "SetStandby": "ตั้งค่าเป็นสแตนด์บาย",
@@ -98,7 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "คุณยังไม่ได้นำเข้าข้อมูล SimBrief ใดๆเลย"
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "น้ำหนักรวม",
       "Engines": "เครื่องยนต์",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -152,11 +152,11 @@
       "BoardingTime": "เวลาเรียกขึ้นเครื่อง",
       "Cargo": "คาร์โก้",
       "Current": "ปัจจุบัน",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationBody": "กรุณายืนยันว่าจะให้ผู้โดยสารทุกคนลงจากเครื่อง",
+      "DeboardConfirmationCancel": "ยกเลิก",
+      "DeboardConfirmationConfirm": "ยืนยัน",
+      "DeboardConfirmationTitle": "คุณต้องการให้ผู้โดยสารทุกคนลงจากเครื่องหรือไม่",
+      "EstimatedDurationUnit": "นาที",
       "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
       "GW": "GW",
       "GWCG": "GW CG",
@@ -167,15 +167,15 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "เครื่องบินต้องอยู่บนพื้นดิน และต้องปิดเครื่องยนต์เพื่อที่จะเปลี่ยนเวลาเรียกขึ้นเครื่อง",
         "FillPayloadFromSimbrief": "กรอกข้อมูลน้ำหนักบรรทุกจาก Simbrief",
         "MaxCargo": "จำนวนคาร์โก้สูงสุด",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "จำนวน GW สูงสุด",
+        "MaxGWCG": "จำนวน GW CG สูงสุด",
         "MaxPassengers": "จำนวนผู้โดยสารสูงสุด",
         "MaxZFW": "จำนวน ZFW สูงสุด",
         "MaxZFWCG": "จำนวน ZFWCG สูงสุด",
         "PerPaxBagWeight": "น้ำหนักสัมภาระของผู้โดยสารต่อคน",
         "PerPaxWeight": "น้ำหนักผู้โดยสารต่อคน",
         "StartBoarding": "เริ่มการเรียกขึ้นเครื่อง",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "เริ่มการให้ลงจากเครื่อง"
       },
       "Title": "น้ำหนักบรรทุก",
       "ZFW": "ZFW",
@@ -185,7 +185,6 @@
       "Title": "Pushback"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "รถบรรทุกสัมภาระ",
       "CateringTruck": "รถบรรทุกอาหาร",
       "Cones": "กรวยนิรภัย",
@@ -196,7 +195,8 @@
       "FuelTruck": "รถบรรทุกน้ำมัน",
       "JetBridge": "สะพานเทียบ",
       "Title": "บริการ",
-      "WheelChocks": "ลูกกลิ้งล้อ"
+      "WheelChocks": "ลูกกลิ้งล้อ",
+      "AirStarterUnit": "Air Starter Unit"
     },
     "Title": "ภาคพื้น"
   },
@@ -210,10 +210,10 @@
     "Altn": "สำรอง",
     "ExitFullscreenMode": "ออกจากโหมดเต็มหน้าจอ",
     "From": "จาก",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "กำลังโหลดรูปภาพ",
+    "LoadingImageFailed": "การโหลดรูปภาพล้มเหลว",
+    "LoadingPdf": "กำลังโหลด PDF",
+    "LoadingPdfFailed": "การโหลด PDF ล้มเหลว",
     "LocalFiles": {
       "Both": "ทั้งสอง",
       "EstablishingConnection": "กำลังสร้างการเชื่อมต่อ",
@@ -226,11 +226,11 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "สนามบินไม่มีอยู่",
-      "AuthenticateWithNavigraph": "ตรวจสอบสิทธิ์ด้วย Navigraph",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Title": "Go to 3rd Party Options to link Navigraph account",
+        "Button": "3rd Party Options"
       },
+      "AuthenticateWithNavigraph": "ตรวจสอบสิทธิ์ด้วย Navigraph",
       "InsufficientEnv": "ไฟล์ .env ไม่เพียงพอ",
       "IntoYourBrowserAndEnterTheCodeBelow": "ลงในเบราว์เซอร์ของคุณและป้อนรหัสด้านล่าง",
       "LoadingMsg": "กำลังโหลด",
@@ -377,7 +377,7 @@
       "ConfirmationDialogMsg": "กรุณายืนยันการโหลดค่าที่ตั้งไว้ล่วงหน้า",
       "CurrentProcedureStep": "คำนวณขั้นตอน",
       "PleaseConfirmLoadingOfPreset": "กรุณายืนยันการโหลดค่าที่ตั้งไว้ล่วงหน้า",
-      "Powered": "Powered",
+      "Powered": "พร้อมใช้งาน",
       "ReadyPushback": "พร้อมสำหรับการ Pushback",
       "ReadyTakeoff": "พร้อมสำหรับการวิ่งขึ้น",
       "ReadyTaxi": "พร้อมสำหรับการ Taxi",
@@ -390,12 +390,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการโหลดค่าที่ตั้งไว้",
       "AircraftNeedsToBePoweredToSavePresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการบันทึกค่าที่ตั้งไว้",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "เช้าตรู่/ย่ำค่ำ:",
+      "AutoLoadDay": "กลางวัน:",
+      "AutoLoadLightingHelpTitle": "โหลดค่าที่ตั้งไว้ล่วงหน้าอัตโนมัติ",
+      "AutoLoadLightingPreset": "เปิดการโหลดของค่าแสงที่ตั้งไว้โดยอัตโนมัติ:",
+      "AutoLoadNight": "กลางคืน:",
+      "AutoLoadNoneSelection": "ไม่มี",
       "LoadPreset": "โหลดค่าที่ตั้งไว้ล่วงหน้า",
       "LoadingPreset": "กำลังโหลดค่าที่ตั้งไว้",
       "NewNameConfirmationDialogMsg": "กรุณายืนยันชื่อใหม่ของค่าแสงที่ตั้งไว้",
@@ -457,26 +457,26 @@
     "TugDirection": "ทิศทางการลากจูง",
     "TugInTransit": "กำลังรอ รถลากจูง/หมุด",
     "TugSpeed": "ความเร็วลากจูง",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "ใช้จอยสติ๊กในการควบคุม"
   },
   "QuickControls": {
     "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
+    "FinishBoarding": "โหลดผู้โดยสาร",
     "OnScreenKeyboard": "OnScreen Keyboard",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
+    "SimBridgeConnected": "เชื่อมต่อสำเร็จ",
+    "SimBridgeConnecting": "กำลังเชื่อมต่อ...",
+    "SimBridgeOff": "ปิด",
     "SimBridgeOffline": "Not Available",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
+      "AutoBrightness": "เปิด/ปิด การปรับแสงอัตโนมัติ",
+      "Brightness": "ปรับความสว่างของ flyPad",
+      "FinishBoarding": "โหลดผู้โดยสารทันที",
+      "OnScreenKeyboard": "เปิด/ปิด OnScreen Keyboard",
+      "PowerButton": "ปิดเครื่อง",
+      "Settings": "ไปยังหน้าตั้งค่าของ flyPad",
+      "SimBridge": "ควบคุมการเชื่อมต่อกับ SimBridge",
       "Sleep": "Standby"
     },
     "Title": "Quick Controls"
@@ -494,9 +494,16 @@
       "PaxSigns": "ป้ายห้องโดยสาร",
       "RmpVhfSpacing": "ระยะห่าง RMP VHF",
       "Satcom": "Satcom",
+      "Select": "เลือก",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "ตัวเลือกเครื่องบิน/โปรแกรมปักหมุด",
       "WeightUnit": "หน่วยน้ำหนัก"
+    },
+    "AutomaticCallOuts": {
+      "Title": "Automatic Call Outs",
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "ResetStandardConfig": "รีเซ็ตเป็นค่ามาตรฐาน",
+      "Reset": "รีเซ็ต"
     },
     "AtsuAoc": {
       "AtisAtcSource": "แหล่งที่มา ATIS/ATC",
@@ -555,10 +562,10 @@
       "Auto": "อัตโนมัติ",
       "Both": "Synchronized",
       "Calibrate": "Calibrate",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "กัปตัน",
+      "CockpitSeatUsedToControl": "ที่นั่งนักบินที่ใช้ในการควบคุม",
       "ConesEnabled": "กรวยนิรภัย",
-      "Copilot": "Copilot",
+      "Copilot": "นักบินผู้ช่วย",
       "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
       "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
       "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
@@ -581,28 +588,29 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
-        "LoginPage": {
-          "Title": "Navigraph Account Login"
-        },
-        "SettingTitle": "Navigraph Account Link",
-        "SubscriptionStatus": {
-          "None": "None",
-          "Unlimited": "Navigraph Unlimited"
-        },
-        "Unlink": "Unlink Account"
-      },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
-      "Title": "3rd Party Options",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "NavigraphAccountLink": {
+        "SettingTitle": "เชื่อมต่อกับบัญชี Navigraph",
+        "Connected": "เชื่อมต่อสำเร็จ",
+        "Link": "เซื่อมต่อบัญชี",
+        "Unlink": "ยกเลิกการเซื่อมต่อบัญชี",
+        "SubscriptionStatus": {
+          "None": "ไม่มี",
+          "Unlimited": "Navigraph Unlimited",
+          "Unknown": "ไม่ทราบ"
+        },
+        "LoginPage": {
+          "Title": "ลงชื่อเข้าใช้ Navigraph"
+        }
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "กรุณาตรวจสอบชื่อ SimBrief หรือ pilot ID ที่คุณใส่ไปอีกครั้ง",
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "ใช้",
@@ -634,7 +642,7 @@
       "BatteryLifeEnabled": "จำลองการใช้งานแบตเตอรี่",
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
-      "Dark": "ดำ",
+      "Dark": "มืด",
       "Language": "ภาษา",
       "Light": "สว่าง",
       "Local": "ท้องถิ่น",
@@ -669,10 +677,10 @@
     "Sep": "ก.ย.",
     "Sun": "อา.",
     "TT": {
-      "Brightness": "Click to change Brightness",
+      "Brightness": "คลิกเพื่อปรับความสว่าง",
       "ConnectedToLocalApi": "เชื่อมต่อกับ API ภายในเครื่อง",
       "DisconnectedFromLocalApi": "ตัดการเชื่อมต่อจาก API ภายในเครื่อง",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "คลิกเพื่อเปิด Quick Controls",
       "TurnOffOrShutdownEfb": "ปิดเครื่อง EFB"
     },
     "Thu": "พฤ.",
@@ -681,12 +689,12 @@
   },
   "VersionCheck": {
     "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "LatestVersionText": "เวอร์ชั่นล่าสุดของ $edition คือ",
+    "RecommendationText": "กรุณาอัพเดทเครื่องบินใน FlyByWire Installer.",
+    "StatusBarWarning": "คุณกำลังใช้เครื่องบินเวอร์ชั่นที่ล้าสมัย",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "กรุณาอัพเดทเครื่องบินใน FlyByWire Installer."
     },
-    "Title": "New Version Available"
+    "Title": "มีเวอร์ชั่นใหม่"
   }
 }
