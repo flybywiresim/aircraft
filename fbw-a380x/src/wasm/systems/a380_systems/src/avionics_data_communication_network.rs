@@ -19,6 +19,7 @@ use std::{
     vec::Vec,
 };
 
+// TODO: deprecate
 pub(crate) trait CoreProcessingInputOutputModuleShared {
     fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule;
 }
