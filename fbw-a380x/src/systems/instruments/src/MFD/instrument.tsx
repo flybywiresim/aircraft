@@ -55,9 +55,10 @@ class A380X_MFD extends BaseInstrument {
 
         document.getElementById('MFD_CONTENT').style.display = 'flex';
         document.getElementById('MFD_CONTENT').style.flexDirection = 'row';
+        document.getElementById('MFD_CONTENT').style.height = '1024';
 
-        FSComponent.render(<div id="MFD_LEFT_PARENT_DIV" style="flex: 1;" />, document.getElementById('MFD_CONTENT'));
-        FSComponent.render(<div id="MFD_RIGHT_PARENT_DIV" style="flex: 1;" />, document.getElementById('MFD_CONTENT'));
+        FSComponent.render(<div id="MFD_LEFT_PARENT_DIV" style="flex: 1; position: relative;" />, document.getElementById('MFD_CONTENT'));
+        FSComponent.render(<div id="MFD_RIGHT_PARENT_DIV" style="flex: 1; position: relative;" />, document.getElementById('MFD_CONTENT'));
         FSComponent.render(<MfdComponent
             captOrFo="CAPT"
             ref={this.mfdCaptRef}
