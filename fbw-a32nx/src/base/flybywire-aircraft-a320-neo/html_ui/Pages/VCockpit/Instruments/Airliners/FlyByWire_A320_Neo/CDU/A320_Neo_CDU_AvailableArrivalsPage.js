@@ -143,18 +143,22 @@ class CDUAvailableArrivalsPage {
                     let runwayLength = '----';
                     let runwayCourse = '---';
 
-                    const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
-                    if (runway) {
-                        runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
-                        runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
+                    const isCircling = approach.runwayIdent === 'RW00';
+                    if (isCircling) {
+                        rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", ""];
+                    } else {
+                        const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
+
+                        if (runway) {
+                            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                            runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
+                        }
+
+                        rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                     }
 
-                    rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
-                    rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
-
                     mcdu.onLeftInput[i + 2] = async () => {
-                        // TODO we need to set the runway, but cannot correlate runway from approach yet
-
                         await mcdu.flightPlanService.setApproach(approach.ident, forPlan, inAlternate);
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
