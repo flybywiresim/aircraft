@@ -39,6 +39,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [airframe] = useState(getAirframeType());
 
     const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === 'A380_842' ? 4 : 2);
+    // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
+    if (airframe !== 'A380_842' && axisNum === 4) {
+        setAxisNum(2);
+    }
 
     const [selectedDetent, setSelectedDetent] = useState(2);
     const [validConfig, setValidConfig] = useState(true);
