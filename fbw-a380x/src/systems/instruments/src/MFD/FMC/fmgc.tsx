@@ -298,10 +298,12 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedClimbSpeedMach(): number {
-        // Assume FL270 as crossover point
+        /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
-        return mach;
+        return mach; */
+        // Return static mach number for now, ECON speed calculation is not mature enough
+       return 0.82;
     }
 
     getAccelerationAltitude(): Feet {
@@ -342,9 +344,11 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedCruiseSpeedMach(): number {
-        const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
+        /* const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
-        return mach;
+        return mach; */
+        // Return static mach number for now, ECON speed calculation is not mature enough
+        return 0.82;
     }
 
     getClimbSpeedLimit(): SpeedLimit {
@@ -381,10 +385,12 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedDescentSpeedMach(): number {
-        // Assume FL270 as crossover point
+        /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
-        return mach;
+        return mach; */
+        // Return static mach number for now, ECON speed calculation is not mature enough
+        return 0.82;
     }
 
     getApproachSpeed(): Knots {

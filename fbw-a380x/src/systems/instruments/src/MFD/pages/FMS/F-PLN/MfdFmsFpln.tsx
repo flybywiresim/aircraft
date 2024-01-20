@@ -513,8 +513,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         } else if (this.props.mfd.uiService.activeUri.get().extra === 'dest') {
             // Scroll to end of FPLN (destination on last line)
             this.scrollToDest();
-        } else {
-            this.scrollToTop();
         }
 
         const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -579,14 +577,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private scrollToTop() {
-        const fromLegIndex = Math.max(this.loadedFlightPlan.activeLegIndex - 1, 0);
-        const whichLineIndex = this.lineData.findIndex((it) => it.originalLegIndex === fromLegIndex);
-        this.displayFplnFromLineIndex.set(whichLineIndex);
+        const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.activeLegIndex);
+        this.displayFplnFromLineIndex.set(Math.max(whichLineIndex - 1, 0));
     }
 
     private scrollToDest() {
-        const whichLineIndex = this.lineData.findIndex((it) => it.originalLegIndex === this.loadedFlightPlan.destinationLegIndex) + 1;
-        this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
+        // TODO Was wenn kein treffer
+        const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.destinationLegIndex) + 1;
+        if (whichLineIndex === -1) {
+            this.displayFplnFromLineIndex.set(0);
+        } else {
+            this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
+        }
     }
 
     render(): VNode {

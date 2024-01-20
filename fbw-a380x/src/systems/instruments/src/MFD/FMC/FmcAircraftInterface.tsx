@@ -335,7 +335,7 @@ export class FmcAircraftInterface {
 
     private managedSpeedTarget: number;
 
-    private managedSpeedTargetIsMach: boolean;
+    private managedSpeedTargetIsMach = false;
 
     private holdDecelReached = false;
 
@@ -1052,9 +1052,9 @@ export class FmcAircraftInterface {
     }
 
     getManagedTargets(v: number, m: number) {
-        // const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
+        const alt = ADIRS.getBaroCorrectedAltitude();
         const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-        return v > vM ? [vM, true] : [v, false];
+        return (alt.isNormalOperation() && alt.value > 20_000 && v > vM) ? [vM, true] : [v, false];
     }
 
     // TODO/VNAV: Speed constraint
