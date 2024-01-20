@@ -2759,6 +2759,33 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - True if the hot air trim system has a fault
 
+- A32NX_PRESS_CPC_{number}_DISCRETE_WORD
+    - Number 1 or 2
+    - Discrete Data word of the Cabin Pressure Controller bus output (label 057)
+    - Bits with * not yet implemented
+    - Arinc429<Discrete>
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | System in control                                    |
+      | 12  | System status - fail                                 |
+      | 13  | Not used                                             |
+      | 14  | Excessive cabin altitude - warn                      |
+      | 15  | Low differential pressure - warn                     |
+      | 16  | Preplanned desc inf - too quick *                    |
+      | 17  | Landing field elevation manual                       |
+      | 18  | Used ADIRS channel bit 1 *                           |
+      | 19  | Used ADIRS channel bit 2 *                           |
+      | 20  | FMS Enabled *                                        |
+      | 21  | Flight mode bit 1 *                                  |
+      | 22  | Flight mode bit 2 *                                  |
+      | 23  | Flight mode bit 3 *                                  |
+      | 24  | FMS select bit 1 *                                   |
+      | 25  | FMS select bit 2 *                                   |
+      | 26  | Not used                                             |
+      | 27  | Not used                                             |
+      | 28  | Spare                                                |
+      | 29  | Spare                                                |
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure

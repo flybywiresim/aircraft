@@ -697,6 +697,7 @@ struct A320PressurizationSystem {
     active_cpc_sys_id: VariableIdentifier,
 
     cpc: [CabinPressureController<A320PressurizationConstants>; 2],
+    cpc_interface: [PressurizationSystemInterfaceUnit; 2],
     outflow_valve: [OutflowValve; 1], // Array to prepare for more than 1 outflow valve in A380
     safety_valve: SafetyValve,
     residual_pressure_controller: ResidualPressureController,
@@ -714,6 +715,10 @@ impl A320PressurizationSystem {
             cpc: [
                 CabinPressureController::new(context),
                 CabinPressureController::new(context),
+            ],
+            cpc_interface: [
+                PressurizationSystemInterfaceUnit::new(context, 1),
+                PressurizationSystemInterfaceUnit::new(context, 2),
             ],
             // Sub-buses 206PP, 401PP (auto) and 301PP (manual)
             outflow_valve: [OutflowValve::new(
@@ -742,7 +747,7 @@ impl A320PressurizationSystem {
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
 
-        for controller in self.cpc.iter_mut() {
+        for (id, controller) in self.cpc.iter_mut().enumerate() {
             controller.update(
                 context,
                 adirs,
@@ -752,6 +757,7 @@ impl A320PressurizationSystem {
                 cabin_simulation,
                 self.outflow_valve.iter().collect(),
                 &self.safety_valve,
+                self.active_system - 1 == id,
             );
         }
 
@@ -791,6 +797,10 @@ impl A320PressurizationSystem {
             .update(context, &self.cpc[self.active_system - 1]);
 
         self.switch_active_system();
+
+        for (id, cpc_i) in self.cpc_interface.iter_mut().enumerate() {
+            cpc_i.update(&self.cpc[id])
+        }
     }
 
     fn switch_active_system(&mut self) {
@@ -840,9 +850,52 @@ impl SimulationElement for A320PressurizationSystem {
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cpc, visitor);
+        accept_iterable!(self.cpc_interface, visitor);
         accept_iterable!(self.outflow_valve, visitor);
 
         visitor.visit(self);
+    }
+}
+
+struct PressurizationSystemInterfaceUnit {
+    discrete_word_id: VariableIdentifier,
+
+    discrete_word: Arinc429Word<u32>,
+}
+
+impl PressurizationSystemInterfaceUnit {
+    fn new(context: &mut InitContext, cpc_id: u8) -> Self {
+        Self {
+            discrete_word_id: context.get_identifier(format!("PRESS_CPC_{}_DISCRETE_WORD", cpc_id)),
+
+            discrete_word: Arinc429Word::new(0, SignStatus::NoComputedData),
+        }
+    }
+
+    fn update(&mut self, cpc: &CabinPressureController<A320PressurizationConstants>) {
+        // TODO: Implement CPC failure
+        if false {
+            self.discrete_word = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            // Active system is 1 or 2, the bit is 0 or 1
+            self.discrete_word.set_bit(11, cpc.is_active());
+            // TODO: Implement CPC failure
+            self.discrete_word.set_bit(12, false);
+            self.discrete_word
+                .set_bit(13, cpc.is_excessive_residual_pressure());
+            self.discrete_word.set_bit(14, cpc.is_excessive_alt());
+            self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
+            self.discrete_word
+                .set_bit(17, !cpc.landing_elevation_is_auto());
+        }
+    }
+}
+
+impl SimulationElement for PressurizationSystemInterfaceUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.discrete_word_id, self.discrete_word);
     }
 }
 
