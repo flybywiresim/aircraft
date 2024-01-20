@@ -163,6 +163,22 @@ export default new TaskOfTasks("all", [
 
         // Group all typescript and react build tasks together.
         new TaskOfTasks("build", [
+            new ExecTask(
+                'extras-host',
+                'npm run build-a380x:extras-host',
+                [
+                    'fbw-a380x/src/systems/extras-host',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/ExtrasHost'
+                ]
+            ),
+            new ExecTask(
+                'systems-host',
+                'npm run build-a380x:systems-host',
+                [
+                    'fbw-a380x/src/systems/systems-host',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/SystemsHost'
+                ]
+            ),
             new TaskOfTasks("instruments", getA380InstrumentsIgniterTasks(), true),
         ], true),
 
