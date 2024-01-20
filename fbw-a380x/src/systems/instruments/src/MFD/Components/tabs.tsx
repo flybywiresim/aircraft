@@ -86,11 +86,11 @@ export const Tab: React.FC<TabProps> = ({ x = 0, y = 0, size = 0, onClick, activ
                 <path d={`m ${x - 18} ${y + 2} h ${size + 56} v -36 h ${-(size + 36)} z`} />
             </clipPath>
 
-            <path stroke="white" fill={active ? '#040404' : (isHovered ? '#777' : '#555')} strokeWidth={active ? 2.5 : 1.5} d={`m ${x - 1000} ${y} h 1000 l 18 -35 h ${size} l 18 35 h 1000`} />
+            <path stroke="white" fill={active ? '#000' : (isHovered ? '#777' : '#555')} strokeWidth={active ? 2.5 : 1.5} d={`m ${x - 1000} ${y} h 1000 l 18 -35 h ${size} l 18 35 h 1000`} />
 
             <text fontSize={20} letterSpacing={0.75} fill="white" textAnchor="middle" x={x + size / 2 + 10} y={y - 10}>{title}</text>
 
-            {active && <rect fill="#040404" x={x + 8} y={y - 2} width={size + 10} height={5} />}
+            {active && <rect fill="#000000" x={x + 8} y={y - 2} width={size + 10} height={5} />}
         </g>
     );
 };

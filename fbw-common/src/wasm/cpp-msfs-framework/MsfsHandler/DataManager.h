@@ -240,8 +240,16 @@ class DataManager {
                                                              bool autoReading = false,
                                                              FLOAT64 maxAgeTime = 0.0,
                                                              UINT64 maxAgeTicks = 0) {
+    AircraftVariablePtr var = make_aircraft_var(varName,
+                                                0,
+                                                "",
+                                                nullptr,
+                                                unit,
+                                                autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE,
+                                                maxAgeTime,
+                                                maxAgeTicks);
     LOG_DEBUG("DataManager::make_simple_aircraft_var(): call make_aircraft_var() to create variable " + var->str());
-    return make_aircraft_var(varName, 0, "", nullptr, unit, autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE, maxAgeTime, maxAgeTicks);
+    return var;
   };
 
   /**

@@ -38,8 +38,8 @@ use uom::si::{f64::Length, length::nautical_mile};
 use systems::{
     accept_iterable,
     apu::{
-        Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
-        AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
+        AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
+        AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
@@ -60,7 +60,7 @@ pub struct A380 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2>,
+    apu: AuxiliaryPowerUnit<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A380PneumaticOverheadPanel,
@@ -203,7 +203,15 @@ impl Aircraft for A380 {
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.apu.update_after_power_distribution();
+        self.apu.update_after_power_distribution(
+            &[
+                &self.engine_1,
+                &self.engine_2,
+                &self.engine_3,
+                &self.engine_4,
+            ],
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
+        );
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.adcn.update();

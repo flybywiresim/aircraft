@@ -21,6 +21,7 @@ pub struct TrentEngine {
     uncorrected_n3_id: VariableIdentifier,
     uncorrected_n3: Ratio,
 
+    n3_speed: AngularVelocity,
     hydraulic_pump_output_speed: AngularVelocity,
     oil_pressure: Pressure,
 
@@ -54,6 +55,7 @@ impl TrentEngine {
             uncorrected_n3_id: context.get_identifier(format!("ENGINE_N3:{}", number)),
             uncorrected_n3: Ratio::new::<percent>(0.),
 
+            n3_speed: AngularVelocity::default(),
             hydraulic_pump_output_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             oil_pressure: Pressure::new::<psi>(0.),
 
@@ -64,10 +66,10 @@ impl TrentEngine {
     pub fn update(&mut self, _: &UpdateContext) {}
 
     fn update_parameters(&mut self) {
-        let n3_speed = AngularVelocity::new::<revolution_per_minute>(
+        self.n3_speed = AngularVelocity::new::<revolution_per_minute>(
             self.uncorrected_n3.get::<percent>() * Self::TRENT_900_100_PCT_N3_RPM / 100.,
         );
-        self.hydraulic_pump_output_speed = n3_speed * Self::PUMP_N3_GEAR_RATIO;
+        self.hydraulic_pump_output_speed = self.n3_speed * Self::PUMP_N3_GEAR_RATIO;
 
         // Ultra stupid model just to have 18psi crossing at 25% N2
         self.oil_pressure = Pressure::new::<psi>(18. / 25. * self.uncorrected_n2.get::<percent>());
@@ -115,5 +117,9 @@ impl Engine for TrentEngine {
 
     fn net_thrust(&self) -> Mass {
         self.net_thrust
+    }
+
+    fn gearbox_speed(&self) -> AngularVelocity {
+        self.n3_speed
     }
 }
