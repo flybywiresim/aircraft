@@ -51,6 +51,8 @@
 1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
 1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
 1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
+1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+
 
 ## 0.11.0
 
