@@ -16,21 +16,22 @@ export const Mlo = 0.55; // mach, Gear operating
 export const VloGravityGearExtension = 220; // kt
 export const MloGravityGearExtension = 0.48; // mach
 
-export const maxCertifiedAlt = 43000; // feet
+export const maxCertifiedAlt = 43_000; // feet
 
-export const defaultTropopauseAlt = 36090; // feet
+export const defaultTropopauseAlt = 36_090; // feet
 
 export const minZfwCg = 23; // %
 export const maxZfwCg = 48; // %
 
-export const maxZfw = 361000; // kg
+export const maxZfw = 361_000; // kg
 
-export const maxGw = 562000; // kg
+export const minGw = 270_000; // kg
+export const maxGw = 562_000; // kg
 
-export const maxBlockFuel = 289982; // kg
-export const maxTaxiFuel = 9889; // kg
-export const maxRteRsvFuel = 49986; // kg
+export const maxBlockFuel = 289_982; // kg
+export const maxTaxiFuel = 9_889; // kg
+export const maxRteRsvFuel = 49_986; // kg
 export const maxRteRsvFuelPerc = 15; // %
 export const maxJtsnGw = maxGw; // kg
-export const maxAltnFuel = 289982; // kg
-export const maxFinalFuel = 100018; // kg
+export const maxAltnFuel = 289_982; // kg
+export const maxFinalFuel = 100_018; // kg

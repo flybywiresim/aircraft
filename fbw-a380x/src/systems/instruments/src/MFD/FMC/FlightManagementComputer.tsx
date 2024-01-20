@@ -299,7 +299,7 @@ export class FlightManagementComputer implements FmcInterface {
         if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.getFOB() + this.fmgc.data.zeroFuelWeight.get());
         } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
-            fmGW = (this.fmgc.data.blockFuel.get() + this.fmgc.data.zeroFuelWeight.get());
+            fmGW = (this.fmgc.getFOB() * 1_000 + this.fmgc.data.zeroFuelWeight.get());
         } else {
             fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
         }

@@ -7,11 +7,12 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { AeroMath, MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
+import { maxZfw, minGw } from '@shared/PerformanceConstants';
 
 export enum TakeoffPowerSetting {
     TOGA = 0,
@@ -248,17 +249,35 @@ export class FmgcDataService implements Fmgc {
     }
 
     getZeroFuelWeight(): Pound {
+        // TODO convert to a320 weights
         // Should be returned in lbs
-        return this.data.zeroFuelWeight.get() / 1000 * 2204.625;
+        let zfw = this.data.zeroFuelWeight.get();
+
+        if (zfw > 80_000 && zfw < minGw) {
+            zfw = 50_000; // If neither a320 nor a380 weights, just return constant
+        } else if (zfw >= minGw) {
+            // Convert to a320 weight
+            zfw = 40_600 + ((zfw - minGw) / (maxZfw - minGw) * (64_300 - 40_600));
+        }
+        return zfw / 1000 * 2204.625;
     }
 
+    /**
+     *
+     * @returns fuel on board in tonnes (i.e. 1000 x kg)
+     */
     getFOB(): number {
+        // TODO convert to a320 weights
+        let fob = this.data.blockFuel.get();
         if (this.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-            const bf = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms') / 1_000;
-            this.data.blockFuel.set(bf);
-            return bf;
+            fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
         }
-        return this.data.blockFuel.get() / 1_000; // Needs to be returned in tonnes
+
+        // If more than a320 max fuel capacity, convert to a320 fuel weight
+        if (fob > 19_046) {
+            fob = fob / 199_000 * 19_046;
+        }
+        return fob / 1_000; // Needs to be returned in tonnes
     }
 
     getV2Speed(): Knots {
@@ -279,7 +298,10 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedClimbSpeedMach(): number {
-        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedClimbSpeed()) as number;
+        // Assume FL270 as crossover point
+        const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
+        const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
+        return mach;
     }
 
     getAccelerationAltitude(): Feet {
@@ -298,6 +320,10 @@ export class FmgcDataService implements Fmgc {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel : 18_000;
     }
 
+    /**
+     *
+     * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
+     */
     getCruiseAltitude(): Feet {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 320;
     }
@@ -316,7 +342,9 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedCruiseSpeedMach(): number {
-        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedCruiseSpeed()) as number;
+        const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
+        const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
+        return mach;
     }
 
     getClimbSpeedLimit(): SpeedLimit {
@@ -353,7 +381,10 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedDescentSpeedMach(): number {
-        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedDescentSpeed()) as number;
+        // Assume FL270 as crossover point
+        const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
+        const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
+        return mach;
     }
 
     getApproachSpeed(): Knots {
