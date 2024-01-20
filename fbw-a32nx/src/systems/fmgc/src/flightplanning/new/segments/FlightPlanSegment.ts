@@ -23,18 +23,26 @@ export abstract class FlightPlanSegment {
     }
 
     /**
-     * Returns the last non-discontinuity leg
+     * Returns the index of the last non-discontinuity leg
      */
-    get lastLeg() {
+    get lastLegIndex() {
         for (let i = this.allLegs.length - 1; i >= 0; i--) {
             const element = this.allLegs[i];
 
             if (element.isDiscontinuity === false) {
-                return element as FlightPlanLeg;
+                return i;
             }
         }
 
-        return undefined;
+        return -1;
+    }
+
+    /**
+     * Returns the last non-discontinuity leg
+     */
+    get lastLeg() {
+        const lastLegIndex = this.lastLegIndex;
+        return lastLegIndex >= 0 ? this.allLegs[lastLegIndex] as FlightPlanLeg : undefined;
     }
 
     /**
@@ -182,6 +190,27 @@ export abstract class FlightPlanSegment {
     findIndexOfWaypoint(waypoint: Fix, afterIndex?: number): number {
         for (let i = 0; i < this.allLegs.length; i++) {
             if (i <= afterIndex) {
+                continue;
+            }
+
+            const leg = this.allLegs[i];
+
+            if (leg.isDiscontinuity === false && leg.terminatesWithWaypoint(waypoint)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Returns the index of a leg in the segment that terminates at the specified waypoint, or -1 if none is found
+     *
+     * @param waypoint the waypoint to look for
+     */
+    findLastIndexOfWaypoint(waypoint: Fix, beforeIndex?: number): number {
+        for (let i = this.allLegs.length - 1; i >= 0; i--) {
+            if (i >= beforeIndex) {
                 continue;
             }
 

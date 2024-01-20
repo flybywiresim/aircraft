@@ -9,6 +9,7 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { RestringOptions } from '../plans/RestringOptions';
 
 export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Arrival
@@ -28,7 +29,9 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;
 
-                this.flightPlan.syncSegmentLegsChange(this);
+                this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
+                this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
+                this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this);
             }
 
             return;
@@ -72,7 +75,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
     }
 
     clone(forPlan: BaseFlightPlan): ApproachViaSegment {

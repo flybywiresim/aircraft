@@ -8,6 +8,7 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { RestringOptions } from '../plans/RestringOptions';
 
 export class DepartureEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Departure
@@ -61,7 +62,7 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
         this.allLegs.push(...mappedOriginEnrouteTransitionLegs);
         this.strung = false;
 
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this);
     }
 

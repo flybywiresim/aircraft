@@ -9,6 +9,7 @@ import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmg
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
+import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
@@ -151,7 +152,7 @@ export class OriginSegment extends FlightPlanSegment {
             this.flightPlan.availableDepartures = newRunwayCompatibleSids;
         }
 
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
         this.flightPlan.syncSegmentLegsChange(this);
     }
 
