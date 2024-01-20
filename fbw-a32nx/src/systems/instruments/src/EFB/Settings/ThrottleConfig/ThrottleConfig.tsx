@@ -62,6 +62,11 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     // the number of throttles that are used in the aircraft (2 or 4)
     const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
 
+    // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
+    if (airframe !== 'A380_842' && axisNum === 4) {
+        setAxisNum(2);
+    }
+
     // simvars for each virtual throttle (we define 4 even for the A320 and ignore 3 + 4)
     const throttleOneSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
