@@ -211,10 +211,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLeg.isDiscontinuity === false
-            // Make sure we've not already string it
-            && this.activeLeg.segment.class === SegmentClass.Arrival
-            && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
+        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
             this.stringMissedApproach();
         }
 
@@ -224,6 +221,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     async stringMissedApproach() {
+        // Make sure we've not already strung the missed approach
+        // Being on an enroute segment would be an indication of that
+        if (this.activeLeg.isDiscontinuity === true || this.activeLeg.segment.class !== SegmentClass.Arrival) {
+            return;
+        }
+
         const missedApproachPointIndex = this.allLegs.findIndex(
             (it) => it.isDiscontinuity === false && it.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint,
         );
