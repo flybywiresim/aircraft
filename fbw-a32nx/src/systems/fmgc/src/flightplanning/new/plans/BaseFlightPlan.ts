@@ -945,12 +945,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
 
-        await this.setApproach(undefined);
-        await this.setApproachVia(undefined);
-        await this.setArrivalEnrouteTransition(undefined);
-        await this.setArrival(undefined);
-        await this.setDestinationAirport(airportIdent);
-        await this.setDestinationRunway(undefined);
+        await this.approachSegment.setProcedure(undefined);
+        await this.approachViaSegment.setProcedure(undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+        await this.arrivalSegment.setProcedure(undefined);
+        await this.destinationSegment.setDestinationIcao(airportIdent);
+        await this.destinationSegment.setDestinationRunway(undefined);
+
+        await this.flushOperationQueue();
 
         this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
 
