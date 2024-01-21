@@ -202,7 +202,7 @@ export const PushbackMap = () => {
         <>
             {/* Map Container */}
             <div
-                className="flex overflow-hidden relative flex-col flex-grow space-y-4 h-[430px] rounded-lg border-2 border-theme-accent"
+                className="relative flex h-[430px] grow flex-col space-y-4 overflow-hidden rounded-lg border-2 border-theme-accent"
                 onMouseDown={(e) => {
                     setMouseDown(true);
                     setDragStartCoords({ x: e.pageX, y: e.pageY });
@@ -234,7 +234,7 @@ export const PushbackMap = () => {
                 )}
 
                 {/* Aircraft and Turning Radius Indicator */}
-                <div className="flex absolute inset-0 justify-center items-center">
+                <div className="absolute inset-0 flex items-center justify-center">
                     {centerPlaneMode && !Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
                         && (
                             <div
@@ -259,15 +259,15 @@ export const PushbackMap = () => {
                 </div>
 
                 {/* Map Controls */}
-                <div className="flex overflow-hidden absolute right-6 bottom-6 z-30 flex-col rounded-md cursor-pointer">
+                <div className="absolute bottom-6 right-6 z-30 flex cursor-pointer flex-col overflow-hidden rounded-md">
                     <TooltipWrapper text={t('Pushback.TT.CenterPlaneMode')}>
                         <button
                             type="button"
                             onClick={() => handleCenterPlaneModeChange()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <IconPlane
-                                className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
+                                className={`-rotate-90 text-white${centerPlaneMode && 'fill-current'}`}
                                 size={40}
                                 strokeLinejoin="round"
                             />
@@ -277,7 +277,7 @@ export const PushbackMap = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomIn()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <ZoomIn size={40} />
                         </button>
@@ -286,7 +286,7 @@ export const PushbackMap = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomOut()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <ZoomOut size={40} />
                         </button>
