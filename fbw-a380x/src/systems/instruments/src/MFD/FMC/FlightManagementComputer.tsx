@@ -21,7 +21,6 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 
 export interface FmsErrorMessage {
     message: McduMessage;
@@ -193,7 +192,7 @@ export class FlightManagementComputer implements FmcInterface {
             const flightPlan = this.revisedWaypointIsAltn.get()
                 ? this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).alternateFlightPlan
                 : this.flightPlanService.get(this.revisedWaypointPlanIndex.get());
-            if (flightPlan.elementAt(this.revisedWaypointIndex.get())?.isDiscontinuity === false) {
+            if (flightPlan.hasElement(this.revisedWaypointIndex.get()) && flightPlan.elementAt(this.revisedWaypointIndex.get())?.isDiscontinuity === false) {
                 return flightPlan.legElementAt(this.revisedWaypointIndex.get())?.definition?.waypoint;
             }
         }
@@ -858,10 +857,9 @@ export class FlightManagementComputer implements FmcInterface {
 
     updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
         const numLinesPerPage = this.flightPlanService.hasTemporary ? 7 : 8;
-        const numPseudoDisplayed = this.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.filter((wpt) => {
-            // How many pseudo waypoints are displayed on page?
-            return wpt.displayedOnMcdu && wpt.alongLegIndex > planDisplayLegIndex && wpt.alongLegIndex < (planDisplayLegIndex + numLinesPerPage);
-        }).length;
+        // How many pseudo waypoints?
+        // eslint-disable-next-line max-len
+        const numPseudoDisplayed = this.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.filter((wpt) => wpt.displayedOnMcdu && wpt.alongLegIndex > planDisplayLegIndex && wpt.alongLegIndex < (planDisplayLegIndex + numLinesPerPage)).length;
         const flightPlan = this.flightPlanService.get(planDisplayForPlan);
 
         // Update ND map center
@@ -869,16 +867,16 @@ export class FlightManagementComputer implements FmcInterface {
         this.efisInterface.setMissedLegVisible(
             (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
             >= flightPlan.firstMissedApproachLegIndex,
-            planDisplayForPlan);
-        this.efisInterface.setAlternateLegVisible(planDisplayInAltn ||
-            (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
-            planDisplayForPlan);
-        this.efisInterface.setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex) ||
-            (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
             planDisplayForPlan,
         );
+        this.efisInterface.setAlternateLegVisible(planDisplayInAltn
+            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
+        planDisplayForPlan);
+        this.efisInterface.setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
+            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
+        planDisplayForPlan);
         this.efisInterface.setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
     }
 

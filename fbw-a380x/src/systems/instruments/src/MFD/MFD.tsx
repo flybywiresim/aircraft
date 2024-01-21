@@ -3,7 +3,6 @@
 import 'instruments/src/MFD/pages/common/style.scss';
 
 import {
-    ArraySubject,
     ClockEvents,
     ComponentProps,
     DisplayComponent,
@@ -26,7 +25,6 @@ import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirector
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 

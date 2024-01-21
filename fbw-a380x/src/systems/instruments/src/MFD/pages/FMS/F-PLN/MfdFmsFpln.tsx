@@ -11,7 +11,7 @@ import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pag
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -54,7 +54,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         Subject.create<FplnLineDisplayData>(null),
     ];
 
-    private activeLegIndex: number = 1;
+    private lastRenderedActiveLegIndex: number = 1;
 
     private lastRenderedFpVersion: number = -1;
 
@@ -102,14 +102,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         // a) activeLegIndex changes
         // b) flight plan version was increased
         // c) list was scrolled up or down
-        const activeLegIndexChanged = this.activeLegIndex !== this.loadedFlightPlan.activeLegIndex;
+        const activeLegIndexChanged = this.lastRenderedActiveLegIndex !== this.loadedFlightPlan.activeLegIndex;
         const fpVersionIncreased = this.lastRenderedFpVersion !== this.loadedFlightPlan.version;
         const listWasScrolled = this.lastRenderedDisplayLineIndex !== this.displayFplnFromLineIndex.get();
         const onlyUpdatePredictions = !(activeLegIndexChanged || fpVersionIncreased || listWasScrolled);
 
-        this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
         this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
 
+        this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex;
         this.lastRenderedFpVersion = this.loadedFlightPlan.version;
         this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
@@ -138,24 +138,22 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private update(startAtIndex: number, onlyUpdatePredictions = true): void {
+        const shouldOnlyUpdatePredictions = this.lineData !== undefined && onlyUpdatePredictions;
+
         // Make sure that you can't scroll higher than the FROM wpt
-        const fromLegIndex = Math.max(this.loadedFlightPlan.activeLegIndex - 1, 0);
-        if (startAtIndex < fromLegIndex) {
-            this.displayFplnFromLineIndex.set(startAtIndex);
-            return;
-        }
+        const startAtIndexChecked = startAtIndex < this.loadedFlightPlan.activeLegIndex - 1 ? this.loadedFlightPlan.activeLegIndex - 1 : startAtIndex;
 
         // Compute rest of required attributes
         this.derivedFplnLegData = [];
         let lastDistanceFromStart: number = 0;
         let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
         // Construct leg data for all legs
-        const jointFlightPlan: FlightPlanElement[] = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
+        const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
         jointFlightPlan.forEach((el, index) => {
             const newEl: DerivedFplnLegData = { distanceFromLastWpt: undefined, trackFromLastWpt: undefined, windPrediction: undefined };
 
-            if (index === this.loadedFlightPlan.allLegs.length) {
-                // Reset distance accumulation for ALTN flight plan
+            if (index === this.loadedFlightPlan.allLegs.length || index === this.loadedFlightPlan.firstMissedApproachLegIndex) {
+                // Reset distance accumulation for ALTN flight plan and for missed apch
                 lastDistanceFromStart = 0;
             }
 
@@ -337,21 +335,21 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         // Delete all lines only if re-render is neccessary.
-        if (onlyUpdatePredictions === false) {
+        if (shouldOnlyUpdatePredictions === false) {
             while (this.linesDivRef.instance.firstChild) {
                 this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
             }
         }
 
-        const untilLegIndex = Math.min(this.lineData.length, startAtIndex + (this.tmpyActive.get() ? 8 : 9));
-        for (let drawIndex = startAtIndex; drawIndex < untilLegIndex; drawIndex++) {
+        const untilLegIndex = Math.min(this.lineData.length, startAtIndexChecked + (this.tmpyActive.get() ? 8 : 9));
+        for (let drawIndex = startAtIndexChecked; drawIndex < untilLegIndex; drawIndex++) {
             if (drawIndex > this.lineData.length - 1) {
                 // Insert empty line
-                if (onlyUpdatePredictions === false) {
+                if (shouldOnlyUpdatePredictions === false) {
                     FSComponent.render(<div />, this.linesDivRef.instance);
                 }
             } else {
-                const lineIndex = drawIndex - startAtIndex;
+                const lineIndex = drawIndex - startAtIndexChecked;
 
                 const previousRow = (drawIndex > 0) ? this.lineData[drawIndex - 1] : null;
                 const previousIsSpecial = previousRow ? previousRow.type === FplnLineType.Special : false;
@@ -371,10 +369,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 if (nextIsSpecial) {
                     flags |= FplnLineFlags.BeforeSpecial;
                 }
-                if (drawIndex === this.activeLegIndex) {
+                if (drawIndex === this.loadedFlightPlan.activeLegIndex) {
                     flags |= FplnLineFlags.IsActiveLeg;
                 }
-                if (drawIndex === this.activeLegIndex - 1) {
+                if (drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
                     flags |= FplnLineFlags.BeforeActiveLeg;
                 }
 
@@ -382,7 +380,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 const clonedLineData = { ...this.lineData[drawIndex] };
                 this.renderedLineData[lineIndex].set(clonedLineData);
 
-                if (onlyUpdatePredictions === false && this?.renderedLineData[lineIndex]?.get() !== undefined) {
+                if (shouldOnlyUpdatePredictions === false && this?.renderedLineData[lineIndex]?.get() !== undefined) {
                     const node = (
                         <FplnLegLine
                             data={this.renderedLineData[lineIndex]}
@@ -419,7 +417,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         // Update EFIS/ND
         if (this.lineData.length > 0) {
             // If pseudo-waypoint, find last actual waypoint
-            let planCentreLineDataIndex = startAtIndex;
+            let planCentreLineDataIndex = startAtIndexChecked;
             const isNoPseudoWpt = (data: FplnLineDisplayData) => {
                 if (data && isWaypoint(data) && data.isPseudoWaypoint === false) {
                     return true;
@@ -478,6 +476,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+        this.onNewData();
 
         this.subs.push(this.displayEfobAndWind.sub((val) => {
             this.efobAndWindButtonDynamicContent.set(val === true ? this.efobWindButton() : this.spdAltButton());
@@ -577,17 +576,24 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private scrollToTop() {
-        const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.activeLegIndex);
-        this.displayFplnFromLineIndex.set(Math.max(whichLineIndex - 1, 0));
+        this.update(this.loadedFlightPlan.activeLegIndex, false);
+        this.checkScrollButtons();
+        if (this.lineData) {
+            const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.activeLegIndex);
+            this.displayFplnFromLineIndex.set(Math.max(whichLineIndex - 1, 0));
+        }
     }
 
     private scrollToDest() {
-        // TODO Was wenn kein treffer
-        const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.destinationLegIndex) + 1;
-        if (whichLineIndex === -1) {
-            this.displayFplnFromLineIndex.set(0);
-        } else {
-            this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
+        this.update(this.loadedFlightPlan.activeLegIndex, false);
+        this.checkScrollButtons();
+        if (this.lineData) {
+            const whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan.destinationLegIndex) + 1;
+            if (whichLineIndex === -1) {
+                this.displayFplnFromLineIndex.set(0);
+            } else {
+                this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
+            }
         }
     }
 

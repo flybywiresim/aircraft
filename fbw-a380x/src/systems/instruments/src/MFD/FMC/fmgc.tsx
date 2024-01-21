@@ -7,7 +7,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { AeroMath, MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -289,7 +289,6 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedClimbSpeed(): Knots {
-        // TODO adapt for A380
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
             const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
             return 290 * (1 - dCI) + 330 * dCI;
@@ -303,7 +302,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
         // Return static mach number for now, ECON speed calculation is not mature enough
-       return 0.82;
+        return 0.80;
     }
 
     getAccelerationAltitude(): Feet {
@@ -335,7 +334,10 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedCruiseSpeed(): Knots {
-        // TODO adapt for A380
+        if (Number.isFinite(this.data.cruisePreSelSpeed.get())) {
+            return this.data.cruisePreSelSpeed.get();
+        }
+
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
             const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
             return 290 * (1 - dCI) + 310 * dCI;
@@ -348,7 +350,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
         // Return static mach number for now, ECON speed calculation is not mature enough
-        return 0.82;
+        return this.data.cruisePreSelMach.get() ?? 0.82;
     }
 
     getClimbSpeedLimit(): SpeedLimit {
@@ -376,6 +378,9 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedDescentSpeed(): Knots {
+        if (Number.isFinite(this.data.descentPreSelSpeed.get())) {
+            return this.data.descentPreSelSpeed.get();
+        }
         // TODO adapt for A380
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
             const dCI = this.flightPlanService.active.performanceData.costIndex / 999;
@@ -390,7 +395,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
         // Return static mach number for now, ECON speed calculation is not mature enough
-        return 0.82;
+        return 0.80;
     }
 
     getApproachSpeed(): Knots {
