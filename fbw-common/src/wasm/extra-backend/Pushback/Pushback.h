@@ -30,6 +30,8 @@ class MsfsHandler;
  */
 class Pushback : public Module {
  private:
+  static constexpr int TEST = 11;
+
   static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
 
   // Convenience pointer to the data manager
@@ -76,7 +78,9 @@ class Pushback : public Module {
    * Creates a new Pushback instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit Pushback(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
+  explicit Pushback(MsfsHandler& msfsHandler) : Module(msfsHandler) {
+    std::cout << "Pushback constructor: " << TEST << std::endl;
+  }
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;
@@ -84,6 +88,32 @@ class Pushback : public Module {
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
 
+ protected:
+  /**
+   * Calculates the counter rotation acceleration.
+   * @param inertiaSpeed The current inertia speed.
+   * @param windVelBodyZ The current wind velocity in body Z direction.
+   * @return The counter rotation acceleration.
+   */
+  virtual FLOAT64 calculateCounterRotAccel(const FLOAT64 inertiaSpeed, AircraftVariablePtr& windVelBodyZ) const = 0;
+
+  /**
+   * @brief Returns the park brake factor for slowing down when the parking brake is engaged.
+   * @return The park brake factor.
+   */
+  virtual constexpr int getParkBrakeFactor() const = 0;  // slow down when parking brake is engaged by this factor
+
+  /**
+   * @brief Returns the speed factor for the pushback for the aircraft
+   * @return the speed factor
+   */
+  virtual constexpr FLOAT64 getSpeedFactor() const = 0;  // ft/sec for "VELOCITY BODY Z"
+
+  /**
+   * @brief Returns the turn speed factor for the pushback for the aircraft
+   * @return the turn speed factor
+   */
+  virtual constexpr FLOAT64 getTurnSpeedFactor() const = 0;  // ft/sec for "ROTATION VELOCITY BODY Y"
 };
 
 #endif  // FLYBYWIRE_PUSHBACK_H

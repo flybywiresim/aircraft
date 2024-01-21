@@ -32,9 +32,6 @@
 // be dormant most of the time, this is saving a lot of unnecessary reads/writes.
 ///
 
-static constexpr FLOAT64 SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
-static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
-
 bool Pushback::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
@@ -102,24 +99,14 @@ bool Pushback::update(sGaugeDrawData* pData) {
   aircraftHeading->updateFromSim(timeStamp, tickCounter);
   windVelBodyZ->updateFromSim(timeStamp, tickCounter);
 
-  const double speedFactor = parkingBrakeEngaged->getAsBool() ? (SPEED_FACTOR / 10) : SPEED_FACTOR;
+  const double speedFactor = parkingBrakeEngaged->getAsBool() ? (getSpeedFactor() / getParkBrakeFactor()) : getSpeedFactor();
   const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
+  const FLOAT64 movementCounterRotAccel = calculateCounterRotAccel(inertiaSpeed, windVelBodyZ);
 
-  const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_FACTOR / 10) : TURN_SPEED_FACTOR;
-  const FLOAT64 computedRotationVelocity = helper::Math::sign(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
-
-  // As we might use the elevator for taxiing we compensate for wind to avoid
-  // the aircraft lifting any gears. The hard coded values are based on testing
-  // in the sim.
-  FLOAT64 movementCounterRotAccel = 0.0;
-  if (inertiaSpeed > 0) {
-    movementCounterRotAccel = (windVelBodyZ->get() / 2000.0) - 0.5;
-  } else if (inertiaSpeed < 0) {
-    movementCounterRotAccel = (windVelBodyZ->get() / 2000.0) + 1.0;
-  }
-
-  FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
+  const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (getTurnSpeedFactor() / getParkBrakeFactor()) : getTurnSpeedFactor();
+  const FLOAT64 computedRotationVelocity = tugCommandedSpeedFactor->get() * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
+  const FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
   const FLOAT64 computedHdg = helper::Math::angleAdd(aircraftHeadingDeg, -90 * tugCommandedHeadingFactor->get());
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
@@ -149,6 +136,16 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   return true;
 }
+
+/**
+ * As we might use the elevator for taxiing we compensate for wind to avoid
+ * the aircraft lifting any gears.
+ *
+ * This contains hard coded values which are based on testing in the sim.
+ *
+ * @param inertiaSpeed the current inertia speed
+ * @return the counter rotation acceleration
+ */
 
 bool Pushback::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
   //  empty
