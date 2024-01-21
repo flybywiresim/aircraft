@@ -12,7 +12,24 @@
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 
+
+
 class ThrottleAxisMapping {
+  static constexpr double THROTTLE_STEPSIZE = 0.05;
+  static constexpr double THROTTLE_STEPSIZE_SMALL = 0.05;
+  static constexpr double THROTTLE_REV_LO = -1.00;  // reverse low
+  static constexpr double THROTTLE_REV_HI = -0.95;  // reverse high
+  static constexpr double THROTTLE_REV_IDLE_LO = -0.85;  // reverse idle low
+  static constexpr double THROTTLE_REV_IDLE_HI = -0.75;  // reverse idle high
+  static constexpr double THROTTLE_IDLE_LO = -0.55;  // idle low
+  static constexpr double THROTTLE_IDLE_HI  = -0.45;  // idle high
+  static constexpr double THROTTLE_CLB_LO  = -0.05;  // climb low
+  static constexpr double THROTTLE_CLB_HI  = +0.05;  // climb high
+  static constexpr double THROTTLE_FLX_LO  = +0.45;  // flex/mct low
+  static constexpr double THROTTLE_FLX_HI  = +0.55;  // flex/mct high
+  static constexpr double THROTTLE_TOGA_LO =  +0.95;  // toga low
+  static constexpr double THROTTLE_TOGA_HI =  +1.00;  // toga high
+
  public:
   ThrottleAxisMapping(unsigned int id);
 

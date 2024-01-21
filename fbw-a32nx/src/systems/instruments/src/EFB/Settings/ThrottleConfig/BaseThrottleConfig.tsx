@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useState } from 'react';
@@ -9,88 +8,216 @@ import { t } from '../../translation';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
+/**
+ * BaseThrottleConfigProps are the props for the BaseThrottleConfig component.
+ * @param className             css class pass through
+ * @param axisNumber            number of the current axis
+ * @param numberOfAxis          number of axis that are mapped
+ * @param numberOfThrottles     number of throttles that are mapped
+ * @param throttleSimvarsSet1   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet2   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet3   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet4   array of throttle simvars to map the axis values to
+ * @param activeDetent          currently active detent
+ * @param reverseDisabled       boolean to disable reverse detent for the axis
+ */
 interface BaseThrottleConfigProps {
     className?: string;
-    throttleNumber: number;
-    displayNumber: boolean;
-    mappingsAxisOne: ThrottleSimvar[];
-    mappingsAxisTwo?: ThrottleSimvar[];
-    activeIndex: number;
+    axisNumber: number;
+    numberOfAxis: number;
+    numberOfThrottles: number;
+    throttleSimvarsSet1?: ThrottleSimvar[];
+    throttleSimvarsSet2?: ThrottleSimvar[];
+    throttleSimvarsSet3?: ThrottleSimvar[];
+    throttleSimvarsSet4?: ThrottleSimvar[];
+    activeDetent: number;
     reverseDisabled?: boolean;
 }
 
+/**
+ * BaseThrottleConfig is the base component for the throttle configuration of one axis.
+ * The term axis is used for available hardware axis on the throttle controller.
+ * The term throttles are used for the number of throttles that are used in the aircraft.
+ * @see BaseThrottleConfigProps
+ * @constructor
+ */
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     className,
-    throttleNumber,
-    displayNumber,
-    mappingsAxisOne,
-    mappingsAxisTwo,
-    activeIndex,
+    axisNumber,
+    numberOfAxis,
+    numberOfThrottles,
+    throttleSimvarsSet1,
+    throttleSimvarsSet2,
+    throttleSimvarsSet3,
+    throttleSimvarsSet4,
+    activeDetent,
     reverseDisabled,
 }) => {
-    const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
+    const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${axisNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
+
+    let throttleNumberString = '';
+    let upperBoundDetentSetter: any[];
+    let lowerBoundDetentSetter: any[];
+    let lowerBoundDetentGetter: any;
+    let upperBoundDetentGetter: any;
+
+    // Here we configure from which axis the detent data is coming from and to which throttle(s) it should be mapped.
+    // There are 5 cases:
+    // 1. A320 with 1 axis and 2 throttles
+    // 2. A320 with 2 axis and 2 throttles
+    // 3. A380 with 1 axis and 4 throttles
+    // 4. A380 with 2 axis and 4 throttles
+    // 5. A380 with 4 axis and 4 throttles
+
+    // A320 Case
+    if (numberOfThrottles === 2) {
+        // case when only one hardware axis is mapped
+        if (numberOfAxis === 1) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2' }]);
+            // all two throttles are mapped from one axis
+            upperBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getHiSetter(),
+                throttleSimvarsSet2[activeDetent].getHiSetter(),
+            ];
+            lowerBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getLowSetter(),
+                throttleSimvarsSet2[activeDetent].getLowSetter(),
+            ];
+            lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
+            upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
+            // eslint-disable-next-line brace-style
+        }
+        // case when two axis are mapped to throttle 1 and 2
+        else if (numberOfAxis === 2) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: axisNumber.toString() }]);
+            // throttle 1-2 is mapped from axis 1-2
+            upperBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getHiSetter(),
+            ];
+            lowerBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getLowSetter(),
+            ];
+            lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
+            upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
+        } else {
+            throw new Error(`Invalid number of axis: ${numberOfAxis}`);
+        }
+        // eslint-disable-next-line brace-style
+    }
+    // A380 Case
+    else if (numberOfThrottles === 4) {
+        // case when only one hardware axis is mapped
+        if (numberOfAxis === 1) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2 + 3 + 4' }]);
+            // all four throttles are mapped from one axis
+            upperBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getHiSetter(),
+                throttleSimvarsSet2[activeDetent].getHiSetter(),
+                throttleSimvarsSet3[activeDetent].getHiSetter(),
+                throttleSimvarsSet4[activeDetent].getHiSetter(),
+            ];
+            lowerBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getLowSetter(),
+                throttleSimvarsSet2[activeDetent].getLowSetter(),
+                throttleSimvarsSet3[activeDetent].getLowSetter(),
+                throttleSimvarsSet4[activeDetent].getLowSetter(),
+            ];
+            lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
+            upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
+            // eslint-disable-next-line brace-style
+        }
+        // case when two axis are mapped and this setting is for axis 1 for throttle 1 and 2
+        else if (numberOfAxis === 2 && axisNumber === 1) {
+            const throttlesString = axisNumber === 1 ? '1 + 2' : '3 + 4';
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: throttlesString }]);
+            // throttle 1 and 2 are mapped from axis 1, 3 and 4 are mapped from axis 2
+            upperBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getHiSetter(),
+                throttleSimvarsSet2[activeDetent].getHiSetter(),
+            ];
+            lowerBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getLowSetter(),
+                throttleSimvarsSet2[activeDetent].getLowSetter(),
+            ];
+            lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
+            upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
+            // eslint-disable-next-line brace-style
+        }
+        // case when four axis are mapped to four throttles
+        else if (numberOfAxis === 4) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: axisNumber.toString() }]);
+            // throttle 1-4 is mapped from axis 1-4
+            upperBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getHiSetter(),
+            ];
+            lowerBoundDetentSetter = [
+                throttleSimvarsSet1[activeDetent].getLowSetter(),
+            ];
+            lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
+            upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
+        } else {
+            throw new Error(`Invalid number of axis: ${numberOfAxis}`);
+        }
+    } else {
+        throw new Error(`Invalid number of throttles: ${numberOfThrottles}`);
+    }
 
     const currentDetent = (
         <DetentConfig
-            key={activeIndex}
-            index={activeIndex}
+            key={activeDetent}
+            index={activeDetent}
             throttlePosition={throttlePosition}
-            upperBoundDetentSetter={mappingsAxisTwo
-                ? [mappingsAxisOne[activeIndex].getHiSetter(), mappingsAxisTwo[activeIndex].getHiSetter()]
-                : [mappingsAxisOne[activeIndex].getHiSetter()]}
-            lowerBoundDetentSetter={mappingsAxisTwo
-                ? [mappingsAxisOne[activeIndex].getLowSetter(), mappingsAxisTwo[activeIndex].getLowSetter()]
-                : [mappingsAxisOne[activeIndex].getLowSetter()]}
-            lowerBoundDetentGetter={mappingsAxisOne[activeIndex].getLowGetter()}
-            upperBoundDetentGetter={mappingsAxisOne[activeIndex].getHiGetter()}
-            detentValue={mappingsAxisOne[activeIndex].getLowGetter()}
-            throttleNumber={throttleNumber}
+            upperBoundDetentSetter={upperBoundDetentSetter}
+            lowerBoundDetentSetter={lowerBoundDetentSetter}
+            lowerBoundDetentGetter={lowerBoundDetentGetter}
+            upperBoundDetentGetter={upperBoundDetentGetter}
+            detentValue={lowerBoundDetentGetter}
             expertMode={expertMode}
         />
     );
 
+    // dummy detent is used to only display the current throttle position with no setting options
     const dummyDetent = (
         <DummyDetentConfig
-            key={activeIndex}
-            index={activeIndex}
+            key={activeDetent}
+            index={activeDetent}
             throttlePosition={throttlePosition}
-            upperBoundDetentSetter={mappingsAxisTwo
-                ? [mappingsAxisOne[activeIndex].getHiSetter(), mappingsAxisTwo[activeIndex].getHiSetter()]
-                : [mappingsAxisOne[activeIndex].getHiSetter()]}
-            lowerBoundDetentSetter={mappingsAxisTwo
-                ? [mappingsAxisOne[activeIndex].getLowSetter(), mappingsAxisTwo[activeIndex].getLowSetter()]
-                : [mappingsAxisOne[activeIndex].getLowSetter()]}
-            lowerBoundDetentGetter={mappingsAxisOne[activeIndex].getLowGetter()}
-            upperBoundDetentGetter={mappingsAxisOne[activeIndex].getHiGetter()}
-            detentValue={mappingsAxisOne[activeIndex].getLowGetter()}
-            throttleNumber={throttleNumber}
+            upperBoundDetentSetter={upperBoundDetentSetter}
+            lowerBoundDetentSetter={lowerBoundDetentSetter}
+            lowerBoundDetentGetter={lowerBoundDetentGetter}
+            upperBoundDetentGetter={upperBoundDetentGetter}
+            detentValue={lowerBoundDetentGetter}
             expertMode={expertMode}
         />
     );
 
     return (
         <div className={className}>
-            <h1 className="mb-2 text-center">
-                {t('Settings.ThrottleConfig.Axis')}
-                {' '}
-                {displayNumber ? throttleNumber : ''}
-            </h1>
-            <div className="flex flex-col justify-center items-center px-2 pt-5 mt-4">
-                <div className="flex flex-row justify-center items-center space-x-2 w-60">
+            {numberOfAxis === 4 ? (
+                <h2 className="mb-2 text-center">
+                    {throttleNumberString}
+                </h2>
+            ) : (
+                <h1 className="mb-2 text-center">
+                    {throttleNumberString}
+                </h1>
+            )}
+            <div className="mt-4 flex flex-col items-center justify-center px-2 pt-5">
+                <div className="flex w-60 flex-row items-center justify-center space-x-2">
                     <p>
                         {t('Settings.ThrottleConfig.CurrentValue')}
                         :
                         {' '}
                         {throttlePosition.toFixed(2)}
                     </p>
-                    {!reverseDisabled || activeIndex >= 2 ? (
+                    {!reverseDisabled || activeDetent >= 2 ? (
                         <PencilSquare className="text-theme-highlight" onMouseDown={() => setExpertMode(!expertMode)} stroke="1.5" />
                     ) : null}
                 </div>
                 <div className="flex flex-row">
-                    <div className="flex flex-col justify-between items-center">
-                        {(!reverseDisabled) || (activeIndex >= 2) ? currentDetent : dummyDetent}
+                    <div className="flex flex-col items-center justify-between">
+                        {(!reverseDisabled) || (activeDetent >= 2) ? currentDetent : dummyDetent}
                     </div>
                 </div>
             </div>

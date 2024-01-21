@@ -19,7 +19,7 @@
             <!-- Nose Landing Gear -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>c_gear</ANIM_NAME>
-                <ANIM_CODE>1 (A:GEAR POSITION:0, Percent over 100) - 100 *</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_GEAR_CENTER_POSITION)</ANIM_CODE>
             </UseTemplate>
 
             <!-- Nose Landing Gear Door FWD -->
@@ -451,7 +451,7 @@
             </UseTemplate>
         </Component>
 
-         <Component ID="Wingflex_Inboard_Right">
+        <Component ID="Wingflex_Inboard_Right">
             <!-- Wingflex Inboard Right  -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_inboard_flex</ANIM_NAME>
