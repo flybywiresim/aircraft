@@ -1750,7 +1750,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     private stringDepartureToDownstream() {
         // Find last departure leg
-        const [lastDepartureSegment, lastDepartureLegIndex, lastDepartureLegIndexInPlan] = this.findLastDepartureLegIndex();
+        const [lastDepartureSegment, lastDepartureLegIndex, lastDepartureLegIndexInPlan] = this.findLastDepartureLeg();
         if (!lastDepartureSegment) {
             return;
         } if (lastDepartureSegment.strung) {
@@ -1786,7 +1786,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     private stringArrivalToUpstream() {
         // Find first arrival leg
-        const [firstArrivalSegment, firstArrivalLegIndex, firstArrivalLegIndexInPlan] = this.findFirstArrivalLegIndex();
+        const [firstArrivalSegment, firstArrivalLegIndex, firstArrivalLegIndexInPlan] = this.findFirstArrivalLeg();
         if (!firstArrivalSegment) {
             return;
         }
@@ -1829,7 +1829,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
     }
 
-    private findLastDepartureLegIndex(): [FlightPlanSegment, number, number] {
+    private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
         for (let segment = this.previousSegment(this.enrouteSegment); segment; segment = this.previousSegment(segment)) {
             const lastLegIndex = segment.lastLegIndex;
             if (lastLegIndex < 0) {
@@ -1844,7 +1844,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return [undefined, -1, -1];
     }
 
-    private findFirstArrivalLegIndex(): [FlightPlanSegment, number, number] {
+    private findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
         for (let segment = this.nextSegment(this.enrouteSegment); segment; segment = this.nextSegment(segment)) {
             if (segment.legCount < 0) {
                 continue;
