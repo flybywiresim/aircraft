@@ -797,8 +797,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.syncSegmentLegsChange(segment);
 
         this.incrementVersion();
+        this.adjustTFLegs();
 
+        this.incrementVersion();
         this.adjustIFLegs();
+
         this.ensureNoDuplicateDiscontinuities();
 
         this.incrementVersion();
@@ -912,7 +915,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         const truncateDirection = this.redistributeLegsAt(redistributeIndex); // NEXT WPT revises the leg that comes after the target leg
 
-        const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint, undefined, LegType.DF);
+        const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
         const waypointExists = this.findDuplicate(waypoint, index);
 
@@ -1543,8 +1546,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.ensureNoDiscontinuityAsFinalElement();
 
         this.incrementVersion();
-
         this.adjustIFLegs();
+        this.incrementVersion();
+        this.adjustTFLegs();
 
         this.incrementVersion();
     }
@@ -1918,6 +1922,26 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             for (let i = toDelete.length - 1; i >= 0; i--) {
                 const { start, length } = toDelete[i];
                 segment.allLegs.splice(start, length);
+            }
+        }
+    }
+
+    /**
+     * Ensures that TF legs only follow XF or hold legs.
+     * Anything else breaks the geometry
+     */
+    private adjustTFLegs() {
+        for (let i = 1; i < this.legCount; i++) {
+            const leg = this.maybeElementAt(i);
+            const prevLeg = this.maybeElementAt(i - 1);
+
+            if (!leg || leg.isDiscontinuity === true || !prevLeg || prevLeg.isDiscontinuity === true) {
+                continue;
+            }
+
+            if (leg.type === LegType.TF && !(prevLeg.isXF() || prevLeg.isHX())) {
+                console.log(`[FMS/FPM] Adjusting TF leg ${leg.ident} to DF`);
+                leg.type = LegType.DF;
             }
         }
     }
