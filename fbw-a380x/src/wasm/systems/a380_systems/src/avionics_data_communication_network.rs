@@ -3,6 +3,7 @@ use crate::systems::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
         input_output_module::InputOutputModule, AvionicsDataCommunicationNetwork,
+        AvionicsDataCommunicationNetworkEndpoint,
         AvionicsDataCommunicationNetworkMessageIdentifier,
     },
     shared::ElectricalBusType,
@@ -15,6 +16,7 @@ use fxhash::FxHashMap;
 use std::{
     cell::{Ref, RefCell},
     collections::VecDeque,
+    ops::Deref,
     rc::Rc,
     vec::Vec,
 };
@@ -541,6 +543,33 @@ impl SimulationElement for A380AvionicsDataCommunicationNetwork {
         }
     }
 }
+
+// This struct is intended to translate simvar values to ADCN messages
+// and ADCN messages to simvars.
+pub struct A380AvionicsDataCommunicationNetworkSimvarTranslator {}
+impl A380AvionicsDataCommunicationNetworkSimvarTranslator {
+    pub fn new<
+        'a,
+        NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint,
+        NetworkEndpointRef: Deref<Target = NetworkEndpoint>,
+    >(
+        _context: &mut InitContext,
+        _adcn: &mut impl AvionicsDataCommunicationNetwork<'a, NetworkEndpoint, NetworkEndpointRef>,
+    ) -> Self {
+        Self {}
+    }
+
+    pub fn update<
+        'a,
+        NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint,
+        NetworkEndpointRef: Deref<Target = NetworkEndpoint>,
+    >(
+        &mut self,
+        _adcn: &impl AvionicsDataCommunicationNetwork<'a, NetworkEndpoint, NetworkEndpointRef>,
+    ) {
+    }
+}
+impl SimulationElement for A380AvionicsDataCommunicationNetworkSimvarTranslator {}
 
 #[cfg(test)]
 mod tests {
