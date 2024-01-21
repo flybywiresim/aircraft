@@ -501,28 +501,33 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
-        switch (this.props.mfd.uiService.activeUri.get().extra) {
-        case 'to':
-            this.flightPhasesSelectedPageIndex.set(0);
-            break;
-        case 'clb':
-            this.flightPhasesSelectedPageIndex.set(1);
-            break;
-        case 'crz':
-            this.flightPhasesSelectedPageIndex.set(2);
-            break;
-        case 'des':
-            this.flightPhasesSelectedPageIndex.set(3);
-            break;
-        case 'appr':
-            this.flightPhasesSelectedPageIndex.set(4);
-            break;
-        case 'ga':
-            this.flightPhasesSelectedPageIndex.set(5);
-            break;
+        if (this.props.mfd.uiService.activeUri.get().extra) {
+            switch (this.props.mfd.uiService.activeUri.get().extra) {
+            case 'to':
+                this.flightPhasesSelectedPageIndex.set(0);
+                break;
+            case 'clb':
+                this.flightPhasesSelectedPageIndex.set(1);
+                break;
+            case 'crz':
+                this.flightPhasesSelectedPageIndex.set(2);
+                break;
+            case 'des':
+                this.flightPhasesSelectedPageIndex.set(3);
+                break;
+            case 'appr':
+                this.flightPhasesSelectedPageIndex.set(4);
+                break;
+            case 'ga':
+                this.flightPhasesSelectedPageIndex.set(5);
+                break;
 
-        default:
-            break;
+            default:
+                break;
+            }
+        } else {
+            const allowedPhases = Math.min(Math.max(this.activeFlightPhase.get(), 1), 6);
+            this.flightPhasesSelectedPageIndex.set(allowedPhases - 1);
         }
 
         // Get flight phase
@@ -1027,7 +1032,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffPacks}
                                         onModified={(val) => {
-                                            if(this.props.fmcService.master.enginesWereStarted.get()) {
+                                            if (this.props.fmcService.master.enginesWereStarted.get()) {
                                                 this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, undefined, undefined);
                                             }
                                             this.props.fmcService.master.fmgc.data.takeoffPacks.set(val);
@@ -1045,7 +1050,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffAntiIce}
                                         onModified={(val) => {
-                                            if(this.props.fmcService.master.enginesWereStarted.get()) {
+                                            if (this.props.fmcService.master.enginesWereStarted.get()) {
                                                 this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, undefined, undefined);
                                             }
                                             this.props.fmcService.master.fmgc.data.takeoffAntiIce.set(val);
