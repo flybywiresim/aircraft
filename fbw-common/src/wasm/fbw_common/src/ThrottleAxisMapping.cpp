@@ -297,22 +297,22 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
   return {
-      true,   // use reverse on axis
-      true,   // use toga on axis
-      0.05,   // increment normal
-      0.025,  // increment small
-      -1.00,  // reverse low
-      -0.95,  // reverse high
-      -0.72,  // reverse idle low
-      -0.62,  // reverse idle high
-      -0.50,  // idle low
-      -0.40,  // idle high
-      -0.03,  // climb low
-      +0.07,  // climb high
-      +0.42,  // flex/mct low
-      +0.52,  // flex/mct high
-      +0.95,  // toga low
-      +1.00   // toga high
+      true,                     // use reverse on axis
+      true,                     // use toga on axis
+      THROTTLE_STEPSIZE,
+      THROTTLE_STEPSIZE_SMALL,
+      THROTTLE_REV_LO,
+      THROTTLE_REV_HI,
+      THROTTLE_REV_IDLE_LO,
+      THROTTLE_REV_IDLE_HI,
+      THROTTLE_IDLE_LO,
+      THROTTLE_IDLE_HI,
+      THROTTLE_CLB_LO,
+      THROTTLE_CLB_HI,
+      THROTTLE_FLX_LO,
+      THROTTLE_FLX_HI,
+      THROTTLE_TOGA_LO,
+      THROTTLE_TOGA_HI,
   };
 }
 
@@ -358,22 +358,22 @@ void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIniStructure(const INIStructure& structure) {
   idUsingConfig->set(true);
   return {
-      INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", false),
+      INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", true),
       INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "TOGA_ON_AXIS", true),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_NORMAL", 0.05),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_SMALL", 0.025),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", -1.00),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_HIGH", -0.95),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_IDLE_LOW", -0.20),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_IDLE_HIGH", -0.15),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "IDLE_LOW", 0.00),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "IDLE_HIGH", 0.05),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "CLIMB_LOW", 0.60),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "CLIMB_HIGH", 0.65),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "FLEX_MCT_LOW", 0.85),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "FLEX_MCT_HIGH", 0.90),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "TOGA_LOW", 0.95),
-      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "TOGA_HIGH", 1.00),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_NORMAL", THROTTLE_STEPSIZE),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_SMALL", THROTTLE_STEPSIZE_SMALL),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", THROTTLE_REV_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_HIGH", THROTTLE_REV_HI),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_IDLE_LOW", THROTTLE_REV_IDLE_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_IDLE_HIGH", THROTTLE_REV_IDLE_HI),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "IDLE_LOW", THROTTLE_IDLE_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "IDLE_HIGH", THROTTLE_IDLE_HI),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "CLIMB_LOW", THROTTLE_CLB_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "CLIMB_HIGH", THROTTLE_CLB_HI),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "FLEX_MCT_LOW", THROTTLE_FLX_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "FLEX_MCT_HIGH", THROTTLE_FLX_HI),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "TOGA_LOW", THROTTLE_TOGA_LO),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "TOGA_HIGH", THROTTLE_TOGA_HI),
   };
 }
 
