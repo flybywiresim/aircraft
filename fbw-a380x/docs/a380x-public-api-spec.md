@@ -7,9 +7,9 @@
 - Prefix for Aircraft (A32NX/A380X) - or alternatively FBW_ to be more generic and reusable between the two aircraft
 - 2nd prefix for section (MAINT/OVHD/FCU/...) 
 - 3rd prefix for panel (ELEC/...) 
-- 4th prefix for side (CAPT/FO) or not?
+- 4th prefix for side (CAPT/FO or L/R)
 - 5th prefix for control name (e.g. BAT/GEN/...)
-- 6th prefix for enumeration (e.g. 1/2/3/4) or left/right (e.g. L/R)
+- 6th prefix for enumeration (e.g. 1/2/3/4)
 - 7th prefix for control type (e.g. PB/SW/KNOB/POT/IND/GUARD...<sup>*</sup>)
 - EVENT/VAR NAME or Function name
 
@@ -234,11 +234,15 @@ W = Write Only: This variable can only be written to via the B: event setter (tr
 |                            |                            |        |                                      |                                                                |     |              |                                                                        |
 | Glareshield                | FCU EFIS                   |        |                                      |                                                                |     |              |                                                                        |
 |                            | FCU AFS                    |        |                                      |                                                                |     |              |                                                                        |
-|                            | ECAM                       |        | Master Warning Ind                   | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN                      |     | 0\|1         |                                                                        |
-|                            |                            |        | Master Warning Pb                    | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_PB                   |     | 0\|1         | resets to 0 zero automatically                                         |
-|                            |                            |        | Master Caution Ind                   | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT                      |     | 0\|1         |                                                                        |
-|                            |                            |        | Master Caution Pb                    | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_PB                   |     | 0\|1         | resets to 0 zero automatically                                         |
-|                            | CHRONO                     |        | Chrono Pb                            | B:A380X_GLARE_CAPT_CHRONO_PB                                   |     | 0\|1         | resets to 0 zero automatically                                         |
+|                            |                            |        | MASTER WARNING PUSHBUTTON            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_PB`                 | W   | -            | trigger only                                                           |
+|                            | ECAM                       |        | MASTER WARNING INDICATION            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_IND_MASTER`         | R   | 0\|1         |                                                                        |
+|                            | ECAM                       |        | MASTER WARNING INDICATION            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_IND_WARN`           | R   | 0\|1         |                                                                        |
+|                            |                            |        | MASTER CAUTION PUSHBUTTON            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_PB`                 | W   | -            | trigger only                                                           |
+|                            |                            |        | MASTER CAUTION INDICATION            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_IND_MASTER`         | R   | 0\|1         |                                                                        |
+|                            |                            |        | MASTER CAUTION INDICATION            | `B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_IND_CAUT`           | R   | 0\|1         |                                                                        |
+|                            |                            |        |                                      |                                                                |     |              |                                                                        |
+|                            | CHRONO                     |        | CHRONO PUSHBUTTON                    | `B:A380X_GLARE_{CAPT\|FO}_CHRONO_PB`                           | W   | -            | trigger only                                                           |
+|                            |                            |        |                                      |                                                                |     |              |                                                                        |
 |                            | INDICATION                 |        | Sidestick Priority Ind               |                                                                |     |              |                                                                        |
 |                            |                            |        | Autoland Ind                         |                                                                |     |              |                                                                        |
 |                            |                            |        | ATC Message Ind                      |                                                                |     |              |                                                                        |
