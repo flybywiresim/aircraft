@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { useSimVar } from '@flybywiresim/fbw-sdk';
@@ -9,9 +8,9 @@ export class ThrottleSimvar {
 
     technicalName: string;
 
-    hiValue;
+    hiValue: any[];
 
-    lowValue;
+    lowValue: any[];
 
     getHiGetter = () => this.hiValue[0]
 
