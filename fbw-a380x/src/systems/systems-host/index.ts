@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher, KeyEventManager, Wait, GameStateProvider } from '@microsoft/msfs-sdk';
-import { AtsuSystem } from './systems/atsu';
-import { PowerSupplyBusses } from './systems/powersupply';
+import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
+import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+// import { PowerSupplyBusses } from './systems/powersupply';
+// import { AtsuSystem } from './systems/atsu';
 
 class SystemsHost extends BaseInstrument {
     private readonly bus: EventBus;
@@ -14,6 +18,14 @@ class SystemsHost extends BaseInstrument {
     // Uncomment once migrated from the A32NX to the A380X
     // private readonly powerSupply: PowerSupplyBusses;
     // private readonly atsu: AtsuSystem;
+
+    private updateThrottler = new UpdateThrottler(75);
+
+    private fwc: LegacyFwc;
+
+    private gpws: LegacyGpws;
+
+    private soundManager: LegacySoundManager;
 
     private keyInterceptManager: KeyEventManager;
 
@@ -32,6 +44,23 @@ class SystemsHost extends BaseInstrument {
         this.hEventPublisher = new HEventPublisher(this.bus);
         // this.powerSupply = new PowerSupplyBusses(this.bus);
         // this.atsu = new AtsuSystem(this.bus);
+        this.fwc = new LegacyFwc();
+        this.soundManager = new LegacySoundManager();
+        this.gpws = new LegacyGpws(this.soundManager);
+        this.gpws.init();
+
+        let lastUpdateTime = Date.now();
+        setInterval(() => {
+            const now = Date.now();
+            const dt = now - lastUpdateTime;
+
+            this.fwc.update(dt);
+            this.soundManager.update(dt);
+            this.gpws.update(dt);
+
+            lastUpdateTime = now;
+        }, 75);
+
         Promise.all([
             KeyEventManager.getManager(this.bus),
             Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
@@ -101,14 +130,14 @@ class SystemsHost extends BaseInstrument {
         // Instruments Cpt
         this.setPotentiometer(88, autoBrightness); // PFD
         this.setPotentiometer(89, autoBrightness); // ND
-        this.setPotentiometer(94, autoBrightness/2); // wxRadar
+        this.setPotentiometer(94, autoBrightness / 2); // wxRadar
         this.setPotentiometer(98, autoBrightness); // MFD
         this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
 
         // Instruments F/O
         this.setPotentiometer(90, autoBrightness); // PFD
         this.setPotentiometer(91, autoBrightness); // ND
-        this.setPotentiometer(95, autoBrightness/2); // wxRadar
+        this.setPotentiometer(95, autoBrightness / 2); // wxRadar
         this.setPotentiometer(99, autoBrightness); // MFD
         this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
 
@@ -122,7 +151,6 @@ class SystemsHost extends BaseInstrument {
         this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
         this.setPotentiometer(85, autoBrightness); // integralLightLevel
         this.setPotentiometer(7, autoBrightness); // ambientLightLevel
-
     }
 
     private setPotentiometer(potentiometer: number, brightness: number) {
