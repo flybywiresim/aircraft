@@ -788,7 +788,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 }
 
                 if (previousElement.isXI()) {
-                    segment.allLegs.splice(indexInSegment - 1, numElementsToDelete + 1);
+                    segment.allLegs.splice(indexInSegment - 1, 1);
                 }
             } else {
                 segment.allLegs.splice(indexInSegment, numElementsToDelete);
@@ -800,10 +800,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.syncSegmentLegsChange(segment);
 
         this.incrementVersion();
-        this.adjustTFLegs();
-
-        this.incrementVersion();
         this.adjustIFLegs();
+        this.adjustTFLegs();
 
         this.ensureNoDuplicateDiscontinuities();
 
@@ -1552,7 +1550,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         this.incrementVersion();
         this.adjustIFLegs();
-        this.incrementVersion();
         this.adjustTFLegs();
 
         this.incrementVersion();
@@ -1945,7 +1942,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
 
             if (leg.type === LegType.TF && !(prevLeg.isXF() || prevLeg.isHX())) {
-                console.log(`[FMS/FPM] Adjusting TF leg ${leg.ident} to DF`);
                 leg.type = LegType.DF;
             }
         }
