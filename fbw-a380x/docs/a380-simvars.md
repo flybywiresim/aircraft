@@ -4,7 +4,8 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#afs-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
@@ -273,6 +274,11 @@
     - Bool
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
+## Auto Flight System ATA 22
+- A380X_MFD_{side}_ACTIVE_PAGE
+    - String
+    - URI of activate page on respective MFD (e.g. fms/active/init)
+    - {side} = L or R
 
 ## Electrical ATA 24
 

@@ -39,7 +39,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
-import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }

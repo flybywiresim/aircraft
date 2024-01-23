@@ -78,6 +78,7 @@ export class MfdUiService {
             nextUri = uri;
         }
 
+        SimVar.SetSimVarValue('L:A380X_MFD_ACTIVE_URI_', 'string', nextUri);
         const parsedUri = this.parseUri(nextUri);
         this.activeUri.set(parsedUri);
     }

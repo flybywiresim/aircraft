@@ -14,7 +14,7 @@ import { DatabaseItem, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sd
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { A32NX_FWC } from 'instruments/src/MFD/pages/FMS/legacy/A32NX_FWC';
-import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
@@ -93,7 +93,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigation);
 
-    private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation)
+    private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation);
 
     private efisSymbols: EfisSymbols;
 

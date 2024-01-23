@@ -13,7 +13,7 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { FrequencyILSFormat, FrequencyVORDMEFormat, InboundCourseFormat, LsCourseFormat, NavaidIdentFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { NavigationDatabaseService } from '@fmgc/index';
-import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {
 }

@@ -12,7 +12,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 import { Fix } from 'msfs-navdata';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {

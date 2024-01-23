@@ -4,7 +4,7 @@ import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSy
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 

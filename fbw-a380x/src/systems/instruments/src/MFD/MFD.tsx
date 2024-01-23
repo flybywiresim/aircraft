@@ -280,6 +280,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
         FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());
+
+        SimVar.SetSimVarValue(`L:A380X_MFD_${this.props.captOrFo === 'CAPT' ? 'L' : 'R'}_ACTIVE_PAGE`, 'string', uri.uri);
     }
 
     fmcChanged() {

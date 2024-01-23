@@ -9,7 +9,7 @@ import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementCompute
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
-import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { Fix, Waypoint } from 'msfs-navdata';
 
 export enum FmcOperatingModes {
