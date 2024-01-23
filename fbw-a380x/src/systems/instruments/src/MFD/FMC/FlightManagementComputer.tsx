@@ -13,7 +13,6 @@ import { Fix, Waypoint } from 'msfs-navdata';
 import { DatabaseItem, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
-import { A32NX_FWC } from 'instruments/src/MFD/pages/FMS/legacy/A32NX_FWC';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
@@ -98,9 +97,6 @@ export class FlightManagementComputer implements FmcInterface {
     private efisSymbols: EfisSymbols;
 
     private flightPhaseManager = getFlightPhaseManager();
-
-    // Preparation for a fake legacy FWC, if we need one for testing purposes. To be implemented in Rust
-    private legacyFwc = new A32NX_FWC();
 
     // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
     private dataManager: DataManager;
@@ -814,7 +810,6 @@ export class FlightManagementComputer implements FmcInterface {
 
     private onUpdate(dt: number) {
         this.flightPhaseManager.shouldActivateNextPhase(dt);
-        this.legacyFwc.update(dt);
         this.navaidSelectionManager.update(dt);
         this.landingSystemSelectionManager.update(dt);
         this.navaidTuner.update(dt);
