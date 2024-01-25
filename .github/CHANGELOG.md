@@ -52,6 +52,7 @@
 1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
 1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
 1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
 
 
 ## 0.11.0
