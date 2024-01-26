@@ -892,17 +892,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
      * @param waypoint the waypoint to insert
      */
     async insertWaypointBefore(index: number, waypoint: Fix) {
-        const [insertSegment, insertIndexInSegment] = this.segmentPositionForIndex(index);
+        const duplicate = this.findDuplicate(waypoint, index);
+        if (duplicate) {
+            // If the waypoint already exists, remove everything between the two waypoints
+            const duplicatePlanIndex = duplicate[2];
 
-        const prependInMissedApproach = insertSegment === this.missedApproachSegment && insertIndexInSegment === 0;
+            this.removeRange(index, duplicatePlanIndex);
 
-        if (!prependInMissedApproach) {
-            this.redistributeLegsAt(index - 1);
+            this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+            await this.flushOperationQueue();
+        } else {
+            const [insertSegment] = this.segmentPositionForIndex(index);
+            const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint);
+
+            await this.insertElementBefore(index, leg, false);
         }
-
-        const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
-
-        await this.insertElementAfter(index - 1, leg, false);
     }
 
     /**
@@ -912,23 +916,22 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
      * @param waypoint the waypoint to insert
      */
     async nextWaypoint(index: number, waypoint: Fix) {
-        const redistributeIndex = index + 1 < (this.legCount - 1) ? index + 1 : index;
+        const duplicate = this.findDuplicate(waypoint, index);
+        if (duplicate) {
+            // If the waypoint already exists, remove everything between the two waypoints
+            const duplicatePlanIndex = duplicate[2];
 
-        const truncateDirection = this.redistributeLegsAt(redistributeIndex); // NEXT WPT revises the leg that comes after the target leg
+            this.removeRange(index + 1, duplicatePlanIndex);
 
-        const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
-
-        const waypointExists = this.findDuplicate(waypoint, index);
-
-        const [newSegment] = this.segmentPositionForIndex(index + 1);
-
-        if (truncateDirection === 1 && newSegment instanceof EnrouteSegment) {
-            // redistributeLegsAt caused the leg at (index + 1) to now be in the enroute segment, and this change applied forwards.
-            // We need to do insertElementBefore on the next segment instead
-
-            await this.insertElementBefore(index + 1, leg, !waypointExists);
+            this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+            await this.flushOperationQueue();
         } else {
-            await this.insertElementAfter(index, leg, !waypointExists);
+            const afterElement = this.elementAt(index);
+
+            const [insertSegment] = this.segmentPositionForIndex(index);
+            const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint, undefined, afterElement.isDiscontinuity === true ? LegType.IF : LegType.TF);
+
+            await this.insertElementAfter(index, leg, true);
         }
     }
 
@@ -1028,8 +1031,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         targetLeg.modifiedHold = undefined;
     }
 
-    // TODO make this private, adjust tests to test nextWaypoint instead
-    async insertElementAfter(index: number, element: FlightPlanElement, insertDiscontinuity = false) {
+    private async insertElementAfter(index: number, element: FlightPlanElement, insertDiscontinuity = false) {
         if (index < 0 || index > this.allLegs.length) {
             throw new Error(`[FMS/FPM] Tried to insert waypoint out of bounds (index=${index})`);
         }
@@ -1042,6 +1044,25 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         } else {
             insertSegment = this.enrouteSegment;
             insertIndexInSegment = 0;
+        }
+
+        const lastDepLegIndexInPlan = this.findLastDepartureLeg()[2];
+        const firstArrLegIndexInPlan = this.findFirstArrivalLeg()[2];
+
+        if (insertSegment.class === SegmentClass.Departure && index >= lastDepLegIndexInPlan) {
+            if (insertIndexInSegment <= insertSegment.legCount - 1) {
+                // If we have a disco as the last departure element, move it into enroute, then prepend the element in the enroute segment
+                this.redistributeLegsAt(index);
+            }
+
+            insertSegment = this.enrouteSegment;
+            insertIndexInSegment = 0;
+        } else if (insertSegment.class === SegmentClass.Arrival && index < firstArrLegIndexInPlan) {
+            // If we have a disco as the first arrival element, move it into enroute, then append the element in the enroute segment
+            this.redistributeLegsAt(index - 1);
+
+            insertSegment = this.enrouteSegment;
+            insertIndexInSegment = this.enrouteSegment.legCount;
         }
 
         const prependInMissedApproach = insertSegment === this.approachSegment && insertIndexInSegment === this.approachSegment.allLegs.length - 1;
@@ -1085,13 +1106,32 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         let startSegment: FlightPlanSegment;
-        let indexInStartSegment;
+        let indexInStartSegment: number;
 
         if (this.legCount > 0) {
             [startSegment, indexInStartSegment] = this.segmentPositionForIndex(index);
         } else {
             startSegment = this.enrouteSegment;
             indexInStartSegment = 0;
+        }
+
+        const lastDepLegIndexInPlan = this.findLastDepartureLeg()[2];
+        const firstArrLegIndexInPlan = this.findFirstArrivalLeg()[2];
+
+        if (startSegment.class === SegmentClass.Departure && index > lastDepLegIndexInPlan) {
+            // If we have a disco as the last departure element, move it into enroute, then prepend the element in the enroute segment
+            this.redistributeLegsAt(index);
+
+            startSegment = this.enrouteSegment;
+            indexInStartSegment = 0;
+        } else if (startSegment.class === SegmentClass.Arrival && index <= firstArrLegIndexInPlan) {
+            // If we have a disco as the first arrival element, move it into enroute, then append the element to the end of the enroute segment
+            if (indexInStartSegment > 0) {
+                this.redistributeLegsAt(index - 1);
+            }
+
+            startSegment = this.enrouteSegment;
+            indexInStartSegment = this.enrouteSegment.legCount;
         }
 
         startSegment.insertBefore(indexInStartSegment, element);
@@ -1523,7 +1563,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // String entire departure to the rest of the route
         if (options & RestringOptions.RestringDeparture) {
-            this.incrementVersion();
             this.stringDepartureToDownstream();
         }
 
@@ -1542,10 +1581,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // String entire arrival to the rest of the route
         if (options & RestringOptions.RestringArrival) {
-            this.incrementVersion();
             this.stringArrivalToUpstream();
         }
 
+        this.ensureNoDuplicateDiscontinuities();
         this.ensureNoDiscontinuityAsFinalElement();
 
         this.incrementVersion();
@@ -1772,20 +1811,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const duplicate = this.findDuplicate(lastDepartureLeg.terminationWaypoint(), lastDepartureLegIndexInPlan);
         if (duplicate) {
             // If it does, remove everything inbetween
-            const [duplicateSegment, duplicateIndexInSegment, duplicatePlanIndex] = duplicate;
+            const [_, __, duplicatePlanIndex] = duplicate;
 
-            if (lastDepartureLegIndexInPlan === this.originLegIndex && duplicatePlanIndex === this.destinationLegIndex) {
+            const originAndDestination = lastDepartureLegIndexInPlan === this.originLegIndex && duplicatePlanIndex === this.destinationLegIndex;
+
+            if (originAndDestination && this.enrouteSegment.allLegs[0]?.isDiscontinuity !== true) {
                 // Do not string origin to destination
-                lastDepartureSegment.allLegs.push({ isDiscontinuity: true });
+                this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
-                lastDepartureSegment.strung = false;
             } else {
                 this.removeRange(lastDepartureLegIndexInPlan + 1, duplicatePlanIndex + 1);
                 lastDepartureSegment.strung = true;
             }
-        } else if (this.allLegs[lastDepartureLegIndexInPlan + 1]?.isDiscontinuity === false) {
+        } else if (this.enrouteSegment.allLegs[0]?.isDiscontinuity !== true) {
             // Insert disco otherwise
-            lastDepartureSegment.allLegs.push({ isDiscontinuity: true });
+            this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
             this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
         }
     }
@@ -1811,11 +1851,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const duplicateBeforeActiveLeg = duplicatePlanIndex < this.activeLegIndex;
             const originAndDestination = duplicatePlanIndex === this.originLegIndex && firstArrivalLegIndexInPlan === this.destinationLegIndex;
 
-            if (duplicateBeforeActiveLeg || originAndDestination) {
+            if (duplicateBeforeActiveLeg || (originAndDestination && this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity !== true)) {
                 // Do not string origin to destination
-                firstArrivalSegment.allLegs.unshift({ isDiscontinuity: true });
+                this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, firstArrivalSegment);
-                this.originSegment.strung = false;
             } else {
                 const duplicateLeg = duplicateSegment.allLegs[duplicateIndexInSegment];
                 if (duplicateLeg.isDiscontinuity === true) {
@@ -1828,10 +1867,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 this.removeRange(duplicatePlanIndex, firstArrivalLegIndexInPlan);
                 duplicateSegment.strung = true;
             }
-        } else if (this.allLegs[firstArrivalLegIndexInPlan - 1]?.isDiscontinuity === false) {
+        } else if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity !== true) {
             // Insert disco otherwise
-            firstArrivalSegment.allLegs.unshift({ isDiscontinuity: true });
-            this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, firstArrivalSegment);
+            this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+            this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this.enrouteSegment);
         }
     }
 
@@ -1856,10 +1895,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 continue;
             }
 
-            const lastLegIndex = segment.allLegs[0].isDiscontinuity === true ? 1 : 0;
-            const totalIndex = this.indexForSegmentPosition(segment, lastLegIndex);
+            const firstLegIndex = segment.allLegs[0].isDiscontinuity === true ? 1 : 0;
+            const totalIndex = this.indexForSegmentPosition(segment, firstLegIndex);
 
-            return [segment, lastLegIndex, totalIndex];
+            return [segment, firstLegIndex, totalIndex];
         }
 
         return [undefined, -1, -1];

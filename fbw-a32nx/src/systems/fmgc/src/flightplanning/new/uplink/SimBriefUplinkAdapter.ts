@@ -147,7 +147,7 @@ export class SimBriefUplinkAdapter {
                 + flightPlanService.uplink.enrouteSegment.legCount
                 - 1;
 
-            if (flightPlanService.uplink.enrouteSegment.legCount > 0) {
+            if (flightPlanService.uplink.enrouteSegment.legCount > 1) {
                 const lastElement = flightPlanService.uplink.allLegs[insertHead];
 
                 if (lastElement?.isDiscontinuity === true) {
