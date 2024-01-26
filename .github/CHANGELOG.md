@@ -43,12 +43,16 @@
 1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
-1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mi
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
 1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
 1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
 1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
 1. [FCU] Fixed SPD display in MACH mode to include decimal - @budzique (Joe Jackson)
 1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
+1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
+1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
+1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+
 
 ## 0.11.0
 
