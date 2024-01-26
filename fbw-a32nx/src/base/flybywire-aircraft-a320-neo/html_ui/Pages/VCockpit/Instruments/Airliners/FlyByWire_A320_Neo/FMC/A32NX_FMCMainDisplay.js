@@ -567,10 +567,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.unconfirmedVRSpeed = undefined;
             this.unconfirmedV2Speed = undefined;
             this._toFlexChecked = true;
-            // Reset SimVars
-            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
         }
 
         this.arincBusOutputs.forEach((word) => {
@@ -2840,6 +2836,33 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincDiscreteWord3.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
+    get v1Speed() {
+        return this.flightPlanService.active.performanceData.v1;
+    }
+
+    set v1Speed(speed) {
+        this.flightPlanService.setPerformanceData('v1', speed);
+        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get vRSpeed() {
+        return this.flightPlanService.active.performanceData.vr;
+    }
+
+    set vRSpeed(speed) {
+        this.flightPlanService.setPerformanceData('vr', speed);
+        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get v2Speed() {
+        return this.flightPlanService.active.performanceData.v2;
+    }
+
+    set v2Speed(speed) {
+        this.flightPlanService.setPerformanceData('v2', speed);
+        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
+    }
+
     //Needs PR Merge #3082
     trySetV1Speed(s) {
         if (s === FMCMainDisplay.clrValue) {
@@ -2857,8 +2880,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV1Speed = undefined;
-        this.flightPlanService.setPerformanceData('v1', v);
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
+        this.v1Speed = v;
         return true;
     }
 
@@ -2879,8 +2901,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedVRSpeed = undefined;
-        this.flightPlanService.setPerformanceData('vr', v);
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
+        this.vRSpeed = v;
         return true;
     }
 
@@ -2901,8 +2922,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV2Speed = undefined;
-        this.flightPlanService.setPerformanceData('v2', v);
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
+        this.v2Speed = v;
         return true;
     }
 

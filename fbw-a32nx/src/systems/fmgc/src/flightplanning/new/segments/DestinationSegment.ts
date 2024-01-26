@@ -5,9 +5,10 @@
 
 import { Airport, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
+import { RestringOptions } from '@fmgc/flightplanning/new/plans/RestringOptions';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
@@ -100,6 +101,7 @@ export class DestinationSegment extends FlightPlanSegment {
 
         this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
 
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
         this.flightPlan.syncSegmentLegsChange(this);
     }
 
