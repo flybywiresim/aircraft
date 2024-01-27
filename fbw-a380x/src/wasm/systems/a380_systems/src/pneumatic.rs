@@ -110,6 +110,7 @@ pub struct A380Pneumatic {
     physics_updater: MaxStepLoop,
 
     apu_bleed_air_valve_open_id: VariableIdentifier,
+    apu_bleed_air_pressure_id: VariableIdentifier,
 
     core_processing_input_output_module_a: CoreProcessingInputOutputModuleA,
     engine_systems: [EngineBleedAirSystem; 4],
@@ -140,6 +141,8 @@ impl A380Pneumatic {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
+            apu_bleed_air_pressure_id: context
+                .get_identifier("PNEU_APU_BLEED_CONTAINER_PRESSURE".to_owned()),
             core_processing_input_output_module_a: CoreProcessingInputOutputModuleA::new(
                 ElectricalBusType::DirectCurrentEssential, // TTM 2
             ),
@@ -416,6 +419,10 @@ impl SimulationElement for A380Pneumatic {
         writer.write(
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
+        );
+        writer.write(
+            &self.apu_bleed_air_pressure_id,
+            self.apu_compression_chamber.pressure(),
         );
     }
 }
@@ -1444,8 +1451,8 @@ mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
+            ApuBleedAirValveSignal, CargoDoorLocked, ControllerSignal, ElectricalBusType,
+            ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
             EngineFirePushButtons, EngineStartState, HydraulicColor,
             InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
             PneumaticBleed, PneumaticValve, PotentialOrigin,
@@ -1474,6 +1481,7 @@ mod tests {
         air_conditioning: A380AirConditioning,
         adcn: A380AvionicsDataCommunicationNetwork,
         adirs: TestAdirs,
+        dsms: TestDsms,
         pressurization_overhead: A380PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
@@ -1482,6 +1490,7 @@ mod tests {
                 air_conditioning: A380AirConditioning::new(context),
                 adcn: A380AvionicsDataCommunicationNetwork::new(context),
                 adirs: TestAdirs::new(),
+                dsms: TestDsms {},
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             }
         }
@@ -1497,6 +1506,7 @@ mod tests {
             self.air_conditioning.update(
                 context,
                 &self.adirs,
+                &self.dsms,
                 &self.adcn,
                 engines,
                 engine_fire_push_buttons,
@@ -1546,6 +1556,17 @@ mod tests {
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
             Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
+        }
+    }
+
+    struct TestDsms {}
+
+    impl CargoDoorLocked for TestDsms {
+        fn aft_cargo_door_locked(&self) -> bool {
+            true
+        }
+        fn fwd_cargo_door_locked(&self) -> bool {
+            true
         }
     }
 

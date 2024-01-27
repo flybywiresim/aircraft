@@ -75,6 +75,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
+    const OFV_CONTROLLER_KP: f64 = 0.0001;
+    const OFV_CONTROLLER_KI: f64 = 6.5;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -95,7 +97,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
-            outflow_valve_controller: OutflowValveController::new(),
+            outflow_valve_controller: OutflowValveController::new(
+                Self::OFV_CONTROLLER_KP,
+                Self::OFV_CONTROLLER_KI,
+            ),
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
@@ -153,7 +158,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 context,
                 adirs_airspeed.unwrap_or_default(),
                 self.exterior_pressure.output(),
-                engines,
+                &engines,
                 lgciu_gears_compressed,
                 self.exterior_flight_altitude,
                 self.exterior_vertical_speed.output(),
@@ -177,7 +182,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.cabin_vertical_speed,
             self.cabin_target_vs,
             press_overhead,
-            self.is_ground() || !(self.cabin_altitude() > Length::new::<foot>(15000.)),
+            self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
             self.is_ground() && self.should_open_outflow_valve(),
         );
 
@@ -603,7 +608,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
     }
 }
 
-struct OutflowValveController {
+pub struct OutflowValveController {
     is_in_man_mode: bool,
     open_allowed: bool,
     should_open: bool,
@@ -611,17 +616,17 @@ struct OutflowValveController {
 }
 
 impl OutflowValveController {
-    fn new() -> Self {
+    pub fn new(kp: f64, ki: f64) -> Self {
         Self {
             //TODO: add ID for multiple OFV
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
-            pid: PidController::new(0.0001, 6.5, 0., 0., 100., 0., 1.),
+            pid: PidController::new(kp, ki, 0., 0., 100., 0., 1.),
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         cabin_vertical_speed: Velocity,
@@ -664,7 +669,7 @@ impl ControllerSignal<OutflowValveSignal> for OutflowValveController {
     }
 }
 
-enum PressureScheduleManager {
+pub enum PressureScheduleManager {
     Ground(PressureSchedule<Ground>),
     TakeOff(PressureSchedule<TakeOff>),
     ClimbInternal(PressureSchedule<ClimbInternal>),
@@ -674,16 +679,16 @@ enum PressureScheduleManager {
 }
 
 impl PressureScheduleManager {
-    fn new() -> Self {
+    pub fn new() -> Self {
         PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
     }
 
-    fn update(
+    pub fn update(
         mut self,
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
         exterior_flight_altitude: Length,
         exterior_vertical_speed: Velocity,
@@ -722,7 +727,7 @@ impl PressureScheduleManager {
         self
     }
 
-    fn should_open_outflow_valve(&self) -> bool {
+    pub fn should_open_outflow_valve(&self) -> bool {
         match self {
             PressureScheduleManager::Ground(schedule) => schedule.should_open_outflow_valve(),
             _ => false,
@@ -766,7 +771,7 @@ macro_rules! transition_with_ctor {
 }
 
 #[derive(Copy, Clone)]
-struct PressureSchedule<S> {
+pub struct PressureSchedule<S> {
     timer: Duration,
     pressure_schedule: S,
 }
@@ -791,7 +796,7 @@ impl<S> PressureSchedule<S> {
 }
 
 #[derive(Copy, Clone)]
-struct Ground {
+pub struct Ground {
     cpc_switch_reset: bool,
 }
 
@@ -821,7 +826,7 @@ impl PressureSchedule<Ground> {
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -859,14 +864,14 @@ transition_with_ctor!(DescentInternal, Ground, Ground::reset);
 transition_with_ctor!(Abort, Ground, Ground::reset);
 
 #[derive(Copy, Clone)]
-struct TakeOff;
+pub struct TakeOff;
 
 impl PressureSchedule<TakeOff> {
     fn step(
         self: PressureSchedule<TakeOff>,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -889,7 +894,7 @@ impl PressureSchedule<TakeOff> {
 transition!(Ground, TakeOff);
 
 #[derive(Copy, Clone)]
-struct ClimbInternal;
+pub struct ClimbInternal;
 
 impl PressureSchedule<ClimbInternal> {
     fn step(
@@ -937,7 +942,7 @@ transition!(DescentInternal, ClimbInternal);
 transition!(Abort, ClimbInternal);
 
 #[derive(Copy, Clone)]
-struct Cruise;
+pub struct Cruise;
 
 impl PressureSchedule<Cruise> {
     fn step(
@@ -969,7 +974,7 @@ impl PressureSchedule<Cruise> {
 transition!(ClimbInternal, Cruise);
 
 #[derive(Copy, Clone)]
-struct DescentInternal;
+pub struct DescentInternal;
 
 impl PressureSchedule<DescentInternal> {
     fn step(
@@ -999,7 +1004,7 @@ transition!(ClimbInternal, DescentInternal);
 transition!(Cruise, DescentInternal);
 
 #[derive(Copy, Clone)]
-struct Abort;
+pub struct Abort;
 
 impl PressureSchedule<Abort> {
     fn step(
@@ -1030,6 +1035,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::air_conditioning::VcmShared;
     use crate::shared::ElectricalBusType;
     use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
@@ -1131,6 +1137,8 @@ mod tests {
             outlet_air
         }
     }
+
+    impl VcmShared for TestAirConditioningSystem {}
 
     struct TestEngine {
         corrected_n1: Ratio,
@@ -1263,8 +1271,10 @@ mod tests {
     struct TestConstants;
 
     impl PressurizationConstants for TestConstants {
-        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const CABIN_ZONE_VOLUME_CUBIC_METER: f64 = 139.; // m3
         const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 89.4; // m3
+        const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 14.3; // m3
         const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
         const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2

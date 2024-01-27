@@ -1,4 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
@@ -6,7 +12,6 @@ import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 import './style.scss';
 

@@ -22,8 +22,7 @@
  * SOFTWARE.
  */
 
-import { FixTypeFlags, LegType } from '@fmgc/types/fstypes/FSEnums';
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { FixTypeFlags, LegType, ApproachUtils } from '@flybywiresim/fbw-sdk';
 
 /**
  * A class for mapping raw facility data to WayPoints.

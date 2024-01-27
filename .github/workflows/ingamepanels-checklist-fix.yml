@@ -13,13 +13,12 @@ on:
 
 jobs:
   build-ingamepanels-checklist-fix:
-    # Prevent running this on forks 
+    # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
     name: 'Build InGamePanels Checklist Fix'
     runs-on: ubuntu-latest
     env:
-      A32NX_PRODUCTION_BUILD: 1
-      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
+      FBW_PRODUCTION_BUILD: 1
       MASTER_ZIP_NAME: ingamepanels-checklist-fix-master.zip
       BUILD_DIR_NAME: master
     steps:
@@ -29,7 +28,7 @@ jobs:
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
         run: |
-          echo A32NX_PRODUCTION_BUILD=1 >> .env
+          echo FBW_PRODUCTION_BUILD=1 >> .env
           echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
@@ -38,7 +37,7 @@ jobs:
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build In-Game Panels Checklist Fix
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build_ingamepanels_checklist_fix.sh --no-tty -j 4
       - name: Build ZIP files
         run: |

@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
@@ -17,8 +16,6 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
-import { Arinc429ConsumerSubject } from '../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -309,9 +306,9 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
 
     private radioAltitude = new Arinc429Word(0);
 
-    private transAlt = 0;
+    private transAltAr = Arinc429Register.empty();
 
-    private transAltAppr = 0;
+    private transLvlAr = Arinc429Register.empty();
 
     private fmgcFlightPhase = 0;
 
@@ -334,12 +331,12 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
             this.roll = roll;
         });
 
-        sub.on('transAlt').whenChanged().handle((ta) => {
-            this.transAlt = ta;
+        sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
+            this.transAltAr.set(ta);
         });
 
-        sub.on('transAltAppr').whenChanged().handle((ta) => {
-            this.transAltAppr = ta;
+        sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
+            this.transLvlAr.set(tl);
         });
 
         sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
@@ -357,8 +354,10 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 const raHasData = !this.radioAltitude.isNoComputedData();
                 const raValue = this.filteredRadioAltitude;
                 const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
-                const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
-                const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
+                const useTransAltVsLvl = this.fmgcFlightPhase <= 3;
+                const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
+                const belowTransitionAltitude = chosenTransalt.isNormalOperation() && !this.altitude.isNoComputedData()
+                    && this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
                 let size = 'FontLarge';
                 const dh = this.dh.get();
                 const DHValid = dh.value >= 0 && (!dh.isNoComputedData() && !dh.isFailureWarning());

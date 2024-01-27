@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) 2021-2023 FlyByWire Simulations
+#
+# SPDX-License-Identifier: GPL-3.0
+
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm"
@@ -13,7 +17,7 @@ else
   CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
-set -ex
+set -e
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
@@ -43,7 +47,9 @@ clang++ \
   -I "${COMMON_DIR}/fadec_common/src" \
   -I "${COMMON_DIR}/fbw_common/src/inih" \
   -I "${DIR}/common" \
-  "${DIR}/src/FadecGauge.cpp"
+  "${DIR}/src/FadecGauge.cpp" \
+  "${DIR}/src/Arinc429.cpp" \
+  "${DIR}/src/Arinc429Utils.cpp"
 
 # restore directory
 popd

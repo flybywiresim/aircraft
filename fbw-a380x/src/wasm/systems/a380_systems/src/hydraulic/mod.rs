@@ -25,6 +25,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
+        bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -35,8 +36,7 @@ use systems::{
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
-            Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
-            SteeringRatioToAngle,
+            SteeringActuator, SteeringAngleLimiter, SteeringController, SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
         pushback::PushbackTug,
@@ -51,10 +51,10 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -738,15 +738,15 @@ impl A380ElevatorFactory {
     /// Builds an aileron control surface body for A380-800
     fn a380_elevator_body(
         init_drooped_down: bool,
-        is_outter: bool,
+        is_outer: bool,
     ) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = if is_outter {
+        let size = if is_outer {
             Vector3::new(9., 0.405, 2.23)
         } else {
             Vector3::new(5., 0.405, 2.49)
         };
 
-        let mass = if is_outter {
+        let mass = if is_outer {
             Mass::new::<kilogram>(243.)
         } else {
             Mass::new::<kilogram>(189.)
@@ -786,9 +786,9 @@ impl A380ElevatorFactory {
         context: &mut InitContext,
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
-        is_outter: bool,
+        is_outer: bool,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outter);
+        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outer);
 
         let elevator_actuator_outboard =
             Self::a380_elevator_actuator(context, &elevator_body, None);
@@ -834,10 +834,10 @@ impl A380ElevatorFactory {
         )
     }
 
-    fn new_a380_elevator_aero_model(is_outter: bool) -> AerodynamicModel {
-        let body = Self::a380_elevator_body(true, is_outter);
+    fn new_a380_elevator_aero_model(is_outer: bool) -> AerodynamicModel {
+        let body = Self::a380_elevator_body(true, is_outer);
 
-        let area_coeff = if is_outter {
+        let area_coeff = if is_outer {
             Ratio::new::<ratio>(0.723)
         } else {
             Ratio::new::<ratio>(0.822)
@@ -1551,6 +1551,7 @@ pub(super) struct A380Hydraulic {
     green_electric_aux_pump_controller: A380AuxiliaryPumpController,
 
     pushback_tug: PushbackTug,
+    bypass_pin: BypassPin,
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
@@ -1800,6 +1801,7 @@ impl A380Hydraulic {
             ),
 
             pushback_tug: PushbackTug::new(context),
+            bypass_pin: BypassPin::new(context),
 
             braking_circuit_norm: BrakeCircuit::new(
                 context,
@@ -2007,11 +2009,11 @@ impl A380Hydraulic {
     }
 
     pub fn left_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.left_elevator.aerodynamic_torques_outter_inner()
+        self.left_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn right_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.right_elevator.aerodynamic_torques_outter_inner()
+        self.right_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn up_down_rudder_aero_torques(&self) -> (Torque, Torque) {
@@ -2020,7 +2022,7 @@ impl A380Hydraulic {
 
     #[cfg(test)]
     fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
-        self.pushback_tug.is_nose_wheel_steering_pin_inserted()
+        self.bypass_pin.is_nose_wheel_steering_pin_inserted()
     }
 
     #[cfg(test)]
@@ -2214,6 +2216,7 @@ impl A380Hydraulic {
             self.yellow_circuit.system_section(),
             &self.brake_steer_computer,
             &self.pushback_tug,
+            &self.bypass_pin,
         );
 
         // Process brake logic (which circuit brakes) and send brake demands (how much)
@@ -2229,6 +2232,7 @@ impl A380Hydraulic {
         );
 
         self.pushback_tug.update(context);
+        self.bypass_pin.update(&self.pushback_tug);
 
         self.braking_force.update_forces(
             context,
@@ -2236,7 +2240,7 @@ impl A380Hydraulic {
             &self.braking_circuit_altn,
             engine1,
             engine2,
-            &self.pushback_tug,
+            &self.bypass_pin,
         );
 
         self.slats_flaps_complex
@@ -2277,7 +2281,7 @@ impl A380Hydraulic {
             context,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            &self.pushback_tug,
+            &self.bypass_pin,
             overhead_panel,
         );
     }
@@ -2802,6 +2806,42 @@ impl A380Hydraulic {
         &self.gear_system
     }
 }
+
+impl SurfacesPositions for A380Hydraulic {
+    fn left_ailerons_positions(&self) -> &[f64] {
+        self.left_aileron.positions()
+    }
+
+    fn right_ailerons_positions(&self) -> &[f64] {
+        self.right_aileron.positions()
+    }
+
+    fn left_spoilers_positions(&self) -> &[f64] {
+        self.left_spoilers.positions()
+    }
+
+    fn right_spoilers_positions(&self) -> &[f64] {
+        self.right_spoilers.positions()
+    }
+
+    fn left_flaps_position(&self) -> f64 {
+        self.flap_system.left_position()
+    }
+
+    fn right_flaps_position(&self) -> f64 {
+        self.flap_system.right_position()
+    }
+}
+
+impl CargoDoorLocked for A380Hydraulic {
+    fn fwd_cargo_door_locked(&self) -> bool {
+        self.forward_cargo_door.is_locked()
+    }
+    fn aft_cargo_door_locked(&self) -> bool {
+        self.aft_cargo_door.is_locked()
+    }
+}
+
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.engine_driven_pump_1a.accept(visitor);
@@ -2849,6 +2889,7 @@ impl SimulationElement for A380Hydraulic {
         self.aft_cargo_door.accept(visitor);
 
         self.pushback_tug.accept(visitor);
+        self.bypass_pin.accept(visitor);
 
         self.green_circuit.accept(visitor);
         self.yellow_circuit.accept(visitor);
@@ -3407,14 +3448,14 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
         overhead: &A380HydraulicOverheadPanel,
     ) {
         self.update_auto_run_logic(
             context,
             forward_cargo_door_controller,
             aft_cargo_door_controller,
-            pushback_tug,
+            bypass_pin,
         );
 
         self.select_pump_in_use(overhead);
@@ -3425,7 +3466,7 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
 
@@ -3439,7 +3480,7 @@ impl A380ElectricPumpAutoLogic {
             self.is_required_for_body_steering_operation.output();
 
         self.is_required_for_body_steering_operation
-            .update(context, pushback_tug.is_nose_wheel_steering_pin_inserted());
+            .update(context, bypass_pin.is_nose_wheel_steering_pin_inserted());
     }
 
     fn select_pump_in_use(&mut self, overhead: &A380HydraulicOverheadPanel) {
@@ -4143,7 +4184,7 @@ impl A380BrakingForce {
         altn_brakes: &BrakeCircuit,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
@@ -4165,7 +4206,7 @@ impl A380BrakingForce {
 
         self.correct_with_flaps_state(context);
 
-        self.update_chocks_braking(context, engine1, engine2, pushback_tug);
+        self.update_chocks_braking(context, engine1, engine2, bypass_pin);
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -4195,12 +4236,12 @@ impl A380BrakingForce {
         context: &UpdateContext,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         let chocks_on_wheels = context.is_on_ground()
             && engine1.corrected_n1().get::<percent>() < 3.5
             && engine2.corrected_n1().get::<percent>() < 3.5
-            && !pushback_tug.is_nose_wheel_steering_pin_inserted()
+            && !bypass_pin.is_nose_wheel_steering_pin_inserted()
             && !self.is_light_beacon_on;
 
         if self.is_chocks_enabled && chocks_on_wheels {
@@ -6021,7 +6062,7 @@ struct AileronAssembly {
     position_mid_id: VariableIdentifier,
     position_in_id: VariableIdentifier,
 
-    positions: [Ratio; 3],
+    positions: [f64; 3],
     aerodynamic_models: [AerodynamicModel; 3],
 }
 impl AileronAssembly {
@@ -6031,7 +6072,7 @@ impl AileronAssembly {
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         middle_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_middle: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
@@ -6065,9 +6106,9 @@ impl AileronAssembly {
                     context.get_identifier("HYD_AIL_RIGHT_INWARD_DEFLECTION".to_owned())
                 }
             },
-            positions: [Ratio::new::<ratio>(0.); 3],
+            positions: [0.; 3],
             aerodynamic_models: [
-                aerodynamic_model_outter,
+                aerodynamic_model_outer,
                 aerodynamic_model_middle,
                 aerodynamic_model_inner,
             ],
@@ -6102,8 +6143,14 @@ impl AileronAssembly {
                 ],
             );
 
-            self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
+            self.positions[idx] = self.hydraulic_assemblies[idx]
+                .position_normalized()
+                .get::<ratio>();
         }
+    }
+
+    fn positions(&self) -> &[f64; 3] {
+        &self.positions
     }
 }
 impl SimulationElement for AileronAssembly {
@@ -6114,9 +6161,9 @@ impl SimulationElement for AileronAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_out_id, self.positions[0].get::<ratio>());
-        writer.write(&self.position_mid_id, self.positions[1].get::<ratio>());
-        writer.write(&self.position_in_id, self.positions[2].get::<ratio>());
+        writer.write(&self.position_out_id, self.positions[0]);
+        writer.write(&self.position_mid_id, self.positions[1]);
+        writer.write(&self.position_in_id, self.positions[2]);
     }
 }
 
@@ -6136,7 +6183,7 @@ impl ElevatorAssembly {
         id: ActuatorSide,
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
         Self {
@@ -6159,7 +6206,7 @@ impl ElevatorAssembly {
             },
 
             positions: [Ratio::new::<ratio>(0.); 2],
-            aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
+            aerodynamic_models: [aerodynamic_model_outer, aerodynamic_model_inner],
         }
     }
 
@@ -6196,8 +6243,8 @@ impl ElevatorAssembly {
         }
     }
 
-    // Returns aerodynamic torques for (outter,inner) control surfaces
-    fn aerodynamic_torques_outter_inner(&self) -> (Torque, Torque) {
+    // Returns aerodynamic torques for (outer,inner) control surfaces
+    fn aerodynamic_torques_outer_inner(&self) -> (Torque, Torque) {
         (
             self.hydraulic_assemblies[0].aerodynamic_torque(),
             self.hydraulic_assemblies[1].aerodynamic_torque(),
@@ -6378,6 +6425,10 @@ impl SpoilerElement {
 
         self.position = self.hydraulic_assembly.position_normalized();
     }
+
+    fn position(&self) -> f64 {
+        self.position.get::<ratio>()
+    }
 }
 impl SimulationElement for SpoilerElement {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6394,6 +6445,7 @@ impl SimulationElement for SpoilerElement {
 struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
+    spoiler_positions: [f64; 8],
 }
 impl SpoilerGroup {
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
@@ -6409,6 +6461,7 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 7),
                 SpoilerController::new(context, spoiler_side, 8),
             ],
+            spoiler_positions: [0.; 8],
         }
     }
 
@@ -6458,10 +6511,25 @@ impl SpoilerGroup {
             &self.hydraulic_controllers[7],
             green_section.pressure_downstream_leak_valve(),
         );
+
+        self.spoiler_positions = [
+            self.spoilers[0].position(),
+            self.spoilers[1].position(),
+            self.spoilers[2].position(),
+            self.spoilers[3].position(),
+            self.spoilers[4].position(),
+            self.spoilers[5].position(),
+            self.spoilers[6].position(),
+            self.spoilers[7].position(),
+        ];
     }
 
     fn actuator(&mut self, spoiler_idx: usize) -> &mut impl Actuator {
         self.spoilers[spoiler_idx].actuator()
+    }
+
+    fn positions(&self) -> &[f64; 8] {
+        &self.spoiler_positions
     }
 }
 impl SimulationElement for SpoilerGroup {

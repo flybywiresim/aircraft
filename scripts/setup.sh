@@ -1,7 +1,14 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 cd /external
-rm -rf node_modules
-npm ci
+
+for arg in "$@"; do
+  if [ "$arg" = "--clean" ]; then
+    echo "Removing node_modules..."
+    rm -rf node_modules/
+  fi
+done
+
+pnpm i

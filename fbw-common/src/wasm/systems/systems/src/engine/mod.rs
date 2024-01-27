@@ -7,7 +7,6 @@ use crate::{
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
-pub mod engine_wing_flex;
 pub mod leap_engine;
 pub mod reverser_thrust;
 pub mod trent_engine;
@@ -17,6 +16,7 @@ pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 + EngineCorrectedN1 {
     fn oil_pressure_is_low(&self) -> bool;
     fn is_above_minimum_idle(&self) -> bool;
     fn net_thrust(&self) -> Mass;
+    fn gearbox_speed(&self) -> AngularVelocity;
 }
 
 use std::convert::TryInto;

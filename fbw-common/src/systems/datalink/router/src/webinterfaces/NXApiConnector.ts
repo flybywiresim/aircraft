@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Atis, Metar, Taf, Telex, AircraftStatus } from '@flybywiresim/api-client';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
     AtsuStatusCodes,
     AtsuMessage,
@@ -14,15 +14,6 @@ import {
     AtisMessage,
     AtisType,
 } from '@datalink/common';
-
-const WeatherMap = {
-    FAA: 'faa',
-    IVAO: 'ivao',
-    MSFS: 'ms',
-    NOAA: 'aviationweather',
-    PILOTEDGE: 'pilotedge',
-    VATSIM: 'vatsim',
-};
 
 /**
  * Defines the NXApi connector for the AOC system
@@ -120,7 +111,7 @@ export class NXApiConnector {
     public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
-        return Metar.get(icao, WeatherMap[storedMetarSrc])
+        return Metar.get(icao, ConfigWeatherMap[storedMetarSrc])
             .then((data) => {
                 let metar = data.metar;
                 if (!metar || metar === undefined || metar === '') {
@@ -138,7 +129,7 @@ export class NXApiConnector {
     public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
         const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
 
-        return Taf.get(icao, WeatherMap[storedTafSrc])
+        return Taf.get(icao, ConfigWeatherMap[storedTafSrc])
             .then((data) => {
                 let taf = data.taf;
                 if (!taf || taf === undefined || taf === '') {
@@ -156,7 +147,7 @@ export class NXApiConnector {
     public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
 
-        await Atis.get(icao, WeatherMap[storedAtisSrc])
+        await Atis.get(icao, ConfigWeatherMap[storedAtisSrc])
             .then((data) => {
                 let atis = undefined;
 
@@ -196,13 +187,11 @@ export class NXApiConnector {
         const retval: AtsuMessage[] = [];
 
         if (NXApiConnector.connected) {
-            if (NXApiConnector.updateCounter++ % 4 === 0) {
-                const status = NXApiConnector.createAircraftStatus();
-                if (status !== undefined) {
-                    const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
-                    if (code !== AtsuStatusCodes.Ok) {
-                        return [AtsuStatusCodes.ComFailed, retval];
-                    }
+            const status = NXApiConnector.createAircraftStatus();
+            if (status !== undefined) {
+                const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
+                if (code !== AtsuStatusCodes.Ok) {
+                    return [AtsuStatusCodes.ComFailed, retval];
                 }
             }
 
@@ -226,10 +215,13 @@ export class NXApiConnector {
         return [AtsuStatusCodes.Ok, retval];
     }
 
+    /**
+     * Gets the interval to poll the NX API in milliseconds.
+     * Warning: This will return a different random time on each invocation!
+     * @returns The polling interval in milliseconds.
+     */
     public static pollInterval(): number {
-        return 15000;
+        // To relax the weight on API, we choose a random number between 45 and 75
+        return Math.random() * 30_000 + 45_000;
     }
 }
-
-NXDataStore.set('PLAN_ORIGIN', '');
-NXDataStore.set('PLAN_DESTINATION', '');
