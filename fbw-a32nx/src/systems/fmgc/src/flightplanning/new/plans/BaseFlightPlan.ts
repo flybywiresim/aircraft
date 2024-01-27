@@ -170,7 +170,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.firstMissedApproachLegIndex - this.approachSegment.allLegs.length;
     }
 
-    activeLegIndex = 0;
+    activeLegIndex = 1;
 
     get activeLeg(): FlightPlanElement {
         return this.allLegs[this.activeLegIndex];
