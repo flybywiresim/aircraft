@@ -344,9 +344,6 @@ impl RefuelApplication {
     }
 }
 impl SimulationElement for RefuelApplication {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by)
-    }
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.refuel_driver.accept(visitor);
         visitor.visit(self);
