@@ -177,17 +177,12 @@ impl SimulationElement for IntegratedRefuelPanel {
     }
 }
 
-pub struct CoreProcessingInputsOutputsCommandModule {
-    is_powered: bool,
-    powered_by: ElectricalBusType,
-
+pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
 }
-impl CoreProcessingInputsOutputsCommandModule {
+impl RefuelApplication {
     pub fn new(_context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         Self {
-            is_powered: false,
-            powered_by,
             refuel_driver: RefuelDriver::new(),
         }
     }
@@ -209,8 +204,6 @@ impl CoreProcessingInputsOutputsCommandModule {
 
         match refuel_panel_input.refuel_rate() {
             RefuelRate::Real => {
-                // TODO: Uncomment when full FQMS implemented
-                // if self.is_powered &&
                 if refuel_panel_input.refuel_is_enabled() {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
@@ -222,8 +215,6 @@ impl CoreProcessingInputsOutputsCommandModule {
                 }
             }
             RefuelRate::Fast => {
-                // TODO: Uncomment when full FQMS implemented
-                // if self.is_powered &&
                 if refuel_panel_input.refuel_is_enabled() {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
@@ -352,7 +343,7 @@ impl CoreProcessingInputsOutputsCommandModule {
         .into()
     }
 }
-impl SimulationElement for CoreProcessingInputsOutputsCommandModule {
+impl SimulationElement for RefuelApplication {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }
@@ -362,6 +353,7 @@ impl SimulationElement for CoreProcessingInputsOutputsCommandModule {
     }
 }
 
+// TODO: This should be moved to common systems
 pub struct RefuelDriver {}
 impl RefuelDriver {
     const WING_FUELRATE_GAL_SEC: f64 = 16.;
@@ -462,7 +454,7 @@ impl RefuelDriver {
                 tank as usize,
                 current_quantity + sign * delta.min(remaining_delta),
             );
-            if delta > remaining_delta {
+            if delta >= remaining_delta {
                 return false;
             }
             remaining_delta -= delta;
@@ -496,8 +488,7 @@ impl SimulationElement for RefuelDriver {}
 
 pub struct A380FuelQuantityManagementSystem {
     fuel_system: FuelSystem<11>,
-    cpiom_command_f1: CoreProcessingInputsOutputsCommandModule,
-    // cpiom_command_f3: CoreProcessingInputsOutputsCommandModule,
+    refuel_application: RefuelApplication,
     integrated_refuel_panel: IntegratedRefuelPanel,
 }
 impl A380FuelQuantityManagementSystem {
@@ -513,10 +504,11 @@ impl A380FuelQuantityManagementSystem {
         let fuel_system = FuelSystem::new(context, fuel_tanks);
 
         Self {
-            // CPIOM_COM_F1, CPIOM_MON_F3, FQDC_1 -> 501PP
-            // CPIOM_COM_F2, CPIOM_MON_F4, FQDC_2 -> 109PP 101PP 107PP
+            // TODO: This needs to be refactored when CPIOM implementation is done
+            // CPIOM_COM_F1, CPIOM_MON_F3 [FQDC_1] -> 501PP
+            // CPIOM_COM_F2, CPIOM_MON_F4 [FQDC_2] -> 109PP 101PP 107PP
             fuel_system,
-            cpiom_command_f1: CoreProcessingInputsOutputsCommandModule::new(
+            refuel_application: RefuelApplication::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential, // 501PP
             ),
@@ -528,7 +520,7 @@ impl A380FuelQuantityManagementSystem {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.cpiom_command_f1.update(
+        self.refuel_application.update(
             context,
             &mut self.fuel_system,
             &mut self.integrated_refuel_panel,
@@ -536,8 +528,8 @@ impl A380FuelQuantityManagementSystem {
     }
 
     #[cfg(test)]
-    pub fn cpiom_command_f1(&mut self) -> &mut CoreProcessingInputsOutputsCommandModule {
-        &mut self.cpiom_command_f1
+    pub fn refuel_application(&mut self) -> &mut RefuelApplication {
+        &mut self.refuel_application
     }
 
     pub fn fuel_system(&self) -> &FuelSystem<11> {
@@ -547,7 +539,7 @@ impl A380FuelQuantityManagementSystem {
 impl SimulationElement for A380FuelQuantityManagementSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.fuel_system.accept(visitor);
-        self.cpiom_command_f1.accept(visitor);
+        self.refuel_application.accept(visitor);
         self.integrated_refuel_panel.accept(visitor);
         visitor.visit(self);
     }
