@@ -342,7 +342,7 @@ class TuningModeIndicator extends DisplayComponent<TuningModeIndicatorProps> {
     private readonly fm2NavTuningWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly tuningMode = MappedSubject.create(([fm1Healthy, fm2Healthy, fm1NavTuningWord, fm2NavTuningWord]) => {
-        const bitIndex = 10 + this.props.index;
+        const bitIndex = 10 + this.props.index + (this.props.adf ? 2 : 0);
 
         if ((!fm1Healthy && !fm2Healthy) || (!fm1NavTuningWord.isNormalOperation() && !fm2NavTuningWord.isNormalOperation())) {
             return 'R';
