@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { t } from '../translation';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
@@ -51,7 +51,6 @@ export const Ground = () => {
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
     const [gsxRefuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPushbackEnabled] = usePersistentNumberProperty('GSX_PUSHBACK', 0);
-    const [gsxCouatlStarted] = useSimVar('L:FSDT_GSX_COUATL_STARTED', 'Number', 223);
     const [, setGsxMenuOpen] = useSimVar('L:FSDT_GSX_MENU_OPEN', 'Number', 223);
     const [, setGsxMenuChoice] = useSimVar('L:FSDT_GSX_MENU_CHOICE', 'Number', 223);
     const [gsxExternalToggle, setGsxExternalToggle] = useSimVar('K:EXTERNAL_SYSTEM_TOGGLE', '', 223);
@@ -60,80 +59,67 @@ export const Ground = () => {
     const [isGsxCalledBack, setIsGsxCalledBack] = useState(true);
     const [checkIfOperatorActive, setCheckIfOperatorActive] = useState(false);
 
-    const selectGsxMenuChoice = (choice: number) => {
-        console.log('GSX: Opening Menu');
-        setGsxMenuOpen(1);
+    // const selectGsxMenuChoice = (choice: number) => {
+    //     setGsxMenuChoice(choice);
+    // };
 
-        setTimeout(() => {
-            console.log(`GSX: Setting GSX callback to menu choice ${choice}`);
+    // const handleGsxOperatorWindow = () => {
+    //     setCheckIfOperatorActive(false);
+    //     console.log('GSX: checking if operator/caterer menu is active');
+    //     console.log('GSX: Opening menu');
+    //     setGsxMenuOpen(1);
+    //     setTimeout(() => {
+    //         fetchGsxMenu()
+    //             .then((lines) => {
+    //                 if (lines[0] === 'Select handling operator' || lines[0] === 'Select catering operator') {
+    //                     console.log('GSX: operator/caterer menu is active, selecting GSX choice');
+    //                     setGsxMenuOpen(1);
+    //                     setTimeout(() => {
+    //                         console.log('GSX: setting menu choice to -1');
+    //                         setGsxMenuChoice(-1);
+    //                         console.log('GSX: resetting external toggle');
+    //                         setGsxExternalToggle(0);
+    //                     }, 150);
+    //                     return;
+    //                 }
+    //                 console.log('GSX: operator/caterer menu is not active, moving on');
+    //             });
+    //     }, 150);
+    // };
 
-            setGsxCallback(() => () => {
-                console.log(`GSX: setting menu choice to ${choice}`);
-                setGsxMenuChoice(choice);
-            });
-
-            setIsGsxCalledBack(false);
-            setGsxExternalToggle(0);
-        }, 100);
-    };
-
-    const handleGsxOperatorWindow = () => {
-        setCheckIfOperatorActive(false);
-        console.log('GSX: checking if operator/caterer menu is active');
-        console.log('GSX: Opening menu');
-        setGsxMenuOpen(1);
-        setTimeout(() => {
-            fetchGsxMenu()
-                .then((lines) => {
-                    if (lines[0] === 'Select handling operator' || lines[0] === 'Select catering operator') {
-                        console.log('GSX: operator/caterer menu is active, selecting GSX choice');
-                        setGsxMenuOpen(1);
-                        setTimeout(() => {
-                            console.log('GSX: setting menu choice to -1');
-                            setGsxMenuChoice(-1);
-                            console.log('GSX: resetting external toggle');
-                            setGsxExternalToggle(0);
-                        }, 150);
-                        return;
-                    }
-                    console.log('GSX: operator/caterer menu is not active, moving on');
-                });
-        }, 150);
-    };
-
-    useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1 || gsxRefuelSyncEnabled === 1) {
-            if (gsxExternalToggle !== 0 && gsxCouatlStarted === 1) {
-                if (!isGsxCalledBack) {
-                    console.log('GSX: external toggle is true callback triggered');
-                    setGsxMenuOpen(1);
-                    setTimeout(() => {
-                        gsxCallback();
-                        setCheckIfOperatorActive(true);
-                        setIsGsxCalledBack(true);
-                        console.log('GSX: resetting external toggle');
-                        setGsxExternalToggle(0);
-                    }, 150);
-
-                    return;
-                }
-
-                if (checkIfOperatorActive) {
-                    handleGsxOperatorWindow();
-                    return;
-                }
-
-                console.log('GSX: external toggle is true, but callback not triggered');
-            }
-        }
-    }, [gsxExternalToggle]);
+    // useEffect(() => {
+    //     if (gsxPayloadSyncEnabled === 1 || gsxRefuelSyncEnabled === 1) {
+    //         if (gsxExternalToggle !== 0 && gsxCouatlStarted === 1) {
+    //             if (!isGsxCalledBack) {
+    //                 console.log('GSX: external toggle is true callback triggered');
+    //                 setGsxMenuOpen(1);
+    //                 setTimeout(() => {
+    //                     gsxCallback();
+    //                     setCheckIfOperatorActive(true);
+    //                     setIsGsxCalledBack(true);
+    //                     console.log('GSX: resetting external toggle');
+    //                     setGsxExternalToggle(0);
+    //                 }, 150);
+    //
+    //                 return;
+    //             }
+    //
+    //             if (checkIfOperatorActive) {
+    //                 handleGsxOperatorWindow();
+    //                 return;
+    //             }
+    //
+    //             console.log('GSX: external toggle is true, but callback not triggered');
+    //         }
+    //     }
+    // }, [gsxExternalToggle]);
 
     const tabs: PageLink[] = [
         {
             name: 'Services',
             alias: t('Ground.Services.Title'),
             component: <ServicesPage
-                selectGsxMenuChoice={selectGsxMenuChoice}
+                setGsxMenuChoice={setGsxMenuChoice}
                 gsxRefuelSyncEnabled={gsxRefuelSyncEnabled === 1}
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
             />,
@@ -145,7 +131,7 @@ export const Ground = () => {
             component: <Payload
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
                 gsxMenuCurrentState={gsxState}
-                selectGsxMenuChoice={selectGsxMenuChoice}
+                setGsxMenuChoice={setGsxMenuChoice}
                 setGsxMenuCurrentState={setGsxState}
             />,
         },
@@ -156,7 +142,7 @@ export const Ground = () => {
                 gsxPushbackEnabled === 1
                     ? (
                         <GsxPushbackPage
-                            selectGsxMenuChoice={selectGsxMenuChoice}
+                            setGsxMenuChoice={setGsxMenuChoice}
                             gsxState={gsxState}
                             setGsxState={setGsxState}
                             gsxExternalToggle={gsxExternalToggle}

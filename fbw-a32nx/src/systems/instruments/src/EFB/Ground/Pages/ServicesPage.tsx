@@ -8,12 +8,12 @@ import { A320Services } from './Services/A320_251N/A320Services';
 import { getAirframeType } from '../../Efb';
 
 export interface ServiceProps {
-    selectGsxMenuChoice: (choice: number) => void,
+    setGsxMenuChoice: (choice: number) => void,
     gsxRefuelSyncEnabled: boolean,
     gsxPayloadSyncEnabled: boolean,
 }
 
-export const ServicesPage: React.FC<ServiceProps> = ({ selectGsxMenuChoice, gsxRefuelSyncEnabled, gsxPayloadSyncEnabled }) => {
+export const ServicesPage: React.FC<ServiceProps> = ({ setGsxMenuChoice, gsxRefuelSyncEnabled, gsxPayloadSyncEnabled }) => {
     const [airframe] = useState(getAirframeType());
 
     switch (airframe) {
@@ -25,7 +25,7 @@ export const ServicesPage: React.FC<ServiceProps> = ({ selectGsxMenuChoice, gsxR
     default:
         return (
             <A320Services
-                selectGsxMenuChoice={selectGsxMenuChoice}
+                setGsxMenuChoice={setGsxMenuChoice}
                 gsxRefuelSyncEnabled={gsxRefuelSyncEnabled}
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
             />

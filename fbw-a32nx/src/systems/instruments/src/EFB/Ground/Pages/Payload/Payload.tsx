@@ -16,14 +16,14 @@ interface PayloadProps {
     gsxMenuCurrentState: GsxMenuStates,
     gsxPayloadSyncEnabled: boolean,
     setGsxMenuCurrentState: (state: GsxMenuStates) => void,
-    selectGsxMenuChoice: (choice: number) => void,
+    setGsxMenuChoice: (choice: number) => void,
 }
 
 export const Payload: React.FC<PayloadProps> = ({
     gsxPayloadSyncEnabled,
     gsxMenuCurrentState,
     setGsxMenuCurrentState,
-    selectGsxMenuChoice,
+    setGsxMenuChoice,
 }) => {
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
@@ -78,7 +78,7 @@ export const Payload: React.FC<PayloadProps> = ({
                 setBoardingRate={setBoardingRate}
                 gsxMenuCurrentState={gsxMenuCurrentState}
                 setGsxMenuCurrentState={setGsxMenuCurrentState}
-                selectGsxMenuChoice={selectGsxMenuChoice}
+                selectGsxMenuChoice={setGsxMenuChoice}
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
             />
         );

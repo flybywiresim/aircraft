@@ -40,12 +40,12 @@ const PushbackServiceButton: React.FC<PushbackServiceProps> = ({ name, state, on
 };
 
 interface GsxPushbackProps {
-    selectGsxMenuChoice: (choice: number) => void,
+    setGsxMenuChoice: (choice: number) => void,
     gsxState: GsxMenuStates,
     setGsxState: Dispatch<SetStateAction<GsxMenuStates>>,
     gsxExternalToggle: any
 }
-export const GsxPushbackPage: React.FC<GsxPushbackProps> = ({ gsxExternalToggle, selectGsxMenuChoice, gsxState, setGsxState }) => {
+export const GsxPushbackPage: React.FC<GsxPushbackProps> = ({ gsxExternalToggle, setGsxMenuChoice, gsxState, setGsxState }) => {
     const [pushbackAttached, setPushbackAttached] = useState(false);
 
     const serviceIndicationCss = 'text-2xl font-bold text-utility-amber w-min';
@@ -86,13 +86,13 @@ export const GsxPushbackPage: React.FC<GsxPushbackProps> = ({ gsxExternalToggle,
     const selectPushbackDirection = (direction: PushbackDirections) => {
         switch (direction) {
         case PushbackDirections.LEFT:
-            selectGsxMenuChoice(0);
+            setGsxMenuChoice(0);
             break;
         case PushbackDirections.RIGHT:
-            selectGsxMenuChoice(1);
+            setGsxMenuChoice(1);
             break;
         case PushbackDirections.STRAIGHT:
-            selectGsxMenuChoice(3);
+            setGsxMenuChoice(3);
             break;
         default:
             console.error('GSX: Incorrect Pushback Direction given');
@@ -112,10 +112,10 @@ export const GsxPushbackPage: React.FC<GsxPushbackProps> = ({ gsxExternalToggle,
     const selectPushbackCompletion = (state: PushbackCompletionState) => {
         switch (state) {
         case PushbackCompletionState.CONFIRM:
-            selectGsxMenuChoice(0);
+            setGsxMenuChoice(0);
             break;
         case PushbackCompletionState.STOP:
-            selectGsxMenuChoice(1);
+            setGsxMenuChoice(1);
             break;
         default:
             console.error('GSX: Incorrect pushback completion state given');

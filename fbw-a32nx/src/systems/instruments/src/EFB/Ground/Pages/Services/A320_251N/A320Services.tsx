@@ -111,7 +111,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
     );
 };
 
-export const A320Services: React.FC<ServiceProps> = ({ selectGsxMenuChoice, gsxRefuelSyncEnabled, gsxPayloadSyncEnabled }) => {
+export const A320Services: React.FC<ServiceProps> = ({ setGsxMenuChoice, gsxRefuelSyncEnabled, gsxPayloadSyncEnabled }) => {
     const dispatch = useAppDispatch();
 
     // Flight state
@@ -142,7 +142,7 @@ export const A320Services: React.FC<ServiceProps> = ({ selectGsxMenuChoice, gsxR
     const toggleCabinRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 2);
     const toggleJetBridgeAndStairs = () => {
         if (gsxPayloadSyncEnabled) {
-            selectGsxMenuChoice(GsxMenuPrepChoices.OP_STAIR);
+            setGsxMenuChoice(GsxMenuPrepChoices.OP_STAIR);
         } else {
             SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
             SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
@@ -154,14 +154,14 @@ export const A320Services: React.FC<ServiceProps> = ({ selectGsxMenuChoice, gsxR
     const toggleAftRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
     const toggleCateringTruck = () => {
         if (gsxPayloadSyncEnabled) {
-            selectGsxMenuChoice(GsxMenuPrepChoices.RQST_CTR);
+            setGsxMenuChoice(GsxMenuPrepChoices.RQST_CTR);
         } else {
             SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
         }
     };
     const toggleFuelTruck = () => {
         if (gsxRefuelSyncEnabled) {
-            selectGsxMenuChoice(GsxMenuPrepChoices.RQST_REFUL);
+            setGsxMenuChoice(GsxMenuPrepChoices.RQST_REFUL);
         } else {
             SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
         }

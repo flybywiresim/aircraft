@@ -4,6 +4,7 @@
 import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 import { NotificationManager, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
+import { fetchGsxMenu, openGsxMenu, setGsxMenuChoice } from '../gsx/GsxHelper';
 
 /**
  * This class is used to intercept the key events for the engine auto start and engine auto shutdown.
@@ -41,6 +42,7 @@ export class KeyInterceptor {
     private registerIntercepts() {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
+        this.keyInterceptManager.interceptKey('EXTERNAL_SYSTEM_TOGGLE', true);
 
         const subscriber = this.eventBus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
@@ -53,10 +55,29 @@ export class KeyInterceptor {
                 console.log('KeyInterceptor: ENGINE_AUTO_SHUTDOWN');
                 this.engineAutoStopAction();
                 break;
+            case 'EXTERNAL_SYSTEM_TOGGLE':
+                console.log('KeyInterceptor: EXTERNAL_SYSTEM_TOGGLE');
+                break;
             default:
                 break;
             }
         });
+    }
+
+    private handleGsxToggle() {
+        fetchGsxMenu().then((lines) => {
+            if (lines[0] === 'Select handling operator' || lines[0] === 'Select catering operator') {
+                console.log('GSX Check: operator/caterer menu is active, selecting GSX choice');
+                openGsxMenu();
+                console.log('GSX Check: setting menu choice to -1');
+                setGsxMenuChoice(-1);
+                return;
+            }
+            console.log('GSX Check: operator/caterer menu is not active, moving on');
+        });
+
+        console.log('GSX Check: GSX Toggled, opening Menu');
+        openGsxMenu();
     }
 
     private engineAutoStartAction() {
