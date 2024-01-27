@@ -8,6 +8,7 @@ import { PushbackPage } from './Pages/Pushback/PushbackPage';
 import { FuelPage } from './Pages/FuelPage';
 import { Payload } from './Pages/Payload/Payload';
 import { GsxPushbackPage } from './Pages/Pushback/GsxPushbackPage';
+import SimVarValue = SimVar.SimVarValue;
 
 export interface StatefulButton {
     id: string,
@@ -52,16 +53,19 @@ export const Ground = () => {
     const [gsxRefuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPushbackEnabled] = usePersistentNumberProperty('GSX_PUSHBACK', 0);
     const [, setGsxMenuOpen] = useSimVar('L:FSDT_GSX_MENU_OPEN', 'Number', 223);
-    const [, setGsxMenuChoice] = useSimVar('L:FSDT_GSX_MENU_CHOICE', 'Number', 223);
+    const [, setGsxMenuChoice] = useSimVar('L:A32NX_GSX_MENU_CHOICE', 'Number', 223);
+    const [, setGsxMenuChoiceMade] = useSimVar('L:A32NX_GSX_MENU_CHOICE_MADE', 'Bool', 223);
     const [gsxExternalToggle, setGsxExternalToggle] = useSimVar('K:EXTERNAL_SYSTEM_TOGGLE', '', 223);
     const [gsxState, setGsxState] = useState<GsxMenuStates>(GsxMenuStates.PREP);
     const [gsxCallback, setGsxCallback] = useState(() => () => {});
     const [isGsxCalledBack, setIsGsxCalledBack] = useState(true);
     const [checkIfOperatorActive, setCheckIfOperatorActive] = useState(false);
 
-    // const selectGsxMenuChoice = (choice: number) => {
-    //     setGsxMenuChoice(choice);
-    // };
+    const selectGsxMenuChoice = (choice: number) => {
+        setGsxMenuChoiceMade(1)
+        setGsxMenuChoice(choice);
+        setGsxMenuOpen(1);
+    };
 
     // const handleGsxOperatorWindow = () => {
     //     setCheckIfOperatorActive(false);
@@ -119,7 +123,7 @@ export const Ground = () => {
             name: 'Services',
             alias: t('Ground.Services.Title'),
             component: <ServicesPage
-                setGsxMenuChoice={setGsxMenuChoice}
+                setGsxMenuChoice={selectGsxMenuChoice}
                 gsxRefuelSyncEnabled={gsxRefuelSyncEnabled === 1}
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
             />,
@@ -131,7 +135,7 @@ export const Ground = () => {
             component: <Payload
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
                 gsxMenuCurrentState={gsxState}
-                setGsxMenuChoice={setGsxMenuChoice}
+                setGsxMenuChoice={selectGsxMenuChoice}
                 setGsxMenuCurrentState={setGsxState}
             />,
         },
@@ -142,7 +146,7 @@ export const Ground = () => {
                 gsxPushbackEnabled === 1
                     ? (
                         <GsxPushbackPage
-                            setGsxMenuChoice={setGsxMenuChoice}
+                            setGsxMenuChoice={selectGsxMenuChoice}
                             gsxState={gsxState}
                             setGsxState={setGsxState}
                             gsxExternalToggle={gsxExternalToggle}
