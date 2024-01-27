@@ -60,10 +60,10 @@ class Pushback : public Module {
 
   // Data structure for PushbackDataID
   struct PushbackData {
-    [[maybe_unused]] FLOAT64 pushbackWait;
-    [[maybe_unused]] FLOAT64 velBodyZ;
-    [[maybe_unused]] FLOAT64 rotVelBodyY;
-    [[maybe_unused]] FLOAT64 rotAccelBodyX;
+    FLOAT64 pushbackWait;
+    FLOAT64 velBodyZ;
+    FLOAT64 rotVelBodyY;
+    FLOAT64 rotAccelBodyX;
   };
   std::shared_ptr<DataDefinitionVariable<PushbackData>> pushbackData;
 
@@ -90,7 +90,9 @@ class Pushback : public Module {
 
  protected:
   /**
-   * Calculates the counter rotation acceleration.
+   * Calculates the counter rotation acceleration. This is required especially if a user uses the
+   * stick for taxiing as forward and backward taxiing are controlled by the same axis as the elevator.
+   * Especially in strong winds this can lead to the aircraft lifting its nose or gears.
    * @param inertiaSpeed The current inertia speed.
    * @param windVelBodyZ The current wind velocity in body Z direction.
    * @return The counter rotation acceleration.

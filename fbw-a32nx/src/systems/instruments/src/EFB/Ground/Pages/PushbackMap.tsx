@@ -21,6 +21,7 @@ import {
     setMapRange,
     TScreenCoordinates,
 } from '../../Store/features/pushback';
+import { getAirframeType } from '../../Efb';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -69,10 +70,6 @@ export const PushbackMap = () => {
     const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'bool', 50);
     const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'bool', 50);
 
-    // This constant has been determined via testing - needs more "thought"
-    // It describes the ratio between the map and real distance
-    const someConstant = 0.48596;
-
     // Reducer state for pushback
     const {
         mapRange,
@@ -80,6 +77,16 @@ export const PushbackMap = () => {
         actualMapLatLon,
         aircraftIconPosition,
     } = useAppSelector((state) => state.pushback.pushbackState);
+
+    // This constant has been determined via testing - needs more "thought"
+    // It describes the ratio between the map and real distance
+    const someConstant = 0.48596;
+
+    // Aircraft wheelbase in meters
+    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2021-11/Airbus-Commercial-Aircraft-AC-A320.pdf
+    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2022-02/Airbus-A380-Facts-and-Figures-February-2022.pdf
+    const aircraftWheelBase = getAirframeType() === 'A380_842' ? 31.9 : 12.64;
+    const aircraftLengthMeter = getAirframeType() === 'A380_842' ? 72.72 : 37.57;
 
     // Map
     const [mouseDown, setMouseDown] = useState(false);
@@ -108,10 +115,9 @@ export const PushbackMap = () => {
     };
 
     // Calculates the size in pixels based on the real A320 length and the current zoom
-    const a320IconSize = (mapRange) => {
+    const aircraftIconSize = (mapRange: number) => {
         const pixelPerMeter = someConstant * 10; // at 0.1 range
-        const a320LengthMeter = 37.57;
-        return MathUtils.clamp(a320LengthMeter * pixelPerMeter * (0.1 / mapRange), 15, 1000);
+        return MathUtils.clamp(aircraftLengthMeter * pixelPerMeter * (0.1 / mapRange), 15, 1000);
     };
 
     // Calculates turning radius for the Turning prediction arc
@@ -119,6 +125,10 @@ export const PushbackMap = () => {
         const tanDeg = Math.tan(turnAngle * Math.PI / 180);
         return wheelBase / tanDeg;
     };
+    const mapRangeCompensationScalar = mapRange / someConstant;
+    const radius = calculateTurningRadius(aircraftWheelBase, Math.abs(tugCmdHdgFactor * 90));
+    const speedInfluenceFactor = 0.4; // value based on testing in the sim
+    const turningRadius = radius / mapRangeCompensationScalar * (Math.abs(tugCmdSpdFactor) / speedInfluenceFactor);
 
     // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
@@ -195,9 +205,6 @@ export const PushbackMap = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
-    const mapRangeCompensationScalar = mapRange / someConstant;
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCmdHdgFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCmdSpdFactor) / 0.2);
-
     return (
         <>
             {/* Map Container */}
@@ -252,7 +259,7 @@ export const PushbackMap = () => {
                     <IconPlane
                         className="text-theme-highlight"
                         style={{ transform: `rotate(-90deg) translateY(${Math.sign(aircraftIconPosition.x) * Math.min(1000, Math.abs(aircraftIconPosition.x))}px) translateX(${Math.sign(aircraftIconPosition.y) * Math.min(1000, Math.abs(aircraftIconPosition.y))}px)` }}
-                        size={a320IconSize(mapRange)}
+                        size={aircraftIconSize(mapRange)}
                         strokeLinejoin="miter"
                         stroke={1}
                     />
