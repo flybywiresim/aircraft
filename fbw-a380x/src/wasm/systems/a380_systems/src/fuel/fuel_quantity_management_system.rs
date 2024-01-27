@@ -181,7 +181,7 @@ pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
 }
 impl RefuelApplication {
-    pub fn new(_context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
+    pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
         Self {
             refuel_driver: RefuelDriver::new(),
         }
