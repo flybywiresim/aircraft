@@ -288,7 +288,7 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
   { 0.0, 0.0, -30.0, -30.0 },
 
 
-  { 0.1, 0.1, 0.15, 0.2, 0.3, 0.5, 0.5 },
+  { 0.1, 0.1, 0.1, 0.15, 0.2, 0.3, 0.3 },
 
 
   { 0.0, 0.0, -30.0, -30.0 },
@@ -389,7 +389,7 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
 
   true,
 
-  4.5,
+  4.55,
 
   3.5,
 
@@ -407,7 +407,7 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
   { -10.0, -2.0, -0.1, 0.0, 0.1, 2.0, 10.0 },
 
 
-  { -10.0, -2.0, 0.0, 2.0, 10.0 },
+  { -10.0, -3.0, 0.0, 3.0, 10.0 },
 
 
   { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
@@ -417,7 +417,7 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
   { -10.0, -2.0, -0.1, 0.0, 0.1, 2.0, 10.0 },
 
 
-  { -10.0, -2.0, 0.0, 2.0, 10.0 },
+  { -10.0, -3.0, 0.0, 3.0, 10.0 },
 
   0.0,
 
@@ -1917,15 +1917,14 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Sum1_c = PitchNormalLaw_rtP.Constant_Value_fe - rtb_Y_dy;
   rtb_Abs = std::abs(PitchNormalLaw_rtP.Constant_Value_e);
   rtb_in_rotation = *rtu_In_on_ground;
-  if (rtb_in_rotation > PitchNormalLaw_rtP.UpperLimitSwitch_Threshold) {
-    rtb_Sum6 = look2_binlxpw(*rtu_In_qk_deg_s, *rtu_In_eta_deg, PitchNormalLaw_rtP.UpperLimit_bp01Data,
-      PitchNormalLaw_rtP.UpperLimit_bp02Data, PitchNormalLaw_rtP.UpperLimit_tableData,
-      PitchNormalLaw_rtP.UpperLimit_maxIndex, 7U);
+  if (rtb_in_rotation > PitchNormalLaw_rtP.LimitSwitchUp_Threshold) {
+    rtb_Sum6 = look2_binlxpw(*rtu_In_qk_deg_s, *rtu_In_eta_deg, PitchNormalLaw_rtP.LimitUp_bp01Data,
+      PitchNormalLaw_rtP.LimitUp_bp02Data, PitchNormalLaw_rtP.LimitUp_tableData, PitchNormalLaw_rtP.LimitUp_maxIndex, 7U);
     rtb_Sum6 *= PitchNormalLaw_rtP.GainUp_Gain * rtb_Abs;
     if (rtb_Sum6 > rtb_Abs) {
       rtb_Sum6 = rtb_Abs;
-    } else if (rtb_Sum6 < PitchNormalLaw_rtP.Constant_Value_l) {
-      rtb_Sum6 = PitchNormalLaw_rtP.Constant_Value_l;
+    } else if (rtb_Sum6 < PitchNormalLaw_rtP.ConstantUp_Value) {
+      rtb_Sum6 = PitchNormalLaw_rtP.ConstantUp_Value;
     }
   } else {
     rtb_Sum6 = PitchNormalLaw_rtP.GainUp_Gain * rtb_Abs;
@@ -2014,13 +2013,13 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
   rtb_Abs *= PitchNormalLaw_rtP.GainLo_Gain;
   if (rtb_Y_dy <= rtb_Sum6) {
-    if (rtb_in_rotation > PitchNormalLaw_rtP.LowerLimitSwitch_Threshold) {
-      rtb_Sum6 = look2_binlxpw(*rtu_In_qk_deg_s, *rtu_In_eta_deg, PitchNormalLaw_rtP.LowerLimit_bp01Data,
-        PitchNormalLaw_rtP.LowerLimit_bp02Data, PitchNormalLaw_rtP.LowerLimit_tableData,
-        PitchNormalLaw_rtP.LowerLimit_maxIndex, 7U);
+    if (rtb_in_rotation > PitchNormalLaw_rtP.LimitSwitchLo_Threshold) {
+      rtb_Sum6 = look2_binlxpw(*rtu_In_qk_deg_s, *rtu_In_eta_deg, PitchNormalLaw_rtP.LimitLo_bp01Data,
+        PitchNormalLaw_rtP.LimitLo_bp02Data, PitchNormalLaw_rtP.LimitLo_tableData, PitchNormalLaw_rtP.LimitLo_maxIndex,
+        7U);
       rtb_Sum6 *= rtb_Abs;
-      if (rtb_Sum6 > PitchNormalLaw_rtP.Constant1_Value) {
-        rtb_Abs = PitchNormalLaw_rtP.Constant1_Value;
+      if (rtb_Sum6 > PitchNormalLaw_rtP.ConstantLo_Value) {
+        rtb_Abs = PitchNormalLaw_rtP.ConstantLo_Value;
       } else if (rtb_Sum6 >= rtb_Abs) {
         rtb_Abs = rtb_Sum6;
       }
@@ -2109,7 +2108,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
     rtb_Y_dy = rtb_Switch_f + rtb_qk_gain_HSP;
   } else {
-    rtb_Y_dy = PitchNormalLaw_rtP.Constant1_Value_g;
+    rtb_Y_dy = PitchNormalLaw_rtP.Constant1_Value;
   }
 
   rtb_Tsxlo = PitchNormalLaw_rtP.RateLimiterVariableTs4_up * *rtu_In_time_dt;
