@@ -2443,7 +2443,7 @@ void AutopilotLawsModelClass::step()
 
   AutopilotLaws_Voter1(rtb_Sum_ia, AutopilotLaws_P.Gain_Gain_o2 * rtb_Y_k, AutopilotLaws_P.VS_Gain_nx * rtb_Gain_ib,
                        &rtb_Gain_ml);
-  AutopilotLaws_VSLimiter(rtb_Gain_ml, &AutopilotLaws_Y.out, &rtb_Y_k);
+  AutopilotLaws_VSLimiter_f(rtb_Gain_ml, &AutopilotLaws_Y.out, &rtb_Y_k);
   if (AutopilotLaws_U.in.input.vertical_mode == 24.0) {
     rtb_Add3_np = 0.15;
   } else {
