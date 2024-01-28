@@ -2,7 +2,7 @@
 #include "rtwtypes.h"
 #include "AutopilotLaws_types.h"
 #include <cmath>
-#include "mod_Mu9grHF5.h"
+#include "mod_2RcCQkwc.h"
 #include "rt_modd.h"
 #include "look1_binlxpw.h"
 
@@ -14,9 +14,9 @@ const uint8_T AutopilotLaws_IN_right{ 3U };
 
 const uint8_T AutopilotLaws_IN_any_n{ 1U };
 
-const uint8_T AutopilotLaws_IN_left_l{ 2U };
+const uint8_T AutopilotLaws_IN_left_n{ 2U };
 
-const uint8_T AutopilotLaws_IN_right_j{ 3U };
+const uint8_T AutopilotLaws_IN_right_f{ 3U };
 
 const uint8_T AutopilotLaws_IN_InAir{ 1U };
 
@@ -249,10 +249,10 @@ void AutopilotLawsModelClass::AutopilotLaws_Chart_h(real_T rtu_right, real_T rtu
         tmp = std::abs(rtu_right);
         tmp_0 = std::abs(rtu_left);
         if ((rtu_use_short_path == 0.0) && (tmp < tmp_0) && (tmp >= 10.0) && (tmp <= 20.0)) {
-          localDW->is_c15_AutopilotLaws = AutopilotLaws_IN_right_j;
+          localDW->is_c15_AutopilotLaws = AutopilotLaws_IN_right_f;
           *rty_out = rtu_right;
         } else if ((rtu_use_short_path == 0.0) && (tmp_0 < tmp) && (tmp_0 >= 10.0) && (tmp_0 <= 20.0)) {
-          localDW->is_c15_AutopilotLaws = AutopilotLaws_IN_left_l;
+          localDW->is_c15_AutopilotLaws = AutopilotLaws_IN_left_n;
           *rty_out = rtu_left;
         } else if (tmp_0 < tmp) {
           *rty_out = rtu_left;
@@ -262,7 +262,7 @@ void AutopilotLawsModelClass::AutopilotLaws_Chart_h(real_T rtu_right, real_T rtu
       }
       break;
 
-     case AutopilotLaws_IN_left_l:
+     case AutopilotLaws_IN_left_n:
       {
         real_T tmp;
         real_T tmp_0;
@@ -455,7 +455,7 @@ void AutopilotLawsModelClass::step()
   real_T rtb_Add3_np;
   real_T rtb_Cos1_pk;
   real_T rtb_Cos_i;
-  real_T rtb_FD_i;
+  real_T rtb_FD_p;
   real_T rtb_Gain1_na;
   real_T rtb_Gain4;
   real_T rtb_GainTheta;
@@ -471,16 +471,15 @@ void AutopilotLawsModelClass::step()
   real_T rtb_Sum_ia;
   real_T rtb_Sum_l1;
   real_T rtb_Vz;
-  real_T rtb_Y_bw;
-  real_T rtb_Y_g;
-  real_T rtb_Y_i;
-  real_T rtb_Y_n;
+  real_T rtb_Y_dr;
+  real_T rtb_Y_k;
+  real_T rtb_Y_nd;
+  real_T rtb_Y_pl;
   real_T rtb_dme;
-  real_T rtb_error_c;
+  real_T rtb_error_b;
   real_T rtb_lo;
-  real_T rtb_lo_f;
+  real_T rtb_lo_a;
   real_T rtb_uDLookupTable_m;
-  real_T u0;
   int32_T i;
   int32_T low_i;
   int32_T low_ip1;
@@ -488,30 +487,29 @@ void AutopilotLawsModelClass::step()
   int32_T rtb_fpmtoms;
   int32_T rtb_on_ground;
   int8_T tmp;
-  boolean_T guard1{ false };
-
+  boolean_T guard1;
   boolean_T rtb_Compare_jy;
   boolean_T rtb_OR1;
   boolean_T rtb_valid;
-  boolean_T rtb_valid_m;
+  boolean_T rtb_valid_f;
   rtb_fpmtoms = ((AutopilotLaws_U.in.input.enabled_AP1 != 0.0) || (AutopilotLaws_U.in.input.enabled_AP2 != 0.0));
   rtb_GainTheta = AutopilotLaws_P.GainTheta_Gain * AutopilotLaws_U.in.data.Theta_deg;
   rtb_GainTheta1 = AutopilotLaws_P.GainTheta1_Gain * AutopilotLaws_U.in.data.Phi_deg;
   rtb_dme = 0.017453292519943295 * rtb_GainTheta;
   rtb_Saturation = 0.017453292519943295 * rtb_GainTheta1;
   b_R = std::tan(rtb_dme);
-  rtb_error_c = std::sin(rtb_Saturation);
+  rtb_error_b = std::sin(rtb_Saturation);
   rtb_Saturation = std::cos(rtb_Saturation);
   result_tmp[0] = 1.0;
-  result_tmp[3] = rtb_error_c * b_R;
+  result_tmp[3] = rtb_error_b * b_R;
   result_tmp[6] = rtb_Saturation * b_R;
   result_tmp[1] = 0.0;
   result_tmp[4] = rtb_Saturation;
-  result_tmp[7] = -rtb_error_c;
+  result_tmp[7] = -rtb_error_b;
   result_tmp[2] = 0.0;
   b_R = std::cos(rtb_dme);
   rtb_Add3_np = 1.0 / b_R;
-  result_tmp[5] = rtb_Add3_np * rtb_error_c;
+  result_tmp[5] = rtb_Add3_np * rtb_error_b;
   result_tmp[8] = rtb_Add3_np * rtb_Saturation;
   a = AutopilotLaws_P.Gain_Gain_de * AutopilotLaws_U.in.data.p_rad_s * AutopilotLaws_P.Gainpk_Gain;
   distance_m = AutopilotLaws_P.Gain_Gain_d * AutopilotLaws_U.in.data.q_rad_s * AutopilotLaws_P.Gainqk_Gain;
@@ -524,11 +522,11 @@ void AutopilotLawsModelClass::step()
   result_tmp[0] = b_R;
   result_tmp[3] = 0.0;
   result_tmp[6] = -rtb_dme;
-  result_tmp[1] = rtb_error_c * rtb_dme;
+  result_tmp[1] = rtb_error_b * rtb_dme;
   result_tmp[4] = rtb_Saturation;
-  result_tmp[7] = b_R * rtb_error_c;
+  result_tmp[7] = b_R * rtb_error_b;
   result_tmp[2] = rtb_Saturation * rtb_dme;
-  result_tmp[5] = 0.0 - rtb_error_c;
+  result_tmp[5] = 0.0 - rtb_error_b;
   result_tmp[8] = rtb_Saturation * b_R;
   for (i = 0; i < 3; i++) {
     result_0[i] = (result_tmp[i + 3] * AutopilotLaws_U.in.data.by_m_s2 + result_tmp[i] * AutopilotLaws_U.in.data.bx_m_s2)
@@ -551,7 +549,7 @@ void AutopilotLawsModelClass::step()
     rtb_dme = 0.0;
   }
 
-  rtb_error_c = 0.017453292519943295 * AutopilotLaws_U.in.data.aircraft_position.lat;
+  rtb_error_b = 0.017453292519943295 * AutopilotLaws_U.in.data.aircraft_position.lat;
   Phi2 = 0.017453292519943295 * AutopilotLaws_U.in.data.nav_loc_position.lat;
   rtb_Saturation = 0.017453292519943295 * AutopilotLaws_U.in.data.aircraft_position.lon;
   a = std::sin((AutopilotLaws_U.in.data.nav_loc_position.lat - AutopilotLaws_U.in.data.aircraft_position.lat) *
@@ -559,28 +557,28 @@ void AutopilotLawsModelClass::step()
   distance_m = std::sin((AutopilotLaws_U.in.data.nav_loc_position.lon - AutopilotLaws_U.in.data.aircraft_position.lon) *
                         0.017453292519943295 / 2.0);
   L = std::cos(Phi2);
-  rtb_Add3_np = std::cos(rtb_error_c);
+  rtb_Add3_np = std::cos(rtb_error_b);
   a = rtb_Add3_np * L * distance_m * distance_m + a * a;
   distance_m = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
   a = AutopilotLaws_U.in.data.aircraft_position.alt - AutopilotLaws_U.in.data.nav_loc_position.alt;
-  rtb_lo_f = 0.017453292519943295 * AutopilotLaws_U.in.data.nav_loc_position.lon - rtb_Saturation;
-  b_L = mod_Mu9grHF5((mod_Mu9grHF5(mod_Mu9grHF5(360.0) + 360.0) - (mod_Mu9grHF5(mod_Mu9grHF5
+  rtb_lo_a = 0.017453292519943295 * AutopilotLaws_U.in.data.nav_loc_position.lon - rtb_Saturation;
+  b_L = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(360.0) + 360.0) - (mod_2RcCQkwc(mod_2RcCQkwc
     (AutopilotLaws_U.in.data.nav_loc_magvar_deg) + 360.0) + 360.0)) + 360.0);
-  b_R = mod_Mu9grHF5(360.0 - b_L);
+  b_R = mod_2RcCQkwc(360.0 - b_L);
   if (std::abs(b_L) < std::abs(b_R)) {
     b_R = -b_L;
   }
 
-  rtb_error_c = std::sin(rtb_error_c);
-  L = mod_Mu9grHF5(mod_Mu9grHF5(mod_Mu9grHF5(std::atan2(std::sin(rtb_lo_f) * L, rtb_Add3_np * std::sin(Phi2) -
-    rtb_error_c * L * std::cos(rtb_lo_f)) * 57.295779513082323 + 360.0)) + 360.0) + 360.0;
-  Phi2 = mod_Mu9grHF5((mod_Mu9grHF5(mod_Mu9grHF5(mod_Mu9grHF5(mod_Mu9grHF5(AutopilotLaws_U.in.data.nav_loc_deg - b_R) +
+  rtb_error_b = std::sin(rtb_error_b);
+  L = mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(std::atan2(std::sin(rtb_lo_a) * L, rtb_Add3_np * std::sin(Phi2) -
+    rtb_error_b * L * std::cos(rtb_lo_a)) * 57.295779513082323 + 360.0)) + 360.0) + 360.0;
+  Phi2 = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(AutopilotLaws_U.in.data.nav_loc_deg - b_R) +
     360.0)) + 360.0) - L) + 360.0);
-  b_R = mod_Mu9grHF5(360.0 - Phi2);
+  b_R = mod_2RcCQkwc(360.0 - Phi2);
   guard1 = false;
   if (std::sqrt(distance_m * distance_m + a * a) / 1852.0 < 30.0) {
-    L = mod_Mu9grHF5((mod_Mu9grHF5(mod_Mu9grHF5(AutopilotLaws_U.in.data.nav_loc_deg) + 360.0) - L) + 360.0);
-    R = mod_Mu9grHF5(360.0 - L);
+    L = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(AutopilotLaws_U.in.data.nav_loc_deg) + 360.0) - L) + 360.0);
+    R = mod_2RcCQkwc(360.0 - L);
     if (std::abs(L) < std::abs(R)) {
       R = -L;
     }
@@ -620,15 +618,15 @@ void AutopilotLawsModelClass::step()
   a = AutopilotLaws_U.in.data.aircraft_position.alt - AutopilotLaws_U.in.data.nav_gs_position.alt;
   distance_m = std::sqrt(distance_m * distance_m + a * a);
   rtb_Saturation = 0.017453292519943295 * AutopilotLaws_U.in.data.nav_gs_position.lon - rtb_Saturation;
-  rtb_error_c = std::atan2(std::sin(rtb_Saturation) * L, rtb_Add3_np * std::sin(Phi2) - rtb_error_c * L * std::cos
+  rtb_error_b = std::atan2(std::sin(rtb_Saturation) * L, rtb_Add3_np * std::sin(Phi2) - rtb_error_b * L * std::cos
     (rtb_Saturation)) * 57.295779513082323;
-  if (rtb_error_c + 360.0 == 0.0) {
+  if (rtb_error_b + 360.0 == 0.0) {
     rtb_Saturation = 0.0;
   } else {
-    rtb_Saturation = std::fmod(rtb_error_c + 360.0, 360.0);
+    rtb_Saturation = std::fmod(rtb_error_b + 360.0, 360.0);
     if (rtb_Saturation == 0.0) {
       rtb_Saturation = 0.0;
-    } else if (rtb_error_c + 360.0 < 0.0) {
+    } else if (rtb_error_b + 360.0 < 0.0) {
       rtb_Saturation += 360.0;
     }
   }
@@ -636,13 +634,13 @@ void AutopilotLawsModelClass::step()
   guard1 = false;
   if (distance_m / 1852.0 < 30.0) {
     if (AutopilotLaws_U.in.data.nav_loc_deg == 0.0) {
-      rtb_error_c = 0.0;
+      rtb_error_b = 0.0;
     } else {
-      rtb_error_c = std::fmod(AutopilotLaws_U.in.data.nav_loc_deg, 360.0);
-      if (rtb_error_c == 0.0) {
-        rtb_error_c = 0.0;
+      rtb_error_b = std::fmod(AutopilotLaws_U.in.data.nav_loc_deg, 360.0);
+      if (rtb_error_b == 0.0) {
+        rtb_error_b = 0.0;
       } else if (AutopilotLaws_U.in.data.nav_loc_deg < 0.0) {
-        rtb_error_c += 360.0;
+        rtb_error_b += 360.0;
       }
     }
 
@@ -657,26 +655,26 @@ void AutopilotLawsModelClass::step()
       }
     }
 
-    if (rtb_error_c + 360.0 == 0.0) {
+    if (rtb_error_b + 360.0 == 0.0) {
       rtb_Add3_np = 0.0;
     } else {
-      rtb_Add3_np = std::fmod(rtb_error_c + 360.0, 360.0);
+      rtb_Add3_np = std::fmod(rtb_error_b + 360.0, 360.0);
     }
 
     if (Phi2 + 360.0 == 0.0) {
-      rtb_error_c = 0.0;
+      rtb_error_b = 0.0;
     } else {
-      rtb_error_c = std::fmod(Phi2 + 360.0, 360.0);
+      rtb_error_b = std::fmod(Phi2 + 360.0, 360.0);
     }
 
-    rtb_error_c = (rtb_Add3_np - (rtb_error_c + 360.0)) + 360.0;
-    if (rtb_error_c == 0.0) {
+    rtb_error_b = (rtb_Add3_np - (rtb_error_b + 360.0)) + 360.0;
+    if (rtb_error_b == 0.0) {
       L = 0.0;
     } else {
-      L = std::fmod(rtb_error_c, 360.0);
+      L = std::fmod(rtb_error_b, 360.0);
       if (L == 0.0) {
         L = 0.0;
-      } else if (rtb_error_c < 0.0) {
+      } else if (rtb_error_b < 0.0) {
         L += 360.0;
       }
     }
@@ -699,8 +697,8 @@ void AutopilotLawsModelClass::step()
     if ((std::abs(R) < 90.0) && ((AutopilotLaws_U.in.data.nav_gs_position.lat != 0.0) ||
          (AutopilotLaws_U.in.data.nav_gs_position.lon != 0.0) || (AutopilotLaws_U.in.data.nav_gs_position.alt != 0.0)))
     {
-      rtb_valid_m = true;
-      rtb_error_c = std::asin(a / distance_m) * 57.295779513082323 - AutopilotLaws_DWork.nav_gs_deg;
+      rtb_valid_f = true;
+      rtb_error_b = std::asin(a / distance_m) * 57.295779513082323 - AutopilotLaws_DWork.nav_gs_deg;
     } else {
       guard1 = true;
     }
@@ -709,8 +707,8 @@ void AutopilotLawsModelClass::step()
   }
 
   if (guard1) {
-    rtb_valid_m = false;
-    rtb_error_c = 0.0;
+    rtb_valid_f = false;
+    rtb_error_b = 0.0;
   }
 
   rtb_Saturation = AutopilotLaws_P.Gain_Gain_n * AutopilotLaws_U.in.data.gear_strut_compression_1 -
@@ -791,8 +789,8 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_Y.out.data.nav_gs_valid = AutopilotLaws_U.in.data.nav_gs_valid;
   AutopilotLaws_Y.out.data.nav_gs_error_deg = AutopilotLaws_U.in.data.nav_gs_error_deg;
   AutopilotLaws_Y.out.data.nav_gs_position = AutopilotLaws_U.in.data.nav_gs_position;
-  AutopilotLaws_Y.out.data.nav_e_gs_valid = rtb_valid_m;
-  AutopilotLaws_Y.out.data.nav_e_gs_error_deg = rtb_error_c;
+  AutopilotLaws_Y.out.data.nav_e_gs_valid = rtb_valid_f;
+  AutopilotLaws_Y.out.data.nav_e_gs_error_deg = rtb_error_b;
   AutopilotLaws_Y.out.data.flight_guidance_xtk_nmi = AutopilotLaws_U.in.data.flight_guidance_xtk_nmi;
   AutopilotLaws_Y.out.data.flight_guidance_tae_deg = AutopilotLaws_U.in.data.flight_guidance_tae_deg;
   AutopilotLaws_Y.out.data.flight_guidance_phi_deg = AutopilotLaws_U.in.data.flight_guidance_phi_deg;
@@ -829,11 +827,11 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE) + AutopilotLaws_P.Constant3_Value_e;
   b_R = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_e);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_e - b_R;
-  rtb_error_c = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_e);
-  if (b_R < rtb_error_c) {
+  rtb_error_b = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_e);
+  if (b_R < rtb_error_b) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_h * b_R;
   } else {
-    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain_Gain_e * rtb_error_c;
+    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain_Gain_e * rtb_error_b;
   }
 
   AutopilotLaws_DWork.DelayInput1_DSTATE += AutopilotLaws_U.in.data.Psi_magnetic_track_deg;
@@ -842,8 +840,8 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.DelayInput1_DSTATE += AutopilotLaws_P.Constant3_Value_b;
   AutopilotLaws_DWork.DelayInput1_DSTATE = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE,
     AutopilotLaws_P.Constant3_Value_b);
-  rtb_error_c = AutopilotLaws_U.in.data.nav_loc_deg - AutopilotLaws_U.in.data.nav_loc_magvar_deg;
-  R = rt_modd(rt_modd(rtb_error_c, AutopilotLaws_P.Constant3_Value_n) + AutopilotLaws_P.Constant3_Value_n,
+  rtb_error_b = AutopilotLaws_U.in.data.nav_loc_deg - AutopilotLaws_U.in.data.nav_loc_magvar_deg;
+  R = rt_modd(rt_modd(rtb_error_b, AutopilotLaws_P.Constant3_Value_n) + AutopilotLaws_P.Constant3_Value_n,
               AutopilotLaws_P.Constant3_Value_n);
   b_R = rt_modd((AutopilotLaws_DWork.DelayInput1_DSTATE - (R + AutopilotLaws_P.Constant3_Value_i)) +
                 AutopilotLaws_P.Constant3_Value_i, AutopilotLaws_P.Constant3_Value_i);
@@ -875,7 +873,7 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.limit = 15.0;
   }
 
-  AutopilotLaws_MATLABFunction(AutopilotLaws_P.tau_Value, AutopilotLaws_P.zeta_Value, &a, &rtb_Y_bw);
+  AutopilotLaws_MATLABFunction(AutopilotLaws_P.tau_Value, AutopilotLaws_P.zeta_Value, &a, &rtb_Y_k);
   if (rtb_dme > AutopilotLaws_P.Saturation_UpperSat_b) {
     rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_b;
   } else if (rtb_dme < AutopilotLaws_P.Saturation_LowerSat_nz) {
@@ -885,7 +883,7 @@ void AutopilotLawsModelClass::step()
   }
 
   b_R = std::sin(AutopilotLaws_P.Gain1_Gain_f * AutopilotLaws_U.in.data.nav_loc_error_deg) * rtb_Add3_np *
-    AutopilotLaws_P.Gain_Gain_h * rtb_Y_bw / AutopilotLaws_U.in.data.V_gnd_kn;
+    AutopilotLaws_P.Gain_Gain_h * rtb_Y_k / AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_DWork.DelayInput1_DSTATE = (AutopilotLaws_DWork.DelayInput1_DSTATE - (rt_modd(rt_modd
     (AutopilotLaws_U.in.data.nav_loc_error_deg + R, AutopilotLaws_P.Constant3_Value_c2) +
     AutopilotLaws_P.Constant3_Value_c2, AutopilotLaws_P.Constant3_Value_c2) + AutopilotLaws_P.Constant3_Value_p)) +
@@ -910,15 +908,15 @@ void AutopilotLawsModelClass::step()
   distance_m = AutopilotLaws_DWork.DelayInput1_DSTATE * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_RateLimiter_n((rtb_Saturation == AutopilotLaws_P.CompareToConstant1_const),
     AutopilotLaws_P.RateLimiterVariableTs_up, AutopilotLaws_P.RateLimiterVariableTs_lo, AutopilotLaws_U.in.time.dt,
-    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition, &rtb_Y_bw, &AutopilotLaws_DWork.sf_RateLimiter_n);
+    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition, &rtb_Y_k, &AutopilotLaws_DWork.sf_RateLimiter_n);
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.nav_loc_error_deg, AutopilotLaws_P.LagFilter2_C1,
     AutopilotLaws_U.in.time.dt, &a, &AutopilotLaws_DWork.sf_LagFilter_h);
   b_R = AutopilotLaws_P.DiscreteDerivativeVariableTs_Gain * a;
   AutopilotLaws_DWork.DelayInput1_DSTATE = b_R - AutopilotLaws_DWork.Delay_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE /= AutopilotLaws_U.in.time.dt;
   AutopilotLaws_LagFilter(a + AutopilotLaws_P.Gain3_Gain_i * AutopilotLaws_DWork.DelayInput1_DSTATE,
-    AutopilotLaws_P.LagFilter_C1, AutopilotLaws_U.in.time.dt, &rtb_Y_i, &AutopilotLaws_DWork.sf_LagFilter_m);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_error_c;
+    AutopilotLaws_P.LagFilter_C1, AutopilotLaws_U.in.time.dt, &rtb_Y_nd, &AutopilotLaws_DWork.sf_LagFilter_m);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_error_b;
   AutopilotLaws_DWork.DelayInput1_DSTATE = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE,
     AutopilotLaws_P.Constant3_Value_if);
   AutopilotLaws_DWork.DelayInput1_DSTATE += AutopilotLaws_P.Constant3_Value_if;
@@ -926,11 +924,11 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_U.in.data.Psi_true_deg + AutopilotLaws_P.Constant3_Value_m;
   AutopilotLaws_DWork.DelayInput1_DSTATE = (Phi2 - AutopilotLaws_DWork.DelayInput1_DSTATE) +
     AutopilotLaws_P.Constant3_Value_m;
-  rtb_error_c = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_m);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_m - rtb_error_c;
+  rtb_error_b = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_m);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_m - rtb_error_b;
   AutopilotLaws_DWork.DelayInput1_DSTATE = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE,
     AutopilotLaws_P.Constant3_Value_m);
-  AutopilotLaws_Chart_h(rtb_error_c, AutopilotLaws_P.Gain_Gain_fn * AutopilotLaws_DWork.DelayInput1_DSTATE,
+  AutopilotLaws_Chart_h(rtb_error_b, AutopilotLaws_P.Gain_Gain_fn * AutopilotLaws_DWork.DelayInput1_DSTATE,
                         AutopilotLaws_P.Constant2_Value_l, &a, &AutopilotLaws_DWork.sf_Chart_h);
   if (AutopilotLaws_U.in.data.H_radio_ft <= AutopilotLaws_P.CompareToConstant_const) {
     rtb_Add3_np = (AutopilotLaws_P.Gain_Gain_ae * a + AutopilotLaws_P.Gain1_Gain_k * AutopilotLaws_U.in.data.beta_deg) *
@@ -939,19 +937,19 @@ void AutopilotLawsModelClass::step()
     rtb_Add3_np = AutopilotLaws_P.Constant1_Value;
   }
 
-  AutopilotLaws_LagFilter(rtb_Add3_np, AutopilotLaws_P.LagFilter1_C1, AutopilotLaws_U.in.time.dt, &rtb_Y_n,
+  AutopilotLaws_LagFilter(rtb_Add3_np, AutopilotLaws_P.LagFilter1_C1, AutopilotLaws_U.in.time.dt, &rtb_Y_dr,
     &AutopilotLaws_DWork.sf_LagFilter_c);
-  if (rtb_Y_n > AutopilotLaws_P.Saturation_UpperSat_e) {
-    rtb_Y_n = AutopilotLaws_P.Saturation_UpperSat_e;
-  } else if (rtb_Y_n < AutopilotLaws_P.Saturation_LowerSat_f) {
-    rtb_Y_n = AutopilotLaws_P.Saturation_LowerSat_f;
+  if (rtb_Y_dr > AutopilotLaws_P.Saturation_UpperSat_e) {
+    rtb_Y_dr = AutopilotLaws_P.Saturation_UpperSat_e;
+  } else if (rtb_Y_dr < AutopilotLaws_P.Saturation_LowerSat_f) {
+    rtb_Y_dr = AutopilotLaws_P.Saturation_LowerSat_f;
   }
 
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_U.in.data.Psi_magnetic_deg + AutopilotLaws_P.Constant3_Value_cd;
   AutopilotLaws_DWork.DelayInput1_DSTATE = (AutopilotLaws_U.in.input.Psi_c_deg - AutopilotLaws_DWork.DelayInput1_DSTATE)
     + AutopilotLaws_P.Constant3_Value_cd;
-  rtb_error_c = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_cd);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_cd - rtb_error_c;
+  rtb_error_b = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Constant3_Value_cd);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_cd - rtb_error_b;
   AutopilotLaws_DWork.DelayInput1_DSTATE = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE,
     AutopilotLaws_P.Constant3_Value_cd);
   rtb_valid = ((rtb_Saturation == AutopilotLaws_P.CompareToConstant5_const) ==
@@ -964,7 +962,7 @@ void AutopilotLawsModelClass::step()
   }
 
   if (a < 1.0) {
-    rtb_valid_m = rtb_valid;
+    rtb_valid_f = rtb_valid;
   } else {
     if (a > 100.0) {
       i = 100;
@@ -972,17 +970,17 @@ void AutopilotLawsModelClass::step()
       i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(a), 4.294967296E+9)));
     }
 
-    rtb_valid_m = AutopilotLaws_DWork.Delay_DSTATE_l[100U - static_cast<uint32_T>(i)];
+    rtb_valid_f = AutopilotLaws_DWork.Delay_DSTATE_l[100U - static_cast<uint32_T>(i)];
   }
 
-  AutopilotLaws_Chart(rtb_error_c, AutopilotLaws_P.Gain_Gain_cy * AutopilotLaws_DWork.DelayInput1_DSTATE, (rtb_valid !=
-    rtb_valid_m), &a, &AutopilotLaws_DWork.sf_Chart);
+  AutopilotLaws_Chart(rtb_error_b, AutopilotLaws_P.Gain_Gain_cy * AutopilotLaws_DWork.DelayInput1_DSTATE, (rtb_valid !=
+    rtb_valid_f), &a, &AutopilotLaws_DWork.sf_Chart);
   AutopilotLaws_DWork.DelayInput1_DSTATE = look1_binlxpw(AutopilotLaws_U.in.data.V_tas_kn,
     AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1_h, AutopilotLaws_P.ScheduledGain_Table_o, 6U);
-  rtb_error_c = a * AutopilotLaws_DWork.DelayInput1_DSTATE;
+  rtb_error_b = a * AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain_Gain_o * result[2];
-  L = AutopilotLaws_P.Gain1_Gain_o * rtb_error_c + AutopilotLaws_DWork.DelayInput1_DSTATE;
-  AutopilotLaws_MATLABFunction_m(AutopilotLaws_U.in.input.Psi_c_deg, a, L, &rtb_error_c, &rtb_lo_f,
+  L = AutopilotLaws_P.Gain1_Gain_o * rtb_error_b + AutopilotLaws_DWork.DelayInput1_DSTATE;
+  AutopilotLaws_MATLABFunction_m(AutopilotLaws_U.in.input.Psi_c_deg, a, L, &rtb_error_b, &rtb_lo_a,
     &AutopilotLaws_DWork.sf_MATLABFunction_m);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_U.in.data.Psi_magnetic_track_deg +
     AutopilotLaws_P.Constant3_Value_k;
@@ -992,17 +990,17 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant3_Value_k - R;
   AutopilotLaws_DWork.DelayInput1_DSTATE = rt_modd(AutopilotLaws_DWork.DelayInput1_DSTATE,
     AutopilotLaws_P.Constant3_Value_k);
-  rtb_valid_m = ((rtb_Saturation == AutopilotLaws_P.CompareToConstant4_const) ==
+  rtb_valid_f = ((rtb_Saturation == AutopilotLaws_P.CompareToConstant4_const) ==
                  AutopilotLaws_P.CompareToConstant_const_e);
   a = AutopilotLaws_P.Subsystem_Value_n / AutopilotLaws_U.in.time.dt;
-  if (!rtb_valid_m) {
+  if (!rtb_valid_f) {
     for (i = 0; i < 100; i++) {
       AutopilotLaws_DWork.Delay_DSTATE_h5[i] = AutopilotLaws_P.Delay_InitialCondition_b;
     }
   }
 
   if (a < 1.0) {
-    rtb_Compare_jy = rtb_valid_m;
+    rtb_Compare_jy = rtb_valid_f;
   } else {
     if (a > 100.0) {
       i = 100;
@@ -1013,14 +1011,14 @@ void AutopilotLawsModelClass::step()
     rtb_Compare_jy = AutopilotLaws_DWork.Delay_DSTATE_h5[100U - static_cast<uint32_T>(i)];
   }
 
-  AutopilotLaws_Chart(R, AutopilotLaws_P.Gain_Gain_p * AutopilotLaws_DWork.DelayInput1_DSTATE, (rtb_valid_m !=
+  AutopilotLaws_Chart(R, AutopilotLaws_P.Gain_Gain_p * AutopilotLaws_DWork.DelayInput1_DSTATE, (rtb_valid_f !=
     rtb_Compare_jy), &a, &AutopilotLaws_DWork.sf_Chart_ba);
   AutopilotLaws_DWork.DelayInput1_DSTATE = look1_binlxpw(AutopilotLaws_U.in.data.V_tas_kn,
     AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1_o, AutopilotLaws_P.ScheduledGain_Table_e, 6U);
   R = a * AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain_Gain_l * result[2];
   b_L = AutopilotLaws_P.Gain1_Gain_i4 * R + AutopilotLaws_DWork.DelayInput1_DSTATE;
-  AutopilotLaws_MATLABFunction_m(AutopilotLaws_U.in.input.Psi_c_deg, a, b_L, &rtb_Y_g, &rtb_lo,
+  AutopilotLaws_MATLABFunction_m(AutopilotLaws_U.in.input.Psi_c_deg, a, b_L, &rtb_Y_pl, &rtb_lo,
     &AutopilotLaws_DWork.sf_MATLABFunction_e5);
   AutopilotLaws_MATLABFunction(AutopilotLaws_P.tau_Value_c, AutopilotLaws_P.zeta_Value_h,
     &AutopilotLaws_DWork.DelayInput1_DSTATE, &R);
@@ -1035,16 +1033,16 @@ void AutopilotLawsModelClass::step()
     break;
 
    case 1:
-    if (L > rtb_error_c) {
-      L = rtb_error_c;
-    } else if (L < rtb_lo_f) {
-      L = rtb_lo_f;
+    if (L > rtb_error_b) {
+      L = rtb_error_b;
+    } else if (L < rtb_lo_a) {
+      L = rtb_lo_a;
     }
     break;
 
    case 2:
-    if (b_L > rtb_Y_g) {
-      L = rtb_Y_g;
+    if (b_L > rtb_Y_pl) {
+      L = rtb_Y_pl;
     } else if (b_L < rtb_lo) {
       L = rtb_lo;
     } else {
@@ -1053,15 +1051,15 @@ void AutopilotLawsModelClass::step()
     break;
 
    case 3:
-    u0 = AutopilotLaws_P.Gain_Gain_c * AutopilotLaws_U.in.data.flight_guidance_xtk_nmi * R /
+    rtb_Add3_np = AutopilotLaws_P.Gain_Gain_c * AutopilotLaws_U.in.data.flight_guidance_xtk_nmi * R /
       AutopilotLaws_U.in.data.V_gnd_kn;
-    if (u0 > AutopilotLaws_P.Saturation_UpperSat) {
-      u0 = AutopilotLaws_P.Saturation_UpperSat;
-    } else if (u0 < AutopilotLaws_P.Saturation_LowerSat) {
-      u0 = AutopilotLaws_P.Saturation_LowerSat;
+    if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat) {
+      rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat;
+    } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat) {
+      rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat;
     }
 
-    L = a - (AutopilotLaws_P.Gain2_Gain * AutopilotLaws_U.in.data.flight_guidance_tae_deg + u0) *
+    L = a - (AutopilotLaws_P.Gain2_Gain * AutopilotLaws_U.in.data.flight_guidance_tae_deg + rtb_Add3_np) *
       AutopilotLaws_DWork.DelayInput1_DSTATE * AutopilotLaws_U.in.data.V_gnd_kn;
     break;
 
@@ -1070,47 +1068,47 @@ void AutopilotLawsModelClass::step()
     break;
 
    case 5:
-    rtb_error_c = rt_modd((AutopilotLaws_U.in.data.Psi_magnetic_deg - (AutopilotLaws_U.in.data.Psi_true_deg +
+    rtb_error_b = rt_modd((AutopilotLaws_U.in.data.Psi_magnetic_deg - (AutopilotLaws_U.in.data.Psi_true_deg +
       AutopilotLaws_P.Constant3_Value)) + AutopilotLaws_P.Constant3_Value, AutopilotLaws_P.Constant3_Value);
-    a = rt_modd(AutopilotLaws_P.Constant3_Value - rtb_error_c, AutopilotLaws_P.Constant3_Value);
-    if (rtb_error_c < a) {
-      rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_l * rtb_error_c;
+    a = rt_modd(AutopilotLaws_P.Constant3_Value - rtb_error_b, AutopilotLaws_P.Constant3_Value);
+    if (rtb_error_b < a) {
+      rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_l * rtb_error_b;
     } else {
       rtb_Add3_np = AutopilotLaws_P.Gain_Gain_g * a;
     }
 
-    rtb_error_c = rt_modd((rt_modd(rt_modd(AutopilotLaws_U.in.data.Psi_magnetic_track_deg + rtb_Add3_np,
+    rtb_error_b = rt_modd((rt_modd(rt_modd(AutopilotLaws_U.in.data.Psi_magnetic_track_deg + rtb_Add3_np,
       AutopilotLaws_P.Constant3_Value_d) + AutopilotLaws_P.Constant3_Value_d, AutopilotLaws_P.Constant3_Value_d) - (Phi2
       + AutopilotLaws_P.Constant3_Value_c)) + AutopilotLaws_P.Constant3_Value_c, AutopilotLaws_P.Constant3_Value_c);
-    a = rt_modd(AutopilotLaws_P.Constant3_Value_c - rtb_error_c, AutopilotLaws_P.Constant3_Value_c);
-    if (rtb_Y_bw > AutopilotLaws_P.Saturation_UpperSat_a) {
-      rtb_Y_bw = AutopilotLaws_P.Saturation_UpperSat_a;
-    } else if (rtb_Y_bw < AutopilotLaws_P.Saturation_LowerSat_a) {
-      rtb_Y_bw = AutopilotLaws_P.Saturation_LowerSat_a;
+    a = rt_modd(AutopilotLaws_P.Constant3_Value_c - rtb_error_b, AutopilotLaws_P.Constant3_Value_c);
+    if (rtb_Y_k > AutopilotLaws_P.Saturation_UpperSat_a) {
+      rtb_Y_k = AutopilotLaws_P.Saturation_UpperSat_a;
+    } else if (rtb_Y_k < AutopilotLaws_P.Saturation_LowerSat_a) {
+      rtb_Y_k = AutopilotLaws_P.Saturation_LowerSat_a;
     }
 
-    if (rtb_error_c < a) {
-      rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_g * rtb_error_c;
+    if (rtb_error_b < a) {
+      rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_g * rtb_error_b;
     } else {
       rtb_Add3_np = AutopilotLaws_P.Gain_Gain_f * a;
     }
 
-    u0 = (rtb_Y_i * look1_binlxpw(AutopilotLaws_U.in.data.V_tas_kn,
-           AutopilotLaws_P.ScheduledGain2_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain2_Table, 6U) *
-          AutopilotLaws_P.Gain4_Gain * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
-           AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain_Table, 5U) + std::sin
-          (AutopilotLaws_P.Gain1_Gain_b * rtb_Add3_np) * AutopilotLaws_U.in.data.V_gnd_kn * AutopilotLaws_P.Gain2_Gain_g)
-      + (AutopilotLaws_U.in.data.beta_deg * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
-          AutopilotLaws_P.ScheduledGain1_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain1_Table, 4U) + rtb_Y_n *
-         look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft, AutopilotLaws_P.ScheduledGain3_BreakpointsForDimension1,
-                       AutopilotLaws_P.ScheduledGain3_Table, 5U));
-    if (u0 > AutopilotLaws_P.Saturation1_UpperSat) {
-      u0 = AutopilotLaws_P.Saturation1_UpperSat;
-    } else if (u0 < AutopilotLaws_P.Saturation1_LowerSat) {
-      u0 = AutopilotLaws_P.Saturation1_LowerSat;
+    rtb_Add3_np = (rtb_Y_nd * look1_binlxpw(AutopilotLaws_U.in.data.V_tas_kn,
+      AutopilotLaws_P.ScheduledGain2_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain2_Table, 6U) *
+                   AutopilotLaws_P.Gain4_Gain * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
+      AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain_Table, 5U) + std::sin
+                   (AutopilotLaws_P.Gain1_Gain_b * rtb_Add3_np) * AutopilotLaws_U.in.data.V_gnd_kn *
+                   AutopilotLaws_P.Gain2_Gain_g) + (AutopilotLaws_U.in.data.beta_deg * look1_binlxpw
+      (AutopilotLaws_U.in.data.H_radio_ft, AutopilotLaws_P.ScheduledGain1_BreakpointsForDimension1,
+       AutopilotLaws_P.ScheduledGain1_Table, 4U) + rtb_Y_dr * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
+      AutopilotLaws_P.ScheduledGain3_BreakpointsForDimension1, AutopilotLaws_P.ScheduledGain3_Table, 5U));
+    if (rtb_Add3_np > AutopilotLaws_P.Saturation1_UpperSat) {
+      rtb_Add3_np = AutopilotLaws_P.Saturation1_UpperSat;
+    } else if (rtb_Add3_np < AutopilotLaws_P.Saturation1_LowerSat) {
+      rtb_Add3_np = AutopilotLaws_P.Saturation1_LowerSat;
     }
 
-    L = (AutopilotLaws_P.Constant_Value - rtb_Y_bw) * distance_m + u0 * rtb_Y_bw;
+    L = (AutopilotLaws_P.Constant_Value - rtb_Y_k) * distance_m + rtb_Add3_np * rtb_Y_k;
     break;
 
    default:
@@ -1118,16 +1116,16 @@ void AutopilotLawsModelClass::step()
     break;
   }
 
-  rtb_error_c = std::abs(AutopilotLaws_U.in.data.V_tas_kn);
-  if (rtb_error_c > 600.0) {
-    rtb_error_c = 19.0;
+  rtb_error_b = std::abs(AutopilotLaws_U.in.data.V_tas_kn);
+  if (rtb_error_b > 600.0) {
+    rtb_error_b = 19.0;
   } else {
     i = 5;
     low_i = 1;
     low_ip1 = 2;
     while (i > low_ip1) {
       mid_i = (low_i + i) >> 1;
-      if (rtb_error_c >= (static_cast<real_T>(mid_i) - 1.0) * 150.0) {
+      if (rtb_error_b >= (static_cast<real_T>(mid_i) - 1.0) * 150.0) {
         low_i = mid_i;
         low_ip1 = mid_i + 1;
       } else {
@@ -1135,18 +1133,18 @@ void AutopilotLawsModelClass::step()
       }
     }
 
-    rtb_error_c = (rtb_error_c - (static_cast<real_T>(low_i) - 1.0) * 150.0) / static_cast<real_T>(150 * low_i - (low_i
+    rtb_error_b = (rtb_error_b - (static_cast<real_T>(low_i) - 1.0) * 150.0) / static_cast<real_T>(150 * low_i - (low_i
       - 1) * 150);
-    if (rtb_error_c == 0.0) {
-      rtb_error_c = b[low_i - 1];
-    } else if (rtb_error_c == 1.0) {
-      rtb_error_c = b[low_i];
+    if (rtb_error_b == 0.0) {
+      rtb_error_b = b[low_i - 1];
+    } else if (rtb_error_b == 1.0) {
+      rtb_error_b = b[low_i];
     } else {
       tmp = b[low_i - 1];
       if (tmp == b[low_i]) {
-        rtb_error_c = tmp;
+        rtb_error_b = tmp;
       } else {
-        rtb_error_c = (1.0 - rtb_error_c) * static_cast<real_T>(tmp) + rtb_error_c * static_cast<real_T>(b[low_i]);
+        rtb_error_b = (1.0 - rtb_error_b) * static_cast<real_T>(tmp) + rtb_error_b * static_cast<real_T>(b[low_i]);
       }
     }
   }
@@ -1154,34 +1152,34 @@ void AutopilotLawsModelClass::step()
   if ((AutopilotLaws_U.in.input.lateral_mode != 30.0) && (AutopilotLaws_U.in.input.lateral_mode != 31.0) &&
       (AutopilotLaws_U.in.input.lateral_mode != 32.0) && (AutopilotLaws_U.in.input.lateral_mode != 33.0) &&
       (AutopilotLaws_U.in.input.lateral_mode != 34.0)) {
-    rtb_error_c = std::fmin(25.0, rtb_error_c);
+    rtb_error_b = std::fmin(25.0, rtb_error_b);
   } else if (AutopilotLaws_U.in.data.H_radio_ft < 700.0) {
-    rtb_error_c = 10.0;
+    rtb_error_b = 10.0;
   }
 
   a = std::abs(AutopilotLaws_U.in.data.flight_guidance_phi_limit_deg);
-  if (!AutopilotLaws_DWork.pY_not_empty_j) {
-    AutopilotLaws_DWork.pY_e = 25.0;
-    AutopilotLaws_DWork.pY_not_empty_j = true;
+  if (!AutopilotLaws_DWork.pY_not_empty_e) {
+    AutopilotLaws_DWork.pY_g = 25.0;
+    AutopilotLaws_DWork.pY_not_empty_e = true;
   }
 
   if ((AutopilotLaws_U.in.input.lateral_mode == 20.0) && (a > 0.0)) {
-    rtb_error_c = a;
+    rtb_error_b = a;
   }
 
-  AutopilotLaws_DWork.pY_e += std::fmax(std::fmin(rtb_error_c - AutopilotLaws_DWork.pY_e, 5.0 *
+  AutopilotLaws_DWork.pY_g += std::fmax(std::fmin(rtb_error_b - AutopilotLaws_DWork.pY_g, 5.0 *
     AutopilotLaws_U.in.time.dt), -5.0 * AutopilotLaws_U.in.time.dt);
-  if (L > AutopilotLaws_DWork.pY_e) {
-    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_DWork.pY_e;
+  if (L > AutopilotLaws_DWork.pY_g) {
+    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_DWork.pY_g;
   } else {
-    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_lt * AutopilotLaws_DWork.pY_e;
+    AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_lt * AutopilotLaws_DWork.pY_g;
     if (L >= AutopilotLaws_DWork.DelayInput1_DSTATE) {
       AutopilotLaws_DWork.DelayInput1_DSTATE = L;
     }
   }
 
   AutopilotLaws_LagFilter(AutopilotLaws_P.Gain_Gain_lu * (AutopilotLaws_DWork.DelayInput1_DSTATE - rtb_GainTheta1),
-    AutopilotLaws_P.LagFilter_C1_a, AutopilotLaws_U.in.time.dt, &rtb_Y_i, &AutopilotLaws_DWork.sf_LagFilter_mp);
+    AutopilotLaws_P.LagFilter_C1_a, AutopilotLaws_U.in.time.dt, &rtb_Y_nd, &AutopilotLaws_DWork.sf_LagFilter_mp);
   if (rtb_dme > AutopilotLaws_P.Saturation_UpperSat_o) {
     rtb_dme = AutopilotLaws_P.Saturation_UpperSat_o;
   } else if (rtb_dme < AutopilotLaws_P.Saturation_LowerSat_o) {
@@ -1212,14 +1210,14 @@ void AutopilotLawsModelClass::step()
 
   AutopilotLaws_storevalue(rtb_Compare_jy, rt_modd(rt_modd(AutopilotLaws_U.in.data.nav_loc_deg -
     AutopilotLaws_U.in.data.nav_loc_magvar_deg, AutopilotLaws_P.Constant3_Value_dk) + AutopilotLaws_P.Constant3_Value_dk,
-    AutopilotLaws_P.Constant3_Value_dk), &rtb_Y_g, &AutopilotLaws_DWork.sf_storevalue);
-  rtb_error_c = rt_modd((AutopilotLaws_U.in.data.Psi_true_deg - (rt_modd(rt_modd
-    (AutopilotLaws_U.in.data.nav_loc_error_deg + rtb_Y_g, AutopilotLaws_P.Constant3_Value_o) +
+    AutopilotLaws_P.Constant3_Value_dk), &rtb_Y_pl, &AutopilotLaws_DWork.sf_storevalue);
+  rtb_error_b = rt_modd((AutopilotLaws_U.in.data.Psi_true_deg - (rt_modd(rt_modd
+    (AutopilotLaws_U.in.data.nav_loc_error_deg + rtb_Y_pl, AutopilotLaws_P.Constant3_Value_o) +
     AutopilotLaws_P.Constant3_Value_o, AutopilotLaws_P.Constant3_Value_o) + AutopilotLaws_P.Constant3_Value_n1)) +
                         AutopilotLaws_P.Constant3_Value_n1, AutopilotLaws_P.Constant3_Value_n1);
-  rtb_dme = rt_modd(AutopilotLaws_P.Constant3_Value_n1 - rtb_error_c, AutopilotLaws_P.Constant3_Value_n1);
-  if (rtb_error_c < rtb_dme) {
-    rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_j * rtb_error_c;
+  rtb_dme = rt_modd(AutopilotLaws_P.Constant3_Value_n1 - rtb_error_b, AutopilotLaws_P.Constant3_Value_n1);
+  if (rtb_error_b < rtb_dme) {
+    rtb_Add3_np = AutopilotLaws_P.Gain1_Gain_j * rtb_error_b;
   } else {
     rtb_Add3_np = AutopilotLaws_P.Gain_Gain_i * rtb_dme;
   }
@@ -1231,15 +1229,15 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_P.Constant3_Value_hr) - (AutopilotLaws_U.in.data.Psi_true_deg + AutopilotLaws_P.Constant3_Value_nr)) +
                     AutopilotLaws_P.Constant3_Value_nr, AutopilotLaws_P.Constant3_Value_nr);
   AutopilotLaws_Chart_h(rtb_dme, AutopilotLaws_P.Gain_Gain_oc * rt_modd(AutopilotLaws_P.Constant3_Value_nr - rtb_dme,
-    AutopilotLaws_P.Constant3_Value_nr), AutopilotLaws_P.Constant1_Value_e, &rtb_error_c,
+    AutopilotLaws_P.Constant3_Value_nr), AutopilotLaws_P.Constant1_Value_e, &rtb_error_b,
                         &AutopilotLaws_DWork.sf_Chart_b);
   AutopilotLaws_RateLimiter_n(rtb_Compare_jy, AutopilotLaws_P.RateLimiterVariableTs_up_n,
     AutopilotLaws_P.RateLimiterVariableTs_lo_k, AutopilotLaws_U.in.time.dt,
-    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition_i, &rtb_Y_bw, &AutopilotLaws_DWork.sf_RateLimiter_e);
-  if (rtb_Y_bw > AutopilotLaws_P.Saturation_UpperSat_k) {
-    rtb_Y_bw = AutopilotLaws_P.Saturation_UpperSat_k;
-  } else if (rtb_Y_bw < AutopilotLaws_P.Saturation_LowerSat_f3) {
-    rtb_Y_bw = AutopilotLaws_P.Saturation_LowerSat_f3;
+    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition_i, &rtb_Y_k, &AutopilotLaws_DWork.sf_RateLimiter_e);
+  if (rtb_Y_k > AutopilotLaws_P.Saturation_UpperSat_k) {
+    rtb_Y_k = AutopilotLaws_P.Saturation_UpperSat_k;
+  } else if (rtb_Y_k < AutopilotLaws_P.Saturation_LowerSat_f3) {
+    rtb_Y_k = AutopilotLaws_P.Saturation_LowerSat_f3;
   }
 
   if (rtb_OR1 || (!AutopilotLaws_DWork.storage_not_empty)) {
@@ -1247,18 +1245,18 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.storage_not_empty = true;
   }
 
-  rtb_error_c = (AutopilotLaws_P.Gain_Gain_b * result[2] * rtb_Y_bw + (AutopilotLaws_P.Constant_Value_a - rtb_Y_bw) *
+  rtb_error_b = (AutopilotLaws_P.Gain_Gain_b * result[2] * rtb_Y_k + (AutopilotLaws_P.Constant_Value_a - rtb_Y_k) *
                  (AutopilotLaws_P.Gain10_Gain * AutopilotLaws_DWork.storage)) + AutopilotLaws_P.Gain5_Gain_o *
-    rtb_error_c;
-  if (rtb_error_c > AutopilotLaws_P.Saturation2_UpperSat) {
-    rtb_error_c = AutopilotLaws_P.Saturation2_UpperSat;
-  } else if (rtb_error_c < AutopilotLaws_P.Saturation2_LowerSat) {
-    rtb_error_c = AutopilotLaws_P.Saturation2_LowerSat;
+    rtb_error_b;
+  if (rtb_error_b > AutopilotLaws_P.Saturation2_UpperSat) {
+    rtb_error_b = AutopilotLaws_P.Saturation2_UpperSat;
+  } else if (rtb_error_b < AutopilotLaws_P.Saturation2_LowerSat) {
+    rtb_error_b = AutopilotLaws_P.Saturation2_LowerSat;
   }
 
   AutopilotLaws_RateLimiter_n(rtb_Compare_jy, AutopilotLaws_P.RateLimiterVariableTs2_up,
     AutopilotLaws_P.RateLimiterVariableTs2_lo, AutopilotLaws_U.in.time.dt,
-    AutopilotLaws_P.RateLimiterVariableTs2_InitialCondition, &rtb_Y_bw, &AutopilotLaws_DWork.sf_RateLimiter_m);
+    AutopilotLaws_P.RateLimiterVariableTs2_InitialCondition, &rtb_Y_k, &AutopilotLaws_DWork.sf_RateLimiter_m);
   if (rtb_fpmtoms > AutopilotLaws_P.Switch_Threshold_n) {
     switch (static_cast<int32_T>(rtb_Saturation)) {
      case 0:
@@ -1286,15 +1284,15 @@ void AutopilotLawsModelClass::step()
       break;
 
      default:
-      if (rtb_Y_bw > AutopilotLaws_P.Saturation_UpperSat_g) {
+      if (rtb_Y_k > AutopilotLaws_P.Saturation_UpperSat_g) {
         rtb_dme = AutopilotLaws_P.Saturation_UpperSat_g;
-      } else if (rtb_Y_bw < AutopilotLaws_P.Saturation_LowerSat_n) {
+      } else if (rtb_Y_k < AutopilotLaws_P.Saturation_LowerSat_n) {
         rtb_dme = AutopilotLaws_P.Saturation_LowerSat_n;
       } else {
-        rtb_dme = rtb_Y_bw;
+        rtb_dme = rtb_Y_k;
       }
 
-      R = AutopilotLaws_P.Gain3_Gain * rtb_error_c * rtb_dme + (AutopilotLaws_P.Constant_Value_p - rtb_dme) *
+      R = AutopilotLaws_P.Gain3_Gain * rtb_error_b * rtb_dme + (AutopilotLaws_P.Constant_Value_p - rtb_dme) *
         AutopilotLaws_DWork.storage;
       break;
     }
@@ -1324,22 +1322,22 @@ void AutopilotLawsModelClass::step()
     break;
 
    case 5:
-    rtb_Saturation = rtb_Y_n;
+    rtb_Saturation = rtb_Y_dr;
     break;
 
    default:
-    if (rtb_Y_bw > AutopilotLaws_P.Saturation_UpperSat_j) {
-      rtb_Y_bw = AutopilotLaws_P.Saturation_UpperSat_j;
-    } else if (rtb_Y_bw < AutopilotLaws_P.Saturation_LowerSat_p) {
-      rtb_Y_bw = AutopilotLaws_P.Saturation_LowerSat_p;
+    if (rtb_Y_k > AutopilotLaws_P.Saturation_UpperSat_j) {
+      rtb_Y_k = AutopilotLaws_P.Saturation_UpperSat_j;
+    } else if (rtb_Y_k < AutopilotLaws_P.Saturation_LowerSat_p) {
+      rtb_Y_k = AutopilotLaws_P.Saturation_LowerSat_p;
     }
 
-    rtb_Saturation = AutopilotLaws_P.Gain7_Gain * rtb_error_c * rtb_Y_bw + (AutopilotLaws_P.Constant_Value_o - rtb_Y_bw)
-      * AutopilotLaws_DWork.storage;
+    rtb_Saturation = AutopilotLaws_P.Gain7_Gain * rtb_error_b * rtb_Y_k + (AutopilotLaws_P.Constant_Value_o - rtb_Y_k) *
+      AutopilotLaws_DWork.storage;
     break;
   }
 
-  AutopilotLaws_LagFilter(rtb_Saturation, AutopilotLaws_P.LagFilter_C1_k, AutopilotLaws_U.in.time.dt, &rtb_error_c,
+  AutopilotLaws_LagFilter(rtb_Saturation, AutopilotLaws_P.LagFilter_C1_k, AutopilotLaws_U.in.time.dt, &rtb_error_b,
     &AutopilotLaws_DWork.sf_LagFilter_h2);
   AutopilotLaws_DWork.icLoad = ((rtb_fpmtoms == 0) || AutopilotLaws_DWork.icLoad);
   if (AutopilotLaws_DWork.icLoad) {
@@ -1367,37 +1365,37 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.Delay_DSTATE_hc += std::fmax(AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.Gain1_Gain_kf
     * AutopilotLaws_DWork.pY * AutopilotLaws_U.in.time.dt);
   AutopilotLaws_LagFilter(AutopilotLaws_DWork.Delay_DSTATE_hc, AutopilotLaws_P.LagFilter_C1_l,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_n, &AutopilotLaws_DWork.sf_LagFilter_o);
+    AutopilotLaws_U.in.time.dt, &rtb_Y_dr, &AutopilotLaws_DWork.sf_LagFilter_o);
   AutopilotLaws_RateLimiter(static_cast<real_T>(rtb_fpmtoms), AutopilotLaws_P.RateLimiterVariableTs_up_b,
     AutopilotLaws_P.RateLimiterVariableTs_lo_b, AutopilotLaws_U.in.time.dt,
-    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition_il, &rtb_Y_g, &AutopilotLaws_DWork.sf_RateLimiter_d);
-  if (rtb_Y_g > AutopilotLaws_P.Saturation_UpperSat_m) {
+    AutopilotLaws_P.RateLimiterVariableTs_InitialCondition_il, &rtb_Y_pl, &AutopilotLaws_DWork.sf_RateLimiter_d);
+  if (rtb_Y_pl > AutopilotLaws_P.Saturation_UpperSat_m) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_UpperSat_m;
-  } else if (rtb_Y_g < AutopilotLaws_P.Saturation_LowerSat_fw) {
+  } else if (rtb_Y_pl < AutopilotLaws_P.Saturation_LowerSat_fw) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_LowerSat_fw;
   } else {
-    AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_g;
+    AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_pl;
   }
 
-  rtb_dme = rtb_Y_n * AutopilotLaws_DWork.DelayInput1_DSTATE;
+  rtb_dme = rtb_Y_dr * AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant_Value_ii - AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE *= rtb_GainTheta1;
   AutopilotLaws_DWork.DelayInput1_DSTATE += rtb_dme;
   AutopilotLaws_Y.out.output.Phi_loc_c = distance_m;
-  u0 = AutopilotLaws_P.Gain_Gain_m3 * R;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_c) {
+  rtb_Add3_np = AutopilotLaws_P.Gain_Gain_m3 * R;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_c) {
     AutopilotLaws_Y.out.output.Nosewheel_c = AutopilotLaws_P.Saturation_UpperSat_c;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_d) {
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_d) {
     AutopilotLaws_Y.out.output.Nosewheel_c = AutopilotLaws_P.Saturation_LowerSat_d;
   } else {
-    AutopilotLaws_Y.out.output.Nosewheel_c = u0;
+    AutopilotLaws_Y.out.output.Nosewheel_c = rtb_Add3_np;
   }
 
-  AutopilotLaws_Y.out.output.flight_director.Beta_c_deg = rtb_error_c;
+  AutopilotLaws_Y.out.output.flight_director.Beta_c_deg = rtb_error_b;
   AutopilotLaws_Y.out.output.autopilot.Beta_c_deg = rtb_Saturation;
-  AutopilotLaws_Y.out.output.flight_director.Phi_c_deg = rtb_Y_i;
+  AutopilotLaws_Y.out.output.flight_director.Phi_c_deg = rtb_Y_nd;
   AutopilotLaws_Y.out.output.autopilot.Phi_c_deg = AutopilotLaws_DWork.DelayInput1_DSTATE;
-  AutopilotLaws_WashoutFilter(rtb_GainTheta, AutopilotLaws_P.WashoutFilter_C1, AutopilotLaws_U.in.time.dt, &rtb_error_c,
+  AutopilotLaws_WashoutFilter(rtb_GainTheta, AutopilotLaws_P.WashoutFilter_C1, AutopilotLaws_U.in.time.dt, &rtb_error_b,
     &AutopilotLaws_DWork.sf_WashoutFilter_f);
   if (AutopilotLaws_P.ManualSwitch_CurrentSetting_b == 1) {
     rtb_dme = AutopilotLaws_P.Constant_Value_m;
@@ -1423,8 +1421,8 @@ void AutopilotLawsModelClass::step()
   }
 
   AutopilotLaws_LagFilter(AutopilotLaws_B.u - AutopilotLaws_U.in.data.H_ft, AutopilotLaws_P.LagFilter_C1_ai,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_LagFilter_g);
-  AutopilotLaws_DWork.DelayInput1_DSTATE += AutopilotLaws_P.Gain_Gain_ft * rtb_Y_g;
+    AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_LagFilter_g);
+  AutopilotLaws_DWork.DelayInput1_DSTATE += AutopilotLaws_P.Gain_Gain_ft * rtb_Y_pl;
   if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation_UpperSat_n) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_UpperSat_n;
   } else if (AutopilotLaws_DWork.DelayInput1_DSTATE < AutopilotLaws_P.Saturation_LowerSat_d4) {
@@ -1440,38 +1438,38 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_LowerSat_n5;
   }
 
-  u0 = a / AutopilotLaws_DWork.DelayInput1_DSTATE;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = a / AutopilotLaws_DWork.DelayInput1_DSTATE;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  distance_m = AutopilotLaws_P.Gain_Gain_k * std::asin(u0);
+  distance_m = AutopilotLaws_P.Gain_Gain_k * std::asin(rtb_Add3_np);
   rtb_Compare_jy = (rtb_dme == AutopilotLaws_P.CompareToConstant1_const_c);
-  if (!AutopilotLaws_DWork.wasActive_not_empty_m) {
-    AutopilotLaws_DWork.wasActive_o = rtb_Compare_jy;
-    AutopilotLaws_DWork.wasActive_not_empty_m = true;
+  if (!AutopilotLaws_DWork.wasActive_not_empty_e) {
+    AutopilotLaws_DWork.wasActive_m = rtb_Compare_jy;
+    AutopilotLaws_DWork.wasActive_not_empty_e = true;
   }
 
   Phi2 = AutopilotLaws_U.in.input.H_c_ft - AutopilotLaws_U.in.data.H_ind_ft;
   if (Phi2 < 0.0) {
-    rtb_Add3_np = -1.0;
+    i = -1;
   } else {
-    rtb_Add3_np = (Phi2 > 0.0);
+    i = (Phi2 > 0.0);
   }
 
-  a = rtb_Add3_np * AutopilotLaws_DWork.dH_offset + Phi2;
-  if ((!AutopilotLaws_DWork.wasActive_o) && rtb_Compare_jy) {
+  a = static_cast<real_T>(i) * AutopilotLaws_DWork.dH_offset + Phi2;
+  if ((!AutopilotLaws_DWork.wasActive_m) && rtb_Compare_jy) {
     AutopilotLaws_DWork.k = AutopilotLaws_U.in.data.H_dot_ft_min / a;
     AutopilotLaws_DWork.dH_offset = std::abs(500.0 / std::abs(AutopilotLaws_DWork.k) - 100.0);
     if (a < 0.0) {
-      rtb_Add3_np = -1.0;
+      i = -1;
     } else {
-      rtb_Add3_np = (a > 0.0);
+      i = (a > 0.0);
     }
 
-    a += rtb_Add3_np * AutopilotLaws_DWork.dH_offset;
+    a += static_cast<real_T>(i) * AutopilotLaws_DWork.dH_offset;
     AutopilotLaws_DWork.k = AutopilotLaws_U.in.data.H_dot_ft_min / a;
     AutopilotLaws_DWork.maxH_dot = std::abs(AutopilotLaws_U.in.data.H_dot_ft_min);
   }
@@ -1479,15 +1477,15 @@ void AutopilotLawsModelClass::step()
   a *= AutopilotLaws_DWork.k;
   if (std::abs(a) > AutopilotLaws_DWork.maxH_dot) {
     if (a < 0.0) {
-      rtb_Add3_np = -1.0;
+      i = -1;
     } else {
-      rtb_Add3_np = (a > 0.0);
+      i = (a > 0.0);
     }
 
-    a = rtb_Add3_np * AutopilotLaws_DWork.maxH_dot;
+    a = static_cast<real_T>(i) * AutopilotLaws_DWork.maxH_dot;
   }
 
-  AutopilotLaws_DWork.wasActive_o = rtb_Compare_jy;
+  AutopilotLaws_DWork.wasActive_m = rtb_Compare_jy;
   AutopilotLaws_DWork.DelayInput1_DSTATE = a - AutopilotLaws_U.in.data.H_dot_ft_min;
   a = AutopilotLaws_P.ftmintoms_Gain_c * AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.kntoms_Gain_h * AutopilotLaws_U.in.data.V_tas_kn;
@@ -1497,61 +1495,61 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_LowerSat_nr;
   }
 
-  u0 = a / AutopilotLaws_DWork.DelayInput1_DSTATE;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = a / AutopilotLaws_DWork.DelayInput1_DSTATE;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  a = AutopilotLaws_P.Gain_Gain_es * std::asin(u0);
+  a = AutopilotLaws_P.Gain_Gain_es * std::asin(rtb_Add3_np);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.fpmtoms_Gain * AutopilotLaws_U.in.data.H_dot_ft_min;
-  u0 = AutopilotLaws_P.kntoms_Gain_m * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_jh) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_jh;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_i) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_i;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_m * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_jh) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_jh;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_i) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_i;
   }
 
-  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / u0) *
+  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / rtb_Add3_np) *
     AutopilotLaws_P.Gain_Gain_e3;
   R = AutopilotLaws_P.Gain1_Gain_c * rtb_GainTheta1;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain * (AutopilotLaws_P.GStoGS_CAS_Gain * (AutopilotLaws_P.ktstomps_Gain *
-    AutopilotLaws_U.in.data.V_gnd_kn)), AutopilotLaws_P.WashoutFilter_C1_e, AutopilotLaws_U.in.time.dt, &rtb_Y_g,
+    AutopilotLaws_U.in.data.V_gnd_kn)), AutopilotLaws_P.WashoutFilter_C1_e, AutopilotLaws_U.in.time.dt, &rtb_Y_pl,
     &AutopilotLaws_DWork.sf_WashoutFilter);
-  u0 = AutopilotLaws_P.kntoms_Gain_b * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ei) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ei;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_dz) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_dz;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_b * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ei) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ei;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_dz) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_dz;
   }
 
-  AutopilotLaws_LeadLagFilter(rtb_Y_g - AutopilotLaws_P.g_Gain * (AutopilotLaws_P.Gain1_Gain_lp *
+  AutopilotLaws_LeadLagFilter(rtb_Y_pl - AutopilotLaws_P.g_Gain * (AutopilotLaws_P.Gain1_Gain_lp *
     (AutopilotLaws_P.Gain_Gain_am * ((AutopilotLaws_P.Gain1_Gain_go * rtb_GainTheta - AutopilotLaws_P.Gain1_Gain_lx *
-    (AutopilotLaws_P.Gain_Gain_c1 * std::atan(AutopilotLaws_P.fpmtoms_Gain_g * AutopilotLaws_U.in.data.H_dot_ft_min / u0)))
-    * (AutopilotLaws_P.Constant_Value_dy - std::cos(R)) + std::sin(R) * std::sin(AutopilotLaws_P.Gain1_Gain_pf *
-    AutopilotLaws_U.in.data.Psi_magnetic_track_deg - AutopilotLaws_P.Gain1_Gain_e *
-    AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1, AutopilotLaws_P.HighPassFilter_C2,
-    AutopilotLaws_P.HighPassFilter_C3, AutopilotLaws_P.HighPassFilter_C4, AutopilotLaws_U.in.time.dt, &rtb_Y_n,
+    (AutopilotLaws_P.Gain_Gain_c1 * std::atan(AutopilotLaws_P.fpmtoms_Gain_g * AutopilotLaws_U.in.data.H_dot_ft_min /
+    rtb_Add3_np))) * (AutopilotLaws_P.Constant_Value_dy - std::cos(R)) + std::sin(R) * std::sin
+    (AutopilotLaws_P.Gain1_Gain_pf * AutopilotLaws_U.in.data.Psi_magnetic_track_deg - AutopilotLaws_P.Gain1_Gain_e *
+     AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1, AutopilotLaws_P.HighPassFilter_C2,
+    AutopilotLaws_P.HighPassFilter_C3, AutopilotLaws_P.HighPassFilter_C4, AutopilotLaws_U.in.time.dt, &rtb_Y_dr,
     &AutopilotLaws_DWork.sf_LeadLagFilter);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_b * AutopilotLaws_U.in.data.V_ias_kn,
     AutopilotLaws_P.LowPassFilter_C1, AutopilotLaws_P.LowPassFilter_C2, AutopilotLaws_P.LowPassFilter_C3,
-    AutopilotLaws_P.LowPassFilter_C4, AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_LeadLagFilter_o);
-  R = (rtb_Y_n + rtb_Y_g) * AutopilotLaws_P.ug_Gain;
-  rtb_Y_bw = AutopilotLaws_P.Gain1_Gain_bf * AutopilotLaws_DWork.DelayInput1_DSTATE;
-  L = R + rtb_Y_bw;
-  rtb_lo_f = AutopilotLaws_P.Constant3_Value_nq - AutopilotLaws_P.Constant4_Value;
-  b_L = (AutopilotLaws_P.Gain1_Gain_ik * R + rtb_Y_bw) * AutopilotLaws_P.Gain_Gain_aj;
-  if (rtb_lo_f > AutopilotLaws_P.Switch_Threshold_l) {
+    AutopilotLaws_P.LowPassFilter_C4, AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_LeadLagFilter_o);
+  R = (rtb_Y_dr + rtb_Y_pl) * AutopilotLaws_P.ug_Gain;
+  rtb_Y_k = AutopilotLaws_P.Gain1_Gain_bf * AutopilotLaws_DWork.DelayInput1_DSTATE;
+  L = R + rtb_Y_k;
+  rtb_lo_a = AutopilotLaws_P.Constant3_Value_nq - AutopilotLaws_P.Constant4_Value;
+  b_L = (AutopilotLaws_P.Gain1_Gain_ik * R + rtb_Y_k) * AutopilotLaws_P.Gain_Gain_aj;
+  if (rtb_lo_a > AutopilotLaws_P.Switch_Threshold_l) {
     R = AutopilotLaws_P.Constant1_Value_g;
   } else {
     R = AutopilotLaws_P.Gain5_Gain_g * b_L;
   }
 
-  AutopilotLaws_V_LSSpeedSelection1(AutopilotLaws_U.in.input.V_c_kn, AutopilotLaws_U.in.data.VLS_kn, &rtb_Y_g);
-  rtb_Gain1_na = (AutopilotLaws_U.in.data.V_ias_kn - rtb_Y_g) * AutopilotLaws_P.Gain1_Gain_oz;
+  AutopilotLaws_V_LSSpeedSelection1(AutopilotLaws_U.in.input.V_c_kn, AutopilotLaws_U.in.data.VLS_kn, &rtb_Y_pl);
+  rtb_Gain1_na = (AutopilotLaws_U.in.data.V_ias_kn - rtb_Y_pl) * AutopilotLaws_P.Gain1_Gain_oz;
   if (rtb_Gain1_na <= R) {
-    if (rtb_lo_f > AutopilotLaws_P.Switch1_Threshold) {
+    if (rtb_lo_a > AutopilotLaws_P.Switch1_Threshold) {
       R = AutopilotLaws_P.Constant_Value_g;
     } else {
       R = AutopilotLaws_P.Gain6_Gain * b_L;
@@ -1564,52 +1562,52 @@ void AutopilotLawsModelClass::step()
 
   b_L = (AutopilotLaws_P.Gain_Gain_b0 * L - AutopilotLaws_DWork.DelayInput1_DSTATE) + R;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.fpmtoms_Gain_a * AutopilotLaws_U.in.data.H_dot_ft_min;
-  u0 = AutopilotLaws_P.kntoms_Gain_p * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_h) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_h;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_e) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_e;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_p * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_h) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_h;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_e) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_e;
   }
 
-  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / u0) *
+  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / rtb_Add3_np) *
     AutopilotLaws_P.Gain_Gain_d4;
   R = AutopilotLaws_P.Gain1_Gain_j0 * rtb_GainTheta1;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_h * (AutopilotLaws_P.GStoGS_CAS_Gain_m *
     (AutopilotLaws_P.ktstomps_Gain_g * AutopilotLaws_U.in.data.V_gnd_kn)), AutopilotLaws_P.WashoutFilter_C1_e4,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_WashoutFilter_d);
-  u0 = AutopilotLaws_P.kntoms_Gain_l * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_i) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_i;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_h) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_h;
+    AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_WashoutFilter_d);
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_l * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_i) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_i;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_h) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_h;
   }
 
-  AutopilotLaws_LeadLagFilter(rtb_Y_g - AutopilotLaws_P.g_Gain_h * (AutopilotLaws_P.Gain1_Gain_dv *
+  AutopilotLaws_LeadLagFilter(rtb_Y_pl - AutopilotLaws_P.g_Gain_h * (AutopilotLaws_P.Gain1_Gain_dv *
     (AutopilotLaws_P.Gain_Gain_id * ((AutopilotLaws_P.Gain1_Gain_kd * rtb_GainTheta - AutopilotLaws_P.Gain1_Gain_o4 *
-    (AutopilotLaws_P.Gain_Gain_bs * std::atan(AutopilotLaws_P.fpmtoms_Gain_c * AutopilotLaws_U.in.data.H_dot_ft_min / u0)))
-    * (AutopilotLaws_P.Constant_Value_c - std::cos(R)) + std::sin(R) * std::sin(AutopilotLaws_P.Gain1_Gain_bk *
-    AutopilotLaws_U.in.data.Psi_magnetic_track_deg - AutopilotLaws_P.Gain1_Gain_lxx *
-    AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1_e,
+    (AutopilotLaws_P.Gain_Gain_bs * std::atan(AutopilotLaws_P.fpmtoms_Gain_c * AutopilotLaws_U.in.data.H_dot_ft_min /
+    rtb_Add3_np))) * (AutopilotLaws_P.Constant_Value_c - std::cos(R)) + std::sin(R) * std::sin
+    (AutopilotLaws_P.Gain1_Gain_bk * AutopilotLaws_U.in.data.Psi_magnetic_track_deg - AutopilotLaws_P.Gain1_Gain_lxx *
+     AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1_e,
     AutopilotLaws_P.HighPassFilter_C2_c, AutopilotLaws_P.HighPassFilter_C3_f, AutopilotLaws_P.HighPassFilter_C4_c,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_n, &AutopilotLaws_DWork.sf_LeadLagFilter_h);
+    AutopilotLaws_U.in.time.dt, &rtb_Y_dr, &AutopilotLaws_DWork.sf_LeadLagFilter_h);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_i * AutopilotLaws_U.in.data.V_ias_kn,
     AutopilotLaws_P.LowPassFilter_C1_n, AutopilotLaws_P.LowPassFilter_C2_a, AutopilotLaws_P.LowPassFilter_C3_o,
-    AutopilotLaws_P.LowPassFilter_C4_o, AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_LeadLagFilter_m);
-  R = (rtb_Y_n + rtb_Y_g) * AutopilotLaws_P.ug_Gain_a;
-  rtb_Y_bw = AutopilotLaws_P.Gain1_Gain_hm * AutopilotLaws_DWork.DelayInput1_DSTATE;
-  L = R + rtb_Y_bw;
-  rtb_lo_f = AutopilotLaws_P.Constant1_Value_b4 - AutopilotLaws_P.Constant2_Value_c;
-  rtb_Gain1_na = (AutopilotLaws_P.Gain1_Gain_mz * R + rtb_Y_bw) * AutopilotLaws_P.Gain_Gain_ie;
-  if (rtb_lo_f > AutopilotLaws_P.Switch_Threshold_b) {
+    AutopilotLaws_P.LowPassFilter_C4_o, AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_LeadLagFilter_m);
+  R = (rtb_Y_dr + rtb_Y_pl) * AutopilotLaws_P.ug_Gain_a;
+  rtb_Y_k = AutopilotLaws_P.Gain1_Gain_hm * AutopilotLaws_DWork.DelayInput1_DSTATE;
+  L = R + rtb_Y_k;
+  rtb_lo_a = AutopilotLaws_P.Constant1_Value_b4 - AutopilotLaws_P.Constant2_Value_c;
+  rtb_Gain1_na = (AutopilotLaws_P.Gain1_Gain_mz * R + rtb_Y_k) * AutopilotLaws_P.Gain_Gain_ie;
+  if (rtb_lo_a > AutopilotLaws_P.Switch_Threshold_b) {
     R = AutopilotLaws_P.Constant1_Value_a;
   } else {
     R = AutopilotLaws_P.Gain5_Gain_l * rtb_Gain1_na;
   }
 
-  rtb_Y_g = AutopilotLaws_U.in.data.V_ias_kn - AutopilotLaws_U.in.data.VMAX_kn;
-  rtb_lo = rtb_Y_g * AutopilotLaws_P.Gain1_Gain_f1;
+  rtb_Y_pl = AutopilotLaws_U.in.data.V_ias_kn - AutopilotLaws_U.in.data.VMAX_kn;
+  rtb_lo = rtb_Y_pl * AutopilotLaws_P.Gain1_Gain_f1;
   if (rtb_lo <= R) {
-    if (rtb_lo_f > AutopilotLaws_P.Switch1_Threshold_f) {
+    if (rtb_lo_a > AutopilotLaws_P.Switch1_Threshold_f) {
       R = AutopilotLaws_P.Constant_Value_p0;
     } else {
       R = AutopilotLaws_P.Gain6_Gain_j * rtb_Gain1_na;
@@ -1623,16 +1621,16 @@ void AutopilotLawsModelClass::step()
   R += AutopilotLaws_P.Gain_Gain_kj * L - AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, a, AutopilotLaws_P.VS_Gain * a, b_L,
     AutopilotLaws_P.Gain_Gain_m0 * b_L, R, AutopilotLaws_P.Gain_Gain_lr * R, AutopilotLaws_P.Constant_Value_ig,
-    &rtb_lo_f, &L);
+    &rtb_lo_a, &L);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.fpmtoms_Gain_p * AutopilotLaws_U.in.data.H_dot_ft_min;
-  u0 = AutopilotLaws_P.kntoms_Gain_f * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_eik) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_eik;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_ad) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_ad;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_f * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_eik) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_eik;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_ad) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_ad;
   }
 
-  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / u0) *
+  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / rtb_Add3_np) *
     AutopilotLaws_P.Gain_Gain_e33;
   R = AutopilotLaws_P.Gain1_Gain_ok * AutopilotLaws_DWork.DelayInput1_DSTATE;
   a = AutopilotLaws_P.Gain1_Gain_jd * rtb_GainTheta1;
@@ -1642,17 +1640,17 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_m * (AutopilotLaws_P.GStoGS_CAS_Gain_l * a),
     AutopilotLaws_P.WashoutFilter_C1_k, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_WashoutFilter_n);
-  u0 = AutopilotLaws_P.kntoms_Gain_a * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_f) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_f;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_c) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_c;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_a * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_f) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_f;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_c) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_c;
   }
 
   AutopilotLaws_LeadLagFilter(rtb_Gain1_na - AutopilotLaws_P.g_Gain_j * (AutopilotLaws_P.Gain1_Gain_ca *
     (AutopilotLaws_P.Gain_Gain_ms * ((AutopilotLaws_P.Gain1_Gain_dh * rtb_GainTheta - AutopilotLaws_P.Gain1_Gain_cv *
-    (AutopilotLaws_P.Gain_Gain_nq * std::atan(AutopilotLaws_P.fpmtoms_Gain_h * AutopilotLaws_U.in.data.H_dot_ft_min / u0)))
-    * (AutopilotLaws_P.Constant_Value_l - b_L) + rtb_lo * std::sin(AutopilotLaws_P.Gain1_Gain_id *
+    (AutopilotLaws_P.Gain_Gain_nq * std::atan(AutopilotLaws_P.fpmtoms_Gain_h * AutopilotLaws_U.in.data.H_dot_ft_min /
+    rtb_Add3_np))) * (AutopilotLaws_P.Constant_Value_l - b_L) + rtb_lo * std::sin(AutopilotLaws_P.Gain1_Gain_id *
     AutopilotLaws_U.in.data.Psi_magnetic_track_deg - AutopilotLaws_P.Gain1_Gain_ct *
     AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1_b,
     AutopilotLaws_P.HighPassFilter_C2_g, AutopilotLaws_P.HighPassFilter_C3_n, AutopilotLaws_P.HighPassFilter_C4_b,
@@ -1693,44 +1691,44 @@ void AutopilotLawsModelClass::step()
   }
 
   rtb_lo = (AutopilotLaws_P.Gain_Gain_d4y * R - AutopilotLaws_DWork.DelayInput1_DSTATE) + a;
-  u0 = AutopilotLaws_P.kntoms_Gain_n * AutopilotLaws_U.in.data.V_tas_kn;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_n * AutopilotLaws_U.in.data.V_tas_kn;
   if (Phi2 < 0.0) {
-    rtb_Add3_np = -1.0;
+    i = -1;
   } else {
-    rtb_Add3_np = (Phi2 > 0.0);
+    i = (Phi2 > 0.0);
   }
 
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ju) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ju;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_gw) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_gw;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ju) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ju;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_gw) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_gw;
   }
 
-  u0 = (rtb_Add3_np * AutopilotLaws_P.Constant3_Value_ix - AutopilotLaws_U.in.data.H_dot_ft_min) *
-    AutopilotLaws_P.ftmintoms_Gain_d / u0;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = (static_cast<real_T>(i) * AutopilotLaws_P.Constant3_Value_ix - AutopilotLaws_U.in.data.H_dot_ft_min) *
+    AutopilotLaws_P.ftmintoms_Gain_d / rtb_Add3_np;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  rtb_Gain_ml = AutopilotLaws_P.Gain_Gain_nz * std::asin(u0);
-  u0 = AutopilotLaws_P.kntoms_Gain_au * AutopilotLaws_U.in.data.V_tas_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_l) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_l;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_hm) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_hm;
+  rtb_Gain_ml = AutopilotLaws_P.Gain_Gain_nz * std::asin(rtb_Add3_np);
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_au * AutopilotLaws_U.in.data.V_tas_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_l) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_l;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_hm) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_hm;
   }
 
-  u0 = (AutopilotLaws_U.in.input.H_dot_c_fpm - AutopilotLaws_U.in.data.H_dot_ft_min) * AutopilotLaws_P.ftmintoms_Gain_l /
-    u0;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = (AutopilotLaws_U.in.input.H_dot_c_fpm - AutopilotLaws_U.in.data.H_dot_ft_min) *
+    AutopilotLaws_P.ftmintoms_Gain_l / rtb_Add3_np;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  rtb_Y_bw = AutopilotLaws_P.Gain_Gain_ey * std::asin(u0);
+  rtb_Y_k = AutopilotLaws_P.Gain_Gain_ey * std::asin(rtb_Add3_np);
   if (!AutopilotLaws_DWork.prevVerticalLaw_not_empty) {
     AutopilotLaws_DWork.prevVerticalLaw = AutopilotLaws_U.in.input.vertical_law;
     AutopilotLaws_DWork.prevVerticalLaw_not_empty = true;
@@ -1755,7 +1753,7 @@ void AutopilotLawsModelClass::step()
   }
 
   b_L = 9.81 / (AutopilotLaws_U.in.data.V_tas_kn * 0.51444444444444448);
-  rtb_Y_n = b_L * rtb_Add3_np * 57.295779513082323;
+  rtb_Y_dr = b_L * rtb_Add3_np * 57.295779513082323;
   AutopilotLaws_DWork.prevVerticalLaw = AutopilotLaws_U.in.input.vertical_law;
   AutopilotLaws_DWork.prevTarget = AutopilotLaws_U.in.input.H_dot_c_fpm;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.kntoms_Gain_o * AutopilotLaws_U.in.data.V_gnd_kn;
@@ -1768,20 +1766,20 @@ void AutopilotLawsModelClass::step()
   a = std::atan(AutopilotLaws_P.fpmtoms_Gain_o * AutopilotLaws_U.in.data.H_dot_ft_min /
                 AutopilotLaws_DWork.DelayInput1_DSTATE) * AutopilotLaws_P.Gain_Gain_lx;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_jn * rtb_GainTheta;
-  u0 = AutopilotLaws_P.kntoms_Gain_d * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_hb) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_hb;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_k) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_k;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_d * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_hb) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_hb;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_k) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_k;
   }
 
   R = AutopilotLaws_DWork.DelayInput1_DSTATE - std::atan(AutopilotLaws_P.fpmtoms_Gain_e *
-    AutopilotLaws_U.in.data.H_dot_ft_min / u0) * AutopilotLaws_P.Gain_Gain_in * AutopilotLaws_P.Gain1_Gain_ps;
+    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Add3_np) * AutopilotLaws_P.Gain_Gain_in * AutopilotLaws_P.Gain1_Gain_ps;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_hi * rtb_GainTheta1;
   rtb_Cos_i = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
   rtb_Cos1_pk = std::sin(AutopilotLaws_DWork.DelayInput1_DSTATE);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_da * AutopilotLaws_U.in.data.Psi_magnetic_deg;
-  rtb_Y_i = AutopilotLaws_P.Gain1_Gain_hg * AutopilotLaws_U.in.data.Psi_magnetic_track_deg -
+  rtb_Y_nd = AutopilotLaws_P.Gain1_Gain_hg * AutopilotLaws_U.in.data.Psi_magnetic_track_deg -
     AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.ktstomps_Gain_m * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_k * (AutopilotLaws_P.GStoGS_CAS_Gain_k *
@@ -1789,7 +1787,7 @@ void AutopilotLawsModelClass::step()
     &rtb_Gain1_na, &AutopilotLaws_DWork.sf_WashoutFilter_fs);
   AutopilotLaws_LeadLagFilter(rtb_Gain1_na - AutopilotLaws_P.g_Gain_m * (AutopilotLaws_P.Gain1_Gain_kdq *
     (AutopilotLaws_P.Gain_Gain_b5 * (R * (AutopilotLaws_P.Constant_Value_od - rtb_Cos_i) + rtb_Cos1_pk * std::sin
-    (rtb_Y_i)))), AutopilotLaws_P.HighPassFilter_C1_g, AutopilotLaws_P.HighPassFilter_C2_l,
+    (rtb_Y_nd)))), AutopilotLaws_P.HighPassFilter_C1_g, AutopilotLaws_P.HighPassFilter_C2_l,
     AutopilotLaws_P.HighPassFilter_C3_j, AutopilotLaws_P.HighPassFilter_C4_i, AutopilotLaws_U.in.time.dt,
     &AutopilotLaws_DWork.DelayInput1_DSTATE, &AutopilotLaws_DWork.sf_LeadLagFilter_b);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_c * AutopilotLaws_U.in.data.V_ias_kn,
@@ -1822,7 +1820,7 @@ void AutopilotLawsModelClass::step()
     }
   }
 
-  rtb_Y_i = (AutopilotLaws_P.Gain_Gain_j * rtb_Cos_i - a) + AutopilotLaws_DWork.DelayInput1_DSTATE;
+  rtb_Y_nd = (AutopilotLaws_P.Gain_Gain_j * rtb_Cos_i - a) + AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.kntoms_Gain_bq * AutopilotLaws_U.in.data.V_gnd_kn;
   if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation_UpperSat_ba) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_UpperSat_ba;
@@ -1833,15 +1831,15 @@ void AutopilotLawsModelClass::step()
   a = std::atan(AutopilotLaws_P.fpmtoms_Gain_p3 * AutopilotLaws_U.in.data.H_dot_ft_min /
                 AutopilotLaws_DWork.DelayInput1_DSTATE) * AutopilotLaws_P.Gain_Gain_py;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_hk * rtb_GainTheta;
-  u0 = AutopilotLaws_P.kntoms_Gain_l5 * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_b3) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_b3;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_es) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_es;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_l5 * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_b3) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_b3;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_es) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_es;
   }
 
   R = AutopilotLaws_DWork.DelayInput1_DSTATE - std::atan(AutopilotLaws_P.fpmtoms_Gain_j *
-    AutopilotLaws_U.in.data.H_dot_ft_min / u0) * AutopilotLaws_P.Gain_Gain_e5 * AutopilotLaws_P.Gain1_Gain_ja;
+    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Add3_np) * AutopilotLaws_P.Gain_Gain_e5 * AutopilotLaws_P.Gain1_Gain_ja;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_er * rtb_GainTheta1;
   rtb_Cos_i = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
   rtb_Cos1_pk = std::sin(AutopilotLaws_DWork.DelayInput1_DSTATE);
@@ -1873,7 +1871,7 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain5_Gain_gm * R;
   }
 
-  rtb_Cos1_pk = rtb_Y_g * AutopilotLaws_P.Gain1_Gain_gy;
+  rtb_Cos1_pk = rtb_Y_pl * AutopilotLaws_P.Gain1_Gain_gy;
   if (rtb_Cos1_pk <= AutopilotLaws_DWork.DelayInput1_DSTATE) {
     if (rtb_Cos_i > AutopilotLaws_P.Switch1_Threshold_b) {
       AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant_Value_ow;
@@ -1887,8 +1885,8 @@ void AutopilotLawsModelClass::step()
   }
 
   a = (AutopilotLaws_P.Gain_Gain_dm * rtb_Gain1_na - a) + AutopilotLaws_DWork.DelayInput1_DSTATE;
-  AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Y_bw, std::fmax(-rtb_Y_n, std::fmin(rtb_Y_n,
-    AutopilotLaws_P.VS_Gain_h * rtb_Y_bw)), rtb_Y_i, AutopilotLaws_P.Gain_Gain_h4 * rtb_Y_i, a,
+  AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Y_k, std::fmax(-rtb_Y_dr, std::fmin(rtb_Y_dr,
+    AutopilotLaws_P.VS_Gain_h * rtb_Y_k)), rtb_Y_nd, AutopilotLaws_P.Gain_Gain_h4 * rtb_Y_nd, a,
     AutopilotLaws_P.Gain_Gain_eq * a, AutopilotLaws_P.Constant_Value_ga, &rtb_Cos1_pk, &rtb_Cos_i);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.kntoms_Gain_c * AutopilotLaws_U.in.data.V_gnd_kn;
   if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation_UpperSat_oz) {
@@ -1899,19 +1897,19 @@ void AutopilotLawsModelClass::step()
 
   rtb_Sum_l1 = AutopilotLaws_U.in.input.FPA_c_deg - std::atan(AutopilotLaws_P.fpmtoms_Gain_ps *
     AutopilotLaws_U.in.data.H_dot_ft_min / AutopilotLaws_DWork.DelayInput1_DSTATE) * AutopilotLaws_P.Gain_Gain_gt;
-  if (!AutopilotLaws_DWork.prevVerticalLaw_not_empty_o) {
-    AutopilotLaws_DWork.prevVerticalLaw_g = AutopilotLaws_U.in.input.vertical_law;
-    AutopilotLaws_DWork.prevVerticalLaw_not_empty_o = true;
+  if (!AutopilotLaws_DWork.prevVerticalLaw_not_empty_e) {
+    AutopilotLaws_DWork.prevVerticalLaw_o = AutopilotLaws_U.in.input.vertical_law;
+    AutopilotLaws_DWork.prevVerticalLaw_not_empty_e = true;
   }
 
-  if (!AutopilotLaws_DWork.prevTarget_not_empty_e) {
-    AutopilotLaws_DWork.prevTarget_f = AutopilotLaws_U.in.input.FPA_c_deg;
-    AutopilotLaws_DWork.prevTarget_not_empty_e = true;
+  if (!AutopilotLaws_DWork.prevTarget_not_empty_d) {
+    AutopilotLaws_DWork.prevTarget_a = AutopilotLaws_U.in.input.FPA_c_deg;
+    AutopilotLaws_DWork.prevTarget_not_empty_d = true;
   }
 
   AutopilotLaws_DWork.islevelOffActive_b = (((AutopilotLaws_U.in.input.vertical_law == 5.0) &&
-    (AutopilotLaws_DWork.prevVerticalLaw_g != 5.0) && (AutopilotLaws_U.in.input.FPA_c_deg == 0.0)) ||
-    ((AutopilotLaws_U.in.input.FPA_c_deg == 0.0) && (AutopilotLaws_DWork.prevTarget_f > 1.0)) ||
+    (AutopilotLaws_DWork.prevVerticalLaw_o != 5.0) && (AutopilotLaws_U.in.input.FPA_c_deg == 0.0)) ||
+    ((AutopilotLaws_U.in.input.FPA_c_deg == 0.0) && (AutopilotLaws_DWork.prevTarget_a > 1.0)) ||
     ((AutopilotLaws_U.in.input.FPA_c_deg == 0.0) && (AutopilotLaws_U.in.input.vertical_law == 5.0) &&
      AutopilotLaws_DWork.islevelOffActive_b));
   if (AutopilotLaws_DWork.islevelOffActive_b) {
@@ -1920,9 +1918,9 @@ void AutopilotLawsModelClass::step()
     rtb_Add3_np = 0.05;
   }
 
-  rtb_Y_n = b_L * rtb_Add3_np * 57.295779513082323;
-  AutopilotLaws_DWork.prevVerticalLaw_g = AutopilotLaws_U.in.input.vertical_law;
-  AutopilotLaws_DWork.prevTarget_f = AutopilotLaws_U.in.input.FPA_c_deg;
+  rtb_Y_dr = b_L * rtb_Add3_np * 57.295779513082323;
+  AutopilotLaws_DWork.prevVerticalLaw_o = AutopilotLaws_U.in.input.vertical_law;
+  AutopilotLaws_DWork.prevTarget_a = AutopilotLaws_U.in.input.FPA_c_deg;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.kntoms_Gain_cv * AutopilotLaws_U.in.data.V_gnd_kn;
   if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation_UpperSat_bb) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_UpperSat_bb;
@@ -1933,55 +1931,55 @@ void AutopilotLawsModelClass::step()
   a = std::atan(AutopilotLaws_P.fpmtoms_Gain_d * AutopilotLaws_U.in.data.H_dot_ft_min /
                 AutopilotLaws_DWork.DelayInput1_DSTATE) * AutopilotLaws_P.Gain_Gain_hv;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_ej * rtb_GainTheta;
-  u0 = AutopilotLaws_P.kntoms_Gain_k * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_pj) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_pj;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_py) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_py;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_k * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_pj) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_pj;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_py) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_py;
   }
 
   R = AutopilotLaws_DWork.DelayInput1_DSTATE - std::atan(AutopilotLaws_P.fpmtoms_Gain_f *
-    AutopilotLaws_U.in.data.H_dot_ft_min / u0) * AutopilotLaws_P.Gain_Gain_bf * AutopilotLaws_P.Gain1_Gain_jv;
+    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Add3_np) * AutopilotLaws_P.Gain_Gain_bf * AutopilotLaws_P.Gain1_Gain_jv;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_gfa * rtb_GainTheta1;
-  rtb_Y_bw = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
+  rtb_Y_k = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
   rtb_Add3_np = std::sin(AutopilotLaws_DWork.DelayInput1_DSTATE);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_kw * AutopilotLaws_U.in.data.Psi_magnetic_deg;
   rtb_Add3_j4 = AutopilotLaws_P.Gain1_Gain_j4 * AutopilotLaws_U.in.data.Psi_magnetic_track_deg -
     AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.ktstomps_Gain_j4 * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_kb * (AutopilotLaws_P.GStoGS_CAS_Gain_o *
-    AutopilotLaws_DWork.DelayInput1_DSTATE), AutopilotLaws_P.WashoutFilter_C1_j, AutopilotLaws_U.in.time.dt, &rtb_Y_i,
+    AutopilotLaws_DWork.DelayInput1_DSTATE), AutopilotLaws_P.WashoutFilter_C1_j, AutopilotLaws_U.in.time.dt, &rtb_Y_nd,
     &AutopilotLaws_DWork.sf_WashoutFilter_h);
-  AutopilotLaws_LeadLagFilter(rtb_Y_i - AutopilotLaws_P.g_Gain_l * (AutopilotLaws_P.Gain1_Gain_n4 *
-    (AutopilotLaws_P.Gain_Gain_bc * (R * (AutopilotLaws_P.Constant_Value_lf - rtb_Y_bw) + rtb_Add3_np * std::sin
+  AutopilotLaws_LeadLagFilter(rtb_Y_nd - AutopilotLaws_P.g_Gain_l * (AutopilotLaws_P.Gain1_Gain_n4 *
+    (AutopilotLaws_P.Gain_Gain_bc * (R * (AutopilotLaws_P.Constant_Value_lf - rtb_Y_k) + rtb_Add3_np * std::sin
     (rtb_Add3_j4)))), AutopilotLaws_P.HighPassFilter_C1_i, AutopilotLaws_P.HighPassFilter_C2_h,
     AutopilotLaws_P.HighPassFilter_C3_m, AutopilotLaws_P.HighPassFilter_C4_n, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_LeadLagFilter_e);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_k * AutopilotLaws_U.in.data.V_ias_kn,
     AutopilotLaws_P.LowPassFilter_C1_l4, AutopilotLaws_P.LowPassFilter_C2_po, AutopilotLaws_P.LowPassFilter_C3_f,
-    AutopilotLaws_P.LowPassFilter_C4_dt, AutopilotLaws_U.in.time.dt, &rtb_Y_i, &AutopilotLaws_DWork.sf_LeadLagFilter_kp);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = (rtb_Gain1_na + rtb_Y_i) * AutopilotLaws_P.ug_Gain_n;
+    AutopilotLaws_P.LowPassFilter_C4_dt, AutopilotLaws_U.in.time.dt, &rtb_Y_nd, &AutopilotLaws_DWork.sf_LeadLagFilter_kp);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = (rtb_Gain1_na + rtb_Y_nd) * AutopilotLaws_P.ug_Gain_n;
   R = AutopilotLaws_P.Gain1_Gain_b1 * a;
   rtb_Gain1_na = AutopilotLaws_DWork.DelayInput1_DSTATE + R;
-  rtb_Y_bw = AutopilotLaws_P.Constant3_Value_nk - AutopilotLaws_P.Constant4_Value_o;
+  rtb_Y_k = AutopilotLaws_P.Constant3_Value_nk - AutopilotLaws_P.Constant4_Value_o;
   R = (AutopilotLaws_P.Gain1_Gain_on * AutopilotLaws_DWork.DelayInput1_DSTATE + R) * AutopilotLaws_P.Gain_Gain_hy;
-  if (rtb_Y_bw > AutopilotLaws_P.Switch_Threshold_d) {
+  if (rtb_Y_k > AutopilotLaws_P.Switch_Threshold_d) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant1_Value_m;
   } else {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain5_Gain_b * R;
   }
 
-  AutopilotLaws_V_LSSpeedSelection1(AutopilotLaws_U.in.input.V_c_kn, AutopilotLaws_U.in.data.VLS_kn, &rtb_Y_i);
-  rtb_Y_i = (AutopilotLaws_U.in.data.V_ias_kn - rtb_Y_i) * AutopilotLaws_P.Gain1_Gain_m1;
-  if (rtb_Y_i <= AutopilotLaws_DWork.DelayInput1_DSTATE) {
-    if (rtb_Y_bw > AutopilotLaws_P.Switch1_Threshold_d) {
+  AutopilotLaws_V_LSSpeedSelection1(AutopilotLaws_U.in.input.V_c_kn, AutopilotLaws_U.in.data.VLS_kn, &rtb_Y_nd);
+  rtb_Y_nd = (AutopilotLaws_U.in.data.V_ias_kn - rtb_Y_nd) * AutopilotLaws_P.Gain1_Gain_m1;
+  if (rtb_Y_nd <= AutopilotLaws_DWork.DelayInput1_DSTATE) {
+    if (rtb_Y_k > AutopilotLaws_P.Switch1_Threshold_d) {
       AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant_Value_p0d;
     } else {
       AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain6_Gain_n * R;
     }
 
-    if (rtb_Y_i >= AutopilotLaws_DWork.DelayInput1_DSTATE) {
-      AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_i;
+    if (rtb_Y_nd >= AutopilotLaws_DWork.DelayInput1_DSTATE) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_nd;
     }
   }
 
@@ -1996,61 +1994,61 @@ void AutopilotLawsModelClass::step()
   a = std::atan(AutopilotLaws_P.fpmtoms_Gain_o2 * AutopilotLaws_U.in.data.H_dot_ft_min /
                 AutopilotLaws_DWork.DelayInput1_DSTATE) * AutopilotLaws_P.Gain_Gain_pp;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_iw * rtb_GainTheta;
-  rtb_Y_bw = AutopilotLaws_P.kntoms_Gain_i * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (rtb_Y_bw > AutopilotLaws_P.Saturation_UpperSat_nu) {
-    rtb_Y_bw = AutopilotLaws_P.Saturation_UpperSat_nu;
-  } else if (rtb_Y_bw < AutopilotLaws_P.Saturation_LowerSat_ae) {
-    rtb_Y_bw = AutopilotLaws_P.Saturation_LowerSat_ae;
+  rtb_Y_k = AutopilotLaws_P.kntoms_Gain_i * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Y_k > AutopilotLaws_P.Saturation_UpperSat_nu) {
+    rtb_Y_k = AutopilotLaws_P.Saturation_UpperSat_nu;
+  } else if (rtb_Y_k < AutopilotLaws_P.Saturation_LowerSat_ae) {
+    rtb_Y_k = AutopilotLaws_P.Saturation_LowerSat_ae;
   }
 
   R = AutopilotLaws_DWork.DelayInput1_DSTATE - std::atan(AutopilotLaws_P.fpmtoms_Gain_hz *
-    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Y_bw) * AutopilotLaws_P.Gain_Gain_ej * AutopilotLaws_P.Gain1_Gain_lw;
+    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Y_k) * AutopilotLaws_P.Gain_Gain_ej * AutopilotLaws_P.Gain1_Gain_lw;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_ky * rtb_GainTheta1;
-  rtb_Y_bw = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
+  rtb_Y_k = std::cos(AutopilotLaws_DWork.DelayInput1_DSTATE);
   rtb_Add3_j4 = std::sin(AutopilotLaws_DWork.DelayInput1_DSTATE);
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_nrn * AutopilotLaws_U.in.data.Psi_magnetic_deg;
   rtb_Add3_lz = AutopilotLaws_P.Gain1_Gain_ip * AutopilotLaws_U.in.data.Psi_magnetic_track_deg -
     AutopilotLaws_DWork.DelayInput1_DSTATE;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.ktstomps_Gain_l * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_ip * (AutopilotLaws_P.GStoGS_CAS_Gain_e *
-    AutopilotLaws_DWork.DelayInput1_DSTATE), AutopilotLaws_P.WashoutFilter_C1_c, AutopilotLaws_U.in.time.dt, &rtb_Y_i,
+    AutopilotLaws_DWork.DelayInput1_DSTATE), AutopilotLaws_P.WashoutFilter_C1_c, AutopilotLaws_U.in.time.dt, &rtb_Y_nd,
     &AutopilotLaws_DWork.sf_WashoutFilter_g5);
-  AutopilotLaws_LeadLagFilter(rtb_Y_i - AutopilotLaws_P.g_Gain_hq * (AutopilotLaws_P.Gain1_Gain_mx *
-    (AutopilotLaws_P.Gain_Gain_d3 * (R * (AutopilotLaws_P.Constant_Value_fo - rtb_Y_bw) + rtb_Add3_j4 * std::sin
+  AutopilotLaws_LeadLagFilter(rtb_Y_nd - AutopilotLaws_P.g_Gain_hq * (AutopilotLaws_P.Gain1_Gain_mx *
+    (AutopilotLaws_P.Gain_Gain_d3 * (R * (AutopilotLaws_P.Constant_Value_fo - rtb_Y_k) + rtb_Add3_j4 * std::sin
     (rtb_Add3_lz)))), AutopilotLaws_P.HighPassFilter_C1_d, AutopilotLaws_P.HighPassFilter_C2_i,
     AutopilotLaws_P.HighPassFilter_C3_d, AutopilotLaws_P.HighPassFilter_C4_nr, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_LeadLagFilter_j);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_mh * AutopilotLaws_U.in.data.V_ias_kn,
     AutopilotLaws_P.LowPassFilter_C1_e, AutopilotLaws_P.LowPassFilter_C2_i, AutopilotLaws_P.LowPassFilter_C3_o5,
-    AutopilotLaws_P.LowPassFilter_C4_f, AutopilotLaws_U.in.time.dt, &rtb_Y_i, &AutopilotLaws_DWork.sf_LeadLagFilter_a);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = (rtb_Gain1_na + rtb_Y_i) * AutopilotLaws_P.ug_Gain_e;
+    AutopilotLaws_P.LowPassFilter_C4_f, AutopilotLaws_U.in.time.dt, &rtb_Y_nd, &AutopilotLaws_DWork.sf_LeadLagFilter_a);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = (rtb_Gain1_na + rtb_Y_nd) * AutopilotLaws_P.ug_Gain_e;
   R = AutopilotLaws_P.Gain1_Gain_be * a;
   rtb_Gain1_na = AutopilotLaws_DWork.DelayInput1_DSTATE + R;
-  rtb_Y_bw = AutopilotLaws_P.Constant1_Value_o - AutopilotLaws_P.Constant2_Value_h;
+  rtb_Y_k = AutopilotLaws_P.Constant1_Value_o - AutopilotLaws_P.Constant2_Value_h;
   R = (AutopilotLaws_P.Gain1_Gain_nj * AutopilotLaws_DWork.DelayInput1_DSTATE + R) * AutopilotLaws_P.Gain_Gain_aq;
-  if (rtb_Y_bw > AutopilotLaws_P.Switch_Threshold_g) {
+  if (rtb_Y_k > AutopilotLaws_P.Switch_Threshold_g) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant1_Value_f;
   } else {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain5_Gain_a * R;
   }
 
-  rtb_Y_g *= AutopilotLaws_P.Gain1_Gain_fle;
-  if (rtb_Y_g <= AutopilotLaws_DWork.DelayInput1_DSTATE) {
-    if (rtb_Y_bw > AutopilotLaws_P.Switch1_Threshold_h) {
+  rtb_Y_pl *= AutopilotLaws_P.Gain1_Gain_fle;
+  if (rtb_Y_pl <= AutopilotLaws_DWork.DelayInput1_DSTATE) {
+    if (rtb_Y_k > AutopilotLaws_P.Switch1_Threshold_h) {
       AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant_Value_i;
     } else {
       AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain6_Gain_g * R;
     }
 
-    if (rtb_Y_g >= AutopilotLaws_DWork.DelayInput1_DSTATE) {
-      AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_g;
+    if (rtb_Y_pl >= AutopilotLaws_DWork.DelayInput1_DSTATE) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = rtb_Y_pl;
     }
   }
 
   a = (AutopilotLaws_P.Gain_Gain_gx * rtb_Gain1_na - a) + AutopilotLaws_DWork.DelayInput1_DSTATE;
-  AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Sum_l1, std::fmax(-rtb_Y_n, std::fmin(rtb_Y_n,
+  AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Sum_l1, std::fmax(-rtb_Y_dr, std::fmin(rtb_Y_dr,
     AutopilotLaws_P.Gain_Gain_c3 * rtb_Sum_l1)), rtb_Add3_np, AutopilotLaws_P.Gain_Gain_fnw * rtb_Add3_np, a,
-    AutopilotLaws_P.Gain_Gain_ko * a, AutopilotLaws_P.Constant_Value_fov, &rtb_FD_i, &rtb_Add3_lz);
+    AutopilotLaws_P.Gain_Gain_ko * a, AutopilotLaws_P.Constant_Value_fov, &rtb_FD_p, &rtb_Add3_lz);
   rtb_Sum_l1 = AutopilotLaws_P.Gain2_Gain_n * AutopilotLaws_U.in.data.H_dot_ft_min *
     AutopilotLaws_P.DiscreteDerivativeVariableTs1_Gain;
   AutopilotLaws_LagFilter((rtb_Sum_l1 - AutopilotLaws_DWork.Delay_DSTATE_c) / AutopilotLaws_U.in.time.dt,
@@ -2063,7 +2061,7 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_U.in.time.dt, &a, &AutopilotLaws_DWork.sf_LagFilter_i);
   AutopilotLaws_WashoutFilter(a, AutopilotLaws_P.WashoutFilter1_C1, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_WashoutFilter_db);
-  u0 = AutopilotLaws_P.Gain4_Gain_n * rtb_Gain1_na;
+  rtb_Add3_np = AutopilotLaws_P.Gain4_Gain_n * rtb_Gain1_na;
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.nav_gs_error_deg, AutopilotLaws_P.LagFilter1_C1_l,
     AutopilotLaws_U.in.time.dt, &rtb_Gain1_na, &AutopilotLaws_DWork.sf_LagFilter_gx);
   R = rtb_Gain1_na * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
@@ -2083,24 +2081,24 @@ void AutopilotLawsModelClass::step()
   }
 
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.nav_gs_error_deg, AutopilotLaws_P.LagFilter2_C1_e,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_i, &AutopilotLaws_DWork.sf_LagFilter_cf);
-  rtb_Add3_j4 = AutopilotLaws_P.DiscreteDerivativeVariableTs_Gain_g * rtb_Y_i;
+    AutopilotLaws_U.in.time.dt, &rtb_Y_nd, &AutopilotLaws_DWork.sf_LagFilter_cf);
+  rtb_Add3_j4 = AutopilotLaws_P.DiscreteDerivativeVariableTs_Gain_g * rtb_Y_nd;
   AutopilotLaws_DWork.DelayInput1_DSTATE = look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
     AutopilotLaws_P.ScheduledGain3_BreakpointsForDimension1_i, AutopilotLaws_P.ScheduledGain3_Table_a, 4U);
-  AutopilotLaws_LagFilter(rtb_Y_i + (rtb_Add3_j4 - AutopilotLaws_DWork.Delay_DSTATE_b) / AutopilotLaws_U.in.time.dt *
+  AutopilotLaws_LagFilter(rtb_Y_nd + (rtb_Add3_j4 - AutopilotLaws_DWork.Delay_DSTATE_b) / AutopilotLaws_U.in.time.dt *
     AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.LagFilter_C1_d, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_LagFilter_p);
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ko) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ko;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_ez) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_ez;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ko) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ko;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_ez) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_ez;
   }
 
-  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain3_Gain_c * ((AutopilotLaws_P.Gain2_Gain_k * u0 + R) * a +
-    (AutopilotLaws_P.Constant_Value_lu - a) * (rtb_Gain1_na * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
+  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain3_Gain_c * ((AutopilotLaws_P.Gain2_Gain_k * rtb_Add3_np + R) *
+    a + (AutopilotLaws_P.Constant_Value_lu - a) * (rtb_Gain1_na * look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
     AutopilotLaws_P.ScheduledGain2_BreakpointsForDimension1_h, AutopilotLaws_P.ScheduledGain2_Table_p, 7U))),
     ((AutopilotLaws_U.in.data.H_radio_ft > AutopilotLaws_P.CompareToConstant_const_kt) &&
-     AutopilotLaws_U.in.data.nav_gs_valid), &rtb_Y_bw);
+     AutopilotLaws_U.in.data.nav_gs_valid), &rtb_Y_k);
   AutopilotLaws_storevalue((rtb_dme == AutopilotLaws_P.CompareToConstant6_const_e), AutopilotLaws_Y.out.data.nav_gs_deg,
     &rtb_Gain1_na, &AutopilotLaws_DWork.sf_storevalue_g);
   if (rtb_Gain1_na > AutopilotLaws_P.Saturation_UpperSat_e0) {
@@ -2112,34 +2110,34 @@ void AutopilotLawsModelClass::step()
   }
 
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.fpmtoms_Gain_g4 * AutopilotLaws_U.in.data.H_dot_ft_min;
-  u0 = AutopilotLaws_P.kntoms_Gain_k4 * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_eb) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_eb;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_gk) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_gk;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_k4 * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_eb) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_eb;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_gk) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_gk;
   }
 
-  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / u0) *
+  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / rtb_Add3_np) *
     AutopilotLaws_P.Gain_Gain_ow;
   AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain2_Gain_l * (a - AutopilotLaws_DWork.DelayInput1_DSTATE),
     rtb_OR1, &rtb_Gain1_na);
-  AutopilotLaws_Voter1(rtb_Y_bw + rtb_Gain1_na, AutopilotLaws_P.Gain1_Gain_d4 * ((a + AutopilotLaws_P.Bias_Bias) -
+  AutopilotLaws_Voter1(rtb_Y_k + rtb_Gain1_na, AutopilotLaws_P.Gain1_Gain_d4 * ((a + AutopilotLaws_P.Bias_Bias) -
     AutopilotLaws_DWork.DelayInput1_DSTATE), AutopilotLaws_P.Gain_Gain_eyl * ((a + AutopilotLaws_P.Bias1_Bias) -
     AutopilotLaws_DWork.DelayInput1_DSTATE), &R);
   rtb_Product_dh = R * look1_binlxpw(AutopilotLaws_U.in.data.V_tas_kn,
     AutopilotLaws_P.ScheduledGain1_BreakpointsForDimension1_d, AutopilotLaws_P.ScheduledGain1_Table_n, 6U);
   rtb_Gain4 = (rtb_GainTheta - AutopilotLaws_P.Constant2_Value_f) * AutopilotLaws_P.Gain4_Gain_o;
-  rtb_Y_i = AutopilotLaws_P.Gain5_Gain_c * AutopilotLaws_U.in.data.bz_m_s2;
+  rtb_Y_nd = AutopilotLaws_P.Gain5_Gain_c * AutopilotLaws_U.in.data.bz_m_s2;
   AutopilotLaws_WashoutFilter(AutopilotLaws_U.in.data.bx_m_s2, AutopilotLaws_P.WashoutFilter_C1_m,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_n, &AutopilotLaws_DWork.sf_WashoutFilter_g);
+    AutopilotLaws_U.in.time.dt, &rtb_Y_dr, &AutopilotLaws_DWork.sf_WashoutFilter_g);
   rtb_OR1 = (rtb_dme == AutopilotLaws_P.CompareToConstant7_const);
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.H_dot_ft_min, AutopilotLaws_P.LagFilterH_C1,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_LagFilter_a);
-  a = rtb_Y_g - AutopilotLaws_P.kntofpm_Gain * AutopilotLaws_U.in.data.V_gnd_kn * AutopilotLaws_P.maxslope_Gain;
+    AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_LagFilter_a);
+  a = rtb_Y_pl - AutopilotLaws_P.kntofpm_Gain * AutopilotLaws_U.in.data.V_gnd_kn * AutopilotLaws_P.maxslope_Gain;
   AutopilotLaws_LeadLagFilter(AutopilotLaws_U.in.data.H_radio_ft, AutopilotLaws_P.LeadLagFilter_C1,
     AutopilotLaws_P.LeadLagFilter_C2, AutopilotLaws_P.LeadLagFilter_C3, AutopilotLaws_P.LeadLagFilter_C4,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_g, &AutopilotLaws_DWork.sf_LeadLagFilter_k);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_oa * rtb_Y_g;
+    AutopilotLaws_U.in.time.dt, &rtb_Y_pl, &AutopilotLaws_DWork.sf_LeadLagFilter_k);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain1_Gain_oa * rtb_Y_pl;
   rtb_Max1 = std::fmax(a, AutopilotLaws_DWork.DelayInput1_DSTATE);
   if (!AutopilotLaws_DWork.wasActive_not_empty) {
     AutopilotLaws_DWork.wasActive = rtb_OR1;
@@ -2178,67 +2176,67 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation_LowerSat_an;
   }
 
-  u0 = (rtb_Vz - rtb_Max1) * AutopilotLaws_P.ftmintoms_Gain_j / AutopilotLaws_DWork.DelayInput1_DSTATE;
+  rtb_Add3_np = (rtb_Vz - rtb_Max1) * AutopilotLaws_P.ftmintoms_Gain_j / AutopilotLaws_DWork.DelayInput1_DSTATE;
   if (R > 1.0) {
     R = 1.0;
   } else if (R < -1.0) {
     R = -1.0;
   }
 
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
   rtb_Sum1_g = AutopilotLaws_P.Gain_Gain_gr * std::asin(R) * AutopilotLaws_P.Gain1_Gain_ml +
-    AutopilotLaws_P.Gain_Gain_by * std::asin(u0) * AutopilotLaws_P.Gain2_Gain_m;
+    AutopilotLaws_P.Gain_Gain_by * std::asin(rtb_Add3_np) * AutopilotLaws_P.Gain2_Gain_m;
   rtb_uDLookupTable_m = look1_binlxpw(AutopilotLaws_U.in.data.total_weight_kg, AutopilotLaws_P.uDLookupTable_bp01Data,
     AutopilotLaws_P.uDLookupTable_tableData, 3U);
   rtb_Sum_ia = AutopilotLaws_P.Constant1_Value_o0 - rtb_GainTheta;
   rtb_Sum3_m3 = AutopilotLaws_P.Constant2_Value_kz - AutopilotLaws_U.in.data.H_ind_ft;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.fpmtoms_Gain_po * AutopilotLaws_U.in.data.H_dot_ft_min;
-  u0 = AutopilotLaws_P.kntoms_Gain_bh * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_pd) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_pd;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_l) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_l;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_bh * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_pd) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_pd;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_l) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_l;
   }
 
-  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / u0) *
+  AutopilotLaws_DWork.DelayInput1_DSTATE = std::atan(AutopilotLaws_DWork.DelayInput1_DSTATE / rtb_Add3_np) *
     AutopilotLaws_P.Gain_Gain_cr;
   R = AutopilotLaws_P.Gain1_Gain_ga * AutopilotLaws_DWork.DelayInput1_DSTATE;
   rtb_Gain1_na = AutopilotLaws_P.Gain1_Gain_hm2 * rtb_GainTheta1;
-  u0 = AutopilotLaws_P.kntoms_Gain_py * AutopilotLaws_U.in.data.V_gnd_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ec) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ec;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_m) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_m;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_py * AutopilotLaws_U.in.data.V_gnd_kn;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ec) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ec;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_m) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_m;
   }
 
   rtb_GainTheta1 = (AutopilotLaws_P.Gain1_Gain_ol * rtb_GainTheta - std::atan(AutopilotLaws_P.fpmtoms_Gain_k *
-    AutopilotLaws_U.in.data.H_dot_ft_min / u0) * AutopilotLaws_P.Gain_Gain_hc * AutopilotLaws_P.Gain1_Gain_ln) *
+    AutopilotLaws_U.in.data.H_dot_ft_min / rtb_Add3_np) * AutopilotLaws_P.Gain_Gain_hc * AutopilotLaws_P.Gain1_Gain_ln) *
     (AutopilotLaws_P.Constant_Value_h - std::cos(rtb_Gain1_na));
   rtb_Add3_np = std::sin(rtb_Gain1_na);
-  rtb_Y_bw = AutopilotLaws_P.Gain1_Gain_it * AutopilotLaws_U.in.data.Psi_magnetic_track_deg;
+  rtb_Y_k = AutopilotLaws_P.Gain1_Gain_it * AutopilotLaws_U.in.data.Psi_magnetic_track_deg;
   rtb_Gain1_na = AutopilotLaws_P.ktstomps_Gain_k5 * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_f * (AutopilotLaws_P.GStoGS_CAS_Gain_j * rtb_Gain1_na),
     AutopilotLaws_P.WashoutFilter_C1_cn, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_WashoutFilter_i);
   AutopilotLaws_LeadLagFilter(rtb_Gain1_na - AutopilotLaws_P.g_Gain_p * (AutopilotLaws_P.Gain1_Gain_mxw *
-    (AutopilotLaws_P.Gain_Gain_er * (rtb_GainTheta1 + rtb_Add3_np * std::sin(rtb_Y_bw - AutopilotLaws_P.Gain1_Gain_a *
+    (AutopilotLaws_P.Gain_Gain_er * (rtb_GainTheta1 + rtb_Add3_np * std::sin(rtb_Y_k - AutopilotLaws_P.Gain1_Gain_a *
     AutopilotLaws_U.in.data.Psi_magnetic_deg)))), AutopilotLaws_P.HighPassFilter_C1_gw,
     AutopilotLaws_P.HighPassFilter_C2_e, AutopilotLaws_P.HighPassFilter_C3_di, AutopilotLaws_P.HighPassFilter_C4_a,
-    AutopilotLaws_U.in.time.dt, &rtb_Y_bw, &AutopilotLaws_DWork.sf_LeadLagFilter_g);
+    AutopilotLaws_U.in.time.dt, &rtb_Y_k, &AutopilotLaws_DWork.sf_LeadLagFilter_g);
   AutopilotLaws_LeadLagFilter(AutopilotLaws_P.ktstomps_Gain_mf * AutopilotLaws_U.in.data.V_ias_kn,
     AutopilotLaws_P.LowPassFilter_C1_d1, AutopilotLaws_P.LowPassFilter_C2_e, AutopilotLaws_P.LowPassFilter_C3_l,
     AutopilotLaws_P.LowPassFilter_C4_a, AutopilotLaws_U.in.time.dt, &rtb_Gain1_na,
     &AutopilotLaws_DWork.sf_LeadLagFilter_n);
-  rtb_Gain1_na = (rtb_Y_bw + rtb_Gain1_na) * AutopilotLaws_P.ug_Gain_c;
+  rtb_Gain1_na = (rtb_Y_k + rtb_Gain1_na) * AutopilotLaws_P.ug_Gain_c;
   rtb_GainTheta1 = (AutopilotLaws_P.Gain1_Gain_nc * rtb_Gain1_na + R) * AutopilotLaws_P.Gain_Gain_bg;
-  rtb_Y_bw = (AutopilotLaws_U.in.data.V_ias_kn - AutopilotLaws_U.in.input.V_c_kn) * AutopilotLaws_P.Gain1_Gain_ke;
+  rtb_Y_k = (AutopilotLaws_U.in.data.V_ias_kn - AutopilotLaws_U.in.input.V_c_kn) * AutopilotLaws_P.Gain1_Gain_ke;
   rtb_OR1 = ((rtb_Sum3_m3 > AutopilotLaws_P.CompareToConstant6_const_d) && (rtb_GainTheta1 <
-              AutopilotLaws_P.CompareToConstant5_const_h) && (rtb_Y_bw < AutopilotLaws_P.CompareToConstant2_const_j) &&
+              AutopilotLaws_P.CompareToConstant5_const_h) && (rtb_Y_k < AutopilotLaws_P.CompareToConstant2_const_j) &&
              (rtb_dme == AutopilotLaws_P.CompareToConstant8_const));
   R += rtb_Gain1_na;
   if (rtb_OR1) {
@@ -2250,42 +2248,42 @@ void AutopilotLawsModelClass::step()
       rtb_Gain1_na = AutopilotLaws_P.Gain5_Gain_n * rtb_GainTheta1;
     }
 
-    if (rtb_Y_bw <= rtb_Gain1_na) {
+    if (rtb_Y_k <= rtb_Gain1_na) {
       if (rtb_Sum3_m3 > AutopilotLaws_P.CompareToConstant4_const_e) {
         rtb_Gain1_na = std::fmax(AutopilotLaws_P.Constant2_Value_m, AutopilotLaws_P.Gain1_Gain_m * rtb_GainTheta1);
       } else {
         rtb_Gain1_na = AutopilotLaws_P.Gain6_Gain_fa * rtb_GainTheta1;
       }
 
-      if (rtb_Y_bw >= rtb_Gain1_na) {
-        rtb_Gain1_na = rtb_Y_bw;
+      if (rtb_Y_k >= rtb_Gain1_na) {
+        rtb_Gain1_na = rtb_Y_k;
       }
     }
   }
 
-  rtb_Y_bw = (AutopilotLaws_P.Gain_Gain_c2 * R - AutopilotLaws_DWork.DelayInput1_DSTATE) + rtb_Gain1_na;
-  u0 = AutopilotLaws_P.kntoms_Gain_om * AutopilotLaws_U.in.data.V_tas_kn;
+  rtb_Y_k = (AutopilotLaws_P.Gain_Gain_c2 * R - AutopilotLaws_DWork.DelayInput1_DSTATE) + rtb_Gain1_na;
+  rtb_Add3_np = AutopilotLaws_P.kntoms_Gain_om * AutopilotLaws_U.in.data.V_tas_kn;
   if (rtb_Sum3_m3 < 0.0) {
-    rtb_Add3_np = -1.0;
+    i = -1;
   } else {
-    rtb_Add3_np = (rtb_Sum3_m3 > 0.0);
+    i = (rtb_Sum3_m3 > 0.0);
   }
 
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ed) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ed;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_ee) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_ee;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ed) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ed;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_ee) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_ee;
   }
 
-  u0 = (rtb_Add3_np * AutopilotLaws_P.Constant3_Value_ew - AutopilotLaws_U.in.data.H_dot_ft_min) *
-    AutopilotLaws_P.ftmintoms_Gain_m / u0;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = (static_cast<real_T>(i) * AutopilotLaws_P.Constant3_Value_ew - AutopilotLaws_U.in.data.H_dot_ft_min) *
+    AutopilotLaws_P.ftmintoms_Gain_m / rtb_Add3_np;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  rtb_Gain_pp = AutopilotLaws_P.Gain_Gain_kon * std::asin(u0);
+  rtb_Gain_pp = AutopilotLaws_P.Gain_Gain_kon * std::asin(rtb_Add3_np);
   rtb_Gain1_na = AutopilotLaws_P.kntoms_Gain_iw * AutopilotLaws_U.in.data.V_tas_kn;
   if (rtb_Gain1_na > AutopilotLaws_P.Saturation_UpperSat_jt) {
     rtb_Gain1_na = AutopilotLaws_P.Saturation_UpperSat_jt;
@@ -2293,32 +2291,32 @@ void AutopilotLawsModelClass::step()
     rtb_Gain1_na = AutopilotLaws_P.Saturation_LowerSat_ih;
   }
 
-  u0 = (AutopilotLaws_P.Constant_Value_iaf - AutopilotLaws_U.in.data.H_dot_ft_min) * AutopilotLaws_P.ftmintoms_Gain_lv /
-    rtb_Gain1_na;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  rtb_Add3_np = (AutopilotLaws_P.Constant_Value_iaf - AutopilotLaws_U.in.data.H_dot_ft_min) *
+    AutopilotLaws_P.ftmintoms_Gain_lv / rtb_Gain1_na;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  rtb_Gain_ib = AutopilotLaws_P.Gain_Gain_o1 * std::asin(u0);
+  rtb_Gain_ib = AutopilotLaws_P.Gain_Gain_o1 * std::asin(rtb_Add3_np);
   if (rtb_OR1) {
-    rtb_Add3_np = rtb_Y_bw;
+    rtb_Add3_np = rtb_Y_k;
   } else if (rtb_Sum3_m3 > AutopilotLaws_P.Switch_Threshold_k) {
-    rtb_Add3_np = std::fmax(rtb_Y_bw, rtb_Gain_pp);
+    rtb_Add3_np = std::fmax(rtb_Y_k, rtb_Gain_pp);
   } else {
-    rtb_Add3_np = std::fmin(rtb_Y_bw, rtb_Gain_pp);
+    rtb_Add3_np = std::fmin(rtb_Y_k, rtb_Gain_pp);
   }
 
   AutopilotLaws_Voter1(rtb_Sum_ia, rtb_Add3_np, rtb_Gain_ib, &R);
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.input.H_c_ft - AutopilotLaws_U.in.data.H_ft, AutopilotLaws_P.LagFilter_C1_b,
     AutopilotLaws_U.in.time.dt, &rtb_Gain1_na, &AutopilotLaws_DWork.sf_LagFilter_d);
-  u0 = AutopilotLaws_P.Gain2_Gain_hq * rtb_Gain1_na;
+  rtb_Add3_np = AutopilotLaws_P.Gain2_Gain_hq * rtb_Gain1_na;
   rtb_GainTheta1 = AutopilotLaws_P.kntoms_Gain_j * AutopilotLaws_U.in.data.V_tas_kn;
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_f3) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_f3;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_b) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_b;
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_f3) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_f3;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_b) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_b;
   }
 
   if (rtb_GainTheta1 > AutopilotLaws_P.Saturation_UpperSat_nuy) {
@@ -2327,22 +2325,22 @@ void AutopilotLawsModelClass::step()
     rtb_GainTheta1 = AutopilotLaws_P.Saturation_LowerSat_dj;
   }
 
-  u0 = ((AutopilotLaws_U.in.input.H_dot_c_fpm + u0) - AutopilotLaws_U.in.data.H_dot_ft_min) *
+  rtb_Add3_np = ((AutopilotLaws_U.in.input.H_dot_c_fpm + rtb_Add3_np) - AutopilotLaws_U.in.data.H_dot_ft_min) *
     AutopilotLaws_P.ftmintoms_Gain_kr / rtb_GainTheta1;
-  if (u0 > 1.0) {
-    u0 = 1.0;
-  } else if (u0 < -1.0) {
-    u0 = -1.0;
+  if (rtb_Add3_np > 1.0) {
+    rtb_Add3_np = 1.0;
+  } else if (rtb_Add3_np < -1.0) {
+    rtb_Add3_np = -1.0;
   }
 
-  rtb_GainTheta1 = AutopilotLaws_P.Gain_Gain_fs * std::asin(u0);
+  rtb_GainTheta1 = AutopilotLaws_P.Gain_Gain_fs * std::asin(rtb_Add3_np);
   switch (static_cast<int32_T>(rtb_dme)) {
    case 0:
-    rtb_lo_f = AutopilotLaws_P.Constant_Value_dh;
+    rtb_lo_a = AutopilotLaws_P.Constant_Value_dh;
     break;
 
    case 1:
-    rtb_lo_f = distance_m;
+    rtb_lo_a = distance_m;
     break;
 
    case 2:
@@ -2350,59 +2348,59 @@ void AutopilotLawsModelClass::step()
 
    case 3:
     if (rtb_Compare_jy) {
-      rtb_lo_f = rtb_lo;
+      rtb_lo_a = rtb_lo;
     } else if (Phi2 > AutopilotLaws_P.Switch_Threshold) {
-      rtb_lo_f = std::fmax(rtb_lo, rtb_Gain_ml);
+      rtb_lo_a = std::fmax(rtb_lo, rtb_Gain_ml);
     } else {
-      rtb_lo_f = std::fmin(rtb_lo, rtb_Gain_ml);
+      rtb_lo_a = std::fmin(rtb_lo, rtb_Gain_ml);
     }
     break;
 
    case 4:
-    rtb_lo_f = rtb_Cos1_pk;
+    rtb_lo_a = rtb_Cos1_pk;
     break;
 
    case 5:
-    rtb_lo_f = rtb_FD_i;
+    rtb_lo_a = rtb_FD_p;
     break;
 
    case 6:
-    rtb_lo_f = AutopilotLaws_P.Gain1_Gain_d * rtb_Product_dh;
+    rtb_lo_a = AutopilotLaws_P.Gain1_Gain_d * rtb_Product_dh;
     break;
 
    case 7:
     if (rtb_on_ground > AutopilotLaws_P.Switch1_Threshold_j) {
-      rtb_lo_f = AutopilotLaws_P.Gain2_Gain_h * rtb_Gain4;
+      rtb_lo_a = AutopilotLaws_P.Gain2_Gain_h * rtb_Gain4;
     } else {
-      rtb_lo_f = ((AutopilotLaws_P.Gain1_Gain_i * rtb_Y_n + rtb_Y_i) + rtb_Sum1_g * rtb_uDLookupTable_m) *
+      rtb_lo_a = ((AutopilotLaws_P.Gain1_Gain_i * rtb_Y_dr + rtb_Y_nd) + rtb_Sum1_g * rtb_uDLookupTable_m) *
         AutopilotLaws_P.Gain6_Gain_f;
     }
     break;
 
    case 8:
-    rtb_lo_f = R;
+    rtb_lo_a = R;
     break;
 
    default:
-    rtb_lo_f = rtb_GainTheta1;
+    rtb_lo_a = rtb_GainTheta1;
     break;
   }
 
-  if (rtb_lo_f > AutopilotLaws_P.Constant1_Value_i) {
+  if (rtb_lo_a > AutopilotLaws_P.Constant1_Value_i) {
     rtb_Gain1_na = AutopilotLaws_P.Constant1_Value_i;
   } else {
     rtb_Gain1_na = AutopilotLaws_P.Gain1_Gain_n * AutopilotLaws_P.Constant1_Value_i;
-    if (rtb_lo_f >= rtb_Gain1_na) {
-      rtb_Gain1_na = rtb_lo_f;
+    if (rtb_lo_a >= rtb_Gain1_na) {
+      rtb_Gain1_na = rtb_lo_a;
     }
   }
 
-  AutopilotLaws_RateLimiter(rtb_Gain1_na - rtb_error_c, AutopilotLaws_P.RateLimiterVariableTs1_up,
+  AutopilotLaws_RateLimiter(rtb_Gain1_na - rtb_error_b, AutopilotLaws_P.RateLimiterVariableTs1_up,
     AutopilotLaws_P.RateLimiterVariableTs1_lo, AutopilotLaws_U.in.time.dt,
     AutopilotLaws_P.RateLimiterVariableTs1_InitialCondition, &rtb_Gain1_na, &AutopilotLaws_DWork.sf_RateLimiter_h);
   AutopilotLaws_LagFilter(rtb_Gain1_na, AutopilotLaws_P.LagFilter_C1_gh, AutopilotLaws_U.in.time.dt, &R,
     &AutopilotLaws_DWork.sf_LagFilter_pe);
-  AutopilotLaws_DWork.icLoad_f = ((rtb_fpmtoms == 0.0) || AutopilotLaws_DWork.icLoad_f);
+  AutopilotLaws_DWork.icLoad_f = ((rtb_fpmtoms == 0) || AutopilotLaws_DWork.icLoad_f);
   if (AutopilotLaws_DWork.icLoad_f) {
     AutopilotLaws_DWork.Delay_DSTATE_h2 = rtb_GainTheta;
   }
@@ -2418,41 +2416,41 @@ void AutopilotLawsModelClass::step()
 
   AutopilotLaws_VSLimiter(AutopilotLaws_P.Gain_Gain_k2 * rtb_lo, &AutopilotLaws_Y.out, &Phi2);
   AutopilotLaws_VSLimiter_f(rtb_Product_dh, &AutopilotLaws_Y.out, &rtb_lo);
-  distance_m = AutopilotLaws_P.Gain3_Gain_l * rtb_Y_n;
-  rtb_lo_f = AutopilotLaws_P.VS_Gain_e * rtb_Sum1_g;
+  distance_m = AutopilotLaws_P.Gain3_Gain_l * rtb_Y_dr;
+  rtb_lo_a = AutopilotLaws_P.VS_Gain_e * rtb_Sum1_g;
   AutopilotLaws_WashoutFilter(rtb_Saturation, AutopilotLaws_P.WashoutFilter1_C1_h, AutopilotLaws_U.in.time.dt,
-    &rtb_error_c, &AutopilotLaws_DWork.sf_WashoutFilter_k);
-  u0 = std::abs(rtb_error_c);
-  if (u0 > AutopilotLaws_P.Saturation_UpperSat_ig) {
-    u0 = AutopilotLaws_P.Saturation_UpperSat_ig;
-  } else if (u0 < AutopilotLaws_P.Saturation_LowerSat_ous) {
-    u0 = AutopilotLaws_P.Saturation_LowerSat_ous;
+    &rtb_error_b, &AutopilotLaws_DWork.sf_WashoutFilter_k);
+  rtb_Add3_np = std::abs(rtb_error_b);
+  if (rtb_Add3_np > AutopilotLaws_P.Saturation_UpperSat_ig) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_UpperSat_ig;
+  } else if (rtb_Add3_np < AutopilotLaws_P.Saturation_LowerSat_ous) {
+    rtb_Add3_np = AutopilotLaws_P.Saturation_LowerSat_ous;
   }
 
-  rtb_Saturation = AutopilotLaws_P.Gain_Gain_j0 * u0;
+  rtb_Saturation = AutopilotLaws_P.Gain_Gain_j0 * rtb_Add3_np;
   if (rtb_on_ground <= AutopilotLaws_P.Switch_Threshold_c) {
-    rtb_Gain4 = ((rtb_Y_i + distance_m) + rtb_uDLookupTable_m * rtb_lo_f) + rtb_Saturation;
+    rtb_Gain4 = ((rtb_Y_nd + distance_m) + rtb_uDLookupTable_m * rtb_lo_a) + rtb_Saturation;
   }
 
-  AutopilotLaws_VSLimiter_f(rtb_Gain4, &AutopilotLaws_Y.out, &rtb_error_c);
+  AutopilotLaws_VSLimiter_f(rtb_Gain4, &AutopilotLaws_Y.out, &rtb_error_b);
   if (!rtb_OR1) {
     if (rtb_Sum3_m3 > AutopilotLaws_P.Switch_Threshold_hz) {
-      rtb_Y_bw = std::fmax(rtb_Y_bw, AutopilotLaws_P.VS_Gain_n5 * rtb_Gain_pp);
+      rtb_Y_k = std::fmax(rtb_Y_k, AutopilotLaws_P.VS_Gain_n5 * rtb_Gain_pp);
     } else {
-      rtb_Y_bw = std::fmin(rtb_Y_bw, AutopilotLaws_P.VS_Gain_n5 * rtb_Gain_pp);
+      rtb_Y_k = std::fmin(rtb_Y_k, AutopilotLaws_P.VS_Gain_n5 * rtb_Gain_pp);
     }
   }
 
-  AutopilotLaws_Voter1(rtb_Sum_ia, AutopilotLaws_P.Gain_Gain_o2 * rtb_Y_bw, AutopilotLaws_P.VS_Gain_nx * rtb_Gain_ib,
+  AutopilotLaws_Voter1(rtb_Sum_ia, AutopilotLaws_P.Gain_Gain_o2 * rtb_Y_k, AutopilotLaws_P.VS_Gain_nx * rtb_Gain_ib,
                        &rtb_Gain_ml);
-  AutopilotLaws_VSLimiter(rtb_Gain_ml, &AutopilotLaws_Y.out, &rtb_Y_bw);
+  AutopilotLaws_VSLimiter(rtb_Gain_ml, &AutopilotLaws_Y.out, &rtb_Y_k);
   if (AutopilotLaws_U.in.input.vertical_mode == 24.0) {
     rtb_Add3_np = 0.15;
   } else {
     rtb_Add3_np = 0.1;
   }
 
-  rtb_Y_n = b_L * rtb_Add3_np * 57.295779513082323;
+  rtb_Y_dr = b_L * rtb_Add3_np * 57.295779513082323;
   switch (static_cast<int32_T>(rtb_dme)) {
    case 0:
     rtb_Gain1_na = AutopilotLaws_P.Constant_Value_dh;
@@ -2482,15 +2480,15 @@ void AutopilotLawsModelClass::step()
     break;
 
    case 7:
-    rtb_Gain1_na = rtb_error_c;
+    rtb_Gain1_na = rtb_error_b;
     break;
 
    case 8:
-    rtb_Gain1_na = rtb_Y_bw;
+    rtb_Gain1_na = rtb_Y_k;
     break;
 
    default:
-    rtb_Gain1_na = std::fmax(-rtb_Y_n, std::fmin(rtb_Y_n, AutopilotLaws_P.VS_Gain_ne * rtb_GainTheta1));
+    rtb_Gain1_na = std::fmax(-rtb_Y_dr, std::fmin(rtb_Y_dr, AutopilotLaws_P.VS_Gain_ne * rtb_GainTheta1));
     break;
   }
 
@@ -2511,7 +2509,7 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.DelayInput1_DSTATE *= AutopilotLaws_U.in.time.dt;
   AutopilotLaws_DWork.Delay_DSTATE_h2 += std::fmax(rtb_Gain1_na, AutopilotLaws_DWork.DelayInput1_DSTATE);
   AutopilotLaws_LagFilter(AutopilotLaws_DWork.Delay_DSTATE_h2, AutopilotLaws_P.LagFilter_C1_i,
-    AutopilotLaws_U.in.time.dt, &rtb_error_c, &AutopilotLaws_DWork.sf_LagFilter_gn);
+    AutopilotLaws_U.in.time.dt, &rtb_error_b, &AutopilotLaws_DWork.sf_LagFilter_gn);
   AutopilotLaws_RateLimiter(static_cast<real_T>(rtb_fpmtoms), AutopilotLaws_P.RateLimiterVariableTs_up_i,
     AutopilotLaws_P.RateLimiterVariableTs_lo_o, AutopilotLaws_U.in.time.dt,
     AutopilotLaws_P.RateLimiterVariableTs_InitialCondition_p, &rtb_Gain1_na, &AutopilotLaws_DWork.sf_RateLimiter_eb);
@@ -2521,10 +2519,10 @@ void AutopilotLawsModelClass::step()
     rtb_Gain1_na = AutopilotLaws_P.Saturation_LowerSat_eq;
   }
 
-  rtb_GainTheta1 = rtb_error_c * rtb_Gain1_na;
-  AutopilotLaws_LagFilter(rtb_Y_g, AutopilotLaws_P.LagFilter1_C1_d, AutopilotLaws_U.in.time.dt, &rtb_error_c,
+  rtb_GainTheta1 = rtb_error_b * rtb_Gain1_na;
+  AutopilotLaws_LagFilter(rtb_Y_pl, AutopilotLaws_P.LagFilter1_C1_d, AutopilotLaws_U.in.time.dt, &rtb_error_b,
     &AutopilotLaws_DWork.sf_LagFilter_cs);
-  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain7_Gain_l * rtb_error_c;
+  AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Gain7_Gain_l * rtb_error_b;
   AutopilotLaws_Y.out.output.flight_director.Theta_c_deg = R;
   AutopilotLaws_Y.out.output.autopilot.Theta_c_deg = (AutopilotLaws_P.Constant_Value_i4 - rtb_Gain1_na) * rtb_GainTheta
     + rtb_GainTheta1;
@@ -2533,8 +2531,8 @@ void AutopilotLawsModelClass::step()
      (AutopilotLaws_U.in.data.H_radio_ft <= 45.0)));
   AutopilotLaws_Y.out.output.flare_law.H_dot_radio_fpm = rtb_Max1;
   AutopilotLaws_Y.out.output.flare_law.H_dot_c_fpm = rtb_Vz;
-  AutopilotLaws_Y.out.output.flare_law.delta_Theta_H_dot_deg = rtb_lo_f;
-  AutopilotLaws_Y.out.output.flare_law.delta_Theta_bz_deg = rtb_Y_i;
+  AutopilotLaws_Y.out.output.flare_law.delta_Theta_H_dot_deg = rtb_lo_a;
+  AutopilotLaws_Y.out.output.flare_law.delta_Theta_bz_deg = rtb_Y_nd;
   AutopilotLaws_Y.out.output.flare_law.delta_Theta_bx_deg = distance_m;
   AutopilotLaws_Y.out.output.flare_law.delta_Theta_beta_c_deg = rtb_Saturation;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_U.in.data.altimeter_setting_left_mbar;
@@ -2546,7 +2544,7 @@ void AutopilotLawsModelClass::step()
   }
 
   AutopilotLaws_DWork.Delay_DSTATE_l[99] = rtb_valid;
-  AutopilotLaws_DWork.Delay_DSTATE_h5[99] = rtb_valid_m;
+  AutopilotLaws_DWork.Delay_DSTATE_h5[99] = rtb_valid_f;
   AutopilotLaws_DWork.icLoad = false;
   AutopilotLaws_DWork.Delay_DSTATE_c = rtb_Sum_l1;
   AutopilotLaws_DWork.Delay_DSTATE_b = rtb_Add3_j4;
@@ -2556,7 +2554,7 @@ void AutopilotLawsModelClass::step()
 void AutopilotLawsModelClass::initialize()
 {
   {
-    real_T rtb_out_o;
+    real_T rtb_out_a;
     int32_T i;
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.DetectChange_vinit;
     AutopilotLaws_DWork.DelayInput1_DSTATE_g = AutopilotLaws_P.DetectChange1_vinit;
@@ -2571,12 +2569,12 @@ void AutopilotLawsModelClass::initialize()
     AutopilotLaws_DWork.Delay_DSTATE_c = AutopilotLaws_P.DiscreteDerivativeVariableTs1_InitialCondition;
     AutopilotLaws_DWork.Delay_DSTATE_b = AutopilotLaws_P.DiscreteDerivativeVariableTs_InitialCondition_f;
     AutopilotLaws_DWork.icLoad_f = true;
-    AutopilotLaws_Chart_g_Init(&rtb_out_o);
-    AutopilotLaws_Chart_Init(&rtb_out_o);
+    AutopilotLaws_Chart_g_Init(&rtb_out_a);
+    AutopilotLaws_Chart_Init(&rtb_out_a);
     AutopilotLaws_MATLABFunction_f_Init(&AutopilotLaws_DWork.sf_MATLABFunction_m);
-    AutopilotLaws_Chart_Init(&rtb_out_o);
+    AutopilotLaws_Chart_Init(&rtb_out_a);
     AutopilotLaws_MATLABFunction_f_Init(&AutopilotLaws_DWork.sf_MATLABFunction_e5);
-    AutopilotLaws_Chart_g_Init(&rtb_out_o);
+    AutopilotLaws_Chart_g_Init(&rtb_out_a);
     AutopilotLaws_B.u = AutopilotLaws_P.Y_Y0;
     AutopilotLaws_DWork.k = 5.0;
     AutopilotLaws_DWork.maxH_dot = 1500.0;

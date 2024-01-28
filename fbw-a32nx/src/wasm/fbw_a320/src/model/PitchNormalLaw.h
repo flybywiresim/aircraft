@@ -115,6 +115,7 @@ class PitchNormalLaw final
     rtDW_LagFilter_PitchNormalLaw_T sf_LagFilter_mf;
     rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_pr;
     rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_f;
+    rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_m;
     rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_f;
     rtDW_WashoutFilter_PitchNormalLaw_T sf_WashoutFilter_ca;
     rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_gr;
@@ -226,6 +227,7 @@ class PitchNormalLaw final
     real_T DiscreteDerivativeVariableTs2_InitialCondition_m;
     real_T RateLimiterVariableTs5_InitialCondition;
     real_T DiscreteDerivativeVariableTs1_InitialCondition_n;
+    real_T RateLimiterFlareLawTailstrikeProtection_InitialCondition;
     real_T RateLimiterDeltaEtaFlare_InitialCondition;
     real_T RateLimiterTheta_c_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_n;
@@ -274,6 +276,7 @@ class PitchNormalLaw final
     real_T RateLimiterVariableTs8_lo;
     real_T RateLimiterVariableTs2_lo_k;
     real_T RateLimiterVariableTs5_lo;
+    real_T RateLimiterFlareLawTailstrikeProtection_lo;
     real_T RateLimiterDeltaEtaFlare_lo;
     real_T RateLimiterTheta_c_lo;
     real_T RateLimiterVariableTs9_lo;
@@ -291,6 +294,7 @@ class PitchNormalLaw final
     real_T RateLimiterVariableTs8_up;
     real_T RateLimiterVariableTs2_up_m;
     real_T RateLimiterVariableTs5_up;
+    real_T RateLimiterFlareLawTailstrikeProtection_up;
     real_T RateLimiterDeltaEtaFlare_up;
     real_T RateLimiterTheta_c_up;
     real_T RateLimiterVariableTs9_up;
@@ -300,10 +304,11 @@ class PitchNormalLaw final
     real_T RateLimiterVariableTs_up_na;
     real_T RateLimitereta_up;
     boolean_T CompareToConstant_const;
+    real_T FlareLawTheta_cDebug_Value;
     real_T Constant2_Value;
     real_T Constant3_Value;
     real_T Constant_Value;
-    real_T Constant_Value_c;
+    real_T Constant_Value_l;
     real_T UpperLimit_tableData[35];
     real_T UpperLimit_bp01Data[7];
     real_T UpperLimit_bp02Data[5];
@@ -312,15 +317,7 @@ class PitchNormalLaw final
     real_T LowerLimit_bp02Data[5];
     real_T Constant1_Value;
     real_T LowerLimitSwitch_Threshold;
-    real_T Constant_Value_l;
-    real_T UpperLimit_tableData_j[35];
-    real_T UpperLimit_bp01Data_a[7];
-    real_T UpperLimit_bp02Data_m[5];
-    real_T LowerLimit_tableData_g[35];
-    real_T LowerLimit_bp01Data_e[7];
-    real_T LowerLimit_bp02Data_o[5];
-    real_T Constant1_Value_m;
-    real_T LowerLimitSwitch_Threshold_n;
+    real_T FlareLawTailstrikeProtectionLimitLo_Value;
     real_T qk_dot_gain1_Gain;
     real_T qk_gain_HSP_Gain;
     real_T v_dot_gain_HSP_Gain;
@@ -356,7 +353,7 @@ class PitchNormalLaw final
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Constant_Value_j;
-    real_T Constant_Value_cz;
+    real_T Constant_Value_c;
     real_T Constant_Value_a;
     real_T Constant_Value_m;
     real_T Constant_Value_mo;
@@ -398,9 +395,6 @@ class PitchNormalLaw final
     real_T SaturationSpoilers_LowerSat_j;
     real_T Saturation_UpperSat_hc;
     real_T Saturation_LowerSat_a;
-    real_T Constant_Value_d;
-    real_T GainUp_Gain;
-    real_T UpperLimitSwitch_Threshold;
     real_T Gain3_Gain_g;
     real_T Gain1_Gain_or;
     real_T Vm_currentms_Value_p;
@@ -425,7 +419,6 @@ class PitchNormalLaw final
     real_T SaturationSpoilers_LowerSat_h;
     real_T Saturation_UpperSat_b;
     real_T Saturation_LowerSat_c;
-    real_T GainLo_Gain;
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_e;
     real_T Constant_Value_i;
@@ -446,8 +439,8 @@ class PitchNormalLaw final
     real_T Saturation_LowerSat_h;
     real_T Constant_Value_fe;
     real_T Constant_Value_e;
-    real_T GainUp_Gain_g;
-    real_T UpperLimitSwitch_Threshold_f;
+    real_T GainUp_Gain;
+    real_T UpperLimitSwitch_Threshold;
     real_T Gain3_Gain_f;
     real_T Gain1_Gain_i;
     real_T Vm_currentms_Value_j;
@@ -459,8 +452,6 @@ class PitchNormalLaw final
     real_T Gain5_Gain_g;
     real_T Bias_Bias_g;
     real_T Gain_Gain_d;
-    real_T SaturationTheta_c_UpperSat;
-    real_T SaturationTheta_c_LowerSat;
     real_T PLUT_tableData_bb[2];
     real_T PLUT_bp01Data_k[2];
     real_T DLUT_tableData_bf[2];
@@ -472,7 +463,7 @@ class PitchNormalLaw final
     real_T SaturationSpoilers_LowerSat_b;
     real_T Saturation_UpperSat_cm;
     real_T Saturation_LowerSat_p;
-    real_T GainLo_Gain_o;
+    real_T GainLo_Gain;
     real_T Saturation_UpperSat_l;
     real_T Saturation_LowerSat_j;
     real_T Constant_Value_jg;
@@ -558,7 +549,6 @@ class PitchNormalLaw final
     real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_k;
     real_T Switch_Threshold;
-    real_T Gain_Gain_c;
     real_T Saturation_UpperSat_la;
     real_T Saturation_LowerSat_kp;
     real_T Constant_Value_o1;
@@ -583,11 +573,11 @@ class PitchNormalLaw final
     real_T Constant_Value_h;
     real_T Saturation_UpperSat_kp;
     real_T Saturation_LowerSat_a4;
+    real_T Gain_Gain_c;
     uint32_T UpperLimit_maxIndex[2];
     uint32_T LowerLimit_maxIndex[2];
-    uint32_T UpperLimit_maxIndex_a[2];
-    uint32_T LowerLimit_maxIndex_p[2];
     uint32_T uDLookupTable_maxIndex[2];
+    uint8_T SwitchTheta_cDebug_CurrentSetting;
     uint8_T ManualSwitch_CurrentSetting;
     uint8_T ManualSwitch1_CurrentSetting;
   };
