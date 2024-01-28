@@ -1,4 +1,4 @@
-import {
+import type {
     FlightPlanManager as FlightPlanManager_,
     ManagedFlightPlan as ManagedFlightPlan_,
     getFlightPhaseManager as getFlightPhaseManager_,

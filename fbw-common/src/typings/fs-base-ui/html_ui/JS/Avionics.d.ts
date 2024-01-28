@@ -1,4 +1,3 @@
-/// <reference path="../../../types.d.ts" />
 /// <reference path="./Types.d.ts" />
 
 declare global {
