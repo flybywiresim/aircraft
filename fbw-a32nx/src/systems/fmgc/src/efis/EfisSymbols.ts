@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-    GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue,
-    efisRangeSettings,
+    GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, A320EfisNdRangeValue,
+    a320EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
@@ -126,7 +126,7 @@ export class EfisSymbols {
         };
 
         for (const side of EfisSymbols.sides) {
-            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = a320EfisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
@@ -540,7 +540,7 @@ export class EfisSymbols {
         }
     }
 
-    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
+    private calculateEditArea(range: A320EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
         case EfisNdMode.ARC:
             if (range <= 10) {

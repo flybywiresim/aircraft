@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject, EfisNdMode, efisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
+
+import { Arinc429RegisterSubject, EfisNdMode, a320EfisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
@@ -13,7 +14,7 @@ import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 
-export class RoseNavPage extends RoseMode {
+export class RoseNavPage<T extends number> extends RoseMode<T> {
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
@@ -112,7 +113,7 @@ export class RoseNavPage extends RoseMode {
         const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
         const rangeSetting = this.mapRangeSub.get();
-        const range = efisRangeSettings[rangeSetting];
+        const range = a320EfisRangeSettings[rangeSetting];
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ROSE_NAV);
         publisher.pub('set_map_pixel_radius', 250);

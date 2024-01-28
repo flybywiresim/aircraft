@@ -32,7 +32,7 @@ import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 import { GenericFcuEvents } from './types/GenericFcuEvents';
 import { ArincEventBus } from '../../../shared/src/ArincEventBus';
-import { EfisNdMode, EfisSide, EfisNdRangeValue, efisRangeSettings } from '../NavigationDisplay';
+import { EfisNdMode, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
 import { MathUtils } from '../../../shared/src/MathUtils';
@@ -47,13 +47,15 @@ export const getDisplayIndex = () => {
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
-export interface NDProps {
+export interface NDProps<T extends number> {
     bus: ArincEventBus,
 
     side: EfisSide,
+
+    rangeValues: T[],
 }
 
-export class NDComponent extends DisplayComponent<NDProps> {
+export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
 
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
@@ -72,17 +74,17 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly trueRefActive = Subject.create(false);
 
-    private readonly mapRangeRadius = Subject.create<EfisNdRangeValue>(10);
+    private readonly mapRangeRadius = Subject.create<T | null>(null);
 
-    private readonly roseLSPage = FSComponent.createRef<RoseLSPage>();
+    private readonly roseLSPage = FSComponent.createRef<RoseLSPage<T>>();
 
-    private readonly roseVorPage = FSComponent.createRef<RoseVorPage>();
+    private readonly roseVorPage = FSComponent.createRef<RoseVorPage<T>>();
 
-    private readonly roseNavPage = FSComponent.createRef<RoseNavPage>();
+    private readonly roseNavPage = FSComponent.createRef<RoseNavPage<T>>();
 
-    private readonly arcPage = FSComponent.createRef<ArcModePage>();
+    private readonly arcPage = FSComponent.createRef<ArcModePage<T>>();
 
-    private readonly planPage = FSComponent.createRef<PlanModePage>();
+    private readonly planPage = FSComponent.createRef<PlanModePage<T>>();
 
     private currentPageMode = Subject.create(EfisNdMode.ARC);
 
@@ -151,7 +153,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.mapRangeRadius.set(efisRangeSettings[value]);
+            this.mapRangeRadius.set(this.props.rangeValues[value]);
             this.invalidateRange();
         });
 
@@ -263,7 +265,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows ILS2  */
                         index={this.props.side === 'L' ? 2 : 1}
@@ -275,7 +277,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows VOR1  */
                         index={this.props.side === 'L' ? 1 : 2}
@@ -287,12 +289,13 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage
                         ref={this.arcPage}
                         bus={this.props.bus}
+                        rangeValues={this.props.rangeValues}
                         headingWord={this.headingWord}
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
@@ -302,6 +305,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <PlanModePage
                         ref={this.planPage}
                         bus={this.props.bus}
+                        rangeValues={this.props.rangeValues}
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
 

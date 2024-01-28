@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ComponentProps, ConsumerSubject, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, efisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, a320EfisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
@@ -13,8 +13,9 @@ import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 
-export interface ArcModePageProps extends ComponentProps {
+export interface ArcModePageProps<T extends number> extends ComponentProps {
     bus: ArincEventBus,
+    rangeValues: T[],
     headingWord: Subscribable<Arinc429WordData>,
     trueHeadingWord: Subscribable<Arinc429WordData>,
     trackWord: Subscribable<Arinc429WordData>,
@@ -22,7 +23,7 @@ export interface ArcModePageProps extends ComponentProps {
     isUsingTrackUpMode: Subscribable<boolean>,
 }
 
-export class ArcModePage extends NDPage<ArcModePageProps> {
+export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
     public isVisible = Subject.create(false);
 
     // TODO these two should be FM pos maybe ?
@@ -173,7 +174,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ARC);
         publisher.pub('set_map_pixel_radius', 498);
-        publisher.pub('set_map_range_radius', efisRangeSettings[this.mapRangeSub.get()]);
+        publisher.pub('set_map_range_radius', a320EfisRangeSettings[this.mapRangeSub.get()]);
         publisher.pub('set_map_center_y_bias', 242);
     }
 
@@ -189,6 +190,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                     bus={this.props.bus}
                     ringAvailable={this.ringAvailable}
                     ringRotation={this.ringRotation}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <LsCourseBug
@@ -198,7 +200,6 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                 />
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
-
             </g>
         );
     }

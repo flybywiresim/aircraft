@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, ComponentProps, Subject, Subscribable, VNode, EventBus } from '@microsoft/msfs-sdk';
-import { Arinc429WordData, MathUtils, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, MathUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericTcasEvents } from '../../types/GenericTcasEvents';
@@ -49,7 +49,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
         const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericTcasEvents>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.rangeValue.set(efisRangeSettings[value]);
+            this.rangeValue.set(a320EfisRangeSettings[value]);
 
             this.handleRingVisibilities();
         });

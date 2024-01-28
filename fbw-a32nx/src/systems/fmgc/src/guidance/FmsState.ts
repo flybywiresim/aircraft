@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, A320EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
 
 export interface FmsState {
     leftEfisState: EfisState,
@@ -13,7 +13,7 @@ export interface FmsState {
 export interface EfisState {
     mode: EfisNdMode,
 
-    range: EfisNdRangeValue,
+    range: A320EfisNdRangeValue,
 
     dataLimitReached: boolean,
 
