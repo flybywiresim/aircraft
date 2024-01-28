@@ -56,9 +56,9 @@ export interface NDProps<T extends number> {
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
-    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly isUsingTrackUpMode = Subject.create(false);
 
@@ -73,8 +73,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     private readonly trackWord = Arinc429ConsumerSubject.create(null);
 
     private readonly trueRefActive = Subject.create(false);
-
-    private readonly mapRangeRadius = Subject.create<T | null>(null);
 
     private readonly roseLSPage = FSComponent.createRef<RoseLSPage<T>>();
 
@@ -153,7 +151,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.mapRangeRadius.set(this.props.rangeValues[value]);
             this.invalidateRange();
         });
 
@@ -265,7 +262,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows ILS2  */
                         index={this.props.side === 'L' ? 2 : 1}
@@ -277,7 +274,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows VOR1  */
                         index={this.props.side === 'L' ? 1 : 2}
@@ -289,7 +286,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage
@@ -449,7 +446,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
         ([visible, boxed]) => visible && boxed,
         this.props.visible,
         this.props.boxed,
-    )
+    );
 
     private readonly boxX = MappedSubject.create(
         ([x]) => x - 34,
@@ -498,7 +495,7 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
     private gridTrackText = MappedSubject.create(
         ([gridTrack]) => gridTrack.toFixed(0).padStart(3, '0'),
         this.props.gridTrack,
-    )
+    );
 
     render(): VNode | null {
         return (
@@ -545,7 +542,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
-    )
+    );
 
     private readonly trueRefVisible = MappedSubject.create(
         ([isTrueRef, isPlanMode]) => isTrueRef && !isPlanMode,
@@ -560,7 +557,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.trueTrackWord,
         this.approachMessageValue,
         this.trueRefVisible,
-    )
+    );
 
     private readonly trueFlagX = MappedSubject.create(
         ([gridTrack]) => 384 + (gridTrack ? -50 : 4),
@@ -575,7 +572,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
     private readonly trueFlagBoxed = MappedSubject.create(
         ([apprMsg]) => apprMsg.length === 0,
         this.approachMessageValue,
-    )
+    );
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -668,7 +665,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
-    )
+    );
 
     private readonly toWptIdentValue = Subject.create('');
 

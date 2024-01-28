@@ -66,6 +66,7 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
                     bus={this.props.bus}
                     heading={this.props.headingWord}
                     visible={this.isVisible}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <IlsCaptureOverlay

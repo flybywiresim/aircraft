@@ -133,6 +133,7 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
                     bus={this.props.bus}
                     heading={this.props.headingWord}
                     visible={this.isVisible}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <LsCourseBug
