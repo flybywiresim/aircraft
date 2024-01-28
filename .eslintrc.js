@@ -27,6 +27,11 @@ module.exports = {
         'tailwindcss': { groupByResponsive: true },
         'import/resolver': { node: { extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'] } },
     },
+    ignorePatterns: [
+        'fbw-common/src/typings/*',
+        'fbw-a380x/*',
+        'fbw-ingamepanels-checklist-fix/*',
+    ],
     // overrides airbnb, use sparingly
     rules: {
         'tailwindcss/no-custom-classname': 'off',

@@ -40,7 +40,7 @@ const FailureGroup = ({ title, failures }: FailureGroupProps) => {
         <div className="space-y-2">
             <h2>{title}</h2>
 
-            <div className="grid grid-cols-4 auto-rows-auto">
+            <div className="grid auto-rows-auto grid-cols-4">
                 {failures.map((failure, index) => (
                     <FailureButton
                         key={failure.identifier}
@@ -80,7 +80,7 @@ export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                     />
                 ))}
                 {failures.length === 0 && (
-                    <div className="flex justify-center items-center rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
+                    <div className="border-theme-accent flex items-center justify-center rounded-md border-2" style={{ height: '48rem' }}>
                         <p>{t('Failures.NoItemsFound')}</p>
                     </div>
                 )}

@@ -24,7 +24,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
 
     private lastUpdateTime = Date.now();
 
-    private groundSpeed= Arinc429Register.empty();
+    private groundSpeed = Arinc429Register.empty();
 
     private headingWord = Arinc429ConsumerSubject.create(null);
 

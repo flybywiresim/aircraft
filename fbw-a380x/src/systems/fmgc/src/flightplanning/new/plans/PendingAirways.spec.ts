@@ -1,10 +1,10 @@
-import fetch from "node-fetch";
-import { FlightPlanService } from "@fmgc/flightplanning/new/FlightPlanService";
-import { setupNavigraphDatabase } from "@fmgc/flightplanning/new/test/Database";
-import { NavigationDatabaseService } from "@fmgc/flightplanning/new/NavigationDatabaseService";
-import { loadSingleFix, loadSingleWaypoint } from "@fmgc/flightplanning/new/segments/enroute/WaypointLoading";
-import { FlightPlanPerformanceData } from "@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData";
-import { dumpFlightPlan } from "@fmgc/flightplanning/new/test/FlightPlan";
+import fetch from 'node-fetch';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { loadSingleFix, loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { dumpFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
 
 if (!globalThis.fetch) {
     globalThis.fetch = fetch;
@@ -117,5 +117,5 @@ describe('pending airways entry', () => {
         FlightPlanService.active.pendingAirways.thenTo(to13);
 
         debugger;
-    })
+    });
 });

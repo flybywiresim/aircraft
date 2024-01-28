@@ -51,7 +51,7 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
         ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
-    ])
+    ]);
 
     public constructor(bus: EventBus) {
         super(NDSimvarPublisher.simvars, bus);

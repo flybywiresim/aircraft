@@ -21,7 +21,7 @@ export class VnavDriver implements GuidanceComponent {
 
     currentClimbProfile: ClimbProfileBuilderResult;
 
-    currentDescentProfile: TheoreticalDescentPathCharacteristics
+    currentDescentProfile: TheoreticalDescentPathCharacteristics;
 
     currentApproachProfile: DecelPathCharacteristics;
 

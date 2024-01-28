@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
@@ -138,20 +142,20 @@ export const LocalFileChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+        <div className="h-content-section-reduced flex w-full flex-row overflow-x-hidden rounded-lg">
             <>
                 {!isFullScreen && (
-                    <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
-                        <div className="flex flex-row justify-center items-center">
+                    <div className="shrink-0 overflow-hidden" style={{ width: '450px' }}>
+                        <div className="flex flex-row items-center justify-center">
                             <SimpleInput
                                 placeholder={t('NavigationAndCharts.LocalFiles.FileName')}
                                 value={searchQuery}
-                                className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
+                                className={`w-full shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
 
                             {simbriefDataLoaded && (
-                                <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                <SelectGroup className="shrink-0 rounded-l-none">
                                     <SelectItem
                                         className="uppercase"
                                         selected={searchQuery === departingAirport}
@@ -179,9 +183,9 @@ export const LocalFileChartUI = () => {
                             )}
                         </div>
 
-                        <div className="flex flex-row items-center w-full h-11">
+                        <div className="flex h-11 w-full flex-row items-center">
                             <ArrowReturnRight size={30} />
-                            <div className="block overflow-hidden px-4 w-full whitespace-nowrap" style={{ textOverflow: 'ellipsis' }}>
+                            <div className="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
                                 {getStatusBarText()}
                             </div>
                         </div>
@@ -193,7 +197,7 @@ export const LocalFileChartUI = () => {
                                         selected={index === selectedTabIndex}
                                         onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabIndex: index }))}
                                         key={organizedChart.name}
-                                        className="flex justify-center w-full uppercase"
+                                        className="flex w-full justify-center uppercase"
                                     >
                                         {organizedChart.alias}
                                     </SelectItem>

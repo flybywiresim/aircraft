@@ -51,11 +51,11 @@ const IndicationBox: FC<IndicationBoxProps> = ({ x, y, network, TR }) => {
                 <Triangle x={batteryChargingStatusX} y={batteryChargingArrowY} colour={current < 0 ? 'Amber' : 'Green'} fill={0} orientation={current < 0 ? 180 : 0} scale={1} />
             </g>
             <g id={`${TR}-${network}-indication-box`}>
-                <path className='LightGrey SW3 BackgroundFill' d={`M ${x},${y} l 0,106 l ${TR === 'TR' ? 114 : 126},0 l 0,-106 l ${TR === 'TR' ? -114 : -126},0`} />
+                <path className="LightGrey SW3 BackgroundFill" d={`M ${x},${y} l 0,106 l ${TR === 'TR' ? 114 : 126},0 l 0,-106 l ${TR === 'TR' ? -114 : -126},0`} />
                 <text
                     x={TRX}
                     y={y + 28}
-                    className='F25 EndAlign White LS1'
+                    className="F25 EndAlign White LS1"
                 >
                     {TR}
 
@@ -63,20 +63,20 @@ const IndicationBox: FC<IndicationBoxProps> = ({ x, y, network, TR }) => {
                 <text
                     x={networkX}
                     y={y + 28}
-                    className='F25 White LS1'
+                    className="F25 White LS1"
                 >
                     {network}
 
                 </text>
                 <g>
-                    <text className='Cyan F23' x={TR === 'TR' ? x + 72 : x + 76} y={y + 61}>V</text>
-                    <text className='Cyan F23' x={TR === 'TR' ? x + 72 : x + 76} y={y + 96}>A</text>
+                    <text className="Cyan F23" x={TR === 'TR' ? x + 72 : x + 76} y={y + 61}>V</text>
+                    <text className="Cyan F23" x={TR === 'TR' ? x + 72 : x + 76} y={y + 96}>A</text>
                 </g>
                 {/* Voltage */}
                 <text
                     x={TR === 'TR' ? x + 62 : x + 70}
                     y={y + 61}
-                    className='F29 EndAlign Green'
+                    className="F29 EndAlign Green"
                 >
                     {Math.round(potential)}
 
@@ -85,7 +85,7 @@ const IndicationBox: FC<IndicationBoxProps> = ({ x, y, network, TR }) => {
                 <text
                     x={TR === 'TR' ? x + 62 : x + 70}
                     y={y + 96}
-                    className='F29 EndAlign Green'
+                    className="F29 EndAlign Green"
                 >
                     {Math.round(current)}
 

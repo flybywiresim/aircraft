@@ -1,5 +1,5 @@
 import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
-import { UpdatableSimVarPublisher } from "../../MsfsAvionicsCommon/UpdatableSimVarPublisher";
+import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export interface PFDSimvars {
     slatsFlapsStatusRaw: number;
@@ -421,7 +421,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
         ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
-    ])
+    ]);
 
     public constructor(bus: EventBus) {
         super(PFDSimvarPublisher.simvars, bus);

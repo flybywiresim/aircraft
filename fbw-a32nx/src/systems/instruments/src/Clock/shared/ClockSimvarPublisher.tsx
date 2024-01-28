@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export interface ClockSimvars {
@@ -41,7 +45,7 @@ export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
         ['year', { name: ClockVars.year, type: SimVarValueType.Number }],
         ['elapsedKnobPos', { name: ClockVars.elapsedKnobPos, type: SimVarValueType.Number }],
         ['dc2IsPowered', { name: ClockVars.dc2IsPowered, type: SimVarValueType.Bool }],
-    ])
+    ]);
 
     public constructor(bus: EventBus) {
         super(ClockSimvarPublisher.simvars, bus);

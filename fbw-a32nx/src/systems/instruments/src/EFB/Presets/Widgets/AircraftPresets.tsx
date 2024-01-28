@@ -55,25 +55,25 @@ export const AircraftPresets = () => {
     };
 
     return (
-        <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
-            <div className="flex flex-row justify-center items-center p-2 space-x-2 h-20 rounded-md border-2 border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent mt-4 space-y-4 rounded-lg border-2 p-4">
+            <div className="border-theme-accent flex h-20 flex-row items-center justify-center space-x-2 rounded-md border-2 p-2">
                 {loadPresetVar ? (
                     <>
-                        <div className="overflow-hidden justify-center content-center w-full h-full bg-theme-accent rounded-md">
-                            <span className="pt-1 pl-3 h-1/2 text-xl">
+                        <div className="bg-theme-accent h-full w-full content-center justify-center overflow-hidden rounded-md">
+                            <span className="h-1/2 pl-3 pt-1 text-xl">
                                 {t('Presets.AircraftStates.CurrentProcedureStep')}
                                 :
                                 {' '}
                                 {StepDescription.get(loadPresetCurrentId)}
                             </span>
                             <div
-                                className="h-1/2 bg-theme-highlight"
+                                className="bg-theme-highlight h-1/2"
                                 style={{ width: `${loadPresetProgress * 100}%`, transition: 'width 0.1s ease' }}
                             />
                         </div>
 
                         <div
-                            className="flex items-center px-4 h-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex h-full items-center rounded-md border-2 px-4 transition duration-100"
                             onClick={() => handleCancel()}
                         >
                             {t('Presets.AircraftStates.Cancel')}
@@ -92,7 +92,7 @@ export const AircraftPresets = () => {
                 {AircraftPresetsList.map(({ index, name }) => (
                     <div
                         key={index}
-                        className={`flex justify-center items-center h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent ${(!simOnGround || (loadPresetVar && loadPresetVar !== index)) && 'opacity-50 pointer-events-none'}`}
+                        className={`text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent flex h-24 items-center justify-center rounded-md border-2 transition duration-100 ${(!simOnGround || (loadPresetVar && loadPresetVar !== index)) && 'pointer-events-none opacity-50'}`}
                         onClick={() => handleLoadPreset(index)}
                     >
                         {name}

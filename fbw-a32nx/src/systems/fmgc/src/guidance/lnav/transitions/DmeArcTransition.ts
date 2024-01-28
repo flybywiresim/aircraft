@@ -42,17 +42,17 @@ export class DmeArcTransition extends Transition {
         return this.ftp;
     }
 
-    private radius: NauticalMiles | undefined
+    private radius: NauticalMiles | undefined;
 
-    private itp: Coordinates | undefined
+    private itp: Coordinates | undefined;
 
-    private centre: Coordinates | undefined
+    private centre: Coordinates | undefined;
 
-    private ftp: Coordinates | undefined
+    private ftp: Coordinates | undefined;
 
-    private sweepAngle: Degrees | undefined
+    private sweepAngle: Degrees | undefined;
 
-    private clockwise: boolean | undefined
+    private clockwise: boolean | undefined;
 
     recomputeWithParameters(_isActive: boolean, tas: Knots, gs: MetresPerSecond, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {

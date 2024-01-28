@@ -66,16 +66,16 @@ const Loading = () => {
     }, []);
 
     return (
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col items-center justify-center">
             <div
-                className="flex justify-center items-center bg-theme-secondary rounded-md"
+                className="bg-theme-secondary flex items-center justify-center rounded-md"
                 style={{ width: '400px', height: '400px' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
             </div>
             <button
                 type="button"
-                className={`flex justify-center items-center p-2 mt-6 rounded-md focus:outline-none bg-theme-highlight transition duration-200 opacity-0 ${showResetButton && 'opacity-100'}`}
+                className={`bg-theme-highlight mt-6 flex items-center justify-center rounded-md p-2 opacity-0 transition duration-200 focus:outline-none ${showResetButton && 'opacity-100'}`}
                 style={{ width: '400px' }}
                 onClick={handleResetRefreshToken}
             >
@@ -122,11 +122,11 @@ export const NavigraphAuthUI = () => {
     }, []);
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-full bg-theme-accent rounded-lg">
-            <div className="flex flex-col justify-center items-center">
+        <div className="bg-theme-accent flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg p-6">
+            <div className="flex flex-col items-center justify-center">
                 <ShieldLock className="mr-2" size={40} />
 
-                <h2 className="flex justify-center items-center mt-2">
+                <h2 className="mt-2 flex items-center justify-center">
                     {t('NavigationAndCharts.Navigraph.AuthenticateWithNavigraph')}
                 </h2>
 
@@ -139,7 +139,7 @@ export const NavigraphAuthUI = () => {
                 </p>
 
                 <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider bg-theme-secondary rounded-md border-2 border-theme-highlight"
+                    className="bg-theme-secondary border-theme-highlight mt-4 flex h-16 items-center rounded-md border-2 px-4 text-4xl font-bold tracking-wider"
                     style={{ minWidth: '200px' }}
                 >
                     {displayAuthCode}
@@ -148,7 +148,7 @@ export const NavigraphAuthUI = () => {
                 <div className="mt-16">
                     {hasQr
                         ? (
-                            <div className="p-3 bg-white rounded-md">
+                            <div className="rounded-md bg-white p-3">
                                 <QRCode
                                     value={navigraph.auth.qrLink}
                                     size={400}
@@ -197,8 +197,8 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({ 
                 </>
             )
             : (
-                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced">
-                    <p className="pt-6 mb-6 text-3xl">{t('NavigationAndCharts.Navigraph.InsufficientEnv')}</p>
+                <div className="h-content-section-reduced mr-4 flex w-full items-center justify-center overflow-x-hidden">
+                    <p className="mb-6 pt-6 text-3xl">{t('NavigationAndCharts.Navigraph.InsufficientEnv')}</p>
                 </div>
             )
     );
@@ -212,15 +212,15 @@ export const NavigraphAuthRedirectUI = () => {
     };
 
     return (
-        <div className="flex justify-center items-center h-content-section-reduced rounded-lg border-2 border-theme-accent">
-            <div className="flex flex-col justify-center items-center space-y-4">
+        <div className="h-content-section-reduced border-theme-accent flex items-center justify-center rounded-lg border-2">
+            <div className="flex flex-col items-center justify-center space-y-4">
                 <h1>{t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Title')}</h1>
 
                 <button
                     type="button"
-                    className="flex justify-center items-center py-2 space-x-4 w-52 text-theme-body
-                         hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2
-                         border-theme-highlight transition duration-100"
+                    className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex w-52
+                         items-center justify-center space-x-4 rounded-md border-2
+                         py-2 transition duration-100"
                     onClick={handleGoToThirdPartySettings}
                 >
                     {t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Button')}

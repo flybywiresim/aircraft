@@ -36,13 +36,13 @@ export const StaticInverter: FC<StaticInverterProps> = ({ x, y }) => {
     const showStaticInvIndication = staticInvertedDcCtorClosed || staticInvertedToAcEmerCtorClosed;
 
     return (
-        <g id='static-inverter-indication' transform={`translate(${x} ${y})`}>
-            <text x={24} y={showStaticInvIndication ? -17 : 10} className='F25 White LS1 WS-6'>
+        <g id="static-inverter-indication" transform={`translate(${x} ${y})`}>
+            <text x={24} y={showStaticInvIndication ? -17 : 10} className="F25 White LS1 WS-6">
                 STAT INV
             </text>
 
             <g className={showStaticInvIndication ? '' : 'Hide'}>
-                <path className='LightGrey SW3 NoFill' d='M 20,-41 l 0,86 l 133,0 l 0,-86 z' />
+                <path className="LightGrey SW3 NoFill" d="M 20,-41 l 0,86 l 133,0 l 0,-86 z" />
 
                 {/* Voltage */}
                 <text
@@ -60,13 +60,13 @@ export const StaticInverter: FC<StaticInverterProps> = ({ x, y }) => {
                 >
                     {Math.round(frequency)}
                 </text>
-                <text className='Cyan F22' x={114} y={11}>V</text>
-                <text className='Cyan F22' x={114} y={39}>HZ</text>
+                <text className="Cyan F22" x={114} y={11}>V</text>
+                <text className="Cyan F22" x={114} y={39}>HZ</text>
             </g>
 
             {/* STAT INV contactor indication */}
             <Triangle x={0} y={0} colour={triangleColor} fill={0} orientation={-90} scale={1} />
-            <path className={`SW2 Green ${staticInvertedDcCtorClosed && staticInvertedToAcEmerCtorClosed ? '' : 'Hide'}`} d='M 0,0 l -43,0' />
+            <path className={`SW2 Green ${staticInvertedDcCtorClosed && staticInvertedToAcEmerCtorClosed ? '' : 'Hide'}`} d="M 0,0 l -43,0" />
         </g>
     );
 };

@@ -23,6 +23,7 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -32,7 +33,6 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -582,14 +582,13 @@ export class ManagedFlightPlan {
                 atWaypoint.additionalData.defaultHold = defaultHold;
             }
             return index;
-        } else {
-            const manualHoldWaypoint = WaypointBuilder.fromWaypointManualHold(atWaypoint, desiredHold.turnDirection, trueCourse, desiredHold.distance, desiredHold.time, this._parentInstrument);
-            manualHoldWaypoint.additionalData.modifiedHold = modifiedHold;
-            manualHoldWaypoint.additionalData.defaultHold = defaultHold;
-
-            this.addWaypoint(manualHoldWaypoint, index + 1);
-            return index + 1;
         }
+        const manualHoldWaypoint = WaypointBuilder.fromWaypointManualHold(atWaypoint, desiredHold.turnDirection, trueCourse, desiredHold.distance, desiredHold.time, this._parentInstrument);
+        manualHoldWaypoint.additionalData.modifiedHold = modifiedHold;
+        manualHoldWaypoint.additionalData.defaultHold = defaultHold;
+
+        this.addWaypoint(manualHoldWaypoint, index + 1);
+        return index + 1;
     }
 
     /**
@@ -793,7 +792,7 @@ export class ManagedFlightPlan {
             newFlightPlan._segments[i].waypoints = [...seg.waypoints.map((wp) => {
                 const clone = new (wp as any).constructor();
                 Object.assign(clone, wp);
-                clone.additionalData = Object.assign({}, wp.additionalData);
+                clone.additionalData = { ...wp.additionalData };
                 return clone;
             })];
         }
@@ -829,7 +828,7 @@ export class ManagedFlightPlan {
         const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.CF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
         turningPoint.isTurningPoint = true;
 
-        let waypointIndex = this.waypoints.findIndex((w, idx) => idx >= this.activeWaypointIndex && w.icao === waypoint.icao);
+        const waypointIndex = this.waypoints.findIndex((w, idx) => idx >= this.activeWaypointIndex && w.icao === waypoint.icao);
         if (waypointIndex === -1) {
             // in this case the waypoint is not already in the flight plan
             // we string it to the start of the flight plan, add a discontinuity after, and then the existing flight plan
@@ -874,7 +873,7 @@ export class ManagedFlightPlan {
 
     private getTurningPointIcao(): string {
         this.turningPointIndex = (this.turningPointIndex + 1) % 1000;
-        return `WXX    TP${this.turningPointIndex.toFixed(0).padStart(3, '0')}`
+        return `WXX    TP${this.turningPointIndex.toFixed(0).padStart(3, '0')}`;
     }
 
     /**
@@ -919,7 +918,7 @@ export class ManagedFlightPlan {
             const departure: RawDeparture = airportInfo.departures[departureIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
-                legAnnotations.push(...runwayTransition.legs.map(_ => departure.name));
+                legAnnotations.push(...runwayTransition.legs.map((_) => departure.name));
                 origin.endsInDiscontinuity = false;
                 origin.discontinuityCanBeCleared = undefined;
             }
@@ -928,14 +927,14 @@ export class ManagedFlightPlan {
         if (departureIndex !== -1) {
             const departure: RawDeparture = airportInfo.departures[departureIndex];
             legs.push(...departure.commonLegs);
-            legAnnotations.push(...departure.commonLegs.map(_ => departure.name));
+            legAnnotations.push(...departure.commonLegs.map((_) => departure.name));
         }
 
         if (transitionIndex !== -1 && departureIndex !== -1) {
             if (airportInfo.departures[departureIndex].enRouteTransitions.length > 0) {
                 const transition: RawEnRouteTransition = airportInfo.departures[departureIndex].enRouteTransitions[transitionIndex];
                 legs.push(...transition.legs);
-                legAnnotations.push(...transition.legs.map(_ => transition.name));
+                legAnnotations.push(...transition.legs.map((_) => transition.name));
             }
         }
 
@@ -950,7 +949,7 @@ export class ManagedFlightPlan {
 
         if (legs.length > 0 || selectedOriginRunwayIndex !== -1 || (departureIndex !== -1 && runwayIndex !== -1)) {
             segment = this.addSegment(SegmentType.Departure);
-            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, airportMagVar, undefined, legAnnotations);
+            const procedure = new LegsProcedure(legs, origin, this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
             const runway: OneWayRunway | null = this.getOriginRunway();
 
@@ -1023,7 +1022,7 @@ export class ManagedFlightPlan {
             const transition: RawEnRouteTransition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
             if (transition !== undefined) {
                 legs.push(...transition.legs);
-                legAnnotations.push(...transition.legs.map(_ => transition.name));
+                legAnnotations.push(...transition.legs.map((_) => transition.name));
                 // console.log('MFP: buildArrival - pushing transition legs ->', legs);
             }
         }
@@ -1031,7 +1030,7 @@ export class ManagedFlightPlan {
         if (arrivalIndex !== -1) {
             const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
             legs.push(...arrival.commonLegs);
-            legAnnotations.push(...arrival.commonLegs.map(_ => arrival.name));
+            legAnnotations.push(...arrival.commonLegs.map((_) => arrival.name));
             // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
         }
 
@@ -1040,7 +1039,7 @@ export class ManagedFlightPlan {
             const runwayTransition: RawRunwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
-                legAnnotations.push(...runwayTransition.legs.map(_ => arrival.name));
+                legAnnotations.push(...runwayTransition.legs.map((_) => arrival.name));
             }
             // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
@@ -1096,14 +1095,14 @@ export class ManagedFlightPlan {
         if (approachIndex !== -1 && approachTransitionIndex !== -1) {
             const transition: RawApproachTransition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
             legs.push(...transition.legs);
-            legAnnotations.push(...transition.legs.map(_ => transition.name));
+            legAnnotations.push(...transition.legs.map((_) => transition.name));
             // console.log('MFP: buildApproach - pushing approachTransition legs ->', legs);
         }
 
         if (approachIndex !== -1) {
             this.procedureDetails.approachType = approach.approachType;
             legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            legAnnotations.push(...approach.finalLegs.map((_) => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 
@@ -1218,26 +1217,26 @@ export class ManagedFlightPlan {
 
     private static isXfLeg(leg: WayPoint): boolean {
         switch (leg?.additionalData?.legType) {
-            case LegType.CF:
-            case LegType.DF:
-            case LegType.IF:
-            case LegType.RF:
-            case LegType.TF:
-                return true;
-            default:
-                return false;
+        case LegType.CF:
+        case LegType.DF:
+        case LegType.IF:
+        case LegType.RF:
+        case LegType.TF:
+            return true;
+        default:
+            return false;
         }
     }
 
     private static isFxLeg(leg: WayPoint): boolean {
         switch (leg?.additionalData?.legType) {
-            case LegType.FA:
-            case LegType.FC:
-            case LegType.FD:
-            case LegType.FM:
-                return true;
-            default:
-                return false;
+        case LegType.FA:
+        case LegType.FC:
+        case LegType.FD:
+        case LegType.FM:
+            return true;
+        default:
+            return false;
         }
     }
 
@@ -1247,21 +1246,21 @@ export class ManagedFlightPlan {
 
     private static climbConstraint(leg: WayPoint): number {
         switch (leg.legAltitudeDescription) {
-            case AltitudeDescriptor.At:
-            case AltitudeDescriptor.AtOrBelow:
-                return leg.legAltitude1;
-            case AltitudeDescriptor.Between:
-                return leg.legAltitude2;
+        case AltitudeDescriptor.At:
+        case AltitudeDescriptor.AtOrBelow:
+            return leg.legAltitude1;
+        case AltitudeDescriptor.Between:
+            return leg.legAltitude2;
         }
         return Infinity;
     }
 
     private static descentConstraint(leg: WayPoint): number {
         switch (leg.legAltitudeDescription) {
-            case AltitudeDescriptor.At:
-            case AltitudeDescriptor.AtOrAbove:
-            case AltitudeDescriptor.Between:
-                return leg.legAltitude1;
+        case AltitudeDescriptor.At:
+        case AltitudeDescriptor.AtOrAbove:
+        case AltitudeDescriptor.Between:
+            return leg.legAltitude1;
         }
         return -Infinity;
     }
@@ -1311,7 +1310,7 @@ export class ManagedFlightPlan {
             legAltitude1,
             legAltitude2,
             speedConstraint: Number.isFinite(speed) ? speed : 0,
-        }
+        };
     }
 
     /**
@@ -1521,8 +1520,7 @@ export class ManagedFlightPlan {
             default:
             }
         } else if (ManagedFlightPlan.isXfLeg(a) && ManagedFlightPlan.isXfLeg(b)
-            || ManagedFlightPlan.isFxLeg(a) && ManagedFlightPlan.isFxLeg(b))
-        {
+            || ManagedFlightPlan.isFxLeg(a) && ManagedFlightPlan.isFxLeg(b)) {
             return a.icao === b.icao;
         }
 

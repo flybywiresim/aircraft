@@ -13,16 +13,15 @@ const getBranchPreFix = () => {
 
     if (edition === 'stable') {
         return 'rel';
-    } else if (buildInfo?.branch === 'master') {
+    } if (buildInfo?.branch === 'master') {
         return 'dev';
-    } else if (buildInfo?.branch === 'experimental') {
+    } if (buildInfo?.branch === 'experimental') {
         return 'exp';
-    } else {
-        return `${buildInfo?.branch ?? 'unknown'}`;
     }
+    return `${buildInfo?.branch ?? 'unknown'}`;
 };
 
-const version = 'v' + packageInfo.version + `-${(getBranchPreFix())}` + `.${buildInfo?.shortHash ?? 'unknown'}`;
+const version = `v${packageInfo.version}-${(getBranchPreFix())}` + `.${buildInfo?.shortHash ?? 'unknown'}`;
 
 const object = {
     built,

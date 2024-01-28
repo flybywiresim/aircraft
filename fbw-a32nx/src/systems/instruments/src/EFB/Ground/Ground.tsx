@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { t } from '../translation';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
@@ -27,7 +31,7 @@ export const Ground = () => {
             <div className="relative mb-4">
                 <h1 className="font-bold">{t('Ground.Title')}</h1>
                 <Navbar
-                    className="absolute top-0 right-0"
+                    className="absolute right-0 top-0"
                     tabs={tabs}
                     basePath="/ground"
                 />

@@ -10,56 +10,56 @@
  * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
  */
 export class NXLogicTriggeredMonostableNode {
-        private timer = 0;
+    private timer = 0;
 
-        private previousValue: null | boolean = null;
+    private previousValue: null | boolean = null;
 
-        private previousOutput = false;
+    private previousOutput = false;
 
-        /**
+    /**
          * Constructors a new Monostable Trigger Node
          * @param t The time constant in seconds
          * @param risingEdge Whether to detect a rising edge, or falling edge
          */
-        constructor(private readonly t: number, private readonly risingEdge = true) {}
+    constructor(private readonly t: number, private readonly risingEdge = true) {}
 
-        private setOutput(output: boolean): boolean {
-            this.previousOutput = output;
-            return output;
-        }
+    private setOutput(output: boolean): boolean {
+        this.previousOutput = output;
+        return output;
+    }
 
-        write(value: boolean, _deltaTime: number) {
-            if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
-                this.previousValue = value;
-            }
-            if (this.risingEdge) {
-                if (this.timer > 0) {
-                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                    this.previousValue = value;
-                    return this.setOutput(true);
-                } if (!this.previousValue && value) {
-                    this.timer = this.t;
-                    this.previousValue = value;
-                    return this.setOutput(true);
-                }
-            } else {
-                if (this.timer > 0) {
-                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                    this.previousValue = value;
-                    return this.setOutput(true);
-                } if (this.previousValue && !value) {
-                    this.timer = this.t;
-                    this.previousValue = value;
-                    return this.setOutput(true);
-                }
-            }
+    write(value: boolean, _deltaTime: number) {
+        if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
             this.previousValue = value;
-            return this.setOutput(false);
         }
+        if (this.risingEdge) {
+            if (this.timer > 0) {
+                this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+                this.previousValue = value;
+                return this.setOutput(true);
+            } if (!this.previousValue && value) {
+                this.timer = this.t;
+                this.previousValue = value;
+                return this.setOutput(true);
+            }
+        } else {
+            if (this.timer > 0) {
+                this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+                this.previousValue = value;
+                return this.setOutput(true);
+            } if (this.previousValue && !value) {
+                this.timer = this.t;
+                this.previousValue = value;
+                return this.setOutput(true);
+            }
+        }
+        this.previousValue = value;
+        return this.setOutput(false);
+    }
 
-        read(): boolean {
-            return this.previousOutput;
-        }
+    read(): boolean {
+        return this.previousOutput;
+    }
 }
 
 /**

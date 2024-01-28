@@ -23,14 +23,14 @@ const OilPressureGauge: FC<OilPressureGaugeProps> = ({ x, y, engine, active }) =
         <g id={`OilPressureGauge-${engine}`}>
 
             {/* Pack inlet flow */}
-            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
+            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                 {!active && (
-                    <text x={x} y={y - 4} className='Amber F29 MiddleAlign'>XX</text>
+                    <text x={x} y={y - 4} className="Amber F29 MiddleAlign">XX</text>
                 )}
                 {active
                 && (
                     <>
-                        <GaugeComponent x={x} y={y} radius={radius - 1} startAngle={startAngle} endAngle={startAngle + 22} visible className='GaugeComponent Gauge SW6RedLine' />
+                        <GaugeComponent x={x} y={y} radius={radius - 1} startAngle={startAngle} endAngle={startAngle + 22} visible className="GaugeComponent Gauge SW6RedLine" />
                         <GaugeMarkerComponent
                             value={min}
                             x={x}
@@ -40,7 +40,7 @@ const OilPressureGauge: FC<OilPressureGaugeProps> = ({ x, y, engine, active }) =
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -52,7 +52,7 @@ const OilPressureGauge: FC<OilPressureGaugeProps> = ({ x, y, engine, active }) =
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -64,7 +64,7 @@ const OilPressureGauge: FC<OilPressureGaugeProps> = ({ x, y, engine, active }) =
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent

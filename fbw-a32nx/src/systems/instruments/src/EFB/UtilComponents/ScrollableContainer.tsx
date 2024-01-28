@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useEffect, useRef, useState } from 'react';
 
 interface ScrollableContainerProps {
@@ -69,7 +73,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
 
     return (
         <div
-            className={`w-full overflow-y-auto scrollbar ${className}`}
+            className={`scrollbar w-full overflow-y-auto ${className}`}
             style={nonRigid ? { maxHeight: `${height}rem` } : { height: `${height}rem` }}
             ref={containerRef}
             onScroll={(event) => {

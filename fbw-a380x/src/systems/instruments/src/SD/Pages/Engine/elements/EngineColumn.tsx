@@ -35,23 +35,23 @@ const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnPr
             <IgnitionBorder x={x} y={y} engine={engine} ignition={ignition} />
             {/* N2 */}
             <DecimalValues x={x} y={y} value={N2} active={engineRunningOrIgnitionOn} />
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y - 10} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y - 10} l 26, 0`} />
             {/* N3 */}
             <rect x={x - 55} y={y + 10} width={98} height={34} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
             <DecimalValues x={x} y={y + 38} value={N3} active={engineRunningOrIgnitionOn} />
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y + 28} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y + 28} l 26, 0`} />
             {/* Fuel Flow */}
             {!engineRunningOrIgnitionOn && (
-                <text x={x} y={y + 86} className='Amber F29 MiddleAlign'>XX</text>
+                <text x={x} y={y + 86} className="Amber F29 MiddleAlign">XX</text>
             )}
             {engineRunningOrIgnitionOn && (
-                <text x={x + 30} y={y + 92} className='Green EndAlign F29'>{(Math.ceil(fuelFlow / 10) * 10)}</text>
+                <text x={x + 30} y={y + 92} className="Green EndAlign F29">{(Math.ceil(fuelFlow / 10) * 10)}</text>
             )}
             {/* OIL */}
             <OilQuantityGauge x={x} y={y + 206} engine={engine} active={engineRunningOrIgnitionOn} value={oilQuantity} />
             <DecimalValues x={x} y={y + 206} value={oilQuantity} active={engineRunningOrIgnitionOn} />
             {!engineRunningOrIgnitionOn && (
-                <text x={x} y={y + 242} className='Amber F29 MiddleAlign'>XX</text>
+                <text x={x} y={y + 242} className="Amber F29 MiddleAlign">XX</text>
             )}
             {engineRunningOrIgnitionOn && (
                 <text
@@ -63,18 +63,18 @@ const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnPr
 
                 </text>
             )}
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y + 82} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y + 82} l 26, 0`} />
             {/* Oil Pressure */}
             <OilPressureGauge x={x} y={y + 320} engine={engine} active={engineRunningOrIgnitionOn} />
             {/* VIB N1 */}
             <DecimalValues x={x} y={y + 380} value={n1Vibration} active={engineRunningOrIgnitionOn} shift={-14} />
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y + 370} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y + 370} l 26, 0`} />
             {/* VIB N2 */}
             <DecimalValues x={x} y={y + 416} value={n2Vibration} active={engineRunningOrIgnitionOn} shift={-14} />
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y + 406} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y + 406} l 26, 0`} />
             {/* VIB N3 */}
             <DecimalValues x={x} y={y + 450} value={n3Vibration} active={engineRunningOrIgnitionOn} shift={-14} />
-            <path className='White SW2' d={`M${engine > 2 ? x - 96 : x + 64},${y + 440} l 26, 0`} />
+            <path className="White SW2" d={`M${engine > 2 ? x - 96 : x + 64},${y + 440} l 26, 0`} />
 
             {/* NAC / Ignition */}
             {(starting || ignition)

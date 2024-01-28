@@ -693,7 +693,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
         altitudeColor: TargetAltitudeColor.Cyan,
         targetAlt: 0,
         metricAltToggle: false,
-    }
+    };
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);

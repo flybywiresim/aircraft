@@ -27,7 +27,7 @@ export class FlightPhaseManager {
         [FmgcFlightPhase.Approach]: new ApproachPhase(),
         [FmgcFlightPhase.GoAround]: new GoAroundPhase(),
         [FmgcFlightPhase.Done]: new DonePhase(),
-    }
+    };
 
     private phaseChangeListeners: Array<(prev: FmgcFlightPhase, next: FmgcFlightPhase) => void> = [];
 

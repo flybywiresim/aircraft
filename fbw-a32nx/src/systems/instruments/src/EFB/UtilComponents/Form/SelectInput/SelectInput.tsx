@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { ChevronDown } from 'react-bootstrap-icons';
 import { ScrollableContainer } from '../../ScrollableContainer';
@@ -62,20 +66,20 @@ export const SelectInput = (props: SelectInputProps) => {
     return (
         <div className="flex flex-row">
             <div
-                className={`relative border-2 cursor-pointer border-theme-accent rounded-md ${props.className} ${' '}
+                className={`border-theme-accent relative cursor-pointer rounded-md border-2 ${props.className} ${' '}
                 ${showDropdown && (props.dropdownOnTop ? 'border-t-theme-body rounded-t-none' : 'border-b-theme-body rounded-b-none')}`}
                 onClick={handleToggleDropdown}
             >
-                <div className="flex relative py-1.5 px-3">
+                <div className="relative flex px-3 py-1.5">
                     {value}
-                    <ChevronDown className={`absolute inset-y-0 h-full right-3 transform duration-100 ${showDropdown && '-rotate-180'}`} size={20} />
+                    <ChevronDown className={`absolute inset-y-0 right-3 h-full duration-100${showDropdown && '-rotate-180'}`} size={20} />
                 </div>
                 {showDropdown && (
                     <div
-                        className={`z-10 absolute flex -inset-x-0.5 transform overflow-hidden pb-2 pr-2 bg-theme-body border-2 border-theme-accent${' '}
+                        className={`bg-theme-body border-theme-accent absolute -inset-x-0.5 z-10 flex overflow-hidden border-2 pb-2 pr-2${' '}
                         ${props.dropdownOnTop
-                        ? 'top-0 -translate-y-full rounded-t-md border-b-0 flex-col-reverse'
-                        : 'bottom-0 translate-y-full rounded-b-md border-t-0 flex-col'}
+                        ? 'top-0 -translate-y-full flex-col-reverse rounded-t-md border-b-0'
+                        : 'bottom-0 translate-y-full flex-col rounded-b-md border-t-0'}
                         `}
                     >
                         <ScrollableContainer height={props.maxHeight || 40} nonRigid>
@@ -87,7 +91,7 @@ export const SelectInput = (props: SelectInputProps) => {
                                             text={option.tooltip}
                                         >
                                             <div
-                                                className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
+                                                className="hover:text-theme-body hover:bg-theme-highlight px-3 py-1.5 transition duration-300 hover:bg-opacity-5"
                                                 onClick={() => onOptionClicked(option)}
                                             >
                                                 {option.displayValue}
@@ -96,7 +100,7 @@ export const SelectInput = (props: SelectInputProps) => {
                                     ) : (
                                         <div
                                             key={option.value}
-                                            className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
+                                            className="hover:text-theme-body hover:bg-theme-highlight px-3 py-1.5 transition duration-300 hover:bg-opacity-5"
                                             onClick={() => onOptionClicked(option)}
                                         >
                                             {option.displayValue}

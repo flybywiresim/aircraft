@@ -12,13 +12,13 @@ export class ThrottleSimvar {
 
     lowValue: any[];
 
-    getHiGetter = () => this.hiValue[0]
+    getHiGetter = () => this.hiValue[0];
 
-    getHiSetter = () => this.hiValue[1]
+    getHiSetter = () => this.hiValue[1];
 
-    getLowGetter = () => this.lowValue[0]
+    getLowGetter = () => this.lowValue[0];
 
-    getLowSetter = () => this.lowValue[1]
+    getLowSetter = () => this.lowValue[1];
 
     constructor(readableName: string, technicalName: string, throttleNumber: number) {
         this.readableName = readableName;

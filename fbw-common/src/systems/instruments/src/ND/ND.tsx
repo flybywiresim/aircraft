@@ -54,9 +54,9 @@ export interface NDProps {
 }
 
 export class NDComponent extends DisplayComponent<NDProps> {
-    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly isUsingTrackUpMode = Subject.create(false);
 
@@ -445,7 +445,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
         ([visible, boxed]) => visible && boxed,
         this.props.visible,
         this.props.boxed,
-    )
+    );
 
     private readonly boxX = MappedSubject.create(
         ([x]) => x - 34,
@@ -494,7 +494,7 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
     private gridTrackText = MappedSubject.create(
         ([gridTrack]) => gridTrack.toFixed(0).padStart(3, '0'),
         this.props.gridTrack,
-    )
+    );
 
     render(): VNode | null {
         return (
@@ -541,7 +541,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
-    )
+    );
 
     private readonly trueRefVisible = MappedSubject.create(
         ([isTrueRef, isPlanMode]) => isTrueRef && !isPlanMode,
@@ -556,7 +556,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.trueTrackWord,
         this.approachMessageValue,
         this.trueRefVisible,
-    )
+    );
 
     private readonly trueFlagX = MappedSubject.create(
         ([gridTrack]) => 384 + (gridTrack ? -50 : 4),
@@ -571,7 +571,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
     private readonly trueFlagBoxed = MappedSubject.create(
         ([apprMsg]) => apprMsg.length === 0,
         this.approachMessageValue,
-    )
+    );
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -664,7 +664,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
-    )
+    );
 
     private readonly toWptIdentValue = Subject.create('');
 

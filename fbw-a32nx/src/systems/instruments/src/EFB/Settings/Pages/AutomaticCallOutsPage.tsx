@@ -53,7 +53,7 @@ export const AutomaticCallOutsPage = () => {
     return (
         <SettingsPage name={t('Settings.AutomaticCallOuts.Title')} backRoute={`/settings/${pathify('Aircraft Options / Pin Programs')}`}>
             <div className="grid grid-cols-2 gap-x-6">
-                <div className="mr-3 divide-y-2 divide-theme-accent">
+                <div className="divide-theme-accent mr-3 divide-y-2">
                     <SettingItem name="Two Thousand Five Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.TwoThousandFiveHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.TwoThousandFiveHundred)} />
                     </SettingItem>
@@ -93,7 +93,7 @@ export const AutomaticCallOutsPage = () => {
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.OneHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.OneHundred)} />
                     </SettingItem>
                 </div>
-                <div className="ml-3 divide-y-2 divide-theme-accent">
+                <div className="divide-theme-accent ml-3 divide-y-2">
                     <SettingItem name="Fifty">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Fifty) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Fifty)} />
                     </SettingItem>
@@ -122,8 +122,8 @@ export const AutomaticCallOutsPage = () => {
             <SettingItem name={t('Settings.AutomaticCallOuts.ResetStandardConfig')}>
                 <button
                     type="button"
-                    className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
-                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight
+                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
                     onClick={() => setAutoCallOuts(DEFAULT_RADIO_AUTO_CALL_OUTS)}
                 >
                     {t('Settings.AutomaticCallOuts.Reset')}

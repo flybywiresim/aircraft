@@ -87,7 +87,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
                             </div>
                             <div>
                                 <button
-                                    className="w-60 rounded-md border-2 border-theme-highlight bg-theme-highlight px-2 py-1 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                                    className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight w-60 rounded-md border-2 px-2 py-1 transition duration-100"
                                     onClick={() => {
                                         setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                     }}
@@ -128,7 +128,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
                             />
                         </div>
                     )}
-                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="my-2 h-12 w-48 text-xl text-utility-red">
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="text-utility-red my-2 h-12 w-48 text-xl">
                     {t('Settings.ThrottleConfig.PleaseEnterAValidDeadzone')}
                     {' '}
                     (&gt; 0.01)

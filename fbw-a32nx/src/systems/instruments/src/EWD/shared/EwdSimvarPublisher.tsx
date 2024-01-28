@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export type EwdSimvars = {
@@ -192,7 +196,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['ewdLowerRight5', { name: EwdVars.ewdLowerRight5, type: SimVarValueType.Number }],
         ['ewdLowerRight6', { name: EwdVars.ewdLowerRight6, type: SimVarValueType.Number }],
         ['ewdLowerRight7', { name: EwdVars.ewdLowerRight7, type: SimVarValueType.Number }],
-    ])
+    ]);
 
     public constructor(bus: EventBus) {
         super(EwdSimvarPublisher.simvars, bus);

@@ -1,6 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -12,7 +13,6 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -253,7 +253,7 @@ class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
         speed: 0,
         tla1: 0,
         tla2: 0,
-    }
+    };
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -321,7 +321,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
 
     private attDhText = FSComponent.createRef<SVGTextElement>();
 
-    private radioAltText = Subject.create('0')
+    private radioAltText = Subject.create('0');
 
     private radioAlt = FSComponent.createRef<SVGTextElement>();
 

@@ -15,8 +15,8 @@ const IgnitionBorder: React.FC<Position & EngineNumber & FadecActive> = ({ x, y,
                 {active && showBorder
                     && (
                         <>
-                            <path className='WhiteLine' d={`m ${x - 74} ${y - 13} l 0,-72 l 162,0 l 0,72`} />
-                            <path className='WhiteLine' d={`m ${x - 74} ${y + 168} l 0,72 l 162,0 l 0,-72`} />
+                            <path className="WhiteLine" d={`m ${x - 74} ${y - 13} l 0,-72 l 162,0 l 0,72`} />
+                            <path className="WhiteLine" d={`m ${x - 74} ${y + 168} l 0,72 l 162,0 l 0,-72`} />
                         </>
                     )}
             </g>

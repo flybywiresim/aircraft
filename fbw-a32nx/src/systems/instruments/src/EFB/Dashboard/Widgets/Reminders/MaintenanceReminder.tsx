@@ -24,7 +24,7 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
     return (
         <div
-            className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-accent rounded-md border-2 border-theme-accent hover:border-theme-highlight"
+            className="bg-theme-accent border-theme-accent hover:border-theme-highlight mr-4 mt-4 flex flex-col flex-wrap rounded-md border-2 p-2"
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
@@ -42,7 +42,7 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
             }}
         >
             <h3 className="font-bold">Active Failure</h3>
-            <span className="mt-2 font-inter">{name}</span>
+            <span className="font-inter mt-2">{name}</span>
             <ArrowRight className="ml-auto" />
         </div>
     );
@@ -70,7 +70,7 @@ export const MaintenanceReminder = () => {
                     })}
 
                 {!activeFailures.size && (
-                    <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.Maintenance.NoActiveFailures')}</h1>
+                    <h1 className="m-auto my-4 text-center font-bold opacity-60">{t('Dashboard.ImportantInformation.Maintenance.NoActiveFailures')}</h1>
                 )}
             </div>
         </RemindersSection>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Triangle } from '@instruments/common/Shapes';
-import { Reservoir } from './Reservoir';
 import { Engine } from 'instruments/src/SD/Pages/Hyd/elements/Engine';
 import { useSimVar } from '@instruments/common/simVars';
+import { Reservoir } from './Reservoir';
 
 type HydraulicSystemProps = {
     label: 'GREEN' | 'YELLOW';
@@ -13,9 +13,9 @@ export const HydraulicSystem = ({ label }: HydraulicSystemProps) => {
 
     return (
         <g>
-            <Engine x={isLeftSide ? 8 : 612} y={231} engineNumber={isLeftSide ? 1 : 4}/>
+            <Engine x={isLeftSide ? 8 : 612} y={231} engineNumber={isLeftSide ? 1 : 4} />
 
-            <Engine x={isLeftSide ? 165 : 457} y={189} engineNumber={isLeftSide ? 2 : 3}/>
+            <Engine x={isLeftSide ? 165 : 457} y={189} engineNumber={isLeftSide ? 2 : 3} />
 
             <Reservoir x={isLeftSide ? 72 : 676} y={467} side={label} />
 
@@ -42,21 +42,21 @@ const SystemLabel = ({ x, y, label }: SystemLabelProps) => {
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <path d='m 114 -31 l 12 20 l -24 0 z' className={`${pressureSwitchColor} SW3 NoFill LineJoinRound`} />
+            <path d="m 114 -31 l 12 20 l -24 0 z" className={`${pressureSwitchColor} SW3 NoFill LineJoinRound`} />
             <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${pressureSwitchColor} NoFill SW3`} />
             <text x={7} y={29} className={`${systemPressureSwitch ? 'White' : 'Amber'} F23`}>{label}</text>
             <text
                 x={isGreen ? 172 : 179}
                 y={31}
-                textAnchor='end'
+                textAnchor="end"
                 className={`${transducerColor} F30`}
             >
                 {pressureNearest100}
             </text>
-            <text x={isGreen ? 175 : 181} y={29} className='Cyan F23'>PSI</text>
+            <text x={isGreen ? 175 : 181} y={29} className="Cyan F23">PSI</text>
 
-            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 4 : 3} label='A' side={label} systemPressureSwitch={systemPressureSwitch} />
-            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 36 : 34} label='B' side={label} systemPressureSwitch={systemPressureSwitch} />
+            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 4 : 3} label="A" side={label} systemPressureSwitch={systemPressureSwitch} />
+            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 36 : 34} label="B" side={label} systemPressureSwitch={systemPressureSwitch} />
         </g>
     );
 };

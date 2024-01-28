@@ -9,8 +9,8 @@ const execute = async () => {
             outDir: './fbw-ingamepanels-checklist-fix/out/build-modules',
             modules: [{
                 name: 'html_ui',
-                sourceDir: './html_ui'
-            }]
+                sourceDir: './html_ui',
+            }],
         });
         console.log(result);
         console.log(fs.readFileSync('./fbw-ingamepanels-checklist-fix/out/build-modules/modules.json').toString());

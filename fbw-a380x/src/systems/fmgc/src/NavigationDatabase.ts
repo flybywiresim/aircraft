@@ -11,7 +11,7 @@ import {
     Database,
     ExternalBackend,
     MsfsBackend,
-    Waypoint
+    Waypoint,
 } from 'msfs-navdata';
 
 /**
@@ -28,7 +28,7 @@ export enum NavigationDatabaseBackend {
  * Only to be used by user-facing functions to search for data. Raw flight plan editing should use the `backendDatabase` property directly
  */
 export class NavigationDatabase {
-    readonly backendDatabase: Database
+    readonly backendDatabase: Database;
 
     constructor(
         readonly backend: NavigationDatabaseBackend,
@@ -67,7 +67,7 @@ export class NavigationDatabase {
     }
 
     static formatLongApproachIdent(approach: Approach): string {
-        let suffix = this.approachSuffix(approach);
+        const suffix = this.approachSuffix(approach);
 
         switch (approach.type) {
         case ApproachType.LocBackcourse: // TODO confirm

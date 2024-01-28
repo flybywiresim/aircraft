@@ -119,7 +119,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
     );
 
-    private readonly x = this.props.index === 1 ? 37 : 668
+    private readonly x = this.props.index === 1 ? 37 : 668;
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -211,7 +211,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 }
 
 class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: Subscribable<boolean>, mode: Subscribable<EfisNdMode> }> {
-    private readonly x = this.props.index === 1 ? 37 : 668
+    private readonly x = this.props.index === 1 ? 37 : 668;
 
     private readonly path = this.props.index === 1
         ? 'M31,686 L25,680 L19,686 M25,680 L25,719'

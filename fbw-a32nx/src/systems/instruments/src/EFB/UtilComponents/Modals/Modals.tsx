@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { createContext, FC, useContext, useState } from 'react';
 import { t } from '../../translation';
@@ -70,19 +74,19 @@ export const PromptModal: FC<PromptModalProps> = ({
 
     return (
 
-        <div className="p-8 w-5/12 bg-theme-body rounded-xl border-2 border-theme-accent">
+        <div className="bg-theme-body border-theme-accent w-5/12 rounded-xl border-2 p-8">
             <h1 className="font-bold">{title}</h1>
             <p className="mt-4">{bodyText}</p>
 
-            <div className="flex flex-row mt-8 space-x-4">
+            <div className="mt-8 flex flex-row space-x-4">
                 <div
-                    className="flex justify-center items-center py-2 px-8 w-full text-center text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body rounded-md border-2 border-theme-accent hover:border-theme-highlight transition duration-100"
+                    className="text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body border-theme-accent hover:border-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
                     onClick={handleCancel}
                 >
                     {cancelText ?? t('Modals.Cancel')}
                 </div>
                 <div
-                    className="flex justify-center items-center py-2 px-8 w-full text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
                     onClick={handleConfirm}
                 >
                     {confirmText ?? t('Modals.Confirm')}
@@ -106,11 +110,11 @@ export const AlertModal: FC<AlertModalProps> = ({
     };
 
     return (
-        <div className="p-8 w-5/12 bg-theme-body rounded-xl border-2 border-theme-accent">
+        <div className="bg-theme-body border-theme-accent w-5/12 rounded-xl border-2 p-8">
             <h1 className="font-bold">{title}</h1>
             <p className="mt-4">{bodyText}</p>
             <div
-                className="flex justify-center items-center py-2 px-8 mt-8 w-full text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight mt-8 flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
                 onClick={handleAcknowledge}
             >
                 {acknowledgeText ?? t('Modals.Okay')}
@@ -123,9 +127,9 @@ export const ModalContainer = () => {
     const { modal } = useModals();
 
     return (
-        <div className={`fixed inset-0 z-50 transition duration-200 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="absolute inset-0 bg-theme-body opacity-75" />
-            <div className="flex absolute inset-0 flex-col justify-center items-center">
+        <div className={`fixed inset-0 z-50 transition duration-200 ${modal ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+            <div className="bg-theme-body absolute inset-0 opacity-75" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
                 {modal}
             </div>
         </div>

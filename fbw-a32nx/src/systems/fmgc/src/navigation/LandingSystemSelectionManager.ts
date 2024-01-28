@@ -24,7 +24,7 @@ export class LandingSystemSelectionManager {
         course: null,
         backcourse: false,
         slope: null,
-    }
+    };
 
     private ppos = { lat: 0, long: 0 };
 

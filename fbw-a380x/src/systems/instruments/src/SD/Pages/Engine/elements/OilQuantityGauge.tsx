@@ -20,9 +20,9 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
         <g id={`OilQuantityGauge-${engine}`}>
 
             {/* Pack inlet flow */}
-            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
+            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                 {!active && (
-                    <text x={x} y={y - 4} className='Amber F29 MiddleAlign'>XX</text>
+                    <text x={x} y={y - 4} className="Amber F29 MiddleAlign">XX</text>
                 )}
                 {active
                 && (
@@ -36,7 +36,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -48,7 +48,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -60,7 +60,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -72,7 +72,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
                         <GaugeMarkerComponent
@@ -84,7 +84,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='GaugeIndicator Gauge LineRound SW4'
+                            className="GaugeIndicator Gauge LineRound SW4"
                             indicator
                             halfIndicator
                             multiplierInner={0.8}

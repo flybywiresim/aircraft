@@ -9,17 +9,17 @@ const execute = async () => {
             outDir: './fbw-a380x/out/build-modules',
             modules: [{
                 name: 'html_ui',
-                sourceDir: './html_ui'
+                sourceDir: './html_ui',
             }, {
                 name: 'Model',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/model'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/model',
             }, {
                 name: 'Panels',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/panel'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/panel',
             }, {
                 name: 'Sound',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/sound'
-            }]
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/sound',
+            }],
         });
         console.log(result);
         console.log(fs.readFileSync('./fbw-a380x/out/build-modules/modules.json').toString());

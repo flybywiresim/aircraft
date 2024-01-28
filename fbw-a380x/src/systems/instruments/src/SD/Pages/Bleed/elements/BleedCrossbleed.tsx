@@ -10,10 +10,10 @@ const BleedCrossbleed: FC = () => {
     const y = 325;
 
     return (
-        <g id='CrossBleed'>
-            <Valve x={283} y={y} radius={19} css='Green SW2' position={lhCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
-            <Valve x={385} y={y} radius={19} css='Green SW2' position={centreCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
-            <Valve x={470} y={y} radius={19} css='Green SW2' position={rhCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
+        <g id="CrossBleed">
+            <Valve x={283} y={y} radius={19} css="Green SW2" position={lhCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
+            <Valve x={385} y={y} radius={19} css="Green SW2" position={centreCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
+            <Valve x={470} y={y} radius={19} css="Green SW2" position={rhCrossBleedValveOpen ? 'H' : 'V'} sdacDatum={sdacDatum} />
         </g>
     );
 };

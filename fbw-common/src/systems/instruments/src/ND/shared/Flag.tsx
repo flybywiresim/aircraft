@@ -24,7 +24,7 @@ export class Flag extends DisplayComponent<FlagProps> {
                 x={this.props.x}
                 y={this.props.y}
                 ref={this.flagRef}
-                class={`${this.props.class} shadow MiddleAlign`}
+                class={`${this.props.class} MiddleAlign shadow`}
             >
                 {this.props.children}
             </text>

@@ -165,7 +165,7 @@ export class UplinkMessageMonitoring {
         this.atsu = atsu;
     }
 
-    public
+    public;
 
     public monitorMessage(message: CpdlcMessage): boolean {
         if (UplinkMonitor.relevantMessage(message)) {

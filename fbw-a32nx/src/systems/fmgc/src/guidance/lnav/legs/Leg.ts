@@ -15,7 +15,7 @@ export abstract class Leg extends Guidable {
 
     abstract metadata: Readonly<LegMetadata>
 
-    constrainedTurnDirection: TurnDirection
+    constrainedTurnDirection: TurnDirection;
 
     abstract get inboundCourse(): Degrees | undefined;
 
@@ -25,13 +25,13 @@ export abstract class Leg extends Guidable {
 
     abstract get ident(): string
 
-    isNull = false
+    isNull = false;
 
-    displayedOnMap = true
+    displayedOnMap = true;
 
-    predictedTas: Knots
+    predictedTas: Knots;
 
-    predictedGs: Knots
+    predictedGs: Knots;
 
     get disableAutomaticSequencing(): boolean {
         return false;

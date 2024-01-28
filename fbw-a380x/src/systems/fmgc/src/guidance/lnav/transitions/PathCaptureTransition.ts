@@ -69,7 +69,7 @@ export class PathCaptureTransition extends Transition {
         super(previousLeg, nextLeg);
     }
 
-    startWithTad = false
+    startWithTad = false;
 
     getPathStartPoint(): Coordinates | undefined {
         return this.itp;

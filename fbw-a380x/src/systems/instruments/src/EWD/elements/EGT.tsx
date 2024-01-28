@@ -49,15 +49,15 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                 {!active
                     && (
                         <>
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent WhiteLine SW2' />
-                            <text className='F26 End Amber' x={x + 17} y={y + 11.7}>XX</text>
+                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent WhiteLine SW2" />
+                            <text className="F26 End Amber" x={x + 17} y={y + 11.7}>XX</text>
                         </>
                     )}
                 {active && (
                     <>
                         <text className={`Large End ${EGTColour}`} x={x + 33} y={y + 11.7}>{Math.round(EGTemperature)}</text>
-                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
-                            <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 20} endAngle={endAngle} visible className='GaugeComponent Gauge ThickRedLine' />
+                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                            <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge ThickRedLine" />
                             <GaugeMarkerComponent
                                 value={min}
                                 x={x}
@@ -67,10 +67,10 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className='GaugeText Gauge Medium'
+                                className="GaugeText Gauge Medium"
                             />
-                            <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge' />
-                            <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge RedLine' />
+                            <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
+                            <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge RedLine" />
                             <GaugeMaxEGTComponent
                                 value={modeEGTMax}
                                 x={x}
@@ -80,9 +80,9 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className='GaugeThrustLimitIndicatorFill Gauge'
+                                className="GaugeThrustLimitIndicatorFill Gauge"
                             />
-                            <rect x={x - 36} y={y - 11} width={72} height={26} className='DarkGreyBox' />
+                            <rect x={x - 36} y={y - 11} width={72} height={26} className="DarkGreyBox" />
                             <GaugeMarkerComponent
                                 value={EGTemperature}
                                 x={x}

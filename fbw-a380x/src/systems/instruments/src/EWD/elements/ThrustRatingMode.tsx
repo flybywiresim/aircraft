@@ -21,27 +21,27 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
 
     return (
         <>
-            <g id='Thrust-Rating-Mode'>
+            <g id="Thrust-Rating-Mode">
                 {!active
                 && (
                     <>
-                        <text className='F26 Center Amber' x={x - 18} y={y}>XX</text>
+                        <text className="F26 Center Amber" x={x - 18} y={y}>XX</text>
                     </>
                 )}
                 {active
                 && (
                     <>
-                        <text className='Huge End Cyan' x={x} y={y}>{thrustLimitTypeArray[N1LimitType]}</text>
-                        <text className='F26 End Green Spread' x={x + 69} y={y - 2}>{N1ThrustLimitSplit[0]}</text>
-                        <text className='F26 End Green' x={x + 86} y={y - 2}>.</text>
-                        <text className='F20 End Green' x={x + 101} y={y - 2}>{N1ThrustLimitSplit[1]}</text>
-                        <text className='F20 End Cyan' x={x + 117} y={y - 2}>%</text>
+                        <text className="Huge End Cyan" x={x} y={y}>{thrustLimitTypeArray[N1LimitType]}</text>
+                        <text className="F26 End Green Spread" x={x + 69} y={y - 2}>{N1ThrustLimitSplit[0]}</text>
+                        <text className="F26 End Green" x={x + 86} y={y - 2}>.</text>
+                        <text className="F20 End Green" x={x + 101} y={y - 2}>{N1ThrustLimitSplit[1]}</text>
+                        <text className="F20 End Cyan" x={x + 117} y={y - 2}>%</text>
                     </>
                 )}
                 {active && displayFlexTemp
                 && (
                     <>
-                        <text className='F20 Cyan' x={x + 154} y={y}>
+                        <text className="F20 Cyan" x={x + 154} y={y}>
                             {Math.round(flexTemp)}
                             &deg;C
                         </text>

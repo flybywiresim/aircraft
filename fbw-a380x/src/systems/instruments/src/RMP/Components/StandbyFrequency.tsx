@@ -22,7 +22,7 @@ const FrequencyLabel: FC<FrequencyLabelProps> = (props) => (
 export const StandbyFrequency: FC<StandbyFrequencyProps> = (props) => (
     <Layer x={props.x} y={props.y}>
         {props.selected && <text x={145} y={50} fontSize={60} dominantBaseline="middle" fill="white" fontFamily="RMP-11">STBY</text>}
-        {props.selected && <rect y={0} width="550" height="225" fill="transparent" strokeWidth={5} stroke={"cyan"} />}
+        {props.selected && <rect y={0} width="550" height="225" fill="transparent" strokeWidth={5} stroke="cyan" />}
         <FrequencyLabel value={props.value} valid={!props.selected || props.valid} />
     </Layer>
 );

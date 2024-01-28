@@ -10,11 +10,11 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 
 export class ArrivalEnrouteTransitionSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival
+    class = SegmentClass.Arrival;
 
-    allLegs: FlightPlanElement[] = []
+    allLegs: FlightPlanElement[] = [];
 
-    private arrivalEnrouteTransition: ProcedureTransition | undefined = undefined
+    private arrivalEnrouteTransition: ProcedureTransition | undefined = undefined;
 
     get arrivalEnrouteTransitionProcedure() {
         return this.arrivalEnrouteTransition;

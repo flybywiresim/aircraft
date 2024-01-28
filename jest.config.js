@@ -3,21 +3,17 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     setupFilesAfterEnv: [
-        "./fbw-common/src/jest/setupJestMock.js"
+        './fbw-common/src/jest/setupJestMock.js',
     ],
     globals: {
         'ts-jest': {
             // Babel assumes isolated modules, therefore enable it here as well.
             // This also speeds up the unit testing performance.
             isolatedModules: true,
-            diagnostics: {
-                ignoreCodes: ['TS151001'],
-            }
-        }
+            diagnostics: { ignoreCodes: ['TS151001'] },
+        },
     },
     // disable fmsv2 tests until they are fixed
-    modulePathIgnorePatterns: ["fbw-a380x/src/systems/fmgc/src/flightplanning"],
-    moduleNameMapper: {
-        '@flybywiresim/fbw-sdk' : '<rootDir>/fbw-common/src/systems/index.ts',
-    }
+    modulePathIgnorePatterns: ['fbw-a380x/src/systems/fmgc/src/flightplanning'],
+    moduleNameMapper: { '@flybywiresim/fbw-sdk': '<rootDir>/fbw-common/src/systems/index.ts' },
 };

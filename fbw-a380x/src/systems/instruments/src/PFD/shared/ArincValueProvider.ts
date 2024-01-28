@@ -378,7 +378,7 @@ export class ArincValueProvider {
             this.radioAltitude2,
             this.radioAltitude3,
         ].map((ra) => !ra.isFailureWarning() && !ra.isNoComputedData());
-        const validCount = validRaMap.filter(x => !!x).length;
+        const validCount = validRaMap.filter((x) => !!x).length;
 
         let chosenRas = [this.radioAltitude1, this.radioAltitude2]; // Default: 1 gets 1, 2 gets 2
         if (validCount === 3) {
@@ -393,8 +393,7 @@ export class ArincValueProvider {
             if (!validRaMap[0]) {
                 // fail PFD 1 to RA 3
                 chosenRas = [this.radioAltitude3, this.radioAltitude2];
-            }
-            else if (!validRaMap[1]) {
+            } else if (!validRaMap[1]) {
                 // fail PFD 2 to RA 3
                 chosenRas = [this.radioAltitude1, this.radioAltitude3];
             }
@@ -403,12 +402,10 @@ export class ArincValueProvider {
             if (validRaMap[0]) {
                 // both get RA 1
                 chosenRas = [this.radioAltitude1, this.radioAltitude1];
-            }
-            else if (validRaMap[1]) {
+            } else if (validRaMap[1]) {
                 // both get RA 2
                 chosenRas = [this.radioAltitude2, this.radioAltitude2];
-            }
-            else {
+            } else {
                 // both get RA 3
                 chosenRas = [this.radioAltitude3, this.radioAltitude3];
             }
@@ -420,27 +417,23 @@ export class ArincValueProvider {
                 this.radioAltitude2,
                 this.radioAltitude3,
             ].map((ra) => !ra.isFailureWarning());
-            const nonFailedCount = nonFailedMap.filter(x => !!x).length;
+            const nonFailedCount = nonFailedMap.filter((x) => !!x).length;
             if (nonFailedCount === 2) {
                 if (!nonFailedMap[0]) {
                     // fail PFD 1 to RA 3
                     chosenRas = [this.radioAltitude3, this.radioAltitude2];
-                }
-                else if (!nonFailedMap[1]) {
+                } else if (!nonFailedMap[1]) {
                     // fail PFD 2 to RA 3
                     chosenRas = [this.radioAltitude1, this.radioAltitude3];
                 }
-            }
-            else if (nonFailedCount === 1) {
+            } else if (nonFailedCount === 1) {
                 if (nonFailedMap[0]) {
                     // both get RA 1
                     chosenRas = [this.radioAltitude1, this.radioAltitude1];
-                }
-                else if (nonFailedMap[1]) {
+                } else if (nonFailedMap[1]) {
                     // both get RA 2
                     chosenRas = [this.radioAltitude2, this.radioAltitude2];
-                }
-                else {
+                } else {
                     // both get RA 3
                     chosenRas = [this.radioAltitude3, this.radioAltitude3];
                 }

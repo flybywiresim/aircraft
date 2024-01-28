@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
@@ -9,9 +13,9 @@ export class Idle extends DisplayComponent<IdleProps> {
 
     private visibility = Subject.create('hidden');
 
-    private engine1N1: number=0;
+    private engine1N1: number = 0;
 
-    private engine2N1: number=0;
+    private engine2N1: number = 0;
 
     private idleN1: number = 0;
 

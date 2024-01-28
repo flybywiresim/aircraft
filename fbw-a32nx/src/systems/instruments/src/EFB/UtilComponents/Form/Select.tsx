@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 
 interface SelectItemProps {
@@ -30,13 +34,13 @@ export const SelectItem: React.FC<SelectItemProps> = ({ children, className, dis
 );
 
 export const SelectGroup: React.FC<{className?: string}> = ({ children, className }) => (
-    <div className={`flex overflow-hidden flex-row justify-between rounded-md border divide-x border-theme-accent divide-theme-accent ${className}`}>
+    <div className={`border-theme-accent divide-theme-accent flex flex-row justify-between divide-x overflow-hidden rounded-md border ${className}`}>
         {children}
     </div>
 );
 
 export const VerticalSelectGroup: React.FC<{className?: string}> = ({ children, className }) => (
-    <div className={`flex overflow-hidden flex-col rounded-md border divide-y divide-theme-accent border-theme-accent ${className}`}>
+    <div className={`divide-theme-accent border-theme-accent flex flex-col divide-y overflow-hidden rounded-md border ${className}`}>
         {children}
     </div>
 );

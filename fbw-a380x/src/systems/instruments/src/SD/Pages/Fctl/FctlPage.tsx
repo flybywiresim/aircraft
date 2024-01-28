@@ -23,8 +23,8 @@ export const FctlPage = () => {
         <>
             <PageTitle x={6} y={29}>F/CTL</PageTitle>
 
-            <image xlinkHref='/Images/SD_FCTL_WING.png' x={-2} y={518} width={774} height={204} />
-            <image xlinkHref='/Images/SD_FCTL_TAIL.png' x={100} y={-15} width={570} height={570} />
+            <image xlinkHref="/Images/SD_FCTL_WING.png" x={-2} y={518} width={774} height={204} />
+            <image xlinkHref="/Images/SD_FCTL_TAIL.png" x={100} y={-15} width={570} height={570} />
 
             <Prims x={0} y={0} />
             <Secs x={0} y={78} />
@@ -53,8 +53,8 @@ export const FctlPage = () => {
             <Rudder x={327} y={108} position={RudderPosition.Upper} />
             <Rudder x={327} y={140} position={RudderPosition.Lower} />
 
-            <SlatFlapActuatorIndication x={336} y={437} type='SLATS' />
-            <SlatFlapActuatorIndication x={336} y={594} type='FLAPS' />
+            <SlatFlapActuatorIndication x={336} y={437} type="SLATS" />
+            <SlatFlapActuatorIndication x={336} y={594} type="FLAPS" />
         </>
     );
 };

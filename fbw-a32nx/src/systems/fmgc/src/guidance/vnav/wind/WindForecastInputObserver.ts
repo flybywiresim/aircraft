@@ -1,10 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Fmgc } from '@fmgc/guidance/GuidanceController';
 import { WindComponent, WindVector, WindVectorAtAltitude } from '@fmgc/guidance/vnav/wind';
 import { FmcWinds, FmcWindEntry } from '@fmgc/guidance/vnav/wind/types';
 import { WindForecastInputs } from '@fmgc/guidance/vnav/wind/WindForecastInputs';
 
 export class WindForecastInputObserver {
-    private inputs: WindForecastInputs
+    private inputs: WindForecastInputs;
 
     constructor(private fmgc: Fmgc) {
         this.inputs = {

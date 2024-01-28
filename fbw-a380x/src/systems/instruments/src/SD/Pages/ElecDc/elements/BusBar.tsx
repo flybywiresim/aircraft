@@ -32,7 +32,7 @@ export const BusBar: FC<BusBarProps> = ({ x, y, bus }) => {
 
     return (
         <g id={`electrical-busbar-${bus}`} transform={`translate(${x} ${y})`}>
-            <path className='LightGrey GreyFill SW1 LS1' d='M 0,0 l 0,34 l 128,0 l 0,-34 z' />
+            <path className="LightGrey GreyFill SW1 LS1" d="M 0,0 l 0,34 l 128,0 l 0,-34 z" />
             <text className={`F29 ${dcBusPowered ? 'Green' : 'Amber'}`} x={isBus1Or2 ? 32 : 9} y={29}>DC</text>
             <text
                 className={`${isBus1Or2 ? 'F35' : 'F29'} ${dcBusPowered ? 'Green' : 'Amber'} LS1`}
@@ -43,7 +43,7 @@ export const BusBar: FC<BusBarProps> = ({ x, y, bus }) => {
             </text>
             {/* inverter */}
             {bus === DcElecBus.DcEssBus && (
-                <g id='static-inverter'>
+                <g id="static-inverter">
                     <Triangle x={98} y={53} colour={!staticInverterFault ? 'White' : 'Amber'} fill={0} orientation={180} scale={1} />
                     <text className={`F22 ${!staticInverterFault ? 'White' : 'Amber'} LS1 WS-8`} x={70} y={77}>STAT INV</text>
                 </g>

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
     AdirsSimVarDefinitions,
@@ -51,7 +55,7 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
         ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
-    ])
+    ]);
 
     public constructor(bus: EventBus) {
         super(NDSimvarPublisher.simvars, bus);

@@ -36,7 +36,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
                 <Link
                     key={tab.name}
                     to={`settings/${pathify(tab.name)}`}
-                    className="flex justify-between items-center p-6 rounded-md border-2 border-transparent transition duration-100 bg-theme-accent hover:border-theme-highlight"
+                    className="bg-theme-accent hover:border-theme-highlight flex items-center justify-between rounded-md border-2 border-transparent p-6 transition duration-100"
                 >
                     <p className="text-2xl">{tab.alias ?? tab.name}</p>
                     <ChevronRight size={30} />
@@ -59,7 +59,7 @@ export const Settings = () => {
     ];
 
     return (
-        <div className="w-full h-content-section-reduced">
+        <div className="h-content-section-reduced w-full">
             <Switch>
                 <Route exact path="/settings">
                     <h1 className="mb-4 font-bold">{t('Settings.Title')}</h1>
@@ -78,8 +78,8 @@ type SettingsPageProps = {
 
 export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children }) => (
     <div>
-        <Link to={backRoute ?? '/settings'} className="inline-block mb-4">
-            <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
+        <Link to={backRoute ?? '/settings'} className="mb-4 inline-block">
+            <div className="hover:text-theme-highlight flex flex-row items-center space-x-3 transition duration-100">
                 <ArrowLeft size={30} />
                 <h1 className="font-bold text-current">
                     {t('Settings.Title')}
@@ -88,9 +88,9 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
                 </h1>
             </div>
         </Link>
-        <div className="py-2 px-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent w-full rounded-lg border-2 px-6 py-2">
             <ScrollableContainer height={54} innerClassName="h-full">
-                <div className="h-full divide-y-2 divide-theme-accent">
+                <div className="divide-theme-accent h-full divide-y-2">
                     {children}
                 </div>
             </ScrollableContainer>
@@ -100,8 +100,8 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
 
 export const FullscreenSettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
     <div>
-        <Link to="/settings" className="inline-block mb-4">
-            <div className="flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100">
+        <Link to="/settings" className="mb-4 inline-block">
+            <div className="hover:text-theme-highlight flex flex-row items-center space-x-3 transition duration-100">
                 <ArrowLeft size={30} />
                 <h1 className="font-bold text-current">
                     {t('Settings.Title')}
@@ -110,7 +110,7 @@ export const FullscreenSettingsPage: FC<SettingsPageProps> = ({ name, children }
                 </h1>
             </div>
         </Link>
-        <div className="py-2 px-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent w-full rounded-lg border-2 px-6 py-2">
             {children}
         </div>
     </div>
@@ -133,7 +133,7 @@ type SettingItemProps = {
 
 export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType, disabled, children }) => {
     const UnrealisticHint = () => (
-        <span className="ml-2 text-theme-highlight">
+        <span className="text-theme-highlight ml-2">
             {' '}
             (
             {t('Settings.Unrealistic')}
@@ -142,9 +142,9 @@ export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType
     );
 
     return (
-        <div className={`flex flex-row justify-between items-center ${groupType === undefined && 'py-4' || 'h-12'}`}>
+        <div className={`flex flex-row items-center justify-between ${groupType === undefined && 'py-4' || 'h-12'}`}>
             {groupType === 'sub' ? (
-                <span className="flex flex-row ml-6">
+                <span className="ml-6 flex flex-row">
                     <span className="ml-2">
                         {name}
                         {unrealistic && (<UnrealisticHint />)}
@@ -157,7 +157,7 @@ export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType
                 </span>
             )}
 
-            <div className={`${disabled && 'pointer-events-none filter grayscale'}`}>
+            <div className={`${disabled && 'pointer-events-none grayscale'}`}>
                 {children}
             </div>
         </div>

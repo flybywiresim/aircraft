@@ -37,13 +37,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -300,7 +300,7 @@ const Efb = () => {
     switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-        return <div className="w-screen h-screen" onClick={offToLoaded} />;
+        return <div className="h-screen w-screen" onClick={offToLoaded} />;
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
         return <LoadingScreen />;
@@ -328,7 +328,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
+                            <div className="h-screen w-screen pr-6 pt-14">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />

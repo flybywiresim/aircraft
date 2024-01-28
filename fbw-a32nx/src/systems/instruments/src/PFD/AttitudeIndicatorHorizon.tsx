@@ -50,7 +50,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
             return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
         }
         return '';
-    }, this.heading, this.selectedHeading, this.props.yOffset, this.visibilitySub)
+    }, this.heading, this.selectedHeading, this.props.yOffset, this.visibilitySub);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -248,7 +248,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         speed: 0,
         tla1: 0,
         tla2: 0,
-    }
+    };
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -316,7 +316,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
 
     private attDhText = FSComponent.createRef<SVGTextElement>();
 
-    private radioAltText = Subject.create('0')
+    private radioAltText = Subject.create('0');
 
     private radioAlt = FSComponent.createRef<SVGTextElement>();
 

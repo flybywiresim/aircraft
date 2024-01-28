@@ -27,17 +27,17 @@ export const EngineGenerator: FC<EngineGeneratorProps> = ({ x, y, bus }) => {
 
     return (
         <g id={`engine-generator-${bus}-indication`} transform={`translate(${x} ${y})`}>
-            <image xlinkHref='/Images/SD_ELEC_AC_ENG.png' x={-18} y={-19} width={111} height={185} />
+            <image xlinkHref="/Images/SD_ELEC_AC_ENG.png" x={-18} y={-19} width={111} height={185} />
 
-            <path className='BackgroundFill' d='M 0,0 l 0,84 l 76,0 l 0,-84 z' />
+            <path className="BackgroundFill" d="M 0,0 l 0,84 l 76,0 l 0,-84 z" />
 
             <text x={5} y={23} className={`F26 ${genPushbuttonAuto && engineState === 1 && !engineGenFailed ? 'White' : 'Amber'}`}>GEN</text>
             <text x={59} y={23} className={`F28 ${genPushbuttonAuto && engineState === 1 && !engineGenFailed ? 'White' : 'Amber'}`}>{bus}</text>
 
             {(bus % 2 === 1) && (
                 <g>
-                    <text className='Cyan F22' x={94} y={52}>%</text>
-                    <text className='Cyan F22' x={94} y={81}>V</text>
+                    <text className="Cyan F22" x={94} y={52}>%</text>
+                    <text className="Cyan F22" x={94} y={81}>V</text>
                 </g>
             )}
 
@@ -68,7 +68,7 @@ export const EngineGenerator: FC<EngineGeneratorProps> = ({ x, y, bus }) => {
 
             {/* GEN line contactor indication */}
             <Triangle x={38} y={-14} colour={`Green ${lineContactorClosed ? '' : 'Hide'}`} fill={0} orientation={0} scale={1} />
-            <path className={`SW2 Green ${lineContactorClosed ? '' : 'Hide'}`} d='M 38,-14 l 0,-151' />
+            <path className={`SW2 Green ${lineContactorClosed ? '' : 'Hide'}`} d="M 38,-14 l 0,-151" />
         </g>
     );
 };

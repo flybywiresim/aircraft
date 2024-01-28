@@ -9,32 +9,32 @@ const execute = async () => {
             outDir: './fbw-a32nx/out/build-modules',
             modules: [{
                 name: 'effects',
-                sourceDir: './effects'
+                sourceDir: './effects',
             }, {
                 name: 'html_ui',
-                sourceDir: './html_ui'
+                sourceDir: './html_ui',
             }, {
                 name: 'CUSTOMIZE',
-                sourceDir: './CUSTOMIZE'
+                sourceDir: './CUSTOMIZE',
             }, {
                 name: 'ModelBehaviorDefs',
-                sourceDir: './ModelBehaviorDefs'
+                sourceDir: './ModelBehaviorDefs',
             }, {
                 name: 'Textures',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE',
             }, {
                 name: 'Livery',
-                sourceDir: './SimObjects/AirPlanes/_FlyByWire_A320_NEO-LIVERY'
+                sourceDir: './SimObjects/AirPlanes/_FlyByWire_A320_NEO-LIVERY',
             }, {
                 name: 'Sound',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/sound'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/sound',
             }, {
                 name: 'Model',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/model'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/model',
             }, {
                 name: 'Panels',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/panel'
-            }]
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/panel',
+            }],
         });
         console.log(result);
         console.log(fs.readFileSync('./fbw-a32nx/out/build-modules/modules.json').toString());

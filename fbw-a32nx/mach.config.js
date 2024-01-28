@@ -3,7 +3,7 @@ const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
-const { typecheckingPlugin } = require("#build-utils");
+const { typecheckingPlugin } = require('#build-utils');
 
 // process.env.FBW_TYPECHECK = "1";
 
@@ -25,7 +25,7 @@ module.exports = {
                     // transform: inset: 0; -> top/right/left/bottom: 0;
                     postCssInset(),
                 ],
-            }
+            },
         }),
         typecheckingPlugin(),
     ],
@@ -68,7 +68,7 @@ function reactInstrument(name, additionalImports) {
             type: 'react',
             isInteractive: false,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js','/JS/fbw-a32nx/A32NX_Simvars.js', ...(additionalImports ?? [])],
+            imports: ['/JS/dataStorage.js', '/JS/fbw-a32nx/A32NX_Simvars.js', ...(additionalImports ?? [])],
         },
     };
 }

@@ -20,9 +20,9 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
     const pitchTrimTitleClass = (powerSource1Avail || powerSource2Avail) && !thsJam ? 'White' : 'Amber';
 
     return (
-        <g id='ths' transform={`translate(${x} ${y})`}>
-            <path className={`${hydraulicAvailableClass} SW2 LineRound LineJoinRound`} d='m-5,98 l-21,-11 v23 l21,-11 z' />
-            <path className='White SW4 LineRound' d='m0,0 v119 M-10,0 h20 M-10,118 h20 M-10,98 h20' />
+        <g id="ths" transform={`translate(${x} ${y})`}>
+            <path className={`${hydraulicAvailableClass} SW2 LineRound LineJoinRound`} d="m-5,98 l-21,-11 v23 l21,-11 z" />
+            <path className="White SW4 LineRound" d="m0,0 v119 M-10,0 h20 M-10,118 h20 M-10,98 h20" />
 
             <text x={57} y={-6} className={`F22 ${pitchTrimTitleClass} MiddleAlign LS1`}>
                 PITCH
@@ -35,7 +35,7 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
                 <text x={38} y={67} className={`${hydraulicAvailableClass} F26 EndAlign`}>{pitchIntegral}</text>
                 <text x={37} y={67} className={`${hydraulicAvailableClass} F26`}>.</text>
                 <text x={55} y={67} className={`${hydraulicAvailableClass} F26`}>{pitchFractional}</text>
-                <text x={65} y={68} className='Cyan F26'>°</text>
+                <text x={65} y={68} className="Cyan F26">°</text>
                 <text
                     x={82}
                     y={68}
@@ -50,7 +50,7 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
                 x={26}
                 y={68}
                 visibility={!positionInfoValid ? 'visible' : 'hidden'}
-                className='Amber F26'
+                className="Amber F26"
             >
                 XX
             </text>

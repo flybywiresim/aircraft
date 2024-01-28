@@ -9,7 +9,7 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanS
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { PendingAirways } from "@fmgc/flightplanning/new/plans/PendingAirways";
+import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 // import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlan extends BaseFlightPlan {

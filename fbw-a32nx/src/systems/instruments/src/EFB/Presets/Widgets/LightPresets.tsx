@@ -64,14 +64,14 @@ export const LightPresets = () => {
     }, []);
 
     return (
-        <div className="p-2 mt-2 mb-2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
-            <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent my-2 rounded-lg border-2 p-2">
+            <div className="border-theme-accent mb-3 flex h-16 flex-row items-center justify-center space-x-2 rounded-md border-2 p-2">
                 {isPowered
                     ? t('Presets.InteriorLighting.SelectAnInteriorLightingPresetToLoadOrSave')
                     : t('Presets.InteriorLighting.TheAircraftMustBePoweredForInteriorLightingPresets')}
             </div>
             <ScrollableContainer height={48}>
-                <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-0">
+                <div className="grid grid-flow-row grid-cols-1 grid-rows-5 gap-0">
                     {/* These the IDs for each row of presets. Add or remove numbers to add or remove rows */}
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <SinglePreset
@@ -122,17 +122,17 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
     }, [props.namesMap, props.storedNames]);
 
     return (
-        <div className="py-2 px-4 mt-2 rounded-md border-2 border-theme-accent">
-            <div className="flex flex-row items-center h-10">
+        <div className="border-theme-accent mt-2 rounded-md border-2 px-4 py-2">
+            <div className="flex h-10 flex-row items-center">
                 <div className="pr-3">
                     {t('Presets.InteriorLighting.AutoLoadLightingPreset')}
                 </div>
                 <Toggle value={!!autoLoadPreset} onToggle={(value) => (setAutoLoadPreset(value ? 1 : 0))} />
             </div>
-            <div className="flex flex-row justify-start items-center mt-3 space-x-4">
+            <div className="mt-3 flex flex-row items-center justify-start space-x-4">
                 <div>{t('Presets.InteriorLighting.AutoLoadDay')}</div>
                 <SelectInput
-                    className="w-72 h-12"
+                    className="h-12 w-72"
                     options={presetSelectionOptions}
                     value={autoLoadDayPresetID}
                     dropdownOnTop
@@ -140,7 +140,7 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
                 />
                 <div>{t('Presets.InteriorLighting.AutoLoadDawnDusk')}</div>
                 <SelectInput
-                    className="w-72 h-12"
+                    className="h-12 w-72"
                     options={presetSelectionOptions}
                     value={autoLoadDawnDuskPresetID}
                     dropdownOnTop
@@ -148,7 +148,7 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
                 />
                 <div>{t('Presets.InteriorLighting.AutoLoadNight')}</div>
                 <SelectInput
-                    className="w-72 h-12"
+                    className="h-12 w-72"
                     options={presetSelectionOptions}
                     value={autoLoadNightPresetID}
                     dropdownOnTop
@@ -263,16 +263,16 @@ const SinglePreset = (props: SinglePresetParams) => {
     }, [props.namesMap, presetName]);
 
     return (
-        <div className="flex flex-row justify-between my-2">
-            <div className="flex justify-center items-center w-24">
+        <div className="my-2 flex flex-row justify-between">
+            <div className="flex w-24 items-center justify-center">
                 {props.presetID}
             </div>
 
-            <div className="flex justify-center items-center mx-4 w-full h-16 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
+            <div className="text-theme-text bg-theme-accent border-theme-accent mx-4 flex h-16 w-full items-center justify-center rounded-md border-2">
                 <TooltipWrapper text={t('Presets.InteriorLighting.TT.ClickTextToChangeThePresetsName')}>
                     <div>
                         <SimpleInput
-                            className="w-80 text-2xl font-medium text-center"
+                            className="w-80 text-center text-2xl font-medium"
                             placeholder={t('Presets.InteriorLighting.NoName')}
                             value={presetName}
                             onBlur={(value) => changePresetName(presetName, value)}
@@ -284,7 +284,7 @@ const SinglePreset = (props: SinglePresetParams) => {
 
             <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.LoadThisPreset') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
-                    className={`flex justify-center items-center mx-4 w-full h-16 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    className={`text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent mx-4 flex h-16 w-full items-center justify-center rounded-md border-2 transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleLoad()}
                 >
                     {t('Presets.InteriorLighting.LoadPreset')}
@@ -293,7 +293,7 @@ const SinglePreset = (props: SinglePresetParams) => {
 
             <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.SaveTheCurrentLightingLevels') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
-                    className={`flex justify-center items-center mx-4 w-full h-16 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    className={`mx-4 flex h-16 w-full items-center justify-center rounded-md border-2 border-green-700 bg-green-700 text-white transition duration-100 hover:border-green-800 hover:bg-green-500 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleSave()}
                 >
                     {t('Presets.InteriorLighting.SavePreset')}

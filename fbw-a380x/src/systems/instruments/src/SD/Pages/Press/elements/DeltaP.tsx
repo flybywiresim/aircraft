@@ -9,12 +9,12 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
 
     let colour;
     if (deltaPsi < -0.72 || deltaPsi > 9.2) {
-        colour = `Red`
-    } else if ((-0.72 <= deltaPsi && deltaPsi <= -0.2) || (8.92 <= deltaPsi && deltaPsi <= 9.2)) {
-        colour = `Amber`
+        colour = 'Red';
+    } else if ((deltaPsi >= -0.72 && deltaPsi <= -0.2) || (deltaPsi >= 8.92 && deltaPsi <= 9.2)) {
+        colour = 'Amber';
     } else {
-        colour = `Green`
-    };
+        colour = 'Green';
+    }
 
     const radius = 86;
     const startAngle = 205;

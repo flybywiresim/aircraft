@@ -43,25 +43,25 @@ export class AFLeg extends XFLeg {
         this.outboundCourse = this.terminationRadial + 90 * this.turnDirectionSign;
     }
 
-    readonly centre: Coordinates | undefined
+    readonly centre: Coordinates | undefined;
 
     private readonly terminationRadial: DegreesTrue | undefined;
 
-    private readonly bearing: DegreesTrue | undefined
+    private readonly bearing: DegreesTrue | undefined;
 
-    readonly arcStartPoint: Coordinates | undefined
+    readonly arcStartPoint: Coordinates | undefined;
 
-    readonly arcEndPoint: Coordinates | undefined
+    readonly arcEndPoint: Coordinates | undefined;
 
-    readonly radius: NauticalMiles | undefined
+    readonly radius: NauticalMiles | undefined;
 
-    private sweepAngle: Degrees | undefined
+    private sweepAngle: Degrees | undefined;
 
-    private clockwise: boolean | undefined
+    private clockwise: boolean | undefined;
 
-    inboundCourse: DegreesTrue | undefined
+    inboundCourse: DegreesTrue | undefined;
 
-    outboundCourse: DegreesTrue | undefined
+    outboundCourse: DegreesTrue | undefined;
 
     getPathStartPoint(): Coordinates | undefined {
         return this.inboundGuidable instanceof DmeArcTransition ? this.inboundGuidable.getPathEndPoint() : this.arcStartPoint;

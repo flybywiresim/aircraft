@@ -51,7 +51,7 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position }) => {
 
     return (
         <g id={`spoiler-${side}-${position}`} transform={`translate(${x} ${y + yOffset})`}>
-            <path className='Grey Fill' d='m0,0 v -35 h15 v35 z' />
+            <path className="Grey Fill" d="m0,0 v -35 h15 v35 z" />
 
             {/* The max deflection line needs to be at the 45° deflection position, as this is the maximum deflection for roll spoilers.
             The 2px offset is because of the line width, the deflection indication should reach the lower border of the line. */}
@@ -59,7 +59,7 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position }) => {
 
             <path className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`} d={`m0,0 h15 v${deflectionYVal} h-16 z`} />
 
-            <path className={`Amber SW4 LineRound ${!deflectionInfoValid ? '' : 'Hide'}`} d='m1,-2 v-31 M14,-2 v-31' />
+            <path className={`Amber SW4 LineRound ${!deflectionInfoValid ? '' : 'Hide'}`} d="m1,-2 v-31 M14,-2 v-31" />
 
             <text
                 x={-1}

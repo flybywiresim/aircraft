@@ -52,9 +52,9 @@ const CabinDoor: React.FC<Position & CabinDoorProps> = ({ x, y, doorNumber, side
             <rect
                 x={0}
                 y={0}
-                width='18'
-                height='26'
-                rx='5'
+                width="18"
+                height="26"
+                rx="5"
                 className={
                     doorRectCss
                 }

@@ -5,12 +5,12 @@ import React from 'react';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export const PresetsHelp = () => (
-    <div className="p-4 mt-4 mb-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+    <div className="h-content-section-reduced border-theme-accent my-4 rounded-lg border-2 p-4">
         <ScrollableContainer height={52}>
-            <div className="space-y-2 w-full ">
+            <div className="w-full space-y-2 ">
                 <h1 className="font-bold">Lighting</h1>
                 <p className="text-2xl">
-                    <ul className="leading-9 list-disc">
+                    <ul className="list-disc leading-9">
                         <li>Load a preset by clicking on the corresponding "Load Preset" button when the aircraft is powered.</li>
                         <li>
                             Save current interior lighting levels by clicking on "Save Preset" button of the
@@ -29,11 +29,11 @@ export const PresetsHelp = () => (
                     while you are preparing the flight management system. The Aircraft Presets do not cover the FMS
                     and FCU setup.
                 </p>
-                <p className="pt-4 pb-4 text-2xl font-bold">
+                <p className="py-4 text-2xl font-bold">
                     You still have to setup the FMS using the MCDU and the FCU according to your flight plan.
                 </p>
                 <p className="text-2xl">
-                    <ul className="text-2xl leading-9 list-disc">
+                    <ul className="list-disc text-2xl leading-9">
                         <li>
                             When clicking on a preset button the corresponding preset procedure will be started.
                             This happens in real time as if a Co-Pilot would execute the setup.

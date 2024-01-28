@@ -34,14 +34,14 @@ const ChecklistReminderCard = ({ checklist, checklistIndex, className }: Checkli
     return (
         <Link
             to="/checklists"
-            className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${color} ${className}`}
+            className={`bg-theme-accent relative mt-4 flex flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 ${color} ${className}`}
             onClick={() => {
                 dispatch(setSelectedChecklistIndex(checklistIndex));
             }}
         >
-            <div className="absolute top-0 left-0 flex-row w-full h-1.5 text-current bg-theme-secondary">
+            <div className="bg-theme-secondary absolute left-0 top-0 h-1.5 w-full flex-row text-current">
                 <div
-                    className="h-full text-current bg-current"
+                    className="h-full bg-current text-current"
                     style={{
                         width: `${getChecklistCompletion(checklistIndex) * 100}%`,
                         transition: 'width 0.5s ease',
@@ -52,9 +52,9 @@ const ChecklistReminderCard = ({ checklist, checklistIndex, className }: Checkli
             <h2 className="font-bold">{checklist.name}</h2>
 
             {checklist.markedCompleted ? (
-                <Check className="mt-auto ml-auto text-colors-lime-400" size={28} />
+                <Check className="text-colors-lime-400 ml-auto mt-auto" size={28} />
             ) : (
-                <ArrowRight className="mt-auto ml-auto text-current" />
+                <ArrowRight className="ml-auto mt-auto text-current" />
             )}
         </Link>
     );
@@ -86,7 +86,7 @@ export const ChecklistsReminder = () => {
                     ))}
                 </div>
             ) : (
-                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.Checklists.NoRelevantChecklists')}</h1>
+                <h1 className="m-auto my-4 text-center font-bold opacity-60">{t('Dashboard.ImportantInformation.Checklists.NoRelevantChecklists')}</h1>
             )}
         </RemindersSection>
     );

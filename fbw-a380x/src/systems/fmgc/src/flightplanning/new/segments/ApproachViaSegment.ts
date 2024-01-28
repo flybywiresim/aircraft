@@ -10,11 +10,11 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 
 export class ApproachViaSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival
+    class = SegmentClass.Arrival;
 
-    allLegs: FlightPlanElement[] = []
+    allLegs: FlightPlanElement[] = [];
 
-    private approachVia: ProcedureTransition | undefined = undefined
+    private approachVia: ProcedureTransition | undefined = undefined;
 
     get approachViaProcedure() {
         return this.approachVia;

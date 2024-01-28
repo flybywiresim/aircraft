@@ -38,19 +38,19 @@ const NoSimBriefDataOverlay = () => {
     };
 
     return (
-        <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <h1 className="flex justify-center items-center w-full h-full">
+        <div className={`bg-theme-body absolute inset-0 transition duration-200 ${simbriefDataLoaded ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
+            <h1 className="flex h-full w-full items-center justify-center">
                 {simbriefDataPending ? (
                     <CloudArrowDown className="animate-bounce" size={40} />
                 ) : (
                     <>
                         {!simbriefDataLoaded && (
-                            <div className="flex flex-col justify-center items-center space-y-8 h-full">
+                            <div className="flex h-full flex-col items-center justify-center space-y-8">
                                 <h1 className="max-w-4xl text-center">{t('Dispatch.Ofp.YouHaveNotYetImportedAnySimBriefData')}</h1>
                                 <button
                                     type="button"
                                     onClick={fetchData}
-                                    className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex w-full items-center justify-center space-x-4 rounded-md border-2 p-2 transition duration-100"
                                 >
                                     <CloudArrowDown size={26} />
                                     <p className="text-current">{t('Dispatch.Ofp.ImportSimBriefData')}</p>
@@ -122,14 +122,14 @@ export const LoadSheetWidget = () => {
     const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
     return (
-        <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">
             <>
-                <div className="overflow-hidden absolute top-6 right-16 bg-theme-secondary rounded-md">
+                <div className="bg-theme-secondary absolute right-16 top-6 overflow-hidden rounded-md">
                     <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
                         <button
                             type="button"
                             onClick={handleFontDecrease}
-                            className="py-2 px-3 hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                            className="hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 px-3 py-2 transition duration-100 hover:bg-opacity-100"
                         >
                             <ZoomOut size={30} />
                         </button>
@@ -139,7 +139,7 @@ export const LoadSheetWidget = () => {
                         <button
                             type="button"
                             onClick={handleFontIncrease}
-                            className="py-2 px-3 hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                            className="hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 px-3 py-2 transition duration-100 hover:bg-opacity-100"
                         >
                             <ZoomIn size={30} />
                         </button>

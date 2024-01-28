@@ -17,7 +17,7 @@ interface InformationEntryProps {
 
 const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) => (
     <div>
-        <div className="flex flex-row items-center space-x-4 text-theme-highlight">
+        <div className="text-theme-highlight flex flex-row items-center space-x-4">
             {children}
             <p className="whitespace-nowrap">{title}</p>
         </div>
@@ -47,7 +47,7 @@ export const OverviewPage = () => {
     };
 
     const A320 = (
-        <div className="flex flex-row mt-8 space-x-16">
+        <div className="mt-8 flex flex-row space-x-16">
             <div className="flex flex-col space-y-8">
                 <InformationEntry title={t('Dispatch.Overview.Model')} info="A320-251N [A20N]">
                     <IconPlane className="fill-current" size={23} stroke={1.5} strokeLinejoin="miter" />
@@ -94,7 +94,7 @@ export const OverviewPage = () => {
     );
 
     const A380 = (
-        <div className="flex flex-row mt-8 space-x-16">
+        <div className="mt-8 flex flex-row space-x-16">
             <div className="flex flex-col space-y-8">
                 <InformationEntry title={t('Dispatch.Overview.Model')} info="A380-842 [A388]">
                     <IconPlane className="fill-current" size={23} stroke={1.5} strokeLinejoin="miter" />
@@ -141,12 +141,12 @@ export const OverviewPage = () => {
     );
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-min rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="h-content-section-reduced border-theme-accent mr-3 w-min overflow-hidden rounded-lg border-2 p-6">
             {airframe === 'A380_842' ? <h1 className="font-bold">Airbus A380</h1> : <h1 className="font-bold">Airbus A320neo</h1>}
             <p>{airline}</p>
 
-            <div className="flex justify-center items-center mt-6">
-                <NoseOutline className="mr-32 -ml-96 h-64 text-theme-text flip-horizontal" />
+            <div className="mt-6 flex items-center justify-center">
+                <NoseOutline className="text-theme-text flip-horizontal -ml-96 mr-32 h-64" />
             </div>
 
             {airframe === 'A380_842' ? A380 : A320}

@@ -65,7 +65,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
 
-    private isNegativeSub = Subject.create('hidden')
+    private isNegativeSub = Subject.create('hidden');
 
     private showThousandsZeroSub = Subject.create(false);
 
@@ -294,7 +294,7 @@ class Drum extends DisplayComponent<DrumProperties> {
 
     private value = 0;
 
-    private color = 'Green'
+    private color = 'Green';
 
     private showZero = true;
 

@@ -18,7 +18,7 @@ export abstract class UplinkMonitor {
 
     private static levelMonitoringMessageIds = ['UM78', 'UM128', 'UM129', 'UM130', 'UM175', 'UM180'];
 
-    public type: UplinkMonitorType
+    public type: UplinkMonitorType;
 
     public messageId = -1;
 

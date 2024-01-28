@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
@@ -42,7 +46,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     if (loading) {
         return (
             <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
                 style={{ height: '42.75rem' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -53,7 +57,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     if (!selectedTab.charts.length) {
         return (
             <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
                 style={{ height: '42.75rem' }}
             >
                 <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
@@ -105,17 +109,17 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
                 <div
-                    className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                    className="bg-theme-accent flex w-full flex-row overflow-hidden rounded-md"
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
                     <div className="flex flex-row items-center">
-                        <div className={`w-2 h-full transition flex-shrink-0 duration-100 ${chart.fileName === chartId
+                        <div className={`h-full w-2 shrink-0 transition duration-100 ${chart.fileName === chartId
                             ? 'bg-theme-highlight'
                             : 'bg-theme-secondary'}`}
                         />
                         <div
-                            className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                            className="hover:text-theme-body hover:bg-theme-highlight flex h-full items-center px-2 transition duration-100"
                             onClick={(event) => {
                                 event.stopPropagation();
 
@@ -159,10 +163,10 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                             }
                         </div>
                     </div>
-                    <div className="flex flex-col m-2">
+                    <div className="m-2 flex flex-col">
                         <span>{chart.fileName}</span>
                         <span
-                            className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
+                            className="text-theme-text bg-theme-secondary mr-auto rounded-sm px-2 text-sm"
                         >
                             {chart.type}
                         </span>

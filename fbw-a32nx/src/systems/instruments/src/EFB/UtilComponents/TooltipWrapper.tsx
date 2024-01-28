@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { useRef, useState, useEffect, forwardRef, RefObject } from 'react';
 import { useAppDispatch, useAppSelector } from '../Store/store';
@@ -17,7 +21,7 @@ export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, re
         <div
             key={text}
             ref={ref}
-            className={`absolute rounded-md z-50 px-2 whitespace-nowrap border bg-theme-accent border-theme-secondary transition duration-100 pointer-events-none ${shown ? 'opacity-100' : 'opacity-0'}`}
+            className={`bg-theme-accent border-theme-secondary pointer-events-none absolute z-50 whitespace-nowrap rounded-md border px-2 transition duration-100 ${shown ? 'opacity-100' : 'opacity-0'}`}
             style={{ top: `${posY + offsetY}px`, left: `${posX}px` }}
         >
             {text}

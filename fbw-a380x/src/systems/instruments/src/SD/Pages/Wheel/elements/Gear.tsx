@@ -60,14 +60,14 @@ const PositionIndicatior: FC<PositionIndicatiorProps> = ({ system }) => {
         <g className={`SW2 ${color} ${hide ? 'Hidden' : ''}`}>
             {system === 1 && (
                 <>
-                    <path d='m 0 0 h 29 v 26 z' />
-                    <path d='M 13 0 v 12 M 21 0 v 19' />
+                    <path d="m 0 0 h 29 v 26 z" />
+                    <path d="M 13 0 v 12 M 21 0 v 19" />
                 </>
             )}
             {system === 2 && (
                 <>
-                    <path d='m 67 0 h -29 v 26 z' />
-                    <path d='M 46 0 v 19 M 54 0 v 12' />
+                    <path d="m 67 0 h -29 v 26 z" />
+                    <path d="M 46 0 v 19 M 54 0 v 12" />
                 </>
             )}
         </g>
@@ -91,14 +91,14 @@ const GearDoor: FC<GearDoorProps> = ({ position, type }) => {
                 <>
                     <path d={`m -14 ${yPos} h 46`} />
                     <path d={`m 81 ${yPos} h -46`} />
-                    <circle r='3' cx={-15} cy={yPos} />
-                    <circle r='3' cx={82} cy={yPos} />
+                    <circle r="3" cx={-15} cy={yPos} />
+                    <circle r="3" cx={82} cy={yPos} />
                 </>
             )}
             {type === GearType.WLG && (
                 <>
                     <path d={`m ${position === GearPosition.Left ? 83 : -16} -7 l ${position === GearPosition.Left ? '-' : ''}94 -5`} />
-                    <circle r='3' cx={position === GearPosition.Left ? 84 : -17} cy={-7} />
+                    <circle r="3" cx={position === GearPosition.Left ? 84 : -17} cy={-7} />
                 </>
             )}
         </g>
@@ -116,14 +116,14 @@ const UplockFlag: FC<UplockFlagProps> = ({ x, y, type }) => (
         {
             (type === GearType.BLG || type === GearType.WLG) && (
                 <g transform={`translate(${x} ${y})`}>
-                    <text className='F24 Amber' x={16} y={-24}>UP</text>
-                    <text className='F24 Amber' x={0} y={0}>LOCK</text>
+                    <text className="F24 Amber" x={16} y={-24}>UP</text>
+                    <text className="F24 Amber" x={0} y={0}>LOCK</text>
                 </g>
             )
         }
         {
             type === GearType.Nose && (
-                <text className='F24 Amber' x={x} y={y}>UP LOCK</text>
+                <text className="F24 Amber" x={x} y={y}>UP LOCK</text>
             )
         }
     </>

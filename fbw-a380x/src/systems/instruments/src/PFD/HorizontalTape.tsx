@@ -12,7 +12,7 @@ interface HorizontalTapeProps {
 export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     private refElement = FSComponent.createRef<SVGGElement>();
 
-    private tapeOffset=0;
+    private tapeOffset = 0;
 
     private tickNumberRefs: NodeReference<SVGTextElement>[] = [];
 

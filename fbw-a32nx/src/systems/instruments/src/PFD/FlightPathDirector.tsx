@@ -36,7 +36,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
         fdActive: true,
         activeLateralMode: 0,
         activeVerticalMode: 0,
-    }
+    };
 
     private isTrkFpaActive = false;
 

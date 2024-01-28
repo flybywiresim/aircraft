@@ -29,14 +29,14 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
     return (
         <Link
             to={`/failures/comfort/${pathify(ataNumber.toString())}`}
-            className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent hover:border-theme-highlight transition duration-100"
+            className="hover:border-theme-highlight flex flex-row space-x-4 rounded-md border-2 border-transparent p-2 transition duration-100"
         >
             <div
-                className="flex justify-center items-center w-1/5 font-title text-5xl font-bold bg-theme-accent rounded-md"
+                className="font-title bg-theme-accent flex w-1/5 items-center justify-center rounded-md text-5xl font-bold"
             >
                 {`ATA ${ataNumber}`}
 
-                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 text-utility-red fill-current">
+                <div className="text-utility-red relative -right-7 bottom-16 inline-block h-0 w-0 fill-current">
                     {hasActiveFailure && (
                         <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
                             <circle cx={10} cy={10} r={5} />
@@ -45,7 +45,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
                 </div>
             </div>
 
-            <div className="space-y-2 w-3/4">
+            <div className="w-3/4 space-y-2">
                 <h1 className="font-bold">
                     {title}
                 </h1>
@@ -77,7 +77,7 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
                 ))}
             </ScrollableContainer>
             {filteredChapters.length === 0 && (
-                <div className="flex justify-center items-center mt-4 rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
+                <div className="border-theme-accent mt-4 flex items-center justify-center rounded-md border-2" style={{ height: '48rem' }}>
                     <p>{t('Failures.NoItemsFound')}</p>
                 </div>
             )}

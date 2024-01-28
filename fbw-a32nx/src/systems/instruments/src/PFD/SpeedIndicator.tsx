@@ -138,7 +138,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private vfeNext = FSComponent.createRef<SVGPathElement>();
 
-    private barTimeout= 0;
+    private barTimeout = 0;
 
     private onGround = Subject.create(true);
 
@@ -508,7 +508,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
     private vStallWarn = new Arinc429Word(0);
 
-    private airSpeed= new Arinc429Word(0);
+    private airSpeed = new Arinc429Word(0);
 
     private vls = new Arinc429Word(0);
 
@@ -875,7 +875,7 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
         holdValue: 100,
         isSpeedManaged: false,
         isMach: false,
-    }
+    };
 
     private handleManagedSpeed() {
         if (this.speedState.isSpeedManaged) {

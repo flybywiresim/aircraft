@@ -14,14 +14,14 @@ export class FlightModel {
 
     static requiredAccelRateMS2 = 0.684; // in m/s^2
 
-    static gravityConstKNS = 19.0626 // in knots/second
+    static gravityConstKNS = 19.0626; // in knots/second
 
     static gravityConstMS2 = 9.806665; // in m/s^2
 
     // From https://github.com/flybywiresim/a32nx/pull/6903#issuecomment-1073168320
-    static machValues: Mach[] = [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85]
+    static machValues: Mach[] = [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85];
 
-    static dragCoefficientCorrections: number[] = [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01]
+    static dragCoefficientCorrections: number[] = [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01];
 
     /**
      * Get lift coefficient at given conditions

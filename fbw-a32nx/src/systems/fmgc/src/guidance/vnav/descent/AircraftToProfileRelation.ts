@@ -16,7 +16,7 @@ export class AircraftToDescentProfileRelation {
 
     private geometricPathStart?: VerticalCheckpoint;
 
-    private distanceToEnd: NauticalMiles = 0;;
+    private distanceToEnd: NauticalMiles = 0;
 
     public totalFlightPlanDistance: number = 0;
 

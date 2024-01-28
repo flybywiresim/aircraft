@@ -34,7 +34,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
                 this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
             }, this.displayTimeInSeconds * 1000) as unknown as number;
         }
-    }
+    };
 }
 
 export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscribable<boolean> }> {

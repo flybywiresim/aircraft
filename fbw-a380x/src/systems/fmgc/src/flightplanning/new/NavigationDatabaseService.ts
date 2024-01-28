@@ -11,7 +11,7 @@ export class NavigationDatabaseService {
     static _activeDatabase: NavigationDatabase;
 
     static get activeDatabase(): NavigationDatabase {
-        return this._activeDatabase
+        return this._activeDatabase;
     }
 
     static set activeDatabase(db: NavigationDatabase) {

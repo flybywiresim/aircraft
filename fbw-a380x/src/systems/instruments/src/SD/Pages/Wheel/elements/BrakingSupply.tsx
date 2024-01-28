@@ -9,7 +9,7 @@ interface BrakingSupplyProps {
 }
 
 export const BrakingSupply: FC<BrakingSupplyProps> = ({ x, y, type }) => (
-    <g id='braking-power-supplies' transform={`translate(${x} ${y})`}>
+    <g id="braking-power-supplies" transform={`translate(${x} ${y})`}>
         <PowerSupplyIndication
             x={-23}
             y={-30}

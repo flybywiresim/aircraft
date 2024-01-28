@@ -36,15 +36,15 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
 
     return (
         <>
-            <text x={x - 22} y={y + 28} className='White F29'>{engine}</text>
-            <image x={x} y={y} width={80} height={124} xlinkHref='/Images/Engine-Hyd-Bleed-Dithered.png' preserveAspectRatio='none' />
+            <text x={x - 22} y={y + 28} className="White F29">{engine}</text>
+            <image x={x} y={y} width={80} height={124} xlinkHref="/Images/Engine-Hyd-Bleed-Dithered.png" preserveAspectRatio="none" />
 
             <g className={engine === 1 ? 'Show' : 'Hide'}>
                 {/* x=75   y=525 */}
-                <rect className='BackgroundFill' height={19} width={28} x={x + 35} y={y + 82} />
-                <rect className='BackgroundFill' height={19} width={28} x={x + 5} y={y + 40} />
-                <text className='White F22' x={x + 6} y={y + 58}>IP</text>
-                <text className='White F22' x={x + 37} y={y + 100}>HP</text>
+                <rect className="BackgroundFill" height={19} width={28} x={x + 35} y={y + 82} />
+                <rect className="BackgroundFill" height={19} width={28} x={x + 5} y={y + 40} />
+                <text className="White F22" x={x + 6} y={y + 58}>IP</text>
+                <text className="White F22" x={x + 37} y={y + 100}>HP</text>
             </g>
 
             { /* Engine Bleed valve */}
@@ -71,10 +71,10 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
             <path className={`SW2 ${shouldHpValveBeOpen === engineHpValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`} d={`M ${x + 61},${y + 59} l 0,20`} />
 
             {/* Engine Bleed temp */}
-            <path className='Grey SW2' d={`M ${x + 30},${y - 145} l -40,0 l 0,75 l 80,0 l 0,-75 l -40,0`} />
+            <path className="Grey SW2" d={`M ${x + 30},${y - 145} l -40,0 l 0,75 l 80,0 l 0,-75 l -40,0`} />
             <g className={engine % 2 === 0 ? 'Hide' : 'Show'}>
-                <text x={x + 78} y={y - 117} className='Cyan F23'>PSI</text>
-                <text x={x + 80} y={y - 75} className='Cyan F23'>°C</text>
+                <text x={x + 78} y={y - 117} className="Cyan F23">PSI</text>
+                <text x={x + 80} y={y - 75} className="Cyan F23">°C</text>
             </g>
             {/* Precooler inlet pressure */}
             <text

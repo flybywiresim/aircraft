@@ -44,7 +44,7 @@ interface ServiceButtonWrapperProps {
 // This groups buttons and sets a border and divider line
 const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
-        className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
+        className={`border-theme-accent divide-theme-accent flex flex-col divide-y-2 overflow-hidden rounded-xl border-2 ${className}`}
         style={{ position: 'absolute', left: xl, right: xr, top: y }}
     >
         {children}
@@ -100,11 +100,11 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
 
     return (
         <div
-            className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${buttonsStyles[state]} ${className}`}
+            className={`flex cursor-pointer flex-row items-center space-x-6 p-6${buttonsStyles[state]} ${className}`}
             onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
         >
             {children}
-            <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
+            <h1 className="shrink-0 text-2xl font-medium text-current">{name}</h1>
         </div>
     );
 };
@@ -530,13 +530,13 @@ export const A320Services: React.FC = () => {
     const serviceIndicationCss = 'text-2xl font-bold text-utility-amber w-min';
 
     return (
-        <div className="relative h-content-section-reduced">
+        <div className="h-content-section-reduced relative">
             <GroundServiceOutline
                 cabinLeftStatus={cabinLeftDoorOpen >= 1.0}
                 cabinRightStatus={cabinRightDoorOpen >= 1.0}
                 aftLeftStatus={aftLeftDoorOpen >= 1.0}
                 aftRightStatus={aftRightDoorOpen >= 1.0}
-                className="inset-x-0 mx-auto w-full h-full text-theme-text"
+                className="text-theme-text inset-x-0 mx-auto h-full w-full"
             />
 
             <ServiceButtonWrapper xr={930} y={24}>
@@ -592,22 +592,22 @@ export const A320Services: React.FC = () => {
                 {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
                 {/* the ServiceButtonWrapper has been re-used. */}
                 {!!wheelChocksEnabled && (
-                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
-                        <div className={`flex justify-center items-end -ml-2 -mr-[2px] ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                        <div className={`-ml-2 -mr-[2px] flex items-end justify-center ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                             <Chock size="12" stroke="4" />
                             <Wheel size="36" stroke="5" className="-mx-0.5" />
                             <Chock size="12" stroke="4" />
                         </div>
-                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
+                        <h1 className="shrink-0 text-2xl font-medium text-current">
                             {t('Ground.Services.WheelChocks')}
                         </h1>
                     </div>
                 )}
 
                 {!!conesEnabled && (
-                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                         <ConeStriped size="38" stroke="1.5" className="mr-2" />
-                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
+                        <h1 className="shrink-0 text-2xl font-medium text-current">
                             {t('Ground.Services.Cones')}
                         </h1>
                     </div>

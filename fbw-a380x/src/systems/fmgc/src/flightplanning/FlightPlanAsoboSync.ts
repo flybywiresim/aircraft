@@ -111,12 +111,12 @@ export class FlightPlanAsoboSync {
                                         console.error(e);
                                     });
                             } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
-                              await fpln.setOriginRunwayIndexFromDeparture()
-                              // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
-                                .catch((e) => {
-                                  console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
-                                  console.error(e);
-                              });
+                                await fpln.setOriginRunwayIndexFromDeparture()
+                                // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
+                                    .catch((e) => {
+                                        console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
+                                        console.error(e);
+                                    });
                             }
                             //  enroutetrans index
                             await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
@@ -125,14 +125,14 @@ export class FlightPlanAsoboSync {
                                     console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
                                     console.error(e);
                                 });
-                             // set approach
+                            // set approach
                             //  rwy index
                             await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
                             // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
-                            .catch((e) => {
-                                console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
-                                console.error(e);
-                            });
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
+                                    console.error(e);
+                                });
                             //  approach index
                             await fpln.setApproachIndex(data.approachIndex)
                                 // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
@@ -166,10 +166,10 @@ export class FlightPlanAsoboSync {
 
                             await fpln.setDestinationRunwayIndexFromApproach()
                             // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
-                            .catch((e) => {
-                                console.error(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... FAILED`);
-                                console.error(e);
-                            });
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... FAILED`);
+                                    console.error(e);
+                                });
 
                             fpln.resumeSync();
 

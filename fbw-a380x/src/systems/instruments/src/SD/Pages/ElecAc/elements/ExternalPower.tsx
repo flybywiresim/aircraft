@@ -36,28 +36,28 @@ export const ExternalPower: FC<ExternalPowerProps> = ({ x, y, bus }) => {
     return (
         <>
             <g id={`external-power-${bus}-units`} transform={`translate(${x} ${y})`} className={bus % 2 === 1 && (extPwrConnected || otherExtPwrConnected) ? '' : 'Hide'}>
-                <text className='Cyan F22' x={94} y={38}>V</text>
-                <text className='Cyan F22' x={87} y={64}>HZ</text>
+                <text className="Cyan F22" x={94} y={38}>V</text>
+                <text className="Cyan F22" x={87} y={64}>HZ</text>
             </g>
             <g id={`external-power-${bus}-indication`} transform={`translate(${x} ${y})`} className={onGround || extPwrConnected ? '' : 'Hide'}>
                 <text
                     x={8}
                     y={10}
-                    className='F22 White LS1'
+                    className="F22 White LS1"
                 >
                     EXT
                 </text>
                 <text
                     x={57}
                     y={10}
-                    className='F22 White'
+                    className="F22 White"
                 >
                     {bus}
                 </text>
 
                 <g className={extPwrConnected ? '' : 'Hide'}>
-                    <path className='LightGrey SW3 NoFill StrokeRound' d='M 5,0 l -5,0 l 0,70 l 5,0' />
-                    <path className='LightGrey SW3 NoFill StrokeRound' d='M 71,0 l 5,0 l 0,70 l -5,0' />
+                    <path className="LightGrey SW3 NoFill StrokeRound" d="M 5,0 l -5,0 l 0,70 l 5,0" />
+                    <path className="LightGrey SW3 NoFill StrokeRound" d="M 71,0 l 5,0 l 0,70 l -5,0" />
 
                     {/* Voltage */}
                     <text

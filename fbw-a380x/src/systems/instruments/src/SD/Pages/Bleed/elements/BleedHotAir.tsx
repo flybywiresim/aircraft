@@ -21,7 +21,7 @@ const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, sdacDatum }) => {
             <path className={`${packValveOpen ? 'Green' : 'Amber'} Line`} d={`M${hotAir === 1 ? x + xoffset : x - xoffset},${y - 68} l 0,-24`} />
             <Triangle x={hotAir === 1 ? x + xoffset : x - xoffset} y={y - 108} colour={packValveOpen ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.2} />
             <Valve x={hotAir === 1 ? x + xoffset : x - xoffset} y={y - 49} radius={19} css={`SW2 ${packValveOpen ? 'Green' : 'Amber'}`} position={hotAirValveOpen ? 'V' : 'H'} sdacDatum />
-            <text x={hotAir === 1 ? x + xoffset + 37 : x - xoffset - 37} y={y - 43} className='White F23 MiddleAlign'>{hotAir}</text>
+            <text x={hotAir === 1 ? x + xoffset + 37 : x - xoffset - 37} y={y - 43} className="White F23 MiddleAlign">{hotAir}</text>
         </g>
     );
 };

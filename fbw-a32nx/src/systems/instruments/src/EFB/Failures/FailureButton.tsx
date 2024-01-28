@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, MouseEventHandler } from 'react';
 
 export interface FailureButtonProps {
@@ -20,7 +24,7 @@ export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChangi
             onClick={onClick}
             type="button"
             disabled={isChanging}
-            className={`flex rounded-md border-t-4 bg-theme-accent px-2 pt-3 pb-2 text-left ${color} ${className}`}
+            className={`bg-theme-accent flex rounded-md border-t-4 px-2 pb-2 pt-3 text-left ${color} ${className}`}
         >
             {highlightedTerm ? (
                 <h2>

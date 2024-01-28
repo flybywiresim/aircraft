@@ -105,8 +105,8 @@ export const Dropdown: FC<DropdownProps> = ({
     if (open && disabled) setOpen(false);
     return (
         <Layer x={x} y={y}>
-            <Button width={width} height={height} onClick={onButtonClick} fill={selectable ? (disabled ? "#575757" : "black") : undefined} disabled={disabled} highlighted={open}>
-                {horizontal && expandLeft && <path fill={disabled ? "#ababab" : "#ffffff"} d={`m 22 ${height / 2 - 9} v 17 l -13 -8 l 13 -8 z`} strokeLinejoin="round" />}
+            <Button width={width} height={height} onClick={onButtonClick} fill={selectable ? (disabled ? '#575757' : 'black') : undefined} disabled={disabled} highlighted={open}>
+                {horizontal && expandLeft && <path fill={disabled ? '#ababab' : '#ffffff'} d={`m 22 ${height / 2 - 9} v 17 l -13 -8 l 13 -8 z`} strokeLinejoin="round" />}
                 {selectable
                     ? (
                         <text x={5} y={height / 2} fill="cyan" fontSize={30} dominantBaseline="central">{title}</text>
@@ -118,7 +118,7 @@ export const Dropdown: FC<DropdownProps> = ({
                                 y={textBbox?.y! - 3}
                                 width={textBbox?.width! + 6}
                                 height={textBbox?.height! + 6}
-                                stroke={active ? "white" : "none"}
+                                stroke={active ? 'white' : 'none'}
                                 strokeWidth={2}
                                 fill="none"
                             />
@@ -126,7 +126,7 @@ export const Dropdown: FC<DropdownProps> = ({
                                 ref={textRef}
                                 x={textX}
                                 y={height / 2 + (horizontal ? 2 : 0)}
-                                fill={disabled ? "#ababab" : "white"}
+                                fill={disabled ? '#ababab' : 'white'}
                                 fontSize={22}
                                 textAnchor={textAnchor}
                                 dominantBaseline="central"
@@ -147,8 +147,8 @@ export const Dropdown: FC<DropdownProps> = ({
                         strokeWidth={1}
                     />
                 )}
-                {horizontal && !expandLeft && <path fill={disabled ? "#ababab" : "#ffffff"} d={`m ${width - 22} ${height / 2 - 9} l 13 8 l -13 8 v 17 z`} strokeLinejoin="round" />}
-                {!horizontal && <path fill={disabled ? "#ababab" : "#ffffff"} d={`m ${width - 30} ${height / 2 - 5} h 20 l -10 14 l -10 -14 z`} strokeLinejoin="round" />}
+                {horizontal && !expandLeft && <path fill={disabled ? '#ababab' : '#ffffff'} d={`m ${width - 22} ${height / 2 - 9} l 13 8 l -13 8 v 17 z`} strokeLinejoin="round" />}
+                {!horizontal && <path fill={disabled ? '#ababab' : '#ffffff'} d={`m ${width - 30} ${height / 2 - 5} h 20 l -10 14 l -10 -14 z`} strokeLinejoin="round" />}
             </Button>
             <clipPath id={clipPathId}>
                 <rect x={childrenRectangleX - 1.5} y={horizontal ? 0 : height} width={childWidth + 3} height={Math.min(Children.count(children) * childHeight + 6, maxHeight)} />
@@ -248,7 +248,7 @@ export const ScrollBar: FC<ScrollBarProps> = ({ x, y, width = 48, maxHeight, tot
             y={y + scrollPosition * Math.min(maxHeight / (totalChildHeight), 1)}
             width={width}
             height={(maxHeight) * Math.min((maxHeight) / (totalChildHeight), 1) - 3}
-            fill={hovered || dragging ? "cyan" : "#b0afae"}
+            fill={hovered || dragging ? 'cyan' : '#b0afae'}
             onMouseDown={handleMouseDown}
         />
     );
@@ -282,7 +282,7 @@ export const DropdownItem: FC<DropdownItemProps> = ({ x = 10, y = 0, onSelect, w
                 ${width}, 0
                 ${width}, ${childHeight}
                 0, ${childHeight}`}
-                stroke={(hovered && !disabled) ? "cyan" : "none"}
+                stroke={(hovered && !disabled) ? 'cyan' : 'none'}
                 strokeWidth={3}
                 fill="transparent"
             />
@@ -293,16 +293,16 @@ export const DropdownItem: FC<DropdownItemProps> = ({ x = 10, y = 0, onSelect, w
                 width={width - 2}
                 height={childHeight - 2}
                 fill="transparent"
-                stroke={(hovered && !disabled) ? "cyan" : "none"}
+                stroke={(hovered && !disabled) ? 'cyan' : 'none'}
                 strokeWidth={2}
             />
             <text
                 x={centered ? width / 2 : 10}
                 y={childHeight / 2}
-                fill={disabled ? "#ababab" : "white"}
+                fill={disabled ? '#ababab' : 'white'}
                 fontSize={21}
                 dominantBaseline="central"
-                textAnchor={centered ? "middle" : "start"}
+                textAnchor={centered ? 'middle' : 'start'}
             >
                 {children}
             </text>

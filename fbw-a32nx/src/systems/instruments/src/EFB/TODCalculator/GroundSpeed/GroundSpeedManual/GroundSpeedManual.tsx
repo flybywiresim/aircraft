@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React from 'react';
 
@@ -14,12 +18,12 @@ export const GroundSpeedManual = () => {
     const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed);
 
     return (
-        <div className="flex flex-col justify-between space-y-12 h-full">
+        <div className="flex h-full flex-col justify-between space-y-12">
             <div className="space-y-6">
                 <div className="space-y-2">
                     {groundSpeed.map(({ from, groundSpeed }, index) => (
                         <>
-                            <div className="flex flex-row space-x-4 w-full rounded-lg">
+                            <div className="flex w-full flex-row space-x-4 rounded-lg">
                                 <div className="w-1/2">
                                     <p>{`${t('Performance.TopOfDescent.GroundSpeed.MinAltitude')} ${index + 1}`}</p>
                                 </div>
@@ -27,7 +31,7 @@ export const GroundSpeedManual = () => {
                                     <p>{t('Performance.TopOfDescent.GroundSpeed.GroundSpeed')}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-row space-x-4 w-full rounded-lg">
+                            <div className="flex w-full flex-row space-x-4 rounded-lg">
                                 <div>
                                     <SimpleInput
                                         placeholder="feet"
@@ -67,7 +71,7 @@ export const GroundSpeedManual = () => {
 
                 <div className="flex flex-row space-x-2">
                     <button
-                        className={`w-full py-2 rounded-md bg-utility-red text-theme-body border-2 border-utility-red transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-utility-red'}`}
+                        className={`bg-utility-red text-theme-body border-utility-red w-full rounded-md border-2 py-2 transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-utility-red'}`}
                         type="button"
                         onClick={() => dispatch(removeTodGroundSpeed(groundSpeed.length - 1))}
                         disabled={groundSpeed.length <= 1}
@@ -76,7 +80,7 @@ export const GroundSpeedManual = () => {
                     </button>
 
                     <button
-                        className={`w-full py-2 bg-colors-lime-500 text-theme-body rounded-md transition duration-100 border-2 border-colors-lime-500 ${groundSpeed.length >= 6 ? 'opacity-60' : 'hover:text-colors-lime-500 hover:bg-theme-body'}`}
+                        className={`bg-colors-lime-500 text-theme-body border-colors-lime-500 w-full rounded-md border-2 py-2 transition duration-100 ${groundSpeed.length >= 6 ? 'opacity-60' : 'hover:text-colors-lime-500 hover:bg-theme-body'}`}
                         type="button"
                         onClick={() => dispatch(addTodGroundSpeed({ from: -1, groundSpeed: -1 }))}
                         disabled={groundSpeed.length >= 6}
@@ -88,7 +92,7 @@ export const GroundSpeedManual = () => {
 
             <button
                 type="button"
-                className="flex justify-center p-3 w-full text-theme-highlight hover:text-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
+                className="text-theme-highlight hover:text-theme-body hover:bg-theme-highlight border-theme-highlight flex w-full justify-center rounded-md border-2 p-3 transition duration-100"
                 onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
             >
                 <p className="text-current">{t('Performance.TopOfDescent.GroundSpeed.Sync')}</p>

@@ -103,9 +103,9 @@ export class GuidanceController {
 
     rightEfisState: EfisState
 
-    efisStateForSide: { L: EfisState, R: EfisState }
+    efisStateForSide: { L: EfisState, R: EfisState };
 
-    private approachMessage: string = ''
+    private approachMessage: string = '';
 
     taskQueue = new TaskQueue();
 

@@ -32,13 +32,13 @@ export const EngineWarningDisplay: React.FC = () => {
             <EngineGauge x={497} y={126} engine={3} active={engineRunningOrIgnitionOn} n1Degraded={n1Degraded[2]} />
             <EngineGauge x={668} y={126} engine={4} active={engineRunningOrIgnitionOn} n1Degraded={n1Degraded[3]} />
 
-            <text x={386} y={121} className='White F26 Center'>THR</text>
-            <text x={386} y={142} className='Cyan F20 Center'>%</text>
+            <text x={386} y={121} className="White F26 Center">THR</text>
+            <text x={386} y={142} className="Cyan F20 Center">%</text>
 
             {/* N1 */}
 
-            <text x={386} y={220} className='White F26 Center'>N1</text>
-            <text x={386} y={243} className='Cyan F20 Center'>%</text>
+            <text x={386} y={220} className="White F26 Center">N1</text>
+            <text x={386} y={243} className="Cyan F20 Center">%</text>
 
             <path className={`LightGreyLine ${n1Degraded[0] || n1Degraded[1] || !engineRunningOrIgnitionOn ? 'Hide' : 'Show'}`} d={`m ${171} 228 l 24 -2`} />
             <path className={`LightGreyLine ${n1Degraded[1] || !engineRunningOrIgnitionOn ? 'Hide' : 'Show'}`} d={`m ${335} 216 l 20 -2`} />
@@ -47,10 +47,10 @@ export const EngineWarningDisplay: React.FC = () => {
 
             {/* EGT */}
 
-            <text x={384} y={316} className='White F26 Center'>EGT</text>
-            <text x={384} y={339} className='Cyan F20 Center'>&deg;C</text>
+            <text x={384} y={316} className="White F26 Center">EGT</text>
+            <text x={384} y={339} className="Cyan F20 Center">&deg;C</text>
 
-            <path stroke='#8c8c8c' strokeWidth={4} d='m 8 375 h 750' />
+            <path stroke="#8c8c8c" strokeWidth={4} d="m 8 375 h 750" />
 
             {/* <text fontSize="25px" x={47} y={435} fill="white">BEFORE START</text>
             <path stroke="white" strokeWidth={2} d="m 49 436.3 h 193" /> */}

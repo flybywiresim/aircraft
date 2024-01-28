@@ -104,7 +104,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
     if (loading) {
         return (
             <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
                 style={{ height: '42.75rem' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -115,7 +115,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
     if (!selectedTab.charts.length) {
         return (
             <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
                 style={{ height: '42.75rem' }}
             >
                 <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
@@ -129,21 +129,21 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
+                            <div className="flex w-full flex-col divide-y-2 divide-gray-700 overflow-hidden rounded-md" key={item.name}>
+                                <span className="bg-theme-secondary rounded-t-lg p-1 text-center">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
-                                        className="flex flex-row bg-theme-accent"
+                                        className="bg-theme-accent flex flex-row"
                                         onClick={() => handleChartClick(chart)}
                                         key={chart.id}
                                     >
                                         <div className="flex flex-row items-center">
-                                            <div className={`w-2 h-full transition duration-100 ${chart.id === chartId
+                                            <div className={`h-full w-2 transition duration-100 ${chart.id === chartId
                                                 ? 'bg-theme-highlight'
                                                 : 'bg-theme-secondary'}`}
                                             />
                                             <div
-                                                className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                                className="hover:text-theme-body hover:bg-theme-highlight flex h-full items-center px-2 transition duration-100"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
 
@@ -173,9 +173,9 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                                 }
                                             </div>
                                         </div>
-                                        <div className="flex flex-col m-2">
+                                        <div className="m-2 flex flex-col">
                                             <span>{chart.procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm text-theme-text bg-theme-secondary rounded-md">
+                                            <span className="text-theme-text bg-theme-secondary mr-auto mt-0.5 rounded-md px-2 text-sm">
                                                 {chart.indexNumber}
                                             </span>
                                         </div>
@@ -189,17 +189,17 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                                className="bg-theme-accent flex w-full flex-row overflow-hidden rounded-md"
                                 onClick={() => handleChartClick(chart)}
                                 key={chart.id}
                             >
                                 <div className="flex flex-row items-center">
-                                    <div className={`w-2 h-full transition duration-100 ${chart.id === chartId
+                                    <div className={`h-full w-2 transition duration-100 ${chart.id === chartId
                                         ? 'bg-theme-highlight'
                                         : 'bg-theme-secondary'}`}
                                     />
                                     <div
-                                        className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                        className="hover:text-theme-body hover:bg-theme-highlight flex h-full items-center px-2 transition duration-100"
                                         onClick={(event) => {
                                             event.stopPropagation();
 
@@ -229,10 +229,10 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                         }
                                     </div>
                                 </div>
-                                <div className="flex flex-col m-2">
+                                <div className="m-2 flex flex-col">
                                     <span>{chart.procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
+                                        className="text-theme-text bg-theme-secondary mr-auto rounded-sm px-2 text-sm"
                                     >
                                         {chart.indexNumber}
                                     </span>

@@ -136,7 +136,7 @@ export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
     return (
         <>
             <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
-            <text x={pos.x} y={pos.y} className={textClassName} alignmentBaseline='central' textAnchor='middle'>{textValue}</text>
+            <text x={pos.x} y={pos.y} className={textClassName} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
 };
@@ -158,7 +158,7 @@ export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, sta
 
     return (
         <>
-            <g className='GaugeComponent'>
+            <g className="GaugeComponent">
                 <g className={visible ? 'Show' : 'Hide'}>
                     <path d={d} className={className} />
                     <>{children}</>
@@ -277,7 +277,7 @@ export const GaugeThrustComponent: FC<GaugeThrustComponentProps> = memo(({ x, y,
 
     return (
         <>
-            <g className='GaugeComponent'>
+            <g className="GaugeComponent">
                 <g className={visible ? 'Show' : 'Hide'}>
                     <path d={ThrustPath} className={className} />
                 </g>

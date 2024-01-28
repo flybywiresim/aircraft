@@ -31,7 +31,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
         pitch: new Arinc429Word(0),
         fpa: new Arinc429Word(0),
         da: new Arinc429Word(0),
-    }
+    };
 
     private needsUpdate = false;
 

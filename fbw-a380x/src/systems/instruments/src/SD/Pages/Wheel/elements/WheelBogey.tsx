@@ -57,12 +57,12 @@ export const WheelBogey: FC<WheelBogeyProps> = ({ x, y, position, type }) => {
     return (
         <g id={`bogey-${position}-${type}`} transform={`translate(${x} ${y})`}>
             {type !== WheelBogeyType.Nose && (
-                <text className='F22 Green LS1' x={-43} y={-54}>A-SKID</text>
+                <text className="F22 Green LS1" x={-43} y={-54}>A-SKID</text>
             )}
 
             {type !== WheelBogeyType.Nose && (
                 <path
-                    className='Grey NoFill SW4'
+                    className="Grey NoFill SW4"
                     d={type === WheelBogeyType.WLG
                         ? 'm0,0 v 92 M -13,0 h 26 M -13,92 h 26'
                         : 'm0,0 v 176 M -13,0 h 26 M -13,91 h 26'}
@@ -92,10 +92,10 @@ interface AccuFlagProps {
 
 const AccuFlag: FC<AccuFlagProps> = ({ x, y }) => (
     <g transform={`translate(${x} ${y})`}>
-        <text className='F24 Green' x={0} y={0}>A</text>
-        <text className='F24 Green' x={0} y={22}>C</text>
-        <text className='F24 Green' x={0} y={44}>C</text>
-        <text className='F24 Green' x={0} y={66}>U</text>
+        <text className="F24 Green" x={0} y={0}>A</text>
+        <text className="F24 Green" x={0} y={22}>C</text>
+        <text className="F24 Green" x={0} y={44}>C</text>
+        <text className="F24 Green" x={0} y={66}>U</text>
     </g>
 
 );

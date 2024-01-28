@@ -27,23 +27,23 @@ export const EngPage = () => {
             <EngineColumn x={701} y={68} engine={4} ignition={engSelectorPosition === 2} anyEngineRunning={engineRunning} />
 
             {/* labels */}
-            <text x={388} y={68} className='F25 EndAlign White'>N2</text>
-            <text x={414} y={68} className='F25 EndAlign Cyan'>%</text>
-            <text x={388} y={108} className='F25 EndAlign White'>N3</text>
-            <text x={414} y={108} className='F25 EndAlign Cyan'>%</text>
-            <text x={388} y={148} className='F25 EndAlign White'>FF</text>
-            <text x={410} y={182} className='F25 EndAlign Cyan'>KG/H</text>
+            <text x={388} y={68} className="F25 EndAlign White">N2</text>
+            <text x={414} y={68} className="F25 EndAlign Cyan">%</text>
+            <text x={388} y={108} className="F25 EndAlign White">N3</text>
+            <text x={414} y={108} className="F25 EndAlign Cyan">%</text>
+            <text x={388} y={148} className="F25 EndAlign White">FF</text>
+            <text x={410} y={182} className="F25 EndAlign Cyan">KG/H</text>
 
-            <text x={410} y={240} className='F25 EndAlign White'>OIL</text>
-            <text x={398} y={276} className='F25 EndAlign Cyan'>QT</text>
-            <text x={398} y={316} className='F25 EndAlign Cyan'>°C</text>
+            <text x={410} y={240} className="F25 EndAlign White">OIL</text>
+            <text x={398} y={276} className="F25 EndAlign Cyan">QT</text>
+            <text x={398} y={316} className="F25 EndAlign Cyan">°C</text>
 
-            <text x={410} y={386} className='F25 EndAlign Cyan'>PSI</text>
+            <text x={410} y={386} className="F25 EndAlign Cyan">PSI</text>
 
-            <text x={388} y={452} className='F25 EndAlign White'>VIB</text>
-            <text x={428} y={452} className='F25 EndAlign White'>N1</text>
-            <text x={428} y={486} className='F25 EndAlign White'>N2</text>
-            <text x={428} y={520} className='F25 EndAlign White'>N3</text>
+            <text x={388} y={452} className="F25 EndAlign White">VIB</text>
+            <text x={428} y={452} className="F25 EndAlign White">N1</text>
+            <text x={428} y={486} className="F25 EndAlign White">N2</text>
+            <text x={428} y={520} className="F25 EndAlign White">N3</text>
         </>
     );
 };

@@ -2,7 +2,6 @@ import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position } from '@instruments/common/types';
 
-
 const LandingElevation: React.FC<Position> = ({ x, y }) => {
     const [landingElev] = useSimVar('L:A32NX_FM1_LANDING_ELEVATION', 'feet', 100);
 

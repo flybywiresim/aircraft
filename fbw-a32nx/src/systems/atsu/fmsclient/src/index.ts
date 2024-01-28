@@ -75,13 +75,13 @@ export class FmsClient {
         vhf: DatalinkStatusCode.NotInstalled,
         satellite: DatalinkStatusCode.NotInstalled,
         hf: DatalinkStatusCode.NotInstalled,
-    }
+    };
 
     private datalinkMode: { vhf: DatalinkModeCode; satellite: DatalinkModeCode; hf: DatalinkModeCode } = {
         vhf: DatalinkModeCode.None,
         satellite: DatalinkModeCode.None,
         hf: DatalinkModeCode.None,
-    }
+    };
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();

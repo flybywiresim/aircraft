@@ -43,7 +43,7 @@ export const HfPage = () => {
     const [currentHf, setCurrentHF] = useState(1);
     useInteractionEvent('A380X_RMPL_LSK1_PRESSED', () => setCurrentHF(1));
     useInteractionEvent('A380X_RMPL_LSK2_PRESSED', () => setCurrentHF(2));
-    useInteractionEvent('A380X_RMPL_LSK3_PRESSED', () => setAmEnabled(old => !old));
+    useInteractionEvent('A380X_RMPL_LSK3_PRESSED', () => setAmEnabled((old) => !old));
     return (
         <Layer>
             <HfCell enabled={currentHf === 1} transceiver={1} />

@@ -94,7 +94,7 @@ export const Data = ({ className }: {className: string}) => {
                     <TooltipWrapper text={currentAltitudeSyncEnabled ? t('Performance.TopOfDescent.TT.DesynchronizeInputWithAircraftsCurrentAltitude') : t('Performance.TopOfDescent.TT.SynchronizeInputWithAircraftsCurrentAltitude')}>
                         <button
                             onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
-                            className={`flex items-center h-auto border-2 border-theme-highlight text-theme-highlight px-3 rounded-md rounded-l-none transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
+                            className={`border-theme-highlight text-theme-highlight flex h-auto items-center rounded-md rounded-l-none border-2 px-3 transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
                             type="button"
                         >
                             <p className="text-current">SYNC</p>
@@ -114,7 +114,7 @@ export const Data = ({ className }: {className: string}) => {
                 />
             </div>
 
-            <div className="w-full h-1 bg-theme-accent rounded-full" />
+            <div className="bg-theme-accent h-1 w-full rounded-full" />
 
             {calculationTypes.map(({ label, placeholder, type, syncValue }) => (!calculationInput || calculationType === type) && (
                 <div key={type}>
@@ -131,7 +131,7 @@ export const Data = ({ className }: {className: string}) => {
                         {inputValid(type, syncValue) && (
                             <button
                                 type="button"
-                                className={`flex items-center border-2 border-theme-highlight text-theme-highlight px-3 rounded-md rounded-l-none transition duration-100 ${calculationInputSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
+                                className={`border-theme-highlight text-theme-highlight flex items-center rounded-md rounded-l-none border-2 px-3 transition duration-100 ${calculationInputSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
                                 onClick={() => dispatch(setTodData({
                                     calculationInputMode: !calculationInputSyncEnabled ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL,
                                     calculation: { type, input: syncedInput },
@@ -143,7 +143,7 @@ export const Data = ({ className }: {className: string}) => {
                         {!!calculationInput && !calculationInputSyncEnabled && (
                             <button
                                 type="button"
-                                className="flex items-center px-3 text-utility-red hover:text-theme-body hover:bg-utility-red rounded-md rounded-l-none border-2 border-utility-red transition duration-100"
+                                className="text-utility-red hover:text-theme-body hover:bg-utility-red border-utility-red flex items-center rounded-md rounded-l-none border-2 px-3 transition duration-100"
                                 onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                             >
                                 X

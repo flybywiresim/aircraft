@@ -20,7 +20,7 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
         <g id={`NacelleTemperatureGauge-${engine}`}>
 
             {/* Pack inlet flow */}
-            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
+            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                 <GaugeMarkerComponent
                     value={min}
                     x={x}
@@ -30,7 +30,7 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className='White SW2'
+                    className="White SW2"
                     showValue={false}
                 />
                 <GaugeMarkerComponent
@@ -42,11 +42,11 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className='White SW2'
+                    className="White SW2"
                     showValue={false}
                 />
                 {!active && (
-                    <text x={x} y={y - 4} className='Amber F29 MiddleAlign'>XX</text>
+                    <text x={x} y={y - 4} className="Amber F29 MiddleAlign">XX</text>
                 )}
                 {active
                 && (
@@ -61,7 +61,7 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='White SW2'
+                            className="White SW2"
                             showValue={false}
                         />
 
@@ -74,7 +74,7 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className='GaugeIndicator Gauge LineRound SW4'
+                            className="GaugeIndicator Gauge LineRound SW4"
                             indicator
                             halfIndicator
                             multiplierInner={0.6}
@@ -83,13 +83,13 @@ const NacelleTemperatureGauge: FC<NacelleTemperatureGaugeProps> = ({ x, y, engin
                     </>
                 ) }
             </GaugeComponent>
-            {engine === 1 && <text x={x - 50} y={y + 29} className='White F21'>0</text> }
-            {engine === 4 && <text x={x + 15} y={y + 29} className='White F21'>500</text> }
+            {engine === 1 && <text x={x - 50} y={y + 29} className="White F21">0</text> }
+            {engine === 4 && <text x={x + 15} y={y + 29} className="White F21">500</text> }
             {engine === 2
             && (
                 <>
-                    <text x={x + 180} y={y - 36} className='F25 EndAlign White'>NAC</text>
-                    <text x={x + 170} y={y - 10} className='F25 EndAlign Cyan'>°C</text>
+                    <text x={x + 180} y={y - 36} className="F25 EndAlign White">NAC</text>
+                    <text x={x + 170} y={y - 10} className="F25 EndAlign Cyan">°C</text>
                 </>
             )}
         </g>

@@ -18,15 +18,15 @@ export const BleedPage = () => {
 
             <BleedMixerUnit x={384} y={30} sdacDatum={sdacDatum} />
 
-            <text x={344} y={70} className='White F23 MiddleAlign'>RAM</text>
-            <text x={404} y={70} className='White F23 MiddleAlign'>AIR</text>
+            <text x={344} y={70} className="White F23 MiddleAlign">RAM</text>
+            <text x={404} y={70} className="White F23 MiddleAlign">AIR</text>
 
             {/* Hot Air */}
             <BleedHotAir x={238} y={204} hotAir={1} sdacDatum={sdacDatum} />
             <BleedHotAir x={514} y={204} hotAir={2} sdacDatum={sdacDatum} />
 
-            <text x={344} y={190} className='White F23 MiddleAlign'>HOT</text>
-            <text x={404} y={190} className='White F23 MiddleAlign'>AIR</text>
+            <text x={344} y={190} className="White F23 MiddleAlign">HOT</text>
+            <text x={404} y={190} className="White F23 MiddleAlign">AIR</text>
 
             <BleedEngine
                 x={75}

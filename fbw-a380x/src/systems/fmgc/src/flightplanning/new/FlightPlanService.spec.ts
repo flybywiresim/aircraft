@@ -68,11 +68,11 @@ describe('the flight plan service', () => {
 
                 const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
 
-                expect(leg4.ident).toEqual('ERBUS');
+                expect(leg4.ident).toBe('ERBUS');
 
                 const leg5 = assertNotDiscontinuity(FlightPlanService.active.allLegs[5]);
 
-                expect(leg5.ident).toEqual('SELAP');
+                expect(leg5.ident).toBe('SELAP');
             });
 
             it('without duplicate', async () => {
@@ -84,13 +84,13 @@ describe('the flight plan service', () => {
 
                 const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
 
-                expect(leg4.ident).toEqual('ERBUS');
+                expect(leg4.ident).toBe('ERBUS');
 
                 assertDiscontinuity(FlightPlanService.active.allLegs[5]);
 
                 const leg6 = assertNotDiscontinuity(FlightPlanService.active.allLegs[6]);
 
-                expect(leg6.ident).toEqual('DULPA');
+                expect(leg6.ident).toBe('DULPA');
             });
         });
 

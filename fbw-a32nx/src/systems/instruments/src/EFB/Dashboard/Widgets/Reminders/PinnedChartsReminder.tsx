@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { t } from '../../../translation';
 import { useAppSelector } from '../../../Store/store';
@@ -21,7 +25,7 @@ export const PinnedChartsReminder = () => {
             </div>
 
             {!pinnedCharts.length && (
-                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}</h1>
+                <h1 className="m-auto my-4 text-center font-bold opacity-60">{t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}</h1>
             )}
         </RemindersSection>
     );

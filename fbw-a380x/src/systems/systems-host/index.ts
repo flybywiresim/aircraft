@@ -101,14 +101,14 @@ class SystemsHost extends BaseInstrument {
         // Instruments Cpt
         this.setPotentiometer(88, autoBrightness); // PFD
         this.setPotentiometer(89, autoBrightness); // ND
-        this.setPotentiometer(94, autoBrightness/2); // wxRadar
+        this.setPotentiometer(94, autoBrightness / 2); // wxRadar
         this.setPotentiometer(98, autoBrightness); // MFD
         this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
 
         // Instruments F/O
         this.setPotentiometer(90, autoBrightness); // PFD
         this.setPotentiometer(91, autoBrightness); // ND
-        this.setPotentiometer(95, autoBrightness/2); // wxRadar
+        this.setPotentiometer(95, autoBrightness / 2); // wxRadar
         this.setPotentiometer(99, autoBrightness); // MFD
         this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
 
@@ -122,7 +122,6 @@ class SystemsHost extends BaseInstrument {
         this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
         this.setPotentiometer(85, autoBrightness); // integralLightLevel
         this.setPotentiometer(7, autoBrightness); // ambientLightLevel
-
     }
 
     private setPotentiometer(potentiometer: number, brightness: number) {

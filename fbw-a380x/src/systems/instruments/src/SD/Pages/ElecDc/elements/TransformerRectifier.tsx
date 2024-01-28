@@ -63,7 +63,7 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
 
     return (
         <g id={`tr-${bus}-indication`} transform={`translate(${x} ${y})`}>
-            <path className='LightGrey SW3 NoFill' d='M 0,0 l 0,106 l 112,0 l 0,-106 z' />
+            <path className="LightGrey SW3 NoFill" d="M 0,0 l 0,106 l 112,0 l 0,-106 z" />
             <text
                 x={57}
                 y={22}
@@ -72,8 +72,8 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
                 {title}
             </text>
             <g>
-                <text className='Cyan F22' x={70} y={63}>V</text>
-                <text className='Cyan F22' x={70} y={97}>A</text>
+                <text className="Cyan F22" x={70} y={63}>V</text>
+                <text className="Cyan F22" x={70} y={97}>A</text>
             </g>
             {/* Voltage */}
             <text

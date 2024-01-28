@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import {
     DescentAltitudeConstraint,
@@ -25,7 +29,7 @@ export class SelectedGeometryProfile extends BaseGeometryProfile {
         VerticalCheckpointReason.CrossingFcuAltitudeClimb,
         VerticalCheckpointReason.CrossingFcuAltitudeDescent,
         VerticalCheckpointReason.CrossingClimbSpeedLimit,
-    ])
+    ]);
 
     getCheckpointsToShowOnTrackLine(): VerticalCheckpoint[] {
         return this.checkpoints.filter((checkpoint) => this.checkpointsToShowAlongFlightPlan.has(checkpoint.reason));

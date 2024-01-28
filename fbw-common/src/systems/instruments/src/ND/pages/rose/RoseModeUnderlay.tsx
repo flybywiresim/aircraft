@@ -33,7 +33,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
         }
 
         return 'Red';
-    })
+    });
 
     private readonly headingRingTransform = this.props.heading.map((heading) => {
         if (heading.isNormalOperation()) {

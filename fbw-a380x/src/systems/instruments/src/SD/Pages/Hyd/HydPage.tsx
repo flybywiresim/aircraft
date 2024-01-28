@@ -1,10 +1,9 @@
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
-import { PageTitle } from '../Generic/PageTitle';
 import { HydraulicSystem } from 'instruments/src/SD/Pages/Hyd/elements/HydraulicSystem';
+import { PageTitle } from '../Generic/PageTitle';
 
 import '../../../index.scss';
-
 
 export const HydPage = () => {
     const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
@@ -17,13 +16,13 @@ export const HydPage = () => {
         <g>
             <PageTitle x={6} y={29}>HYD</PageTitle>
 
-            <HydraulicSystem label='GREEN' />
+            <HydraulicSystem label="GREEN" />
 
             <text x={352} y={110} className={anyEngineIsRunning ? 'Hide' : 'F26 White LS1'}>ELEC</text>
             <text x={352} y={135} className={anyEngineIsRunning ? 'Hide' : 'F26 White LS1'}>PMP</text>
             <text x={401} y={135} className={anyEngineIsRunning ? 'Hide' : 'F23 White'}>S</text>
 
-            <HydraulicSystem label='YELLOW' />
+            <HydraulicSystem label="YELLOW" />
         </g>
     );
 };

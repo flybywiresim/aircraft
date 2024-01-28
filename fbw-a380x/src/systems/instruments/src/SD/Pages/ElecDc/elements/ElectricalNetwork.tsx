@@ -54,7 +54,7 @@ export const ElectricalNetwork: FC<ElectricalNetworkProps> = ({ x, y, bus }) => 
             <BatToBusWire x={xposBus} y={yposBus} bus={bus} />
             {/* TR to BusBar */}
             <g id={`tr-to-busbar-${bus}`} className={trContactorClosed ? 'Show' : 'Hide'}>
-                <path className='Green SW2' d={`M ${xposTR + 56},${yposTR} l 0,-${bus === DcElecBus.DcEssBus ? '127' : '78'}`} />
+                <path className="Green SW2" d={`M ${xposTR + 56},${yposTR} l 0,-${bus === DcElecBus.DcEssBus ? '127' : '78'}`} />
             </g>
             {/* TR */}
             <TransformerRectifier x={xposTR} y={yposTR} bus={bus} />

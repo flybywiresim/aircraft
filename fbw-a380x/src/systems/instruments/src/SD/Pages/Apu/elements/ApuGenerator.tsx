@@ -36,7 +36,7 @@ export const ApuGenerator: FC<ApuGeneratorProps> = ({ x, y, position }) => {
                 {position === 1 ? 'A' : 'B'}
             </text>
 
-            <path className={`White SW3 NoFill StrokeRound ${masterSwPbOn ? '' : 'Hide'}`} d='M 5,0 l -5,0 l 0,100 l 83,0 l 0,-100 l -5,0' />
+            <path className={`White SW3 NoFill StrokeRound ${masterSwPbOn ? '' : 'Hide'}`} d="M 5,0 l -5,0 l 0,100 l 83,0 l 0,-100 l -5,0" />
 
             <g className={masterSwPbOn && genPushbuttonAuto ? '' : 'Hide'}>
                 {/* Load */}
