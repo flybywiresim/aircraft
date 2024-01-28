@@ -28,6 +28,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
 
     protected activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
+    // protected mfdInViewConsumer: Consumer<boolean>;
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -36,6 +38,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         this.subs.push(sub.on('flightPhase').whenChanged().handle((val) => {
             this.activeFlightPhase.set(val);
         }));
+
+        // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
         this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             this.activePageTitle.set(`${val.category.toUpperCase()}/${this.props.pageTitle}`);

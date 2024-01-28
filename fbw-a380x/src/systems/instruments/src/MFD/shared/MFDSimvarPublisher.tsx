@@ -18,6 +18,8 @@ export type MfdSimvars = {
     kccuNavaid: number;
     kccuFpln: number;
     kccuDest: number;
+    leftMfdInView: boolean;
+    rightMfdInView: boolean;
   }
 
 export enum MfdVars {
@@ -38,6 +40,8 @@ export enum MfdVars {
     kccuNavaid = 'L:A32NX_KCCU_L_NAVAID',
     kccuFpln = 'L:A32NX_KCCU_L_FPLN',
     kccuDest = 'L:A32NX_KCCU_L_DEST',
+    leftMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:1',
+    rightMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:2',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -60,6 +64,8 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
         ['kccuNavaid', { name: MfdVars.kccuNavaid, type: SimVarValueType.Number }],
         ['kccuFpln', { name: MfdVars.kccuFpln, type: SimVarValueType.Number }],
         ['kccuDest', { name: MfdVars.kccuDest, type: SimVarValueType.Number }],
+        ['leftMfdInView', { name: MfdVars.leftMfdInView, type: SimVarValueType.Bool }],
+        ['rightMfdInView', { name: MfdVars.rightMfdInView, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {

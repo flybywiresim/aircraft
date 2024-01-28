@@ -31,6 +31,7 @@ interface InputFieldProps<T> extends ComponentProps {
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
     tmpyActive?: Subscribable<boolean>;
+    // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
 
 /**
@@ -426,6 +427,16 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.instance.focus();
             });
         }
+
+        /* if (this.props.inViewEvent) {
+            this.subs.push(this.props.inViewEvent.whenChanged().handle((inView) =>
+            {
+                console.warn('inView: ' + inView);
+                if (!inView) {
+                    this.onBlur();
+                }
+            }));
+        } */
     }
 
     render(): VNode {
