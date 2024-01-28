@@ -2,7 +2,7 @@
 use crate::msfs::legacy::execute_calculator_code;
 #[cfg(target_arch = "wasm32")]
 use msfs::legacy::execute_calculator_code;
-use systems::shared::to_bool;
+use systems::{pneumatic::EngineState, shared::to_bool};
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use std::error::Error;
@@ -20,13 +20,16 @@ pub(super) fn engines(
                 ExecuteOn::PostTick,
                 vec![
                     starter_pressurized_variable,
+                    Variable::named(&format!("ENGINE_STATE:{}", engine_number)),
                     Variable::aircraft("BLEED AIR ENGINE", "bool", engine_number),
                 ],
                 Box::new(move |_, values| {
                     let sim_engine_start_allowed = to_bool(values[0]);
-                    let is_sim_bleed_air_active = to_bool(values[1]);
+                    let engine_state: EngineState = values[1].into();
+                    let is_engine_running = engine_state == EngineState::On;
+                    let is_sim_bleed_air_active = to_bool(values[2]);
 
-                    if sim_engine_start_allowed != is_sim_bleed_air_active {
+                    if (sim_engine_start_allowed || is_engine_running) != is_sim_bleed_air_active {
                         toggle_sim_engine_bleed_air(engine_number);
                     }
                 }),
