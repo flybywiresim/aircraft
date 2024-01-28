@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ComponentProps, ConsumerSubject, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, a320EfisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
+
+import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
@@ -174,7 +175,7 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ARC);
         publisher.pub('set_map_pixel_radius', 498);
-        publisher.pub('set_map_range_radius', a320EfisRangeSettings[this.mapRangeSub.get()]);
+        publisher.pub('set_map_range_radius', this.props.rangeValues[this.mapRangeSub.get()]);
         publisher.pub('set_map_center_y_bias', 242);
     }
 

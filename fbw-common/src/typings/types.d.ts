@@ -1,4 +1,10 @@
-import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
+import {
+    FlightPlanManager as FlightPlanManager_,
+    ManagedFlightPlan as ManagedFlightPlan_,
+    getFlightPhaseManager as getFlightPhaseManager_,
+    EfisSymbols as EfisSymbols_,
+} from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { a320EfisRangeSettings as a320EfisRangeSettings_ } from "../systems/instruments/src/NavigationDisplay"
 
 declare global {
     type NauticalMiles = number;
@@ -57,8 +63,21 @@ declare global {
         ACE_REMOTE_IS_CONNECTED: boolean | undefined
     }
 
+    /**
+     * Legacy A32NX FMGC object typings
+     */
     namespace Fmgc {
-        const FlightPhaseManager: typeof FlightPhaseManager_
+        const FlightPlanManager: typeof FlightPlanManager_
+
+        const ManagedFlightPlan: typeof ManagedFlightPlan_
+
+        const EfisSymbols: typeof EfisSymbols_
+
+        const getFlightPhaseManager: typeof getFlightPhaseManager_
+
+        const FlightPhaseManager: ReturnType<getFlightPhaseManager_>
+
+        const a320EfisRangeSettings: typeof a320EfisRangeSettings_
     }
 }
 

@@ -4,7 +4,7 @@
 
 import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429RegisterSubject, EfisNdMode, a320EfisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
@@ -113,7 +113,7 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
         const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
         const rangeSetting = this.mapRangeSub.get();
-        const range = a320EfisRangeSettings[rangeSetting];
+        const range = this.props.rangeValues[rangeSetting];
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ROSE_NAV);
         publisher.pub('set_map_pixel_radius', 250);
