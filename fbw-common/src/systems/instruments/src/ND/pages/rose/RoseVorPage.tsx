@@ -69,6 +69,7 @@ export class RoseVorPage<T extends number> extends RoseMode<T, RoseVorProps<T>> 
                     bus={this.props.bus}
                     heading={this.props.headingWord}
                     visible={this.isVisible}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <VorCaptureOverlay
@@ -138,7 +139,7 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
 
     private readonly deviationTransform = MappedSubject.create(([cdiPx]) => {
         return `translate(${cdiPx}, 0)`;
-    }, this.cdiPx)
+    }, this.cdiPx);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
