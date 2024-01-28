@@ -62,7 +62,7 @@ export const Ground = () => {
     const [checkIfOperatorActive, setCheckIfOperatorActive] = useState(false);
 
     const selectGsxMenuChoice = (choice: number) => {
-        setGsxMenuChoiceMade(1)
+        setGsxMenuChoiceMade(1);
         setGsxMenuChoice(choice);
         setGsxMenuOpen(1);
     };
