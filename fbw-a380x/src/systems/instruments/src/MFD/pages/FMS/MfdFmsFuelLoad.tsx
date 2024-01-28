@@ -431,7 +431,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     {this.destEta}
                                 </div>
                                 <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                                    <span class={{"mfd-value": true, 'amber': this.destEfobBelowMin }}>{this.destEfob}</span>
+                                    <span class={{ 'mfd-value': true, 'amber': this.destEfobBelowMin }}>{this.destEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div class="mfd-label" style="text-align: center; align-self: center;">
@@ -444,7 +444,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     {this.altnEta}
                                 </div>
                                 <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                                    <span class={{"mfd-value": true, 'amber': this.altnEfobBelowMin }}>{this.altnEfob}</span>
+                                    <span class={{ 'mfd-value': true, 'amber': this.altnEfobBelowMin }}>{this.altnEfob}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                             </div>

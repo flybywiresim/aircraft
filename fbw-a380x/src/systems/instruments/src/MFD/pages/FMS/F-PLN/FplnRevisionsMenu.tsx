@@ -101,8 +101,6 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                     );
 
                     fpln.props.fmcService.master.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
-                } else {
-                    console.warn('Tried to hold on already existing Hx leg');
                 }
                 fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`);
             },

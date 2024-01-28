@@ -2000,7 +2000,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">OAT</span>
                                             <InputField<number>
                                                 dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
-                                                mandatory={Subject.create(false)}
+                                                mandatory={Subject.create(true)}
                                                 value={this.props.fmcService.master.fmgc.data.approachTemperature}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"
@@ -2018,7 +2018,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                         SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', v * 33.8639);
                                                     }
                                                 }}
-                                                mandatory={Subject.create(false)}
+                                                mandatory={Subject.create(true)}
                                                 value={this.props.fmcService.master.fmgc.data.approachQnh}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"

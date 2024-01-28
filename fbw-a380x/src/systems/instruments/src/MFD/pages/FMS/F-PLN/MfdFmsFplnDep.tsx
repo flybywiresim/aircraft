@@ -54,7 +54,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
             sortedRunways.forEach((rw) => {
                 runways.push({
-                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
+                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
                         await this.props.fmcService.master.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
                         await this.props.fmcService.master.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
@@ -194,7 +194,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                                 >
                                     {this.rwyLength}
                                 </span>
-                                <span class="mfd-label-unit mfd-unit-trailing">FT</span>
+                                <span class="mfd-label-unit mfd-unit-trailing">M</span>
                             </div>
                         </div>
                         <div style="flex: 0.7; display: flex; flex-direction: column;">

@@ -159,7 +159,7 @@ export class FmgcData {
 
     public readonly approachSpeed = Subject.create<Knots>(undefined);
 
-    public readonly approachWind = Subject.create<FmcWindVector>({ direction: 0, speed: 0 });
+    public readonly approachWind = Subject.create<FmcWindVector>({ direction: null, speed: null });
 
     public readonly approachQnh = Subject.create<number>(undefined);
 
@@ -179,7 +179,7 @@ export class FmgcData {
 
     public readonly takeoffDeratedSetting = Subject.create<TakeoffDerated>(TakeoffDerated.D01);
 
-    public readonly takeoffThsFor = Subject.create<number>(undefined);
+    public readonly takeoffThsFor = Subject.create<number>(null);
 
     public readonly takeoffPacks = Subject.create<TakeoffPacks>(TakeoffPacks.ON);
 

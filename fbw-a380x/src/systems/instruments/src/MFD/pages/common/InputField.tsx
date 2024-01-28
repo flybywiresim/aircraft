@@ -75,7 +75,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.modifiedFieldValue.get() !== null) {
             this.modifiedFieldValue.set(null);
         }
-        if (this.props.value.get()) {
+        if (this.props.value.get() !== undefined) {
             if (this.props.canOverflow === true) {
                 // If item was overflowed, check whether overflow is still needed
                 this.overflow(!(this.props.value.get().toString().length <= this.props.dataEntryFormat.maxDigits));
@@ -91,7 +91,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private updateDisplayElement() {
         // If input was not modified, render props' value
         if (this.modifiedFieldValue.get() === null) {
-            if (!this.props.value.get()) {
+            if (this.props.value.get() === null || this.props.value.get() === undefined) {
                 this.populatePlaceholders();
             } else {
                 const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
@@ -256,6 +256,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         } catch (msg: unknown) {
             if (msg instanceof FmsError && this.props.errorHandler) {
                 this.props.errorHandler(msg.type);
+                newValue = null;
             }
         }
 

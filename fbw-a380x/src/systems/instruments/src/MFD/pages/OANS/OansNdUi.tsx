@@ -15,8 +15,8 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { OansRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OansRunwayInfoBox';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
+import { OansRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OANSRunwayInfoBox';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
@@ -342,7 +342,7 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                         </TopTabNavigatorPage>
                     </TopTabNavigator>
                 </div>
-                <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
+                <MouseCursor side={Subject.create('CAPT')} ref={this.mouseCursorRef} />
             </div>
         );
     }
