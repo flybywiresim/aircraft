@@ -1,10 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-//
-// Created by frank on 21.01.2024.
-//
-
 #ifndef FLYBYWIRE_AIRCRAFT_PUSHBACK_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_PUSHBACK_A32NX_H
 

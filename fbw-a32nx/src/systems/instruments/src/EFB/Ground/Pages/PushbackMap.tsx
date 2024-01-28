@@ -248,9 +248,9 @@ export const PushbackMap = () => {
                                 className="absolute"
                                 style={{
                                     transform: `rotate(-90deg) 
-                                scaleX(${tugCmdSpdFactor >= 0 ? 1 : -1}) 
-                                scaleY(${tugCmdHdgFactor >= 0 ? 1 : -1}) 
-                                translateY(${turningRadius}px)`,
+                                    scaleX(${tugCmdSpdFactor >= 0 ? 1 : -1}) 
+                                    scaleY(${tugCmdHdgFactor >= 0 ? 1 : -1}) 
+                                    translateY(${turningRadius}px)`,
                                 }}
                             >
                                 <TurningRadiusIndicator turningRadius={turningRadius} />
