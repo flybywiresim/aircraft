@@ -1026,11 +1026,12 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         const C: f64 = -3.3376e-9;
         const D: f64 = 4.5905e-4;
 
-        let target_aircraft_altitude = if self.fma_lateral_mode == 20 {
-            self.cruise_altitude
-        } else {
-            self.exterior_flight_altitude
-        };
+        let target_aircraft_altitude =
+            if self.fma_lateral_mode == 20 && self.cruise_altitude.get::<foot>() != 0. {
+                self.cruise_altitude
+            } else {
+                self.exterior_flight_altitude
+            };
         let target_aircraft_altitude_foot = target_aircraft_altitude.get::<foot>();
 
         let target_cabin_delta_p_psi = Pressure::new::<psi>(
