@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 'use strict';
 
 module.exports = {
@@ -14,11 +18,6 @@ module.exports = {
         'tailwindcss',
     ],
     parser: '@typescript-eslint/parser',
-    ignorePatterns: [
-        'jest/**',
-        'typings/**',
-        'wasm/**',
-    ],
     parserOptions: {
         ecmaVersion: 2021,
         sourceType: 'script',
@@ -28,19 +27,6 @@ module.exports = {
         'tailwindcss': { groupByResponsive: true },
         'import/resolver': { node: { extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'] } },
     },
-    overrides: [
-        {
-            files: ['*.jsx', '*.tsx'],
-            parserOptions: {
-                sourceType: 'module',
-                ecmaFeatures: { jsx: true },
-            },
-        },
-        {
-            files: ['*.mjs', '*.ts', '*.d.ts'],
-            parserOptions: { sourceType: 'module' },
-        },
-    ],
     // overrides airbnb, use sparingly
     rules: {
         'tailwindcss/no-custom-classname': 'off',
@@ -57,7 +43,7 @@ module.exports = {
         'react/jsx-indent': ['error', 4],
         'no-restricted-syntax': 'off',
         'quote-props': ['error', 'consistent-as-needed'],
-        'strict': ['error', 'global'],
+        'strict': 'off',
 
         'no-case-declarations': 'off',
 
@@ -110,11 +96,12 @@ module.exports = {
         'no-undef': 'off',
         'max-len': ['error', { code: 192 }],
 
-        // Irrelevant for our use
+        // Irrelevant for our use TODO we should probably fix those anyway, in the EFB at least, since that will be accessible remotely
         'jsx-a11y/alt-text': 'off',
         'jsx-a11y/no-static-element-interactions': 'off',
         'jsx-a11y/click-events-have-key-events': 'off',
         'jsx-a11y/anchor-is-valid': 'off',
+        'jsx-a11y/control-has-associated-label': 'off',
         'object-curly-newline': ['error', { multiline: true }],
         'linebreak-style': 'off',
 
