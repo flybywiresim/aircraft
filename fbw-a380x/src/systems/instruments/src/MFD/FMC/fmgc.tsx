@@ -290,7 +290,7 @@ export class FmgcDataService implements Fmgc {
 
     getManagedClimbSpeed(): Knots {
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
+            const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
             return 290 * (1 - dCI) + 330 * dCI;
         }
         return 250;
@@ -339,7 +339,7 @@ export class FmgcDataService implements Fmgc {
         }
 
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
+            const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
             return 290 * (1 - dCI) + 310 * dCI;
         }
         return 310;
@@ -383,7 +383,7 @@ export class FmgcDataService implements Fmgc {
         }
         // TODO adapt for A380
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            const dCI = this.flightPlanService.active.performanceData.costIndex / 999;
+            const dCI = (this.flightPlanService.active.performanceData.costIndex ?? 100) / 999;
             return 288 * (1 - dCI) + 300 * dCI;
         }
         return 300;

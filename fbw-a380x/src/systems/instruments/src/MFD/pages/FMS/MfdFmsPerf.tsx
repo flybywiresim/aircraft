@@ -340,7 +340,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private desTablePredLine2 = Subject.create<string>(undefined);
 
-    private transFl = Subject.create<number>(5000);
+    private transFl = Subject.create<number>(null);
 
     private transFlIsPilotEntered = Subject.create<boolean>(false);
 
