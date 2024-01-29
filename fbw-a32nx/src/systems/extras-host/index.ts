@@ -8,6 +8,7 @@ import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPu
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { FlightPlanTest } from './modules/flight_plan_test/FlightPlanTest';
@@ -93,10 +94,10 @@ class ExtrasHost extends BaseInstrument {
                     this.lastFlightPlanVersion = event.plans[0]?.flightPlanVersion;
 
                     if (event.plans[0]?.segments?.originSegment?.allLegs[0] as SerializedFlightPlanLeg) {
-                        const ident = (event.plans[0]?.segments?.originSegment?.allLegs[0] as SerializedFlightPlanLeg).ident;
+                        const ident = (event.plans[0] as SerializedFlightPlan).originAirport;
                         console.log('ORIGIN IDENT', ident);
                         await Coherent.call('SET_ORIGIN', `A      ${ident.substring(0, 4)} `, false);
-                        const deestIident = (event.plans[0]?.segments.approachSegment?.allLegs[plan.segments.approachSegment.allLegs?.length - 1] as SerializedFlightPlanLeg).ident;
+                        const deestIident = (event.plans[0] as SerializedFlightPlan).destinationAirport;
 
                         const allEnrouteLegs = event.plans[0].segments.enrouteSegment.allLegs;
                         console.log('ALL ENROUTE LEGS', allEnrouteLegs);
