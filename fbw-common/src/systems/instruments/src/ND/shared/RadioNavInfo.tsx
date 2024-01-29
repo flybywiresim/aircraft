@@ -231,6 +231,10 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.adfFrequency,
     );
 
+    private readonly visibilitySub = MappedSubject.create(
+        ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
+    );
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -243,7 +247,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <Layer x={0} y={0} visible={this.props.visible}>
+            <g visibility={this.visibilitySub}>
                 <path
                     d={this.path}
                     strokw-width={2}
@@ -260,7 +264,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 <text visibility={this.frequencyVisibility} x={this.x} y={722} font-size={24} class="Green">{this.adfFrequency.map((it) => Math.floor(it).toFixed(0))}</text>
 
                 <TuningModeIndicator bus={this.props.bus} index={this.props.index} adf />
-            </Layer>
+            </g>
         );
     }
 }
