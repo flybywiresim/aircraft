@@ -278,6 +278,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])
+    .with_wing_anti_ice()?
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Z", "feet per second squared", 0)?
@@ -413,11 +414,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         builder.copy(
             Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
             Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
-        );
-
-        builder.copy(
-            Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
-            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
         builder.map(
