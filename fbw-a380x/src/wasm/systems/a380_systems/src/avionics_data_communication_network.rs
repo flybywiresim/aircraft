@@ -3,7 +3,6 @@ use crate::systems::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
         input_output_module::InputOutputModule, AvionicsDataCommunicationNetwork,
-        AvionicsDataCommunicationNetworkEndpoint,
         AvionicsDataCommunicationNetworkMessageIdentifier,
     },
     shared::ElectricalBusType,
@@ -16,7 +15,6 @@ use fxhash::FxHashMap;
 use std::{
     cell::{Ref, RefCell},
     collections::VecDeque,
-    ops::Deref,
     rc::Rc,
     vec::Vec,
 };
