@@ -362,7 +362,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
 
-                    <g id="radio_needles" clipPath={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
+                    <g id="radio_needles" clip-path={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
 
                         <RadioNeedle
                             bus={this.props.bus}
