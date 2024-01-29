@@ -773,6 +773,15 @@ export class FmcAircraftInterface {
         SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
     }
 
+    /**
+     * Update pax number to be used by air conditioning system (to regulate air flow)
+     * @param paxNumber Number of passengers, 0-999
+     */
+    // FIXME AFDX candidate
+    updatePaxNumber(paxNumber: number) {
+        SimVar.SetSimVarValue('L:A32NX_FMS_PAX_NUMBER', 'number', paxNumber);
+    }
+
     updateConstraints() {
         const activeFpIndex = this.flightPlanService.activeLegIndex;
         const constraints = this.managedProfile.get(activeFpIndex);

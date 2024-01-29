@@ -272,6 +272,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
                                 dataEntryFormat={new PaxNbrFormat()}
+                                dataHandlerDuringValidation={async (v) => {
+                                    this.props.fmcService.master.fmgc.data.paxNumber.set(v);
+                                    this.props.fmcService.master.acInterface.updatePaxNumber(v);
+                                }}
                                 value={this.props.fmcService.master.fmgc.data.paxNumber}
                                 mandatory={Subject.create(true)}
                                 alignText="center"

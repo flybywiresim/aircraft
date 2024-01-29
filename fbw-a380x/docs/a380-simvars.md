@@ -280,6 +280,10 @@
     - URI of activate page on respective MFD (e.g. fms/active/init)
     - {side} = L or R
 
+- A32NX_FMS_PAX_NUMBER
+    - Number
+    - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
 ## Electrical ATA 24
 
 - A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
