@@ -532,7 +532,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         // Get flight phase
         this.subs.push(this.activeFlightPhase.sub((val) => {
-            if (val === FmgcFlightPhase.Climb || val === FmgcFlightPhase.Cruise || val === FmgcFlightPhase.Descent) {
+            if (val === FmgcFlightPhase.Climb || val === FmgcFlightPhase.Cruise || val === FmgcFlightPhase.Descent || val === FmgcFlightPhase.GoAround) {
                 this.activateApprButton.instance.style.visibility = 'visible';
             } else {
                 this.activateApprButton.instance.style.visibility = 'hidden';
