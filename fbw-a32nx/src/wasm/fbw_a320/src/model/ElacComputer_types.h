@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_ElacComputer_types_h_
 #define RTW_HEADER_ElacComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_pitch_efcs_law_
 
