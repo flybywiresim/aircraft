@@ -487,13 +487,10 @@ impl CoreProcessingInputOutputModuleShared for A380AvionicsDataCommunicationNetw
     }
 }
 
-impl<'a>
-    AvionicsDataCommunicationNetwork<
-        'a,
-        AvionicsFullDuplexSwitch,
-        Ref<'a, AvionicsFullDuplexSwitch>,
-    > for A380AvionicsDataCommunicationNetwork
-{
+impl<'a> AvionicsDataCommunicationNetwork<'a> for A380AvionicsDataCommunicationNetwork {
+    type NetworkEndpoint = AvionicsFullDuplexSwitch;
+    type NetworkEndpointRef = Ref<'a, AvionicsFullDuplexSwitch>;
+
     fn get_message_identifier(
         &mut self,
         name: String,
@@ -505,7 +502,7 @@ impl<'a>
         })
     }
 
-    fn get_endpoint(&'a self, id: u8) -> Ref<'a, AvionicsFullDuplexSwitch> {
+    fn get_endpoint(&'a self, id: u8) -> Self::NetworkEndpointRef {
         self.afdx_switches[Self::map_switch_id(id)].borrow()
     }
 
@@ -548,26 +545,14 @@ impl SimulationElement for A380AvionicsDataCommunicationNetwork {
 // and ADCN messages to simvars.
 pub struct A380AvionicsDataCommunicationNetworkSimvarTranslator {}
 impl A380AvionicsDataCommunicationNetworkSimvarTranslator {
-    pub fn new<
-        'a,
-        NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint,
-        NetworkEndpointRef: Deref<Target = NetworkEndpoint>,
-    >(
+    pub fn new<'a>(
         _context: &mut InitContext,
-        _adcn: &mut impl AvionicsDataCommunicationNetwork<'a, NetworkEndpoint, NetworkEndpointRef>,
+        _adcn: &mut impl AvionicsDataCommunicationNetwork<'a>,
     ) -> Self {
         Self {}
     }
 
-    pub fn update<
-        'a,
-        NetworkEndpoint: AvionicsDataCommunicationNetworkEndpoint,
-        NetworkEndpointRef: Deref<Target = NetworkEndpoint>,
-    >(
-        &mut self,
-        _adcn: &impl AvionicsDataCommunicationNetwork<'a, NetworkEndpoint, NetworkEndpointRef>,
-    ) {
-    }
+    pub fn update<'a>(&mut self, _adcn: &impl AvionicsDataCommunicationNetwork<'a>) {}
 }
 impl SimulationElement for A380AvionicsDataCommunicationNetworkSimvarTranslator {}
 
