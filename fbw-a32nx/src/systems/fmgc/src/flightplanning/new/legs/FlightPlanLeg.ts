@@ -36,6 +36,7 @@ import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFli
  */
 export interface SerializedFlightPlanLeg {
     ident: string,
+    databaseId: string,
     flags: number,
     annotation: string,
     isDiscontinuity: false,
@@ -113,6 +114,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         return {
             ident: this.ident,
             flags: this.flags,
+            databaseId: this.definition.waypoint?.databaseId,
             annotation: this.annotation,
             isDiscontinuity: false,
             definition: JSON.parse(JSON.stringify(this.definition)),
