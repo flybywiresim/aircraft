@@ -42,6 +42,4 @@ LateralDirectLaw::LateralDirectLaw():
 {
 }
 
-LateralDirectLaw::~LateralDirectLaw()
-{
-}
+LateralDirectLaw::~LateralDirectLaw() = default;
