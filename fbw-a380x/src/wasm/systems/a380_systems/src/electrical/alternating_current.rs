@@ -582,6 +582,8 @@ impl A380MainPowerSources {
         let priority_table = if ext_pwr_available.iter().all(|v| !v)
             && gen_available.iter().filter(|&a| *a).count() == 1
             && apu_gen_available.iter().filter(|&a| *a).count() == 1
+            && !(gen_available[0] && apu_gen_available[0]
+                || gen_available[3] && apu_gen_available[1])
         {
             &Self::SPECIAL_POWER_SOURCE_PRIORITIES
         } else {

@@ -924,7 +924,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
                     >
                         {this.additionalText}
                     </tspan>
-                    `
                 </text>
             </g>
         );

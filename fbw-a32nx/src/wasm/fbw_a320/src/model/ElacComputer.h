@@ -80,7 +80,7 @@ class ElacComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_m;
+    boolean_T sProtActive_f;
     boolean_T eventTime_not_empty_a;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
