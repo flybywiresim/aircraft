@@ -1,18 +1,18 @@
 #[macro_use]
 pub mod aspects;
+mod anti_ice;
 mod electrical;
 mod failures;
 mod msfs;
-mod wing_anti_ice;
 
 #[cfg(not(target_arch = "wasm32"))]
 use crate::msfs::legacy::{AircraftVariable, NamedVariable};
 #[cfg(target_arch = "wasm32")]
 use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
+use crate::anti_ice::wing_anti_ice;
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
-use crate::wing_anti_ice::wing_anti_ice;
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     sys, MSFSEvent,
