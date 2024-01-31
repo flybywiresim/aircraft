@@ -14,6 +14,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = undefined;
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
+        this.recMaxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
         this.perfTOTemp = undefined;
@@ -291,9 +292,9 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.updateCurrentApproach();
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
-                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
+                    this.v1Speed = undefined;
+                    this.vRSpeed = undefined;
+                    this.v2Speed = undefined;
                     const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
@@ -346,6 +347,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
+        this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
         this.resetCoroute();
         this._overridenFlapApproachSpeed = NaN;
@@ -582,10 +584,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.unconfirmedVRSpeed = undefined;
             this.unconfirmedV2Speed = undefined;
             this._toFlexChecked = true;
-            // Reset SimVars
-            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
         }
 
         this.arincBusOutputs.forEach((word) => {
@@ -2920,6 +2918,33 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincDiscreteWord3.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
+    get v1Speed() {
+        return this._v1Speed;
+    }
+
+    set v1Speed(speed) {
+        this._v1Speed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get vRSpeed() {
+        return this._vRSpeed;
+    }
+
+    set vRSpeed(speed) {
+        this._vRSpeed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get v2Speed() {
+        return this._v2Speed;
+    }
+
+    set v2Speed(speed) {
+        this._v2Speed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
+    }
+
     //Needs PR Merge #3082
     trySetV1Speed(s) {
         if (s === FMCMainDisplay.clrValue) {
@@ -2938,7 +2963,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV1Speed = undefined;
         this.v1Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
         return true;
     }
 
@@ -2960,7 +2984,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedVRSpeed = undefined;
         this.vRSpeed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
         return true;
     }
 
@@ -2982,7 +3005,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV2Speed = undefined;
         this.v2Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
         return true;
     }
 
@@ -4882,7 +4904,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: can this be an util?
     getMaxFlCorrected(fl = this.getMaxFL()) {
-        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
+        return fl >= this.recMaxCruiseFL ? this.recMaxCruiseFL : fl;
     }
 
     // only used by trySetMinDestFob
@@ -4996,7 +5018,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getV2Speed() {
-        return SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots");
+        return this.v2Speed;
     }
 
     getTropoPause() {

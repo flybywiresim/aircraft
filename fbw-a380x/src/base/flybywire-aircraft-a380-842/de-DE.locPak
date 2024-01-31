@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "de-DE",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Die erste A320 von Airbus wurde 1984 der Weltöffentlichkeit präsentiert. 26 Jahre später, 2010, verkündete das Unternehmen, dass die Familie ein neues Mitglied in ihrer Mitte begrüßen kann, die A320neo (neo: neue Triebwerksoption), die dazu beitragen soll, die Unternehmenslinie der weltweit führenden Schmalrumpfflugzeuge mit Doppel-Mantelstromtriebwerk zu revitalisieren und in die Zukunft zu führen.<\/br><\/br>Nach einem ausgedehnten Entwicklungsprozess wurde die A320neo von der Lufthansa 2016 in Betrieb genommen und entwickelte sich rasch zum am meisten verkauften Flugzeug aller Zeiten, wobei bis zum heutigen Tag 115 verschiedene Airlines insgesamt 7.000 Flugzeuge orderten.<\/br><\/br>Ganz im Sinne der Tradition, die mit der ursprünglichen A320 begründet wurde – diese war die erste Passagiermaschine, mit Ausnahme der Concorde, die für normale Operationen auf die Fly-by-Wire-Steuerung setzte – teilt die A320neo eine mehr als 95 %ige Gemeinsamkeit der Flugzeugzelle mit ihren Vorgängern. Allerdings versteht es die A320neo ebenfalls, sich entsprechend abzugrenzen: und zwar durch die Einführung zweier Triebwerke der neuesten Generation, die mit den unternehmenseigenen „Sharklet“-Flügelspitzen kombiniert werden.<\/br><\/br>Zu den Schlüsselverbesserungen der neo zählen unter anderem Treibstoffersparnis, eine größere Reichweite und erhöhte max. Ladung sowie eine verkürzte Landedistanz als auch eine dramatische Reduzierung der Lautstärke und der Kohlenstoffdioxid-Emissionen. All dies bezeugt, dass die A320 nicht nur ein kommerzieller Erfolg, sondern auch ein wichtiger Schritt hin zu einem Kurs der Luftfahrt ist, bei dem es um eine größere Umweltverantwortlichkeit geht.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ausgewählten Steuerkurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)"
+    }
+  }
+}

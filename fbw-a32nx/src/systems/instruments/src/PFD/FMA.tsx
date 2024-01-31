@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, SubscribableMapFunctions, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
@@ -630,18 +630,31 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     private textSub = Subject.create('');
 
+    private text2Sub = Subject.create('');
+
+    private textXPosSub = Subject.create(0);
+
     private getText() {
         if (this.athrModeMessage === 0) {
+            /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
+                vertical bar is mapped to ":" aligned to bottom in font file
+                 */
             if (this.speedPreselVal !== -1 && this.machPreselVal === -1) {
                 const text = Math.round(this.speedPreselVal);
-                this.textSub.set(`SPEED SEL ${text}`);
+                this.textSub.set('SPEED SEL|   ');
+                this.text2Sub.set(`${text}`);
+                this.textXPosSub.set(35.434673);
             } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-                this.textSub.set(`MACH SEL ${this.machPreselVal.toFixed(2)}`);
+                this.textSub.set('MACH SEL|   ');
+                this.text2Sub.set(`${this.machPreselVal.toFixed(2)}`);
+                this.textXPosSub.set(33.834673);
             } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
                 this.textSub.set('');
+                this.text2Sub.set('');
             }
         } else {
             this.textSub.set('');
+            this.text2Sub.set('');
         }
     }
 
@@ -668,7 +681,11 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{this.textSub}</text>
+            <g>
+                <text class="FontMedium MiddleAlign Cyan" style="white-space: pre" x={this.textXPosSub} y="21.656223">{this.textSub}</text>
+                <text class="FontMedium MiddleAlign Cyan" x="52.934673" y="21.656223">{this.text2Sub}</text>
+            </g>
+
         );
     }
 }
@@ -688,9 +705,19 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     private fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
+    private readonly verticalText = Subject.create('');
+
+    private readonly additionalText = Subject.create('');
+
     private selectedVS = 0;
 
-    private inSpeedProtection = false;
+    private readonly apSpeedProtection = ConsumerSubject.create(null, false);
+
+    private readonly inSpeedProtection = MappedSubject.create(
+        ([apSpeedProtection, activeVerticalMode]) => apSpeedProtection && (activeVerticalMode === 14 || activeVerticalMode === 15),
+        this.apSpeedProtection,
+        this.activeVerticalModeSub,
+    );
 
     private fmaModeReversion = false;
 
@@ -798,7 +825,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
         }
 
-        const inSpeedProtection = this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
+        const inSpeedProtection = this.inSpeedProtection.get();
 
         if (inSpeedProtection || this.fmaModeReversion) {
             this.boxClassSub.set('NormalStroke None');
@@ -821,7 +848,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         this.activeVerticalModeClassSub.set(smallFont ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
-        this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
+        this.verticalText.set(text);
+        this.additionalText.set(additionalText);
 
         return text.length > 0;
     }
@@ -857,10 +885,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.getText();
         });
 
-        sub.on('fmaSpeedProtection').whenChanged().handle((protection) => {
-            this.inSpeedProtection = protection;
-            this.getText();
-        });
+        this.apSpeedProtection.setConsumer(sub.on('fmaSpeedProtection'));
+        this.apSpeedProtection.sub(this.getText.bind(this));
 
         sub.on('expediteMode').whenChanged().handle((e) => {
             this.expediteMode = e;
@@ -888,9 +914,16 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
                 <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
 
                 <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="49.921795" y="7.1040988">
-
-                    {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
-
+                    <tspan>{this.verticalText}</tspan>
+                    <tspan
+                        xml:space="preserve"
+                        class={{
+                            PulseCyanFill: this.inSpeedProtection,
+                            Cyan: this.inSpeedProtection.map(SubscribableMapFunctions.not()),
+                        }}
+                    >
+                        {this.additionalText}
+                    </tspan>
                 </text>
             </g>
         );
@@ -1459,6 +1492,13 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     }
 }
 
+enum MdaMode {
+    None = '',
+    NoDh = 'NO DH',
+    Radio = 'RADIO',
+    Baro = 'BARO',
+}
+
 class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
     private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1471,37 +1511,45 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
 
     private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
-    private mdaMdhHtml = MappedSubject.create(
-        ([mda, dh, noDhSelected]) => {
-            if (noDhSelected) {
-                return '<tspan>NO DH</tspan>';
+    private readonly mdaDhMode = MappedSubject.create(
+        ([noDh, dh, mda]) => {
+            if (noDh) {
+                return MdaMode.NoDh;
             }
 
             if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
-                const DHText = Math.round(dh.value).toString().padStart(4, ' ');
-                return `<tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>`;
+                return MdaMode.Radio;
             }
 
             if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
-                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
-                return `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
+                return MdaMode.Baro;
             }
 
-            return '';
+            return MdaMode.None;
         },
-        this.mda,
-        this.dh,
         this.noDhSelected,
+        this.dh,
+        this.mda,
+    );
+
+    private readonly mdaDhValueText = MappedSubject.create(
+        ([mdaMode, dh, mda]) => {
+            switch (mdaMode) {
+            case MdaMode.Baro:
+                return Math.round(mda.value).toString().padStart(6, ' ');
+            case MdaMode.Radio:
+                return Math.round(dh.value).toString().padStart(4, ' ');
+            default:
+                return '';
+            }
+        },
+        this.mdaDhMode,
+        this.dh,
+        this.mda,
     );
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        this.mdaMdhHtml.sub((html) => this.textRef.instance.innerHTML = html);
-        this.noDhSelected.sub((noDh) => {
-            this.textRef.instance.classList.toggle('FontSmallest', !noDh);
-            this.textRef.instance.classList.toggle('FontMedium', noDh);
-        });
 
         const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
@@ -1512,7 +1560,20 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <text ref={this.textRef} class="FontSmallest MiddleAlign White" x="118.38384" y="21.104172" />
+            <text
+                ref={this.textRef}
+                class={{
+                    FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+                    FontMedium: this.noDhSelected,
+                    MiddleAlign: true,
+                    White: true,
+                }}
+                x="118.38384"
+                y="21.104172"
+            >
+                <tspan>{this.mdaDhMode}</tspan>
+                <tspan class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }} style="white-space: pre">{this.mdaDhValueText}</tspan>
+            </text>
         );
     }
 }

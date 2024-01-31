@@ -1,0 +1,748 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_A380X_Components_InteractiveParts">
+        <!-- CPT OXY -->
+
+        <Component ID="CPT_OXY_FWD" Node="CPT_OXY_FWD">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>CPT_OXY_FWD_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:CPT_OXY_FWD_OPENING) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:CPT_OXY_FWD_OPENING) ! (&gt;L:CPT_OXY_FWD_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open and Close Captain Oxygen Panel</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- AFT OXY -->
+
+        <Component ID="AFT_OXY" Node="AFT_OXY_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>AFT_OXY_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:AFT_OXY_OPENING) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:AFT_OXY_OPENING) ! (&gt;L:AFT_OXY_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open and Close Arturos Oxygens Panel</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- AFT OIT -->
+
+        <Component ID="AFT_OIT" Node="AFT_OIT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>AFT_OIT_ANIM</ANIM_NAME>
+                <ANIM_LAG>60</ANIM_LAG>
+                <ANIM_CODE>(L:AFT_OIT_OPENING) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:AFT_OIT_OPENING) ! (&gt;L:AFT_OIT_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open and Close OIT</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CAS LH OPEN -->
+
+        <Component ID="CAS_LH_OPEN" Node="CAS_LH_OPEN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>CAS_LH_OPEN_ANIM</ANIM_NAME>
+                <ANIM_LAG>60</ANIM_LAG>
+                <ANIM_CODE>(L:CAS_LH_OPENING) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:CAS_LH_OPENING) ! (&gt;L:CAS_LH_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open and Close CAS</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CAS RH OPEN -->
+
+        <Component ID="CAS_RH_OPEN" Node="CAS_RH_OPEN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>CAS_RH_OPEN_ANIM</ANIM_NAME>
+                <ANIM_LAG>60</ANIM_LAG>
+                <ANIM_CODE>(L:CAS_RH_OPENING) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:CAS_RH_OPENING) ! (&gt;L:CAS_RH_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open and Close CAS</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SUNSHADE CPT -->
+
+        <Component ID="SUNSHADE_CPT" Node="SUNSHADE_CPT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SUNSHADE_CPT_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SUNSHADE_CPT_OPENING) 100 *</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:SUNSHADE_CPT_OPENING) ! (&gt;L:SUNSHADE_CPT_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Place Captain Sunshade</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SUNSHADE FO -->
+
+        <Component ID="SUNSHADE_FO" Node="SUNSHADE_FO_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SUNSHADE_FO_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SUNSHADE_FO_OPENING) 100 *</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:SUNSHADE_FO_OPENING) ! (&gt;L:SUNSHADE_FO_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Place First Officer Sunshade</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SUNSHADE DRAG FWD CTR -->
+
+        <Component ID="SUNSHADE_FWD_CTR" Node="SUNSHADE_FWD_CTR_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SUNSHADE_FWD_CTR_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SUNSHADE_FWD_CTR)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:SUNSHADE_FWD_CTR) 5 - 0 max (&gt;L:SUNSHADE_FWD_CTR)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:SUNSHADE_FWD_CTR) 5 + 100 min (&gt;L:SUNSHADE_FWD_CTR)
+                </DOWN_CODE>
+                <TOOLTIPID>Move center Visor UP or DOWN</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SUNSHADE DRAG FWD RH -->
+
+        <Component ID="SUNSHADE_FWD_RH" Node="SUNSHADE_FWD_RH_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SUNSHADE_FWD_RH_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SUNSHADE_FWD_RH)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:SUNSHADE_FWD_RH) 3 - 0 max (&gt;L:SUNSHADE_FWD_RH)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:SUNSHADE_FWD_RH) 3 + 100 min (&gt;L:SUNSHADE_FWD_RH)
+                </DOWN_CODE>
+                <TOOLTIPID>Move First Officer Visor UP or DOWN</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SUNSHADE DRAG FWD LH -->
+
+        <Component ID="SUNSHADE_FWD_LH" Node="SUNSHADE_FWD_LH_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SUNSHADE_FWD_LH_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SUNSHADE_FWD_LH)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:SUNSHADE_FWD_LH) 3 - 0 max (&gt;L:SUNSHADE_FWD_LH)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:SUNSHADE_FWD_LH) 3 + 100 min (&gt;L:SUNSHADE_FWD_LH)
+                </DOWN_CODE>
+                <TOOLTIPID>Move Captain Visor UP or DOWN</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+		<!-- SMALL SUNSHADE DRAG CPT -->
+
+		<Component ID="CPT_SMALL_SHADE" Node="CPT_SMALL_SHADE_CLICK">
+			<UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>CPT_SMALL_SHADE_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:CPT_SMALL_SHADE)</ANIM_CODE>
+            </UseTemplate>
+
+			<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+				<UP_CODE>
+					(L:CPT_SMALL_SHADE) 5 - 0 max (&gt;L:CPT_SMALL_SHADE)
+				</UP_CODE>
+				<DOWN_CODE>
+					(L:CPT_SMALL_SHADE) 5 + 100 min (&gt;L:CPT_SMALL_SHADE)
+				</DOWN_CODE>
+                <TOOLTIPID>Move small Visor UP or DOWN</TOOLTIPID>
+			</UseTemplate>
+        </Component>
+
+		<!-- SMALL SUNSHADE DRAG FO -->
+
+		<Component ID="FO_SMALL_SHADE" Node="FO_SMALL_SHADE_CLICK">
+			<UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>FO_SMALL_SHADE_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:FO_SMALL_SHADE)</ANIM_CODE>
+            </UseTemplate>
+
+			<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+				<UP_CODE>
+					(L:FO_SMALL_SHADE) 5 - 0 max (&gt;L:FO_SMALL_SHADE)
+				</UP_CODE>
+				<DOWN_CODE>
+					(L:FO_SMALL_SHADE) 5 + 100 min (&gt;L:FO_SMALL_SHADE)
+				</DOWN_CODE>
+                <TOOLTIPID>Move small Visor UP or DOWN</TOOLTIPID>
+			</UseTemplate>
+        </Component>
+
+		<!-- AFT LH SUNSHADE  -->
+
+		<Component ID="AFT_LH_SUNSHADE" Node="AFT_LH_SUNSHADE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>AFT_LH_SUNSHADE_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:AFT_LH_SUNSHADE_OPENING) 100 *</ANIM_CODE>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:AFT_LH_SUNSHADE_OPENING) ! (&gt;L:AFT_LH_SUNSHADE_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Place Aft Sunshade</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+		<!-- AFT RH SUNSHADE  -->
+
+		<Component ID="AFT_RH_SUNSHADE" Node="AFT_RH_SUNSHADE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>AFT_RH_SUNSHADE_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:AFT_RH_SUNSHADE_OPENING) 100 *</ANIM_CODE>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:AFT_RH_SUNSHADE_OPENING) ! (&gt;L:AFT_RH_SUNSHADE_OPENING)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Place Aft Sunshade</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEAT CPT MOVE FWD AFT -->
+
+        <Component ID="SEAT_CPT_MOVE_FWD_AFT" Node="SEAT_CPT_MOVE_FWD_AFT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SEAT_CPT_MOVE_FWD_AFT_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:SEAT_CPT_MOVE_FWD_AFT)</ANIM_CODE>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Switch_3States">
+                <ANIM_NAME>SEAT_CPT_MOVE_FWD_AFT_CLICK</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>XMLVAR_SEAT_FWDAFT</SWITCH_POSITION_VAR>
+                <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
+                <CODE_POS_0>(L:SEAT_CPT_MOVE_FWD_AFT) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_FWD_AFT)</CODE_POS_0>
+                <CODE_POS_2>(L:SEAT_CPT_MOVE_FWD_AFT) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_FWD_AFT)</CODE_POS_2>
+                <MOMENTARY_SWITCH/>
+				<ANIM_LAG>800</ANIM_LAG>
+                <STATE_MAX_TIMER>0.2</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.2</STATE0_TIMER>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEAT CPT MOVE UP DOWN  -->
+
+        <Component ID="SEAT_CPT_MOVE_UP_DOWN" Node="SEAT_CPT_MOVE_UP_DOWN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SEAT_CPT_MOVE_UP_DOWN_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:SEAT_CPT_MOVE_UP_DOWN)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Switch_3States">
+                <ANIM_NAME>SEAT_CPT_MOVE_UP_DOWN_CLICK</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>XMLVAR_SEAT_UPDOWN</SWITCH_POSITION_VAR>
+                <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
+                <CODE_POS_0>(L:SEAT_CPT_MOVE_UP_DOWN) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_UP_DOWN)</CODE_POS_0>
+                <CODE_POS_2>(L:SEAT_CPT_MOVE_UP_DOWN) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_UP_DOWN)</CODE_POS_2>
+                <MOMENTARY_SWITCH/>
+				<ANIM_LAG>800</ANIM_LAG>
+                <STATE_MAX_TIMER>0.2</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.2</STATE0_TIMER>
+                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST CPT TILT FWD AFT -->
+
+        <Component ID="BIGARMREST_CPT_TILT" Node="BIGARMREST_CPT_TILT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_CPT_TILT_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:BIGARMREST_CPT_TILT)</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:BIGARMREST_CPT_TILT) 1 - 0 max (&gt;L:BIGARMREST_CPT_TILT)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:BIGARMREST_CPT_TILT) 1 + 100 min (&gt;L:BIGARMREST_CPT_TILT)
+                </DOWN_CODE>
+                <TOOLTIPID>Tilt Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST CPT UP DOWN -->
+
+        <Component ID="BIGARMREST_CPT_UP_DOWN" Node="BIGARMREST_CPT_UP_DOWN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_CPT_UP_DOWN_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:BIGARMREST_CPT_UP_DOWN)</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:BIGARMREST_CPT_UP_DOWN) 1 - 0 max (&gt;L:BIGARMREST_CPT_UP_DOWN)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:BIGARMREST_CPT_UP_DOWN) 1 + 100 min (&gt;L:BIGARMREST_CPT_UP_DOWN)
+                </DOWN_CODE>
+                <TOOLTIPID>Move Armrest UP or DOWN</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST CPT STOW -->
+
+        <Component ID="BIGARMREST_CPT_STOW" Node="BIGARMREST_CPT_STOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_CPT_STOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:BIGARMREST_CPT_STOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:BIGARMREST_CPT_STOW) ! (&gt;L:BIGARMREST_CPT_STOW)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Stow Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEAT FO MOVE FWD AFT -->
+
+        <Component ID="SEAT_FO_MOVE_FWD_AFT" Node="SEAT_FO_MOVE_FWD_AFT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SEAT_FO_MOVE_FWD_AFT_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:SEAT_FO_MOVE_FWD_AFT)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Switch_3States">
+                <ANIM_NAME>SEAT_FO_MOVE_FWD_AFT_CLICK</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>XMLVAR_SEAT_FO_FWDAFT</SWITCH_POSITION_VAR>
+                <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
+                <CODE_POS_0>(L:SEAT_FO_MOVE_FWD_AFT) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_FWD_AFT)</CODE_POS_0>
+                <CODE_POS_2>(L:SEAT_FO_MOVE_FWD_AFT) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_FWD_AFT)</CODE_POS_2>
+                <MOMENTARY_SWITCH/>
+				<ANIM_LAG>800</ANIM_LAG>
+                <STATE_MAX_TIMER>2</STATE_MAX_TIMER>
+                <STATE0_TIMER>2</STATE0_TIMER>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEAT FO MOVE UP DOWN  -->
+
+        <Component ID="SEAT_FO_MOVE_UP_DOWN" Node="SEAT_FO_MOVE_UP_DOWN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SEAT_FO_MOVE_UP_DOWN_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:SEAT_FO_MOVE_UP_DOWN)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Switch_3States">
+                <ANIM_NAME>SEAT_FO_MOVE_UP_DOWN_CLICK</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>XMLVAR_SEAT_FO_UPDOWN</SWITCH_POSITION_VAR>
+                <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
+                <CODE_POS_0>(L:SEAT_FO_MOVE_UP_DOWN) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_UP_DOWN)</CODE_POS_0>
+                <CODE_POS_2>(L:SEAT_FO_MOVE_UP_DOWN) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_UP_DOWN)</CODE_POS_2>
+                <MOMENTARY_SWITCH/>
+				<ANIM_LAG>800</ANIM_LAG>
+                <STATE_MAX_TIMER>2</STATE_MAX_TIMER>
+                <STATE0_TIMER>2</STATE0_TIMER>
+                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+				<INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST FO TILT FWD AFT -->
+
+        <Component ID="BIGARMREST_FO_TILT" Node="BIGARMREST_FO_TILT_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_FO_TILT_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:BIGARMREST_FO_TILT)</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:BIGARMREST_FO_TILT) 1 - 0 max (&gt;L:BIGARMREST_FO_TILT)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:BIGARMREST_FO_TILT) 1 + 100 min (&gt;L:BIGARMREST_FO_TILT)
+                </DOWN_CODE>
+                <TOOLTIPID>Tilt Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST FO UP DOWN -->
+
+        <Component ID="BIGARMREST_FO_UP_DOWN" Node="BIGARMREST_FO_UP_DOWN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_FO_UP_DOWN_ANIM</ANIM_NAME>
+                <ANIM_CODE>(L:BIGARMREST_FO_UP_DOWN)</ANIM_CODE>
+                <INVERT_ANIM>1</INVERT_ANIM>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+                <UP_CODE>
+                    (L:BIGARMREST_FO_UP_DOWN) 1 - 0 max (&gt;L:BIGARMREST_FO_UP_DOWN)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:BIGARMREST_FO_UP_DOWN) 1 + 100 min (&gt;L:BIGARMREST_FO_UP_DOWN)
+                </DOWN_CODE>
+                <TOOLTIPID>Move Armrest UP or DOWN</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- BIGARMREST FO STOW -->
+
+        <Component ID="BIGARMREST_FO_STOW" Node="BIGARMREST_FO_STOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>BIGARMREST_FO_STOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:BIGARMREST_FO_STOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:BIGARMREST_FO_STOW) ! (&gt;L:BIGARMREST_FO_STOW)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Stow Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SMALLARMREST FO FWD AND AFT -->
+
+        <Component ID="SMALLARMREST_FO_FWD" Node="SMALLARMREST_FO_FWD_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SMALLARMREST_FO_FWD_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SMALLARMREST_FO_FWD)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingXAxis_Code">
+                <UP_CODE>
+                    (L:SMALLARMREST_FO_FWD) 5 - 0 max (&gt;L:SMALLARMREST_FO_FWD)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:SMALLARMREST_FO_FWD) 5 + 100 min (&gt;L:SMALLARMREST_FO_FWD)
+                </DOWN_CODE>
+                <TOOLTIPID>Move Armrest FWD or AFT</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SMALLARMREST FO STOW -->
+
+        <Component ID="SMALLARMREST_FO_STOW" Node="SMALLARMREST_FO_STOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SMALLARMREST_FO_STOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:SMALLARMREST_FO_STOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:SMALLARMREST_FO_STOW) ! (&gt;L:SMALLARMREST_FO_STOW)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Stow Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SMALLARMREST CPT FWD AND AFT -->
+
+        <Component ID="SMALLARMREST_CPT_FWD" Node="SMALLARMREST_CPT_FWD_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SMALLARMREST_CPT_FWD_ANIM</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+                <ANIM_CODE>(L:SMALLARMREST_CPT_FWD)</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_DraggingXAxis_Code">
+                <UP_CODE>
+                    (L:SMALLARMREST_CPT_FWD) 5 - 0 max (&gt;L:SMALLARMREST_CPT_FWD)
+                </UP_CODE>
+                <DOWN_CODE>
+                    (L:SMALLARMREST_CPT_FWD) 5 + 100 min (&gt;L:SMALLARMREST_CPT_FWD)
+                </DOWN_CODE>
+                <TOOLTIPID>Move Armrest FWD or AFT</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- SMALLARMREST CPT STOW -->
+
+        <Component ID="SMALLARMREST_CPT_STOW" Node="SMALLARMREST_CPT_STOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>SMALLARMREST_CPT_STOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>150</ANIM_LAG>
+                <ANIM_CODE>(L:SMALLARMREST_CPT_STOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:SMALLARMREST_CPT_STOW) ! (&gt;L:SMALLARMREST_CPT_STOW)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Stow Armrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- COCKPIT DOOR OPENING -->
+
+        <Component ID="COCKPITDOOR_OPEN" Node="COCKPITDOOR_OPEN_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>COCKPITDOOR_OPEN_ANIM</ANIM_NAME>
+                <ANIM_LAG>50</ANIM_LAG>
+                <ANIM_CODE>(L:COCKPITDOOR_OPEN) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:COCKPITDOOR_OPEN) ! (&gt;L:COCKPITDOOR_OPEN)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close Cockpit Door</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- FO SLIDING WINDOW OPENING -->
+
+        <Component ID="FO_SLIDING_WINDOW" Node="FO_SLIDING_WINDOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>FO_SLIDING_WINDOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:FO_SLIDING_WINDOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:FO_SLIDING_WINDOW) ! (&gt;L:FO_SLIDING_WINDOW)
+                    <!--
+                    (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
+                        (L:FO_SLIDING_WINDOW) ! (&gt;L:FO_SLIDING_WINDOW)
+                    } els{
+                        0 (&gt;L:FO_SLIDING_WINDOW)
+                    }
+                    -->
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close FO Sliding Window</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CPT SLIDING WINDOW OPENING -->
+
+        <Component ID="CPT_SLIDING_WINDOW" Node="CPT_SLIDING_WINDOW_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>CPT_SLIDING_WINDOW_ANIM</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:CPT_SLIDING_WINDOW) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:CPT_SLIDING_WINDOW) ! (&gt;L:CPT_SLIDING_WINDOW)
+                    <!--
+                    (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
+                        (L:CPT_SLIDING_WINDOW) ! (&gt;L:CPT_SLIDING_WINDOW)
+                    } els{
+                        0 (&gt;L:CPT_SLIDING_WINDOW)
+                    }
+                    -->
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close CPT Sliding Window</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CPT TABLE -->
+
+        <Component ID="A380_CPT_TABLE" Node="A380_CPT_TABLE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_CPT_TABLE</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_CPT_TABLE) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_CPT_TABLE) ! (&gt;L:A380_CPT_TABLE)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close CPT Table</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CPT MEALTABLE -->
+
+        <Component ID="A380_CPT_MEALTABLE" Node="A380_CPT_MEALTABLE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_CPT_MEALTABLE</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_CPT_MEALTABLE) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_CPT_TABLE) 1 == if{
+                        (L:A380_CPT_MEALTABLE) ! (&gt;L:A380_CPT_MEALTABLE)
+                    }
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close CPT Mealtable</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CPT KEYBOARD -->
+
+        <Component ID="A380_CPT_KEYBOARD" Node="A380_CPT_KEYBOARD_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_CPT_KEYBOARD</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_CPT_KEYBOARD) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_CPT_MEALTABLE) 1 == if{
+                        (L:A380_CPT_KEYBOARD) ! (&gt;L:A380_CPT_KEYBOARD)
+                    }
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close CPT Keyboard</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- CPT FOOTREST -->
+
+        <Component ID="A380_CPT_FOOTREST" Node="A380_CPT_FOOTREST_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_CPT_FOOTREST</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_CPT_FOOTREST) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_CPT_FOOTREST) ! (&gt;L:A380_CPT_FOOTREST)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close CPT Footrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- FO TABLE -->
+
+        <Component ID="A380_FO_TABLE" Node="A380_FO_TABLE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_FO_TABLE</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_FO_TABLE) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_FO_TABLE) ! (&gt;L:A380_FO_TABLE)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close FO Table</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- FO MEALTABLE -->
+
+        <Component ID="A380_FO_MEALTABLE" Node="A380_FO_MEALTABLE_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_FO_MEALTABLE</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_FO_MEALTABLE) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_FO_TABLE) 1 == if{
+                        (L:A380_FO_MEALTABLE) ! (&gt;L:A380_FO_MEALTABLE)
+                    }
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close FO Mealtable</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- FO KEYBOARD -->
+
+        <Component ID="A380_FO_KEYBOARD" Node="A380_FO_KEYBOARD_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_FO_KEYBOARD</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_FO_KEYBOARD) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_FO_MEALTABLE) 1 == if{
+                        (L:A380_FO_KEYBOARD) ! (&gt;L:A380_FO_KEYBOARD)
+                    }
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close FO Keyboard</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- FO FOOTREST -->
+
+        <Component ID="A380_FO_FOOTREST" Node="A380_FO_FOOTREST_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_FO_FOOTREST</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_FO_FOOTREST) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_FO_FOOTREST) ! (&gt;L:A380_FO_FOOTREST)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close FO Footrest</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+
+        <!-- LG PINS DOOR -->
+
+        <Component ID="A380_LGPIN_DOOR" Node="A380_LGPIN_DOOR_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>A380_LGPIN_DOOR</ANIM_NAME>
+                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_CODE>(L:A380_LGPIN_DOOR) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380_LGPIN_DOOR) ! (&gt;L:A380_LGPIN_DOOR)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close Landing Gear Pins Compartment</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>
