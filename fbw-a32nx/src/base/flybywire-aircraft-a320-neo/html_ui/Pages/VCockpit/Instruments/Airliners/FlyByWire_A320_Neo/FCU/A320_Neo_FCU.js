@@ -39,9 +39,9 @@ class A320_Neo_FCU extends BaseAirliners {
             if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:2", "bool")) {
                 SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 2);
             }
-}
-            this.electricity.style.display = newStyle;
         }
+        this.electricity.style.display = newStyle;
+    }
     onEvent(_event) {
     }
 }
@@ -220,7 +220,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = false;
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
-                this.isTargetManaged = false;
+        this.isTargetManaged = false;
 
         this._rotaryEncoderCurrentSpeed = 1;
         this._rotaryEncoderMaximumSpeed = 10;
@@ -234,7 +234,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     init() {
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
-                this.selectedValue = this.MIN_SPEED;
+        this.selectedValue = this.MIN_SPEED;
         this.currentValue = this.MIN_SPEED;
         this.targetSpeed = this.MIN_SPEED;
         this.isTargetManaged = false;
@@ -831,7 +831,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
 
     onTRKModeChanged(_newValue) {
         // do not alter if we're in managed heading
-        if(this.selectedValue !== -1) {
+        if (this.selectedValue !== -1) {
             if (_newValue) {
                 this.selectedValue = this.calculateTrackForHeading(this.selectedValue);
             } else {
