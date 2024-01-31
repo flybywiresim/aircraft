@@ -2768,7 +2768,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       |:---:|:----------------------------------------------------:|
       | 11  | System in control                                    |
       | 12  | System status - fail                                 |
-      | 13  | Not used                                             |
+      | 13  | Excessive residual pressure - warn                   |
       | 14  | Excessive cabin altitude - warn                      |
       | 15  | Low differential pressure - warn                     |
       | 16  | Preplanned desc inf - too quick *                    |

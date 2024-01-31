@@ -108,6 +108,10 @@ export class PseudoFWC {
 
     private readonly acsc2DiscreteWord2 = Arinc429Register.empty();
 
+    private readonly cpc1DiscreteWord = Arinc429Register.empty();
+
+    private readonly cpc2DiscreteWord = Arinc429Register.empty();
+
     private readonly apuBleedValveOpen = Subject.create(false);
 
     private readonly cabAltSetReset1 = new NXLogicMemoryNode();
@@ -123,6 +127,10 @@ export class PseudoFWC {
     private readonly cabFanHasFault2 = Subject.create(false);
 
     private readonly excessPressure = Subject.create(false);
+
+    private readonly excessResidualPr = Subject.create(false);
+
+    private readonly lowDiffPress = Subject.create(false);
 
     private readonly acsc1Lane1Fault = Subject.create(false);
 
@@ -745,7 +753,7 @@ export class PseudoFWC {
 
     private readonly ndXfrKnob = Subject.create(0);
 
-    private readonly manLandingElevation = Subject.create(0);
+    private readonly manLandingElevation = Subject.create(false);
 
     private readonly noSmoking = Subject.create(0);
 
@@ -1183,7 +1191,15 @@ export class PseudoFWC {
         this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
         this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
-        this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
+        this.cpc1DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+        this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+        const activeCpc = this.cpc1DiscreteWord.bitValueOr(11, false) ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
+
+        this.excessPressure.set(activeCpc.bitValueOr(14, false));
+        this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
+        this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
+
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write((pressureAltitude ?? 0) > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
@@ -1202,7 +1218,7 @@ export class PseudoFWC {
         this.attKnob.set(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum'));
         this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
         this.dmcSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum'));
-        this.manLandingElevation.set(SimVar.GetSimVarValue('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number'));
+        this.manLandingElevation.set(activeCpc.bitValueOr(17, false));
         this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
         this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
         this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
@@ -2338,6 +2354,27 @@ export class PseudoFWC {
             sysPage: 2,
             side: 'LEFT',
         },
+        2131231: { // LO DIFF PR
+            flightPhaseInhib: [2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.lowDiffPress,
+            whichCodeToReturn: () => [0, 1, 2],
+            codesToReturn: ['213123101', '213123102', '213123103'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131235: { // EXCES RESIDUAL PR
+            flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: this.excessResidualPr,
+            whichCodeToReturn: () => [0, this.pack1On.get() ? 1 : null,
+                this.pack2On.get() ? 2 : null, 3],
+            codesToReturn: ['213123501', '213123502', '213123503', '213123504'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 2,
+            side: 'LEFT',
+        },
         2161206: { // PACK 1+2 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: this.pack1And2Fault,
@@ -3287,7 +3324,7 @@ export class PseudoFWC {
         },
         '0000230': { // MAN LANDING ELEVATION
             flightPhaseInhib: [],
-            simVarIsActive: this.manLandingElevation.map((v) => v > 0),
+            simVarIsActive: this.manLandingElevation,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000023001'],
             memoInhibit: () => false,
