@@ -85,6 +85,12 @@
                 (L:A32NX_EFIS_L_ND_MODE) (&gt;L:A380X_EFIS_L_ND_MODE)
                 (L:A32NX_EFIS_R_ND_MODE) (&gt;L:A380X_EFIS_R_ND_MODE)
 
+                (L:A380X_EFIS_L_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_1_FILTER_ACTIVE)
+                (L:A380X_EFIS_R_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_2_FILTER_ACTIVE)
+
+                (L:A380X_EFIS_L_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_L_OPTION)
+                (L:A380X_EFIS_R_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_R_OPTION)
+
                 (O:PrevPot7Value) s0
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) s1
 
@@ -305,12 +311,12 @@
                 <Component ID="SCREEN_RMPL">
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_RMPL</NODE_ID>
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
+                        <POTENTIOMETER>80</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_BACKLIGHT_RMPL</NODE_ID>
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
+                        <POTENTIOMETER>80</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) 5 *</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
@@ -321,29 +327,29 @@
                 <Component ID="SCREEN_RMPR">
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_RMPR</NODE_ID>
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
-                        <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE> <!--
-                        TODO FCOM: "(Only audio control panel of RMP 2)" what does this mean ? -->
+                        <POTENTIOMETER>81</POTENTIOMETER>
+                        <!-- TODO FCOM: "(Only audio control panel of RMP 2)" what does this mean ? -->
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_BACKLIGHT_RMPR</NODE_ID>
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
+                        <POTENTIOMETER>81</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) 5 *</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
             </Component>
 
             <!-- RMP_T -->
-            <Component ID="RMP_L">
+            <Component ID="RMP_T">
                 <Component ID="SCREEN_DU_RMPL">
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_RMPT</NODE_ID> <!-- TODO Repsol: fix node name -->
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
+                        <POTENTIOMETER>82</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_BACKLIGHT_RMPT</NODE_ID>
-                        <!-- <POTENTIOMETER>87</POTENTIOMETER> TODO add a potentiometer -->
+                        <POTENTIOMETER>82</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) 5 *</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
@@ -6248,13 +6254,13 @@
 
         <Component ID="Chronometer">
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
-                <NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
+                <NODE_ID>PUSH_GLARESHIELD_CS_CHRONO</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_CS_CHRONO</ANIM_NAME>
                 <SIDE>L</SIDE>
             </UseTemplate>
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
-                <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
+                <NODE_ID>PUSH_GLARESHIELD_FO_CHRONO</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_FO_CHRONO</ANIM_NAME>
                 <SIDE>R</SIDE>
             </UseTemplate>
 
