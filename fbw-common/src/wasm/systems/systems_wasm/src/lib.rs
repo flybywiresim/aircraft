@@ -10,7 +10,7 @@ use crate::msfs::legacy::{AircraftVariable, NamedVariable};
 #[cfg(target_arch = "wasm32")]
 use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
-use crate::anti_ice::wing_anti_ice;
+use crate::anti_ice::{engine_anti_ice, wing_anti_ice};
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use ::msfs::{
@@ -109,6 +109,10 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
             fuel_valve_number,
             fuel_pump_number,
         ))
+    }
+
+    pub fn with_engine_anti_ice(self, engine_count: usize) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(engine_anti_ice(engine_count))
     }
 
     pub fn with_wing_anti_ice(self) -> Result<Self, Box<dyn Error>> {

@@ -3049,6 +3049,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - High Pressure warning in the right wing anti ice valve
     - Bool
 
+- A32NX_BUTTON_OVHD_ANTI_ICE_ENG_1_POSITION:
+    - Indicated whether the overhead ENG ANTI ICE button is illuminated for engine 1
+    - Bool
+
+- A32NX_BUTTON_OVHD_ANTI_ICE_ENG_2_POSITION:
+    - Indicated whether the overhead ENG ANTI ICE button is illuminated for engine 2
+    - Bool
+
 ## Autoflight (ATA 22)
 
 - - A32NX_FAC_{number}_PUSHBUTTON_PRESSED

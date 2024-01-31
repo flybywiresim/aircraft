@@ -7,6 +7,48 @@ use systems::shared::to_bool;
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use std::error::Error;
 
+pub(super) fn engine_anti_ice(
+    engine_count: usize,
+) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    move |builder: &mut MsfsAspectBuilder| {
+        for engine_number in 1..=engine_count {
+            builder.on_change(
+                ExecuteOn::PostTick,
+                vec![
+                    Variable::named(&format!(
+                        "BUTTON_OVHD_ANTI_ICE_ENG_{}_POSITION",
+                        engine_number
+                    )),
+                    Variable::aircraft("ENG ANTI ICE", "bool", engine_number),
+                ],
+                Box::new(move |prev_values, new_values| {
+                    let was_eng_anti_ice_push_button_on = to_bool(prev_values[0]);
+                    let is_eng_anti_ice_push_button_on_now = to_bool(new_values[0]);
+                    let is_eng_anti_ice_on_now = to_bool(new_values[1]);
+
+                    let has_eng_anti_ice_button_changed =
+                        was_eng_anti_ice_push_button_on != is_eng_anti_ice_push_button_on_now;
+                    let eng_anti_ice_disagrees =
+                        is_eng_anti_ice_on_now != is_eng_anti_ice_push_button_on_now;
+
+                    if has_eng_anti_ice_button_changed && eng_anti_ice_disagrees {
+                        execute_calculator_code::<()>(&format!(
+                            "{} (>K:ANTI_ICE_SET_ENG{})",
+                            match is_eng_anti_ice_push_button_on_now {
+                                true => 1,
+                                false => 0,
+                            },
+                            engine_number
+                        ));
+                    }
+                }),
+            );
+        }
+
+        Ok(())
+    }
+}
+
 pub(super) fn wing_anti_ice() -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     move |builder: &mut MsfsAspectBuilder| {
         builder.on_change(
