@@ -26,6 +26,7 @@
 
         <!-- A380X Includes - Libraries -->
         <Include RelativeFile="behaviour\generic\buttons.xml" />
+        <Include RelativeFile="behaviour\generic\gear.xml" />
 
         <!-- A380X Includes - External Components -->
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
@@ -83,6 +84,12 @@
 
                 (L:A32NX_EFIS_L_ND_MODE) (&gt;L:A380X_EFIS_L_ND_MODE)
                 (L:A32NX_EFIS_R_ND_MODE) (&gt;L:A380X_EFIS_R_ND_MODE)
+
+                (L:A380X_EFIS_L_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_1_FILTER_ACTIVE)
+                (L:A380X_EFIS_R_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_2_FILTER_ACTIVE)
+
+                (L:A380X_EFIS_L_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_L_OPTION)
+                (L:A380X_EFIS_R_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_R_OPTION)
 
                 (O:PrevPot7Value) s0
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) s1
@@ -2074,12 +2081,12 @@
                     fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
+            <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
-                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_ON_GROUND />
+                <ANIM_LENGTH>3</ANIM_LENGTH>
             </UseTemplate>
+
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>
@@ -6247,13 +6254,13 @@
 
         <Component ID="Chronometer">
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
-                <NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
+                <NODE_ID>PUSH_GLARESHIELD_CS_CHRONO</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_CS_CHRONO</ANIM_NAME>
                 <SIDE>L</SIDE>
             </UseTemplate>
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
-                <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
+                <NODE_ID>PUSH_GLARESHIELD_FO_CHRONO</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_FO_CHRONO</ANIM_NAME>
                 <SIDE>R</SIDE>
             </UseTemplate>
 
