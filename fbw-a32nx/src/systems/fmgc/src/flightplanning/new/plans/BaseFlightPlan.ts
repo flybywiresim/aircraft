@@ -176,6 +176,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.allLegs[this.activeLegIndex];
     }
 
+    /**
+     * Returns the index of the last leg before the active leg, or -1 if none is found
+     * We can have a discontinuity before the active leg. In this case, return the leg before that discontinuity
+     */
+    get fromLegIndex(): number {
+        for (let i = Math.min(this.activeLegIndex, this.legCount) - 1; i >= 0; i--) {
+            if (this.allLegs[i].isDiscontinuity === false) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     get isApproachActive(): boolean {
         // `this.approach` can be undefined for runway-by-itself approaches
         return this.approach !== undefined && this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
@@ -211,7 +225,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
+        if (this.activeLeg && this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
             this.stringMissedApproach();
         }
 
@@ -222,8 +236,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     async stringMissedApproach() {
         // Make sure we've not already strung the missed approach
-        // Being on an enroute segment would be an indication of that
-        if (this.activeLeg.isDiscontinuity === true || this.activeLeg.segment.class !== SegmentClass.Arrival) {
+        // Being on an enroute segment would be an indication of that, unless there's no approach legs at all (after DIR to MAP for example),
+        // then restring anyways
+        if (!this.activeLeg || this.activeLeg.isDiscontinuity === true || (this.approachSegment.legCount > 0 && this.activeLeg.segment.class !== SegmentClass.Arrival)) {
             return;
         }
 
@@ -795,6 +810,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
         } else {
             segment.allLegs.splice(indexInSegment, 1);
+        }
+
+        // TODO: should this be here?
+        if (index === this.activeLegIndex) {
+            this.sequence();
         }
 
         this.syncSegmentLegsChange(segment);
