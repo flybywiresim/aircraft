@@ -221,7 +221,7 @@ impl SteeringActuator {
         current_pressure: Pressure,
     ) -> AngularVelocity {
         (if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
-            self.nominal_speed * current_pressure.get::<psi>().sqrt() * 1.
+            self.nominal_speed * current_pressure.get::<psi>().sqrt()
                 / Self::REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI.sqrt()
         } else {
             AngularVelocity::default()
