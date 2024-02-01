@@ -23,18 +23,18 @@ pub(super) fn engine_anti_ice(
                 ],
                 Box::new(move |prev_values, new_values| {
                     let was_eng_anti_ice_push_button_on = to_bool(prev_values[0]);
-                    let is_eng_anti_ice_push_button_on_now = to_bool(new_values[0]);
-                    let is_eng_anti_ice_on_now = to_bool(new_values[1]);
+                    let is_eng_anti_ice_push_button_on = to_bool(new_values[0]);
+                    let is_eng_anti_ice_on = to_bool(new_values[1]);
 
                     let has_eng_anti_ice_button_changed =
-                        was_eng_anti_ice_push_button_on != is_eng_anti_ice_push_button_on_now;
+                        was_eng_anti_ice_push_button_on != is_eng_anti_ice_push_button_on;
                     let eng_anti_ice_disagrees =
-                        is_eng_anti_ice_on_now != is_eng_anti_ice_push_button_on_now;
+                        is_eng_anti_ice_on != is_eng_anti_ice_push_button_on;
 
                     if has_eng_anti_ice_button_changed && eng_anti_ice_disagrees {
                         execute_calculator_code::<()>(&format!(
                             "{} (>K:ANTI_ICE_SET_ENG{})",
-                            match is_eng_anti_ice_push_button_on_now {
+                            match is_eng_anti_ice_push_button_on {
                                 true => 1,
                                 false => 0,
                             },
@@ -60,11 +60,11 @@ pub(super) fn wing_anti_ice() -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(
             ],
             Box::new(move |prev_values, new_values| {
                 let was_wing_anti_ice_on = to_bool(prev_values[0]) && !to_bool(prev_values[1]);
-                let is_wing_anti_ice_on_now = to_bool(new_values[0]) && !to_bool(new_values[1]);
-                let is_now_deicing = to_bool(new_values[2]);
+                let is_wing_anti_ice_on = to_bool(new_values[0]) && !to_bool(new_values[1]);
+                let is_deicing = to_bool(new_values[2]);
 
-                let has_wing_anti_ice_changed = was_wing_anti_ice_on != is_wing_anti_ice_on_now;
-                let structural_anti_ice_disagrees = is_now_deicing != is_wing_anti_ice_on_now;
+                let has_wing_anti_ice_changed = was_wing_anti_ice_on != is_wing_anti_ice_on;
+                let structural_anti_ice_disagrees = is_deicing != is_wing_anti_ice_on;
 
                 if has_wing_anti_ice_changed && structural_anti_ice_disagrees {
                     execute_calculator_code::<()>("(>K:TOGGLE_STRUCTURAL_DEICE)");
