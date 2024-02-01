@@ -5,20 +5,53 @@
 
 #include "LightingPresets.h"
 #include "ScopedTimer.hpp"
+#include "math_utils.hpp"
+
+bool LightingPresets::initialize() {
+  dataManager = &msfsHandler.getDataManager();
+
+  // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
+  loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+  saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+  presetLoadTime = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
+
+  // reset to default values
+  loadLightingPresetRequest->setAndWriteToSim(0.0);
+  saveLightingPresetRequest->setAndWriteToSim(0.0);
+  presetLoadTime->setAndWriteToSim(TOTAL_LOADING_TIME);
+
+  initialize_aircraft();
+
+  _isInitialized = true;
+  LOG_INFO("LightingPresets initialized");
+  return true;
+}
 
 bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
     LOG_ERROR("LightingPresets_A32NX::update() - not initialized");
     return false;
   }
-
+  // only run when aircraft is ready
+  // FIXME: It appears the the IS_READY signal is not reliable on the A380X yet esp. when using Quick Reload).
+  if (!msfsHandler.getAircraftIsReadyVar()) {
+    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
+    return true;
+  }
   // only run when aircraft is powered
-  if (!msfsHandler.getAircraftIsReadyVar() || !elecAC1Powered->getAsBool()) {
+  if (!elecAC1Powered->getAsBool()) {
+    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not powered");
     return true;
   }
 
-  // load becomes priority in case both vars are set.
+  // load has priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
+    if (readIniFile) {
+      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " is being loaded.");
+    }
+    // loading a preset happens over a number of frames to allow the animation to keep up
+    // loadLightingPreset() returns true when the preset is fully loaded
+    // otherwise it returns false and the next frame will continue loading
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
@@ -39,15 +72,26 @@ bool LightingPresets::shutdown() {
 }
 
 bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
-  // throttle the load process so animation can keep up
-  if (msfsHandler.getTickCounter() % 2 != 0)
+  // Throttle the load process so animation can keep up
+  // Compensates for the fact that the sim runs at different frame rates on different machines
+  // Compensation is imperfect as we need a minimum step size to make the values converge and also
+  // a maximum step size to avoid the animation being choppy.
+  // The reason is that the sim cuts of precision from the LIGHT POTENTIOMETER values we read from
+  // the sim so that the values we write back to the sim are not identical to the values we read
+  // from the sim.
+  const FLOAT64 deltaTime = msfsHandler.getTimeStamp() - lastUpdate;
+  if (deltaTime < UPDATE_DELAY_TIME) {
     return false;
+  }
+  const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
+  FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
+  lastUpdate = msfsHandler.getTimeStamp();
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
   readFromAircraft();
   if (readFromStore(loadPresetRequest)) {
-    bool finished = calculateIntermediateValues();
+    const bool finished = calculateIntermediateValues(stepSize);
     applyToAircraft();
     return finished;
   }
@@ -85,7 +129,7 @@ bool LightingPresets::saveToStore(INT64 presetNr) {
   return iniFile.write(ini, true);
 }
 
-AircraftVariablePtr LightingPresets::getLightPotentiometerVar(int index) const {
+AircraftVariablePtr LightingPresets::createLightPotentiometerVar(int index) const {
   return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent);
 }
 
@@ -105,6 +149,14 @@ FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
   return defaultValue;
 }
 
-FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target) {
-  return momentary < target ? (std::min)(momentary + STEP_SIZE, target) : (std::max)(momentary - STEP_SIZE, target);
+FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target, FLOAT64 stepSize) {
+  FLOAT64 convergedValue;
+  if (helper::Math::almostEqual(momentary, target, stepSize)) {
+    convergedValue = target;
+  } else if (momentary < target) {
+    convergedValue = (std::min)(momentary + stepSize, target);
+  } else {
+    convergedValue = (std::max)(momentary - stepSize, target);
+  }
+  return convergedValue;
 }

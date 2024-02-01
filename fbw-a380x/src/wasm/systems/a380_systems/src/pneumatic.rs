@@ -110,6 +110,7 @@ pub struct A380Pneumatic {
     physics_updater: MaxStepLoop,
 
     apu_bleed_air_valve_open_id: VariableIdentifier,
+    apu_bleed_air_pressure_id: VariableIdentifier,
 
     core_processing_input_output_module_a: CoreProcessingInputOutputModuleA,
     engine_systems: [EngineBleedAirSystem; 4],
@@ -140,6 +141,8 @@ impl A380Pneumatic {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
+            apu_bleed_air_pressure_id: context
+                .get_identifier("PNEU_APU_BLEED_CONTAINER_PRESSURE".to_owned()),
             core_processing_input_output_module_a: CoreProcessingInputOutputModuleA::new(
                 ElectricalBusType::DirectCurrentEssential, // TTM 2
             ),
@@ -416,6 +419,10 @@ impl SimulationElement for A380Pneumatic {
         writer.write(
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
+        );
+        writer.write(
+            &self.apu_bleed_air_pressure_id,
+            self.apu_compression_chamber.pressure(),
         );
     }
 }
