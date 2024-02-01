@@ -86,8 +86,13 @@ class CDUAvailableArrivalsPage {
             for (let j = 0; j < approaches.length; j++) {
                 approaches[j].index = j;
             }
-            // Sort the approaches in Honeywell's documented order
-            const sortedApproaches = approaches.slice().sort((a, b) => ApproachTypeOrder.indexOf(a.approachType) - ApproachTypeOrder.indexOf(b.approachType));
+
+            const sortedApproaches = approaches.slice()
+                // filter out approaches with no matching runway, but keep circling approaches (no runway)
+                .filter((a) => a.runwayNumber === 0 || !!airportInfo.oneWayRunways.find((rw) => rw.number === a.runwayNumber && rw.designator === a.runwayDesignator))
+                // Sort the approaches in Honeywell's documented order
+                .sort((a, b) => ApproachTypeOrder.indexOf(a.approachType) - ApproachTypeOrder.indexOf(b.approachType));
+
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             const matchingArrivals = [];
             if (!starSelection) {
@@ -97,20 +102,29 @@ class CDUAvailableArrivalsPage {
                     if (approach) {
                         let runwayLength = "----";
                         let runwayCourse = "---";
-                        const runway = airportInfo.oneWayRunways.find((rw) => rw.number === approach.runwayNumber && rw.designator === approach.runwayDesignator);
-                        if (runway) {
-                            runwayLength = NXUnits.mToUser(runway.length).toFixed(0);
-                            const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
-                            runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
-                            rows[2 * i] = [`{cyan}{${approach.name.padEnd(9)}{end}` + runwayLength.padStart(5) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}[color]cyan", "", ""];
-                            const hasIls = approach.approachType === ApproachType.APPROACH_TYPE_ILS && runway.primaryILSFrequency.freqMHz > 0;
-                            const ilsText = hasIls ? `${WayPoint.formatIdentFromIcao(runway.primaryILSFrequency.icao).padStart(6)}/${runway.primaryILSFrequency.freqMHz.toFixed(2)}` : '';
-                            rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
+                        const isCircling = approach.runwayNumber === 0;
+                        if (isCircling) {
+                            rows[2 * i] = [`{cyan}{${approach.name}{end}`, "", ""];
+                        } else {
+                            const runway = airportInfo.oneWayRunways.find((rw) => rw.number === approach.runwayNumber && rw.designator === approach.runwayDesignator);
+                            if (runway) {
+                                runwayLength = NXUnits.mToUser(runway.length).toFixed(0);
+                                const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
+                                runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
+                                rows[2 * i] = [`{cyan}{${approach.name.padEnd(9)}{end}` + runwayLength.padStart(5) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}[color]cyan", "", ""];
+                                const hasIls = approach.approachType === ApproachType.APPROACH_TYPE_ILS && runway.primaryILSFrequency.freqMHz > 0;
+                                const ilsText = hasIls ? `${WayPoint.formatIdentFromIcao(runway.primaryILSFrequency.icao).padStart(6)}/${runway.primaryILSFrequency.freqMHz.toFixed(2)}` : '';
+                                rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
+                            }
                         }
-                      
+
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
-                                mcdu.flightPlanManager.setDestinationRunwayIndexFromApproach();
+                                if (isCircling) {
+                                    mcdu.flightPlanManager.setDestinationRunwayIndex(-1);
+                                } else {
+                                    mcdu.flightPlanManager.setDestinationRunwayIndexFromApproach();
+                                }
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                             });
                         };

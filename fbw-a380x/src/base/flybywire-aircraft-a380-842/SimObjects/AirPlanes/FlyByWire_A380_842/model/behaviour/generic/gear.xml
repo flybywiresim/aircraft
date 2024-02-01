@@ -1,0 +1,44 @@
+<ModelBehaviors>
+    <!--
+    Template for gear lever movement
+    -->
+    <Template Name="FBW_HANDLING_Gear_Lever_Template">
+        <DefaultTemplateParameters>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPSV2.LANDING_GEAR_LEVER_GEAR_TITLE</TOOLTIPID>
+            <ANIM_NAME>lever_landing_gear</ANIM_NAME>
+            <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
+            <PART_ID>LEVER_LANDINGGEAR</PART_ID>
+            <ANIM_LAG>0</ANIM_LAG>
+            <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+            <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
+            <DRAG_DELTA>0.001</DRAG_DELTA>
+            <DRAG_SPEED>0.03</DRAG_SPEED>
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_GEAR_HANDLE_POSITION, Number) 0.95 &gt; if{
+                    (&gt;K:GEAR_UP)
+                } els{
+                    (&gt;K:GEAR_DOWN)
+                }
+            </LEFT_SINGLE_CODE>
+            <LEFT_RELEASE_CODE>
+                (L:A32NX_GEAR_LEVER_LOCKED, Boolean) 1 ==  if{
+                    (&gt;K:GEAR_DOWN)
+                }
+            </LEFT_RELEASE_CODE>
+            <DRAG_CODE>
+
+            </DRAG_CODE>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_LENGTH>3</ANIM_LENGTH>
+                <ANIM_CODE>
+                        (L:A32NX_GEAR_HANDLE_POSITION, Percent) 2.5 *
+                </ANIM_CODE>
+                <UP_CODE>  (&gt;K:GEAR_UP)</UP_CODE>
+                <DOWN_CODE> (&gt;K:GEAR_DOWN)</DOWN_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

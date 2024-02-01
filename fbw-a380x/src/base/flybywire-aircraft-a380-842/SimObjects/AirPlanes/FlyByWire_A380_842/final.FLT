@@ -419,6 +419,7 @@ A32NX_ISIS_BUGS_SPD_ACTIVE:1=0
 A32NX_ISIS_BUGS_SPD_ACTIVE:2=0
 A32NX_ISIS_BUGS_SPD_ACTIVE:3=0
 A32NX_LG_GRVTY_SWITCH_POS=1
+A32NX_GEAR_LEVER_POSITION_REQUEST = 1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -453,6 +454,9 @@ Potentiometer.9=0
 Potentiometer.10=0
 Potentiometer.11=0
 Potentiometer.76=0
+Potentiometer.80=0.5
+Potentiometer.81=0.5
+Potentiometer.82=0.5
 Potentiometer.83=0
 Potentiometer.84=0.5
 Potentiometer.85=0.5
