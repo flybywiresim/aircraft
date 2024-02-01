@@ -224,7 +224,7 @@ impl SteeringActuator {
             self.nominal_speed * current_pressure.get::<psi>().sqrt() * 1.
                 / Self::REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI.sqrt()
         } else {
-            AngularVelocity::new::<radian_per_second>(0.)
+            AngularVelocity::default()
         })
         .min(self.nominal_speed)
     }
