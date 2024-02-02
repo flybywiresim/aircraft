@@ -24,7 +24,7 @@ class CDULateralRevisionPage {
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const isPpos = leg === undefined || legIndexFP === 0 && leg !== targetPlan.originLeg;
-        const isFrom = legIndexFP === targetPlan.activeLegIndex - 1;
+        const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === Fmgc.FlightPlanIndex.Active && !inAlternate;
         const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
         const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
         const isWaypoint = !isDeparture && !isDestination && !isPpos;

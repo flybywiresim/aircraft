@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway, ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { Approach, Runway, ApproachUtils, LegType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
@@ -110,6 +110,15 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             legs.push(cf);
             legs.push(FlightPlanLeg.fromAirportAndRunway(this, shortApproachName, airport, runway));
         } else {
+            const firstApproachLeg = approachLegs[0];
+
+            // Add an IF at the start if first leg of the approach is an FX
+            if (firstApproachLeg && firstApproachLeg.isDiscontinuity === false && firstApproachLeg.isFX()) {
+                const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachLeg.definition.waypoint, undefined, LegType.IF);
+
+                legs.push(newLeg);
+            }
+
             const lastLeg = approachLegs[approachLegs.length - 1];
             // let lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway;
             const lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && this.findRunwayFromRunwayLeg(lastLeg); // TODO user workaround until msfs-navdata fix (fms-v2)

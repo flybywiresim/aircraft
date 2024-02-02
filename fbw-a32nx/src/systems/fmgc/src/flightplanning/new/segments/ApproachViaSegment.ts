@@ -63,8 +63,8 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
         const firstApproachViaLeg = mappedApproachViaLegs[0];
 
-        // Add an IF at the start if first leg of the VIA is a PI
-        if (firstApproachViaLeg.type === LegType.PI) {
+        // Add an IF at the start if first leg of the VIA is a PI or FX
+        if (firstApproachViaLeg.type === LegType.PI || firstApproachViaLeg.isFX()) {
             const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachViaLeg.definition.waypoint, undefined, LegType.IF);
 
             this.allLegs.push(newLeg);

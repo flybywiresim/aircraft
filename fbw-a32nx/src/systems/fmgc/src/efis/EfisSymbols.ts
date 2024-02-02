@@ -491,8 +491,8 @@ export class EfisSymbols {
         const ret: NdSymbol[] = [];
 
         // FP legs
-        for (let i = flightPlan.legCount - 1; i >= (flightPlan.activeLegIndex - 1) && i >= 0; i--) {
-            const isFromLeg = !isAlternate && i === flightPlan.activeLegIndex - 1;
+        for (let i = flightPlan.legCount - 1; i >= (flightPlan.fromLegIndex) && i >= 0; i--) {
+            const isBeforeActiveLeg = i < flightPlan.activeLegIndex;
 
             const leg = flightPlan.elementAt(i);
 
@@ -571,7 +571,7 @@ export class EfisSymbols {
 
             const altConstraint = leg.altitudeConstraint;
 
-            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg) && !isAlternate) {
+            if ((isInLatAutoControl || isLatAutoControlArmed) && !isBeforeActiveLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg) && !isAlternate) {
                 if (!isSelectedVerticalModeActive) {
                     type |= NdSymbolTypeFlags.Constraint;
 
@@ -587,7 +587,7 @@ export class EfisSymbols {
                 }
             }
 
-            if (efisOption === EfisOption.Constraints && !isFromLeg) {
+            if (efisOption === EfisOption.Constraints && !isBeforeActiveLeg) {
                 const descent = leg.constraintType === WaypointConstraintType.DES;
                 switch (altConstraint?.type) {
                 case AltitudeConstraintType.at:

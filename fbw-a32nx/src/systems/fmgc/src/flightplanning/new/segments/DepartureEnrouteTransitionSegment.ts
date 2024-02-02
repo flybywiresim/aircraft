@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ProcedureTransition } from '@flybywiresim/fbw-sdk';
+import { LegType, ProcedureTransition } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -59,6 +59,16 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
         const mappedOriginEnrouteTransitionLegs = matchingOriginEnrouteTransition.legs.map(
             (leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingOriginEnrouteTransition.ident, WaypointConstraintType.CLB),
         );
+
+        const firstDepartureEnrouteTransitionLeg = mappedOriginEnrouteTransitionLegs[0];
+
+        // Add an IF at the start if first leg of the transition is an FX
+        if (firstDepartureEnrouteTransitionLeg?.isFX() && !firstDepartureEnrouteTransitionLeg.isRunway()) {
+            const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstDepartureEnrouteTransitionLeg.definition.waypoint, undefined, LegType.IF);
+
+            this.allLegs.push(newLeg);
+        }
+
         this.allLegs.push(...mappedOriginEnrouteTransitionLegs);
         this.strung = false;
 

@@ -370,9 +370,7 @@ export class LnavDriver implements GuidanceComponent {
                 withinSequencingArea = Math.abs(params.crossTrackError) < 7 && Math.abs(params.trackAngleError) < 90;
             }
 
-            const shouldSequenceFirstLeg = activeLegIdx === 0 && geometry.legs.has(activeLegIdx + 1);
-
-            if ((canSequence && withinSequencingArea && geometry.shouldSequenceLeg(activeLegIdx, this.ppos)) || activeLeg.isNull || shouldSequenceFirstLeg) {
+            if ((canSequence && withinSequencingArea && geometry.shouldSequenceLeg(activeLegIdx, this.ppos)) || activeLeg.isNull) {
                 const outboundTransition = geometry.transitions.get(activeLegIdx);
                 const nextLeg = geometry.legs.get(activeLegIdx + 1);
                 const followingLeg = geometry.legs.get(activeLegIdx + 2);
