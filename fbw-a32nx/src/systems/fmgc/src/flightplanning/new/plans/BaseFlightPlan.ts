@@ -2100,9 +2100,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             performanceData: this instanceof FlightPlan ? this.performanceData.serialize() : undefined,
 
-            destinationAirport: this.destinationAirport.icaoCode,
+            destinationAirport: this.destinationSegment?.destinationAirport?.ident ?? '',
 
-            originAirport: this.originAirport.icaoCode,
+            originAirport: this.originSegment?.originAirport?.ident ?? '',
 
             segments: {
                 originSegment: this.originSegment.serialize(),
