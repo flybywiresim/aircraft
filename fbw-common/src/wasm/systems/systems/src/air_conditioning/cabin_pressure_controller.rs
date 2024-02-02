@@ -1,4 +1,5 @@
 use crate::{
+    failures::{Failure, FailureType},
     shared::{
         arinc429::Arinc429Word, low_pass_filter::LowPassFilter, pid::PidController, AverageExt,
         CabinSimulation, ControllerSignal, EngineCorrectedN1,
@@ -62,6 +63,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
 
     is_active: bool,
     is_initialised: bool,
+    failure: Failure,
     constants: PhantomData<C>,
 }
 
@@ -80,7 +82,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const OFV_CONTROLLER_KP: f64 = 0.0001;
     const OFV_CONTROLLER_KI: f64 = 6.5;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, id: usize) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
             cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
@@ -134,6 +136,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
             is_active: false,
             is_initialised: false,
+            failure: Failure::new(FailureType::Cpc(id)),
             constants: PhantomData,
         }
     }
@@ -183,14 +186,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.reference_pressure = new_reference_pressure;
         self.departure_elevation = self.calculate_departure_elevation();
 
-        self.outflow_valve_controller.update(
-            context,
-            self.cabin_vertical_speed,
-            self.cabin_target_vs,
-            press_overhead,
-            self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
-            self.is_ground() && self.should_open_outflow_valve(),
-        );
+        if !self.has_fault() {
+            self.outflow_valve_controller.update(
+                context,
+                self.cabin_vertical_speed,
+                self.cabin_target_vs,
+                press_overhead,
+                self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
+                self.is_ground() && self.should_open_outflow_valve(),
+            );
+        }
 
         self.outflow_valve_open_amount = outflow_valve
             .iter()
@@ -476,6 +481,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.pressure_schedule_manager
             .as_ref()
             .map_or(false, |manager| manager.should_switch_cpc())
+            || self.has_fault()
     }
 
     pub fn should_open_outflow_valve(&self) -> bool {
@@ -500,6 +506,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
     pub fn is_active(&self) -> bool {
         self.is_active
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.failure.is_active()
     }
 
     pub fn landing_elevation_is_auto(&self) -> bool {
@@ -622,6 +632,11 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
         self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
+
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
 }
 
 pub struct OutflowValveController {
@@ -634,7 +649,6 @@ pub struct OutflowValveController {
 impl OutflowValveController {
     pub fn new(kp: f64, ki: f64) -> Self {
         Self {
-            //TODO: add ID for multiple OFV
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
@@ -1338,7 +1352,7 @@ mod tests {
             let mut test_aircraft = Self {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                cpc: CabinPressureController::new(context),
+                cpc: CabinPressureController::new(context, 1),
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],

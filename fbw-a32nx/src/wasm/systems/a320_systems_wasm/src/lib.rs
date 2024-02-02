@@ -90,6 +90,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (21_012, FailureType::CabinFan(1)),
         (21_013, FailureType::CabinFan(2)),
         (21_014, FailureType::GalleyFans),
+        (21_015, FailureType::Cpc(1)),
+        (21_016, FailureType::Cpc(2)),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),

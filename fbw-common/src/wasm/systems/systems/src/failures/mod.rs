@@ -13,6 +13,7 @@ pub enum FailureType {
     TrimAirOverheat(ZoneType),
     TrimAirFault(ZoneType),
     TrimAirHighPressure,
+    Cpc(usize),
     GalleyFans,
     Generator(usize),
     ApuGenerator(usize),

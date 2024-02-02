@@ -4,7 +4,7 @@
 
 import React, { FC, useState, useEffect, memo } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -13,10 +13,19 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import './Press.scss';
 
 export const PressPage: FC = () => {
+    const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+    const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+    const cpc1SysFault = cpc1DiscreteWord.isFailureWarning();
+    const cpc2SysFault = cpc2DiscreteWord.isFailureWarning();
+
+    // SYS is visible if the system is active or if it is failed
+    const cpc1SysVisible = cpc1DiscreteWord.getBitValueOr(11, false) || cpc1SysFault;
+    const cpc2SysVisible = cpc2DiscreteWord.getBitValueOr(11, false) || cpc2SysFault;
+
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
-    const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
     const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
     const [cabinAltTextCss, setCabinAltTextCss] = useState('');
@@ -48,8 +57,8 @@ export const PressPage: FC = () => {
             <PressureComponent />
 
             {/* System */}
-            <SystemComponent id={1} x={180} y={290} visible={systemNumber === 1} />
-            <SystemComponent id={2} x={350} y={290} visible={systemNumber === 2} />
+            <SystemComponent id={1} x={180} y={290} visible={cpc1SysVisible} fault={cpc1SysFault} />
+            <SystemComponent id={2} x={350} y={290} visible={cpc2SysVisible} fault={cpc2SysFault} />
 
             {/* Delta pressure gauge */}
             <g id="DeltaPressure">
@@ -324,14 +333,13 @@ const PressureComponent = () => {
 type SystemComponentType = {
     id: number,
     visible: boolean,
+    fault: boolean,
     x: number,
     y: number
 }
 
-const SystemComponent: FC<SystemComponentType> = memo(({ id, visible, x, y }) => {
-    // When failures are introduced can override visible variable
-    const systemFault = false;
-    const systemColour = systemFault ? 'Amber' : 'Green';
+const SystemComponent: FC<SystemComponentType> = memo(({ id, visible, fault, x, y }) => {
+    const systemColour = fault ? 'Amber' : 'Green';
 
     return (
         <>

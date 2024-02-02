@@ -30,6 +30,8 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [21, A320Failure.CabinFan1Failure, 'Cabin Fan 1'],
     [21, A320Failure.CabinFan2Failure, 'Cabin Fan 2'],
     [21, A320Failure.LabGalleyFan, 'Extraction Fan of lavatory and galley'],
+    [21, A320Failure.Cpc1, 'Cabin Pressure Controller 1'],
+    [21, A320Failure.Cpc2, 'Cabin Pressure Controller 2'],
 
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],

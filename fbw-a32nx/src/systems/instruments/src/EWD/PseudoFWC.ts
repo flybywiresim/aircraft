@@ -190,6 +190,12 @@ export class PseudoFWC {
 
     private readonly packOffNotFailed2Status = Subject.create(false);
 
+    private readonly cpc1Fault = Subject.create(false);
+
+    private readonly cpc2Fault = Subject.create(false);
+
+    private readonly pressurizationAuto = Subject.create(false);
+
     /* 22 - AUTOFLIGHT */
 
     private readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
@@ -1142,7 +1148,6 @@ export class PseudoFWC {
 
         /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        // FIXME: Should take both words
         this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
         this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
         this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
@@ -1196,9 +1201,14 @@ export class PseudoFWC {
 
         const activeCpc = this.cpc1DiscreteWord.bitValueOr(11, false) ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
 
+        this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
+        this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
+
         this.excessPressure.set(activeCpc.bitValueOr(14, false));
         this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
         this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
+
+        this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));
 
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write((pressureAltitude ?? 0) > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
@@ -2351,6 +2361,40 @@ export class PseudoFWC {
                 '213122106', '213122107', '213122108', '213122109', '213122110', '213122111', '213122112', '213122113', '213122114', '213122115', '213122116'],
             memoInhibit: () => false,
             failure: 3,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131222: { // SYS 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => cpc1Fault && !cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['213122201'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131223: { // SYS 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => !cpc1Fault && cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['213122301'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131224: { // SYS 1+2 FAULT
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => cpc1Fault && cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            whichCodeToReturn: () => [
+                0,
+                this.pressurizationAuto.get() ? 1 : null,
+                2,
+            ],
+            codesToReturn: ['213122401', '213122402', '213122403'],
+            memoInhibit: () => false,
+            failure: 2,
             sysPage: 2,
             side: 'LEFT',
         },
