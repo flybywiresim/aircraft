@@ -319,7 +319,8 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
                 </tspan>
                 <tspan
                     font-size={20}
-                    visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'inherit' : 'hidden'))}
+                    // visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'inherit' : 'hidden'))}
+                    style={`display: ${this.showDecimal.map((showDecimal) => (showDecimal ? 'inline' : 'none'))}`}
                     class={this.props.class}
                 >
                     {this.decimalPartText}
