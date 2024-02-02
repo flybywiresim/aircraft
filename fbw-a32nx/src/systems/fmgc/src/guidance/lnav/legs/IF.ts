@@ -28,6 +28,8 @@ export class IFLeg extends XFLeg {
         const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
 
         this.displayedOnMap = waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
+        // Always compute IF legs that are the runway. If we don't, IF legs at the origin might never be computed because they are before the active leg
+        this.isComputed = waypointDescriptor === WaypointDescriptor.Airport || waypointDescriptor === WaypointDescriptor.Runway;
     }
 
     get predictedPath(): PathVector[] | undefined {
