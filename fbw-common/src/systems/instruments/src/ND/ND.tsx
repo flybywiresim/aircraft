@@ -150,7 +150,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
-        sub.on('ndRangeSetting').whenChanged().handle((value) => {
+        sub.on('ndRangeSetting').whenChanged().handle(() => {
             this.invalidateRange();
         });
 
