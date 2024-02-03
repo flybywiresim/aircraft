@@ -1,9 +1,9 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
     private lsButtonPressedVisibility = false;

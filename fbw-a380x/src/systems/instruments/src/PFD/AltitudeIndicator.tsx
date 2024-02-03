@@ -1,12 +1,11 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
+import { Arinc429Word, ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const DisplayRange = 600;
 const ValueSpacing = 100;

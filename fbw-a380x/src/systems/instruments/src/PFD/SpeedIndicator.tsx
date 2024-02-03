@@ -1,11 +1,10 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
 import { LagFilter, RateLimiter, SmoothSin } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
+import { Arinc429Word, ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;

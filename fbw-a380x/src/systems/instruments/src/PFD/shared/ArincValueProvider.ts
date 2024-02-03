@@ -1,7 +1,7 @@
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 export interface Arinc429Values {
     slatsFlapsStatus: Arinc429Word;

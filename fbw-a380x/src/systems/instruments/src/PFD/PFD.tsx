@@ -1,7 +1,6 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -14,7 +13,7 @@ import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
+import { Arinc429Word, ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 import './style.scss';
 
