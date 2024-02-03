@@ -106,7 +106,7 @@ class CDUFlightPlanPage {
         }
 
         const waypointsAndMarkers = [];
-        const first = Math.max(0, targetPlan.activeLegIndex - 1);
+        const first = Math.max(0, targetPlan.fromLegIndex);
 
         // VNAV
         const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
@@ -125,7 +125,7 @@ class CDUFlightPlanPage {
         for (let i = first; i < targetPlan.legCount; i++) {
             const inMissedApproach = i >= targetPlan.firstMissedApproachLegIndex;
             const isActiveLeg = i === targetPlan.activeLegIndex && forActiveOrTemporary;
-            const isFromLeg = i === targetPlan.activeLegIndex - 1 && forActiveOrTemporary;
+            const isBeforeActiveLeg = i < targetPlan.activeLegIndex && forActiveOrTemporary;
 
             const wp = targetPlan.allLegs[i];
 
@@ -143,7 +143,7 @@ class CDUFlightPlanPage {
                 const distanceFromLastLine = pwp.distanceFromStart - cumulativeDistance;
                 cumulativeDistance = pwp.distanceFromStart;
 
-                if (!isFromLeg) {
+                if (!isBeforeActiveLeg) {
                     waypointsAndMarkers.push({ pwp, fpIndex: i, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && j === 0 })
                 }
             }
@@ -277,7 +277,7 @@ class CDUFlightPlanPage {
 
                 let ident = wp.ident;
                 let isOverfly = wp.definition.overfly;
-                const isFromLeg = !inAlternate && fpIndex === targetPlan.alternateFlightPlan.activeLegIndex - 1;
+                const isFromLeg = !inAlternate && fpIndex === targetPlan.fromLegIndex;
 
                 let verticalWaypoint = null;
                 // TODO: Alternate predictions
@@ -838,7 +838,7 @@ class CDUFlightPlanPage {
 
         let insertDiscontinuity = true;
         if (element.isDiscontinuity === false) {
-            if (element.isHX()) {
+            if (element.isHX() || fpIndex < targetPlan.activeLegIndex) {
                 insertDiscontinuity = false;
             } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
                 insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
@@ -895,6 +895,11 @@ class CDUFlightPlanPage {
         if (element.isDiscontinuity === true) {
             if (previousElement && previousElement.isDiscontinuity === false && previousElement.isVectors()) {
                 // Cannot clear disco after MANUAL
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                scratchpadCallback();
+                return false;
+            } else if (fpIndex - 1 === targetPlan.fromLegIndex && forPlan === Fmgc.FlightPlanIndex.Active && !forAlternate) {
+                // Cannot clear disco after FROM leg
                 mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 scratchpadCallback();
                 return false;

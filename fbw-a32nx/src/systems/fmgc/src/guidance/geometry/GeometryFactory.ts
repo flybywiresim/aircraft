@@ -195,7 +195,7 @@ export namespace GeometryFactory {
         // Trim geometry
 
         for (const [index] of geometry.legs.entries()) {
-            const legBeforePrev = index < flightPlan.activeLegIndex - 1;
+            const legBeforePrev = index < flightPlan.fromLegIndex;
             const legAfterLastWpt = index >= flightPlan.legCount;
 
             if (legBeforePrev || legAfterLastWpt) {

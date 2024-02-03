@@ -490,13 +490,8 @@ export class Geometry {
             const flightPlanLeg = flightPlanLegs[i];
             const geometryLeg = this.legs.get(i);
 
-            if (i === plan.firstMissedApproachLegIndex) {
-                cumulativeDistance = 0;
-                cumulativeDistanceWithTransitions = 0;
-            }
-
-            if (i === plan.activeLegIndex - 1) {
-                this.setCalculatedDistancesOnFromLeg(flightPlanLeg, geometryLeg);
+            if (i === fromIndex || i === plan.firstMissedApproachLegIndex) {
+                this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
             } else if (flightPlanLeg.isDiscontinuity === true) {
                 const directDistance = this.computeDistanceInDiscontinuity(i);
 
@@ -533,7 +528,7 @@ export class Geometry {
         this.reflowDistancesToEnd(plan, cumulativeDistance, cumulativeDistanceWithTransitions, fromIndex, toIndex);
     }
 
-    private setCalculatedDistancesOnFromLeg(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
+    private initializeCalculatedDistances(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
         if (flightPlanLeg.isDiscontinuity === true) {
             return;
         }
@@ -562,12 +557,14 @@ export class Geometry {
         const previousLeg = this.legs.get(discoIndex - 1);
         const nextLeg = this.legs.get(discoIndex + 1);
 
-        if (nextLeg instanceof IFLeg) {
-            const directDistanceInDisco = previousLeg instanceof VMLeg
-                ? distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location)
-                : distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
-
-            return directDistanceInDisco;
+        if (nextLeg instanceof IFLeg && previousLeg) {
+            if (previousLeg instanceof VMLeg) {
+                if (previousLeg.getPathStartPoint()) {
+                    return distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location);
+                }
+            } else if (previousLeg.getPathEndPoint()) {
+                return distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
+            }
         }
 
         return 0;
