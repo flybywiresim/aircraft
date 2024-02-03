@@ -292,6 +292,11 @@ export const PushbackPage = () => {
                 Rot. Accel Z:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared'), 3).toFixed(3)}
+                <br />
+                {' '}
+                Rel. Wind V Body Z:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second'), 3).toFixed(3)}
             </div>
             <div className="text-m overflow-hidden text-black">
                 acGroundSpeed:
