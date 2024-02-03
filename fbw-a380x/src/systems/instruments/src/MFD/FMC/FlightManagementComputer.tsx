@@ -64,6 +64,8 @@ export class FlightManagementComputer implements FmcInterface {
         return this.#flightPlanService;
     }
 
+    private lastFlightPlanVersion: number = null;
+
     #fmgc = new FmgcDataService(this.flightPlanService);
 
     get fmgc() {
@@ -846,8 +848,18 @@ export class FlightManagementComputer implements FmcInterface {
             // this.updatePerfPageAltPredictions();
         }
 
-        this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+        const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
+
+        if (flightPlanChanged) {
+            this.acInterface.updateManagedProfile();
+            this.acInterface.updateDestinationData();
+            this.lastFlightPlanVersion = this.flightPlanService.activeOrTemporary.version;
+        }
+
         this.acInterface.updateAutopilot(dt);
+
+        this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+
     }
 
     updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {

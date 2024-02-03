@@ -279,6 +279,63 @@ export class FmcAircraftInterface {
         this.arincTakeoffPitchTrim.setBnrValue(ths ? -ths : 0, ssm, 12, 180, -180);
     }
 
+    private landingElevation: number = null;
+
+    private destinationLatitude: number = null;
+
+    private destinationLongitude: number = null;
+
+    async updateDestinationData() {
+        let landingElevation: number;
+        let latitude: number;
+        let longitude: number;
+
+        const runway = this.flightPlanService.active.destinationRunway;
+
+        if (runway) {
+            landingElevation = runway.thresholdLocation.alt;
+            latitude = runway.thresholdLocation.lat;
+            longitude = runway.thresholdLocation.long;
+        } else {
+            const airport = this.flightPlanService.active.destinationAirport;
+
+            if (airport) {
+                const ele = airport.location.alt;
+
+                landingElevation = isFinite(ele) ? ele : undefined;
+                latitude = airport.location.lat;
+                longitude = airport.location.long;
+            }
+        }
+
+        if (this.landingElevation !== landingElevation) {
+            this.landingElevation = landingElevation;
+
+            const ssm = landingElevation !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
+
+            this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+
+            // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
+            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
+        }
+
+        if (this.destinationLatitude !== latitude) {
+            this.destinationLatitude = latitude;
+
+            const ssm = latitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
+
+            this.arincDestinationLatitude.setBnrValue(latitude ? latitude : 0, ssm, 18, 180, -180);
+        }
+
+        if (this.destinationLongitude !== longitude) {
+            this.destinationLongitude = longitude;
+
+            const ssm = longitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
+
+            this.arincDestinationLongitude.setBnrValue(longitude ? longitude : 0, ssm, 18, 180, -180);
+        }
+    }
+
     updateMinimums(distanceToDestination: number) {
         const inRange = this.shouldTransmitMinimums(distanceToDestination);
 
