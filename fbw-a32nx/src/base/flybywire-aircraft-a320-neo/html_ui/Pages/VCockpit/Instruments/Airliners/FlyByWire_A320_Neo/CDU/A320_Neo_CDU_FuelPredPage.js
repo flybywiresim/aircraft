@@ -250,9 +250,8 @@ class CDUFuelPredPage {
                     zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
                 }
 
-                destEFOBCellColor = mcdu._isBelowMinDestFob? "[color]amber" : "[color]green";
+                destEFOBCellColor = mcdu._isBelowMinDestFob ? "[color]amber" : "[color]green";
             }
-
         }
 
         mcdu.setTemplate([

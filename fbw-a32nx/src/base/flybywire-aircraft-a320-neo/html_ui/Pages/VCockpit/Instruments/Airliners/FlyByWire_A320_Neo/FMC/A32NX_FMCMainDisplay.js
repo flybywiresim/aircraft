@@ -4279,17 +4279,17 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     checkEFOBBelowMin() {
-        if(this._fuelPredDone) {
+        if (this._fuelPredDone) {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
 
-        if(this._minDestFob) {
+        if (this._minDestFob) {
             // round & only use 100kgs precision since thats how it is displayed in fuel pred
-            const EFOBBelMin = Math.round( (this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false)) * 10) / 10;
-            const roundedMinDestFob =  Math.round(this._minDestFob * 10)/10;
-            if(!this._isBelowMinDestFob) {
-                if (EFOBBelMin < roundedMinDestFob) {
+            const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
+            const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+            if (!this._isBelowMinDestFob) {
+                if (destEfob < roundedMinDestFob) {
                     this._isBelowMinDestFob = true;
                     // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
                     if (this.isAnEngineOn()) {
@@ -4299,7 +4299,7 @@ class FMCMainDisplay extends BaseAirliners {
                             }, () => {
                                 this._EfobBelowMinClr = true;
                             });
-                        }, 180000);
+                        }, 120000);
                     } else {
                         this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
                             return this._EfobBelowMinClr === true;
@@ -4310,8 +4310,8 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             } else {
                 // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
-                if(roundedMinDestFob) {
-                    if(EFOBBelMin - roundedMinDestFob >= 0.3) {
+                if (roundedMinDestFob) {
+                    if (destEfob - roundedMinDestFob >= 0.3) {
                         this._isBelowMinDestFob = false;
                         this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
                     }
