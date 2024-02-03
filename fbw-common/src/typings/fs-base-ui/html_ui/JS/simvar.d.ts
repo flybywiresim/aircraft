@@ -2,7 +2,7 @@
 /// <reference path="./Types.d.ts" />
 /// <reference path="./Simplane.d.ts" />
 
-type SingleArgumentCallback = () => void;
+type SingleArgumentCallback = (arg: unknown) => void;
 
 declare namespace SimVar {
     var g_bUseWatcher: boolean;
