@@ -1568,39 +1568,39 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const departureSegments = segments.filter((s) => s.class === SegmentClass.Departure);
         const arrivalSegments = segments.filter((s) => s.class === SegmentClass.Arrival);
 
-        // String all departure segments among each other
-        for (let i = 0; i < departureSegments.length; i++) {
-            const segment = departureSegments[i];
-            const nextSegment = this.nextSegment(segment);
+        if (options & RestringOptions.RestringDeparture) {
+            // String all departure segments among each other
+            for (let i = 0; i < departureSegments.length; i++) {
+                const segment = departureSegments[i];
+                const nextSegment = this.nextSegment(segment);
 
-            if (nextSegment?.class === SegmentClass.Departure) {
-                this.stringSegmentsBackwards(segment, nextSegment);
-                this.stringSegmentsForwards(segment, nextSegment);
+                if (nextSegment?.class === SegmentClass.Departure) {
+                    this.stringSegmentsBackwards(segment, nextSegment);
+                    this.stringSegmentsForwards(segment, nextSegment);
+                }
+
+                segment.insertNecessaryDiscontinuities();
             }
 
-            segment.insertNecessaryDiscontinuities();
-        }
-
-        // String entire departure to the rest of the route
-        if (options & RestringOptions.RestringDeparture) {
+            // String entire departure to the rest of the route
             this.stringDepartureToDownstream();
         }
 
-        // String all arrival segments among each other
-        for (let i = 0; i < arrivalSegments.length; i++) {
-            const segment = arrivalSegments[i];
-            const nextSegment = this.nextSegment(segment);
+        if (options & RestringOptions.RestringArrival) {
+            // String all arrival segments among each other
+            for (let i = 0; i < arrivalSegments.length; i++) {
+                const segment = arrivalSegments[i];
+                const nextSegment = this.nextSegment(segment);
 
-            if (nextSegment?.class === SegmentClass.Arrival) {
-                this.stringSegmentsBackwards(segment, nextSegment);
-                this.stringSegmentsForwards(segment, nextSegment);
+                if (nextSegment?.class === SegmentClass.Arrival) {
+                    this.stringSegmentsBackwards(segment, nextSegment);
+                    this.stringSegmentsForwards(segment, nextSegment);
+                }
+
+                segment.insertNecessaryDiscontinuities();
             }
 
-            segment.insertNecessaryDiscontinuities();
-        }
-
-        // String entire arrival to the rest of the route
-        if (options & RestringOptions.RestringArrival) {
+            // String entire arrival to the rest of the route
             this.stringArrivalToUpstream();
         }
 
@@ -1723,7 +1723,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     private stringSegmentsBackwards(first: FlightPlanSegment, second: FlightPlanSegment) {
-        if (!first || !second || first.strung || first.allLegs.length === 0 || second.allLegs.length === 0 || (second instanceof EnrouteSegment && second.isSequencedMissedApproach)) {
+        if (!first || !second || first.allLegs.length === 0 || second.allLegs.length === 0) {
             return;
         }
 
@@ -1765,13 +1765,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             if (bothXf) {
                 if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
-                    // Transfer leg type from firstLegInSecond definition onto element
-                    element.type = firstLegInSecond.definition.type;
-                    Object.assign(element.definition, firstLegInSecond.definition);
-
-                    // Annotation of element should be used
-                    [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, element.annotation);
-
+                    // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
                     second.allLegs.shift();
                     second.flightPlan.syncSegmentLegsChange(first);
                     cutBefore = i;
@@ -1794,7 +1788,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
             }
 
-            first.strung = false;
             return;
         }
 
@@ -1809,8 +1802,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
-
-        first.strung = true;
     }
 
     private stringDepartureToDownstream() {
@@ -1855,6 +1846,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const [firstArrivalSegment, firstArrivalLegIndex, firstArrivalLegIndexInPlan] = this.findFirstArrivalLeg();
         if (!firstArrivalSegment) {
             return;
+        } if (firstArrivalSegment.strungEnroute) {
+            console.log(`${firstArrivalSegment.constructor.name} is already strung to upstream`);
+            return;
         }
 
         const firstArrivalLeg = firstArrivalSegment.allLegs[firstArrivalLegIndex];
@@ -1885,7 +1879,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 firstArrivalLeg.annotation = duplicateLeg.annotation;
 
                 this.removeRange(duplicatePlanIndex, firstArrivalLegIndexInPlan);
-                duplicateSegment.strung = true;
+                firstArrivalSegment.strungEnroute = true;
             }
         } else if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity !== true) {
             // Insert disco otherwise

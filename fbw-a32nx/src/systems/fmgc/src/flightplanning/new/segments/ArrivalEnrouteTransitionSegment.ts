@@ -23,6 +23,8 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
     private arrivalEnrouteTransition: ProcedureTransition | undefined = undefined
 
     setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        const oldArrivalEnrouteTransitionName = this.arrivalEnrouteTransition?.ident;
+
         if (ident === undefined) {
             this.arrivalEnrouteTransition = undefined;
 
@@ -73,6 +75,11 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
         this.allLegs.push(...mappedArrivalEnrouteTransitionLegs);
         this.strung = false;
 
+        if (oldArrivalEnrouteTransitionName !== matchingArrivalEnrouteTransition.ident) {
+            // Restring to enroute if the arrival enroute transition has changed
+            this.strungEnroute = false;
+        }
+
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
     }
@@ -81,6 +88,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
         const newSegment = new ArrivalEnrouteTransitionSegment(forPlan);
 
         newSegment.strung = this.strung;
+        newSegment.strungEnroute = this.strungEnroute;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
         newSegment.arrivalEnrouteTransition = this.arrivalEnrouteTransition;
 
