@@ -1,7 +1,7 @@
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
+import { Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 
 export interface Arinc429Values {
     slatsFlapsStatus: Arinc429Word;
@@ -19,6 +19,7 @@ export interface Arinc429Values {
     chosenRa: Arinc429Word;
     fpa: Arinc429Word;
     da: Arinc429Word;
+    landingElevation: Arinc429Word;
     staticPressure: Arinc429Word;
     fcdcDiscreteWord1: Arinc429Word;
     fcdc1DiscreteWord1: Arinc429Word;
@@ -36,6 +37,12 @@ export interface Arinc429Values {
     vLs: Arinc429Word;
     estimatedBeta: Arinc429Word;
     betaTarget: Arinc429Word;
+    fmEisDiscreteWord1Raw: number;
+    fmEisDiscreteWord2Raw: number;
+    fmMdaRaw: number;
+    fmDhRaw: number;
+    fmTransAltRaw: number;
+    fmTransLvlRaw: number;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -68,6 +75,10 @@ export class ArincValueProvider {
 
     private da = new Arinc429Word(0);
 
+    private ownLandingElevation = new Arinc429Word(0);
+
+    private oppLandingElevation = new Arinc429Word(0);
+
     private staticPressure = new Arinc429Word(0);
 
     private fac1Healthy = false;
@@ -79,6 +90,14 @@ export class ArincValueProvider {
     private fac2VAlphaMax = new Arinc429Word(0);
 
     private facToUse = 0;
+
+    private readonly fm1Healthy = ConsumerSubject.create(null, 0);
+
+    private readonly fm2Healthy = ConsumerSubject.create(null, 0);
+
+    private readonly fm1Subs: Subscription[] = [];
+
+    private readonly fm2Subs: Subscription[] = [];
 
     constructor(private readonly bus: EventBus) {
 
@@ -122,7 +141,7 @@ export class ArincValueProvider {
             publisher.pub('speedAr', this.speed);
         });
 
-        subscriber.on('altitude').handle((a) => {
+        subscriber.on('baroCorrectedAltitude').handle((a) => {
             this.altitude = new Arinc429Word(a);
             publisher.pub('altitudeAr', this.altitude);
         });
@@ -175,6 +194,15 @@ export class ArincValueProvider {
         subscriber.on('daRaw').handle((da) => {
             this.da = new Arinc429Word(da);
             publisher.pub('da', this.da);
+        });
+
+        subscriber.on('landingElevation1Raw').handle((elevation) => {
+            if (getDisplayIndex() === 1) {
+                this.ownLandingElevation = new Arinc429Word(elevation);
+            } else {
+                this.oppLandingElevation = new Arinc429Word(elevation);
+            }
+            this.determineAndPublishChosenLandingElevation(publisher);
         });
 
         subscriber.on('staticPressureRaw').handle((sp) => {
@@ -370,6 +398,22 @@ export class ArincValueProvider {
         publisher.pub('fcdcDiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
         publisher.pub('fcdc1DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
         publisher.pub('fcdc2DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
+
+        this.fm1Subs.push(subscriber.on('fm1EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1MdaRaw').handle((raw) => publisher.pub('fmMdaRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2MdaRaw').handle((raw) => publisher.pub('fmMdaRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1TransAltRaw').handle((raw) => publisher.pub('fmTransAltRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2TransAltRaw').handle((raw) => publisher.pub('fmTransAltRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1TransLvlRaw').handle((raw) => publisher.pub('fmTransLvlRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2TransLvlRaw').handle((raw) => publisher.pub('fmTransLvlRaw', raw), true));
+
+        this.fm1Healthy.setConsumer(subscriber.on('fm1HealthyDiscrete'));
+        this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));
+        this.fm1Healthy.sub(this.determineFmToUse.bind(this));
+        this.fm2Healthy.sub(this.determineFmToUse.bind(this), true);
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {
@@ -451,6 +495,19 @@ export class ArincValueProvider {
         publisher.pub('chosenRa', getDisplayIndex() === 1 ? chosenRas[0] : chosenRas[1]);
     }
 
+    private determineAndPublishChosenLandingElevation(publisher: Publisher<Arinc429Values>) {
+        const useOpposite = (this.ownLandingElevation.isFailureWarning()
+            || this.ownLandingElevation.isNoComputedData())
+            && !this.oppLandingElevation.isFailureWarning()
+            && !this.oppLandingElevation.isNoComputedData();
+
+        if (useOpposite) {
+            publisher.pub('landingElevation', this.oppLandingElevation);
+        } else {
+            publisher.pub('landingElevation', this.ownLandingElevation);
+        }
+    }
+
     // Determine which FAC bus to use for FE function. If FAC HEALTHY discrete is low or any word is coded FW,
     // declare FAC as invalid. For simplicty reasons, only check SSM of words that use the same data, so all failure cases are
     // handled while minimizing the words that have to be checked.
@@ -472,5 +529,20 @@ export class ArincValueProvider {
         }
 
         publisher.pub('facToUse', this.facToUse);
+    }
+
+    private determineFmToUse(): void {
+        const onSideIndex = MathUtils.clamp(getDisplayIndex(), 1, 2);
+
+        const onlyFm1Healthy = this.fm1Healthy.get() && !this.fm2Healthy.get();
+        const onlyFm2Healthy = this.fm2Healthy.get() && !this.fm1Healthy.get();
+
+        if ((onSideIndex === 1 && !onlyFm2Healthy) || onlyFm1Healthy) {
+            this.fm2Subs.forEach((sub) => sub.pause());
+            this.fm1Subs.forEach((sub) => sub.resume(true));
+        } else if ((onSideIndex === 2 && !onlyFm1Healthy) || onlyFm2Healthy) {
+            this.fm1Subs.forEach((sub) => sub.pause());
+            this.fm2Subs.forEach((sub) => sub.resume(true));
+        }
     }
 }
