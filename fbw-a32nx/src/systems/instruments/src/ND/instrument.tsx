@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { A320EfisNdRangeValue, a320EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { a320EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
