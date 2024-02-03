@@ -293,6 +293,7 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
 
             if (this.props.roundedThreshold && value >= this.props.roundedThreshold) {
                 this.intPartText.set(value.toFixed(0));
+                this.decimalPartText.set('');
                 this.showDecimal.set(false);
             } else {
                 const [intPart, decimalPart] = value.toFixed(this.props.digits).split('.', 2);
@@ -319,8 +320,7 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
                 </tspan>
                 <tspan
                     font-size={20}
-                    // visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'inherit' : 'hidden'))}
-                    style={`display: ${this.showDecimal.map((showDecimal) => (showDecimal ? 'inline' : 'none'))}`}
+                    visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'inherit' : 'hidden'))}
                     class={this.props.class}
                 >
                     {this.decimalPartText}
