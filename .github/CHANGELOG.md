@@ -55,6 +55,7 @@
 1. [ND] Fixed manual/RMP tuning flags for ADFs - @tracernz (Mike)
 1. [EFCS] Freeze rudder trim when below 200 ft RA - @aguther (Andreas Guther)
 1. [AP] Tuning of Autoland especially in Crosswind situations - @aguther (Andreas Guther)
+1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
 
 ## 0.11.0
 
