@@ -229,7 +229,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, Fmgc.a320EfisRangeSettings, this);
         this.navigation = new Fmgc.Navigation(this.flightPlanManager, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(
             this.flightPlanManager,
