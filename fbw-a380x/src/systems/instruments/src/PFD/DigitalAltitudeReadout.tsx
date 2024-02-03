@@ -134,7 +134,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         return (
             <g id="AltReadoutGroup">
                 <g>
-                    <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+                    <svg x="117.754" y="76.3374" width="14.5" height="8.9706" viewBox="0 0 14.5 8.9706">
                         <Drum
                             type="ten-thousands"
                             position={this.tenThousandsPosition}
@@ -234,13 +234,13 @@ class Drum extends DisplayComponent<DrumProperties> {
             const digitRef = FSComponent.createRef<SVGTextElement>();
 
             if (this.props.type === 'hundreds') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="11.631" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="13.1" y="6.8" />);
             } else if (this.props.type === 'thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="7.18" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="9.2" y="6.8" />);
             } else if (this.props.type === 'ten-thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="5.9" y="6.8" />);
             } else if (this.props.type === 'tens') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontTinyToSmallest MiddleAlign ${this.color}`} x="5.8" y="8.9133" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontTinyToSmallest MiddleAlign ${this.color}`} x="5.5" y="8.9133" />);
             }
             this.digitRefElements.push(digitRef);
         }
