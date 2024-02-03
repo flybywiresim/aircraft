@@ -110,8 +110,8 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
 
             this.slatsOut = slats > 6.1;
 
-            const xFactor = -0.63;
-            const yFactor = 0.15;
+            const xFactor = -0.43;
+            const yFactor = 0.09;
             const synchroFactor = 0.081;
 
             let synchroOffset = 0;
@@ -218,9 +218,9 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
                     <path d={circlePath(0.8, 5, 196.4)} class={this.slatsTargetPos.map((i) => (i == 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
 
                     <path d='M 32.3 193.7 v 1.7 h 1.9 z' class='Fill Stroke NormalStroke Cyan CornerRound' visibility={this.flapsTargetPos.map((i) => (i == 0 ? 'visible' : 'hidden'))} />
-                    <path d='M 41.5 197.5 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 47.9 199.9 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 55.0 203 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
+                    <path d='M 39.9 196.8 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
+                    <path d='M 47.3 199.9 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
+                    <path d='M 54.7 203 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
                     <path d='M 62.1 206.1 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
 
                     <text x={23.7} y={202.3} class={this.targetClass}>{this.targetText}</text>
