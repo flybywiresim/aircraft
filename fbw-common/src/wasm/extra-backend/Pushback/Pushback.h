@@ -46,6 +46,7 @@ class Pushback : public Module {
   NamedVariablePtr tugCommandedHeadingFactor;
   NamedVariablePtr tugCommandedSpeedFactor;
   // debug purposes - send as LVARs for debugging to the flyPad
+  NamedVariablePtr pushbackDebug;
   NamedVariablePtr tugCommandedHeading;
   NamedVariablePtr tugCommandedSpeed;
   NamedVariablePtr tugInertiaSpeed;
@@ -71,6 +72,9 @@ class Pushback : public Module {
   ClientEventPtr tugHeadingEvent;
   ClientEventPtr tugSpeedEvent;
 
+  // Profiler for measuring the update time
+  SimpleProfiler profiler{"Pushback::update", 120};
+
  public:
   Pushback() = delete;
 
@@ -90,8 +94,9 @@ class Pushback : public Module {
 
  protected:
   /**
-   * Calculates the counter rotation acceleration. This is required especially if a user uses the
-   * stick for taxiing as forward and backward taxiing are controlled by the same axis as the elevator.
+   * Calculates the counter rotation acceleration. This is required as the elevator creates a lift force
+   * especially if a user uses the stick for taxiing as forward and backward taxiing are controlled
+   * by the same axis as the elevator.
    * Especially in strong winds this can lead to the aircraft lifting its nose or gears.
    * @param inertiaSpeed The current inertia speed.
    * @param windVelBodyZ The current wind velocity in body Z direction.

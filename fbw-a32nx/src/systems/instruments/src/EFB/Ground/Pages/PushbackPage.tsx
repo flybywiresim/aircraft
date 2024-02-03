@@ -265,6 +265,11 @@ export const PushbackPage = () => {
                 {' '}
                 {tugCmdHdg.toFixed(3)}
                 <br />
+                {' '}
+                Counter Rot X:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'Number'), 3).toFixed(3)}
+                <br />
                 Rotation Velocity X:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
@@ -292,11 +297,6 @@ export const PushbackPage = () => {
                 Rot. Accel Z:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared'), 3).toFixed(3)}
-                <br />
-                {' '}
-                Rel. Wind V Body Z:
-                {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second'), 3).toFixed(3)}
             </div>
             <div className="text-m overflow-hidden text-black">
                 acGroundSpeed:
@@ -304,8 +304,8 @@ export const PushbackPage = () => {
                 {planeGroundSpeed.toFixed(3)}
                 {'kts '}
                 {' ('}
-                {(planeGroundSpeed * 1.68781).toFixed(3)}
-                ft/s)
+                {(planeGroundSpeed * 0.51444).toFixed(3)}
+                m/s)
                 <br />
                 tCSpeedFactor:
                 {' '}
@@ -345,6 +345,12 @@ export const PushbackPage = () => {
                 Accel Z:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
+                <br />
+                {' '}
+                Rel. Wind Z:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second'), 3).toFixed(3)}
+                m/s
             </div>
         </div>
     );
@@ -395,7 +401,7 @@ export const PushbackPage = () => {
                             <div className="w-full">
                                 <p
                                     className="text-center"
-                                    onDoubleClick={() => setShowDebugInfo((old) => !old)}
+                                    onDoubleClick={() => setShowDebugInfo((old: any) => !old)}
                                 >
                                     {t('Pushback.SystemEnabledOn')}
                                 </p>
@@ -413,7 +419,7 @@ export const PushbackPage = () => {
                             <div className="w-full">
                                 <p
                                     className="text-center"
-                                    onDoubleClick={() => setShowDebugInfo((old) => !old)}
+                                    onDoubleClick={() => setShowDebugInfo((old: any) => !old)}
                                 >
                                     {t('Pushback.SystemEnabledOff')}
                                 </p>
@@ -461,7 +467,7 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.SetReleaseParkingBrake')}>
                                 <button
                                     type="button"
-                                    onClick={() => setParkingBrakeEngaged((old) => !old)}
+                                    onClick={() => setParkingBrakeEngaged((old: any) => !old)}
                                     className={`text-utility-white flex h-20 w-full items-center justify-center rounded-md opacity-60 transition duration-100 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable && 'pointer-events-none opacity-30'}`}
                                 >
                                     {parkingBrakeEngaged ? (

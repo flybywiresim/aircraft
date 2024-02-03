@@ -4,7 +4,7 @@
 #include "Pushback_A380X.h"
 
 FLOAT64 Pushback_A380X::calculateCounterRotAccel(const FLOAT64 inertiaSpeed, AircraftVariablePtr& windVelBodyZ) const {
-  // TODO: adapt this to the A380X
+  // TODO: tune this to the A380X - requires A380X flight model to be implemented
   FLOAT64 movementCounterRotAccel = 0.0;
   if (inertiaSpeed > 0) {
     movementCounterRotAccel = (windVelBodyZ->get() / 2000.0) - 0.5;

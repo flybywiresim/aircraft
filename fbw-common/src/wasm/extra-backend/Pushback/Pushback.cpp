@@ -41,6 +41,7 @@ bool Pushback::initialize() {
   tugCommandedSpeedFactor = dataManager->make_named_var("PUSHBACK_SPD_FACTOR");
   tugCommandedHeadingFactor = dataManager->make_named_var("PUSHBACK_HDG_FACTOR");
   // debug purposes
+  pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
   tugCommandedSpeed = dataManager->make_named_var("PUSHBACK_SPD");
   tugCommandedHeading = dataManager->make_named_var("PUSHBACK_HDG");
   tugInertiaSpeed = dataManager->make_named_var("PUSHBACK_INERTIA_SPD");
@@ -89,6 +90,8 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return true;
   }
 
+  //  profiler.start();
+
   const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
   const UINT64 tickCounter = msfsHandler.getTickCounter();
 
@@ -115,12 +118,13 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const DWORD convertedComputedHeading = static_cast<DWORD>(computedHdg) * headingToInt32;
 
   // send as LVARs for debugging in the flyPad
-  updateDelta->setAndWriteToSim(pData->dt);            // debug value
-  tugInertiaSpeed->setAndWriteToSim(inertiaSpeed);     // debug value
-  tugCommandedSpeed->setAndWriteToSim(tugCmdSpd);      // debug value
-  rotXOut->setAndWriteToSim(movementCounterRotAccel);  // debug value
-  tugCommandedHeading->setAndWriteToSim(computedHdg);  // debug value
-
+  if (pushbackDebug->getAsBool()) {
+    updateDelta->setAndWriteToSim(pData->dt);            // debug value
+    tugInertiaSpeed->setAndWriteToSim(inertiaSpeed);     // debug value
+    tugCommandedSpeed->setAndWriteToSim(tugCmdSpd);      // debug value
+    rotXOut->setAndWriteToSim(movementCounterRotAccel);  // debug value
+    tugCommandedHeading->setAndWriteToSim(computedHdg);  // debug value
+  }
   // send K:KEY_TUG_HEADING event
   tugHeadingEvent->trigger_ex1(convertedComputedHeading, 0, 0, 0, 0);
 
@@ -133,6 +137,9 @@ bool Pushback::update(sGaugeDrawData* pData) {
   pushbackData->data().rotVelBodyY = computedRotationVelocity;
   pushbackData->data().rotAccelBodyX = movementCounterRotAccel;
   pushbackData->writeDataToSim();
+
+  //  profiler.stop();
+  //  profiler.print();
 
   return true;
 }
