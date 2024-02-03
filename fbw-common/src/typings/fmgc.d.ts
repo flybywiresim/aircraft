@@ -1,4 +1,6 @@
 import type {
+    GuidanceController as GuidanceController_,
+    GuidanceManager as GuidanceManager_,
     FlightPlanManager as FlightPlanManager_,
     ManagedFlightPlan as ManagedFlightPlan_,
     getFlightPhaseManager as getFlightPhaseManager_,
@@ -11,6 +13,10 @@ declare global {
      * Legacy A32NX FMGC object typings
      */
     namespace Fmgc {
+        const GuidanceController: typeof GuidanceController_
+
+        const GuidanceManager: typeof GuidanceManager_
+
         const FlightPlanManager: typeof FlightPlanManager_
 
         const ManagedFlightPlan: typeof ManagedFlightPlan_
