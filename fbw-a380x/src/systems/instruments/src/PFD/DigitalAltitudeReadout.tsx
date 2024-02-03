@@ -240,7 +240,7 @@ class Drum extends DisplayComponent<DrumProperties> {
             } else if (this.props.type === 'ten-thousands') {
                 graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
             } else if (this.props.type === 'tens') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontSmallest MiddleAlign ${this.color}`} x="4.5894" y="8.9133" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontTinyToSmallest MiddleAlign ${this.color}`} x="5.8" y="8.9133" />);
             }
             this.digitRefElements.push(digitRef);
         }

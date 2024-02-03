@@ -561,14 +561,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <path id='SpeedTapeBackground' class='TapeBackground' d='m1.9058 123.56v-85.473h17.125v85.473z' />
                     <text id='SpeedFailText' class='Blink9Seconds FontLargest EndAlign Red' x='17.756115' y='83.386398'>SPD</text>
-                    <path id='SpeedTapeOutlineRight' class='NormalStroke Red' d={this.pathSub} />
 
                 </g>
 
                 <g id='SpeedTapeElementsGroup' ref={this.speedTapeElements}>
                     <path id='SpeedTapeBackground' class='TapeBackground' d='m1.9058 123.56v-85.473h17.125v85.473z' />
                     {/* Outline */}
-                    <path id='SpeedTapeOutlineRight' class='NormalStroke White' d={this.pathSub} />
                     <VerticalTape
                         tapeValue={this.speedSub}
                         lowerLimit={30}
