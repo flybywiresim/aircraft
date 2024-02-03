@@ -95,13 +95,13 @@ export class GuidanceController {
 
     automaticSequencing: boolean = true;
 
-    leftEfisState: EfisState<any>
+    leftEfisState: EfisState<number>;
 
-    rightEfisState: EfisState<any>
+    rightEfisState: EfisState<number>;
 
-    efisStateForSide: { L: EfisState<any>, R: EfisState<any> }
+    efisStateForSide: { L: EfisState<number>, R: EfisState<number> };
 
-    private approachMessage: string = ''
+    private approachMessage: string = '';
 
     taskQueue = new TaskQueue();
 
