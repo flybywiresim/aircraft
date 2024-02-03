@@ -88,7 +88,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             }
         });
 
-        sub.on('vs').withPrecision(2).handle((vs) => {
+        sub.on('vs').withArinc429Precision(2).handle((vs) => {
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
             const absVSpeed = Math.abs(filteredVS);

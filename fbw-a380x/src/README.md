@@ -11,7 +11,7 @@ The `src` directory is structured as follows:
 - behavior        <behavior sources files>
 - fonts           <fonts files>
 - model           <model sources files>
-- systems         <TypeScrtipt absed systems incl. instruments>
+- systems         <TypeScript based systems incl. instruments>
 - textures        <textures files>
 - wasm            <rust and c++ sources files for wasm>
 ```

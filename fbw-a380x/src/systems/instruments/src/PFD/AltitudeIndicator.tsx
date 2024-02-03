@@ -387,7 +387,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.setText();
         });
 
-        sub.on('altitudeAr').withPrecision(2).handle((a) => {
+        sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
             this.altitude = a;
             this.handleAltitudeDisplay();
             this.getOffset();
