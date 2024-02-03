@@ -69,6 +69,9 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
         this.strung = false;
 
         if (oldArrivalName !== matchingArrival.ident) {
+            // Clear enroute transition if arrival is different
+            this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+
             // Changing the arrival should trigger a restringing to the enroute
             this.strungEnroute = false;
             this.flightPlan.arrivalRunwayTransitionSegment.strungEnroute = false;
