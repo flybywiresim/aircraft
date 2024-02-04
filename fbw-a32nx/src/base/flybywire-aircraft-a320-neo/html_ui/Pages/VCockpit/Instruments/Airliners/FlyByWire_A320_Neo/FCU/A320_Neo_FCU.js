@@ -830,13 +830,10 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
 
     onTRKModeChanged(_newValue) {
-        // do not alter if we're in managed heading
-        if (this.selectedValue !== -1) {
-            if (_newValue) {
-                this.selectedValue = this.calculateTrackForHeading(this.selectedValue);
-            } else {
-                this.selectedValue = this.calculateHeadingForTrack(this.selectedValue);
-            }
+        if (_newValue) {
+            this.selectedValue = this.calculateTrackForHeading(this.selectedValue);
+        } else {
+            this.selectedValue = this.calculateHeadingForTrack(this.selectedValue);
         }
     }
 
