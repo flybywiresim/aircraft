@@ -142,6 +142,31 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         "STEERING_SET",
     )?;
 
+    // Adds rotational speed to nose wheel based on steering angle
+    const STEERING_RATIO_TO_WHEEL_ANGLE_GAIN: f64 = 80.;
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("NOSE_WHEEL_POSITION"),
+            Variable::aircraft("CENTER WHEEL ROTATION ANGLE", "degree", 0),
+        ],
+        |values| {
+            normalise_angle(values[1] + (values[0] - 0.5) * STEERING_RATIO_TO_WHEEL_ANGLE_GAIN)
+        },
+        Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
+    );
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("NOSE_WHEEL_POSITION"),
+            Variable::aircraft("CENTER WHEEL ROTATION ANGLE", "degree", 0),
+        ],
+        |values| {
+            normalise_angle(values[1] - (values[0] - 0.5) * STEERING_RATIO_TO_WHEEL_ANGLE_GAIN)
+        },
+        Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
+    );
+
     Ok(())
 }
 
@@ -168,7 +193,7 @@ fn steering_demand_to_msfs_from_steering_angle(
     nose_wheel_position: f64,
     rudder_position: f64,
 ) -> f64 {
-    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 75.;
+    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 70.;
 
     // Steering in msfs is the max we want rescaled to the max in msfs
     let steering_ratio_converted = nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
@@ -180,4 +205,14 @@ fn steering_demand_to_msfs_from_steering_angle(
     // Then we hack msfs by adding the rudder value that it will always substract internally
     // This way we end up with actual angle we required
     (1. - steering_ratio_converted) + (rudder_position - 0.5)
+}
+
+fn normalise_angle(angle: f64) -> f64 {
+    let raw = angle % 360.;
+
+    if raw > 0. {
+        raw
+    } else {
+        raw + 360.
+    }
 }
