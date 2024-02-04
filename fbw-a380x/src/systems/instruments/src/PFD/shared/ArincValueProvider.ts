@@ -43,6 +43,7 @@ export interface Arinc429Values {
     fmDhRaw: number;
     fmTransAltRaw: number;
     fmTransLvlRaw: number;
+    lgciuDiscreteWord1: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -90,6 +91,8 @@ export class ArincValueProvider {
     private fac2VAlphaMax = new Arinc429Word(0);
 
     private facToUse = 0;
+
+    private lgciuDiscreteWord1 = new Arinc429Word(0);
 
     private readonly fm1Healthy = ConsumerSubject.create(null, 0);
 
@@ -391,6 +394,11 @@ export class ArincValueProvider {
                 publisher.pub('betaTarget', new Arinc429Word(word));
             }
         });
+
+        subscriber.on('lgciuDiscreteWord1Raw').handle((word) => {
+            this.lgciuDiscreteWord1 = new Arinc429Word(word);
+            publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
+        })
 
         // Word with Normal Operation status indicating that pitch and roll are in normal law. To be replaced by proper FCDC implementation.
         const pitchRollNormalLawNOWord = 12884935680;
