@@ -929,7 +929,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const [insertSegment] = this.segmentPositionForIndex(index);
             const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint);
 
-            await this.insertElementBefore(index, leg, false);
+            await this.insertElementBefore(index, leg, true);
         }
     }
 
