@@ -7,9 +7,9 @@
 #include "Pushback/Pushback.h"
 
 class Pushback_A32NX : public Pushback {
-  static constexpr int PARKING_BRAKE_FACTOR = 20;     // slow down when parking brake is engaged by this factor
-  static constexpr FLOAT64 SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
-  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.4 ;  // ft/sec for "ROTATION VELOCITY BODY Y"
+  static constexpr FLOAT64 PARKING_BRAKE_FACTOR = 20.0; // slow down when parking brake is engaged by this factor
+  static constexpr FLOAT64 SPEED_FACTOR = 18.0;         // ft/sec for "VELOCITY BODY Z" (also max speed)
+  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.75;    // ft/sec for "ROTATION VELOCITY BODY Y"
 
  public:
   /**
@@ -19,7 +19,6 @@ class Pushback_A32NX : public Pushback {
   explicit Pushback_A32NX(MsfsHandler& msfsHandler) : Pushback(msfsHandler) {}
 
  private:
-  FLOAT64 calculateCounterRotAccel(const FLOAT64 inertiaSpeed, AircraftVariablePtr& windVelBodyZ1) const override final;
   constexpr int getParkBrakeFactor() const override final { return PARKING_BRAKE_FACTOR; }
   constexpr FLOAT64 getSpeedFactor() const override final { return SPEED_FACTOR; }
   constexpr FLOAT64 getTurnSpeedFactor() const override final { return TURN_SPEED_FACTOR; }

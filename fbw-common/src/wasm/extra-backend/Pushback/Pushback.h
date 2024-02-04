@@ -39,8 +39,8 @@ class Pushback : public Module {
   InertialDampener inertialDampener{0.0, 0.15, 0.1};
 
   // LVARs
-  NamedVariablePtr tugCommandedHeadingFactor;
   NamedVariablePtr tugCommandedSpeedFactor;
+  NamedVariablePtr tugCommandedHeadingFactor;
 
   // Base data structure for PushbackBaseInfo
   struct PushbackBaseInfo {
@@ -80,6 +80,12 @@ class Pushback : public Module {
   // Profiler for measuring the update time
   SimpleProfiler profiler{"Pushback::update", 120};
 
+ protected:
+  // Aircraft configuration as LVARs
+  NamedVariablePtr aircraftParkingBrakeFactor;
+  NamedVariablePtr aircraftSpeedFactor;
+  NamedVariablePtr aircraftTurnSpeedFactor;
+
  public:
   Pushback() = delete;
 
@@ -96,16 +102,6 @@ class Pushback : public Module {
   bool shutdown() override;
 
  protected:
-  /**
-   * Calculates the counter rotation acceleration. This is required as the elevator creates a lift force
-   * especially if a user uses the stick for taxiing as forward and backward taxiing are controlled
-   * by the same axis as the elevator.
-   * Especially in strong winds this can lead to the aircraft lifting its nose or gears.
-   * @param inertiaSpeed The current inertia speed.
-   * @param windVelBodyZ The current wind velocity in body Z direction.
-   * @return The counter rotation acceleration.
-   */
-  virtual FLOAT64 calculateCounterRotAccel(const FLOAT64 inertiaSpeed, AircraftVariablePtr& windVelBodyZ) const = 0;
 
   /**
    * @brief Returns the park brake factor for slowing down when the parking brake is engaged.

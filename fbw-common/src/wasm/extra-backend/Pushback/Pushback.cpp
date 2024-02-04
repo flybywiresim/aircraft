@@ -38,6 +38,14 @@ bool Pushback::initialize() {
   tugCommandedSpeedFactor = dataManager->make_named_var("PUSHBACK_SPD_FACTOR");
   tugCommandedHeadingFactor = dataManager->make_named_var("PUSHBACK_HDG_FACTOR");
 
+  // Aircraft configuration
+  aircraftParkingBrakeFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_PARKBRAKE_FACTOR");
+  aircraftSpeedFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_SPEED_FACTOR");
+  aircraftTurnSpeedFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_TURN_SPEED_FACTOR");
+  aircraftParkingBrakeFactor->setAndWriteToSim(this->getParkBrakeFactor());
+  aircraftSpeedFactor->setAndWriteToSim(this->getSpeedFactor());
+  aircraftTurnSpeedFactor->setAndWriteToSim(this->getTurnSpeedFactor());
+
   // debug purposes
   pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
   tugCommandedSpeed = dataManager->make_named_var("PUSHBACK_SPD");
@@ -106,20 +114,27 @@ bool Pushback::update(sGaugeDrawData* pData) {
   // read all data from sim - could be done inline but better readability this way
   tugCommandedSpeedFactor->updateFromSim(timeStamp, tickCounter);
   tugCommandedHeadingFactor->updateFromSim(timeStamp, tickCounter);
+  aircraftParkingBrakeFactor->updateFromSim(timeStamp, tickCounter);
+  aircraftSpeedFactor->updateFromSim(timeStamp, tickCounter);
+  aircraftTurnSpeedFactor->updateFromSim(timeStamp, tickCounter);
 
   // Based on an aircraft specific speed factor and the user input (0.0-1.0),
   // the inertia speed (current actual speed) is calculated in ft/sec.
-  const double speedFactor = parkingBrakeEngaged ? (getSpeedFactor() / getParkBrakeFactor()) : getSpeedFactor();
+  const double speedFactor =
+      parkingBrakeEngaged ? (aircraftSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftSpeedFactor->get();
   const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
   // Based on an aircraft specific turn speed factor and the user input (0.0-1.0),
   // the rotation velocity is calculated in ft/sec.
-  const double turnSpeedHdgFactor = parkingBrakeEngaged ? (getTurnSpeedFactor() / getParkBrakeFactor()) : getTurnSpeedFactor();
-  const FLOAT64 computedRotationVelocity = (inertiaSpeed / getSpeedFactor()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
+  const double turnSpeedHdgFactor =
+      parkingBrakeEngaged ? (aircraftTurnSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftTurnSpeedFactor->get();
+  const FLOAT64 computedRotationVelocity =
+      (inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
 
   // The heading of the tug is calculated based on the aircraft heading and the user input (0.0-1.0).
-  const FLOAT64 computedTugHdg = helper::Math::angleAdd(pushbackBaseInfoPtr->data().aircraftHeading, tugCommandedHeadingFactor->get() * -90);
+  const FLOAT64 computedTugHdg =
+      helper::Math::angleAdd(pushbackBaseInfoPtr->data().aircraftHeading, tugCommandedHeadingFactor->get() * -90);
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   // https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Aircraft_Misc_Events.htm#TUG_HEADING
   const uint32_t convertedComputedTugHeading = static_cast<uint32_t>(computedTugHdg * (UINT32_MAX / 360));
