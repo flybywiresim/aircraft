@@ -46,7 +46,7 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 };
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => {
-    // 19 seems to be an arbitrary number to make the arc look good - initial develop er did not document this
+    // 19 seems to be an arbitrary number to make the arc look good - initial developer did not document this
     const magicNumber = 45 + 45 * (19 / turningRadius);
     return (
         <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>

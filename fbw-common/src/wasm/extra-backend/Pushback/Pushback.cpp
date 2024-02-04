@@ -147,6 +147,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   // movement of the aircraft introduces a rotation around the x-axis, which is compensated here
   // The sim seems to add this rotation and even setting rotation velocity to 0 doesn't stop it.
+  // (I hate to have to do this - I hope to find a better solution in the future)
   FLOAT64 counterRotationAcceleration = 0.0;
   if (inertiaSpeed > 0.0) {
     counterRotationAcceleration = -1.0;
