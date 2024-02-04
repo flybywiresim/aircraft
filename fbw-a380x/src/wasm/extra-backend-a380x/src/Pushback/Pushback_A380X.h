@@ -7,9 +7,9 @@
 #include "Pushback/Pushback.h"
 
 class Pushback_A380X : public Pushback {
-  static constexpr FLOAT64 PARKING_BRAKE_FACTOR = 20.0;     // slow down when parking brake is engaged by this factor
-  static constexpr FLOAT64 SPEED_FACTOR = 15.0;       // ft/sec for "VELOCITY BODY Z"
-  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.30;  // ft/sec for "ROTATION VELOCITY BODY Y"
+  static constexpr FLOAT64 PARKING_BRAKE_FACTOR = 20.0; // slow down when parking brake is engaged by this factor
+  static constexpr FLOAT64 SPEED_FACTOR = 15.0;         // ft/sec for "VELOCITY BODY Z" (also max speed)
+  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.25;    // ft/sec for "ROTATION VELOCITY BODY Y"
 
  public:
   /**

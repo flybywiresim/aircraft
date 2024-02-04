@@ -62,6 +62,9 @@ class Pushback : public Module {
     FLOAT64 rotVelBodyX;
     FLOAT64 rotVelBodyY;
     FLOAT64 rotVelBodyZ;
+    FLOAT64 rotAccelBodyX;
+    FLOAT64 rotAccelBodyY;
+    FLOAT64 rotAccelBodyZ;
   };
   DataDefinitionVariablePtr<PushbackData> pushbackDataPtr;
 
@@ -102,7 +105,6 @@ class Pushback : public Module {
   bool shutdown() override;
 
  protected:
-
   /**
    * @brief Returns the park brake factor for slowing down when the parking brake is engaged.
    * @return The park brake factor.

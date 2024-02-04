@@ -71,7 +71,10 @@ bool Pushback::initialize() {
                                                  {"VELOCITY BODY Z", 0, UNITS.FeetSec},
                                                  {"ROTATION VELOCITY BODY X", 0, UNITS.FeetSec},
                                                  {"ROTATION VELOCITY BODY Y", 0, UNITS.FeetSec},
-                                                 {"ROTATION VELOCITY BODY Z", 0, UNITS.FeetSec}};
+                                                 {"ROTATION VELOCITY BODY Z", 0, UNITS.FeetSec},
+                                                 {"ROTATION ACCELERATION BODY X", 0, UNITS.FeetSecSquared},
+                                                 {"ROTATION ACCELERATION BODY Y", 0, UNITS.FeetSecSquared},
+                                                 {"ROTATION ACCELERATION BODY Z", 0, UNITS.FeetSecSquared}};
   pushbackDataPtr = dataManager->make_datadefinition_var<PushbackData>("PUSHBACK DATA", pushBackDataDef);
 
   // Events
@@ -142,6 +145,15 @@ bool Pushback::update(sGaugeDrawData* pData) {
   // send K:KEY_TUG_HEADING event
   tugHeadingEvent->trigger(convertedComputedTugHeading);
 
+  // movement of the aircraft introduces a rotation around the x-axis, which is compensated here
+  // The sim seems to add this rotation and even setting rotation velocity to 0 doesn't stop it.
+  FLOAT64 counterRotationAcceleration = 0.0;
+  if (inertiaSpeed > 0.0) {
+    counterRotationAcceleration = -1.0;
+  } else if (inertiaSpeed < 0.0) {
+    counterRotationAcceleration = +2.0;
+  }
+
   // Update sim data
   pushbackDataPtr->data().pushbackWait = helper::Math::almostEqual(inertiaSpeed, 0.0) ? 1 : 0;
   pushbackDataPtr->data().velBodyX = 0;
@@ -150,6 +162,9 @@ bool Pushback::update(sGaugeDrawData* pData) {
   pushbackDataPtr->data().rotVelBodyX = 0;
   pushbackDataPtr->data().rotVelBodyY = computedRotationVelocity;
   pushbackDataPtr->data().rotVelBodyZ = 0;
+  pushbackDataPtr->data().rotAccelBodyX = counterRotationAcceleration;
+  pushbackDataPtr->data().rotAccelBodyY = 0;
+  pushbackDataPtr->data().rotAccelBodyZ = 0;
   pushbackDataPtr->writeDataToSim();
 
   // send as LVARs for debugging in the flyPad

@@ -39,9 +39,9 @@ export const PushbackPage = () => {
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
     const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 100);
-    const [pushbackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
-    const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
-    const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
+    const [pushbackWait, setPushbackWait] = useSimVar('PUSHBACK WAIT', 'bool', 100);
+    const [pushbackAttached] = useSimVar('PUSHBACK ATTACHED', 'bool', 100);
+    const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Degrees', 100);
 
     const [useControllerInput, setUseControllerInput] = usePersistentNumberProperty('PUSHBACK_USE_CONTROLLER_INPUT', 1);
     const [rudderPosition] = useSimVar('L:A32NX_RUDDER_PEDAL_POSITION', 'number', 50);
@@ -232,9 +232,6 @@ export const PushbackPage = () => {
                 tugAngle:
                 {' '}
                 {pushbackAngle.toFixed(3)}
-                {' ('}
-                {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
-                °)
                 <br />
                 NW STRG DISC MEMO
                 {' '}
@@ -281,17 +278,22 @@ export const PushbackPage = () => {
                 {' '}
                 Rot. Accel. X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel. Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel Z:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
+                <br />
+                {' '}
+                Pitch:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees'), 3).toFixed(3)}
             </div>
             <div className="text-m overflow-hidden text-black">
                 acGroundSpeed:
@@ -316,15 +318,15 @@ export const PushbackPage = () => {
                 <br />
                 Velocity X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity Z:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'feet per second'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Accel. X:
