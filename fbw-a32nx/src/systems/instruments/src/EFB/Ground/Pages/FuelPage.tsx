@@ -103,10 +103,9 @@ export const FuelPage = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
     const dispatch = useAppDispatch();
     const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
-    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     useEffect(() => {
-        if (simbriefDataLoaded === true && autoSimbriefImport === 'ENABLED' && fuelImported === false) {
+        if (simbriefDataLoaded === true && fuelImported === false) {
             handleFuelAutoFill();
             dispatch(setFuelImported(true));
         }

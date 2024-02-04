@@ -25,7 +25,6 @@ interface A380Props {
     simbriefBag: number,
     simbriefFreight: number,
     simbriefDataLoaded: boolean,
-    autoSimbriefImport: string,
     payloadImported: boolean,
     massUnitForDisplay: string,
     isOnGround: boolean,
@@ -44,7 +43,6 @@ export const A380Payload: React.FC<A380Props> = ({
     simbriefBag,
     simbriefFreight,
     simbriefDataLoaded,
-    autoSimbriefImport,
     payloadImported,
     massUnitForDisplay,
     isOnGround,
@@ -176,7 +174,7 @@ export const A380Payload: React.FC<A380Props> = ({
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (simbriefDataLoaded === true && autoSimbriefImport === 'ENABLED' && payloadImported === false) {
+        if (simbriefDataLoaded === true && payloadImported === false) {
             setSimBriefValues();
             dispatch(setPayloadImported(true));
         }

@@ -23,7 +23,6 @@ export const Payload = () => {
     const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 509);
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const payloadImported = useAppSelector((state) => state.simbrief.payloadImported);
-    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
@@ -40,7 +39,6 @@ export const Payload = () => {
                 simbriefBag={simbriefBag}
                 simbriefFreight={simbriefFreight}
                 simbriefDataLoaded={simbriefDataLoaded}
-                autoSimbriefImport={autoSimbriefImport}
                 payloadImported={payloadImported}
                 massUnitForDisplay={massUnitForDisplay}
                 isOnGround={isOnGround}
@@ -61,7 +59,6 @@ export const Payload = () => {
                 simbriefBag={simbriefBag}
                 simbriefFreight={simbriefFreight}
                 simbriefDataLoaded={simbriefDataLoaded}
-                autoSimbriefImport={autoSimbriefImport}
                 payloadImported={payloadImported}
                 massUnitForDisplay={massUnitForDisplay}
                 isOnGround={isOnGround}
