@@ -61,6 +61,7 @@ export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTr
         const newSegment = new ArrivalRunwayTransitionSegment(forPlan);
 
         newSegment.strung = this.strung;
+        newSegment.strungEnroute = this.strungEnroute;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
         newSegment.arrivalRunwayTransition = this.arrivalRunwayTransition;
 

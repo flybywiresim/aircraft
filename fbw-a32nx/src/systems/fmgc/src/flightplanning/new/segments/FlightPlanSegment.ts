@@ -50,6 +50,11 @@ export abstract class FlightPlanSegment {
      */
     strung = false
 
+    /**
+     * Whether the segment has already been strung upstream to enroute
+     */
+    strungEnroute = false
+
     constructor(
         public readonly flightPlan: BaseFlightPlan,
     ) {

@@ -23,6 +23,8 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
     private approachVia: ProcedureTransition | undefined = undefined
 
     setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        const oldApproachViaName = this.approachVia?.ident;
+
         if (ident === undefined) {
             this.approachVia = undefined;
 
@@ -73,6 +75,11 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
         this.allLegs.push(...mappedApproachViaLegs);
         this.strung = false;
 
+        if (oldApproachViaName !== matchingApproachVia.ident) {
+            // Restring to enroute if the approach via has changed
+            this.strungEnroute = false;
+        }
+
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
@@ -82,6 +89,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
         const newSegment = new ApproachViaSegment(forPlan);
 
         newSegment.strung = this.strung;
+        newSegment.strungEnroute = this.strungEnroute;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
         newSegment.approachVia = this.approachVia;
 
