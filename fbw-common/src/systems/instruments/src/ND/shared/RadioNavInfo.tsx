@@ -114,7 +114,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.props.mode,
     );
 
-    private readonly visibilitySub = MappedSubject.create(
+    private readonly isVisible = MappedSubject.create(
         ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
     );
 
@@ -148,7 +148,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <g visibility={this.visibilitySub}>
+            <g visibility={this.isVisible}>
                 <path
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
@@ -230,7 +230,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.adfFrequency,
     );
 
-    private readonly visibilitySub = MappedSubject.create(
+    private readonly isVisible = MappedSubject.create(
         ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
     );
 
@@ -246,7 +246,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <g visibility={this.visibilitySub}>
+            <g visibility={this.isVisible}>
                 <path
                     d={this.path}
                     strokw-width={2}
