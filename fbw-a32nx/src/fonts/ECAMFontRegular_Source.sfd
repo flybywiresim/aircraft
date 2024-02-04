@@ -22,7 +22,7 @@ OS2Version: 4
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1630565342
-ModificationTime: 1701114684
+ModificationTime: 1707065731
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -57,6 +57,7 @@ OS2XHeight: 2284
 OS2Vendor: 'PfEd'
 OS2CodePages: 00000001.00000000
 OS2UnicodeRanges: 00000003.00000000.00000000.00000000
+Lookup: 1 0 0 "'zero' Slashed Zero in Latin lookup 0" { "'zero' Slashed Zero in Latin lookup 0-1"  } ['zero' ('DFLT' <'dflt' > 'latn' <'dflt' > ) ]
 MarkAttachClasses: 1
 DEI: 91125
 ShortTable: cvt  2
@@ -89,7 +90,9 @@ NameList: AGL For New Fonts
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
-WinInfo: 58 29 10
+WinInfo: 65250 29 10
+BeginPrivate: 0
+EndPrivate
 Grid
 -4096 3112.08334351 m 0
  8192 3112.08334351 l 1024
@@ -97,7 +100,7 @@ Grid
 -4053.02087402 5324 m 0
  -4053.02087402 -2868 l 1024
 EndSplineSet
-BeginChars: 65538 383
+BeginChars: 65539 384
 
 StartChar: .notdef
 Encoding: 65536 -1 0
@@ -634,6 +637,7 @@ SplineSet
  222 2606 222 2606 326 2756 c 0,22,23
 EndSplineSet
 Validated: 1
+Substitution2: "'zero' Slashed Zero in Latin lookup 0-1" zero.zero
 EndChar
 
 StartChar: one
@@ -1519,6 +1523,8 @@ Encoding: 72 72 31
 Width: 2568
 GlyphClass: 2
 Flags: W
+HStem: 1 21G<112.25 170.75 1919.25 1977.75> 1 21G<112.25 170.75 1919.25 1977.75> 1416 283<283 1807> 3093 20G<112.5 171 1919.25 1977.75>
+VStem: 0 283<43.8011 1416 1699 3070.2> 1807 283<43.8011 1416 1699 3070.2>
 LayerCount: 2
 Fore
 SplineSet
@@ -1556,6 +1562,8 @@ Encoding: 73 73 32
 Width: 2568
 GlyphClass: 2
 Flags: W
+HStem: 1 282<162.801 905 1188 1931.2> 2829 283<162.801 905 1188 1931.2>
+VStem: 905 283<283 2829>
 LayerCount: 2
 Fore
 SplineSet
@@ -1686,6 +1694,8 @@ Encoding: 76 76 35
 Width: 2568
 GlyphClass: 2
 Flags: W
+HStem: 1 283<403 2206.2> 3093 20G<232.25 290.75>
+VStem: 120 283<284 3070.2>
 LayerCount: 2
 Fore
 SplineSet
@@ -2085,6 +2095,8 @@ Encoding: 84 84 43
 Width: 2568
 GlyphClass: 2
 Flags: W
+HStem: 1 21G<1174.5 1233.5> 1 21G<1174.5 1233.5> 2830 282<162.801 1063 1345 2245.2>
+VStem: 1063 282<43.8009 2830>
 LayerCount: 2
 Fore
 SplineSet
@@ -3292,7 +3304,7 @@ StartChar: bar
 Encoding: 124 124 130
 Width: 2568
 VWidth: 3780
-Flags: WO
+Flags: W
 LayerCount: 2
 Fore
 SplineSet
@@ -3323,6 +3335,7 @@ SplineSet
  473 92 473 92 473 157 c 2,31,-1
  473 471 l 2,16,17
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: braceright
@@ -5609,6 +5622,46 @@ SplineSet
  1271 395 l 5,21,-1
  2075 1554 l 5,22,-1
  1269 2716 l 5,19,-1
+EndSplineSet
+Validated: 1
+EndChar
+
+StartChar: zero.zero
+Encoding: 65538 -1 383
+Width: 2568
+Flags: W
+LayerCount: 2
+Fore
+SplineSet
+344 2027 m 2,0,1
+ 344 2456 344 2456 549 2753 c 0,2,3
+ 797 3112 797 3112 1231 3112 c 0,4,5
+ 1667 3112 1667 3112 1915 2753 c 0,6,7
+ 2119 2458 2119 2458 2119 2027 c 2,8,-1
+ 2119 1085 l 2,9,10
+ 2119 653 2119 653 1914 357 c 0,11,12
+ 1667 0 1667 0 1229 0 c 0,13,14
+ 924 0 924 0 711 179 c 1,15,16
+ 665 172 665 172 626 186 c 0,17,18
+ 573 206 573 206 546 253 c 128,-1,19
+ 519 300 519 300 545 361 c 2,20,-1
+ 546 363 l 1,21,22
+ 344 658 344 658 344 1085 c 2,23,-1
+ 344 2027 l 2,0,1
+626 2027 m 2,24,-1
+ 626 1085 l 2,25,26
+ 626 869 626 869 689 698 c 1,27,-1
+ 1557 2727 l 1,28,29
+ 1423 2829 1423 2829 1232 2829 c 0,30,31
+ 946 2829 946 2829 786 2598.5 c 128,-1,32
+ 626 2368 626 2368 626 2027 c 2,24,-1
+886 401 m 1,33,34
+ 1026 283 1026 283 1231 283 c 0,35,36
+ 1518 283 1518 283 1680 517 c 0,37,38
+ 1836 741 1836 741 1836 1085 c 2,39,-1
+ 1836 2027 l 2,40,41
+ 1836 2263 1836 2263 1760 2446 c 1,42,-1
+ 886 401 l 1,33,34
 EndSplineSet
 Validated: 1
 EndChar

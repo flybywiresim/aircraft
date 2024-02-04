@@ -9,9 +9,9 @@
 }
 
 @font-face {
-  font-family: "EcamNumerical";
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontNumericalValues.ttf") format("truetype");
+  src: url("/Fonts/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -60,7 +60,7 @@
 .mfd-value {
   color: $display-green;
   font-size: 25px;
-  font-family: "EcamNumerical", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .mfd-value.amber {
@@ -492,7 +492,7 @@
 .mfd-input-field-text-input {
   background-color: $display-background;
   border: none;
-  font-family: "EcamNumerical", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   font-size: 27px;
   line-height: 27px;
   color: $display-cyan;
@@ -545,7 +545,7 @@
   width: 18px;
   background-color: $display-cyan;
   color: $display-background;
-  font-family: "EcamNumerical", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   font-size: 27px;
   text-align: center;
   vertical-align: center;
