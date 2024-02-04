@@ -1,5 +1,5 @@
 import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
-import { UpdatableSimVarPublisher } from "../../MsfsAvionicsCommon/UpdatableSimVarPublisher";
+import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export interface PFDSimvars {
     slatsFlapsStatusRaw: number;

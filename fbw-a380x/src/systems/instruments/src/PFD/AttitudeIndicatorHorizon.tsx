@@ -1,5 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
+import { Arinc429Register, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -11,7 +12,6 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
-import { Arinc429Register, Arinc429Word, ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;

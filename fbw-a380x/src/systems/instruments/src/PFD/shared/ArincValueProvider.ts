@@ -1,7 +1,7 @@
 import { ConsumerSubject, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { PFDSimvars } from './PFDSimvarPublisher';
 import { Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { PFDSimvars } from './PFDSimvarPublisher';
 
 export interface Arinc429Values {
     slatsFlapsStatus: Arinc429Word;
@@ -398,7 +398,7 @@ export class ArincValueProvider {
         subscriber.on('lgciuDiscreteWord1Raw').handle((word) => {
             this.lgciuDiscreteWord1 = new Arinc429Word(word);
             publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
-        })
+        });
 
         // Word with Normal Operation status indicating that pitch and roll are in normal law. To be replaced by proper FCDC implementation.
         const pitchRollNormalLawNOWord = 12884935680;
@@ -430,7 +430,7 @@ export class ArincValueProvider {
             this.radioAltitude2,
             this.radioAltitude3,
         ].map((ra) => !ra.isFailureWarning() && !ra.isNoComputedData());
-        const validCount = validRaMap.filter(x => !!x).length;
+        const validCount = validRaMap.filter((x) => !!x).length;
 
         let chosenRas = [this.radioAltitude1, this.radioAltitude2]; // Default: 1 gets 1, 2 gets 2
         if (validCount === 3) {
@@ -445,8 +445,7 @@ export class ArincValueProvider {
             if (!validRaMap[0]) {
                 // fail PFD 1 to RA 3
                 chosenRas = [this.radioAltitude3, this.radioAltitude2];
-            }
-            else if (!validRaMap[1]) {
+            } else if (!validRaMap[1]) {
                 // fail PFD 2 to RA 3
                 chosenRas = [this.radioAltitude1, this.radioAltitude3];
             }
@@ -455,12 +454,10 @@ export class ArincValueProvider {
             if (validRaMap[0]) {
                 // both get RA 1
                 chosenRas = [this.radioAltitude1, this.radioAltitude1];
-            }
-            else if (validRaMap[1]) {
+            } else if (validRaMap[1]) {
                 // both get RA 2
                 chosenRas = [this.radioAltitude2, this.radioAltitude2];
-            }
-            else {
+            } else {
                 // both get RA 3
                 chosenRas = [this.radioAltitude3, this.radioAltitude3];
             }
@@ -472,27 +469,23 @@ export class ArincValueProvider {
                 this.radioAltitude2,
                 this.radioAltitude3,
             ].map((ra) => !ra.isFailureWarning());
-            const nonFailedCount = nonFailedMap.filter(x => !!x).length;
+            const nonFailedCount = nonFailedMap.filter((x) => !!x).length;
             if (nonFailedCount === 2) {
                 if (!nonFailedMap[0]) {
                     // fail PFD 1 to RA 3
                     chosenRas = [this.radioAltitude3, this.radioAltitude2];
-                }
-                else if (!nonFailedMap[1]) {
+                } else if (!nonFailedMap[1]) {
                     // fail PFD 2 to RA 3
                     chosenRas = [this.radioAltitude1, this.radioAltitude3];
                 }
-            }
-            else if (nonFailedCount === 1) {
+            } else if (nonFailedCount === 1) {
                 if (nonFailedMap[0]) {
                     // both get RA 1
                     chosenRas = [this.radioAltitude1, this.radioAltitude1];
-                }
-                else if (nonFailedMap[1]) {
+                } else if (nonFailedMap[1]) {
                     // both get RA 2
                     chosenRas = [this.radioAltitude2, this.radioAltitude2];
-                }
-                else {
+                } else {
                     // both get RA 3
                     chosenRas = [this.radioAltitude3, this.radioAltitude3];
                 }
