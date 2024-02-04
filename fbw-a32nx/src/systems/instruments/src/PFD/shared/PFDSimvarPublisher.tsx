@@ -163,8 +163,16 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fm1TransAltRaw: number;
     fm2TransAltRaw: number;
     fm1TransLvlRaw: number;
-    fm2TransLvlRaw: number
-  }
+    fm2TransLvlRaw: number;
+    baroMode: number;
+    baroUnit: number;
+    baroPressure: number;
+    selectedSpeedMode: number;
+    selectedAltitude: number;
+    isAirspeedMach: boolean;
+    airspeedHoldValue: number;
+
+}
 
 export enum PFDVars {
     coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
@@ -321,6 +329,13 @@ export enum PFDVars {
     fm2TransAltRaw = 'L:A32NX_FM2_TRANS_ALT',
     fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
     fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
+    baroMode = 'L:XMLVAR_Baro1_Mode',
+    baroUnit = 'L:XMLVAR_Baro_Selector_HPA_1',
+    baroPressure = 'KOHLSMAN SETTING HG',
+    selectedSpeedMode = 'AUTOPILOT SPEED SLOT INDEX',
+    selectedAltitude = 'AUTOPILOT ALTITUDE LOCK VAR:3',
+    isAirspeedMach = 'L:XMLVAR_AirSpeedIsInMach',
+    airspeedHoldValue = 'AUTOPILOT MACH HOLD VAR',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -479,6 +494,13 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fm2TransAltRaw', { name: PFDVars.fm2TransAltRaw, type: SimVarValueType.Number }],
         ['fm1TransLvlRaw', { name: PFDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
         ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
+        ['baroMode', { name: PFDVars.baroMode, type: SimVarValueType.Number }],
+        ['baroUnit', { name: PFDVars.baroUnit, type: SimVarValueType.Number }],
+        ['baroPressure', { name: PFDVars.baroPressure, type: SimVarValueType.InHG }],
+        ['selectedSpeedMode', { name: PFDVars.selectedSpeedMode, type: SimVarValueType.Number }],
+        ['selectedAltitude', { name: PFDVars.selectedAltitude, type: SimVarValueType.Feet }],
+        ['isAirspeedMach', { name: PFDVars.isAirspeedMach, type: SimVarValueType.Bool }],
+        ['airspeedHoldValue', { name: PFDVars.airspeedHoldValue, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: ArincEventBus) {
