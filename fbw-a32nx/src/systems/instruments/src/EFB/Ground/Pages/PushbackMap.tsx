@@ -45,20 +45,26 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
     ].join(' ');
 };
 
-const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
-    <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
-        <path
-            d={describeArc(turningRadius,
-                turningRadius,
-                turningRadius,
-                0,
-                45 + 45 * (19 / turningRadius))}
-            fill="none"
-            stroke="white"
-            strokeWidth="2"
-        />
-    </svg>
-);
+const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => {
+    // 19 seems to be an arbitrary number to make the arc look good - initial develop er did not document this
+    const magicNumber = 45 + 45 * (19 / turningRadius);
+    return (
+        <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
+            <path
+                d={describeArc(
+                    turningRadius,
+                    turningRadius,
+                    turningRadius,
+                    0,
+                    magicNumber,
+                )}
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+            />
+        </svg>
+    );
+};
 
 export const PushbackMap = () => {
     const dispatch = useAppDispatch();
@@ -127,8 +133,7 @@ export const PushbackMap = () => {
     };
     const mapRangeCompensationScalar = mapRange / someConstant;
     const radius = calculateTurningRadius(aircraftWheelBase, Math.abs(tugCmdHdgFactor * 90));
-    const speedInfluenceFactor = 0.4; // value based on testing in the sim
-    const turningRadius = radius / mapRangeCompensationScalar * (Math.abs(tugCmdSpdFactor) / speedInfluenceFactor);
+    const turningRadius = radius / mapRangeCompensationScalar;
 
     // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.

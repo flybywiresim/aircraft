@@ -265,11 +265,6 @@ export const PushbackPage = () => {
                 {' '}
                 {tugCmdHdg.toFixed(3)}
                 <br />
-                {' '}
-                Counter Rot X:
-                {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'Number'), 3).toFixed(3)}
-                <br />
                 Rotation Velocity X:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
@@ -304,8 +299,8 @@ export const PushbackPage = () => {
                 {planeGroundSpeed.toFixed(3)}
                 {'kts '}
                 {' ('}
-                {(planeGroundSpeed * 0.51444).toFixed(3)}
-                m/s)
+                {(planeGroundSpeed * 1.68781).toFixed(3)}
+                ft/s)
                 <br />
                 tCSpeedFactor:
                 {' '}
