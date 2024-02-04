@@ -2155,6 +2155,22 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         return lowestClimbConstraint;
     }
+
+    deduplicateDownstreamAt(atIndex: number, keepUpstreamVsDownstream: boolean = false) {
+        const leg = this.legElementAt(atIndex);
+        if (!leg.isXF() && !leg.isFX() && !leg.isHX()) {
+            throw new Error('[FMS/FPM] Can only deduplicate XF, FX or HX legs');
+        }
+
+        const duplicate = this.findDuplicate(leg.terminationWaypoint(), atIndex);
+        if (!duplicate) {
+            return;
+        }
+
+        const [_, __, planIndex] = duplicate;
+        this.removeRange(keepUpstreamVsDownstream ? atIndex + 1 : atIndex, keepUpstreamVsDownstream ? planIndex + 1 : planIndex);
+        this.incrementVersion();
+    }
 }
 
 export interface SerializedFlightPlan {
