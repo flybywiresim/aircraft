@@ -30,8 +30,6 @@ class MsfsHandler;
  */
 class Pushback : public Module {
  private:
-  static constexpr int TEST = 11;
-
   static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
 
   // Convenience pointer to the data manager
@@ -41,10 +39,36 @@ class Pushback : public Module {
   InertialDampener inertialDampener{0.0, 0.15, 0.1};
 
   // LVARs
-  NamedVariablePtr pushbackSystemEnabled;
-  NamedVariablePtr parkingBrakeEngaged;
   NamedVariablePtr tugCommandedHeadingFactor;
   NamedVariablePtr tugCommandedSpeedFactor;
+
+  // Base data structure for PushbackBaseInfo
+  struct PushbackBaseInfo {
+    FLOAT64 pushbackSystemEnabled;
+    FLOAT64 parkingBrakeEngaged;
+    FLOAT64 simOnGround;
+    FLOAT64 pushbackAttached;
+    FLOAT64 aircraftHeading;
+    FLOAT64 windVelBodyZ;
+  };
+  DataDefinitionVariablePtr<PushbackBaseInfo> pushbackBaseInfoPtr;
+
+  // Data structure for PushbackDataID
+  struct PushbackData {
+    FLOAT64 pushbackWait;
+    FLOAT64 velBodyX;
+    FLOAT64 velBodyY;
+    FLOAT64 velBodyZ;
+    FLOAT64 rotVelBodyX;
+    FLOAT64 rotVelBodyY;
+    FLOAT64 rotVelBodyZ;
+  };
+  DataDefinitionVariablePtr<PushbackData> pushbackDataPtr;
+
+  // Events
+  ClientEventPtr tugHeadingEvent;
+  ClientEventPtr tugSpeedEvent;
+
   // debug purposes - send as LVARs for debugging to the flyPad
   NamedVariablePtr pushbackDebug;
   NamedVariablePtr tugCommandedHeading;
@@ -52,25 +76,6 @@ class Pushback : public Module {
   NamedVariablePtr tugInertiaSpeed;
   NamedVariablePtr updateDelta;
   NamedVariablePtr rotXOut;
-
-  // Sim-vars
-  AircraftVariablePtr simOnGround;
-  AircraftVariablePtr pushbackAttached;
-  AircraftVariablePtr aircraftHeading;
-  AircraftVariablePtr windVelBodyZ;
-
-  // Data structure for PushbackDataID
-  struct PushbackData {
-    FLOAT64 pushbackWait;
-    FLOAT64 velBodyZ;
-    FLOAT64 rotVelBodyY;
-    FLOAT64 rotAccelBodyX;
-  };
-  std::shared_ptr<DataDefinitionVariable<PushbackData>> pushbackData;
-
-  // Events
-  ClientEventPtr tugHeadingEvent;
-  ClientEventPtr tugSpeedEvent;
 
   // Profiler for measuring the update time
   SimpleProfiler profiler{"Pushback::update", 120};
@@ -82,9 +87,7 @@ class Pushback : public Module {
    * Creates a new Pushback instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit Pushback(MsfsHandler& msfsHandler) : Module(msfsHandler) {
-    std::cout << "Pushback constructor: " << TEST << std::endl;
-  }
+  explicit Pushback(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;
