@@ -859,7 +859,6 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updateAutopilot(dt);
 
         this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
-
     }
 
     updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {

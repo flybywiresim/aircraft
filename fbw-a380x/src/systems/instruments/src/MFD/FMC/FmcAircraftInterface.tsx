@@ -302,7 +302,7 @@ export class FmcAircraftInterface {
             if (airport) {
                 const ele = airport.location.alt;
 
-                landingElevation = isFinite(ele) ? ele : undefined;
+                landingElevation = Number.isFinite(ele) ? ele : undefined;
                 latitude = airport.location.lat;
                 longitude = airport.location.long;
             }
@@ -313,10 +313,10 @@ export class FmcAircraftInterface {
 
             const ssm = landingElevation !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
-            this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+            this.arincLandingElevation.setBnrValue(landingElevation || 0, ssm, 14, 16384, -2048);
 
             // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
-            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
+            SimVar.SetSimVarValue('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', landingElevation || 0);
         }
 
         if (this.destinationLatitude !== latitude) {
@@ -324,7 +324,7 @@ export class FmcAircraftInterface {
 
             const ssm = latitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
-            this.arincDestinationLatitude.setBnrValue(latitude ? latitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLatitude.setBnrValue(latitude || 0, ssm, 18, 180, -180);
         }
 
         if (this.destinationLongitude !== longitude) {
@@ -332,7 +332,7 @@ export class FmcAircraftInterface {
 
             const ssm = longitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
-            this.arincDestinationLongitude.setBnrValue(longitude ? longitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLongitude.setBnrValue(longitude || 0, ssm, 18, 180, -180);
         }
     }
 
