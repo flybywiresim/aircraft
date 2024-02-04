@@ -45,7 +45,7 @@ const ArrivalPagination = Object.freeze(
     }
 );
 class CDUAvailableArrivalsPage {
-    static ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
+    static async ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
@@ -105,7 +105,8 @@ class CDUAvailableArrivalsPage {
         }
 
         const approaches = targetPlan.availableApproaches;
-        const runways = targetPlan.availableDestinationRunways
+        const runways = targetPlan.availableDestinationRunways;
+        const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
 
         // Add an index member variable, so we can track the original order of approaches
         for (let j = 0; j < approaches.length; j++) {
@@ -148,14 +149,18 @@ class CDUAvailableArrivalsPage {
                         rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", ""];
                     } else {
                         const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
-
                         if (runway) {
                             runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                             runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
-                        }
 
-                        rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
-                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
+                            const finalLeg = approach.legs[approach.legs.length - 1];
+                            const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find((ils) => ils.databaseId === finalLeg.recommendedNavaid.databaseId) : undefined;
+                            const hasIls = !!matchingIls;
+                            const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
+
+                            rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                            rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
+                        }
                     }
 
                     mcdu.onLeftInput[i + 2] = async () => {
@@ -358,6 +363,7 @@ class CDUAvailableArrivalsPage {
             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, !starSelection, forPlan, inAlternate);
         };
         mcdu.onNextPage = mcdu.onPrevPage;
+
     }
 
     static ShowViasPage(mcdu, airport, pageCurrent = 0, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
