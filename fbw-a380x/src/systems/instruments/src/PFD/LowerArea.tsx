@@ -1,8 +1,9 @@
 import { Arinc429Values, ArincValueProvider } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-export class LowerArea extends DisplayComponent<{ bus: EventBus }> {
+export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
     render(): VNode {
         return (
             <g>
@@ -19,7 +20,7 @@ export class LowerArea extends DisplayComponent<{ bus: EventBus }> {
 
 const circlePath = (r: number, cx: number, cy: number) => `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
+class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private targetClass = Subject.create('');
 
     private targetText = Subject.create('');
@@ -67,7 +68,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values>();
 
         sub.on('slatsFlapsStatus').whenChanged().handle((s) => {
             this.configClean = s.getBitValue(17);
@@ -110,6 +111,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
 
             this.slatsOut = slats > 6.1;
 
+            // Slats and flaps should align with future implementation; do not change
             const xFactor = -0.43;
             const yFactor = 0.09;
             const synchroFactor = 0.081;
@@ -153,6 +155,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
 
             this.flapsOut = flaps > 73.1;
 
+            // Slats and flaps should align with future implementation; do not change
             const xFactor = 0.87;
             const yFactor = 0.365;
             const synchroFactor = 0.22;
@@ -237,22 +240,39 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
                 <path class={this.flapSlatIndexClass} d={this.flapsLinePath} />
 
                 <path class='NormalStroke White CornerRound' d='M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z' />
+
+                <GearIndicator bus={this.props.bus} />
             </g>
         );
     }
 }
 
-// THS and gear indications waiting for systems implementations
-class GearIndicator extends DisplayComponent<{ bus: EventBus }> {
+
+class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+    private landingGearDownAndLocked = Subject.create('hidden');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
+        // TODO change to proper LGCIS input once LGCIS is implemented
+        sub.on('lgciuDiscreteWord1').handle((word) => {
+            const gearDownAndLocked = word.getBitValue(23) && word.getBitValue(24) && word.getBitValue(25);
+            this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
+        });
+    }
+
     render(): VNode {
         return (
-            <g>
+            <g visibility={this.landingGearDownAndLocked}>
                 <path class='NormalStroke Green CornerRound' d='M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6' />
             </g>
         );
     }
 }
 
+// THS indications waiting for systems implementations
 class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode {
         return (
