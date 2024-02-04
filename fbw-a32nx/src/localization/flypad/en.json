@@ -509,7 +509,6 @@
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",
       "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
-      "ImportSimBriefWeights": "Automatically set SimBrief Fuel & Payload on Import",
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",

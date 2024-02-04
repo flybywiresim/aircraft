@@ -72,7 +72,6 @@ export const FlightWidget = () => {
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
-    const [simbriefWeightsImport] = usePersistentProperty('CONFIG_SIMBRIEF_WEIGHTS_IMPORT');
     const [airframe] = useState(getAirframeType());
 
     const {
@@ -119,31 +118,23 @@ export const FlightWidget = () => {
     const fetchData = async () => {
         setSimbriefDataPending(true);
 
-        if (simbriefWeightsImport === 'DISABLED') {
-            fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
-                dispatch(action);
-            }).catch((e) => {
-                toast.error(e.message);
-            });
-        } else {
-            dispatch(setFuelImported(false));
-            dispatch(setPayloadImported(false));
-            fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
-                dispatch(action);
-            }).catch((e) => {
-                toast.error(e.message);
+        dispatch(setFuelImported(false));
+        dispatch(setPayloadImported(false));
+        fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
+            dispatch(action);
+        }).catch((e) => {
+            toast.error(e.message);
+        })
+            .then(() => {
+                history.push('/ground/fuel');
             })
-                .then(() => {
-                    history.push('/ground/fuel');
-                })
-                .then(() => {
-                    history.push('/ground/payload');
-                })
-                .then(() => {
-                    history.push('/dashboard');
-                    toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
-                });
-        }
+            .then(() => {
+                history.push('/ground/payload');
+            })
+            .then(() => {
+                history.push('/dashboard');
+                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            });
 
         setSimbriefDataPending(false);
     };
