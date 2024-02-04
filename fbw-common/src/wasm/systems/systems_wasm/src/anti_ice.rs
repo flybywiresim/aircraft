@@ -55,6 +55,7 @@ pub(super) fn wing_anti_ice() -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(
             ExecuteOn::PostTick,
             vec![
                 Variable::named("PNEU_WING_ANTI_ICE_SYSTEM_ON"),
+                //TODO: replace with a mechanism that detects actual air flow into anti-ice system
                 Variable::named("PNEU_WING_ANTI_ICE_HAS_FAULT"),
                 Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
             ],
