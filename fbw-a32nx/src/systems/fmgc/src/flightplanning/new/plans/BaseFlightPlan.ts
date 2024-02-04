@@ -176,6 +176,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.allLegs[this.activeLegIndex];
     }
 
+    private setActiveLegIndex(index: number) {
+        this.activeLegIndex = index;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: index });
+    }
+
     /**
      * Returns the index of the last leg before the active leg, or -1 if none is found
      * We can have a discontinuity before the active leg. In this case, return the leg before that discontinuity
@@ -275,8 +280,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // Set active leg again because the index might've changed when we moved it into enroute
         const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
-        this.activeLegIndex = activeIndex;
-        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+        this.setActiveLegIndex(activeIndex);
     }
 
     version = 0;
@@ -1612,6 +1616,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.adjustTFLegs();
 
         this.incrementVersion();
+        this.selectActiveLeg();
     }
 
     private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
@@ -2020,6 +2025,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
 
             break;
+        }
+    }
+
+    private selectActiveLeg() {
+        // If we're on an arrival segment and select a different arrival, the active leg should be the first leg of the arrival
+        if (this.activeLegIndex === -1) {
+            return;
+        }
+
+        const [_, __, indexInPlan] = this.findFirstArrivalLeg();
+        if (indexInPlan === -1) {
+            return;
+        }
+
+        if (this.activeLegIndex > indexInPlan) {
+            console.log('[FMS/FPM] Active leg index is after the first arrival leg, resetting');
+            this.setActiveLegIndex(indexInPlan);
         }
     }
 
