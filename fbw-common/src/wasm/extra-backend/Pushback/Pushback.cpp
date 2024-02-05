@@ -182,16 +182,6 @@ bool Pushback::update(sGaugeDrawData* pData) {
   return true;
 }
 
-/**
- * As we might use the elevator for taxiing we compensate for wind to avoid
- * the aircraft lifting any gears.
- *
- * This contains hard coded values which are based on testing in the sim.
- *
- * @param inertiaSpeed the current inertia speed
- * @return the counter rotation acceleration
- */
-
 bool Pushback::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
   //  empty
   return true;

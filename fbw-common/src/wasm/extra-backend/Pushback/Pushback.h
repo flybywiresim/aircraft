@@ -81,7 +81,7 @@ class Pushback : public Module {
   NamedVariablePtr rotXOut;
 
   // Profiler for measuring the update time
-  SimpleProfiler profiler{"Pushback::update", 120};
+  //  SimpleProfiler profiler{"Pushback::update", 120};
 
  protected:
   // Aircraft configuration as LVARs
