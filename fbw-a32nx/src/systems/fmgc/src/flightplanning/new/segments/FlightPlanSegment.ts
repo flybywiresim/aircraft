@@ -74,6 +74,10 @@ export abstract class FlightPlanSegment {
      * @param element the element to insert
      */
     insertBefore(index: number, element: FlightPlanElement) {
+        if (element.isDiscontinuity === false) {
+            element.segment = this;
+        }
+
         this.allLegs.splice(index, 0, element);
 
         this.flightPlan.syncSegmentLegsChange(this);
@@ -86,6 +90,10 @@ export abstract class FlightPlanSegment {
      * @param element the element to insert
      */
     insertAfter(index: number, element: FlightPlanElement) {
+        if (element.isDiscontinuity === false) {
+            element.segment = this;
+        }
+
         this.allLegs.splice(index + 1, 0, element);
 
         this.flightPlan.syncSegmentLegsChange(this);

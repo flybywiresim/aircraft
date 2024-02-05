@@ -926,8 +926,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
             await this.flushOperationQueue();
         } else {
-            const [insertSegment] = this.segmentPositionForIndex(index);
-            const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint);
+            const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
             await this.insertElementBefore(index, leg, true);
         }
@@ -1163,9 +1162,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         if (insertDiscontinuity) {
             this.incrementVersion();
 
-            const elementAfterInserted = startSegment.allLegs[indexInStartSegment + 1];
+            const elementAfterInserted = this.allLegs[index + 1];
 
-            if (elementAfterInserted.isDiscontinuity === false) {
+            if (elementAfterInserted?.isDiscontinuity === false) {
                 startSegment.insertBefore(indexInStartSegment + 1, { isDiscontinuity: true });
                 this.incrementVersion();
             }
