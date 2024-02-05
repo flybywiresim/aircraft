@@ -84,6 +84,7 @@
       "Route": "Ruta",
       "SimBriefDataNotYetLoaded": "Los datos de SimBrief aún no se han cargado.",
       "Title": "Tu vuelo",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Defueling",
       "EstimatedDuration": "Duración estimada (minutos)",
       "EstimatedTime": "Tiempo Estimado",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Tanque interior izquierdo",
       "LeftOuterTank": "Tanque exterior izquierdo",
       "ReadyToStart": "Listo para empezar",
@@ -494,6 +495,7 @@
       "PaxSigns": "Señales PAX",
       "RmpVhfSpacing": "Espaciado VHF RMP",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Altura de reducción de empuje (ft)",
       "Title": "Opciones de aeronave/ Programas de pin",
       "WeightUnit": "Unidad de peso"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU audible en cabina",
       "Title": "Sonido",
       "WindInteriorVolume": "Volumen del viento en el interior"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Rápido",
     "Instant": "Instantáneo",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Aplicar",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "¿Está seguro que desea restablecer los valores actuales de configuración del throttle a sus estados predeterminados? Esta acción es irreversible.",
       "Axis": "Eje",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Atrás",
       "ConfigureEnd": "Fin del rango de tolerancia",
       "ConfigureStart": "Inicio del rango de tolerancia",
       "CurrentValue": "Valor actual",
       "Deadband": "Banda Muerta",
       "ErrorOverlapMsg": "se superpone con",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Eje independiente",
       "LoadFromFile": "Cargar desde archivo",
       "PleaseEnterAValidDeadzone": "Por favor, introduzca una zona muerta válida",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Guardar y aplicar",
       "SetFromThrottle": "Aplica desde Throttle",
       "ThrottleConfigurationReset": "Reinicio de la configuración del Throttle",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Ajustes",
     "Unrealistic": "No realista",

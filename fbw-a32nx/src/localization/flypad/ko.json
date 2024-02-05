@@ -84,6 +84,7 @@
       "Route": "루트",
       "SimBriefDataNotYetLoaded": "SimBrief 데이터가 로드되지 않았습니다.",
       "Title": "운항 정보",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -494,6 +495,7 @@
       "PaxSigns": "승객 사인",
       "RmpVhfSpacing": "RMP VHF 주파수 간격",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
       "WeightUnit": "무게 단위"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "조종석에서 PTU 동작음 듣기",
       "Title": "오디오",
       "WindInteriorVolume": "기내 바람 음량"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "빠름",
     "Instant": "즉시",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph 계정 연결",
         "SubscriptionStatus": {
           "None": "없음",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "계정 연결 해제"
@@ -608,12 +617,14 @@
       "Apply": "적용",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "현재 쓰로틀 구성 설정을 기본 상태로 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
       "Axis": "축",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "이전",
       "ConfigureEnd": "끝 값",
       "ConfigureStart": "시작 값",
       "CurrentValue": "현재 값",
       "Deadband": "데드존",
       "ErrorOverlapMsg": "이(가) 다음과 겹칩니다 :",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "독립 축",
       "LoadFromFile": "파일에서 불러오기",
       "PleaseEnterAValidDeadzone": "올바른 데드존을 입력하십시오",
@@ -624,7 +635,7 @@
       "SaveAndApply": "저장 및 적용",
       "SetFromThrottle": "쓰로틀 값으로 설정",
       "ThrottleConfigurationReset": "쓰로틀 설정 초기화",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "설정",
     "Unrealistic": "비현실적",

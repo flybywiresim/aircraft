@@ -84,6 +84,7 @@
       "Route": "Útvonal",
       "SimBriefDataNotYetLoaded": "A SimBrief adatok még nincsenek betöltve.",
       "Title": "A repülésed",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -494,6 +495,7 @@
       "PaxSigns": "Övek becsatolását jelző tabló",
       "RmpVhfSpacing": "RMP VHF elosztás",
       "Satcom": "Satcom megjelenítése",
+      "Select": "Select",
       "ThrustReductionHeight": "Tolóerő csökkentési magasság (ft)",
       "Title": "Repülő beállításai / programok kitűzése",
       "WeightUnit": "Súly mértékegység"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU hallható a pilótafülkében",
       "Title": "Audió",
       "WindInteriorVolume": "Szél hangerő (belső)"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Gyors",
     "Instant": "Azonnali",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph fiók link",
         "SubscriptionStatus": {
           "None": "Egyik sem",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Korlátlan "
         },
         "Unlink": "Fiók szétkapcsoltása"
@@ -608,12 +617,14 @@
       "Apply": "Alkalmaz",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Biztos benne, hogy vissza szeretné állítani az aktuális gázkar konfigurációs beállításokat az alapértelmezett állapotokra? Ez a változtatás visszafordíthatatlan.",
       "Axis": "Tengely",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Vissza",
       "ConfigureEnd": "Konfigurálás vége",
       "ConfigureStart": "Konfigurálás elkezdése",
       "CurrentValue": "Jelenlegi érték",
       "Deadband": "Holtsáv",
       "ErrorOverlapMsg": "Átfedés a következővel",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Független tengely",
       "LoadFromFile": "Betöltés fájlból",
       "PleaseEnterAValidDeadzone": "Adjon meg egy érvényes holtjátékot",

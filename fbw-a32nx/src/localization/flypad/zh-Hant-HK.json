@@ -84,6 +84,7 @@
       "Route": "航線",
       "SimBriefDataNotYetLoaded": "尚未導入 SimBrief 數據。",
       "Title": "您的航班",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "零油重量 (ZFW)"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "減油",
       "EstimatedDuration": "預計需要時間 (分鐘)",
       "EstimatedTime": "估計時間",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "左內油箱",
       "LeftOuterTank": "左外油箱",
       "ReadyToStart": "預備開始",
@@ -494,6 +495,7 @@
       "PaxSigns": "客倉標誌",
       "RmpVhfSpacing": "RMP 高頻間距",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "減油高度 (英尺，ft)",
       "Title": "飛機選項/電針程式",
       "WeightUnit": "重量單位"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "駕駛艙可否聽到 PTU 聲音",
       "Title": "音訊",
       "WindInteriorVolume": "機內風流音量"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "快",
     "Instant": "即時",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "應用",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "是否確定重置油門設定？重設是不可逆轉的。",
       "Axis": "軸",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "返回",
       "ConfigureEnd": "結束配置",
       "ConfigureStart": "開始配置",
       "CurrentValue": "目前值",
       "Deadband": "死帶",
       "ErrorOverlapMsg": "跟重疊",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "獨立軸",
       "LoadFromFile": "從文件中加載",
       "PleaseEnterAValidDeadzone": "請輸入有效的死帶",
@@ -624,7 +635,7 @@
       "SaveAndApply": "儲存並應用",
       "SetFromThrottle": "從油門設置",
       "ThrottleConfigurationReset": "重置油門設定",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "設定",
     "Unrealistic": "唔真實",
