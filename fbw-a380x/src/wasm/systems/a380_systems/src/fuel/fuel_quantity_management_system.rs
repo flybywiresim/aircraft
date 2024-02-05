@@ -351,13 +351,13 @@ impl SimulationElement for RefuelApplication {
 }
 
 // TODO: This should be moved to common systems
-pub struct RefuelDriver {}
+pub struct RefuelDriver;
 impl RefuelDriver {
     const WING_FUELRATE_GAL_SEC: f64 = 16.;
     const FAST_SPEED_FACTOR: f64 = 5.;
 
     pub fn new() -> Self {
-        Self {}
+        Self
     }
 
     fn execute_timed_refuel(
