@@ -17,7 +17,7 @@ The A32NX and A380X Projects are community-driven open source projects to recrea
 
 The following aircraft configurations are currently simulated or targeted:
 
-### A320neo (LEAP)
+### A320-200N (LEAP)
 
  ```
  Model       A320-251N
@@ -76,7 +76,6 @@ Read [Contributing.md](.github/Contributing.md) and join our Discord to get star
 
 ### Are FlyByWire aircraft payware?
 
-
 No, they are completely free aircraft, open-source, including SimBridge and other FlyByWire projects which are publicly accessible via GitHub.
 
 ### How do we report bugs?
@@ -85,7 +84,7 @@ Please read the [known Issues and bug reporting](#known-issues-and-bug-reporting
 
 ### Is this going to be "study-level"?
 
-While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320neo and A380-800 to the Microsoft Flight Simulator platform.
+While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320-200N and A380-800 to the Microsoft Flight Simulator platform.
 
 ### Is feature X from the real aircraft going to be implemented?
 
