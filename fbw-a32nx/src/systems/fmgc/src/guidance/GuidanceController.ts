@@ -99,9 +99,9 @@ export class GuidanceController {
 
     automaticSequencing: boolean = true;
 
-    leftEfisState: EfisState
+    leftEfisState: EfisState;
 
-    rightEfisState: EfisState
+    rightEfisState: EfisState;
 
     efisStateForSide: { L: EfisState, R: EfisState };
 
