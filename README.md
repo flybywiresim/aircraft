@@ -85,7 +85,7 @@ Please read the [known Issues and bug reporting](#known-issues-and-bug-reporting
 
 ### Is this going to be "study-level"?
 
-While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320-200 and A380-800 to the Microsoft Flight Simulator platform.
+While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320neo and A380-800 to the Microsoft Flight Simulator platform.
 
 ### Is feature X from the real aircraft going to be implemented?
 
