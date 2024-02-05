@@ -13,7 +13,7 @@
 [![Facebook](https://img.shields.io/badge/-FlyByWireSimulations-e84393?label=&logo=facebook&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.facebook.com/FlyByWireSimulations/)
 [![Instagram](https://img.shields.io/badge/-@FlyByWireSim-e84393?label=&logo=instagram&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://instagram.com/flybywiresim)
 
-The A32NX and A380X projects are community-driven open source projects to recreate, respectively, a free Airbus A320neo and A380-800 in Microsoft Flight Simulator that are as close to reality as possible.
+The A32NX and A380X Projects are community-driven open source projects to recreate, respectively, a free Airbus A320-200N and A380-800 in Microsoft Flight Simulator that are as close to reality as possible.
 
 The following aircraft configurations are currently simulated or targeted:
 
