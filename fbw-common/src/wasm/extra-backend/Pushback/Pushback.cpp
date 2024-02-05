@@ -19,10 +19,10 @@
 // Looking at the make_xxx_var functions, you can see that they are updated
 // with different update cycles.
 //
-// Some variables are read from the sim at every tick:
-// - A32NX_PUSHBACK_SYSTEM_ENABLED
-// - Pushback Attached
-// - SIM ON GROUND
+// It also uses DataDefinition to read and write multiple variables at once.
+//
+// The PushbackBaseInfo struct is used to read multiple variables at once every visual frame using
+// the periodic data request feature of the DataDefinition.
 //
 // The rest are read on demand after the state of the above variables have been checked.
 // No variable is written automatically.
@@ -48,11 +48,12 @@ bool Pushback::initialize() {
 
   // debug purposes
   pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
-  tugCommandedSpeed = dataManager->make_named_var("PUSHBACK_SPD");
-  tugCommandedHeading = dataManager->make_named_var("PUSHBACK_HDG");
-  tugInertiaSpeed = dataManager->make_named_var("PUSHBACK_INERTIA_SPD");
-  updateDelta = dataManager->make_named_var("PUSHBACK_UPDT_DELTA");
-  rotXOut = dataManager->make_named_var("PUSHBACK_R_X_OUT");
+  std::vector<DataDefinition> pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
+                                                      {"L:A32NX_PUSHBACK_SPD", 0, UNITS.FeetSec},
+                                                      {"L:A32NX_PUSHBACK_HDG", 0, UNITS.degrees},
+                                                      {"L:A32NX_PUSHBACK_INERTIA_SPD", 0, UNITS.FeetSec},
+                                                      {"L:A32NX_PUSHBACK_R_X_OUT", 0, UNITS.FeetSecSquared}};
+  pushbackDebugPtr = dataManager->make_datadefinition_var<PushbackDebug>("PUSHBACK DEBUG DATA", pushbackDebugDataDef);
 
   // Pushback Base Data
   std::vector<DataDefinition> pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
@@ -170,10 +171,12 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   // send as LVARs for debugging in the flyPad
   if (pushbackDebug->getAsBool()) {
-    updateDelta->setAndWriteToSim(pData->dt);               // debug value
-    tugInertiaSpeed->setAndWriteToSim(inertiaSpeed);        // debug value
-    tugCommandedSpeed->setAndWriteToSim(tugCmdSpd);         // debug value
-    tugCommandedHeading->setAndWriteToSim(computedTugHdg);  // debug value
+    pushbackDebugPtr->data().updateDelta = pData->dt;
+    pushbackDebugPtr->data().tugCommandedSpeed = tugCmdSpd;
+    pushbackDebugPtr->data().tugCommandedHeading = computedTugHdg;
+    pushbackDebugPtr->data().tugInertiaSpeed = inertiaSpeed;
+    pushbackDebugPtr->data().rotXOut = counterRotationAcceleration;
+    pushbackDebugPtr->writeDataToSim();
   }
 
   //  profiler.stop();

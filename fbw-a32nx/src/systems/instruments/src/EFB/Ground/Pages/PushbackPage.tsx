@@ -3,18 +3,24 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useRef } from 'react';
-import { useSimVar, useSplitSimVar, MathUtils, usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { MathUtils, usePersistentNumberProperty, useSimVar, useSplitSimVar } from '@flybywiresim/fbw-sdk';
 import {
     ArrowDown,
     ArrowLeft,
-    ArrowRight, ArrowsAngleContract, ArrowsAngleExpand,
+    ArrowRight,
+    ArrowsAngleContract,
+    ArrowsAngleExpand,
     ArrowUp,
     ChevronDoubleDown,
     ChevronDoubleUp,
     ChevronLeft,
-    ChevronRight, DashCircle, DashCircleFill,
+    ChevronRight,
+    DashCircle,
+    DashCircleFill,
     PauseCircleFill,
-    PlayCircleFill, ToggleOff, ToggleOn,
+    PlayCircleFill,
+    ToggleOff,
+    ToggleOn,
     TruckFlatbed,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
@@ -48,8 +54,6 @@ export const PushbackPage = () => {
     const [elevatorPosition] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number', 50);
 
     const [planeGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots', 100);
-    const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
-    const [planeHeadingMagnetic] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees', 100);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 250);
@@ -57,11 +61,6 @@ export const PushbackPage = () => {
     const [tugCmdHdgFactor, setCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'number', 100);
     const [tugCmdSpdFactor, setCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'number', 100);
 
-    // debug info only - can be removed eventually
-    const [tugCmdHdg] = useSimVar('L:A32NX_PUSHBACK_HDG', 'number', 100);
-    const [tugCmdSpd] = useSimVar('L:A32NX_PUSHBACK_SPD', 'number', 100);
-    const [tugInertiaSpeed] = useSimVar('L:A32NX_PUSHBACK_INERTIA_SPD', 'number', 100);
-    const [updateDeltaTime] = useSimVar('L:A32NX_PUSHBACK_UPDT_DELTA', 'number', 0);
     const [showDebugInfo, setShowDebugInfo] = useSimVar('L:A32NX_PUSHBACK_DEBUG', 'bool', 100);
 
     // Required so these can be used inside the useEffect return callback
@@ -133,14 +132,6 @@ export const PushbackPage = () => {
         setCmdSpdFactor(MathUtils.clamp(speed, -1, 1));
     };
 
-    const handleTugDirectionLeft = () => {
-        handleTugDirection(tugCmdHdgFactor - 0.1);
-    };
-
-    const handleTugDirectionRight = () => {
-        handleTugDirection(tugCmdHdgFactor + 0.1);
-    };
-
     const handleTugDirection = (value: number) => {
         setCmdHdgFactor(MathUtils.clamp(value, -1, 1));
     };
@@ -207,7 +198,7 @@ export const PushbackPage = () => {
                 <br />
                 deltaTime:
                 {' '}
-                {updateDeltaTime.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_UPDT_DELTA', 'number'), 3).toFixed(3)}
                 <br />
                 pushBackWait:
                 {' '}
@@ -248,11 +239,11 @@ export const PushbackPage = () => {
             <div className="text-m overflow-hidden text-black">
                 Heading (True):
                 {' '}
-                {planeHeadingTrue.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees'), 3).toFixed(3)}
                 <br />
                 Heading (Magnetic):
                 {' '}
-                {planeHeadingMagnetic.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'), 3).toFixed(3)}
                 <br />
                 tCHeadingF:
                 {' '}
@@ -260,7 +251,7 @@ export const PushbackPage = () => {
                 <br />
                 tCHeading :
                 {' '}
-                {tugCmdHdg.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_HDG', 'degrees'), 3).toFixed(3)}
                 <br />
                 Rotation Velocity X:
                 {' '}
@@ -291,6 +282,12 @@ export const PushbackPage = () => {
                 {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
+                Counter Rot. Accel X:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'feet per second squared'), 3).toFixed(3)}
+                {' '}
+                <br />
+                {' '}
                 Pitch:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees'), 3).toFixed(3)}
@@ -310,11 +307,11 @@ export const PushbackPage = () => {
                 <br />
                 tCSpeed:
                 {' '}
-                {tugCmdSpd.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_SPD', 'feet per second'), 3).toFixed(3)}
                 <br />
                 tInertiaSpeed:
                 {' '}
-                {tugInertiaSpeed.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_INERTIA_SPD', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity X:
                 {' '}
@@ -540,7 +537,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
-                                    onClick={() => handleTugDirectionLeft()}
+                                    onClick={() => handleTugDirection(tugCmdHdgFactor - 0.05)}
                                 >
                                     <ArrowLeft size={40} />
                                 </button>
@@ -556,7 +553,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
-                                    onClick={() => handleTugDirectionRight()}
+                                    onClick={() => handleTugDirection(tugCmdHdgFactor + 0.05)}
                                 >
                                     <ArrowRight size={40} />
                                 </button>
@@ -600,7 +597,7 @@ export const PushbackPage = () => {
                                     onChange={(value) => handleTugSpeed(value)}
                                     onAfterChange={() => speedSliderRef.current.blur()}
                                     min={-1}
-                                    step={0.1}
+                                    step={0.01}
                                     max={1}
                                     value={tugCmdSpdFactor}
                                     startPoint={0}

@@ -72,13 +72,16 @@ class Pushback : public Module {
   ClientEventPtr tugHeadingEvent;
   ClientEventPtr tugSpeedEvent;
 
-  // debug purposes - send as LVARs for debugging to the flyPad
+  // debug purposes - send LVARs for debugging to the flyPad
   NamedVariablePtr pushbackDebug;
-  NamedVariablePtr tugCommandedHeading;
-  NamedVariablePtr tugCommandedSpeed;
-  NamedVariablePtr tugInertiaSpeed;
-  NamedVariablePtr updateDelta;
-  NamedVariablePtr rotXOut;
+  struct PushbackDebug {
+    FLOAT64 updateDelta;
+    FLOAT64 tugCommandedSpeed;
+    FLOAT64 tugCommandedHeading;
+    FLOAT64 tugInertiaSpeed;
+    FLOAT64 rotXOut;
+  };
+  DataDefinitionVariablePtr<PushbackDebug> pushbackDebugPtr;
 
   // Profiler for measuring the update time
   //  SimpleProfiler profiler{"Pushback::update", 120};
