@@ -284,12 +284,7 @@ A32NX_GEAR_LEVER_POSITION_REQUEST = 1
 KollsmanSetting=29.921342849731445313
 
 [BleedAir.0]
-BleedAirSource=1
-EngineAirBleed.1=0
-EngineAirBleed.2=0
-APUAirBleed=0
-EngineRecievesAPUAirBleed.1=0
-EngineRecievesAPUAirBleed.2=0
+BleedAirSource=0
 
 [Switches.0]
 PitotHeat=False

@@ -18,6 +18,8 @@ import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select'
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
+import { setPayloadImported } from '../../../../Store/features/simBrief';
+import { useAppDispatch } from '../../../../Store/store';
 
 interface A380Props {
     simbriefUnits: string,
@@ -27,6 +29,7 @@ interface A380Props {
     simbriefBag: number,
     simbriefFreight: number,
     simbriefDataLoaded: boolean,
+    payloadImported: boolean,
     massUnitForDisplay: string,
     isOnGround: boolean,
 
@@ -44,6 +47,7 @@ export const A380Payload: React.FC<A380Props> = ({
     simbriefBag,
     simbriefFreight,
     simbriefDataLoaded,
+    payloadImported,
     massUnitForDisplay,
     isOnGround,
     boardingStarted,
@@ -170,6 +174,15 @@ export const A380Payload: React.FC<A380Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && payloadImported === false) {
+            setSimBriefValues();
+            dispatch(setPayloadImported(true));
+        }
+    }, []);
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {

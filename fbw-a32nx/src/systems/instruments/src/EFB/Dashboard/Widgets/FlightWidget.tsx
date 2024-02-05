@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -70,6 +71,7 @@ export const FlightWidget = () => {
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
+    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
     const [airframe] = useState(getAirframeType());
 
     const {
@@ -96,6 +98,8 @@ export const FlightWidget = () => {
 
     const dispatch = useAppDispatch();
 
+    const history = useHistory();
+
     const sta = new Date(parseInt(schedIn) * 1000);
     const schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
 
@@ -114,16 +118,32 @@ export const FlightWidget = () => {
     const fetchData = async () => {
         setSimbriefDataPending(true);
 
-        try {
-            const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '');
-
+        dispatch(setFuelImported(false));
+        dispatch(setPayloadImported(false));
+        fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
             dispatch(action);
-        } catch (e) {
+        }).catch((e) => {
             toast.error(e.message);
-        }
+        })
+            .then(() => {
+                history.push('/ground/fuel');
+            })
+            .then(() => {
+                history.push('/ground/payload');
+            })
+            .then(() => {
+                history.push('/dashboard');
+                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            });
 
         setSimbriefDataPending(false);
     };
+
+    useEffect(() => {
+        if ((!data || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
+            fetchData();
+        }
+    }, []);
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
 

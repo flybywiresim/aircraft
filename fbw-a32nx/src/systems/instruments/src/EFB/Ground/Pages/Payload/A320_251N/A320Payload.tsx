@@ -18,6 +18,8 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+import { setPayloadImported } from '../../../../Store/features/simBrief';
+import { useAppDispatch } from '../../../../Store/store';
 
 interface A320Props {
     simbriefUnits: string,
@@ -27,6 +29,7 @@ interface A320Props {
     simbriefBag: number,
     simbriefFreight: number,
     simbriefDataLoaded: boolean,
+    payloadImported: boolean,
     massUnitForDisplay: string,
     isOnGround: boolean,
 
@@ -43,6 +46,7 @@ export const A320Payload: React.FC<A320Props> = ({
     simbriefBag,
     simbriefFreight,
     simbriefDataLoaded,
+    payloadImported,
     massUnitForDisplay,
     isOnGround,
     boardingStarted,
@@ -141,6 +145,15 @@ export const A320Payload: React.FC<A320Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && payloadImported === false) {
+            setSimBriefValues();
+            dispatch(setPayloadImported(true));
+        }
+    }, []);
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
