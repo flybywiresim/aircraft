@@ -62,6 +62,7 @@ module.exports = {
         '@typescript-eslint/no-useless-constructor': ['error'],
         'no-empty-function': ['error', { allow: ['constructors', 'arrowFunctions'] }],
         '@typescript-eslint/no-empty-function': 'off',
+        'camelcase': 'off',
 
         // buggy
         'prefer-destructuring': 'off',

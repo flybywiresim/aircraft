@@ -22,8 +22,5 @@ CMakeFiles/*
 cmake*
 fbw-a32nx/out/*
 fbw-a380x/out/*
-# TODO: these need to be more granular
-fbw-a32nx/src/base/*
-fbw-a380x/src/base/*
 fbw-a32nx/bundles/*
 fbw-a380x/bundles/*
