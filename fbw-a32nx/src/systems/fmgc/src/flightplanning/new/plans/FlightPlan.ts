@@ -137,7 +137,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         const magVar = MagVar.get(ppos.lat, ppos.long);
-        const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
+        const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
         const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
@@ -172,7 +172,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         const magVar = MagVar.get(ppos.lat, ppos.long);
-        const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
+        const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
         const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);

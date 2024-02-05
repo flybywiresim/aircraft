@@ -301,7 +301,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             type: LegType.FC,
             overfly: false,
             waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
-            magneticCourse: MagVar.trueToMagnetic(bearing, magVar),
+            magneticCourse: A32NX_Util.trueToMagnetic(bearing, magVar),
             length: 0.1,
         }, '', '', undefined);
     }
