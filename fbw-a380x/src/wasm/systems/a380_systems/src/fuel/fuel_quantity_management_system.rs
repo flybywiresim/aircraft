@@ -257,8 +257,7 @@ impl RefuelApplication {
         // TODO: Trim tank logic
         let trim_fuel = match total_desired_fuel {
             x if x <= f => Mass::default(),
-            x if x < f + trim_1 => total_desired_fuel - f,
-            x if x <= f + trim_1 => trim_1,
+            x if x <= f + trim_1 => x - f,
             x if x <= g => trim_1,
             x if x <= g + trim_2 => trim_1 + total_desired_fuel - g,
             x if x <= h => trim_2,
