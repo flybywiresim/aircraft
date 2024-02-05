@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
@@ -51,7 +55,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ATSU: false,
             CFDS: false,
             FMGC: false,
-        }
+        };
         this._lastAtsuMessageCount = 0;
         this.leftBrightness = 0;
         this.rightBrightness = 0;

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class A32NX_FADEC {
     constructor(engine) {
         this.engine = engine;
@@ -17,10 +21,10 @@ class A32NX_FADEC {
         const n2Percent = SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${this.engine}`, "Percent");
 
         if ((this.dcEssPoweredInPreviousUpdate !== dcEssIsPowered && dcEssIsPowered === 1) ||
-            (this.lastEngineState !== engineState && engineState === 4) ) {
+            (this.lastEngineState !== engineState && engineState === 4)) {
             this.fadecTimer = 5 * 60;
         }
-        if ((this.lastEngineState === 2 || this.lastEngineState === 3) && engineState !== 2 && engineState !== 3){
+        if ((this.lastEngineState === 2 || this.lastEngineState === 3) && engineState !== 2 && engineState !== 3) {
             this.lastActiveIgniterAutostart ^= 1; // toggles Igniter
         }
 

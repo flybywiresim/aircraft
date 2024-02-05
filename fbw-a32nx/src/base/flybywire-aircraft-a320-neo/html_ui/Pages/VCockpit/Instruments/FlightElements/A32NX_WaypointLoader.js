@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class NearestAirspacesLoader {
     constructor(_instrument) {
         this.lla = new LatLongAlt;
@@ -460,7 +464,7 @@ class FacilityLoader {
                     if (runway) {
                         this.addFacility(runway, 'R');
                     }
-                })
+                });
                 this.loadingFacilities.push(icao);
             }
             let attempts = 0;

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -137,7 +141,7 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0.\xa0]";
         }
 
-        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${vor.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`
+        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${vor.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`;
     }
 
     static handleVorCrsLsk(mcdu, receiverIndex, input, scratchpadCallback) {
@@ -240,7 +244,7 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0\xa0\xa0]";
         }
 
-        return `{cyan}${identText}{${mmr.manual ? 'big' : 'small'}}/{end}${freqText}{end}`
+        return `{cyan}${identText}{${mmr.manual ? 'big' : 'small'}}/{end}${freqText}{end}`;
     }
 
     static handleMmrCrsLsk(mcdu, input, scratchpadCallback) {
@@ -265,7 +269,7 @@ class CDUNavRadioPage {
                 scratchpadCallback();
                 return;
             }
-            const course = input.charAt(0) === 'F' ? parseInt(input.slice(1)): parseInt(input);
+            const course = input.charAt(0) === 'F' ? parseInt(input.slice(1)) : parseInt(input);
             if (course < 0 || course > 360) {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 scratchpadCallback();
@@ -375,6 +379,6 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0\xa0.]";
         }
 
-        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${adf.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`
+        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${adf.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`;
     }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 // Honeywell H4+ feature only
@@ -74,7 +78,7 @@ const ConfirmType = {
     NoConfirm : 0,
     DeleteStored : 1,
     SwitchDataBase : 2,
-}
+};
 
 class CDUIdentPage {
     static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
