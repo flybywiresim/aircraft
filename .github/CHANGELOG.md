@@ -58,7 +58,6 @@
 1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
 1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
-1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality)
 
 ## 0.11.0
 

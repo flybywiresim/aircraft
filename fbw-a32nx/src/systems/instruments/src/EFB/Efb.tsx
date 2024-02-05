@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
@@ -23,6 +23,7 @@ import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
@@ -36,13 +37,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -84,6 +85,10 @@ const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
+    const simbriefData = useAppSelector((state) => state.simbrief.data);
+    const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
+    const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
+    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
@@ -193,6 +198,14 @@ const Efb = () => {
                     }));
                 });
             }
+
+            if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
+                fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
+                    dispatch(action);
+                }).catch((e) => {
+                    toast.error(e.message);
+                });
+            }
         }
     }, [powerState]);
 
@@ -287,7 +300,7 @@ const Efb = () => {
     switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-        return <div className="h-screen w-screen" onClick={offToLoaded} />;
+        return <div className="w-screen h-screen" onClick={offToLoaded} />;
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
         return <LoadingScreen />;
@@ -315,7 +328,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="h-screen w-screen pr-6 pt-14">
+                            <div className="pt-14 pr-6 w-screen h-screen">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />
