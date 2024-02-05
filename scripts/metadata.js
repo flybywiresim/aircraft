@@ -21,7 +21,7 @@ const getBranchPreFix = () => {
     return `${buildInfo?.branch ?? 'unknown'}`;
 };
 
-const version = `v${packageInfo.version}-${(getBranchPreFix())}` + `.${buildInfo?.shortHash ?? 'unknown'}`;
+const version = `v${packageInfo.version}-${(getBranchPreFix())}.${buildInfo?.shortHash ?? 'unknown'}`;
 
 const object = {
     built,

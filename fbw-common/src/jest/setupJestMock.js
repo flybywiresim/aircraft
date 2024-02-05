@@ -1,4 +1,3 @@
-/* global jest */
 let values;
 
 global.beforeEach(() => {
@@ -7,7 +6,7 @@ global.beforeEach(() => {
 
 global.SimVar = {};
 global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
-    if (values.hasOwnProperty(name)) {
+    if (Object.prototype.hasOwnProperty.call(values, name)) {
         return values[name];
     }
     return 0;

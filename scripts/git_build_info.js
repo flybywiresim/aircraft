@@ -34,9 +34,15 @@ exports.getGitBuildInfo = () => {
         const tag = evaluate('git tag -l --contains HEAD').split('\n').filter((it) => !!it)[0];
 
         const isPullRequest = process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/pull/');
-        const branch = isPullRequest
-            ? process.env.GITHUB_REF.match('^refs/pull/([0-9]+)/.*$')[1]
-            : (process.env.GITHUB_REF_NAME ? process.env.GITHUB_REF_NAME : evaluate('git rev-parse --abbrev-ref HEAD'));
+
+        let branch;
+        if (isPullRequest) {
+            branch = process.env.GITHUB_REF.match('^refs/pull/([0-9]+)/.*$')[1];
+        } else {
+            branch = process.env.GITHUB_REF_NAME
+                ? process.env.GITHUB_REF_NAME
+                : evaluate('git rev-parse --abbrev-ref HEAD');
+        }
 
         const buildInfo = {
             actor: process.env.GITHUB_ACTOR ?? evaluate('git log -1 --pretty=format:\'%an <%ae>\''),
@@ -58,4 +64,6 @@ exports.getGitBuildInfo = () => {
             console.warn('Git failed', e);
         }
     }
+
+    return undefined;
 };
