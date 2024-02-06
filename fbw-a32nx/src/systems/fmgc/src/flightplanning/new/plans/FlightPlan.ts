@@ -467,7 +467,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
      *
      * The union type in the signature is to work around https://github.com/microsoft/TypeScript/issues/28662.
      */
-    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k], notify = true) {
+    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k] | null, notify = true) {
         this.performanceData[key] = value;
 
         if (notify) {

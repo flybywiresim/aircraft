@@ -333,7 +333,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
     }
 
-    async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active, alternate = false): Promise<number> {
+    async addOrEditManualHold(
+        at: number,
+        desiredHold: HoldData,
+        modifiedHold: HoldData | undefined,
+        defaultHold: HoldData,
+        planIndex = FlightPlanIndex.Active,
+        alternate = false,
+    ): Promise<number> {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);

@@ -1002,7 +1002,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.pendingAirways = new PendingAirways(this, revisedLegIndex, leg);
     }
 
-    async addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData): Promise<number> {
+    async addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData | undefined, defaultHold: HoldData): Promise<number> {
         const targetLeg = this.elementAt(atIndex);
 
         if (targetLeg.isDiscontinuity === true) {
