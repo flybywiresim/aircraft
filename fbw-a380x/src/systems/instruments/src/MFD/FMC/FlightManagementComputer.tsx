@@ -143,11 +143,11 @@ export class FlightManagementComputer implements FmcInterface {
         this.#guidanceController.init();
         this.fmgc.guidanceController = this.#guidanceController;
 
-        try {
+        /* try {
             this.initializeTestingFlightPlans();
         } catch {
             console.warn('Testing init didn\'t work.');
-        }
+        } */
 
         let lastUpdateTime = Date.now();
 
