@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { isSimbriefDataLoaded, setFuelImported } from '../../Store/features/simBrief';
-import { useAppDispatch, useAppSelector } from '../../Store/store';
+import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { useAppSelector } from '../../Store/store';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -101,15 +101,6 @@ export const FuelPage = () => {
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
     const simbriefDataLoaded = isSimbriefDataLoaded();
-    const dispatch = useAppDispatch();
-    const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
-
-    useEffect(() => {
-        if (simbriefDataLoaded === true && fuelImported === false) {
-            handleFuelAutoFill();
-            dispatch(setFuelImported(true));
-        }
-    }, []);
 
     const gsxRefuelActive = () => (gsxRefuelState === 4 || gsxRefuelState === 5);
 
