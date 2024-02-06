@@ -84,7 +84,7 @@
       "Route": "Lộ trình",
       "SimBriefDataNotYetLoaded": "Dữ liệu SimBrief chưa được tải.",
       "Title": "Chuyến bay của bạn",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "Nhiêu liệu + Tải trọng đã nhập!",
       "ZFW": "Trọng lượng máy bay không kể nhiên liệu"
     }
   },
@@ -495,7 +495,7 @@
       "PaxSigns": "Đèn báo hiệu hành khách",
       "RmpVhfSpacing": "Khoảng cách RMP VHF",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "Chọn",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
       "WeightUnit": "Đơn vị trọng lượng"
@@ -534,10 +534,10 @@
       "WindInteriorVolume": "Âm lượng gió phía trong"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Bị hạn chế Khi Bắt được Glideslope",
+      "Reset": "Đặt lại",
+      "ResetStandardConfig": "Đặt lại Về Cấu hình Tiêu chuẩn",
+      "Title": "Call Out Tự động"
     },
     "Fast": "Nhanh",
     "Instant": "Lập tức",
@@ -600,7 +600,7 @@
         "SettingTitle": "Liên kết tài khoản Navigraph",
         "SubscriptionStatus": {
           "None": "Không",
-          "Unknown": "Unknown",
+          "Unknown": "Không xác định",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Hủy liên kết tài khoản"
@@ -611,20 +611,20 @@
         "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },
       "Title": "Tùy chọn bên thứ 3",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID ghi đè đã được xác thực và cập nhật thành"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "PilotID SimBrief ghi đè đã được xác thực và cập nhật thành"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Bạn có chắc chắn rằng bạn muốn đặt lại cấu hình cần ga hiện tại trở về mặc định? Không thể hoàn tác hành động này.",
       "Axis": "Trục",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": "Trục $axis cho Cần ga $throttles",
       "Back": "Quay lại",
       "ConfigureEnd": "Cấu hình cuối",
       "ConfigureStart": "Cấu hình bắt đầu",
       "CurrentValue": "Giá trị hiện tại",
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "chồng chéo với",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "Hãy nhớ định cấu hình MSFS để sử dụng Axis 1 cho Cần ga 1+2 và Axis 2 cho Cần ga 3+4.",
       "IndependentAxis": "Trục độc lập",
       "LoadFromFile": "Tải từ tệp",
       "PleaseEnterAValidDeadzone": "Vui lòng nhập vùng nguy hiểm hợp lệ",

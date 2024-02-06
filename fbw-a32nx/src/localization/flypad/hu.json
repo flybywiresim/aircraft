@@ -84,7 +84,7 @@
       "Route": "Útvonal",
       "SimBriefDataNotYetLoaded": "A SimBrief adatok még nincsenek betöltve.",
       "Title": "A repülésed",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "Üzemanyag és rakomány importálva",
       "ZFW": "ZFW"
     }
   },
@@ -132,7 +132,7 @@
       "Defueling": "Üzemanyag leszívása",
       "EstimatedDuration": "Becsült időtartam (perc)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX üzemanyag szinkronizálás bekapcsolva",
+      "GSXFuelSyncEnabled": "Hívja a GSX tankert",
       "LeftInnerTank": "Bal belső tartály",
       "LeftOuterTank": "Bal külső tartály",
       "ReadyToStart": "Indításra kész",
@@ -495,7 +495,7 @@
       "PaxSigns": "Övek becsatolását jelző tabló",
       "RmpVhfSpacing": "RMP VHF elosztás",
       "Satcom": "Satcom megjelenítése",
-      "Select": "Select",
+      "Select": "Kiválaszt",
       "ThrustReductionHeight": "Tolóerő csökkentési magasság (ft)",
       "Title": "Repülő beállításai / programok kitűzése",
       "WeightUnit": "Súly mértékegység"
@@ -534,10 +534,10 @@
       "WindInteriorVolume": "Szél hangerő (belső)"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Mellőzve ha az ILS befogva",
+      "Reset": "Visszaállítás",
+      "ResetStandardConfig": "Alapértelmezett konfiguráció visszaállítása",
+      "Title": "Autómatikus figyelmeztetések"
     },
     "Fast": "Gyors",
     "Instant": "Azonnali",
@@ -600,7 +600,7 @@
         "SettingTitle": "Navigraph fiók link",
         "SubscriptionStatus": {
           "None": "Egyik sem",
-          "Unknown": "Unknown",
+          "Unknown": "Nem ismert",
           "Unlimited": "Navigraph Korlátlan "
         },
         "Unlink": "Fiók szétkapcsoltása"
@@ -617,14 +617,14 @@
       "Apply": "Alkalmaz",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Biztos benne, hogy vissza szeretné állítani az aktuális gázkar konfigurációs beállításokat az alapértelmezett állapotokra? Ez a változtatás visszafordíthatatlan.",
       "Axis": "Tengely",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": " Tengely $axis a gázkar $throttles\n ",
       "Back": "Vissza",
       "ConfigureEnd": "Konfigurálás vége",
       "ConfigureStart": "Konfigurálás elkezdése",
       "CurrentValue": "Jelenlegi érték",
       "Deadband": "Holtsáv",
       "ErrorOverlapMsg": "Átfedés a következővel",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "Ne felejtse el beállítani az MSFS-t úgy, hogy az 1-es tengelyt az 1+2 gázkarhoz, a 2. tengelyt pedig a 3+4 gázkarhoz használja.",
       "IndependentAxis": "Független tengely",
       "LoadFromFile": "Betöltés fájlból",
       "PleaseEnterAValidDeadzone": "Adjon meg egy érvényes holtjátékot",
