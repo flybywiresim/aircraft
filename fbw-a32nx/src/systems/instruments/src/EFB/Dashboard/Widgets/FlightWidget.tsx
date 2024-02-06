@@ -9,7 +9,7 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported } from '../../Store/features/simBrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported, setToastPresented } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -98,6 +98,7 @@ export const FlightWidget = () => {
 
     const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
     const payloadImported = useAppSelector((state) => state.simbrief.payloadImported);
+    const toastPresented = useAppSelector((state) => state.simbrief.toastPresented);
 
     const dispatch = useAppDispatch();
 
@@ -124,6 +125,7 @@ export const FlightWidget = () => {
 
         dispatch(setFuelImported(false));
         dispatch(setPayloadImported(false));
+        dispatch(setToastPresented(false));
         fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
             dispatch(action);
         }).catch((e) => {
@@ -134,16 +136,18 @@ export const FlightWidget = () => {
                 history.push('/ground/fuel');
                 history.push('/ground/payload');
                 history.push('/dashboard');
-                setTimeout(() => {
-                    if (fuelImported && payloadImported) {
-                        toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
-                    }
-                }, 2000);
             }
         });
 
         setSimbriefDataPending(false);
     };
+
+    useEffect(() => {
+        if (!simbriefDataPending && autoSimbriefImport === 'ENABLED' && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
+            toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            dispatch(setToastPresented(true));
+        }
+    }, [fuelImported, payloadImported]);
 
     useEffect(() => {
         if ((!data || !isSimbriefDataLoaded()) && !simbriefDataPending && autoSimbriefImport === 'ENABLED' && (navigraphUsername || overrideSimBriefUserID)) {
