@@ -148,7 +148,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         const vSpeedSet = pd.v1 !== undefined || pd.vr !== undefined || pd.v2 !== undefined;
-        const tbc = fm.v1ToBeConfirmed.get() !== undefined || fm.vrToBeConfirmed.get() !== undefined || fm.v2ToBeConfirmed.get() !== undefined;
+        const tbc = fm.v1ToBeConfirmed.get() !== null || fm.vrToBeConfirmed.get() !== null || fm.v2ToBeConfirmed.get() !== null;
         this.showConfirmVSpeeds(!vSpeedSet && tbc);
     }
 
@@ -642,7 +642,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.clbTablePredLine2.set(null);
             } else {
                 this.clbTableModeLine1.set('SELECTED');
-                this.clbTableSpdLine1.set((obs && obs.fcuSpeed < 1) ? null : (obs?.fcuSpeed.toFixed(0) ?? null));
+                this.clbTableSpdLine1.set((obs && obs.fcuSpeed >= 1) ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
                 this.clbTableMachLine1.set((obs && obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
                 this.clbTablePredLine1.set(null);
 
@@ -773,7 +773,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.desTablePredLine2.set(null);
             } else {
                 this.desTableModeLine1.set('SELECTED');
-                this.desTableSpdLine1.set((obs && obs.fcuSpeed < 1) ? null : (obs?.fcuSpeed.toFixed(0) ?? null));
+                this.desTableSpdLine1.set((obs && obs.fcuSpeed >= 1) ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
                 this.desTableMachLine1.set((obs && obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
                 this.desTablePredLine1.set('--:--  ----');
                 this.desTableModeLine2.set('MANAGED');

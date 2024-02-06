@@ -187,7 +187,9 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     }
 }
 
-// Unit of value: Feet (i.e. FL * 100)
+/**
+ * Unit of value: Feet (i.e. FL * 100)
+ */
 export class FlightLevelFormat implements DataEntryFormat<number> {
     public placeholder = '---';
 

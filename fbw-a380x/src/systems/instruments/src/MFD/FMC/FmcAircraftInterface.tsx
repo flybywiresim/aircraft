@@ -969,7 +969,7 @@ export class FmcAircraftInterface {
             return;
         }
 
-        const targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0 / 100;
+        const targetFl = (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100;
 
         if (
             (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && targetFl > this.flightPlanService.active.performanceData.cruiseFlightLevel)
@@ -1020,7 +1020,7 @@ export class FmcAircraftInterface {
         const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
         if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
-            const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0 / 100;
+            const fcuFl = (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100;
 
             if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel
             || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
@@ -1031,7 +1031,7 @@ export class FmcAircraftInterface {
                 }
 
                 this.cruiseFlightLevelTimeOut = setTimeout(() => {
-                    if (fcuFl === (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100
+                    if (fcuFl === ((Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100)
                         && (
                             this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel
                             || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
@@ -1061,10 +1061,7 @@ export class FmcAircraftInterface {
             this.fmc.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
             return false;
         }
-        if (fl >= 1000) {
-            fl = Math.floor(fl / 100);
-        }
-        if (fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+        if (fl > (this.fmc.getRecMaxFlightLevel() ?? (maxCertifiedAlt / 100))) {
             this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
             return false;
         }
@@ -1075,7 +1072,7 @@ export class FmcAircraftInterface {
             return false;
         }
 
-        if (fl <= 0 || fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+        if (fl <= 0 || fl > (this.fmc.getRecMaxFlightLevel() ?? (maxCertifiedAlt / 100))) {
             this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
             return false;
         }
@@ -1086,8 +1083,13 @@ export class FmcAircraftInterface {
         return true;
     }
 
-    public setCruiseFl(newFl: number) { // FL in 100 increments (e.g. 240 for 24000ft)
-        if (this.trySetCruiseFl(newFl)) {
+    /**
+     *
+     * @param newFl FL in 100 increments (e.g. 240 for 24000ft)
+     */
+    public setCruiseFl(newFl: number) {
+        const ret = this.trySetCruiseFl(newFl);
+        if (ret) {
             if (SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 && SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1) {
                 SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', this.flightPlanService.active.performanceData.cruiseFlightLevel);
             } else {
