@@ -101,7 +101,6 @@ pub struct SteeringActuator {
 
     max_half_angle: Angle,
 
-    max_speed: LowPassFilter<AngularVelocity>,
     nominal_speed: AngularVelocity,
 
     angular_to_linear_ratio: Ratio,
@@ -116,8 +115,13 @@ impl SteeringActuator {
 
     const REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI: f64 = 2000.;
 
-    const MAX_SPEED_FILTER_TIMECONST: Duration = Duration::from_millis(100);
     const CURRENT_SPEED_FILTER_TIMECONST: Duration = Duration::from_millis(150);
+
+    // Adjusts how the steering slows down with position error
+    // Formula is speed_coefficient = POSITION_ERROR_TO_MAX_SPEED_GAIN * position_error^2
+    // Then max speed will be max_speed = nominal_speed * speed_coefficient
+    // Note this is open loop: it will overshoot or undershoot depending on this factor
+    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.06;
 
     pub fn new(
         context: &mut InitContext,
@@ -136,7 +140,6 @@ impl SteeringActuator {
 
             max_half_angle,
 
-            max_speed: LowPassFilter::<AngularVelocity>::new(Self::MAX_SPEED_FILTER_TIMECONST),
             nominal_speed,
             angular_to_linear_ratio,
 
@@ -158,16 +161,14 @@ impl SteeringActuator {
         bypass_pin: &BypassPin,
     ) {
         if !bypass_pin.is_nose_wheel_steering_pin_inserted() {
-            self.update_max_speed(context, section_pressure);
-
             let limited_requested_angle = steering_controller
                 .requested_position()
                 .min(self.max_half_angle)
                 .max(-self.max_half_angle);
 
-            self.update_current_speed(context, limited_requested_angle);
+            self.update_current_speed(context, section_pressure, limited_requested_angle);
 
-            self.update_final_speed_position(context, limited_requested_angle);
+            self.update_final_speed_position(context);
         } else {
             self.update_speed_position_during_pushback(pushback_tug);
         }
@@ -175,26 +176,10 @@ impl SteeringActuator {
         self.update_flow(context, bypass_pin);
     }
 
-    fn update_final_speed_position(&mut self, context: &UpdateContext, requested_angle: Angle) {
+    fn update_final_speed_position(&mut self, context: &UpdateContext) {
         self.current_position += Angle::new::<radian>(
             self.current_speed.output().get::<radian_per_second>() * context.delta_as_secs_f64(),
         );
-
-        let position_error_abs = (requested_angle - self.position_feedback()).abs();
-
-        // If we crossed desired position between frames we assume we stopped at correct position
-        // Checking a position error because if requested angle changed since last frame by a huge
-        // amount, we want to track new position not to directly set new position
-        if position_error_abs.get::<degree>() < 5.
-            && ((self.current_speed.output().get::<radian_per_second>() > 0.
-                && requested_angle < self.position_feedback())
-                || (self.current_speed.output().get::<radian_per_second>() < 0.
-                    && requested_angle > self.position_feedback()))
-        {
-            self.current_speed
-                .reset(AngularVelocity::new::<radian_per_second>(0.));
-            self.current_position = requested_angle;
-        }
     }
 
     fn update_speed_position_during_pushback(&mut self, pushback_tug: &impl Pushback) {
@@ -203,36 +188,57 @@ impl SteeringActuator {
         self.current_position = pushback_tug.steering_angle();
     }
 
-    fn update_current_speed(&mut self, context: &UpdateContext, requested_angle: Angle) {
-        let signed_max_speed = if requested_angle > self.position_feedback() {
-            self.max_speed.output()
-        } else if requested_angle < self.position_feedback() {
-            -self.max_speed.output()
-        } else {
-            AngularVelocity::new::<radian_per_second>(0.)
-        };
-
-        self.current_speed.update(context.delta(), signed_max_speed);
-    }
-
-    fn update_max_speed(
+    fn update_current_speed(
         &mut self,
         context: &UpdateContext,
         section_pressure: &impl SectionPressure,
+        requested_angle: Angle,
     ) {
         let current_pressure = section_pressure.pressure_downstream_priority_valve();
 
-        let mut new_max_speed =
-            if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
-                self.nominal_speed * current_pressure.get::<psi>().sqrt() * 1.
-                    / Self::REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI.sqrt()
+        let max_speed_for_current_hydraulics_pressure =
+            self.max_speed_for_current_hydraulics_pressure(current_pressure);
+
+        let max_speed_closing_to_requested_position =
+            self.max_speed_for_position_error(requested_angle);
+
+        // Final speed is the max allowed by hydraulic power, potentially diminished by the closing position factor
+        let final_absolute_speed =
+            max_speed_for_current_hydraulics_pressure.min(max_speed_closing_to_requested_position);
+
+        self.current_speed.update(
+            context.delta(),
+            if requested_angle > self.position_feedback() {
+                final_absolute_speed
             } else {
-                AngularVelocity::new::<radian_per_second>(0.)
-            };
+                -final_absolute_speed
+            },
+        );
+    }
 
-        new_max_speed = new_max_speed.min(self.nominal_speed);
+    fn max_speed_for_current_hydraulics_pressure(
+        &self,
+        current_pressure: Pressure,
+    ) -> AngularVelocity {
+        (if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
+            self.nominal_speed * current_pressure.get::<psi>().sqrt()
+                / Self::REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI.sqrt()
+        } else {
+            AngularVelocity::default()
+        })
+        .min(self.nominal_speed)
+    }
 
-        self.max_speed.update(context.delta(), new_max_speed);
+    fn max_speed_for_position_error(&self, requested_angle: Angle) -> AngularVelocity {
+        let position_error_abs = (requested_angle - self.position_feedback()).abs();
+
+        // When closing to requested position, speed decreases using coefficient formula
+        //   This yields a 0..1 coefficient that reduces the nominal max speed
+        let slowing_coefficient = (Self::POSITION_ERROR_TO_MAX_SPEED_GAIN
+            * position_error_abs.get::<degree>().powi(2))
+        .min(1.);
+
+        self.nominal_speed * slowing_coefficient
     }
 
     fn update_flow(&mut self, context: &UpdateContext, bypass_pin: &BypassPin) {
@@ -553,7 +559,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.steering_actuator.position_normalized())
-                == Ratio::new::<ratio>(1.)
+                >= Ratio::new::<ratio>(0.98)
         );
 
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(-90.)));
@@ -566,7 +572,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.steering_actuator.position_normalized())
-                == Ratio::new::<ratio>(-1.)
+                <= Ratio::new::<ratio>(-0.98)
         );
     }
 
@@ -577,7 +583,7 @@ mod tests {
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
 
-        test_bed.run_multiple_frames(Duration::from_secs(2));
+        test_bed.run_multiple_frames(Duration::from_secs(3));
 
         assert!(is_equal_angle(
             test_bed.query(|a| a.steering_actuator.position_feedback()),
@@ -710,7 +716,7 @@ mod tests {
     }
 
     fn is_equal_angle(a1: Angle, a2: Angle) -> bool {
-        const EPSILON_DEGREE: f64 = 0.1;
+        const EPSILON_DEGREE: f64 = 1.;
 
         (a1 - a2).abs() <= Angle::new::<degree>(EPSILON_DEGREE)
     }

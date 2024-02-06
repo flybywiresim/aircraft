@@ -63,6 +63,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_engine_anti_ice(4)?
+    .with_wing_anti_ice()?
     .with_failures(vec![
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
@@ -264,6 +266,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("CENTER WHEEL ROTATION ANGLE", "Degrees", 0)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?

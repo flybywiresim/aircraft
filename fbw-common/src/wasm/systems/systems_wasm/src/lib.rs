@@ -1,7 +1,7 @@
 #[macro_use]
 pub mod aspects;
+mod anti_ice;
 mod electrical;
-mod engines;
 mod failures;
 mod msfs;
 
@@ -10,9 +10,9 @@ use crate::msfs::legacy::{AircraftVariable, NamedVariable};
 #[cfg(target_arch = "wasm32")]
 use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
+use crate::anti_ice::{engine_anti_ice, wing_anti_ice};
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
-use crate::engines::engines;
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     sys, MSFSEvent,
@@ -111,8 +111,12 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         ))
     }
 
-    pub fn with_engines(self, engine_count: usize) -> Result<Self, Box<dyn Error>> {
-        self.with_aspect(engines(engine_count))
+    pub fn with_engine_anti_ice(self, engine_count: usize) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(engine_anti_ice(engine_count))
+    }
+
+    pub fn with_wing_anti_ice(self) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(wing_anti_ice())
     }
 
     pub fn with_failures(mut self, failures: Vec<(u64, FailureType)>) -> Self {

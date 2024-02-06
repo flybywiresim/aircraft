@@ -1,8 +1,8 @@
 #include "rtwtypes.h"
+#include "mod_Mu9grHF5.h"
 #include <cmath>
-#include "mod_mvZvttxs.h"
 
-real_T mod_mvZvttxs(real_T x)
+real_T mod_Mu9grHF5(real_T x)
 {
   real_T r;
   if (x == 0.0) {

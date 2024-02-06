@@ -110,3 +110,6 @@ cmake-build*/
 cmake-build*
 
 localazy.keys.json
+
+# MacOS files
+**/.DS_Store
