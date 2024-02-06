@@ -26,11 +26,11 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
         this.divRef.instance.addEventListener('click', this.props.onClick);
 
         if (this.props.isActiveFlightPhase === true) {
-            this.textRef.getOrDefault().style.color = '#00ff00';
+            this.textRef.instance.style.color = '#00ff00';
         } else if (this.props.isSelected === true) {
-            this.textRef.getOrDefault().style.color = this.props.selectedTextColor;
+            this.textRef.instance.style.color = this.props.selectedTextColor;
         } else {
-            this.textRef.getOrDefault().style.color = 'white;';
+            this.textRef.instance.style.color = 'white;';
         }
     }
 
@@ -114,13 +114,13 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
     constructor(props: TopTabNavigatorProps) {
         super(props);
 
-        if (this.props.pageTitles.get().length !== this.props.children.length) {
+        if (this.props.pageTitles.get().length !== this.props.children?.length) {
             console.error('Number of TopTabNavigator children is not equal to number of elements in pageTitles array.');
         }
 
         // Set visibility for pages and check whether TopTabNavigator only has TopTabNavigatorPage elements as children
-        const nodes = FSComponent.createChildNodes(null, this.props.children);
-        nodes.forEach((page, index) => {
+        const nodes = FSComponent.createChildNodes(<></>, this.props.children ?? []);
+        nodes?.forEach((page, index) => {
             if (page.instance instanceof TopTabNavigatorPage) {
                 page.instance.setVisibility(index === this.props.selectedPageIndex.get());
             } else {
@@ -144,8 +144,8 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
         }
 
         // Re-set visibility for pages
-        const nodes = FSComponent.createChildNodes(node, this.props.children);
-        nodes.forEach((page, index) => {
+        const nodes = FSComponent.createChildNodes(node, this.props.children ?? []);
+        nodes?.forEach((page, index) => {
             if (page.instance instanceof TopTabNavigatorPage) {
                 page.instance.setVisibility(index === selectedTab);
             }

@@ -24,16 +24,17 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
     private newDest = Subject.create<string>('');
 
     private onModified(newDest: string): void {
-        if (newDest.length === 4) {
-            this.props.fmcService.master.flightPlanService.newDest(
-                this.props.fmcService.master.revisedWaypointIndex.get(),
+        const revWpt = this.props.fmcService.master?.revisedWaypointIndex.get();
+        if (newDest.length === 4 && revWpt) {
+            this.props.fmcService.master?.flightPlanService.newDest(
+                revWpt,
                 newDest,
-                this.props.fmcService.master.revisedWaypointPlanIndex.get(),
-                this.props.fmcService.master.revisedWaypointIsAltn.get(),
+                this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
+                this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
             );
             this.props.visible.set(false);
             this.newDest.set('');
-            this.props.fmcService.master.resetRevisedWaypoint();
+            this.props.fmcService.master?.resetRevisedWaypoint();
         }
     }
 
@@ -41,15 +42,19 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
         super.onAfterRender(node);
 
         this.subs.push(this.props.visible.sub((val) => {
-            this.topRef.getOrDefault().style.display = val ? 'block' : 'none';
-            this.newDest.set('');
+            if (this.topRef.getOrDefault()) {
+                this.topRef.instance.style.display = val ? 'block' : 'none';
+                this.newDest.set('');
+            }
         }, true));
 
-        this.subs.push(this.props.fmcService.master.revisedWaypointIndex.sub(() => {
-            if (this.props.fmcService.master.revisedWaypoint()) {
-                this.identRef.instance.innerText = this.props.fmcService.master.revisedWaypoint().ident;
-            }
-        }));
+        if (this.props.fmcService.master) {
+            this.subs.push(this.props.fmcService.master.revisedWaypointIndex.sub(() => {
+                if (this.props.fmcService.master?.revisedWaypoint()) {
+                    this.identRef.instance.innerText = this.props.fmcService.master?.revisedWaypoint()?.ident ?? '';
+                }
+            }));
+        }
     }
 
     public destroy(): void {
@@ -71,14 +76,14 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         <span class="mfd-label">
                             NEW DEST FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value bigger">{this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value bigger">{this.props.fmcService.master?.revisedWaypoint()?.ident ?? ''}</span>
                         </span>
                         <div style="align-self: center; margin-top: 50px;">
                             <InputField<string>
                                 dataEntryFormat={new AirportFormat()}
                                 mandatory={Subject.create(false)}
                                 canBeCleared={Subject.create(true)}
-                                onModified={(val) => this.onModified(val)}
+                                onModified={(val) => this.onModified(val ?? '')}
                                 value={this.newDest}
                                 alignText="center"
                                 errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
@@ -90,7 +95,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                             label="CANCEL"
                             onClick={() => {
                                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.fmcService.master?.resetRevisedWaypoint();
                                 this.props.visible.set(false);
                             }}
                         />

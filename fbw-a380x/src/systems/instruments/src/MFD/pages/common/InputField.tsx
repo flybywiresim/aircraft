@@ -14,18 +14,18 @@ interface InputFieldProps<T> extends ComponentProps {
     canBeCleared?: Subscribable<boolean>;
     enteredByPilot?: Subscribable<boolean>; // Value will be displayed in smaller font, if not entered by pilot (i.e. computed)
     canOverflow?: boolean;
-    value: Subject<T> | Subscribable<T>;
+    value: Subject<T | null> | Subscribable<T | null>;
     /**
      * If defined, this component does not update the value prop, but rather calls this method.
      */
-    onModified?: (newValue: T) => void;
+    onModified?: (newValue: T | null) => void;
     onInput?: (newValue: string) => void; // Called for every character that is being typed
     /**
      * Function which modifies data within flight plan. Called during validation phase, after data entry format has been checked
      * @param newValue to be validated
      * @returns whether validation was successful. If nothing is returned, success is assumed
      */
-    dataHandlerDuringValidation?: (newValue: T, oldValue?: T) => Promise<boolean | void>;
+    dataHandlerDuringValidation?: (newValue: T | null, oldValue?: T | null) => Promise<boolean | void>;
     errorHandler?: (errorType: FmsErrorType) => void;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
@@ -51,15 +51,15 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private caretRef = FSComponent.createRef<HTMLSpanElement>();
 
-    private leadingUnit = Subject.create<string>(undefined);
+    private leadingUnit = Subject.create<string>('');
 
-    private trailingUnit = Subject.create<string>(undefined);
+    private trailingUnit = Subject.create<string>('');
 
     private leadingUnitRef = FSComponent.createRef<HTMLSpanElement>();
 
     private trailingUnitRef = FSComponent.createRef<HTMLSpanElement>();
 
-    private modifiedFieldValue = Subject.create<string>(null);
+    private modifiedFieldValue = Subject.create<string | null>(null);
 
     private isFocused = Subject.create(false);
 
@@ -78,11 +78,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.value.get() !== undefined) {
             if (this.props.canOverflow === true) {
                 // If item was overflowed, check whether overflow is still needed
-                this.overflow(!(this.props.value.get().toString().length <= this.props.dataEntryFormat.maxDigits));
+                this.overflow(!((this.props.value.get()?.toString().length ?? 0) <= this.props.dataEntryFormat.maxDigits));
             }
 
-            if (this.props.mandatory.get() === true) {
-                this.textInputRef.getOrDefault().classList.remove('mandatory');
+            if (this.props.mandatory?.get() === true) {
+                this.textInputRef.getOrDefault()?.classList.remove('mandatory');
             }
         }
         this.updateDisplayElement();
@@ -95,66 +95,68 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.populatePlaceholders();
             } else {
                 const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
-                this.textInputRef.getOrDefault().innerText = formatted;
-                this.leadingUnit.set(leadingUnit);
-                this.trailingUnit.set(trailingUnit);
+                this.textInputRef.instance.innerText = formatted ?? '';
+                this.leadingUnit.set(leadingUnit ?? '');
+                this.trailingUnit.set(trailingUnit ?? '');
             }
         } else { // Else, render modifiedFieldValue
             const numDigits = this.props.dataEntryFormat.maxDigits;
-            if (this.modifiedFieldValue.get().length < numDigits || this.isFocused.get() === false || this.props.canOverflow === true) {
-                this.textInputRef.getOrDefault().innerText = this.modifiedFieldValue.get();
-                this.caretRef.getOrDefault().innerText = '';
+            if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || this.isFocused.get() === false || this.props.canOverflow === true) {
+                this.textInputRef.instance.innerText = this.modifiedFieldValue.get() ?? '';
+                this.caretRef.instance.innerText = '';
             } else {
-                this.textInputRef.getOrDefault().innerText = this.modifiedFieldValue.get().slice(0, numDigits - 1);
-                this.caretRef.getOrDefault().innerText = this.modifiedFieldValue.get().slice(numDigits - 1, numDigits);
+                this.textInputRef.instance.innerText = this.modifiedFieldValue.get()?.slice(0, numDigits - 1) ?? '';
+                this.caretRef.instance.innerText = this.modifiedFieldValue.get()?.slice(numDigits - 1, numDigits) ?? '';
             }
         }
     }
 
     // Called when the input field changes
     private onInput() {
-        if (this.props.canOverflow === true && this.modifiedFieldValue.get().length === this.props.dataEntryFormat.maxDigits) {
+        if (this.props.canOverflow === true && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
             this.overflow(true);
         }
 
         if (this.props.onInput) {
-            this.props.onInput(this.modifiedFieldValue.get());
+            this.props.onInput(this.modifiedFieldValue.get() ?? '');
         }
     }
 
     public overflow(overflow: boolean) {
-        if (overflow === true) {
-            this.topRef.instance.style.position = 'relative';
-            this.topRef.instance.style.top = '0px';
-            this.containerRef.instance.style.position = 'absolute';
-            this.containerRef.instance.style.top = '-18px';
-            this.containerRef.instance.style.zIndex = '5';
-            const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
-            this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
-            this.containerRef.instance.style.border = '1px solid grey';
-        } else {
-            this.topRef.instance.style.position = null;
-            this.topRef.instance.style.top = null;
-            this.containerRef.instance.style.position = null;
-            this.containerRef.instance.style.top = null;
-            this.containerRef.instance.style.zIndex = null;
-            this.containerRef.instance.style.width = null;
-            this.containerRef.instance.style.border = null;
+        if (this.topRef.getOrDefault() && this.containerRef.getOrDefault()) {
+            if (overflow === true) {
+                this.topRef.instance.style.position = 'relative';
+                this.topRef.instance.style.top = '0px';
+                this.containerRef.instance.style.position = 'absolute';
+                this.containerRef.instance.style.top = '-18px';
+                this.containerRef.instance.style.zIndex = '5';
+                const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
+                this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+                this.containerRef.instance.style.border = '1px solid grey';
+            } else {
+                this.topRef.instance.style.position = '';
+                this.topRef.instance.style.top = '';
+                this.containerRef.instance.style.position = '';
+                this.containerRef.instance.style.top = '';
+                this.containerRef.instance.style.zIndex = '';
+                this.containerRef.instance.style.width = '';
+                this.containerRef.instance.style.border = '';
 
-            if (this.props.containerStyle) {
-                this.containerRef.instance.setAttribute('style', this.props.containerStyle);
+                if (this.props.containerStyle) {
+                    this.containerRef.instance.setAttribute('style', this.props.containerStyle);
+                }
             }
         }
     }
 
     private onKeyDown(ev: KeyboardEvent) {
         if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
-            if (this.modifiedFieldValue.get() === null && this.props.canBeCleared.get() === true) {
+            if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get() === true) {
                 this.modifiedFieldValue.set('');
-            } else if (this.modifiedFieldValue.get().length === 0) {
+            } else if (this.modifiedFieldValue.get()?.length === 0) {
                 // Do nothing
             } else {
-                this.modifiedFieldValue.set(this.modifiedFieldValue.get().slice(0, -1));
+                this.modifiedFieldValue.set(this.modifiedFieldValue.get()?.slice(0, -1) ?? '');
             }
 
             this.onInput();
@@ -163,19 +165,19 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private onKeyPress(ev: KeyboardEvent) {
         // Un-select the text
-        this.textInputRef.getOrDefault().classList.remove('valueSelected');
+        this.textInputRef.instance.classList.remove('valueSelected');
         // ev.key is undefined, so we have to use the deprecated keyCode here
         const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
         if (ev.keyCode !== KeyCode.KEY_ENTER) {
             if (this.modifiedFieldValue.get() === null) {
                 this.modifiedFieldValue.set('');
-                this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-start';
+                this.spanningDivRef.instance.style.justifyContent = 'flex-start';
             }
 
-            if (this.modifiedFieldValue.get()?.length < this.props.dataEntryFormat.maxDigits || this.props.canOverflow === true) {
+            if ((this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits || this.props.canOverflow === true) {
                 this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
-                this.caretRef.getOrDefault().style.display = 'inline';
+                this.caretRef.instance.style.display = 'inline';
             }
 
             this.onInput();
@@ -186,32 +188,32 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             if (this.props.handleFocusBlurExternally === true) {
                 this.onBlur(true);
             } else {
-                this.textInputRef.getOrDefault().blur();
+                this.textInputRef.instance.blur();
             }
         }
     }
 
     public onFocus() {
-        if (this.isFocused.get() === false && this.isValidating.get() === false && this.props.disabled.get() === false && this.props.inactive.get() === false) {
+        if (this.isFocused.get() === false && this.isValidating.get() === false && this.props.disabled?.get() === false && this.props.inactive?.get() === false) {
             this.isFocused.set(true);
             Coherent.trigger('FOCUS_INPUT_FIELD');
-            this.textInputRef.getOrDefault().classList.add('valueSelected');
-            this.textInputRef.getOrDefault().classList.add('editing');
-            if (this.props.mandatory.get() === true) {
-                this.textInputRef.getOrDefault().classList.remove('mandatory');
+            this.textInputRef.instance.classList.add('valueSelected');
+            this.textInputRef.instance.classList.add('editing');
+            if (this.props.mandatory?.get() === true) {
+                this.textInputRef.instance.classList.remove('mandatory');
             }
             this.modifiedFieldValue.set(null);
-            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
+            this.spanningDivRef.instance.style.justifyContent = this.props.alignText ?? 'center';
             this.updateDisplayElement();
         }
     }
 
     public async onBlur(validateAndUpdate: boolean = true) {
-        if (this.props.disabled.get() === false && this.props.inactive.get() === false && this.isFocused.get() === true) {
+        if (this.props.disabled?.get() === false && this.props.inactive?.get() === false && this.isFocused.get() === true) {
             this.isFocused.set(false);
             Coherent.trigger('UNFOCUS_INPUT_FIELD');
-            this.textInputRef.getOrDefault().classList.remove('valueSelected');
-            this.caretRef.getOrDefault().style.display = 'none';
+            this.textInputRef.instance.classList.remove('valueSelected');
+            this.caretRef.instance.style.display = 'none';
             this.updateDisplayElement();
 
             if (validateAndUpdate) {
@@ -219,31 +221,31 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                     console.log('Enter pressed after no modification');
                     // Enter is pressed after no modification
                     const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
-                    await this.validateAndUpdate(formatted);
+                    await this.validateAndUpdate(formatted ?? '');
                 } else {
-                    await this.validateAndUpdate(this.modifiedFieldValue.get());
+                    await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
                 }
             }
 
             // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-            if (!this.props.value.get() && this.props.mandatory.get() === true) {
-                this.textInputRef.getOrDefault().classList.add('mandatory');
+            if (!this.props.value.get() && this.props.mandatory?.get() === true) {
+                this.textInputRef.instance.classList.add('mandatory');
             }
 
-            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
-            this.textInputRef.getOrDefault().classList.remove('editing');
+            this.spanningDivRef.instance.style.justifyContent = this.props.alignText ?? 'center';
+            this.textInputRef.instance.classList.remove('editing');
         }
     }
 
     private populatePlaceholders() {
         const [formatted, unitLeading, unitTrailing] = this.props.dataEntryFormat.format(null);
-        this.leadingUnit.set(unitLeading);
-        this.trailingUnit.set(unitTrailing);
+        this.leadingUnit.set(unitLeading ?? '');
+        this.trailingUnit.set(unitTrailing ?? '');
 
-        if (this.props.mandatory.get() === true && this.props.inactive.get() === false && this.props.disabled.get() === false) {
-            this.textInputRef.getOrDefault().innerHTML = formatted.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get()));
+        if (this.props.mandatory?.get() === true && this.props.inactive?.get() === false && this.props.disabled?.get() === false) {
+            this.textInputRef.instance.innerHTML = formatted?.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get())) ?? '';
         } else {
-            this.textInputRef.getOrDefault().innerText = formatted;
+            this.textInputRef.instance.innerText = formatted ?? '';
         }
     }
 
@@ -335,55 +337,55 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
         this.subs.push(this.isValidating.sub((val) => {
             if (val === true) {
-                this.textInputRef.getOrDefault().classList.add('validating');
+                this.textInputRef.instance.classList.add('validating');
             } else {
-                this.textInputRef.getOrDefault().classList.remove('validating');
+                this.textInputRef.instance.classList.remove('validating');
             }
         }));
 
         this.subs.push(this.props.mandatory.sub((val) => {
             if (val === true && !this.props.value.get()) {
-                this.textInputRef.getOrDefault().classList.add('mandatory');
+                this.textInputRef.instance.classList.add('mandatory');
             } else {
-                this.textInputRef.getOrDefault().classList.remove('mandatory');
+                this.textInputRef.instance.classList.remove('mandatory');
             }
             this.updateDisplayElement();
         }, true));
 
         this.subs.push(this.props.inactive.sub((val) => {
             if (val === true) {
-                this.containerRef.getOrDefault().classList.add('inactive');
-                this.textInputRef.getOrDefault().classList.add('inactive');
+                this.containerRef.instance.classList.add('inactive');
+                this.textInputRef.instance.classList.add('inactive');
 
-                this.textInputRef.getOrDefault().tabIndex = null;
+                this.textInputRef.instance.tabIndex = 0;
             } else {
-                this.containerRef.getOrDefault().classList.remove('inactive');
-                this.textInputRef.getOrDefault().classList.remove('inactive');
+                this.containerRef.instance.classList.remove('inactive');
+                this.textInputRef.instance.classList.remove('inactive');
 
-                if (this.props.disabled.get() === false) {
-                    this.textInputRef.getOrDefault().tabIndex = -1;
+                if (this.props.disabled?.get() === false) {
+                    this.textInputRef.instance.tabIndex = -1;
                 }
             }
             this.updateDisplayElement();
         }, true));
 
         this.subs.push(this.props.disabled.sub((val) => {
-            if (this.props.inactive.get() !== true) {
+            if (this.props.inactive?.get() !== true) {
                 if (val === true) {
-                    this.textInputRef.getOrDefault().tabIndex = null;
-                    this.containerRef.getOrDefault().classList.add('disabled');
-                    this.textInputRef.getOrDefault().classList.add('disabled');
+                    this.textInputRef.instance.tabIndex = 0;
+                    this.containerRef.instance.classList.add('disabled');
+                    this.textInputRef.instance.classList.add('disabled');
 
-                    if (this.props.mandatory.get() === true && !this.props.value.get()) {
-                        this.textInputRef.getOrDefault().classList.remove('mandatory');
+                    if (this.props.mandatory?.get() === true && !this.props.value.get()) {
+                        this.textInputRef.instance.classList.remove('mandatory');
                     }
                 } else {
-                    this.textInputRef.getOrDefault().tabIndex = -1;
-                    this.containerRef.getOrDefault().classList.remove('disabled');
-                    this.textInputRef.getOrDefault().classList.remove('disabled');
+                    this.textInputRef.instance.tabIndex = -1;
+                    this.containerRef.instance.classList.remove('disabled');
+                    this.textInputRef.instance.classList.remove('disabled');
 
-                    if (this.props.mandatory.get() === true && !this.props.value.get()) {
-                        this.textInputRef.getOrDefault().classList.add('mandatory');
+                    if (this.props.mandatory?.get() === true && !this.props.value.get()) {
+                        this.textInputRef.instance.classList.add('mandatory');
                     }
                 }
             }
@@ -392,9 +394,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         this.subs.push(this.props.enteredByPilot.sub((val) => {
             if (val === false) {
-                this.textInputRef.getOrDefault().classList.add('computedByFms');
+                this.textInputRef.instance.classList.add('computedByFms');
             } else {
-                this.textInputRef.getOrDefault().classList.remove('computedByFms');
+                this.textInputRef.instance.classList.remove('computedByFms');
             }
         }, true));
 

@@ -25,7 +25,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
     private availableWaypoints = ArraySubject.create<string>([]);
 
-    private selectedWaypointIndex = Subject.create<number>(null);
+    private selectedWaypointIndex = Subject.create<number | null>(null);
 
     private manualWptIdent: string | null = '';
 
@@ -33,7 +33,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
     private distToWpt = Subject.create<string>('---');
 
-    private directToOption = Subject.create<DirectToOption>(DirectToOption.DIRECT);
+    private directToOption = Subject.create<DirectToOption | null>(DirectToOption.DIRECT);
 
     private eraseButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
@@ -45,8 +45,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         console.time('DIRECT-TO:onNewData');
 
         // Use active FPLN for building the list (page only works for active anyways)
-        const activeFpln = this.props.fmcService.master.flightPlanService.active;
-        const wpt = activeFpln.allLegs.slice(
+        const activeFpln = this.props.fmcService.master?.flightPlanService.active;
+        const wpt = activeFpln?.allLegs.slice(
             activeFpln.activeLegIndex,
             activeFpln.firstMissedApproachLegIndex,
         ).map((el) => {
@@ -54,14 +54,17 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                 return el.ident;
             }
             return null;
-        }).filter((el) => el !== null);
-        this.availableWaypoints.set(wpt);
+        }).filter((el) => el !== null) as readonly string[] | undefined;
+        if (wpt) {
+            this.availableWaypoints.set(wpt);
+        }
 
         // Existance of TMPY fpln is indicator for pending direct to revision
         if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary) {
             // If waypoint was revised, select revised wpt
-            if (this.props.fmcService.master.revisedWaypoint() !== undefined) {
-                const selectedLegIndex = this.availableWaypoints.getArray().findIndex((it) => it === this.props.fmcService.master.revisedWaypoint().ident);
+            const revWpt = this.props.fmcService.master?.revisedWaypoint();
+            if (revWpt) {
+                const selectedLegIndex = this.availableWaypoints.getArray().findIndex((it) => it === revWpt.ident);
                 if (selectedLegIndex !== -1) {
                     this.selectedWaypointIndex.set(selectedLegIndex);
                 }
@@ -74,7 +77,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             }
 
             // TODO Display ETA; target waypoint is now activeLeg termination in temporary fpln
-            if (this.loadedFlightPlan.activeLeg instanceof FlightPlanLeg) {
+            if (this.loadedFlightPlan?.activeLeg instanceof FlightPlanLeg) {
                 // No predictions for temporary fpln atm, so only distance is displayed
                 this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
             }
@@ -84,35 +87,37 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     }
 
     private async onDropdownModified(idx: number, text: string): Promise<void> {
-        if (this.props.fmcService.master.flightPlanService.hasTemporary) {
+        if (this.props.fmcService.master?.flightPlanService.hasTemporary) {
             await this.props.fmcService.master.flightPlanService.temporaryDelete();
             this.props.fmcService.master.resetRevisedWaypoint();
         }
 
-        const fpln = this.props.fmcService.master.flightPlanService.active;
+        const fpln = this.props.fmcService.master?.flightPlanService.active;
         if (idx >= 0) {
             if (this.availableWaypoints.get(idx)
-                && fpln.findLegIndexByFixIdent(this.availableWaypoints.get(idx))) {
+                && fpln?.findLegIndexByFixIdent(this.availableWaypoints.get(idx))) {
                 this.selectedWaypointIndex.set(idx);
                 this.manualWptIdent = null;
-                await this.props.fmcService.master.flightPlanService.directToLeg(
-                    this.props.fmcService.master.navigation.getPpos(),
+                await this.props.fmcService.master?.flightPlanService.directToLeg(
+                    this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
                     fpln.findLegIndexByFixIdent(this.availableWaypoints.get(idx)),
                     this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
                     FlightPlanIndex.Active,
                 );
             }
-        } else {
+        } else if (this.props.fmcService.master) {
             const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
-            this.manualWptIdent = wpt.ident;
-            await this.props.fmcService.master.flightPlanService.directToWaypoint(
-                this.props.fmcService.master.navigation.getPpos(),
-                SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-                wpt,
-                this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
-                FlightPlanIndex.Active,
-            );
+            if (wpt) {
+                this.manualWptIdent = wpt.ident;
+                await this.props.fmcService.master.flightPlanService.directToWaypoint(
+                    this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
+                    SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+                    wpt,
+                    this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
+                    FlightPlanIndex.Active,
+                );
+            }
         }
     }
 
@@ -122,9 +127,11 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.onNewData();
 
         this.subs.push(this.tmpyActive.sub((v) => {
-            this.eraseButtonDiv.getOrDefault().style.display = (v ? 'block' : 'none');
-            this.returnButtonDiv.getOrDefault().style.display = (v ? 'none' : 'block');
-            this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
+            if (this.eraseButtonDiv.getOrDefault() && this.returnButtonDiv.getOrDefault() && this.tmpyInsertButtonDiv.getOrDefault()) {
+                this.eraseButtonDiv.instance.style.display = (v ? 'block' : 'none');
+                this.returnButtonDiv.instance.style.display = (v ? 'none' : 'block');
+                this.tmpyInsertButtonDiv.instance.style.visibility = (v ? 'visible' : 'hidden');
+            }
         }, true));
     }
 
@@ -147,7 +154,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                         freeTextAllowed
                                         containerStyle="width: 175px;"
                                         alignLabels="flex-start"
-                                        onModified={(i, text) => this.onDropdownModified(i, text)}
+                                        onModified={(i, text) => i && this.onDropdownModified(i, text)}
                                         numberOfDigitsForInputField={7}
                                         tmpyActive={this.tmpyActive}
                                     />
@@ -204,7 +211,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                         <Button
                             label="ERASE<br />DIR TO*"
                             onClick={async () => {
-                                await this.props.fmcService.master.flightPlanService.temporaryDelete();
+                                await this.props.fmcService.master?.flightPlanService.temporaryDelete();
                                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #e68000;"
@@ -220,7 +227,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                         <Button
                             label="INSERT<br />DIR TO*"
                             onClick={async () => {
-                                this.props.fmcService.master.flightPlanService.temporaryInsert();
+                                this.props.fmcService.master?.flightPlanService.temporaryInsert();
                                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #e68000;"

@@ -40,16 +40,20 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
     protected onNewData() {
         console.time('DATA/STATUS:onNewData');
 
-        const date = this.props.fmcService.master.fmgc.getNavDataDateRange();
-        this.activeDatabase.set(this.calculateActiveDate(date));
-        this.secondDatabase.set(this.calculateSecDate(date));
+        const date = this.props.fmcService.master?.fmgc.getNavDataDateRange();
+        if (date) {
+            this.activeDatabase.set(this.calculateActiveDate(date));
+            this.secondDatabase.set(this.calculateSecDate(date));
+        }
 
-        const storedElements = this.props.fmcService.master.getDataManager().numberOfStoredElements();
-        this.storedWaypoints.set(storedElements.waypoints.toFixed(0).padStart(2, '0'));
-        this.storedRoutes.set(storedElements.routes.toFixed(0).padStart(2, '0'));
-        this.storedNavaids.set(storedElements.navaids.toFixed(0).padStart(2, '0'));
-        this.storedRunways.set(storedElements.runways.toFixed(0).padStart(2, '0'));
-        this.deleteStoredElementsDisabled.set(storedElements.total === 0);
+        const storedElements = this.props.fmcService.master?.getDataManager()?.numberOfStoredElements();
+        if (storedElements) {
+            this.storedWaypoints.set(storedElements.waypoints.toFixed(0).padStart(2, '0'));
+            this.storedRoutes.set(storedElements.routes.toFixed(0).padStart(2, '0'));
+            this.storedNavaids.set(storedElements.navaids.toFixed(0).padStart(2, '0'));
+            this.storedRunways.set(storedElements.runways.toFixed(0).padStart(2, '0'));
+            this.deleteStoredElementsDisabled.set(storedElements.total === 0);
+        }
 
         console.timeEnd('DATA/STATUS:onNewData');
     }
@@ -234,7 +238,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                                 </div>,
                                             )}
-                                            onClick={() => this.props.fmcService.master.getDataManager().deleteAllStoredWaypoints()}
+                                            onClick={() => this.props.fmcService.master?.getDataManager()?.deleteAllStoredWaypoints()}
                                             disabled={this.deleteStoredElementsDisabled}
                                         />
                                     </div>

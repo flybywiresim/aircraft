@@ -40,7 +40,7 @@ export class TypeIIMessage extends McduMessage {
      * isResolved {function} overrides present function
      * onClear {function} overrides present function
      */
-    getModifiedMessage(t: string, isResolved: () => boolean = undefined, onClear: () => void = undefined) {
+    getModifiedMessage(t: string, isResolved: (() => boolean) | undefined = undefined, onClear: (() => void) | undefined = undefined) {
         return new TypeIIMessage(
             t ? this.text.replace(this.replace, `${t}`) : this.text,
             this.isAmber,

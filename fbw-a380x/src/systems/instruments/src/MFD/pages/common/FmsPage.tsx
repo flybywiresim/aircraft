@@ -12,11 +12,11 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     protected subs = [] as Subscription[];
 
-    private newDataIntervalId: number;
+    private newDataIntervalId: number = 0;
 
     protected activePageTitle = Subject.create<string>('');
 
-    public loadedFlightPlan: FlightPlan;
+    public loadedFlightPlan: FlightPlan | null = null;
 
     protected loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
@@ -53,7 +53,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         }));
 
         this.subs.push(flightPlanSyncSub.on('flightPlanManager.delete').handle((data) => {
-            if (data.planIndex === this.loadedFlightPlan.index) {
+            if (data.planIndex === this.loadedFlightPlan?.index) {
                 this.onFlightPlanChanged();
             }
         }));
@@ -63,13 +63,13 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         }));
 
         this.subs.push(flightPlanSyncSub.on('flightPlanManager.swap').handle((data) => {
-            if (data.planIndex === this.loadedFlightPlan.index || data.targetPlanIndex === this.loadedFlightPlan.index) {
+            if (data.planIndex === this.loadedFlightPlan?.index || data.targetPlanIndex === this.loadedFlightPlan?.index) {
                 this.onFlightPlanChanged();
             }
         }));
 
         this.subs.push(flightPlanSyncSub.on('flightPlanManager.copy').handle((data) => {
-            if (data.planIndex === this.loadedFlightPlan.index || data.targetPlanIndex === this.loadedFlightPlan.index) {
+            if (data.planIndex === this.loadedFlightPlan?.index || data.targetPlanIndex === this.loadedFlightPlan?.index) {
                 this.onFlightPlanChanged();
             }
         }));
@@ -82,68 +82,68 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
 
     protected checkIfNewData() {
         // Check for current flight plan, whether it has changed (TODO switch to Subscribable in the future)
-        if (this.loadedFlightPlan.version !== this.currentFlightPlanVersion) {
+        if (this.loadedFlightPlan?.version !== this.currentFlightPlanVersion) {
             this.onNewDataChecks();
             this.onNewData();
-            this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+            this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
         }
     }
 
     protected onFlightPlanChanged() {
         switch (this.props.mfd.uiService.activeUri.get().category) {
         case 'active':
-            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.activeOrTemporary;
-            this.loadedFlightPlanIndex.set(this.props.fmcService.master.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+            this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.activeOrTemporary ?? null;
+            this.loadedFlightPlanIndex.set(this.props.fmcService.master?.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
             this.secActive.set(false);
-            this.tmpyActive.set(this.props.fmcService.master.flightPlanService.hasTemporary);
+            this.tmpyActive.set(this.props.fmcService.master?.flightPlanService.hasTemporary ?? false);
             break;
         case 'sec1':
-            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(1);
+            this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(1) ?? null;
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec2':
-            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(2);
+            this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(2) ?? null;
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec3':
-            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(3);
+            this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(3) ?? null;
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
 
         default:
-            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.activeOrTemporary;
+            this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.activeOrTemporary ?? null;
             break;
         }
         this.onNewDataChecks();
         this.onNewData();
-        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+        this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
     }
 
-    protected abstract onNewData();
+    protected abstract onNewData(): void;
 
     private onNewDataChecks() {
-        const fm = this.props.fmcService.master.fmgc.data;
-        const pd = this.loadedFlightPlan.performanceData;
+        const fm = this.props.fmcService.master?.fmgc.data ?? null;
+        const pd = this.loadedFlightPlan?.performanceData ?? null;
 
-        if (this.loadedFlightPlan.originRunway) {
-            if (fm.vSpeedsForRunway.get() === undefined) {
-                fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
+        if (this.loadedFlightPlan?.originRunway) {
+            if (!fm?.vSpeedsForRunway.get()) {
+                fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
             } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
                 fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-                fm.v1ToBeConfirmed.set(pd.v1);
+                fm.v1ToBeConfirmed.set(pd?.v1 ?? null);
                 this.loadedFlightPlan.setPerformanceData('v1', undefined);
-                fm.vrToBeConfirmed.set(pd.vr);
+                fm.vrToBeConfirmed.set(pd?.vr ?? null);
                 this.loadedFlightPlan.setPerformanceData('vr', undefined);
-                fm.v2ToBeConfirmed.set(pd.v2);
+                fm.v2ToBeConfirmed.set(pd?.v2 ?? null);
                 this.loadedFlightPlan.setPerformanceData('v2', undefined);
 
-                this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan.performanceData.vr !== undefined, undefined);
+                this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan?.performanceData.vr !== null, undefined);
             }
         }
     }

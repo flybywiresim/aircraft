@@ -21,23 +21,25 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
 
     private msgListContainer = FSComponent.createRef<HTMLDivElement>();
 
-    protected onNewData: () => {};
+    protected onNewData = () => {};
 
     // Yeah, it's expensive, but rn I won't find a better way
     private renderMessageList() {
-        const arr = this.props.fmcService.master.fmsErrors.getArray();
+        const arr = this.props.fmcService.master?.fmsErrors.getArray();
 
-        if (arr.length > 5) {
+        if (arr && arr.length > 5) {
             console.warn('More than 5 FMS messages, truncating.');
         }
 
         // Clear all items
-        while (this.msgListContainer.getOrDefault().firstChild) {
-            this.msgListContainer.getOrDefault().removeChild(this.msgListContainer.getOrDefault().firstChild);
+        if (this.msgListContainer.getOrDefault()) {
+            while (this.msgListContainer.instance.firstChild) {
+                this.msgListContainer.instance.removeChild(this.msgListContainer.instance.firstChild);
+            }
         }
 
         // Render them
-        arr.forEach((it, idx) => {
+        arr?.forEach((it, idx) => {
             if (idx < 4) {
                 FSComponent.render(<div class="mfd-label msg-list-element">{it.messageText}</div>, this.msgListContainer.instance);
             }
@@ -47,7 +49,11 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.visible.sub((vis) => this.topRef.getOrDefault().style.display = vis ? 'block' : 'none', true));
+        this.subs.push(this.props.visible.sub((vis) => {
+            if (this.topRef.getOrDefault()) {
+                this.topRef.instance.style.display = vis ? 'block' : 'none';
+            }
+        }, true));
 
         const sub = this.props.bus.getSubscriber<ClockEvents>();
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => this.renderMessageList()));

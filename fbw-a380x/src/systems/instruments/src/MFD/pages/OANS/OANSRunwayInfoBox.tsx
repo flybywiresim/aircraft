@@ -3,7 +3,7 @@ import '../common/style.scss';
 import { EntityTypes } from 'instruments/src/MFD/pages/OANS/OansNdUi';
 
 interface OansRunwayInfoBoxProps {
-    rwyOrStand: Subscribable<EntityTypes>;
+    rwyOrStand: Subscribable<EntityTypes | null>;
     selectedEntity: Subscribable<string>;
     tora: Subscribable<number>;
     lda: Subscribable<number>;
@@ -15,7 +15,7 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
 
     private standDivRef = FSComponent.createRef<HTMLDivElement>();
 
-    private setDivs(rwyOrStand) {
+    private setDivs(rwyOrStand: EntityTypes | null) {
         if (rwyOrStand === EntityTypes.RWY) {
             this.rwyDivRef.instance.style.display = 'grid';
             this.standDivRef.instance.style.display = 'none';

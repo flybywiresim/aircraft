@@ -75,11 +75,11 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private activePageRef = FSComponent.createRef<HTMLDivElement>();
 
-    private activePage: VNode = null;
+    private activePage: VNode | null = null;
 
     private activeHeaderRef = FSComponent.createRef<HTMLDivElement>();
 
-    private activeHeader: VNode = null;
+    private activeHeader: VNode | null = null;
 
     private messageListOpened = Subject.create<boolean>(false);
 
@@ -160,7 +160,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
      * @param waypoint the waypoint to look for
      */
     async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
-        return this.props.fmcService.master?.isWaypointInUse(waypoint);
+        return this.props.fmcService.master?.isWaypointInUse(waypoint) ?? false;
     }
 
     public async onAfterRender(node: VNode): Promise<void> {
@@ -244,7 +244,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         this.topRef.instance.addEventListener('mousemove', (ev) => {
-            this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
+            this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY);
         });
 
         // Navigate to initial page
@@ -257,16 +257,21 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         }
 
         // Remove and destroy old header
-        while (this.activeHeaderRef.getOrDefault().firstChild) {
-            this.activeHeaderRef.getOrDefault().removeChild(this.activeHeaderRef.getOrDefault().firstChild);
+        if (this.activeHeaderRef.getOrDefault()) {
+            while (this.activeHeaderRef.instance.firstChild) {
+                this.activeHeaderRef.instance.removeChild(this.activeHeaderRef.instance.firstChild);
+            }
         }
+
         if (this.activeHeader && this.activeHeader.instance instanceof DisplayComponent) {
             this.activeHeader.instance.destroy();
         }
 
         // Remove and destroy old MFD page
-        while (this.activePageRef.getOrDefault().firstChild) {
-            this.activePageRef.getOrDefault().removeChild(this.activePageRef.getOrDefault().firstChild);
+        if (this.activePageRef.getOrDefault()) {
+            while (this.activePageRef.instance.firstChild) {
+                this.activePageRef.instance.removeChild(this.activePageRef.instance.firstChild);
+            }
         }
         if (this.activePage && this.activePage.instance instanceof DisplayComponent) {
             this.activePage.instance.destroy();

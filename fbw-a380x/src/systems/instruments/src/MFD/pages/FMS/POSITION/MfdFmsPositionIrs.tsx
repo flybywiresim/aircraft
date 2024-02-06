@@ -59,7 +59,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
 
     private setHdgDivRef = FSComponent.createRef<HTMLDivElement>();
 
-    private setHdgValue = Subject.create<number>(undefined);
+    private setHdgValue = Subject.create<number | null>(null);
 
     private irsDataRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -136,14 +136,14 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                 } else {
                     this.alignmentLabel.set('IRS ALIGNED ON GPS POS:');
                 }
-                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
+                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false));
             } else {
                 if (this.irsAreAlignedOnRefPos.get() === true) {
                     this.alignmentLabel.set('IRS ALIGNING ON REF POS:');
                 } else {
                     this.alignmentLabel.set('IRS ALIGNING ON GPS POS:');
                 }
-                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
+                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false));
             }
         }, true));
 
@@ -176,14 +176,14 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             const magVar = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_HEADING`).value - Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_HEADING`).value;
             this.irsDataMagneticVariation.set(Math.abs(magVar).toFixed(1));
             this.irsDataMagneticVariationUnit.set(magVar < 0 ? '°W' : '°E');
-            this.irsDataGpirsPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
-            this.irsDataAccuracy.set(this.props.fmcService.master.navigation.getEpe().toFixed(0));
+            this.irsDataGpirsPosition.set(coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false));
+            this.irsDataAccuracy.set(this.props.fmcService.master?.navigation.getEpe().toFixed(0) ?? '');
         }
     }
 
     private alignDurationLeft(v: Arinc429Register): string {
         if (v.bitValue(16) && v.bitValue(17) && v.bitValue(18)) {
-            return 'AVAIL IN > 7 MIN';
+            return 'AVAIL IN \u003e 7 MIN';
         }
         if (v.bitValue(17) && v.bitValue(18)) {
             return 'AVAIL IN 6 MIN';
@@ -309,7 +309,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             mandatory={Subject.create(true)}
                             alignText="flex-end"
                             containerStyle="width: 150px; margin-left: 10px;"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-position-irs-irs-button-row">

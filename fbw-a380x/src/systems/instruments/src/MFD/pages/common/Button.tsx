@@ -36,10 +36,10 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     private menuOpensUpwards = Subject.create(false);
 
-    private renderedMenuItems: ButtonMenuItem[];
+    private renderedMenuItems: ButtonMenuItem[] = [];
 
     private clickHandler(): void {
-        if (this.props.disabled.get() === false) {
+        if (this.props.disabled?.get() === false) {
             this.props.onClick();
         }
     }
@@ -74,17 +74,17 @@ export class Button extends DisplayComponent<ButtonProps> {
 
         this.subs.push(this.props.disabled.sub((val) => {
             if (val === true) {
-                this.buttonRef.getOrDefault().classList.add('disabled');
+                this.buttonRef.getOrDefault()?.classList.add('disabled');
             } else {
-                this.buttonRef.getOrDefault().classList.remove('disabled');
+                this.buttonRef.getOrDefault()?.classList.remove('disabled');
             }
         }, true));
 
         this.subs.push(this.props.selected.sub((val) => {
             if (val === true) {
-                this.buttonRef.getOrDefault().classList.add('selected');
+                this.buttonRef.getOrDefault()?.classList.add('selected');
             } else {
-                this.buttonRef.getOrDefault().classList.remove('selected');
+                this.buttonRef.getOrDefault()?.classList.remove('selected');
             }
         }, true));
 
@@ -160,8 +160,8 @@ export class Button extends DisplayComponent<ButtonProps> {
                         </span>
                         <span class="mfd-fms-fpln-button-dropdown-arrow">
                             {this.menuOpensUpwards.get()
-                                ? <TriangleUp color={this.props.disabled.get() ? 'grey' : 'white'} />
-                                : <TriangleDown color={this.props.disabled.get() ? 'grey' : 'white'} />}
+                                ? <TriangleUp color={this.props.disabled?.get() ? 'grey' : 'white'} />
+                                : <TriangleDown color={this.props.disabled?.get() ? 'grey' : 'white'} />}
                         </span>
                     </div>
                 );
@@ -172,14 +172,14 @@ export class Button extends DisplayComponent<ButtonProps> {
         }, true));
 
         // Close dropdown menu if clicked outside
-        document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
-            if (!this.topRef.getOrDefault().contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+        document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
+            if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
                 this.dropdownIsOpened.set(false);
             }
         });
 
         this.buttonRef.instance.addEventListener('click', () => {
-            if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled.get()) {
+            if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
                 this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
             }
         });

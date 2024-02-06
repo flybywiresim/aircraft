@@ -24,8 +24,16 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.eoIsActive.sub((v) => this.eoRef.getOrDefault().style.display = v ? 'block' : 'none', true));
-        this.subs.push(this.props.tmpyIsActive.sub((v) => this.tmpyRef.getOrDefault().style.display = v ? 'block' : 'none', true));
+        this.subs.push(this.props.eoIsActive.sub((v) => {
+            if (this.eoRef.getOrDefault()) {
+                this.eoRef.instance.style.display = v ? 'block' : 'none';
+            }
+        }, true));
+        this.subs.push(this.props.tmpyIsActive.sub((v) => {
+            if (this.tmpyRef.getOrDefault()) {
+                this.tmpyRef.instance.style.display = v ? 'block' : 'none';
+            }
+        }, true));
     }
 
     public destroy(): void {

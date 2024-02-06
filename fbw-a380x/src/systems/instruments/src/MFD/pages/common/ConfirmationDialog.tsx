@@ -21,7 +21,11 @@ export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.visible.sub((val) => this.topRef.getOrDefault().style.display = val ? 'block' : 'none', true));
+        this.subs.push(this.props.visible.sub((val) => {
+            if (this.topRef.getOrDefault()) {
+                this.topRef.instance.style.display = val ? 'block' : 'none';
+            }
+        }, true));
     }
 
     public destroy(): void {

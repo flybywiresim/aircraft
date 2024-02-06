@@ -20,9 +20,9 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
-    private simBriefOfp: ISimbriefData;
+    private simBriefOfp: ISimbriefData | null = null;
 
-    private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
+    private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
         if (it === false) {
             return (
                 <span>
@@ -39,40 +39,40 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 CPNY F-PLN
             </span>
         );
-    })
+    }) : Subject.create(<></>);
 
-    private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => (it ? [
+    private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => (it ? [
         { label: 'INSERT*', action: () => this.insertCpnyFpln() },
         {
             label: 'CLEAR*',
             action: () => {
-                this.props.fmcService.master.flightPlanService.uplinkDelete();
-                this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
+                this.props.fmcService.master?.flightPlanService.uplinkDelete();
+                this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.set(false);
             },
-        }] : []));
+        }] : [])) : Subject.create([]);
 
-    private fromIcao = Subject.create<string>(null);
+    private fromIcao = Subject.create<string | null>(null);
 
     private fromIcaoDisabled = Subject.create<boolean>(false);
 
-    private toIcao = Subject.create<string>(null);
+    private toIcao = Subject.create<string | null>(null);
 
-    private altnIcao = Subject.create<string>(null);
+    private altnIcao = Subject.create<string | null>(null);
 
     private altnDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private cpnyRte = Subject.create<string>(null); // FIXME not found
+    private cpnyRte = Subject.create<string | null>(null); // FIXME not found
 
-    private altnRte = Subject.create<string>(null); // FIXME not found
+    private altnRte = Subject.create<string | null>(null); // FIXME not found
 
-    private crzFl = Subject.create<number>(null);
+    private crzFl = Subject.create<number | null>(null);
 
-    private crzTemp = Subject.create<number>(null); // FIXME missing
+    private crzTemp = Subject.create<number | null>(null); // FIXME missing
 
     // private crzTempIsDisabled = !crzTemp;
     private crzTempIsDisabled = this.crzFl.map((crzFl) => !crzFl);
 
-    private costIndex = Subject.create<number>(null);
+    private costIndex = Subject.create<number | null>(null);
 
     private costIndexDisabled = MappedSubject.create(([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
         this.fromIcao,
@@ -90,6 +90,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     protected onNewData() {
+        if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+            return;
+        }
+
         console.time('INIT:onNewData');
 
         this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(
@@ -136,6 +140,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     private async cpnyFplnRequest() {
+        if (!this.props.fmcService.master) {
+            return;
+        }
+
         const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
         const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
@@ -155,8 +163,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     private async insertCpnyFpln() {
+        if (!this.props.fmcService.master) {
+            return;
+        }
+
         this.props.fmcService.master.flightPlanService.uplinkInsert();
-        this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? null);
+        this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
         // Don't insert weights for now, something seems broken here
         /* this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
@@ -171,13 +183,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmcService.master.fmgc.data.paxNumber.set(Number(this.simBriefOfp?.weights?.passengerCount ?? null));
         this.props.fmcService.master.fmgc.data.tropopausePilotEntry.set(this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null);
 
-        this.props.fmcService.master.acInterface.setCruiseFl(this.simBriefOfp?.cruiseAltitude ? this.simBriefOfp.cruiseAltitude / 100 : null);
+        if (this.simBriefOfp?.cruiseAltitude) {
+            this.props.fmcService.master.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100);
+        }
 
         this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
     }
 
     render(): VNode {
-        return (
+        return this.props.fmcService.master && (
             <>
                 {super.render()}
                 {/* begin page content */}
@@ -190,7 +204,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.props.fmcService.master.fmgc.data.atcCallsign}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <Button
                             label="ACFT STATUS"
@@ -201,7 +215,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <Button
                             label={this.cpnyFplnButtonLabel}
                             disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
-                            onClick={() => (this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest())}
+                            onClick={() => (this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest())}
                             buttonStyle="width: 175px;"
                             idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
                             menuItems={this.cpnyFplnButtonMenuItems}
@@ -214,8 +228,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataEntryFormat={new AirportFormat()}
                             dataHandlerDuringValidation={async (v) => {
                                 this.fromIcao.set(v);
-                                if (v && this.toIcao.get()) {
-                                    await this.props.fmcService.master.flightPlanService.newCityPair(v, this.toIcao.get(), this.altnIcao.get());
+                                const toIcao = this.toIcao.get();
+                                if (v && toIcao) {
+                                    await this.props.fmcService.master?.flightPlanService.newCityPair(v, toIcao, this.altnIcao.get() ?? undefined);
                                 }
                             }}
                             mandatory={Subject.create(true)}
@@ -223,7 +238,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.fromIcao}
                             alignText="center"
                             disabled={this.fromIcaoDisabled}
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-space-lr">TO</div>
                         <InputField<string>
@@ -231,27 +246,32 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataHandlerDuringValidation={async (v) => {
                                 this.toIcao.set(v);
                                 if (this.fromIcao.get() !== undefined && v) {
-                                    await this.props.fmcService.master.flightPlanService.newCityPair(this.fromIcao.get(), v, this.altnIcao.get());
+                                    const fromIcao = this.fromIcao.get();
+                                    if (v && fromIcao) {
+                                        await this.props.fmcService.master?.flightPlanService.newCityPair(fromIcao, v, this.altnIcao.get() ?? undefined);
+                                    }
                                 }
                             }}
                             mandatory={Subject.create(true)}
                             canBeCleared={Subject.create(false)}
                             value={this.toIcao}
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-space-lr">ALTN</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
                             dataHandlerDuringValidation={async (v) => {
                                 this.altnIcao.set(v);
-                                await this.props.fmcService.master.flightPlanService.setAlternate(v);
+                                if (v) {
+                                    await this.props.fmcService.master?.flightPlanService.setAlternate(v);
+                                }
                             }}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             value={this.altnIcao}
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line">
@@ -264,7 +284,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                             disabled={Subject.create(true)} // TODO
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <Button disabled={Subject.create(true)} label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
@@ -278,7 +298,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.altnRte}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <Button
                             label="ALTN RTE SEL"
@@ -291,13 +311,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
-                            dataHandlerDuringValidation={async (v) => this.props.fmcService.master.acInterface.setCruiseFl(v)}
+                            dataHandlerDuringValidation={async (v) => (v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             canBeCleared={Subject.create(false)}
                             value={this.crzFl}
                             containerStyle="margin-right: 25px;"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">CRZ TEMP</div>
                         <InputField<number>
@@ -307,7 +327,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.crzTemp}
                             containerStyle="width: 110px; justify-content: flex-end;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line" style="margin-top: 10px;">
@@ -315,25 +335,25 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new CostIndexFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                                this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                                this.loadedFlightPlan?.setPerformanceData('costIndex', v ?? undefined);
                             }}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
                             value={this.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">TROPO</div>
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
-                            dataHandlerDuringValidation={async (v) => this.props.fmcService.master.fmgc.data.tropopausePilotEntry.set(v)}
+                            dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tropopausePilotEntry.set(v)}
                             mandatory={Subject.create(false)}
                             enteredByPilot={this.props.fmcService.master.fmgc.data.tropopauseIsPilotEntered}
                             value={this.props.fmcService.master.fmgc.data.tropopause}
                             onModified={() => { }}
                             alignText="flex-end"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line trip-wind">
@@ -345,7 +365,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.props.fmcService.master.fmgc.data.tripWind}
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         />
                         <Button disabled={Subject.create(true)} label="WIND" onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;" />
                         <div style="flex-grow: 1" />

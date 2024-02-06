@@ -55,7 +55,11 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
         super.onAfterRender(node);
 
         this.subs.push(this.displayFromWaypointIndex.sub((idx) => this.update(idx)));
-        this.subs.push(this.props.visible.sub((vis) => this.topRef.getOrDefault().style.display = vis ? 'block' : 'none', true));
+        this.subs.push(this.props.visible.sub((vis) => {
+            if (this.topRef.getOrDefault()) {
+                this.topRef.instance.style.display = vis ? 'block' : 'none';
+            }
+        }, true));
 
         this.update(0);
     }
@@ -69,7 +73,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             if (isNavaid(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmcService?.master.navigation.getPpos() ?? { lat: 0, long: 0 }),
+                    distance: distanceTo(fx.location, this.props.fmcService?.master?.navigation.getPpos() ?? { lat: 0, long: 0 }),
                     location: fx.location,
                     freqChan: fx.frequency,
                     fixData: fx,
@@ -78,7 +82,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             } else if (isNavaidOrWaypoint(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmcService?.master.navigation.getPpos() ?? { lat: 0, long: 0 }),
+                    distance: distanceTo(fx.location, this.props.fmcService?.master?.navigation.getPpos() ?? { lat: 0, long: 0 }),
                     location: fx.location,
                     freqChan: undefined,
                     fixData: fx,
@@ -115,14 +119,14 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                             <span class="mfd-value bigger">{latLonString ?? '\u00A0'}</span>
                         </div>
                         <div style="width: 30%">
-                            <span class="mfd-value bigger">{(fix.freqChan > 120) ? fix.freqChan.toFixed(0) : fix.freqChan?.toFixed(2) ?? '\u00A0'}</span>
+                            <span class="mfd-value bigger">{(fix.freqChan && fix.freqChan > 120) ? fix.freqChan.toFixed(0) : (fix.freqChan?.toFixed(2) ?? '\u00A0')}</span>
                         </div>
                     </div>
                 );
                 FSComponent.render(node, this.linesDivRef.instance);
 
                 // These don't get explicitly deleted when re-rendering the list, TODO check if critical
-                document.getElementById(`mfd-fms-dupl-${i}`).addEventListener('click', () => {
+                document.getElementById(`mfd-fms-dupl-${i}`)?.addEventListener('click', () => {
                     this.resolveItemIndex = i;
                     this.isResolved = true;
                 });
@@ -139,7 +143,6 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
 
     // Entry point after opening this dialog
     public async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
-        console.log(items);
         this.isResolved = false;
         this.loadIdent(items);
 

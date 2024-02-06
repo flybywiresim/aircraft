@@ -1,15 +1,14 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { Arinc429SignStatusMatrix, Arinc429Word, Knots } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { maxZfw } from '@shared/PerformanceConstants';
+import { Vmo, maxCertifiedAlt, maxGw, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { Feet } from 'msfs-geo';
 import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
@@ -140,7 +139,7 @@ export class FmcAircraftInterface {
             return;
         }
         const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude; // as altitude
-        const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel; // as FL
+        const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel ?? 18_000; // as FL
 
         if (Number.isFinite(originTransitionAltitude)) {
             this.arincTransitionAltitude.setBnrValue(
@@ -191,7 +190,8 @@ export class FmcAircraftInterface {
             return false;
         }
 
-        const tow = this.fmc.getGrossWeight() - (this.fmgc.isAnEngineOn() || this.fmgc.data.taxiFuel.get() === undefined ? 0 : this.fmgc.data.taxiFuel.get());
+        const taxiFuel = this.fmgc.data.taxiFuel.get() ?? 0;
+        const tow = (this.fmc.getGrossWeight() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
 
         return this.flightPlanService.active.performanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
             || this.flightPlanService.active.performanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
@@ -279,16 +279,16 @@ export class FmcAircraftInterface {
         this.arincTakeoffPitchTrim.setBnrValue(ths ? -ths : 0, ssm, 12, 180, -180);
     }
 
-    private landingElevation: number = null;
+    private landingElevation: number | null = null;
 
-    private destinationLatitude: number = null;
+    private destinationLatitude: number | null = null;
 
-    private destinationLongitude: number = null;
+    private destinationLongitude: number | null = null;
 
     async updateDestinationData() {
-        let landingElevation: number;
-        let latitude: number;
-        let longitude: number;
+        let landingElevation: number | null = null;
+        let latitude: number | null = null;
+        let longitude: number | null = null;
 
         const runway = this.flightPlanService.active.destinationRunway;
 
@@ -302,7 +302,7 @@ export class FmcAircraftInterface {
             if (airport) {
                 const ele = airport.location.alt;
 
-                landingElevation = Number.isFinite(ele) ? ele : undefined;
+                landingElevation = Number.isFinite(ele) ? ele : null;
                 latitude = airport.location.lat;
                 longitude = airport.location.long;
             }
@@ -348,7 +348,7 @@ export class FmcAircraftInterface {
         const mdaSsm = mdaValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
         const dhSsm = dhValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
-        this.arincMDA.setBnrValue(mdaValid ? mda : 0, mdaSsm, 17, 131072, 0);
+        this.arincMDA.setBnrValue(mdaValid ? mda as number : 0, mdaSsm, 17, 131072, 0);
         this.arincDH.setBnrValue(dhValid ? dh : 0, dhSsm, 16, 8192, 0);
         this.arincEisWord2.setBitValue(29, inRange && !dhValid);
         // FIXME we need to handle these better
@@ -372,7 +372,7 @@ export class FmcAircraftInterface {
         }
     }
 
-    updatePreSelSpeedMach(preSel: number) {
+    updatePreSelSpeedMach(preSel: number | null) {
         // The timeout is required to create a delay for the current value to be read and the new one to be set
         setTimeout(() => {
             if (preSel) {
@@ -390,7 +390,8 @@ export class FmcAircraftInterface {
         }, 200);
     }
 
-    private managedSpeedTarget: number;
+    /** in knots or mach */
+    private managedSpeedTarget: number | null = null;
 
     private managedSpeedTargetIsMach = false;
 
@@ -400,7 +401,8 @@ export class FmcAircraftInterface {
 
     private setHoldSpeedMessageActive = false;
 
-    private takeoffEngineOutSpeed: Knots;
+    /** in knots */
+    private takeoffEngineOutSpeed: number | null = null;
 
     updateManagedSpeed() {
         if (!this.flightPlanService.hasActive) {
@@ -408,7 +410,7 @@ export class FmcAircraftInterface {
         }
         const activePerformanceData = this.flightPlanService.active.performanceData;
 
-        let vPfd = 0;
+        let vPfd: number = 0;
         let isMach = false;
 
         /* TODO port over
@@ -436,7 +438,7 @@ export class FmcAircraftInterface {
                     ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
                     : SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number') - 10;
             }
-            vPfd = this.managedSpeedTarget;
+            vPfd = this.managedSpeedTarget ?? 0;
         } else if (this.holdDecelReached) {
             vPfd = this.holdSpeedTarget;
             this.managedSpeedTarget = this.holdSpeedTarget;
@@ -476,7 +478,7 @@ export class FmcAircraftInterface {
                 speed = Math.min(speed, this.getSpeedConstraint());
 
                 [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach());
-                vPfd = this.managedSpeedTarget;
+                vPfd = this.managedSpeedTarget ?? speed;
                 break;
             }
             case FmgcFlightPhase.Cruise: {
@@ -487,7 +489,7 @@ export class FmcAircraftInterface {
                 }
 
                 [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
-                vPfd = this.managedSpeedTarget;
+                vPfd = this.managedSpeedTarget ?? speed;
                 break;
             }
             case FmgcFlightPhase.Descent: {
@@ -504,8 +506,8 @@ export class FmcAircraftInterface {
                 // the displayed target is Vapp (with GSmini)
                 // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
                 // constraints are not considered
-                const speed = this.getAppManagedSpeed();
-                vPfd = this.getVAppGsMini();
+                const speed = this.getAppManagedSpeed() ?? 0;
+                vPfd = this.getVAppGsMini() ?? speed;
 
                 this.managedSpeedTarget = Math.max(speed, vPfd);
                 break;
@@ -516,7 +518,7 @@ export class FmcAircraftInterface {
                         this.fmgc.data.approachVls.get() + (engineOut ? 15 : 25),
                         Math.max(
                             SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
-                            this.fmgc.data.approachSpeed.get(),
+                            this.fmgc.data.approachSpeed.get() ?? 0,
                         ),
                         SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number') - 5,
                     );
@@ -525,7 +527,7 @@ export class FmcAircraftInterface {
                     this.managedSpeedTarget = speed;
                 } else {
                     const speedConstraint = this.getSpeedConstraint();
-                    const speed = Math.min(this.fmgc.data.greenDotSpeed.get(), speedConstraint);
+                    const speed = Math.min(this.fmgc.data.greenDotSpeed.get() ?? Infinity, speedConstraint);
 
                     vPfd = speed;
                     this.managedSpeedTarget = speed;
@@ -548,7 +550,7 @@ export class FmcAircraftInterface {
         }
 
         // Overspeed protection
-        const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number'));
+        const Vtap = Math.min(this.managedSpeedTarget ?? Vmo, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number'));
 
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
@@ -569,14 +571,16 @@ export class FmcAircraftInterface {
     }
 
     getVAppGsMini() {
-        let vAppTarget = this.fmgc.data.approachSpeed.get();
+        let vAppTarget = this.fmgc.data.approachSpeed.get() ?? SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
         let towerHeadwind = 0;
-        if (Number.isFinite(this.fmgc.data.approachWind.get().speed) && Number.isFinite(this.fmgc.data.approachWind.get().direction)) {
-            if (this.fmgc.getDestinationRunway()) {
+        const appWind = this.fmgc.data.approachWind.get();
+        const destRwy = this.fmgc.getDestinationRunway();
+        if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+            if (destRwy) {
                 towerHeadwind = A380SpeedsUtils.getHeadwind(
-                    this.fmgc.data.approachWind.get().speed,
-                    this.fmgc.data.approachWind.get().direction,
-                    this.fmgc.getDestinationRunway().magneticBearing,
+                    appWind.speed,
+                    appWind.direction,
+                    destRwy.magneticBearing,
                 );
             }
             vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
@@ -628,21 +632,22 @@ export class FmcAircraftInterface {
         }
     }
 
-    private apMasterStatus: number;
+    private apMasterStatus: boolean = false;
 
-    private lastUpdateAPTime: number;
+    private lastUpdateAPTime: number = 0;
 
     private updateAutopilotCooldown: number = 0;
 
     private apCooldown: number = 500;
 
-    private forceNextAltitudeUpdate: boolean;
+    private forceNextAltitudeUpdate: boolean = true;
 
-    private activeWpIdx: number;
+    private activeWpIdx: number = 0;
 
-    private constraintAlt: Feet;
+    /** in feet */
+    private constraintAlt: number | null = null;
 
-    private lastRequestedFLCModeWaypointIndex: number;
+    private lastRequestedFLCModeWaypointIndex: number | null = null;
 
     updateAutopilot(dt: number) {
         let apLogicOn = (this.apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
@@ -657,7 +662,7 @@ export class FmcAircraftInterface {
 
         if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Takeoff && !this.fmgc.isAllEngineOn() && this.takeoffEngineOutSpeed === undefined) {
             const casWord = ADIRS.getCalibratedAirspeed();
-            this.takeoffEngineOutSpeed = casWord.isNormalOperation() ? casWord.value : undefined;
+            this.takeoffEngineOutSpeed = casWord.isNormalOperation() ? casWord.value : null;
         }
 
         if (this.updateAutopilotCooldown < 0) {
@@ -749,7 +754,7 @@ export class FmcAircraftInterface {
      */
     tryEstimateLandingWeight() {
         const altActive = false;
-        const landingWeight = this.fmgc.data.zeroFuelWeight.get() + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
+        const landingWeight = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
         // Workaround for fake a320 weights
         if (landingWeight < 100) {
             return this.fmc.getGrossWeight();
@@ -757,34 +762,37 @@ export class FmcAircraftInterface {
         return Number.isFinite(landingWeight) ? landingWeight : NaN;
     }
 
-    calculateAndUpdateSpeeds() {
-        // Calculate all speeds and write to SimVars
-    }
-
     /**
      * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
      */
     updatePerfSpeeds() {
-        let weight = this.tryEstimateLandingWeight();
+        let weight: number | null = this.tryEstimateLandingWeight();
+        const gw = this.fmc.getGrossWeight() ?? maxGw;
         const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
         // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
         if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(weight)) {
-            weight = (this.fmc.getGrossWeight() === 0) ? maxZfw : this.fmc.getGrossWeight();
+            weight = (gw === 0) ? maxZfw : gw;
         } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-            weight = this.fmgc.data.zeroFuelWeight.get() + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934 / 1000);
+            weight = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934 / 1000);
         }
+
+        if (!weight) {
+            weight = maxGw;
+        }
+
         // Workaround for fake a320 weights
         if (weight < 100_000) {
-            weight = this.fmc.getGrossWeight();
+            weight = gw;
         }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-        if (this.fmgc.data.approachWind.get() && Number.isFinite(this.fmgc.data.approachWind.get().speed) && Number.isFinite(this.fmgc.data.approachWind.get().direction)) {
+        const appWind = this.fmgc.data.approachWind.get();
+        if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
             let towerHeadwind = 0;
             if (this.flightPlanService.active.destinationRunway) {
                 towerHeadwind = A380SpeedsUtils.getHeadwind(
-                    this.fmgc.data.approachWind.get().speed,
-                    this.fmgc.data.approachWind.get().direction,
+                    appWind.speed,
+                    appWind.direction,
                     this.flightPlanService.active.destinationRunway.magneticBearing,
                 );
             }
@@ -801,8 +809,8 @@ export class FmcAircraftInterface {
 
         const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
         const gearPos = Math.round(SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum'));
-        const speeds = new A380OperatingSpeeds(this.fmc.getGrossWeight() / 1000, flaps, gearPos);
-        speeds.compensateForMachEffect(Math.round(Simplane.getAltitude()));
+        const speeds = new A380OperatingSpeeds(gw / 1000, flaps, gearPos);
+        speeds.compensateForMachEffect(Math.round(Simplane.getAltitude() ?? 0));
 
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
@@ -842,7 +850,7 @@ export class FmcAircraftInterface {
     updateConstraints() {
         const activeFpIndex = this.flightPlanService.activeLegIndex;
         const constraints = this.managedProfile.get(activeFpIndex);
-        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet');
+        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0;
 
         let constraintAlt = 0;
         if (constraints) {
@@ -882,19 +890,25 @@ export class FmcAircraftInterface {
         }
         if (event === 'MODE_SELECTED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_SELECTED_ALTITUDE') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-            this.fmc.handleFcuAltKnobPushPull(dist);
+            if (dist) {
+                this.fmc.handleFcuAltKnobPushPull(dist);
+            }
             this.onModeSelectedAltitude();
             this.onStepClimbDescent();
         }
         if (event === 'MODE_MANAGED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_MANAGED_ALTITUDE') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-            this.fmc.handleFcuAltKnobPushPull(dist);
+            if (dist) {
+                this.fmc.handleFcuAltKnobPushPull(dist);
+            }
             this.onModeManagedAltitude();
             this.onStepClimbDescent();
         }
         if (event === 'AP_DEC_ALT' || event === 'AP_INC_ALT' || event === 'A320_Neo_CDU_AP_DEC_ALT' || event === 'A320_Neo_CDU_AP_INC_ALT') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-            this.fmc.handleFcuAltKnobTurn(dist);
+            if (dist) {
+                this.fmc.handleFcuAltKnobTurn(dist);
+            }
             this.onTrySetCruiseFlightLevel();
         }
         if (event === 'AP_DEC_HEADING' || event === 'AP_INC_HEADING' || event === 'A320_Neo_CDU_AP_DEC_HEADING' || event === 'A320_Neo_CDU_AP_INC_HEADING') {
@@ -906,7 +920,9 @@ export class FmcAircraftInterface {
         }
         if (event === 'VS' || event === 'A320_Neo_CDU_VS') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-            this.fmc.handleFcuVSKnob(dist, this.onStepClimbDescent.bind(this));
+            if (dist) {
+                this.fmc.handleFcuVSKnob(dist, this.onStepClimbDescent.bind(this));
+            }
         }
     }
 
@@ -953,7 +969,7 @@ export class FmcAircraftInterface {
             return;
         }
 
-        const targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+        const targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0 / 100;
 
         if (
             (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && targetFl > this.flightPlanService.active.performanceData.cruiseFlightLevel)
@@ -989,14 +1005,13 @@ export class FmcAircraftInterface {
         }
     }
 
-    /** *
+    private cruiseFlightLevelTimeOut: number | null = null;
+
+    /**
      * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
      * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
      * @private
      */
-
-    private cruiseFlightLevelTimeOut: number;
-
     private onTrySetCruiseFlightLevel() {
         if (!(this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise)) {
             return;
@@ -1005,18 +1020,18 @@ export class FmcAircraftInterface {
         const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
         if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
-            const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+            const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0 / 100;
 
             if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel
             || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
             ) {
                 if (this.cruiseFlightLevelTimeOut) {
                     clearTimeout(this.cruiseFlightLevelTimeOut);
-                    this.cruiseFlightLevelTimeOut = undefined;
+                    this.cruiseFlightLevelTimeOut = null;
                 }
 
                 this.cruiseFlightLevelTimeOut = setTimeout(() => {
-                    if (fcuFl === Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100
+                    if (fcuFl === (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100
                         && (
                             this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel
                             || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
@@ -1049,18 +1064,18 @@ export class FmcAircraftInterface {
         if (fl >= 1000) {
             fl = Math.floor(fl / 100);
         }
-        if (fl > this.fmc.getRecMaxFlightLevel()) {
+        if (fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
             this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
             return false;
         }
         const phase = this.fmgc.getFlightPhase();
-        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue('feet')) / 100);
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100);
         if (fl < selFl && (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)) {
             this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
             return false;
         }
 
-        if (fl <= 0 || fl > this.fmc.getRecMaxFlightLevel()) {
+        if (fl <= 0 || fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
             this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
             return false;
         }
@@ -1081,7 +1096,11 @@ export class FmcAircraftInterface {
         }
     }
 
-    onUpdateCruiseLevel(newCruiseLevel) {
+    /**
+     * called when cruise FL is updated through FMS
+     * @param newCruiseLevel as flight level
+     */
+    onUpdateCruiseLevel(newCruiseLevel: number) {
         SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
         this.updateConstraints();
 
@@ -1133,12 +1152,13 @@ export class FmcAircraftInterface {
     }
 
     // TODO better decel distance calc
-    calculateDecelDist(fromSpeed, toSpeed) {
+    calculateDecelDist(fromSpeed: number, toSpeed: number) {
         return Math.min(20, Math.max(3, (fromSpeed - toSpeed) * 0.15));
     }
 
     getNavModeSpeedConstraint() {
-        const activeLegIndex = this.fmgc.guidanceController.activeTransIndex >= 0 ? this.fmgc.guidanceController.activeTransIndex : this.fmgc.guidanceController.activeLegIndex;
+        const transIndex = this.fmgc.guidanceController?.activeTransIndex ?? 0;
+        const activeLegIndex = (transIndex >= 0 ? transIndex : this.fmgc.guidanceController?.activeLegIndex) ?? 0;
         const constraints = this.managedProfile.get(activeLegIndex);
         if (constraints) {
             if (this.fmgc.getFlightPhase() < FmgcFlightPhase.Cruise || this.fmgc.getFlightPhase() === FmgcFlightPhase.GoAround) {
@@ -1148,7 +1168,7 @@ export class FmcAircraftInterface {
             if (this.fmgc.getFlightPhase() > FmgcFlightPhase.Cruise && this.fmgc.getFlightPhase() < FmgcFlightPhase.GoAround) {
                 // FIXME proper decel calc
                 // eslint-disable-next-line max-len
-                if (this.fmgc.guidanceController.activeLegDtg < this.calculateDecelDist(Math.min(constraints.previousDescentSpeed, this.fmgc.getManagedDescentSpeed()), constraints.descentSpeed)) {
+                if ((this.fmgc.guidanceController?.activeLegDtg ?? 0) < this.calculateDecelDist(Math.min(constraints.previousDescentSpeed, this.fmgc.getManagedDescentSpeed()), constraints.descentSpeed)) {
                     return constraints.descentSpeed;
                 }
                 return constraints.previousDescentSpeed;
@@ -1239,7 +1259,7 @@ export class FmcAircraftInterface {
                         currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
                         break;
                     case 'B': // between alt 1 and alt 2
-                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude2));
+                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude2 ?? altConstraint.altitude1));
                         break;
                     default:
                             // not constraining

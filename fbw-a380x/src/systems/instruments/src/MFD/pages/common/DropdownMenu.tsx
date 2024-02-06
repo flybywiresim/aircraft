@@ -5,14 +5,14 @@ import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryF
 
 interface DropdownMenuProps extends ComponentProps {
     values: SubscribableArray<string>;
-    selectedIndex: Subject<number>;
+    selectedIndex: Subject<number | null>;
     freeTextAllowed: boolean;
     idPrefix: string;
     /**
      *
      * If defined, this component does not update the selectedIndex prop by itself, but rather calls this method.
      */
-    onModified?: (newSelectedIndex: number, freeTextEntry: string) => void;
+    onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
     inactive?: Subscribable<boolean>;
     containerStyle?: string;
     alignLabels?: 'flex-start' | 'center' | 'flex-end';
@@ -35,8 +35,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
 
-    // private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
-
     private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownIsOpened = Subject.create(false);
@@ -52,7 +50,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private renderedDropdownOptionsIndices: number[] = [];
 
     clickHandler(i: number, thisArg: DropdownMenu) {
-        if (this.props.inactive.get() === false) {
+        if (this.props.inactive?.get() === false) {
             this.freeTextEntered = false;
             if (thisArg.props.onModified) {
                 thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
@@ -65,7 +63,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     }
 
     private onFieldSubmit(text: string) {
-        if (this.props.freeTextAllowed && this.props.onModified && this.props.inactive.get() === false) {
+        if (this.props.freeTextAllowed && this.props.onModified && this.props.inactive?.get() === false) {
             // selected index of -1 marks free text entry
             this.props.onModified(-1, text);
 
@@ -138,8 +136,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }));
 
         this.subs.push(this.props.values.sub((index, type, item, array) => {
-            if (this.props.selectedIndex.get() !== undefined && this.props.selectedIndex.get() !== null) {
-                this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
+            const selIdx = this.props.selectedIndex.get();
+            if (selIdx !== undefined && selIdx !== null) {
+                this.inputFieldValue.set(array[selIdx]);
             } else {
                 this.inputFieldValue.set('');
             }
@@ -148,18 +147,20 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }, true));
 
         this.subs.push(this.props.selectedIndex.sub((value) => {
-            this.inputFieldValue.set(this.props.values.get(value));
+            if ((value !== null)) {
+                this.inputFieldValue.set(this.props.values.get(value));
+            }
         }));
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
-            if (this.props.inactive.get() === false) {
+            if (this.props.inactive?.get() === false) {
                 this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
             }
         });
 
         // Close dropdown menu if clicked outside
-        document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
-            if (!this.topRef.getOrDefault().contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+        document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
+            if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
                 this.dropdownIsOpened.set(false);
             }
         });
@@ -180,11 +181,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         this.subs.push(this.props.inactive.sub((val) => {
             if (val === true) {
-                this.dropdownSelectorRef.getOrDefault().classList.add('inactive');
-                this.dropdownArrowRef.getOrDefault().classList.add('inactive');
+                this.dropdownSelectorRef.getOrDefault()?.classList.add('inactive');
+                this.dropdownArrowRef.getOrDefault()?.classList.add('inactive');
             } else {
-                this.dropdownSelectorRef.getOrDefault().classList.remove('inactive');
-                this.dropdownArrowRef.getOrDefault().classList.remove('inactive');
+                this.dropdownSelectorRef.getOrDefault()?.classList.remove('inactive');
+                this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
             }
         }, true));
 
@@ -210,7 +211,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                             containerStyle="border: 2px inset transparent"
                             alignText={this.props.alignLabels}
                             canOverflow={this.props.freeTextAllowed}
-                            onModified={(text) => this.onFieldSubmit(text)}
+                            onModified={(text) => this.onFieldSubmit(text ?? '')}
                             onInput={(text) => this.onFieldChanged(text)}
                             inactive={this.props.inactive}
                             handleFocusBlurExternally

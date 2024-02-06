@@ -29,7 +29,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
 
     updateSvgColor(color: string) {
         if (this.svgGroupRef) {
-            this.svgGroupRef.getOrDefault().setAttribute('fill', color);
+            this.svgGroupRef.getOrDefault()?.setAttribute('fill', color);
         }
     }
 

@@ -22,7 +22,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
     private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-    private renderedMenuItems: ContextMenuElement[];
+    private renderedMenuItems: ContextMenuElement[] = [];
 
     private openedAt: number = 0;
 
@@ -93,7 +93,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         }, true));
 
         // Close dropdown menu if clicked outside
-        document.getElementById('MFD_CONTENT').addEventListener('click', () => {
+        document.getElementById('MFD_CONTENT')?.addEventListener('click', () => {
             if ((Date.now() - this.openedAt) > 100 && this.props.opened.get() === true) {
                 this.hideMenu();
             }

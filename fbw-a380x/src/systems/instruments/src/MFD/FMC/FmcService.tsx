@@ -13,22 +13,23 @@ export class FmcService implements FmcServiceInterface {
 
     protected fmc: FmcInterface[] = [];
 
-    constructor(private bus: EventBus) {
+    constructor(private bus: EventBus, mfdReference: (DisplayInterface & MfdDisplayInterface) | null) {
+        this.createFmc(mfdReference);
     }
 
     get master() {
-        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Master));
+        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Master)) ?? null;
     }
 
     get slave() {
-        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Slave));
+        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Slave)) ?? null;
     }
 
     get standby() {
-        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Standby));
+        return this.fmc.find((it) => (it.operatingMode === FmcOperatingModes.Standby)) ?? null;
     }
 
-    createFmc(mfdReference: DisplayInterface & MfdDisplayInterface): void {
+    createFmc(mfdReference: (DisplayInterface & MfdDisplayInterface) | null): void {
         // Only instantiate FMC-A for now, this takes up enough resources already
         // Before more FMC can be added, they have to be synced
         this.fmc.push(new FlightManagementComputer(FmcIndex.FmcA, FmcOperatingModes.Master, this.bus, mfdReference));

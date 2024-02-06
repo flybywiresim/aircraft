@@ -6,7 +6,6 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { ApproachType } from '@fmgc/index';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
 const ApproachTypeOrder = Object.freeze({
     [ApproachType.Mls]: 0,
@@ -24,6 +23,7 @@ const ApproachTypeOrder = Object.freeze({
     [ApproachType.Rnav]: 12,
     [ApproachType.VorDme]: 13,
     [ApproachType.Vortac]: 13, // VORTAC and VORDME are intentionally the same
+    [ApproachType.Tacan]: 13,
     [ApproachType.Vor]: 14,
     [ApproachType.NdbDme]: 15,
     [ApproachType.Ndb]: 16,
@@ -76,13 +76,17 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-    private apprButtonScrollTo = Subject.create<number>(null);
+    private apprButtonScrollTo = Subject.create<number>(0);
 
     protected onNewData(): void {
+        if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+            return;
+        }
+
         console.time('ARRIVAL:onNewData');
 
-        const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get();
-        const flightPlan: BaseFlightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
+        const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get() ?? false;
+        const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
         if (flightPlan.destinationAirport) {
             this.toIcao.set(flightPlan.destinationAirport.ident);
@@ -93,9 +97,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
                     action: async () => {
-                        await this.props.fmcService.master.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmcService.master.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmcService.master.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 });
             });
@@ -117,21 +121,26 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 const appr: ButtonMenuItem[] = [{
                     label: 'NONE',
                     action: async () => {
-                        await this.props.fmcService.master.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmcService.master.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 }];
 
                 // Sort approaches by runway
-                const sortedApproaches = flightPlan.availableApproaches.sort((a, b) => a.runwayIdent.localeCompare(b.runwayIdent) || ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]);
+                // eslint-disable-next-line max-len
+                const sortedApproaches = flightPlan.availableApproaches.sort((a, b) => a.runwayIdent?.localeCompare(b.runwayIdent ?? '') || ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]);
                 let isFirstMatch = true;
                 sortedApproaches.forEach((el, idx) => {
                     appr.push({
                         label: el.ident,
                         action: async () => {
-                            await this.props.fmcService.master.flightPlanService.setDestinationRunway(el.runwayIdent, this.loadedFlightPlanIndex.get(), isAltn); // Should we do this here?
-                            await this.props.fmcService.master.flightPlanService.setApproach(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
-                            await this.props.fmcService.master.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
+                                el.runwayIdent ?? '',
+                                this.loadedFlightPlanIndex.get(),
+                                isAltn,
+                            ); // Should we do this here?
+                            await this.props.fmcService.master?.flightPlanService.setApproach(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     });
 
@@ -152,22 +161,22 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
             if (flightPlan.approach) {
                 this.appr.set(flightPlan.approach.ident);
-                this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel.toFixed(2));
+                this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel?.toFixed(2) ?? '');
 
                 if (flightPlan.availableApproachVias.length > 0) {
                     const vias: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmcService.master.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     }];
 
                     // Only show VIAs matching to approach (and STAR, if available)
                     flightPlan.availableApproachVias.filter((it) => {
-                        if (flightPlan?.arrival?.runwayTransitions?.length > 0) {
+                        if (flightPlan.arrival?.runwayTransitions?.length && flightPlan.arrival?.runwayTransitions?.length > 0) {
                             let oneStarIsMatching = false;
                             flightPlan.arrival.runwayTransitions.forEach((ii) => {
-                                if (ii.legs[ii.legs.length - 1]?.waypoint.databaseId === it.legs[0]?.waypoint.databaseId) {
+                                if (ii.legs[ii.legs.length - 1]?.waypoint?.databaseId === it.legs[0]?.waypoint?.databaseId) {
                                     oneStarIsMatching = true;
                                 }
                                 oneStarIsMatching = false;
@@ -179,7 +188,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         vias.push({
                             label: el.ident,
                             action: async () => {
-                                await this.props.fmcService.master.flightPlanService.setApproachVia(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                                await this.props.fmcService.master?.flightPlanService.setApproachVia(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
                             },
                         });
                     });
@@ -210,8 +219,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 const arrivals: ButtonMenuItem[] = [{
                     label: 'NONE',
                     action: async () => {
-                        await this.props.fmcService.master.flightPlanService.setArrival(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmcService.master.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setArrival(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 }];
 
@@ -219,15 +228,16 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     const arr: ButtonMenuItem = {
                         label: el.ident,
                         action: async () => {
-                            await this.props.fmcService.master.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
-                            await this.props.fmcService.master.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     };
 
                     if (el.runwayTransitions.length > 0) {
                         let apprIsMatching = false;
                         el.runwayTransitions.forEach((it) => {
-                            if (it.ident === flightPlan.approach.runwayIdent || (it.ident.charAt(4) === 'B' && it.ident.substring(0, 4) === flightPlan.approach.runwayIdent.substring(0, 4))) {
+                            if (it.ident === flightPlan.approach?.runwayIdent
+                                || (it.ident.charAt(4) === 'B' && it.ident.substring(0, 4) === flightPlan.approach?.runwayIdent?.substring(0, 4))) {
                                 apprIsMatching = true;
                             }
                         });
@@ -253,14 +263,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     const trans: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmcService.master.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     }];
                     flightPlan.arrival.enrouteTransitions.forEach((el) => {
                         trans.push({
                             label: el.ident,
                             action: async () => {
-                                await this.props.fmcService.master.flightPlanService.setArrivalEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                                await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
                             },
                         });
                     });
@@ -294,8 +304,10 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.tmpyActive.sub((v) => {
-            this.returnButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
-            this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
+            if (this.returnButtonDiv.getOrDefault() && this.tmpyInsertButtonDiv.getOrDefault()) {
+                this.returnButtonDiv.instance.style.visibility = (v ? 'hidden' : 'visible');
+                this.tmpyInsertButtonDiv.instance.style.visibility = (v ? 'visible' : 'hidden');
+            }
         }, true));
     }
 
@@ -492,7 +504,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <Button
                             label="RETURN"
                             onClick={() => {
-                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.fmcService.master?.resetRevisedWaypoint();
                                 this.props.mfd.uiService.navigateTo('back');
                             }}
                         />
@@ -501,7 +513,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         <Button
                             label="TMPY F-PLN"
                             onClick={() => {
-                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.fmcService.master?.resetRevisedWaypoint();
                                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: yellow"

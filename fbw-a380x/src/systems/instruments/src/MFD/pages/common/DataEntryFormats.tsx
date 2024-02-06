@@ -2,11 +2,11 @@ import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
-type FieldFormatTuple = [value: string, unitLeading: string, unitTrailing: string];
+type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
 export interface DataEntryFormat<T> {
     placeholder: string;
     maxDigits: number;
-    format(value: T): FieldFormatTuple;
+    format(value: T | null): FieldFormatTuple;
     parse(input: string): Promise<T | null>;
     /**
      * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
@@ -103,7 +103,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
 
     private maxValue = maxCertifiedAlt;
 
-    private transAlt: number;
+    private transAlt: number = 18_000;
 
     reFormatTrigger = Subject.create(false);
 
@@ -569,10 +569,10 @@ export class TripWindFormat implements DataEntryFormat<number> {
                 sign = +1;
                 number = Number(input);
             } else {
-                return undefined;
+                return null;
             }
         } else {
-            return undefined;
+            return null;
         }
 
         const nbr = Number(sign * number);
@@ -932,7 +932,7 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
             hours = Number(replacedInput.slice(0, -2));
         }
         if (minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
-            return undefined;
+            return null;
         }
 
         const nbr = minutes + hours * 60;
@@ -947,7 +947,9 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     }
 }
 
-// Stored in seconds
+/**
+ * Stored in seconds
+ */
 export class TimeHHMMSSFormat implements DataEntryFormat<number> {
     public placeholder = '--:--:--';
 
@@ -963,7 +965,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
         }
         const hours = Math.abs(Math.floor(value / 3600)).toFixed(0).padStart(2, '0');
         const minutes = Math.abs(Math.floor(value / 60) % 60).toFixed(0).padStart(2, '0');
-        const seconds = Math.abs(value % 3600).toFixed(0).padStart(2, '0');
+        const seconds = Math.abs(value % 60).toFixed(0).padStart(2, '0');
         return [`${hours}:${minutes}:${seconds}`, null, null] as FieldFormatTuple;
     }
 
@@ -974,7 +976,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
 
         const replacedInput = input.replace(':', '');
         if (replacedInput.length < 4) {
-            return undefined;
+            return null;
         }
 
         let hours = 0;
@@ -986,7 +988,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
             seconds = Number(replacedInput.slice(-2));
         }
         if (seconds < 0 || seconds > 59 || minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
-            return undefined;
+            return null;
         }
 
         const nbr = seconds + minutes * 60 + hours * 3600;

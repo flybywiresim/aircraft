@@ -15,17 +15,17 @@ export interface FmcServiceInterface {
     /**
      * Returns interface to the FMC, which is currently operating as master. For now, will always be FMC-A.
      */
-    get master(): FmcInterface;
+    get master(): FmcInterface | null;
 
     /**
      * Returns interface to the FMC, which is currently operating as slave. For now, will always be undefined.
      */
-    get slave(): FmcInterface;
+    get slave(): FmcInterface | null;
 
     /**
      * Returns interface to the FMC, which is currently operating as slave. No computations are being done while in standby. For now, will always be undefined.
      */
-    get standby(): FmcInterface;
+    get standby(): FmcInterface | null;
 
     /**
      * Instantiate FMCs. Currently, only FMC-A is instantiated.

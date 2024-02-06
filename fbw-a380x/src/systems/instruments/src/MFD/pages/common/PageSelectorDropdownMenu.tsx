@@ -42,8 +42,8 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         });
 
         // Close dropdown menu if clicked outside
-        document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
-            if (!this.topRef.getOrDefault().contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+        document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
+            if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
                 this.dropdownIsOpened.set(false);
             }
         });

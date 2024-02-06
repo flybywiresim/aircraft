@@ -77,7 +77,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
      */
     get fmsErrors(): ArraySubject<FmsErrorMessage>;
 
-    getDataManager(): DataManager;
+    getDataManager(): DataManager | null;
 
     /**
      * Primary aircraft interface, setting and reading SimVars, converting them to the internal FMS representation.
@@ -88,17 +88,17 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
     /**
      * Returns leg index (in the flight plan) of currently revised waypoint
      */
-    get revisedWaypointIndex(): Subject<number>;
+    get revisedWaypointIndex(): Subject<number | null>;
 
     /**
      * Returns flight plan index of currently revised waypoint
      */
-    get revisedWaypointPlanIndex(): Subject<FlightPlanIndex>;
+    get revisedWaypointPlanIndex(): Subject<FlightPlanIndex | null>;
 
     /**
      * Returns, whether currently revised waypoint is part of ALTN flight plan
      */
-    get revisedWaypointIsAltn(): Subject<boolean>;
+    get revisedWaypointIsAltn(): Subject<boolean | null>;
 
     /**
      * Returns, whether number 2&3 engines were started
@@ -140,17 +140,23 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
      */
     deleteAllStoredWaypoints(): void;
 
-    getLandingWeight(): Kilograms;
+    /** in kilograms */
+    getLandingWeight(): number | null;
 
-    getGrossWeight(): Kilograms;
+    /** in kilograms */
+    getGrossWeight(): number | null;
 
-    getTakeoffWeight(): Kilograms;
+    /** in kilograms */
+    getTakeoffWeight(): number | null;
 
-    getTripFuel(): Kilograms;
+    /** in kilograms */
+    getTripFuel(): number | null;
 
-    getRecMaxFlightLevel(): FlightLevel;
+    /** as flight level */
+    getRecMaxFlightLevel(): number | null;
 
-    getOptFlightLevel(): FlightLevel;
+    /** as flight level */
+    getOptFlightLevel(): number | null;
 
     /**
      * Add message to fmgc message queue
@@ -158,7 +164,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
      * @param _isResolvedOverride Function that determines if the error is resolved at this moment (type II only).
      * @param _onClearOverride Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addMessageToQueue(_message: TypeIMessage | TypeIIMessage, _isResolvedOverride: () => boolean, _onClearOverride: () => void): void;
+    addMessageToQueue(_message: TypeIMessage | TypeIIMessage, _isResolvedOverride: (() => boolean) | undefined, _onClearOverride: (() => void) | undefined): void;
 
     /**
      * Removes a message from the queue

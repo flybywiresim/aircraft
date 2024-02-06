@@ -17,9 +17,9 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
 
     protected availableSystems = ArraySubject.create([this.props.activeFmsSource.get(), 'ATCCOM', 'SURV', 'FCU BKUP']);
 
-    protected sysSelectorSelectedIndex = Subject.create(0);
+    protected sysSelectorSelectedIndex = Subject.create<number | null>(0);
 
-    public changeSystem(selectedSysIndex: number) {
+    public changeSystem(selectedSysIndex: number | null) {
         this.sysSelectorSelectedIndex.set(selectedSysIndex);
 
         switch (selectedSysIndex) {

@@ -8,12 +8,12 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { Fix } from 'msfs-navdata';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {
 }
@@ -36,26 +36,29 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
     protected onNewData(): void {
         console.time('AIRWAYS:onNewData');
 
-        if (this.props.fmcService.master.revisedWaypoint()) {
-            this.revisedFixIdent.set(this.props.fmcService.master.revisedWaypoint().ident);
+        const revWpt = this.props.fmcService.master?.revisedWaypoint();
+        if (revWpt) {
+            this.revisedFixIdent.set(revWpt.ident);
         }
 
         console.timeEnd('AIRWAYS:onNewData');
     }
 
     private renderNextLine(fromFix: Fix): void {
-        // Render max. 10 items for now
-        if (this.airwayLinesRef.instance.children.length <= 10) {
-            const line = (
-                <AirwayLine
-                    fmc={this.props.fmcService.master}
-                    pendingAirways={this.loadedFlightPlan.pendingAirways}
-                    fromFix={fromFix}
-                    isFirstLine={false}
-                    nextLineCallback={(fix) => this.renderNextLine(fix)}
-                />
-            );
-            FSComponent.render(line, this.airwayLinesRef.instance);
+        if (this.airwayLinesRef.getOrDefault()) {
+            // Render max. 10 items for now
+            if (this.airwayLinesRef.instance.children.length <= 10 && this.props.fmcService.master && this.loadedFlightPlan?.pendingAirways) {
+                const line = (
+                    <AirwayLine
+                        fmc={this.props.fmcService.master}
+                        pendingAirways={this.loadedFlightPlan.pendingAirways}
+                        fromFix={fromFix}
+                        isFirstLine={false}
+                        nextLineCallback={(fix) => this.renderNextLine(fix)}
+                    />
+                );
+                FSComponent.render(line, this.airwayLinesRef.instance);
+            }
         }
     }
 
@@ -63,20 +66,25 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.tmpyActive.sub((v) => {
-            this.returnButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
-            this.tmpyFplnButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
+            if (this.returnButtonDiv.getOrDefault() && this.tmpyFplnButtonDiv.getOrDefault()) {
+                this.returnButtonDiv.instance.style.visibility = (v ? 'hidden' : 'visible');
+                this.tmpyFplnButtonDiv.instance.style.visibility = (v ? 'visible' : 'hidden');
+            }
         }, true));
 
-        const firstLine = (
-            <AirwayLine
-                fmc={this.props.fmcService.master}
-                pendingAirways={this.loadedFlightPlan.pendingAirways}
-                fromFix={this.props.fmcService.master.revisedWaypoint()}
-                isFirstLine
-                nextLineCallback={(fix) => this.renderNextLine(fix)}
-            />
-        );
-        FSComponent.render(firstLine, this.airwayLinesRef.instance);
+        const revWpt = this.props.fmcService.master?.revisedWaypoint();
+        if (this.props.fmcService.master && this.loadedFlightPlan?.pendingAirways && revWpt && this.airwayLinesRef.getOrDefault()) {
+            const firstLine = (
+                <AirwayLine
+                    fmc={this.props.fmcService.master}
+                    pendingAirways={this.loadedFlightPlan.pendingAirways}
+                    fromFix={revWpt}
+                    isFirstLine
+                    nextLineCallback={(fix) => this.renderNextLine(fix)}
+                />
+            );
+            FSComponent.render(firstLine, this.airwayLinesRef.instance);
+        }
     }
 
     render(): VNode {
@@ -121,7 +129,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                         <Button
                             label="RETURN"
                             onClick={() => {
-                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.fmcService.master?.resetRevisedWaypoint();
                                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                         />
@@ -130,9 +138,12 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                         <Button
                             label="TMPY F-PLN"
                             onClick={async () => {
-                                this.loadedFlightPlan.pendingAirways.finalize();
-                                this.props.fmcService.master.resetRevisedWaypoint();
-                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
+                                if (this.loadedFlightPlan) {
+                                    this.loadedFlightPlan.pendingAirways?.finalize();
+                                    this.loadedFlightPlan.pendingAirways = undefined; // Reset, so it's not finalized twice when performing tmpy insert
+                                    this.props.fmcService.master?.resetRevisedWaypoint();
+                                    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
+                                }
                             }}
                             buttonStyle="color: #ffff00;"
                         />
@@ -154,13 +165,11 @@ interface AirwayLineProps extends ComponentProps {
 }
 
 class AirwayLine extends DisplayComponent<AirwayLineProps> {
-    private db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-
-    public viaField = Subject.create<string | undefined>(undefined);
+    public viaField = Subject.create<string | null>(null);
 
     private viaFieldDisabled = Subject.create(false);
 
-    public toField = Subject.create<string | undefined>(undefined);
+    public toField = Subject.create<string | null>(null);
 
     private toFieldDisabled = Subject.create(this.props.isFirstLine);
 
@@ -181,17 +190,20 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 return true;
                             }
 
-                            const fixes = await this.db.searchAllFix(this.props.fromFix.ident);
+                            const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(this.props.fromFix.ident);
                             if (fixes.length === 0) {
                                 this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
                             }
                             let chosenFix = fixes[0];
                             if (fixes.length > 1) {
-                                chosenFix = await this.props.fmc.deduplicateFacilities(fixes);
+                                const dedup = await this.props.fmc.deduplicateFacilities(fixes);
+                                if (dedup !== undefined) {
+                                    chosenFix = dedup;
+                                }
                             }
 
-                            const airways = await this.db.searchAirway(v, chosenFix);
+                            const airways = await NavigationDatabaseService.activeDatabase.searchAirway(v, chosenFix);
                             if (airways.length === 0) {
                                 this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
@@ -221,19 +233,22 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                             if (!v) {
                                 return false;
                             }
-                            if (this.viaField.get() === undefined) {
+                            if (this.viaField.get() === null) {
                                 this.viaField.set('DCT');
                                 this.viaFieldDisabled.set(true);
                             }
 
-                            const fixes = await this.db.searchAllFix(v);
+                            const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(v);
                             if (fixes.length === 0) {
                                 this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
                             }
                             let chosenFix = fixes[0];
                             if (fixes.length > 1) {
-                                chosenFix = await this.props.fmc.deduplicateFacilities(fixes);
+                                const dedup = await this.props.fmc.deduplicateFacilities(fixes);
+                                if (dedup !== undefined) {
+                                    chosenFix = dedup;
+                                }
                             }
 
                             const success = this.props.pendingAirways.thenTo(chosenFix);

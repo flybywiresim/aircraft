@@ -33,7 +33,7 @@ class A380X_MFD extends BaseInstrument {
         this.simVarPublisher = new MfdSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.clock = new Clock(this.bus);
-        this.fmcService = new FmcService(this.bus);
+        this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault());
     }
 
     get templateID(): string {
@@ -53,9 +53,12 @@ class A380X_MFD extends BaseInstrument {
 
         this.clock.init();
 
-        document.getElementById('MFD_CONTENT').style.display = 'flex';
-        document.getElementById('MFD_CONTENT').style.flexDirection = 'row';
-        document.getElementById('MFD_CONTENT').style.height = '1024';
+        const mfd = document.getElementById('MFD_CONTENT');
+        if (mfd) {
+            mfd.style.display = 'flex';
+            mfd.style.flexDirection = 'row';
+            mfd.style.height = '1024';
+        }
 
         FSComponent.render(<div id="MFD_LEFT_PARENT_DIV" style="flex: 1; position: relative;" />, document.getElementById('MFD_CONTENT'));
         FSComponent.render(<div id="MFD_RIGHT_PARENT_DIV" style="flex: 1; position: relative;" />, document.getElementById('MFD_CONTENT'));
@@ -73,14 +76,18 @@ class A380X_MFD extends BaseInstrument {
             instrument={this}
             fmcService={this.fmcService}
         />, document.getElementById('MFD_RIGHT_PARENT_DIV'));
-        this.fmcService.createFmc(this.mfdCaptRef.instance);
+
+        // Update MFD reference for deduplication etc.
+        if (this.fmcService.master) {
+            this.fmcService.master.mfdReference = this.mfdCaptRef.instance;
+        }
 
         // Navigate to initial page
         this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
         this.mfdFoRef.instance.uiService.navigateTo('fms/data/status');
 
         // Remove "instrument didn't load" text
-        document.getElementById('MFD_CONTENT').querySelector(':scope > h1').remove();
+        mfd?.querySelector(':scope > h1')?.remove();
     }
 
     public onInteractionEvent(args: string[]): void {

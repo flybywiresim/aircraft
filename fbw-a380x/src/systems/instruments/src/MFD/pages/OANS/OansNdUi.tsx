@@ -43,23 +43,23 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
 
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
-    private thresholdShift = Subject.create<number>(null);
+    private thresholdShift = Subject.create<number | null>(null);
 
-    private endShift = Subject.create<number>(null);
+    private endShift = Subject.create<number | null>(null);
 
-    private selectedEntityType = Subject.create<EntityTypes>(EntityTypes.RWY);
+    private selectedEntityType = Subject.create<EntityTypes | null>(EntityTypes.RWY);
 
     private availableEntityList = ArraySubject.create(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
 
-    private selectedEntityIndex = Subject.create(0);
+    private selectedEntityIndex = Subject.create<number | null>(null);
 
     private selectedEntityString = Subject.create('08L');
 
     private airportList = ArraySubject.create(['EDDM', 'KJFK']);
 
-    private selectedAirportIndex = Subject.create(0);
+    private selectedAirportIndex = Subject.create<number | null>(null);
 
-    private selectedAirportSearchFilter = Subject.create(0); // 0 = ICAO, 1 = IATA, 2 = CITY NAME
+    private selectedAirportSearchFilter = Subject.create<number | null>(null); // 0 = ICAO, 1 = IATA, 2 = CITY NAME
 
     private mapRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -115,13 +115,21 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
     }
 
     private showLdgShiftPanel() {
-        document.getElementById('MapDataLdgShiftPanel').style.display = 'flex';
-        document.getElementById('MapDataMain').style.display = 'none';
+        const shiftPanel = document.getElementById('MapDataLdgShiftPanel');
+        const main = document.getElementById('MapDataMain');
+        if (shiftPanel && main) {
+            shiftPanel.style.display = 'flex';
+            main.style.display = 'none';
+        }
     }
 
     private hideLdgShiftPanel() {
-        document.getElementById('MapDataLdgShiftPanel').style.display = 'none';
-        document.getElementById('MapDataMain').style.display = 'flex';
+        const shiftPanel = document.getElementById('MapDataLdgShiftPanel');
+        const main = document.getElementById('MapDataMain');
+        if (shiftPanel && main) {
+            shiftPanel.style.display = 'none';
+            main.style.display = 'flex';
+        }
     }
 
     // Necessary to enable mouse interaction
@@ -151,7 +159,7 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
             this.contextMenuRef.instance.hideMenu();
         });
 
-        this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val)));
+        this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
 
     render(): VNode {
@@ -256,8 +264,8 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                                     </div>
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
-                                            label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`}
-                                            onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`)}
+                                            label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`}
+                                            onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`)}
                                             buttonStyle="width: 65%"
                                         />
                                     </div>

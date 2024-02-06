@@ -23,40 +23,42 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.fmcService.master.fmsErrors.sub((index, type, item, arr) => {
-            const ind = arr.findIndex((el) => el.cleared === false);
+        if (this.props.fmcService.master) {
+            this.subs.push(this.props.fmcService.master.fmsErrors.sub((index, type, item, arr) => {
+                const ind = arr.findIndex((el) => el.cleared === false);
 
-            if (ind > -1) {
-                this.messageToBeCleared.set(true);
-                this.messageRef.instance.textContent = arr[ind].messageText;
+                if (ind > -1 && this.messageRef.getOrDefault()) {
+                    this.messageToBeCleared.set(true);
+                    this.messageRef.instance.textContent = arr[ind].messageText;
 
-                if (arr[ind].backgroundColor === 'white') {
-                    this.messageRef.instance.style.backgroundColor = '#ffffff';
-                } else if (arr[ind].backgroundColor === 'cyan') {
-                    this.messageRef.instance.style.backgroundColor = '#00ffff';
-                } else if (arr[ind].backgroundColor === 'amber') {
-                    this.messageRef.instance.style.backgroundColor = '#e68000';
+                    if (arr[ind].backgroundColor === 'white') {
+                        this.messageRef.instance.style.backgroundColor = '#ffffff';
+                    } else if (arr[ind].backgroundColor === 'cyan') {
+                        this.messageRef.instance.style.backgroundColor = '#00ffff';
+                    } else if (arr[ind].backgroundColor === 'amber') {
+                        this.messageRef.instance.style.backgroundColor = '#e68000';
+                    }
+                    this.buttonText.set(
+                        <span>
+                            CLEAR
+                            <br />
+                            INFO
+                        </span>,
+                    );
+                } else {
+                    this.messageToBeCleared.set(false);
+                    this.messageRef.instance.textContent = '';
+                    this.messageRef.instance.style.backgroundColor = 'none';
+                    this.buttonText.set(
+                        <span>
+                            MSG
+                            <br />
+                            LIST
+                        </span>,
+                    );
                 }
-                this.buttonText.set(
-                    <span>
-                        CLEAR
-                        <br />
-                        INFO
-                    </span>,
-                );
-            } else {
-                this.messageToBeCleared.set(false);
-                this.messageRef.instance.textContent = '';
-                this.messageRef.instance.style.backgroundColor = 'none';
-                this.buttonText.set(
-                    <span>
-                        MSG
-                        <br />
-                        LIST
-                    </span>,
-                );
-            }
-        }, true));
+            }, true));
+        }
     }
 
     public destroy(): void {
@@ -75,7 +77,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
                     label={this.buttonText}
                     onClick={() => {
                         if (this.messageToBeCleared.get() === true) {
-                            this.props.fmcService.master.clearLatestFmsErrorMessage();
+                            this.props.fmcService.master?.clearLatestFmsErrorMessage();
                         } else {
                             this.props.mfd.openMessageList();
                         }

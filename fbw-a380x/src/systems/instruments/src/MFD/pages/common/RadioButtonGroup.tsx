@@ -4,7 +4,7 @@ import './style.scss';
 interface RadioButtonGroupProps extends ComponentProps {
     values: string[];
     valuesDisabled?: Subscribable<boolean[]>;
-    selectedIndex: Subject<number>;
+    selectedIndex: Subject<number | null>;
     idPrefix: string;
     onModified?: (newSelectedIndex: number) => void;
     additionalVerticalSpacing?: number;
@@ -57,9 +57,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         this.subs.push(this.props.tmpyActive.sub((v) => {
             this.props.values.forEach((val, idx) => {
                 if (v === true) {
-                    document.getElementById(`${this.props.idPrefix}_label_${idx}`).classList.add('tmpy');
+                    document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add('tmpy');
                 } else {
-                    document.getElementById(`${this.props.idPrefix}_label_${idx}`).classList.remove('tmpy');
+                    document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('tmpy');
                 }
             });
         }, true));

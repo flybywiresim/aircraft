@@ -48,8 +48,6 @@ export enum ClimbDerated {
     D05 = 5,
 }
 
-type AltitudeValue = Feet | undefined;
-
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
@@ -60,168 +58,174 @@ export class FmgcData {
 
     public readonly atcCallsign = Subject.create<string>('----------');
 
-    public readonly tripWind = Subject.create<Knots>(undefined);
+    public readonly tripWind = Subject.create<Knots | null>(null);
 
-    public readonly zeroFuelWeight = Subject.create<number>(undefined); // in kg
+    public readonly zeroFuelWeight = Subject.create<number | null>(null); // in kg
 
-    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(undefined); // in percent
+    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null); // in percent
 
-    public readonly blockFuel = Subject.create<number>(undefined); // in kg
+    public readonly blockFuel = Subject.create<number | null>(null); // in kg
 
-    public readonly taxiFuelPilotEntry = Subject.create<number>(undefined); // in kg
+    public readonly taxiFuelPilotEntry = Subject.create<number | null>(null); // in kg
 
-    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation.EK.taxiFuel : it)); // in kg
+    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === null) ? AirlineModifiableInformation.EK.taxiFuel : it)); // in kg
 
-    public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== undefined);
+    public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== null);
 
-    public readonly routeReserveFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
+    public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null); // in kg
 
-    public readonly routeReserveFuelWeightCalculated = Subject.create<number>(undefined); // in kg
+    public readonly routeReserveFuelWeightCalculated = Subject.create<number | null>(null); // in kg
 
-    public readonly routeReserveFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.routeReserveFuelWeightCalculated, this.routeReserveFuelWeightPilotEntry);
+    public readonly routeReserveFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== null ? pe : calc), this.routeReserveFuelWeightCalculated, this.routeReserveFuelWeightPilotEntry);
 
-    public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number>(undefined); // in percent
+    public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null); // in percent
 
-    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation.EK.rteRsv : it)); // in percent
+    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === null) ? AirlineModifiableInformation.EK.rteRsv : it)); // in percent
 
     public readonly routeReserveFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
-    ) => fuel !== undefined || time !== undefined,
+    ) => fuel !== null || time !== null,
     this.routeReserveFuelWeightPilotEntry,
     this.routeReserveFuelPercentagePilotEntry);
 
-    public readonly paxNumber = Subject.create<number>(undefined);
+    public readonly paxNumber = Subject.create<number | null>(null);
 
-    public readonly jettisonGrossWeight = Subject.create<number>(undefined); // in kg
+    public readonly jettisonGrossWeight = Subject.create<number | null>(null); // in kg
 
-    public readonly alternateFuelPilotEntry = Subject.create<number>(undefined); // in kg
+    public readonly alternateFuelPilotEntry = Subject.create<number | null>(null); // in kg
 
-    public readonly alternateFuelCalculated = Subject.create<number>(undefined); // in kg
+    public readonly alternateFuelCalculated = Subject.create<number | null>(null); // in kg
 
-    public readonly alternateFuel = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.alternateFuelCalculated, this.alternateFuelPilotEntry); // in kg
+    public readonly alternateFuel = MappedSubject.create(([calc, pe]) => (pe !== null ? pe : calc), this.alternateFuelCalculated, this.alternateFuelPilotEntry); // in kg
 
-    public readonly alternateFuelIsPilotEntered = this.alternateFuelPilotEntry.map((it) => it !== undefined);
+    public readonly alternateFuelIsPilotEntered = this.alternateFuelPilotEntry.map((it) => it !== null);
 
-    public readonly finalFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
+    public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null); // in kg
 
-    public readonly finalFuelWeightCalculated = Subject.create<number>(undefined); // in kg
+    public readonly finalFuelWeightCalculated = Subject.create<number | null>(null); // in kg
 
-    public readonly finalFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.finalFuelWeightCalculated, this.finalFuelWeightPilotEntry);
+    public readonly finalFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== null ? pe : calc), this.finalFuelWeightCalculated, this.finalFuelWeightPilotEntry);
 
-    public readonly finalFuelTimePilotEntry = Subject.create<number>(undefined); // in percent
+    public readonly finalFuelTimePilotEntry = Subject.create<number | null>(null); // in percent
 
-    public readonly finalFuelTime = this.finalFuelTimePilotEntry.map((it) => ((it === undefined) ? 30 : it)); // in minutes
+    public readonly finalFuelTime = this.finalFuelTimePilotEntry.map((it) => ((it === null) ? 30 : it)); // in minutes
 
     public readonly finalFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
-    ) => fuel !== undefined || time !== undefined,
+    ) => fuel !== null || time !== null,
     this.finalFuelWeightPilotEntry,
     this.finalFuelTimePilotEntry);
 
-    public readonly minimumFuelAtDestinationPilotEntry = Subject.create<number>(undefined); // in kg
+    public readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null); // in kg
 
     public readonly minimumFuelAtDestination = MappedSubject.create(
-        ([pe, ff, af]) => ((pe === undefined) ? (ff + af) : pe),
+        ([pe, ff, af]) => ((pe === null && ff && af) ? (ff + af) : pe),
         this.minimumFuelAtDestinationPilotEntry,
         this.finalFuelWeight,
         this.alternateFuel,
     ); // in kg
 
-    public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map((it) => it !== undefined);
+    public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map((it) => it !== null);
 
-    public readonly tropopausePilotEntry = Subject.create<AltitudeValue>(undefined);
+    /** in feet */
+    public readonly tropopausePilotEntry = Subject.create<number | null>(null);
 
     public readonly tropopause = this.tropopausePilotEntry.map((tp) => (tp ?? 36_090)); // in ft
 
-    public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== undefined);
+    public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== null);
 
     /**
      * For which departure runway the v speeds have been inserted
      */
-    public readonly vSpeedsForRunway = Subject.create<string>(undefined);
+    public readonly vSpeedsForRunway = Subject.create<string | null>(null);
 
     /**
      * V1 speed, to be confirmed after rwy change
      */
-    readonly v1ToBeConfirmed = Subject.create<Knots>(undefined);
+    readonly v1ToBeConfirmed = Subject.create<Knots | null>(null);
 
     /**
      * VR speed, to be confirmed after rwy change
      */
-    readonly vrToBeConfirmed = Subject.create<Knots>(undefined);
+    readonly vrToBeConfirmed = Subject.create<Knots | null>(null);
 
     /**
      * V2 speed, to be confirmed after rwy change
      */
-    readonly v2ToBeConfirmed = Subject.create<Knots>(undefined);
+    readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
 
     public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
-    public readonly approachSpeed = Subject.create<Knots>(undefined);
+    public readonly approachSpeed = Subject.create<Knots | null>(null);
 
-    public readonly approachWind = Subject.create<FmcWindVector>({ direction: null, speed: null });
+    public readonly approachWind = Subject.create<FmcWindVector | null>(null);
 
-    public readonly approachQnh = Subject.create<number>(undefined);
+    public readonly approachQnh = Subject.create<number | null>(null);
 
-    public readonly approachTemperature = Subject.create<number>(undefined);
+    public readonly approachTemperature = Subject.create<number | null>(null);
 
-    public readonly flapRetractionSpeed = Subject.create<Knots>(141);
+    public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
 
-    public readonly slatRetractionSpeed = Subject.create<Knots>(159);
+    public readonly slatRetractionSpeed = Subject.create<Knots | null>(159);
 
-    public readonly greenDotSpeed = Subject.create<Knots>(190);
+    public readonly greenDotSpeed = Subject.create<Knots | null>(190);
 
-    public readonly takeoffShift = Subject.create<number>(undefined); // in meters
+    public readonly takeoffShift = Subject.create<number | null>(null); // in meters
 
     public readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
-    public readonly takeoffFlexTemp = Subject.create<number>(undefined);
+    public readonly takeoffFlexTemp = Subject.create<number | null>(null);
 
-    public readonly takeoffDeratedSetting = Subject.create<TakeoffDerated>(TakeoffDerated.D01);
+    public readonly takeoffDeratedSetting = Subject.create<TakeoffDerated | null>(null);
 
-    public readonly takeoffThsFor = Subject.create<number>(null);
+    public readonly takeoffThsFor = Subject.create<number | null>(null);
 
-    public readonly takeoffPacks = Subject.create<TakeoffPacks>(TakeoffPacks.ON);
+    public readonly takeoffPacks = Subject.create<TakeoffPacks | null>(TakeoffPacks.ON);
 
-    public readonly takeoffAntiIce = Subject.create<TakeoffAntiIce>(TakeoffAntiIce.OFF);
+    public readonly takeoffAntiIce = Subject.create<TakeoffAntiIce | null>(TakeoffAntiIce.OFF);
 
     public readonly noiseEnabled = Subject.create<boolean>(false);
 
-    public readonly noiseN1 = Subject.create<number>(undefined);
+    public readonly noiseN1 = Subject.create<number | null>(null);
 
-    public readonly noiseSpeed = Subject.create<Knots>(undefined);
+    public readonly noiseSpeed = Subject.create<Knots | null>(null);
 
-    public readonly noiseEndAltitude = Subject.create<AltitudeValue>(undefined);
+    /** in feet */
+    public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
-    public readonly climbDerated = Subject.create<ClimbDerated>(ClimbDerated.NONE);
+    public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
-    public readonly climbPredictionsReferencePilotEntry = Subject.create<AltitudeValue>(undefined); // in ft
+    /** in feet */
+    public readonly climbPredictionsReferencePilotEntry = Subject.create<number | null>(null); // in ft
 
-    public readonly climbPredictionsReferenceAutomatic = Subject.create<AltitudeValue>(undefined); // in ft
+    /** in feet */
+    public readonly climbPredictionsReferenceAutomatic = Subject.create<number | null>(null); // in ft
 
-    public readonly climbPredictionsReference = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc),
+    public readonly climbPredictionsReference = MappedSubject.create(([calc, pe]) => (pe !== null ? pe : calc),
         this.climbPredictionsReferenceAutomatic,
         this.climbPredictionsReferencePilotEntry);
 
-    public readonly climbPredictionsReferenceIsPilotEntered = this.climbPredictionsReferencePilotEntry.map((it) => it !== undefined);
+    public readonly climbPredictionsReferenceIsPilotEntered = this.climbPredictionsReferencePilotEntry.map((it) => it !== null);
 
-    public readonly climbPreSelSpeed = Subject.create<Knots>(undefined);
+    public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
 
     public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
-    public readonly cruisePreSelMach = Subject.create<number>(undefined);
+    public readonly cruisePreSelMach = Subject.create<number | null>(null);
 
-    public readonly cruisePreSelSpeed = Subject.create<Knots>(undefined);
+    public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
-    public readonly descentPreSelSpeed = Subject.create<Knots>(undefined);
+    public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
 
     public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
     public readonly descentCabinRate = Subject.create<number>(-350); // ft/min
 
-    public readonly approachBaroMinimum = Subject.create<AltitudeValue>(undefined);
+    /** in feet */
+    public readonly approachBaroMinimum = Subject.create<number | null>(null);
 
-    public readonly approachRadioMinimum = Subject.create<AltitudeValue>(undefined);
+    /** in feet */
+    public readonly approachRadioMinimum = Subject.create<number | null>(null);
 
     public readonly approachVref = Subject.create<Knots>(129);
 
@@ -232,7 +236,7 @@ export class FmgcData {
     /**
      * Estimated take-off time, in seconds. Displays as HH:mm:ss
      */
-    public readonly estimatedTakeoffTime = Subject.create<number>(undefined);
+    public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 }
 
 /**
@@ -241,7 +245,7 @@ export class FmgcData {
 export class FmgcDataService implements Fmgc {
     public data = new FmgcData();
 
-    public guidanceController: GuidanceController;
+    public guidanceController: GuidanceController | undefined = undefined;
 
     constructor(
         private flightPlanService: FlightPlanService,
@@ -251,7 +255,7 @@ export class FmgcDataService implements Fmgc {
     getZeroFuelWeight(): Pound {
         // TODO convert to a320 weights
         // Should be returned in lbs
-        let zfw = this.data.zeroFuelWeight.get();
+        let zfw = this.data.zeroFuelWeight.get() ?? minGw;
 
         if (zfw > 80_000 && zfw < minGw) {
             zfw = 50_000; // If neither a320 nor a380 weights, just return constant
@@ -268,7 +272,7 @@ export class FmgcDataService implements Fmgc {
      */
     getFOB(): number {
         // TODO convert to a320 weights
-        let fob = this.data.blockFuel.get();
+        let fob = this.data.blockFuel.get() ?? 0;
         if (this.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
             fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
         }
@@ -306,19 +310,19 @@ export class FmgcDataService implements Fmgc {
     }
 
     getAccelerationAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.accelerationAltitude : 1_500;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.accelerationAltitude as Feet : 1_500;
     }
 
     getThrustReductionAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.thrustReductionAltitude : 1_500;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.thrustReductionAltitude as Feet : 1_500;
     }
 
     getOriginTransitionAltitude(): Feet | undefined {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude : 18_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude as Feet : undefined;
     }
 
     getDestinationTransitionLevel(): Feet | undefined {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel : 18_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel as Feet : undefined;
     }
 
     /**
@@ -334,8 +338,9 @@ export class FmgcDataService implements Fmgc {
     }
 
     getManagedCruiseSpeed(): Knots {
-        if (Number.isFinite(this.data.cruisePreSelSpeed.get())) {
-            return this.data.cruisePreSelSpeed.get();
+        const preSel = this.data.cruisePreSelSpeed.get();
+        if (Number.isFinite(preSel) && preSel !== null) {
+            return preSel;
         }
 
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
@@ -362,15 +367,18 @@ export class FmgcDataService implements Fmgc {
     }
 
     getPreSelectedClbSpeed(): Knots {
-        return this.data.climbPreSelSpeed.get();
+        // FIXME fmgc interface should also accept null
+        return this.data.climbPreSelSpeed.get() ?? 0;
     }
 
     getPreSelectedCruiseSpeed(): Knots {
-        return this.data.cruisePreSelSpeed.get();
+        // FIXME fmgc interface should also accept null
+        return this.data.cruisePreSelSpeed.get() ?? 0;
     }
 
     getPreSelectedDescentSpeed(): Knots {
-        return this.data.descentPreSelSpeed.get();
+        // FIXME fmgc interface should also accept null
+        return this.data.descentPreSelSpeed.get() ?? 0;
     }
 
     getTakeoffFlapsSetting(): FlapConf | undefined {
@@ -379,7 +387,7 @@ export class FmgcDataService implements Fmgc {
 
     getManagedDescentSpeed(): Knots {
         if (Number.isFinite(this.data.descentPreSelSpeed.get())) {
-            return this.data.descentPreSelSpeed.get();
+            return this.data.descentPreSelSpeed.get() ?? 0;
         }
         // TODO adapt for A380
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
@@ -399,23 +407,23 @@ export class FmgcDataService implements Fmgc {
     }
 
     getApproachSpeed(): Knots {
-        return this.data.approachSpeed.get();
+        return this.data.approachSpeed.get() ?? 0;
     }
 
     getFlapRetractionSpeed(): Knots {
-        return this.data.flapRetractionSpeed.get();
+        return this.data.flapRetractionSpeed.get() ?? 0;
     }
 
     getSlatRetractionSpeed(): Knots {
-        return this.data.slatRetractionSpeed.get();
+        return this.data.slatRetractionSpeed.get() ?? 0;
     }
 
     getCleanSpeed(): Knots {
-        return this.data.greenDotSpeed.get();
+        return this.data.greenDotSpeed.get() ?? 0;
     }
 
     getTripWind(): number {
-        return this.data.tripWind.get();
+        return this.data.tripWind.get() ?? 0;
     }
 
     getWinds(): FmcWinds {
@@ -423,15 +431,15 @@ export class FmgcDataService implements Fmgc {
     }
 
     getApproachWind(): FmcWindVector {
-        return this.data.approachWind.get();
+        return this.data.approachWind.get() ?? { direction: 0, speed: 0 };
     }
 
     getApproachQnh(): number {
-        return this.data.approachQnh.get();
+        return this.data.approachQnh.get() ?? 1013.15;
     }
 
     getApproachTemperature(): number {
-        return this.data.approachTemperature.get();
+        return this.data.approachTemperature.get() ?? 0;
     }
 
     getDestEFOB(useFob: boolean): number { // Metric tons
@@ -450,20 +458,20 @@ export class FmgcDataService implements Fmgc {
         return (this.getDestEFOB(useFOB) - 1.0) > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
     }
 
-    getDepartureElevation(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt : undefined;
+    getDepartureElevation(): Feet | null {
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt : null;
     }
 
     getDestinationElevation(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt : undefined;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt : 0;
     }
 
-    getDestinationRunway(): Runway {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway : undefined;
+    getDestinationRunway(): Runway | null {
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway : null;
     }
 
-    getDistanceToDestination(): number {
-        return this.guidanceController.vnavDriver.getDestinationPrediction().distanceFromAircraft;
+    getDistanceToDestination(): number | null {
+        return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
     }
 
     getNavDataDateRange(): string {
@@ -500,7 +508,7 @@ export class FmgcDataService implements Fmgc {
         return this.getFlightPhase() >= FmgcFlightPhase.Takeoff && this.getFlightPhase() < FmgcFlightPhase.Done;
     }
 
-    getPressureAltAtElevation(elev, qnh = 1013.2) {
+    getPressureAltAtElevation(elev: number, qnh = 1013.2) {
         const p0 = qnh < 500 ? 29.92 : 1013.2;
         return elev + 145442.15 * (1 - ((qnh / p0) ** 0.190263));
     }
@@ -515,8 +523,8 @@ export class FmgcDataService implements Fmgc {
         return null;
     }
 
-    getBaroCorrection1() {
+    getBaroCorrection1(): number {
         // FIXME hook up to ADIRU or FCU
-        return Simplane.getPressureValue('millibar');
+        return Simplane.getPressureValue('millibar') ?? 1013.25;
     }
 }
