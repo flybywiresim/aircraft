@@ -316,7 +316,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             <InputField<number>
                                 dataEntryFormat={new CostIndexFormat()}
                                 dataHandlerDuringValidation={async (v) => {
-                                    this.loadedFlightPlan?.setPerformanceData('costIndex', v ?? undefined);
+                                    this.loadedFlightPlan?.setPerformanceData('costIndex', v);
                                 }}
                                 value={this.costIndex}
                                 mandatory={Subject.create(true)}

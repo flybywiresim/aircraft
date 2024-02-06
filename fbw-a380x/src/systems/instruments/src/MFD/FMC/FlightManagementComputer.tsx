@@ -701,7 +701,7 @@ export class FlightManagementComputer implements FmcInterface {
 
             /** Clear pre selected speed/mach */
             this.acInterface.updatePreSelSpeedMach(null);
-            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', undefined);
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', null);
 
             break;
         }

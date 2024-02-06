@@ -335,7 +335,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new CostIndexFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                                this.loadedFlightPlan?.setPerformanceData('costIndex', v ?? undefined);
+                                this.loadedFlightPlan?.setPerformanceData('costIndex', v);
                             }}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
