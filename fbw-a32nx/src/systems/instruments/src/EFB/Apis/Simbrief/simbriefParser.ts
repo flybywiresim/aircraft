@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 import { ISimbriefData } from './simbriefInterface';
 
 const SIMBRIEF_BASE_URL = 'https://www.simbrief.com/api/xml.fetcher.php';
@@ -11,7 +12,7 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: string): Promise<ISimbriefData> => {
+export const getSimbriefData = async (navigraphUsername: string, overrideSimbriefID: string): Promise<ISimbriefData> => {
     const simbriefApiUrl = new URL(SIMBRIEF_BASE_URL);
     const simbriefApiParams = simbriefApiUrl.searchParams;
 
@@ -23,15 +24,19 @@ export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: s
 
     simbriefApiParams.append('json', '1');
 
-    simbriefApiUrl.search = simbriefApiParams.toString();
+    // adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
+    const versionInfo = await AircraftVersionChecker.getBuildInfo();
+    simbriefApiParams.append('source', `fbw-${versionInfo.version}`);
 
-    return fetch(simbriefApiUrl.toString(), getRequestData)
-        .then((res) => {
-            if (!res.ok) {
-                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
-            }
-            return res.json().then((json) => simbriefDataParser(json));
-        });
+    simbriefApiUrl.search = simbriefApiParams.toString();
+    console.log('simbriefApiUrl', simbriefApiUrl);
+
+    const res = await fetch(simbriefApiUrl.toString(), getRequestData);
+    if (!res.ok) {
+        return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
+    }
+    const resJson = await res.json();
+    return simbriefDataParser(resJson);
 };
 
 const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
