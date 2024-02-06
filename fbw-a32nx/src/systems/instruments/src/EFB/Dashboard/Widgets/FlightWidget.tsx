@@ -96,6 +96,9 @@ export const FlightWidget = () => {
     } = data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
+    const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
+    const payloadImported = useAppSelector((state) => state.simbrief.payloadImported);
+
     const dispatch = useAppDispatch();
 
     const history = useHistory();
@@ -117,6 +120,7 @@ export const FlightWidget = () => {
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
+        let importError = false;
 
         dispatch(setFuelImported(false));
         dispatch(setPayloadImported(false));
@@ -124,23 +128,25 @@ export const FlightWidget = () => {
             dispatch(action);
         }).catch((e) => {
             toast.error(e.message);
-        })
-            .then(() => {
+            importError = true;
+        }).then(() => {
+            if (!importError) {
                 history.push('/ground/fuel');
-            })
-            .then(() => {
                 history.push('/ground/payload');
-            })
-            .then(() => {
                 history.push('/dashboard');
-                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
-            });
+                setTimeout(() => {
+                    if (fuelImported && payloadImported) {
+                        toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+                    }
+                }, 2000);
+            }
+        });
 
         setSimbriefDataPending(false);
     };
 
     useEffect(() => {
-        if ((!data || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
+        if ((!data || !isSimbriefDataLoaded()) && !simbriefDataPending && autoSimbriefImport === 'ENABLED' && (navigraphUsername || overrideSimBriefUserID)) {
             fetchData();
         }
     }, []);
