@@ -23,7 +23,7 @@ export class WaypointEntryUtils {
      *
      * @returns a waypoint, or `undefined` if the operation is cancelled
      */
-    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, place: string, stored: boolean, ident: string): Promise<Fix | undefined> {
+    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, place: string, stored: boolean, ident?: string): Promise<Fix | undefined> {
         if (WaypointEntryUtils.isLatLonFormat(place)) {
             const coordinates = WaypointEntryUtils.parseLatLon(place);
 
