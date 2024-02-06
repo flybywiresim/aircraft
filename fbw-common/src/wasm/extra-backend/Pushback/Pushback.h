@@ -17,6 +17,8 @@ constexpr double PI = 3.14159265358979323846;
 
 class MsfsHandler;
 
+using DataDefVector = std::vector<DataDefinition>;
+
 /**
  * This module is responsible for the pushback process.
  *
