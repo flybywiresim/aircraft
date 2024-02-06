@@ -121,22 +121,18 @@ export const FlightWidget = () => {
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
-        let importError = false;
 
         dispatch(setFuelImported(false));
         dispatch(setPayloadImported(false));
         dispatch(setToastPresented(false));
         fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
             dispatch(action);
+        }).then(() => {
+            history.push('/ground/fuel');
+            history.push('/ground/payload');
+            history.push('/dashboard');
         }).catch((e) => {
             toast.error(e.message);
-            importError = true;
-        }).then(() => {
-            if (!importError) {
-                history.push('/ground/fuel');
-                history.push('/ground/payload');
-                history.push('/dashboard');
-            }
         });
 
         setSimbriefDataPending(false);
