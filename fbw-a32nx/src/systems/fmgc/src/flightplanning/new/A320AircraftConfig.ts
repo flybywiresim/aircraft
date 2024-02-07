@@ -41,6 +41,9 @@ const flightModelParams: FlightModelParameters = {
     gravityConstMS2: 9.806665,
     machValues: [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85],
     dragCoefficientCorrections: [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01],
+    speedBrakeDrag: 0.01008,
+    gearDrag: 0.0372,
+    dragCoeffFactor: 1,
 };
 
 const engineModelParams: EngineModelParameters = {

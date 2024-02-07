@@ -31,9 +31,9 @@ export class FlightModel {
      * @param flapConf flap configuration
      * @returns drag coefficient (Cd)
      */
-    static getDragCoefficient(Cl: number, spdBrkDeflected = false, gearExtended = false, flapConf = FlapConf.CLEAN) : number {
+    static getDragCoefficient(config: FlightModelParameters, Cl: number, spdBrkDeflected = false, gearExtended = false, flapConf = FlapConf.CLEAN) : number {
         // Values taken at mach 0
-        let baseDrag;
+        let baseDrag: number;
         switch (flapConf) {
         case FlapConf.CLEAN:
             baseDrag = (0.0211 * Cl ** 3) + (0.0412 * Cl ** 2) - (0.015 * Cl) + 0.0215;
@@ -54,9 +54,9 @@ export class FlightModel {
             break;
         }
 
-        const spdBrkIncrement = spdBrkDeflected ? 0.01008 : 0;
-        const gearIncrement = gearExtended ? 0.0372 : 0;
-        return baseDrag + spdBrkIncrement + gearIncrement;
+        const spdBrkIncrement = spdBrkDeflected ? config.speedBrakeDrag : 0;
+        const gearIncrement = gearExtended ? config.gearDrag : 0;
+        return config.dragCoeffFactor * (baseDrag + spdBrkIncrement + gearIncrement);
     }
 
     /**
@@ -71,7 +71,7 @@ export class FlightModel {
      */
     static getDrag(config: FlightModelParameters, weight: number, mach: number, delta: number, spdBrkDeflected: boolean, gearExtended: boolean, flapConf: FlapConf): number {
         const Cl = this.getLiftCoefficient(config, weight, mach, delta);
-        const Cd = this.getDragCoefficient(Cl, spdBrkDeflected, gearExtended, flapConf);
+        const Cd = this.getDragCoefficient(config, Cl, spdBrkDeflected, gearExtended, flapConf);
         const deltaCd = this.getMachCorrection(config, mach, flapConf);
 
         return 1481.4 * (mach ** 2) * delta * config.wingArea * (Cd + deltaCd);
