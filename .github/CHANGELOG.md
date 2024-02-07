@@ -59,6 +59,10 @@
 1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
 1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
 
 ## 0.11.0
 
