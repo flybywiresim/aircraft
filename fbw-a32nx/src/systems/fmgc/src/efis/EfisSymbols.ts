@@ -218,7 +218,7 @@ export class EfisSymbols {
             // eslint-disable-next-line no-loop-func
             const upsertSymbol = (symbol: NdSymbol): void => {
                 if (DEBUG) {
-                    console.time(`upsert symbol ${symbol.databaseId}`);
+                    // console.time(`upsert symbol ${symbol.databaseId}`);
                 }
                 // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
                 const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;

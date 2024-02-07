@@ -15,6 +15,7 @@ import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/Tempora
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 
 export class DescentPathBuilder {
     private geometricPathBuilder: GeometricPathBuilder;
@@ -24,13 +25,14 @@ export class DescentPathBuilder {
     constructor(
         private computationParametersObserver: VerticalProfileComputationParametersObserver,
         private atmosphericConditions: AtmosphericConditions,
+        private readonly acConfig: AircraftConfig,
     ) {
         this.geometricPathBuilder = new GeometricPathBuilder(
             computationParametersObserver,
             atmosphericConditions,
         );
 
-        this.idleDescentStrategy = new IdleDescentStrategy(computationParametersObserver, atmosphericConditions);
+        this.idleDescentStrategy = new IdleDescentStrategy(computationParametersObserver, atmosphericConditions, this.acConfig);
     }
 
     computeManagedDescentPath(

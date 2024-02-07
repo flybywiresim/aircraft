@@ -26,6 +26,7 @@ import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory'
 import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 
@@ -284,14 +285,14 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface) {
+    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface, private readonly acConfig: AircraftConfig) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-        this.lnavDriver = new LnavDriver(flightPlanService, this);
-        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
+        this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
+        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, this.acConfig);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
         this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterface);
     }

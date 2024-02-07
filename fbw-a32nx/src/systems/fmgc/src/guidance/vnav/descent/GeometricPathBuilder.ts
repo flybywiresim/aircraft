@@ -13,6 +13,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 
 export class GeometricPathBuilder {
     private flightPathAngleStrategy: FlightPathAngleStrategy;
@@ -20,8 +21,9 @@ export class GeometricPathBuilder {
     constructor(
         private observer: VerticalProfileComputationParametersObserver,
         atmosphericConditions: AtmosphericConditions,
+        private readonly acConfig: AircraftConfig,
     ) {
-        this.flightPathAngleStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, -3.0);
+        this.flightPathAngleStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, -3.0, this.acConfig);
     }
 
     executeGeometricSegments(sequence: TemporaryCheckpointSequence, segments: PlannedGeometricSegment[], speedConstraints: MaxSpeedConstraint[], windProfile: HeadwindProfile) {
