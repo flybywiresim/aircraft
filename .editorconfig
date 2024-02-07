@@ -7,6 +7,13 @@ indent_style = space
 insert_final_newline = false
 tab_width = 4
 
+[*.{js,jsx,ts,tsx}]
+charset = utf-8
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+tab_width = 2
+
 [*.{h,hpp,c,cpp}]
 end_of_line = lf
 indent_size = 2

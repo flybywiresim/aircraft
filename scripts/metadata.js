@@ -1,7 +1,7 @@
 const { execSync } = require('child_process');
 const { writeFileSync } = require('fs');
 
-evaluate = (cmd) => execSync(cmd, { shell: 'bash' }).toString().trim();
+const evaluate = (cmd) => execSync(cmd, { shell: 'bash' }).toString().trim();
 
 const built = evaluate('date -u -Iseconds');
 
