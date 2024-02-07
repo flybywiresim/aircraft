@@ -14,6 +14,7 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 
 export class CruiseToDescentCoordinator {
     private lastEstimatedFuelAtDestination: Pounds = 4000;
@@ -25,6 +26,7 @@ export class CruiseToDescentCoordinator {
         private cruisePathBuilder: CruisePathBuilder,
         private descentPathBuilder: DescentPathBuilder,
         private approachPathBuilder: ApproachPathBuilder,
+        private readonly acConfig: AircraftConfig,
     ) { }
 
     resetEstimations() {
@@ -101,7 +103,7 @@ export class CruiseToDescentCoordinator {
                     // If we somehow don't find an intercept between climb and descent path, just build the cruise path until end of the path
                     if (index < 0) {
                         cruisePath = this.cruisePathBuilder.computeCruisePath(
-                            profile, startingPoint, descentPath.at(0).distanceFromStart, stepClimbStrategy, stepDescentStrategy, speedProfile, cruiseWinds,
+                            profile, this.acConfig, startingPoint, descentPath.at(0).distanceFromStart, stepClimbStrategy, stepDescentStrategy, speedProfile, cruiseWinds,
                         );
 
                         console.error('[FMS/VNAV] Edge case: Flight plan too short. However, no intercept between climb and descent path.');
@@ -122,7 +124,7 @@ export class CruiseToDescentCoordinator {
             }
 
             cruisePath = this.cruisePathBuilder.computeCruisePath(
-                profile, startingPoint, descentPath.lastCheckpoint.distanceFromStart, stepClimbStrategy, stepDescentStrategy, speedProfile, cruiseWinds,
+                profile, this.acConfig, startingPoint, descentPath.lastCheckpoint.distanceFromStart, stepClimbStrategy, stepDescentStrategy, speedProfile, cruiseWinds,
             );
 
             if (!cruisePath) {

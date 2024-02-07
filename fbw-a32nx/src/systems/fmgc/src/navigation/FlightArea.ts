@@ -4,7 +4,7 @@
 /**
  * Navigation flight areas
  */
- export enum FlightArea {
+export enum FlightArea {
     Terminal,
     Takeoff,
     Enroute,

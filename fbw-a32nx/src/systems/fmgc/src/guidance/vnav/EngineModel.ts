@@ -1,9 +1,6 @@
 import { Common } from './common';
 
 export class EngineModel {
-    // In pounds of force. Used as a multiplier for results of table 1506
-    static maxThrust = 27120;
-
     /**
      * Maximum N1 in CLB thrust
      * @param i row index (tat) in steps of 4°C
