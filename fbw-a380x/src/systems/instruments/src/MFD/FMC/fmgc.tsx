@@ -12,7 +12,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
-import { maxZfw, minGw } from '@shared/PerformanceConstants';
+import { minGw } from '@shared/PerformanceConstants';
 
 export enum TakeoffPowerSetting {
     TOGA = 0,
@@ -254,7 +254,7 @@ export class FmgcDataService implements Fmgc {
 
     getZeroFuelWeight(): Pound {
         // Should be returned in lbs
-        let zfw = this.data.zeroFuelWeight.get() ?? minGw;
+        const zfw = this.data.zeroFuelWeight.get() ?? minGw;
         return zfw / 1000 * 2204.625;
     }
 
