@@ -404,7 +404,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             previousRow={Subject.create(previousRow)}
                             openRevisionsMenuCallback={() => {
                                 const line = this.lineData[drawIndex];
-                                if (line.originalLegIndex) {
+                                if (line.originalLegIndex !== null) {
                                     this.openRevisionsMenu(line.originalLegIndex, isWaypoint(line) ? line.isAltnWaypoint : false);
                                 }
                             }}
