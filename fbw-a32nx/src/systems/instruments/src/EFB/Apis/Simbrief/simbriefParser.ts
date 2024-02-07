@@ -26,8 +26,8 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
 
     // Adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
     // The try/catch is there as the a380x build info file cannot be loaded with the current package setup and
-    // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X then
-    // this try/catch could be removed, but it doesn't hurt to have it here for now)
+    // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X) then
+    // this try/catch could be removed, but it doesn't hurt to have it here for now
     try {
         const versionInfo = await AircraftVersionChecker.getBuildInfo();
         simbriefApiParams.append('client', `fbw-${versionInfo.version}`);
@@ -38,12 +38,13 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     simbriefApiUrl.search = simbriefApiParams.toString();
     console.log('simbriefApiUrl', simbriefApiUrl);
 
-    const res = await fetch(simbriefApiUrl.toString(), getRequestData);
-    if (!res.ok) {
-        return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
-    }
-    const resJson = await res.json();
-    return simbriefDataParser(resJson);
+    return fetch(simbriefApiUrl.toString(), getRequestData)
+        .then((res) => {
+            if (!res.ok) {
+                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
+            }
+            return res.json().then((json) => simbriefDataParser(json));
+        });
 };
 
 const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
