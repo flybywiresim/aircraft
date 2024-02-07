@@ -132,7 +132,7 @@
       "Defueling": "燃料の取り出し中",
       "EstimatedDuration": "推定所要時間(分)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX給油同期有効",
+      "GSXFuelSyncEnabled": "GSXで給油を要請できます",
       "LeftInnerTank": "左内側タンク",
       "LeftOuterTank": "左外側タンク",
       "ReadyToStart": "準備完了",
@@ -495,7 +495,7 @@
       "PaxSigns": "乗客サイン",
       "RmpVhfSpacing": "RMP VHF 周波数間隔",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "設定",
       "ThrustReductionHeight": "推力低減高度(ft)",
       "Title": "機体オプション/Pin Programs",
       "WeightUnit": "重量単位"
