@@ -7,9 +7,9 @@ import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { Tooltip } from './UtilComponents/TooltipWrapper';
-import { FbwLogo } from './UtilComponents/FbwLogo';
-import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
+import { Tooltip } from '@fbw-common/flypad/UtilComponents/TooltipWrapper';
+import { FbwLogo } from '@fbw-common/flypad/UtilComponents/FbwLogo';
+import { AlertModal, ModalContainer, useModals } from '@fbw-common/flypad/UtilComponents/Modals/Modals';
 import { NavigraphContext } from './Apis/Navigraph/Navigraph';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
@@ -77,7 +77,7 @@ export const getAirframeType = () => new URL(
     document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'),
 ).searchParams.get('Airframe');
 
-const Efb = () => {
+export const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');

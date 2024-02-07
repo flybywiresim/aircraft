@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -11,17 +10,19 @@ import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '@sentry/FbwAircraftSentryClient';
-import { ModalProvider } from './UtilComponents/Modals/Modals';
-import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
-import Efb from './Efb';
+import {
+    Efb,
+    ModalProvider,
+    readSettingsFromPersistentStorage,
+    FailuresOrchestratorProvider,
+    migrateSettings,
+    store,
+    Error,
+} from '@fbw-common/flypad';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';
 import './Assets/Slider.scss';
-import { readSettingsFromPersistentStorage } from './Settings/sync';
-import { migrateSettings } from './Settings/Migration';
-import { store } from './Store/store';
-import { Error } from './Assets/Error';
 
 const EFBLoad = () => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
