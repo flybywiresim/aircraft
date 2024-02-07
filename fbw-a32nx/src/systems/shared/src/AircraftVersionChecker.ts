@@ -5,6 +5,7 @@
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { getAirframeType } from '../../instruments/src/EFB/Efb';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
@@ -104,7 +105,8 @@ export class AircraftVersionChecker {
         if (this.buildInfo) {
             return this.buildInfo;
         }
-        await fetch('/VFS/a32nx_build_info.json').then((response) => {
+        const aircraft = getAirframeType() === 'A380_842' ? 'a380x' : 'a32nx';
+        await fetch(`/VFS/${aircraft}_build_info.json`).then((response) => {
             response.json().then((json) => {
                 this.buildInfo = ({
                     built: json.built,
@@ -115,6 +117,8 @@ export class AircraftVersionChecker {
                     prettyReleaseName: json.pretty_release_name,
                     version: json.version,
                 });
+            }).catch((error) => {
+                console.error('Failed to read build info: ', error);
             });
         });
         return this.buildInfo;
