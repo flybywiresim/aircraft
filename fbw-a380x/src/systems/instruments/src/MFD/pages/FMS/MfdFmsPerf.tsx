@@ -1406,7 +1406,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-value">{this.clbTableSpdLine2}</span>
-                                        <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                        <span class="mfd-label-unit mfd-unit-trailing">{this.clbTableSpdLine2.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
