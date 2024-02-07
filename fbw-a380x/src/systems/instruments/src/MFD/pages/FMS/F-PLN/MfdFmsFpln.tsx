@@ -397,14 +397,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 const clonedLineData = { ...this.lineData[drawIndex] };
                 this.renderedLineData[lineIndex].set(clonedLineData);
 
-                if (shouldOnlyUpdatePredictions === false && this?.renderedLineData[lineIndex]?.get() !== undefined && this.linesDivRef.getOrDefault()) {
+                if (shouldOnlyUpdatePredictions === false && this?.renderedLineData[lineIndex]?.get() !== null && this.linesDivRef.getOrDefault()) {
                     const node = (
                         <FplnLegLine
                             data={this.renderedLineData[lineIndex]}
                             previousRow={Subject.create(previousRow)}
                             openRevisionsMenuCallback={() => {
                                 const line = this.lineData[drawIndex];
-                                if (line.originalLegIndex) {
+                                if (line.originalLegIndex !== null) {
                                     this.openRevisionsMenu(line.originalLegIndex, isWaypoint(line) ? line.isAltnWaypoint : false);
                                 }
                             }}
@@ -1019,7 +1019,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         }));
 
         this.identRef.getOrDefault()?.addEventListener('click', () => {
-            if (this.props.data.get()?.originalLegIndex !== undefined) {
+            if (this.props.data.get()?.originalLegIndex !== null) {
                 this.props.openRevisionsMenuCallback();
                 this.selectedForRevision.set(true);
             }

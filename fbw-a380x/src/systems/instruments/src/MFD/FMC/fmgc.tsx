@@ -253,16 +253,8 @@ export class FmgcDataService implements Fmgc {
     }
 
     getZeroFuelWeight(): Pound {
-        // TODO convert to a320 weights
         // Should be returned in lbs
         let zfw = this.data.zeroFuelWeight.get() ?? minGw;
-
-        if (zfw > 80_000 && zfw < minGw) {
-            zfw = 50_000; // If neither a320 nor a380 weights, just return constant
-        } else if (zfw >= minGw) {
-            // Convert to a320 weight
-            zfw = 40_600 + ((zfw - minGw) / (maxZfw - minGw) * (64_300 - 40_600));
-        }
         return zfw / 1000 * 2204.625;
     }
 
@@ -271,16 +263,11 @@ export class FmgcDataService implements Fmgc {
      * @returns fuel on board in tonnes (i.e. 1000 x kg)
      */
     getFOB(): number {
-        // TODO convert to a320 weights
         let fob = this.data.blockFuel.get() ?? 0;
         if (this.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
             fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
         }
 
-        // If more than a320 max fuel capacity, convert to a320 fuel weight
-        if (fob > 19_046) {
-            fob = fob / 199_000 * 19_046;
-        }
         return fob / 1_000; // Needs to be returned in tonnes
     }
 

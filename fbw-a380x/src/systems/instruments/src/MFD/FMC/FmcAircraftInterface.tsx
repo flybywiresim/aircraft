@@ -755,10 +755,7 @@ export class FmcAircraftInterface {
     tryEstimateLandingWeight() {
         const altActive = false;
         const landingWeight = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
-        // Workaround for fake a320 weights
-        if (landingWeight < 100) {
-            return this.fmc.getGrossWeight();
-        }
+
         return Number.isFinite(landingWeight) ? landingWeight : NaN;
     }
 
@@ -781,10 +778,6 @@ export class FmcAircraftInterface {
             weight = maxGw;
         }
 
-        // Workaround for fake a320 weights
-        if (weight < 100_000) {
-            weight = gw;
-        }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
         const appWind = this.fmgc.data.approachWind.get();
         if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
