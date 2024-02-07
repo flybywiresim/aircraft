@@ -163,4 +163,13 @@ export interface FlightModelParameters {
     machValues: Mach[];
 
     dragCoefficientCorrections: number[];
+
+    /** Drag coefficient increase due to extended speed brake */
+    speedBrakeDrag: number;
+
+    /** Drag coefficient increase due to extended speed brake */
+    gearDrag: number;
+
+    /** Drag coefficient factor for tuning */
+    dragCoeffFactor: number;
 }

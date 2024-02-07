@@ -90,8 +90,10 @@ export class Predictions {
         const theta2 = Common.getTheta2(theta, mach);
         const delta2 = Common.getDelta2(delta, mach);
         const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach) * 2 * config.engineModelParameters.maxThrust;
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * 2;
+        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach)
+        * config.engineModelParameters.numberOfEngines
+        * config.engineModelParameters.maxThrust;
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
         const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
         const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
@@ -522,7 +524,7 @@ export class Predictions {
         let iterations = 0;
         do {
             const liftCoefficient = FlightModel.getLiftCoefficientFromEAS(config.flightModelParameters, lift, eas);
-            const dragCoefficient = FlightModel.getDragCoefficient(liftCoefficient, speedbrakesExtended, gearExtended, flapConfig);
+            const dragCoefficient = FlightModel.getDragCoefficient(config.flightModelParameters, liftCoefficient, speedbrakesExtended, gearExtended, flapConfig);
             const accelFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
 
             thrust = FlightModel.getThrustFromConstantPathAngleCoefficients(

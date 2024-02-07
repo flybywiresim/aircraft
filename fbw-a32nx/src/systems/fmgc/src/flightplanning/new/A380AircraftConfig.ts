@@ -27,13 +27,13 @@ const vnavConfig: VnavConfig = {
     ALLOW_DEBUG_PARAMETER_INJECTION: false,
     VNAV_USE_LATCHED_DESCENT_MODE: false,
     IDLE_N1_MARGIN: 3,
-    MAXIMUM_FUEL_ESTIMATE: 40000,
+    MAXIMUM_FUEL_ESTIMATE: 200_000,
 };
 
 const flightModelParams: FlightModelParameters = {
-    Cd0: 0.01873,
-    wingSpan: 117.454,
-    wingArea: 1317.47,
+    Cd0: 0.1401,
+    wingSpan: 262.467,
+    wingArea: 9096,
     wingEffcyFactor: 0.70,
     requiredAccelRateKNS: 1.33,
     requiredAccelRateMS2: 0.684,
@@ -41,10 +41,13 @@ const flightModelParams: FlightModelParameters = {
     gravityConstMS2: 9.806665,
     machValues: [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85],
     dragCoefficientCorrections: [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01],
+    speedBrakeDrag: 0.02605,
+    gearDrag: 0.0372,
+    dragCoeffFactor: 1.2,
 };
 
 const engineModelParams: EngineModelParameters = {
-    maxThrust: 27120,
+    maxThrust: 80_213,
     numberOfEngines: 4,
 };
 

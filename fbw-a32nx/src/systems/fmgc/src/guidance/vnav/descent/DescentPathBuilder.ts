@@ -30,6 +30,7 @@ export class DescentPathBuilder {
         this.geometricPathBuilder = new GeometricPathBuilder(
             computationParametersObserver,
             atmosphericConditions,
+            this.acConfig,
         );
 
         this.idleDescentStrategy = new IdleDescentStrategy(computationParametersObserver, atmosphericConditions, this.acConfig);
