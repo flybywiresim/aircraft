@@ -879,6 +879,13 @@ class CDUFlightPlanPage {
                 mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
                 scratchpadCallback();
                 return false;
+            } else if (fpIndex === targetPlan.fromLegIndex /* TODO check this is ppos */ && fpIndex + 2 === targetPlan.destinationLegIndex) {
+                const nextElement = targetPlan.elementAt(fpIndex + 1);
+                if (nextElement.isDiscontinuity === true) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                    scratchpadCallback();
+                    return false;
+                }
             }
         }
 

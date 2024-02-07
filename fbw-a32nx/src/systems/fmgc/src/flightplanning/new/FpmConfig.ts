@@ -13,6 +13,12 @@ export interface FpmConfig {
     /** Whether changing a constraint on a leg creates a temporary flight plan */
     TMPY_ON_CONSTRAINT_EDIT: boolean,
 
+    /**
+     * Whether inserting a waypoint directly in the fligh plan creates a temporary flight plan
+     * Note that NEXT WPT will always create a temporary flight plan
+     */
+    TMPY_ON_INSERT_WAYPOINT: boolean,
+
     /** Whether further changes can be made to the temporary flight plan after it is created from a revision */
     ALLOW_REVISIONS_ON_TMPY: boolean,
 
@@ -34,6 +40,7 @@ export class FpmConfigs {
         TMPY_ON_DELETE_WAYPOINT: true,
         TMPY_ON_OVERFLY: true,
         TMPY_ON_CONSTRAINT_EDIT: true,
+        TMPY_ON_INSERT_WAYPOINT: true,
         ALLOW_REVISIONS_ON_TMPY: true,
         ALLOW_NON_ACTIVE_FIX_INFOS: false,
         MAX_NUM_LEGS: 200,
@@ -45,6 +52,7 @@ export class FpmConfigs {
         TMPY_ON_DELETE_WAYPOINT: false,
         TMPY_ON_OVERFLY: false,
         TMPY_ON_CONSTRAINT_EDIT: false,
+        TMPY_ON_INSERT_WAYPOINT: false,
         ALLOW_REVISIONS_ON_TMPY: false,
         ALLOW_NON_ACTIVE_FIX_INFOS: false,
         MAX_NUM_LEGS: 250,

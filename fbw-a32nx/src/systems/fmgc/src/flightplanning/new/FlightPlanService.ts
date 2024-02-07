@@ -286,7 +286,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     async insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
-        const finalIndex = this.prepareDestructiveModification(planIndex);
+        let finalIndex: number = planIndex;
+        if (this.config.TMPY_ON_INSERT_WAYPOINT) {
+            finalIndex = this.prepareDestructiveModification(planIndex);
+        }
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
