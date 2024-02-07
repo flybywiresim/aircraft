@@ -176,6 +176,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.allLegs[this.activeLegIndex];
     }
 
+    private setActiveLegIndex(index: number) {
+        this.activeLegIndex = index;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: index });
+    }
+
     /**
      * Returns the index of the last leg before the active leg, or -1 if none is found
      * We can have a discontinuity before the active leg. In this case, return the leg before that discontinuity
@@ -275,8 +280,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // Set active leg again because the index might've changed when we moved it into enroute
         const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
-        this.activeLegIndex = activeIndex;
-        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+        this.setActiveLegIndex(activeIndex);
     }
 
     version = 0;
@@ -922,10 +926,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
             await this.flushOperationQueue();
         } else {
-            const [insertSegment] = this.segmentPositionForIndex(index);
-            const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint);
+            const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
-            await this.insertElementBefore(index, leg, false);
+            await this.insertElementBefore(index, leg, true);
         }
     }
 
@@ -1159,9 +1162,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         if (insertDiscontinuity) {
             this.incrementVersion();
 
-            const elementAfterInserted = startSegment.allLegs[indexInStartSegment + 1];
+            const elementAfterInserted = this.allLegs[index + 1];
 
-            if (elementAfterInserted.isDiscontinuity === false) {
+            if (elementAfterInserted?.isDiscontinuity === false) {
                 startSegment.insertBefore(indexInStartSegment + 1, { isDiscontinuity: true });
                 this.incrementVersion();
             }
@@ -1612,6 +1615,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.adjustTFLegs();
 
         this.incrementVersion();
+        this.selectActiveLeg();
     }
 
     private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
@@ -2023,6 +2027,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
     }
 
+    private selectActiveLeg() {
+        // If we're on an arrival segment and select a different arrival, the active leg should be the first leg of the arrival
+        if (this.activeLegIndex === -1) {
+            return;
+        }
+
+        const [_, __, indexInPlan] = this.findFirstArrivalLeg();
+        if (indexInPlan === -1) {
+            return;
+        }
+
+        if (this.activeLegIndex > indexInPlan) {
+            console.log('[FMS/FPM] Active leg index is after the first arrival leg, resetting');
+            this.setActiveLegIndex(indexInPlan);
+        }
+    }
+
     private async rebuildArrivalAndApproachSegments() {
         // We call the segment functions here, otherwise we infinitely enqueue restrings and rebuilds since calling
         // the methods on BaseFlightPlan flush the op queue
@@ -2132,6 +2153,22 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         return lowestClimbConstraint;
+    }
+
+    deduplicateDownstreamAt(atIndex: number, keepUpstreamVsDownstream: boolean = false) {
+        const leg = this.legElementAt(atIndex);
+        if (!leg.isXF() && !leg.isFX() && !leg.isHX()) {
+            throw new Error('[FMS/FPM] Can only deduplicate XF, FX or HX legs');
+        }
+
+        const duplicate = this.findDuplicate(leg.terminationWaypoint(), atIndex);
+        if (!duplicate) {
+            return;
+        }
+
+        const [_, __, planIndex] = duplicate;
+        this.removeRange(keepUpstreamVsDownstream ? atIndex + 1 : atIndex, keepUpstreamVsDownstream ? planIndex + 1 : planIndex);
+        this.incrementVersion();
     }
 }
 

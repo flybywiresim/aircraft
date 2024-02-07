@@ -447,7 +447,7 @@ export class LnavDriver implements GuidanceComponent {
         const termination = activeLeg instanceof XFLeg ? activeLeg.fix.location : activeLeg.getPathEndPoint();
 
         const efisTrueBearing = termination ? bearingTo(this.ppos, termination) : -1;
-        const efisBearing = termination ? MagVar.trueToMagnetic(
+        const efisBearing = termination ? A32NX_Util.trueToMagnetic(
             efisTrueBearing,
             Facilities.getMagVar(this.ppos.lat, this.ppos.long),
         ) : -1;
