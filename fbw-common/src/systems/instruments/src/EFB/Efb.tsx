@@ -7,9 +7,14 @@ import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { Tooltip } from '@fbw-common/flypad/UtilComponents/TooltipWrapper';
-import { FbwLogo } from '@fbw-common/flypad/UtilComponents/FbwLogo';
-import { AlertModal, ModalContainer, useModals } from '@fbw-common/flypad/UtilComponents/Modals/Modals';
+import { ErrorBoundary } from 'react-error-boundary';
+import { MemoryRouter as Router } from 'react-router';
+import { Provider } from 'react-redux';
+import { Error as ErrorIcon } from './Assets/Error';
+import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
+import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
+import { FbwLogo } from './UtilComponents/FbwLogo';
+import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { NavigraphContext } from './Apis/Navigraph/Navigraph';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
@@ -22,13 +27,23 @@ import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
-import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
+import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
+import { FailureDefinition } from '../../../shared/src/failures/failures-orchestrator';
+// TODO move that to fbw-common
+import {
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+} from '../../../../../../fbw-a32nx/src/systems/sentry-client/src/FbwAircraftSentryClient';
+
+import './Assets/Efb.scss';
+import './Assets/Theme.css';
+import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -359,4 +374,71 @@ export const Efb = () => {
     }
 };
 
-export default Efb;
+interface ErrorFallbackProps {
+    resetErrorBoundary: (...args: Array<unknown>) => void;
+}
+
+export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
+    const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
+    const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
+            <div className="max-w-4xl">
+                <ErrorIcon />
+                <div className="mt-6 space-y-12">
+                    <h1 className="text-4xl font-bold">A critical error has been encountered.</h1>
+
+                    <h2 className="text-3xl">You are able to reset this tablet to recover from this error.</h2>
+
+                    {sentryEnabled === SentryConsentState.Given && (
+                        <>
+                            <h2 className="text-3xl leading-relaxed">
+                                You have opted into anonymous error reporting and this issue has been relayed to us. If you want immediate support,
+                                please share the following code to a member of staff in the #support channel on the FlyByWire Discord server:
+                            </h2>
+
+                            <h1 className="text-center text-4xl font-extrabold tracking-wider">{sessionId}</h1>
+                        </>
+                    )}
+
+                    <div
+                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
+                        onClick={resetErrorBoundary}
+                    >
+                        <h2 className="text-center font-bold text-current">Reset Display</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export interface EfbInstrumentProps {
+    failures: FailureDefinition[],
+}
+
+export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
+    const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
+
+    useEffect(
+        () => () => setSessionId(''), [],
+    );
+
+    const [err, setErr] = useState(false);
+
+    return (
+        <FailuresOrchestratorProvider failures={failures}>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+                <Router>
+                    <ModalProvider>
+                        <Provider store={store}>
+                            <Efb />
+                        </Provider>
+                    </ModalProvider>
+                </Router>
+            </ErrorBoundary>
+        </FailuresOrchestratorProvider>
+
+    );
+};

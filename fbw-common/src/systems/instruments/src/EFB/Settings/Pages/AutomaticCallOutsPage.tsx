@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
 import React from 'react';
-import { DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { pathify } from 'instruments/src/EFB/Utils/routing';
 import { t } from '../../translation';
 import { SettingItem, SettingsPage } from '../Settings';
@@ -122,8 +121,8 @@ export const AutomaticCallOutsPage = () => {
             <SettingItem name={t('Settings.AutomaticCallOuts.ResetStandardConfig')}>
                 <button
                     type="button"
-                    className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
-                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                     onClick={() => setAutoCallOuts(DEFAULT_RADIO_AUTO_CALL_OUTS)}
                 >
                     {t('Settings.AutomaticCallOuts.Reset')}

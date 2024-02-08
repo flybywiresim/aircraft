@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
-      "../typings"
+      "../typings",
+      "../../../node_modules/@types"
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,

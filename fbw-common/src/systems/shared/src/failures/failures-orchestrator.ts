@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AtaChapterNumber } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber } from '../ata';
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
@@ -11,6 +11,8 @@ export interface Failure {
     identifier: number,
     name: string,
 }
+
+export type FailureDefinition = [AtaChapterNumber, number, string];
 
 /**
  * Orchestrates the activation and deactivation of failures.
@@ -28,7 +30,7 @@ export class FailuresOrchestrator {
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
-    constructor(simVarPrefix: string, failures: [AtaChapterNumber, number, string][]) {
+    constructor(simVarPrefix: string, failures: FailureDefinition[]) {
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
         failures.forEach((failure) => {

@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
+import { NXDataStore, DEFAULT_RADIO_AUTO_CALL_OUTS } from '@flybywiresim/fbw-sdk';
 
 type SimVar = [name: string, type: string, defaultValue: string];
 type SimVarEnum = [name: string, type: string, defaultValue: string, map: Map<string, number>];
