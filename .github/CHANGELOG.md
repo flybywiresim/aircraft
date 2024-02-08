@@ -59,6 +59,7 @@
 1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
 1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
 
 ## 0.11.0
 
