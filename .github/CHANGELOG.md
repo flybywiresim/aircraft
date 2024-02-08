@@ -53,8 +53,17 @@
 1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
 1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
 1. [ND] Fixed manual/RMP tuning flags for ADFs - @tracernz (Mike)
+1. [EFCS] Freeze rudder trim when below 200 ft RA - @aguther (Andreas Guther)
+1. [AP] Tuning of Autoland especially in Crosswind situations - @aguther (Andreas Guther)
+1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
+1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
+1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
 1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
-
 
 ## 0.11.0
 

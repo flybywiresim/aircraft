@@ -26,6 +26,7 @@
 
         <!-- A380X Includes - Libraries -->
         <Include RelativeFile="behaviour\generic\buttons.xml" />
+        <Include RelativeFile="behaviour\generic\gear.xml" />
 
         <!-- A380X Includes - External Components -->
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
@@ -2080,12 +2081,12 @@
                     fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
+            <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
-                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_ON_GROUND />
+                <ANIM_LENGTH>3</ANIM_LENGTH>
             </UseTemplate>
+
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>

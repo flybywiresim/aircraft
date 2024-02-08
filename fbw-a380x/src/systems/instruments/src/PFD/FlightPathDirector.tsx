@@ -1,5 +1,5 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from './PFD';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';

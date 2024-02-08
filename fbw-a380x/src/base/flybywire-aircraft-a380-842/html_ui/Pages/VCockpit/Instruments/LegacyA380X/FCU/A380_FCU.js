@@ -194,7 +194,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isMachActive = false;
         this.textSPD = this.getTextElement('SPD');
         this.textMACH = this.getTextElement('MACH');
-        this.illuminator = this.getElement('circle', 'Illuminator');
+        this.textKNOTS = this.getTextElement('KNOTS');
         Coherent.call('AP_SPD_VAR_SET', 0, this.MIN_SPEED).catch(console.error);
         SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number', this.MIN_SPEED);
         SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 0);
@@ -313,7 +313,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn('reset due to _isManaged == true');
             }
             this.isManaged = _isManaged;
-            SimVar.SetSimVarValue('L:A32NX_FCU_SPD_MANAGED_DOT', 'boolean', this.isManaged);
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
@@ -329,12 +328,13 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
+            this.setTextElementActive(this.textKNOTS, !(this.isManaged && !this.showSelectedSpeed));
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
-                this.setElementVisibility(this.illuminator, true);
                 this.textValueContent = '.8.8.8';
                 this.setTextElementActive(this.textSPD, true);
                 this.setTextElementActive(this.textMACH, true);
+                this.setTextElementActive(this.textKNOTS, true);
                 return;
             }
             let value = _machActive ? Math.max(this.currentValue, 0) : Math.max(this.currentValue, 100);
@@ -344,7 +344,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     value = `${value.substring(0, 1)}.${value.substring(1)}`;
                 }
                 this.textValueContent = value;
-                this.setElementVisibility(this.illuminator, false);
             } else if (_isManaged || this.currentValue < 0) {
                 if (_showSelectedSpeed) {
                     if (_machActive) {
@@ -355,7 +354,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     this.textValueContent = '---';
                 }
             }
-            this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
 
@@ -555,7 +553,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textHDG = this.getTextElement('HDG');
         this.textTRK = this.getTextElement('TRK');
         this.textLAT = this.getTextElement('LAT');
-        this.illuminator = this.getElement('circle', 'Illuminator');
+        this.signDegrees = this.getTextElement('DEGREES');
         this.currentValue = -1;
         this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
         this.isSelectedValueActive = true;
@@ -698,11 +696,21 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                     }
                 }
             }
-            SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', _showSelectedHeading == true ? 1 : 0);
+
+            // ugly hack because the FG doesn't understand true heading
+            // FIXME teach the FG about true/mag
+            const correctedHeading = this.trueRef ? (_value - SimVar.GetSimVarValue('MAGVAR', 'degree')) % 360 : _value;
+
+            SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
             if (_value !== this.currentValue) {
-                SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'Degrees', _value);
-                Coherent.call('HEADING_BUG_SET', 1, Math.max(0, _value)).catch(console.error);
+                SimVar.SetSimVarValue("L:A32NX_FCU_HEADING_SELECTED", "Degrees", _value);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", correctedHeading);
+                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, correctedHeading)).catch(console.error);
+            } else if (this.trueRef) {
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", correctedHeading);
+                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, correctedHeading)).catch(console.error);
             }
+
             this.isActive = _isActive;
             this.isManagedActive = _isManagedActive;
             this.isManagedArmed = _isManagedArmed;
@@ -716,15 +724,17 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textHDG, true);
                 this.setTextElementActive(this.textTRK, true);
                 this.setTextElementActive(this.textLAT, true);
+                this.setElementVisibility(this.signDegrees, true);
                 this.textValueContent = '.8.8.8';
-                this.setElementVisibility(this.illuminator, true);
                 return;
             }
             if ((this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading) {
                 this.textValueContent = '---';
+                this.setElementVisibility(this.signDegrees, false);
             } else {
                 const value = Math.round(Math.max(this.currentValue, 0)) % 360;
                 this.textValueContent = value.toString().padStart(3, '0');
+                this.setElementVisibility(this.signDegrees, true);
             }
 
             SimVar.SetSimVarValue(
@@ -732,13 +742,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 'boolean',
                 (this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading,
             );
-            SimVar.SetSimVarValue(
-                'L:A32NX_FCU_HDG_MANAGED_DOT',
-                'boolean',
-                this.isManagedArmed || this.isManagedActive,
-            );
 
-            this.setElementVisibility(this.illuminator, this.isManagedArmed || this.isManagedActive);
         }
     }
 
@@ -892,7 +896,6 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
     }
 
     init() {
-        this.illuminator = this.getElement('circle', 'Illuminator');
         this.isActive = false;
         this.isManaged = false;
         this.currentValue = 0;
@@ -935,12 +938,10 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
                 this.textValueContent = '88888';
-                this.setElementVisibility(this.illuminator, true);
                 return;
             }
             const value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, '0');
-            this.setElementVisibility(this.illuminator, this.isManaged);
             SimVar.SetSimVarValue('L:A32NX_FCU_ALT_MANAGED', 'boolean', this.isManaged);
         }
     }
@@ -1140,14 +1141,14 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.setTextElementActive(this.textVS, !this.isFPAMode);
             this.setTextElementActive(this.textFPA, this.isFPAMode);
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
-                const sign = (this.currentValue < 0) ? '~' : '+';
+                const sign = (this.currentValue < 0) ? '-' : '+';
                 if (this.isFPAMode) {
                     let value = Math.abs(this.currentValue);
                     value = Math.round(value * 10).toString().padStart(2, '0');
                     value = `${value.substring(0, 1)}.${value.substring(1)}`;
                     this.textValueContent = sign + value;
                 } else if (this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
-                    this.textValueContent = ('{sp}00oo');
+                    this.textValueContent = ('~00oo');
                 } else {
                     let value = Math.floor(this.currentValue);
                     value = Math.abs(value);
