@@ -5,7 +5,7 @@
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
-import { getAirframeType } from '../../instruments/src/EFB/Efb';
+import { getAircraftType } from '../../../../../fbw-common/src/systems/shared/src/aircraftTypeCheck';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
@@ -105,7 +105,9 @@ export class AircraftVersionChecker {
         if (this.buildInfo) {
             return this.buildInfo;
         }
-        const aircraft = getAirframeType() === 'A380_842' ? 'a380x' : 'a32nx';
+
+        const aircraft = getAircraftType();
+
         await fetch(`/VFS/${aircraft}_build_info.json`).then((response) => {
             response.json().then((json) => {
                 this.buildInfo = ({
