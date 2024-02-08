@@ -113,66 +113,79 @@ impl FuelTestBed {
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_a(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 18000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_b(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 26000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_c(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 36000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_d(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 47000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_e(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 103788.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_f(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 158042.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_g(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 215702.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_h(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 223028.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_max(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 260059.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_min(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 0.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_50000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 50000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_100000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 100000.);
         self
     }
 
+    #[allow(dead_code)]
     fn desired_fuel_200000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 200000.);
         self
@@ -375,7 +388,7 @@ fn spawn_no_fuel_with_desired_set() {
 
 #[test]
 fn spawn_no_fuel_load_desired_instant_50000() {
-    let mut test_bed: FuelTestBed = test_bed_with()
+    let test_bed = test_bed_with()
         .desired_fuel_50000()
         .trigger_instant_refuel()
         .and_run()
@@ -386,7 +399,7 @@ fn spawn_no_fuel_load_desired_instant_50000() {
 
 #[test]
 fn spawn_high_fuel_load_desired_instant_50000() {
-    let mut test_bed = test_bed_with()
+    let test_bed = test_bed_with()
         .fuel_high()
         .desired_fuel_50000()
         .trigger_instant_refuel()
@@ -398,7 +411,7 @@ fn spawn_high_fuel_load_desired_instant_50000() {
 
 #[test]
 fn spawn_no_fuel_load_desired_instant_100000() {
-    let mut test_bed: FuelTestBed = test_bed_with()
+    let test_bed = test_bed_with()
         .desired_fuel_100000()
         .trigger_instant_refuel()
         .and_run()
@@ -409,7 +422,7 @@ fn spawn_no_fuel_load_desired_instant_100000() {
 
 #[test]
 fn spawn_no_fuel_load_desired_instant_200000() {
-    let mut test_bed: FuelTestBed = test_bed_with()
+    let test_bed = test_bed_with()
         .desired_fuel_200000()
         .trigger_instant_refuel()
         .and_run()

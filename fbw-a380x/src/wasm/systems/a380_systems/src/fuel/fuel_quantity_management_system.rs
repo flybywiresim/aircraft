@@ -523,7 +523,7 @@ impl A380FuelQuantityManagementSystem {
         );
     }
 
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub fn refuel_application(&mut self) -> &mut RefuelApplication {
         &mut self.refuel_application
     }
