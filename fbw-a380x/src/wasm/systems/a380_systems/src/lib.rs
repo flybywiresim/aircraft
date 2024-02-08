@@ -286,6 +286,7 @@ impl Aircraft for A380 {
                 &self.engine_4,
             ],
             &self.engine_fire_overhead,
+            &self.payload,
             &self.pneumatic,
             &self.pneumatic_overhead,
             &self.pressurization_overhead,

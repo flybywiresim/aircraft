@@ -1,4 +1,4 @@
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { useSimVar } from './simVars';
 
 export const useArinc429Var = (
