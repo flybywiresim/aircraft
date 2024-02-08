@@ -36,7 +36,6 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     }
 
     simbriefApiUrl.search = simbriefApiParams.toString();
-    console.log('simbriefApiUrl', simbriefApiUrl);
 
     return fetch(simbriefApiUrl.toString(), getRequestData)
         .then((res) => {
