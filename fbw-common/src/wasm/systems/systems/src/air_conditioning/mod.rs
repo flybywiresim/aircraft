@@ -198,7 +198,7 @@ impl ZoneType {
                 } else if number < &20 {
                     *number as usize - 10
                 } else {
-                    *number as usize - 13
+                    *number as usize - 12
                 }
             }
             ZoneType::Cargo(number) => *number as usize + 15,

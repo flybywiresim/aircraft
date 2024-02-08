@@ -62,7 +62,7 @@ class ElacComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_g;
+    real_T eventTime_d;
     real_T on_ground_time;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
@@ -80,8 +80,8 @@ class ElacComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_f;
-    boolean_T eventTime_not_empty_a;
+    boolean_T sProtActive_g;
+    boolean_T eventTime_not_empty_e;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_fb;
