@@ -4,8 +4,7 @@
 /* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
-import { getAircraftType } from '../../../../../fbw-common/src/systems/shared/src/aircraftTypeCheck';
+import { getAircraftType, NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
