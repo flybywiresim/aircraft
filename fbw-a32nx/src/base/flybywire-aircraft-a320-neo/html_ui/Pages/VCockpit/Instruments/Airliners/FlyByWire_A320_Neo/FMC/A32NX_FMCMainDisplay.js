@@ -2996,7 +2996,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         const origin = this.flightPlanService.active.originAirport;
 
-        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        let elevation = 0;
         if (origin) {
             elevation = origin.location.alt;
         }
