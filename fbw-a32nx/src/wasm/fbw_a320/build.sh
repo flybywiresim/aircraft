@@ -107,6 +107,10 @@ clang++ \
   "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/fac" \
   "${DIR}/src/fac/Fac.cpp" \
+  -I "${DIR}/src/fmgc" \
+  "${DIR}/src/fmgc/Fmgc.cpp" \
+  -I "${DIR}/src/fcu" \
+  "${DIR}/src/fcu/Fcu.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/utils" \
@@ -115,10 +119,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/AutopilotLaws_data.cpp" \
-  "${DIR}/src/model/AutopilotLaws.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine_data.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine.cpp" \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
@@ -133,6 +133,10 @@ clang++ \
   "${DIR}/src/model/LateralDirectLaw.cpp" \
   "${DIR}/src/model/FacComputer_data.cpp" \
   "${DIR}/src/model/FacComputer.cpp" \
+  "${DIR}/src/model/FmgcComputer_data.cpp" \
+  "${DIR}/src/model/FmgcComputer.cpp" \
+  "${DIR}/src/model/FcuComputer_data.cpp" \
+  "${DIR}/src/model/FcuComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
