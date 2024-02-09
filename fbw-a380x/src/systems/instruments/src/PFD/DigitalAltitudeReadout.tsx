@@ -92,8 +92,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
             const color = (this.mda !== 0 && altitude.value < this.mda) ? 'Amber' : 'Green';
             this.colorSub.set(color);
 
-            // const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
-            const absAlt = 24223;
+            const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
             const tensDigits = absAlt % 100;
             this.tenDigitsSub.set(tensDigits);
 
