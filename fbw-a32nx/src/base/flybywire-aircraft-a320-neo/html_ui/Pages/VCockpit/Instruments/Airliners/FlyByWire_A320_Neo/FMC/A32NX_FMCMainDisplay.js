@@ -335,7 +335,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     initVariables(resetTakeoffData = true) {
         this.costIndex = undefined;
-        // this.costIndexSet = false;
+        // this.isCostIndexSet = false;
         this.maxCruiseFL = 390;
         this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
@@ -2000,7 +2000,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                    // this.costIndexSet = true;
+                    // this.isCostIndexSet = true;
                     this.costIndex = value;
                     this.updateManagedSpeeds();
                     return true;
@@ -4986,7 +4986,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    get costIndexSet() {
+    get isCostIndexSet() {
         const plan = this.currFlightPlanService.active;
 
         if (plan) {
