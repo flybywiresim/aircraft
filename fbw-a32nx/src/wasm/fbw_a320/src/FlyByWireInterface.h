@@ -5,8 +5,6 @@
 
 #include "AdditionalData.h"
 #include "Arinc429.h"
-#include "AutopilotLaws.h"
-#include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
 #include "EngineData.h"
@@ -21,6 +19,8 @@
 #include "fac/Fac.h"
 #include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
+#include "fcu/Fcu.h"
+#include "fmgc/Fmgc.h"
 #include "sec/Sec.h"
 
 #include "utils/ConfirmNode.h"
@@ -56,13 +56,11 @@ class FlyByWireInterface {
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
 
-  bool autopilotStateMachineEnabled = false;
-  bool autopilotLawsEnabled = false;
-  bool flyByWireEnabled = false;
   int elacDisabled = -1;
   int secDisabled = -1;
   int facDisabled = -1;
-  bool autoThrustEnabled = false;
+  bool fcuDisabled = false;
+  int fmgcDisabled = -1;
   bool tailstrikeProtectionEnabled = true;
 
   ConfirmNode elac2EmerPowersupplyRelayTimer = ConfirmNode(true, 30);
@@ -116,14 +114,6 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  AutopilotStateMachine autopilotStateMachine;
-  AutopilotStateMachine::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
-  ap_raw_laws_input autopilotStateMachineOutput;
-
-  AutopilotLawsModelClass autopilotLaws;
-  AutopilotLawsModelClass::ExternalInputs_AutopilotLaws_T autopilotLawsInput = {};
-  ap_raw_output autopilotLawsOutput;
-
   Autothrust autoThrust;
   Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
@@ -134,7 +124,9 @@ class FlyByWireInterface {
 
   base_sfcc_bus sfccBusOutputs[2] = {};
 
-  base_fmgc_b_bus fmgcBBusOutputs = {};
+  base_ecu_bus fadecBusOutputs[2] = {};
+
+  base_ils_bus ilsBusOutputs[2] = {};
 
   base_adr_bus adrBusOutputs[3] = {};
   base_ir_bus irBusOutputs[3] = {};
@@ -153,6 +145,14 @@ class FlyByWireInterface {
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
   base_fcdc_bus fcdcsBusOutputs[2] = {};
 
+  Fmgc fmgcs[2] = {Fmgc(true), Fmgc(false)};
+  base_fmgc_discrete_outputs fmgcsDiscreteOutputs[2] = {};
+  base_fmgc_bus_outputs fmgcsBusOutputs[2] = {};
+
+  Fcu fcu = Fcu();
+  base_fcu_bus fcuBusOutputs = {};
+  bool fcuHealthy = false;
+
   Fac facs[2] = {Fac(true), Fac(false)};
   base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
   base_fac_analog_outputs facsAnalogOutputs[2] = {};
@@ -162,8 +162,6 @@ class FlyByWireInterface {
 
   RadioReceiver radioReceiver;
 
-  bool wasFcuInitialized = false;
-  double simulationTimeReady = 0.0;
   std::unique_ptr<LocalVariable> idIsReady;
   std::unique_ptr<LocalVariable> idStartState;
 
@@ -193,49 +191,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
 
-  std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
-
-  std::unique_ptr<LocalVariable> idFmaLateralMode;
-  std::unique_ptr<LocalVariable> idFmaLateralArmed;
-  std::unique_ptr<LocalVariable> idFmaVerticalMode;
-  std::unique_ptr<LocalVariable> idFmaVerticalArmed;
-  std::unique_ptr<LocalVariable> idFmaSoftAltModeActive;
-  std::unique_ptr<LocalVariable> idFmaCruiseAltModeActive;
-  std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
-  std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
-  std::unique_ptr<LocalVariable> idFmaApproachCapability;
-  std::unique_ptr<LocalVariable> idFmaTripleClick;
-  std::unique_ptr<LocalVariable> idFmaModeReversion;
-
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageDisarm;
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageRaInhibited;
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageTrkFpaDeselection;
-
-  std::unique_ptr<LocalVariable> idFlightDirectorBank;
-  std::unique_ptr<LocalVariable> idFlightDirectorPitch;
-  std::unique_ptr<LocalVariable> idFlightDirectorYaw;
-
-  std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
-
-  std::unique_ptr<LocalVariable> idAutopilotActiveAny;
-  std::unique_ptr<LocalVariable> idAutopilotActive_1;
-  std::unique_ptr<LocalVariable> idAutopilotActive_2;
-
-  std::unique_ptr<LocalVariable> idAutopilotAutothrustMode;
-
   std::unique_ptr<LocalVariable> idAutopilot_H_dot_radio;
-
-  std::unique_ptr<LocalVariable> idFcuTrkFpaModeActive;
-  std::unique_ptr<LocalVariable> idFcuSelectedFpa;
-  std::unique_ptr<LocalVariable> idFcuSelectedVs;
-  std::unique_ptr<LocalVariable> idFcuSelectedHeading;
-
-  std::unique_ptr<LocalVariable> idFcuLocModeActive;
-  std::unique_ptr<LocalVariable> idFcuApprModeActive;
-  std::unique_ptr<LocalVariable> idFcuHeadingSync;
-  std::unique_ptr<LocalVariable> idFcuModeReversionActive;
-  std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
-  std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
 
   std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
@@ -568,6 +524,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecBat1HotBusPowered;
   std::unique_ptr<LocalVariable> idElecBat2HotBusPowered;
 
+  std::unique_ptr<LocalVariable> idElecBtc1Closed;
+  std::unique_ptr<LocalVariable> idElecBtc2Closed;
+  std::unique_ptr<LocalVariable> idElecDcBatToDc2ContactorClosed;
+
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
   std::unique_ptr<LocalVariable> idHydBlueSystemPressure;
@@ -578,10 +538,89 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
+  // FMGC discrete output Lvars
+  std::unique_ptr<LocalVariable> idFmgcHealthy[2];
+  std::unique_ptr<LocalVariable> idFmgcAthrEngaged[2];
+  std::unique_ptr<LocalVariable> idFmgcFdEngaged[2];
+  std::unique_ptr<LocalVariable> idFmgcApEngaged[2];
+
+  // FMGC A Bus output Lvars
+  std::unique_ptr<LocalVariable> idFmgcABusPfdSelectedSpeed[2];
+  std::unique_ptr<LocalVariable> idFmgcABusRollFdCommand[2];
+  std::unique_ptr<LocalVariable> idFmgcABusPitchFdCommand[2];
+  std::unique_ptr<LocalVariable> idFmgcABusYawFdCommand[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFmgcABusAtsDiscreteWord[2];
+  std::unique_ptr<LocalVariable> idFmgcABusAtsFmaDiscreteWord[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord6[2];
+
+  std::unique_ptr<LocalVariable> idLightsTest;
+
+  std::unique_ptr<LocalVariable> idFcuSelectedHeading;
+  std::unique_ptr<LocalVariable> idFcuSelectedAltitude;
+  std::unique_ptr<LocalVariable> idFcuSelectedAirspeed;
+  std::unique_ptr<LocalVariable> idFcuSelectedVerticalSpeed;
+  std::unique_ptr<LocalVariable> idFcuSelectedTrack;
+  std::unique_ptr<LocalVariable> idFcuSelectedFpa;
+  std::unique_ptr<LocalVariable> idFcuAtsDiscreteWord;
+  std::unique_ptr<LocalVariable> idFcuAtsFmaDiscreteWord;
+  std::unique_ptr<LocalVariable> idFcuEisLeftDiscreteWord1;
+  std::unique_ptr<LocalVariable> idFcuEisLeftDiscreteWord2;
+  std::unique_ptr<LocalVariable> idFcuEisLeftBaro;
+  std::unique_ptr<LocalVariable> idFcuEisLeftBaroHpa;
+  std::unique_ptr<LocalVariable> idFcuEisRightDiscreteWord1;
+  std::unique_ptr<LocalVariable> idFcuEisRightDiscreteWord2;
+  std::unique_ptr<LocalVariable> idFcuEisRightBaro;
+  std::unique_ptr<LocalVariable> idFcuEisRightBaroHpa;
+  std::unique_ptr<LocalVariable> idFcuDiscreteWord1;
+  std::unique_ptr<LocalVariable> idFcuDiscreteWord2;
+
+  std::unique_ptr<LocalVariable> idFcuEisPanelEfisMode[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelEfisRange[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelNavaid1Mode[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelNavaid2Mode[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelBaroIsInhg[2];
+
+  std::unique_ptr<LocalVariable> idFcuEisPanelFdLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelLsLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelCstrLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelWptLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelVordLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelNdbLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelArptLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroValueMode[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroValue[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroMode[2];
+
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAltIncrement1000;
+
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAp1LightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAp2LightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAthrLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelLocLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelExpedLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelApprLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayTrkFpaMode;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayMachMode;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplaySpdMachValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplaySpdMachDashes;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplaySpdMachManaged;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayHdgTrkValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayHdgTrkDashes;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayHdgTrkManaged;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayAltValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayLvlChManaged;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayVsFpaValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayVsFpaDashes;
+
+  std::unique_ptr<LocalVariable> idFcuHealthy;
+
   void loadConfiguration();
   void setupLocalVariables();
-
-  bool handleFcuInitialization(double sampleTime);
 
   bool readDataAndLocalVariables(double sampleTime);
 
@@ -593,8 +632,6 @@ class FlyByWireInterface {
   bool updateEngineData(double sampleTime);
   bool updateAdditionalData(double sampleTime);
 
-  bool updateAutopilotStateMachine(double sampleTime);
-  bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
@@ -604,6 +641,10 @@ class FlyByWireInterface {
 
   bool updateSfcc(int sfccIndex);
 
+  bool updateFadec(int fadecIndex);
+
+  bool updateIls(int ilsIndex);
+
   bool updateAdirs(int adirsIndex);
 
   bool updateElac(double sampleTime, int elacIndex);
@@ -612,13 +653,15 @@ class FlyByWireInterface {
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
 
+  bool updateFmgc(double sampleTime, int fmgcIndex);
+
+  bool updateFcu(double sampleTime);
+
   bool updateFac(double sampleTime, int facIndex);
 
   bool updateServoSolenoidStatus();
 
   bool updateSpoilers(double sampleTime);
-
-  bool updateFoSide(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 

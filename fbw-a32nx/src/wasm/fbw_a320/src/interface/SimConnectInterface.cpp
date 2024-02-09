@@ -12,12 +12,11 @@ SimInput SimConnectInterface::simInput = {};
 double SimConnectInterface::flightControlsKeyChangeAileron = 0.0;
 
 bool SimConnectInterface::connect(bool clientDataEnabled,
-                                  bool autopilotStateMachineEnabled,
-                                  bool autopilotLawsEnabled,
-                                  bool flyByWireEnabled,
                                   int elacDisabled,
                                   int secDisabled,
                                   int facDisabled,
+                                  int fmgcDisabled,
+                                  bool fcuDisabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   double keyChangeAileron,
@@ -51,6 +50,8 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     this->elacDisabled = elacDisabled;
     this->secDisabled = secDisabled;
     this->facDisabled = facDisabled;
+    this->fmgcDisabled = fmgcDisabled;
+    this->fcuDisabled = fcuDisabled;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
@@ -307,7 +308,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_ON, "AUTOPILOT_ON", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_TOGGLE, "AUTOPILOT_DISENGAGE_TOGGLE", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_DISCONNECT_PUSH, "A32NX.FCU_AP_DISCONNECT_PUSH", false);
@@ -315,36 +315,49 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ATHR_DISCONNECT_PUSH, "A32NX.FCU_ATHR_DISCONNECT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_INC, "A32NX.FCU_SPD_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_DEC, "A32NX.FCU_SPD_DEC", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_SET, "A32NX.FCU_SPD_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PUSH, "A32NX.FCU_SPD_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PULL, "A32NX.FCU_SPD_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH, "A32NX.FCU_SPD_MACH_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_INC, "A32NX.FCU_HDG_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_DEC, "A32NX.FCU_HDG_DEC", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_SET, "A32NX.FCU_HDG_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PUSH, "A32NX.FCU_HDG_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PULL, "A32NX.FCU_HDG_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH, "A32NX.FCU_TRK_FPA_TOGGLE_PUSH", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_HDG_PUSH, "A32NX.FCU_TO_AP_HDG_PUSH", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_HDG_PULL, "A32NX.FCU_TO_AP_HDG_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_SET, "A32NX.FCU_ALT_SET", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_TOGGLE, "A32NX.FCU_ALT_INCREMENT_TOGGLE", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_SET, "A32NX.FCU_ALT_INCREMENT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PULL, "A32NX.FCU_ALT_PULL", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_METRIC_ALT_TOGGLE_PUSH, "A32NX.FCU_METRIC_ALT_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_INC, "A32NX.FCU_VS_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_DEC, "A32NX.FCU_VS_DEC", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_SET, "A32NX.FCU_VS_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PUSH, "A32NX.FCU_VS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PULL, "A32NX.FCU_VS_PULL", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_VS_PUSH, "A32NX.FCU_TO_AP_VS_PUSH", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_VS_PULL, "A32NX.FCU_TO_AP_VS_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_LOC_PUSH, "A32NX.FCU_LOC_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EXPED_PUSH, "A32NX.FCU_EXPED_PUSH", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_FD_PUSH, "A32NX.FCU_EFIS_L_FD_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_LS_PUSH, "A32NX.FCU_EFIS_L_LS_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_INC, "A32NX.FCU_EFIS_L_BARO_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_DEC, "A32NX.FCU_EFIS_L_BARO_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_PUSH, "A32NX.FCU_EFIS_L_BARO_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_PULL, "A32NX.FCU_EFIS_L_BARO_PULL", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_CSTR_PUSH, "A32NX.FCU_EFIS_L_CSTR_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_WPT_PUSH, "A32NX.FCU_EFIS_L_WPT_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_VORD_PUSH, "A32NX.FCU_EFIS_L_VORD_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NDB_PUSH, "A32NX.FCU_EFIS_L_NDB_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_ARPT_PUSH, "A32NX.FCU_EFIS_L_ARPT_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_FD_PUSH, "A32NX.FCU_EFIS_R_FD_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_LS_PUSH, "A32NX.FCU_EFIS_R_LS_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_INC, "A32NX.FCU_EFIS_R_BARO_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_DEC, "A32NX.FCU_EFIS_R_BARO_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_PUSH, "A32NX.FCU_EFIS_R_BARO_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_PULL, "A32NX.FCU_EFIS_R_BARO_PULL", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_CSTR_PUSH, "A32NX.FCU_EFIS_R_CSTR_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_WPT_PUSH, "A32NX.FCU_EFIS_R_WPT_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_VORD_PUSH, "A32NX.FCU_EFIS_R_VORD_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NDB_PUSH, "A32NX.FCU_EFIS_R_NDB_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_ARPT_PUSH, "A32NX.FCU_EFIS_R_ARPT_PUSH", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
@@ -473,151 +486,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 bool SimConnectInterface::prepareClientDataDefinitions() {
   // variable for result
   HRESULT result;
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result = SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_STATE_MACHINE", ClientData::AUTOPILOT_STATE_MACHINE);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, sizeof(ClientDataAutopilotStateMachine),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
-                                         ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_LAWS", ClientData::AUTOPILOT_LAWS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, sizeof(ClientDataAutopilotLaws),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOTHRUST", ClientData::AUTOTHRUST);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOTHRUST, sizeof(ClientDataAutothrust),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -780,14 +648,29 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   for (int i = 0; i < 2; i++) {
-    auto defineId = ClientData::FMGC_1_B_BUS + i;
+    auto defineId = ClientData::ILS_1_BUS + i;
+    // map client id
+    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_ILS_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_ils_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    for (int i = 0; i < 4; i++) {
+      result &=
+          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::FADEC_1_BUS + i;
     // map client id
     result &=
-        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FMGC_" + std::to_string(i + 1) + "_B_BUS").c_str(), defineId);
+        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FADEC_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
     // create client data
-    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fmgc_b_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_ecu_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 2; i++) {
       result &=
           SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
     }
@@ -958,147 +841,109 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES", ClientData::LOCAL_VARIABLES);
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FCU_BUS", ClientData::FCU_BUS_OUTPUT);
   // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FCU_BUS_OUTPUT, sizeof(base_fcu_bus),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  for (int i = 0; i < 21; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FCU_BUS_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // request data to be updated when set
+  if (fcuDisabled) {
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::FCU_BUS_OUTPUT, ClientData::FCU_BUS_OUTPUT, ClientData::FCU_BUS_OUTPUT,
+                                           SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
 
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result &=
-      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES_AUTOTHRUST", ClientData::LOCAL_VARIABLES_AUTOTHRUST);
-  // create client
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(ClientDataLocalVariablesAutothrust),
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FMGC_DISCRETE_INPUT", ClientData::FMGC_DISCRETE_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FMGC_DISCRETE_INPUTS, sizeof(base_fmgc_discrete_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  for (int i = 0; i < 34; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FMS_INPUT", ClientData::FMGC_FMS_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FMGC_FMS_INPUTS, sizeof(base_fms_inputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+
+  // Struct size is 184 bytes due to struct padding. Thus, we cannot just give the correct datatypes, but instead just
+  // pass 23 8byte f64's.
+  for (int i = 0; i < 23; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_FMS_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FMGC_DISCRETES_OUTPUT", ClientData::FMGC_DISCRETE_OUTPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, sizeof(base_fmgc_discrete_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  for (int i = 0; i < 6; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
+  }
+
+  // request data to be updated when set
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, ClientData::FMGC_DISCRETE_OUTPUTS,
+                                         ClientData::FMGC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::FMGC_1_BUS_A_OUTPUT + i;
+    // map client id
+    result &=
+        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FMGC_" + std::to_string(i + 1) + "_A_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fmgc_a_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    for (int i = 0; i < 33; i++) {
+      result &=
+          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+    }
+
+    // request data to be updated when set
+    if (i == fmgcDisabled) {
+      result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::FMGC_1_BUS_B_OUTPUT + i;
+    // map client id
+    result &=
+        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FMGC_" + std::to_string(i + 1) + "_B_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fmgc_b_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    for (int i = 0; i < 18; i++) {
+      result &=
+          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+    }
+
+    // request data to be updated when set
+    if (i == fmgcDisabled) {
+      result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+    }
+  }
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -1189,16 +1034,6 @@ bool SimConnectInterface::sendEvent(Events eventId, DWORD data, DWORD priority) 
   return true;
 }
 
-bool SimConnectInterface::setClientDataLocalVariables(ClientDataLocalVariables output) {
-  // write data and return result
-  return sendClientData(ClientData::LOCAL_VARIABLES, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output) {
-  // write data and return result
-  return sendClientData(ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(output), &output);
-}
-
 SimData SimConnectInterface::getSimData() {
   return simData;
 }
@@ -1209,6 +1044,14 @@ SimInput SimConnectInterface::getSimInput() {
 
 SimInputAutopilot SimConnectInterface::getSimInputAutopilot() {
   return simInputAutopilot;
+}
+
+base_fcu_afs_panel_inputs SimConnectInterface::getFcuAfsPanelInputs() {
+  return fcuAfsPanelInputs;
+}
+
+base_fcu_efis_panel_inputs SimConnectInterface::getFcuEfisPanelInputs(int side) {
+  return fcuEfisPanelInputs[side];
 }
 
 SimInputRudderTrim SimConnectInterface::getSimInputRudderTrim() {
@@ -1236,6 +1079,48 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.DIR_TO_trigger = 0;
 }
 
+void SimConnectInterface::resetFcuFrontPanelInputs() {
+  fcuEfisPanelInputs[0].baro_knob.pushed = false;
+  fcuEfisPanelInputs[0].baro_knob.pulled = false;
+  fcuEfisPanelInputs[0].baro_knob.turns = 0;
+  fcuEfisPanelInputs[0].fd_button_pushed = false;
+  fcuEfisPanelInputs[0].ls_button_pushed = false;
+  fcuEfisPanelInputs[0].cstr_button_pushed = false;
+  fcuEfisPanelInputs[0].wpt_button_pushed = false;
+  fcuEfisPanelInputs[0].vord_button_pushed = false;
+  fcuEfisPanelInputs[0].ndb_button_pushed = false;
+  fcuEfisPanelInputs[0].arpt_button_pushed = false;
+  fcuEfisPanelInputs[1].baro_knob.pushed = false;
+  fcuEfisPanelInputs[1].baro_knob.pulled = false;
+  fcuEfisPanelInputs[1].baro_knob.turns = 0;
+  fcuEfisPanelInputs[1].fd_button_pushed = false;
+  fcuEfisPanelInputs[1].ls_button_pushed = false;
+  fcuEfisPanelInputs[1].cstr_button_pushed = false;
+  fcuEfisPanelInputs[1].wpt_button_pushed = false;
+  fcuEfisPanelInputs[1].vord_button_pushed = false;
+  fcuEfisPanelInputs[1].ndb_button_pushed = false;
+  fcuEfisPanelInputs[1].arpt_button_pushed = false;
+  fcuAfsPanelInputs.loc_button_pressed = false;
+  fcuAfsPanelInputs.exped_button_pressed = false;
+  fcuAfsPanelInputs.appr_button_pressed = false;
+  fcuAfsPanelInputs.spd_mach_button_pressed = false;
+  fcuAfsPanelInputs.trk_fpa_button_pressed = false;
+  fcuAfsPanelInputs.metric_alt_button_pressed = false;
+  fcuAfsPanelInputs.spd_knob.pushed = false;
+  fcuAfsPanelInputs.spd_knob.pulled = false;
+  fcuAfsPanelInputs.spd_knob.turns = 0;
+  fcuAfsPanelInputs.hdg_trk_knob.pushed = false;
+  fcuAfsPanelInputs.hdg_trk_knob.pulled = false;
+  fcuAfsPanelInputs.hdg_trk_knob.turns = 0;
+  fcuAfsPanelInputs.alt_knob.pushed = false;
+  fcuAfsPanelInputs.alt_knob.pulled = false;
+  fcuAfsPanelInputs.alt_knob.turns = 0;
+  fcuAfsPanelInputs.alt_increment_1000 = false;
+  fcuAfsPanelInputs.vs_fpa_knob.pushed = false;
+  fcuAfsPanelInputs.vs_fpa_knob.pulled = false;
+  fcuAfsPanelInputs.vs_fpa_knob.turns = 0;
+}
+
 void SimConnectInterface::resetSimInputRudderTrim() {
   simInputRudderTrim.rudderTrimSwitchLeft = false;
   simInputRudderTrim.rudderTrimSwitchRight = false;
@@ -1246,32 +1131,6 @@ void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_push = 0;
   simInputThrottles.ATHR_disconnect = 0;
   simInputThrottles.ATHR_reset_disable = 0;
-}
-
-bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws output) {
-  // write data and return result
-  return sendClientData(ClientData::AUTOPILOT_LAWS, sizeof(output), &output);
-}
-
-ClientDataAutopilotLaws SimConnectInterface::getClientDataAutopilotLaws() {
-  return clientDataAutopilotLaws;
-}
-
-bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output) {
-  // write data and return result
-  return sendClientData(ClientData::AUTOPILOT_STATE_MACHINE, sizeof(output), &output);
-}
-
-ClientDataAutopilotStateMachine SimConnectInterface::getClientDataAutopilotStateMachine() {
-  return clientDataAutopilotStateMachine;
-}
-
-ClientDataAutothrust SimConnectInterface::getClientDataAutothrust() {
-  return clientDataAutothrust;
-}
-
-ClientDataFlyByWire SimConnectInterface::getClientDataFlyByWire() {
-  return clientDataFlyByWire;
 }
 
 bool SimConnectInterface::setClientDataElacDiscretes(base_elac_discrete_inputs output) {
@@ -1314,6 +1173,26 @@ bool SimConnectInterface::setClientDataFacBus(base_fac_bus output, int facIndex)
   return sendClientData(ClientData::FAC_1_BUS_OUTPUT + facIndex, sizeof(output), &output);
 }
 
+bool SimConnectInterface::setClientDataFcuBus(base_fcu_bus output) {
+  return sendClientData(ClientData::FCU_BUS_OUTPUT, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFmgcDiscretes(base_fmgc_discrete_inputs output) {
+  return sendClientData(ClientData::FMGC_DISCRETE_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFmgcFmsData(base_fms_inputs output) {
+  return sendClientData(ClientData::FMGC_FMS_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFmgcABus(base_fmgc_a_bus output, int fmgcIndex) {
+  return sendClientData(ClientData::FMGC_1_BUS_A_OUTPUT + fmgcIndex, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFmgcBBus(base_fmgc_b_bus output, int fmgcIndex) {
+  return sendClientData(ClientData::FMGC_1_BUS_B_OUTPUT + fmgcIndex, sizeof(output), &output);
+}
+
 base_elac_discrete_outputs SimConnectInterface::getClientDataElacDiscretesOutput() {
   return clientDataElacDiscreteOutputs;
 }
@@ -1350,6 +1229,22 @@ base_fac_bus SimConnectInterface::getClientDataFacBusOutput() {
   return clientDataFacBusOutputs;
 }
 
+base_fcu_bus SimConnectInterface::getClientDataFcuBusOutput() {
+  return clientDataFcuBusOutputs;
+}
+
+base_fmgc_discrete_outputs SimConnectInterface::getClientDataFmgcDiscretesOutput() {
+  return clientDataFmgcDiscreteOutputs;
+}
+
+base_fmgc_a_bus SimConnectInterface::getClientDataFmgcABusOutput() {
+  return clientDataFmgcABusOutputs;
+}
+
+base_fmgc_b_bus SimConnectInterface::getClientDataFmgcBBusOutput() {
+  return clientDataFmgcBBusOutputs;
+}
+
 bool SimConnectInterface::setClientDataAdr(base_adr_bus output, int adrIndex) {
   return sendClientData(ClientData::ADR_1_INPUTS + adrIndex, sizeof(output), &output);
 }
@@ -1370,8 +1265,12 @@ bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus output, int sfccIndex)
   return sendClientData(ClientData::SFCC_1_BUS + sfccIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataFmgcB(base_fmgc_b_bus output, int fmgcIndex) {
-  return sendClientData(ClientData::FMGC_1_B_BUS + fmgcIndex, sizeof(output), &output);
+bool SimConnectInterface::setClientDataIls(base_ils_bus output, int ilsIndex) {
+  return sendClientData(ClientData::ILS_1_BUS + ilsIndex, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFadec(base_ecu_bus output, int fadecIndex) {
+  return sendClientData(ClientData::FADEC_1_BUS + fadecIndex, sizeof(output), &output);
 }
 
 void SimConnectInterface::setLoggingFlightControlsEnabled(bool enabled) {
@@ -1787,11 +1686,6 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
-    case Events::TOGGLE_FLIGHT_DIRECTOR: {
-      std::cout << "WASM: event triggered: TOGGLE_FLIGHT_DIRECTOR:" << static_cast<long>(data0) << std::endl;
-      break;
-    }
-
     case Events::AP_MASTER: {
       simInputAutopilot.AP_1_push = 1;
       std::cout << "WASM: event triggered: AP_MASTER" << std::endl;
@@ -1843,273 +1737,279 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     case Events::A32NX_FCU_SPD_INC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_INC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_SPD_DEC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_DEC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_DEC" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_SPD_SET: {
-      idFcuEventSetSPEED->set(static_cast<long>(data0));
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_SET)", nullptr, nullptr, nullptr);
-      std::cout << "WASM: event triggered: A32NX_FCU_SPD_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_SPD_PUSH:
     case Events::AP_AIRSPEED_ON: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_PUSH)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_SPD_PULL:
     case Events::AP_AIRSPEED_OFF: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_PULL)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_PULL" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH:
     case Events::AP_MACH_HOLD: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_mach_button_pressed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_MACH_TOGGLE_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_HDG_INC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_INC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_INC_HEADING) }",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_HDG_DEC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_DEC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_DEC_HEADING) }",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_DEC" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_HDG_SET: {
-      idFcuEventSetHDG->set(static_cast<long>(data0));
-      execute_calculator_code("(>H:A320_Neo_FCU_HDG_SET)", nullptr, nullptr, nullptr);
-      std::cout << "WASM: event triggered: A32NX_FCU_HDG_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_HDG_PUSH:
     case Events::AP_HDG_HOLD_ON: {
-      execute_calculator_code("(>H:A320_Neo_FCU_HDG_PUSH)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_HDG_PULL:
     case Events::AP_HDG_HOLD_OFF: {
-      execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_PULL" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH:
     case Events::AP_VS_HOLD: {
-      execute_calculator_code("(L:A32NX_TRK_FPA_MODE_ACTIVE) ! (>L:A32NX_TRK_FPA_MODE_ACTIVE)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.trk_fpa_button_pressed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_TRK_FPA_TOGGLE_PUSH" << std::endl;
       break;
     }
 
-    case Events::A32NX_FCU_TO_AP_HDG_PUSH: {
-      simInputAutopilot.HDG_push = 1;
-      std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_HDG_PUSH" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_TO_AP_HDG_PULL: {
-      simInputAutopilot.HDG_pull = 1;
-      std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_HDG_PULL" << std::endl;
-      break;
-    }
-
     case Events::A32NX_FCU_ALT_INC: {
-      long increment = static_cast<long>(data0);
-      if (increment == 100) {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
-            "100 % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
-            "(>H:A320_Neo_CDU_AP_INC_ALT)",
-            nullptr, nullptr, nullptr);
-      } else if (increment == 1000) {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
-            "1000 % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
-            "(>H:A320_Neo_CDU_AP_INC_ALT)",
-            nullptr, nullptr, nullptr);
-      } else {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
-            "(L:XMLVAR_Autopilot_Altitude_Increment) % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
-            "(>H:A320_Neo_CDU_AP_INC_ALT)",
-            nullptr, nullptr, nullptr);
-      }
+      fcuAfsPanelInputs.alt_knob.turns = 1;
+
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_ALT_DEC: {
-      long increment = static_cast<long>(data0);
-      if (increment == 100) {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 - 100 "
-            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 % - 100 % "
-            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
-            nullptr, nullptr, nullptr);
-      } else if (increment == 1000) {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 - 1000 "
-            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 % - 1000 % "
-            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
-            nullptr, nullptr, nullptr);
-      } else {
-        execute_calculator_code(
-            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) - (L:XMLVAR_Autopilot_Altitude_Increment) "
-            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) % - (L:XMLVAR_Autopilot_Altitude_Increment) "
-            "% "
-            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
-            nullptr, nullptr, nullptr);
-      }
+      fcuAfsPanelInputs.alt_knob.turns = -1;
+
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_DEC" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_ALT_SET: {
-      long value = 100 * (static_cast<long>(data0) / 100);
-      std::ostringstream stringStream;
-      stringStream << value;
-      stringStream << " (>K:3:AP_ALT_VAR_SET_ENGLISH)";
-      execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
-      std::cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << value << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE:
-    case Events::AP_ALT_HOLD: {
-      execute_calculator_code(
-          "(L:XMLVAR_Autopilot_Altitude_Increment, number) 100 == "
-          "if{ 1000 (>L:XMLVAR_Autopilot_Altitude_Increment) } "
-          "els{ 100 (>L:XMLVAR_Autopilot_Altitude_Increment) }",
-          nullptr, nullptr, nullptr);
-      std::cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_TOGGLE" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_ALT_INCREMENT_SET: {
-      long value = static_cast<long>(data0);
-      if (value == 100 || value == 1000) {
-        std::ostringstream stringStream;
-        stringStream << value;
-        stringStream << " (>L:XMLVAR_Autopilot_Altitude_Increment)";
-        execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
-        std::cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_SET: " << value << std::endl;
-      }
       break;
     }
 
     case Events::A32NX_FCU_ALT_PUSH:
     case Events::AP_ALT_HOLD_ON: {
-      simInputAutopilot.ALT_push = 1;
-      execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.alt_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_ALT_PULL:
     case Events::AP_ALT_HOLD_OFF: {
-      simInputAutopilot.ALT_pull = 1;
-      execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.alt_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_PULL" << std::endl;
       break;
     }
 
+    case Events::A32NX_FCU_METRIC_ALT_TOGGLE_PUSH: {
+      fcuAfsPanelInputs.metric_alt_button_pressed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_METRIC_ALT_TOGGLE_PUSH" << std::endl;
+      break;
+    }
+
     case Events::A32NX_FCU_VS_INC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_INC_FPA) } els{ (>H:A320_Neo_FCU_VS_INC_VS) } "
-          "(>H:A320_Neo_CDU_VS)",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_VS_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_VS_DEC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_DEC_FPA) } els{ (>H:A320_Neo_FCU_VS_DEC_VS) } "
-          "(>H:A320_Neo_CDU_VS)",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_VS_DEC" << std::endl;
-      break;
-    }
-
-    case Events::A32NX_FCU_VS_SET: {
-      idFcuEventSetVS->set(static_cast<long>(data0));
-      execute_calculator_code("(>H:A320_Neo_FCU_VS_SET) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
-      std::cout << "WASM: event triggered: A32NX_FCU_VS_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_VS_PUSH:
     case Events::AP_VS_ON: {
-      execute_calculator_code("(>H:A320_Neo_FCU_VS_PUSH) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_VS_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_VS_PULL:
     case Events::AP_VS_OFF: {
-      execute_calculator_code("(>H:A320_Neo_FCU_VS_PULL) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_VS_PULL" << std::endl;
       break;
     }
 
-    case Events::A32NX_FCU_TO_AP_VS_PUSH: {
-      simInputAutopilot.VS_push = 1;
-      std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_VS_PUSH" << std::endl;
-      break;
-    }
-    case Events::A32NX_FCU_TO_AP_VS_PULL: {
-      simInputAutopilot.VS_pull = 1;
-      std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_VS_PULL" << std::endl;
-      break;
-    }
-
     case Events::A32NX_FCU_LOC_PUSH: {
-      simInputAutopilot.LOC_push = 1;
+      fcuAfsPanelInputs.loc_button_pressed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_LOC_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_APPR_PUSH: {
-      simInputAutopilot.APPR_push = 1;
+      fcuAfsPanelInputs.appr_button_pressed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_APPR_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EXPED_PUSH:
     case Events::AP_ATT_HOLD: {
-      simInputAutopilot.EXPED_push = 1;
+      fcuAfsPanelInputs.exped_button_pressed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EXPED_PUSH" << std::endl;
       break;
     }
 
-    case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
-      simInputAutopilot.DIR_TO_trigger = 1;
-      std::cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << std::endl;
+    case Events::A32NX_FCU_EFIS_L_FD_PUSH: {
+      fcuEfisPanelInputs[0].fd_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_FD_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_LS_PUSH: {
+      fcuEfisPanelInputs[0].ls_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_LS_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_BARO_INC: {
+      fcuEfisPanelInputs[0].baro_knob.turns = 1;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_INC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
+      fcuEfisPanelInputs[0].baro_knob.turns = -1;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_BARO_PUSH: {
+      fcuEfisPanelInputs[0].baro_knob.pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_BARO_PULL: {
+      fcuEfisPanelInputs[0].baro_knob.pulled = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PULL" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_CSTR_PUSH: {
+      fcuEfisPanelInputs[0].cstr_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_CSTR_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_WPT_PUSH: {
+      fcuEfisPanelInputs[0].wpt_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_WPT_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_VORD_PUSH: {
+      fcuEfisPanelInputs[0].vord_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_VORD_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_NDB_PUSH: {
+      fcuEfisPanelInputs[0].ndb_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NDB_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_ARPT_PUSH: {
+      fcuEfisPanelInputs[0].arpt_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_ARPT_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_FD_PUSH: {
+      fcuEfisPanelInputs[1].fd_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_FD_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_LS_PUSH: {
+      fcuEfisPanelInputs[1].ls_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_LS_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_BARO_INC: {
+      fcuEfisPanelInputs[1].baro_knob.turns = 1;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_INC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_BARO_DEC: {
+      fcuEfisPanelInputs[1].baro_knob.turns = -1;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_BARO_PUSH: {
+      fcuEfisPanelInputs[1].baro_knob.pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_BARO_PULL: {
+      fcuEfisPanelInputs[1].baro_knob.pulled = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PULL" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_CSTR_PUSH: {
+      fcuEfisPanelInputs[1].cstr_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_CSTR_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_WPT_PUSH: {
+      fcuEfisPanelInputs[1].wpt_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_WPT_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_VORD_PUSH: {
+      fcuEfisPanelInputs[1].vord_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_VORD_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_NDB_PUSH: {
+      fcuEfisPanelInputs[1].ndb_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NDB_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_ARPT_PUSH: {
+      fcuEfisPanelInputs[1].arpt_button_pushed = true;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_ARPT_PUSH" << std::endl;
       break;
     }
 
@@ -2797,21 +2697,6 @@ void SimConnectInterface::simConnectProcessSimObjectData(const SIMCONNECT_RECV_S
 void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
   // process depending on request id
   switch (data->dwRequestID) {
-    case ClientData::AUTOPILOT_STATE_MACHINE:
-      // store aircraft data
-      clientDataAutopilotStateMachine = *((ClientDataAutopilotStateMachine*)&data->dwData);
-      return;
-
-    case ClientData::AUTOPILOT_LAWS:
-      // store aircraft data
-      clientDataAutopilotLaws = *((ClientDataAutopilotLaws*)&data->dwData);
-      return;
-
-    case ClientData::AUTOTHRUST:
-      // store aircraft data
-      clientDataAutothrust = *((ClientDataAutothrust*)&data->dwData);
-      return;
-
     case ClientData::ELAC_DISCRETE_OUTPUTS:
       // store aircraft data
       clientDataElacDiscreteOutputs = *((base_elac_discrete_outputs*)&data->dwData);
@@ -2870,6 +2755,36 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::FAC_2_BUS_OUTPUT:
       // store aircraft data
       clientDataFacBusOutputs = *((base_fac_bus*)&data->dwData);
+      return;
+
+    case ClientData::FCU_BUS_OUTPUT:
+      // store aircraft data
+      clientDataFcuBusOutputs = *((base_fcu_bus*)&data->dwData);
+      return;
+
+    case ClientData::FMGC_DISCRETE_OUTPUTS:
+      // store aircraft data
+      clientDataFmgcDiscreteOutputs = *((base_fmgc_discrete_outputs*)&data->dwData);
+      return;
+
+    case ClientData::FMGC_1_BUS_A_OUTPUT:
+      // store aircraft data
+      clientDataFmgcABusOutputs = *((base_fmgc_a_bus*)&data->dwData);
+      return;
+
+    case ClientData::FMGC_2_BUS_A_OUTPUT:
+      // store aircraft data
+      clientDataFmgcABusOutputs = *((base_fmgc_a_bus*)&data->dwData);
+      return;
+
+    case ClientData::FMGC_1_BUS_B_OUTPUT:
+      // store aircraft data
+      clientDataFmgcBBusOutputs = *((base_fmgc_b_bus*)&data->dwData);
+      return;
+
+    case ClientData::FMGC_2_BUS_B_OUTPUT:
+      // store aircraft data
+      clientDataFmgcBBusOutputs = *((base_fmgc_b_bus*)&data->dwData);
       return;
 
     default:
