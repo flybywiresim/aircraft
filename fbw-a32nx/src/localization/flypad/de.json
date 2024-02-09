@@ -600,7 +600,7 @@
         "SettingTitle": "Navigraph-Kontolink",
         "SubscriptionStatus": {
           "None": "Keine Navigraph Subscription",
-          "Unknown": "Unknown",
+          "Unknown": "Unbekannt",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Kontoverknüpfung aufheben"
