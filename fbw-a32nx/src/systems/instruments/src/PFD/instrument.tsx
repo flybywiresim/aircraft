@@ -7,11 +7,12 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
 
@@ -26,7 +27,9 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly arincProvider: ArincValueProvider;
 
-  private readonly simplaneValueProvider: SimplaneValueProvider;
+  private readonly fgBusProvider: FgBusProvider;
+
+  private readonly fcuBusProvider: FcuBusProvider;
 
   private readonly clock: Clock;
 
@@ -50,7 +53,8 @@ class A32NX_PFD extends BaseInstrument {
     this.simVarPublisher = new PFDSimvarPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.arincProvider = new ArincValueProvider(this.bus);
-    this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
+    this.fgBusProvider = new FgBusProvider(this.bus);
+    this.fcuBusProvider = new FcuBusProvider(this.bus);
     this.clock = new Clock(this.bus);
     this.dmcPublisher = new DmcPublisher(this.bus);
   }
@@ -80,6 +84,8 @@ class A32NX_PFD extends BaseInstrument {
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
     this.arincProvider.init();
+    this.fgBusProvider.init();
+    this.fcuBusProvider.init();
     this.clock.init();
     this.dmcPublisher.startPublish();
 
@@ -107,7 +113,6 @@ class A32NX_PFD extends BaseInstrument {
       this.gameState = gamestate;
     } else {
       this.simVarPublisher.onUpdate();
-      this.simplaneValueProvider.onUpdate();
       this.clock.onUpdate();
       this.dmcPublisher.onUpdate();
       this.fmsDataPublisher.onUpdate();
