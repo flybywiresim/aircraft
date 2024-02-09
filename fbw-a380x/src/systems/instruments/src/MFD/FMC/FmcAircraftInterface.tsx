@@ -169,6 +169,12 @@ export class FmcAircraftInterface {
             return;
         }
 
+        // If spawned after T/O, set reasonable V2
+        if (this.fmgc.getFlightPhase() > FmgcFlightPhase.Preflight && !this.flightPlanService.active.performanceData.v2) {
+            const fSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number;
+            this.flightPlanService.setPerformanceData('v2', Math.round(fSpeed));
+        }
+
         SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1 ?? NaN);
         SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2 ?? NaN);
         SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr ?? NaN);
@@ -267,7 +273,7 @@ export class FmcAircraftInterface {
 
     /**
      * Set the takeoff trim config
-     * @param {number | null} ths
+     * @param ths trimmable horizontal stabilizer
      */
     setTakeoffTrim(ths: number) {
         // legacy vars
@@ -763,15 +769,16 @@ export class FmcAircraftInterface {
      * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
      */
     updatePerfSpeeds() {
+        /** in kg */
         let weight: number | null = this.tryEstimateLandingWeight();
         const gw = this.fmc.getGrossWeight() ?? maxGw;
         const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
-        // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
+        // Fallback gross weight set to MZFW, which is replaced by FMGW once input in FMS to avoid function returning undefined results.
         if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(weight)) {
-            weight = (gw === 0) ? maxZfw : gw;
+            weight = gw;
         } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-            weight = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934 / 1000);
+            weight = (this.fmgc.data.zeroFuelWeight.get() ?? maxZfw) + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934);
         }
 
         if (!weight) {
@@ -780,8 +787,8 @@ export class FmcAircraftInterface {
 
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
         const appWind = this.fmgc.data.approachWind.get();
+        let towerHeadwind = 0;
         if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
-            let towerHeadwind = 0;
             if (this.flightPlanService.active.destinationRunway) {
                 towerHeadwind = A380SpeedsUtils.getHeadwind(
                     appWind.speed,
@@ -789,16 +796,11 @@ export class FmcAircraftInterface {
                     this.flightPlanService.active.destinationRunway.magneticBearing,
                 );
             }
-            const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3, towerHeadwind);
-            this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
-            this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
-            this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
-        } else {
-            const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3);
-            this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
-            this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
-            this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
         }
+        const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3, towerHeadwind);
+        this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
+        this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
+        this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
 
         const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
         const gearPos = Math.round(SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum'));
@@ -826,9 +828,13 @@ export class FmcAircraftInterface {
     }
 
     /** Write gross weight to SimVar */
-    updateGrossWeight() {
+    updateWeights() {
         const gw = this.fmc.getGrossWeight();
         SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+
+        if (this.fmc.enginesWereStarted.get() === true) {
+            this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
+        }
     }
 
     /**

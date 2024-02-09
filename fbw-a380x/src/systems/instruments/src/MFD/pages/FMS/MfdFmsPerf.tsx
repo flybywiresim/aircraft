@@ -367,9 +367,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private desTablePredLine2 = Subject.create<string | null>(null);
 
-    private transFl = Subject.create<number>(18_000);
+    private transFl = Subject.create<number | null>(null);
 
-    private transFlIsPilotEntered = Subject.create<boolean>(false);
+    private transFlIsPilotEntered = Subject.create<boolean>(true);
 
     // APPR page subjects, refs and methods
     private apprIdent = Subject.create<string>('');
@@ -381,6 +381,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
     private apprLandingWeight = Subject.create<number | null>(null);
+
+    private apprVerticalDeviation = Subject.create<string>('+-----');
 
     /** in feet */
     private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -522,6 +524,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         if (pd.transitionLevel) {
             this.transFl.set(pd.transitionLevel);
+        }
+
+        if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation()) {
+            const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation() ?? 0;
+            this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `-${vDev.toFixed(0)}FT`);
+        } else {
+            this.apprVerticalDeviation.set('+-----');
         }
 
         console.timeEnd('PERF:onNewData');
@@ -1340,7 +1349,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt, Subject.create(0), Subject.create(maxCertifiedAlt))}
                                         dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.climbPredictionsReferencePilotEntry.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
@@ -1868,7 +1877,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transFl.map((it) => (it ?? 180) * 100), Subject.create(0), Subject.create(maxCertifiedAlt))}
                                         mandatory={Subject.create(false)}
                                         disabled={this.activeFlightPhase.map((it) => it !== FmgcFlightPhase.Descent)}
                                         value={this.desPredictionsReference}
@@ -2192,7 +2201,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">VERT DEV</span>
-                                    <span class="mfd-value">+-----</span>
+                                    <span class="mfd-value">{this.apprVerticalDeviation}</span>
                                 </div>
                             </div>
                         </TopTabNavigatorPage>

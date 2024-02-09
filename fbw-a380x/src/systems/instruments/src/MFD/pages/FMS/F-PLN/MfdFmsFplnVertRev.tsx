@@ -112,10 +112,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     public static isEligibleForVerticalRevision(legIndex: number, leg: FlightPlanLeg, flightPlan: FlightPlan): boolean {
         // Check conditions: No constraints for airports, FROM waypoint, CRZ legs, GA legs, pseudo waypoints
         const enrouteLegsNoDisco = flightPlan.enrouteSegment.allLegs.filter((it) => it instanceof FlightPlanLeg);
-        const firstEnrouteFix = enrouteLegsNoDisco[0] as FlightPlanLeg;
-        const lastEnrouteFix = enrouteLegsNoDisco[enrouteLegsNoDisco.length - 1] as FlightPlanLeg;
-        const firstEnrouteLegIndex = firstEnrouteFix.definition.waypoint ? flightPlan.findLegIndexByFixIdent(firstEnrouteFix.definition.waypoint.ident) : Infinity;
-        const lastEnrouteLegIndex = lastEnrouteFix.definition.waypoint ? flightPlan.findLegIndexByFixIdent(lastEnrouteFix.definition.waypoint.ident) : 0;
+        const firstEnrouteFix = enrouteLegsNoDisco[0] as FlightPlanLeg | undefined;
+        const lastEnrouteFix = enrouteLegsNoDisco[enrouteLegsNoDisco.length - 1] as FlightPlanLeg | undefined;
+        const firstEnrouteLegIndex = firstEnrouteFix?.definition?.waypoint ? flightPlan.findLegIndexByFixIdent(firstEnrouteFix.definition.waypoint.ident) : Infinity;
+        const lastEnrouteLegIndex = lastEnrouteFix?.definition?.waypoint ? flightPlan.findLegIndexByFixIdent(lastEnrouteFix.definition.waypoint.ident) : 0;
+
         if (leg.isRunway()
         || legIndex <= flightPlan.activeLegIndex
         || (legIndex >= firstEnrouteLegIndex && legIndex <= lastEnrouteLegIndex)

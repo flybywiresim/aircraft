@@ -62,7 +62,6 @@ export const NXSystemMessages = {
     checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
     checkSpeedMode: new TypeIIMessage('CHECK SPEED MODE'),
     checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
-    checkWeight: new TypeIIMessage('CHECK WEIGHT', true),
     comUnavailable: new TypeIMessage('COM UNAVAILABLE'),
     databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
     dcduFileFull: new TypeIMessage('DCDU FILE FULL'),
