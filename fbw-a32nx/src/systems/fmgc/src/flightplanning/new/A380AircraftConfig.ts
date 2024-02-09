@@ -22,16 +22,15 @@ const lnavConfig: LnavConfig = {
 const vnavConfig: VnavConfig = {
     VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
     VNAV_EMIT_CDA_FLAP_PWP: false,
-    DEBUG_PROFILE: false,
-    DEBUG_GUIDANCE: false,
+    DEBUG_PROFILE: true,
+    DEBUG_GUIDANCE: true,
     ALLOW_DEBUG_PARAMETER_INJECTION: false,
     VNAV_USE_LATCHED_DESCENT_MODE: false,
-    IDLE_N1_MARGIN: 3,
-    MAXIMUM_FUEL_ESTIMATE: 200_000,
+    IDLE_N1_MARGIN: 4,
+    MAXIMUM_FUEL_ESTIMATE: 250_000,
 };
 
 const flightModelParams: FlightModelParameters = {
-    Cd0: 0.1401,
     wingSpan: 262.467,
     wingArea: 9096,
     wingEffcyFactor: 0.70,
@@ -41,14 +40,15 @@ const flightModelParams: FlightModelParameters = {
     gravityConstMS2: 9.806665,
     machValues: [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85],
     dragCoefficientCorrections: [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01],
-    speedBrakeDrag: 0.02605,
-    gearDrag: 0.0372,
-    dragCoeffFactor: 1.2,
+    speedBrakeDrag: 0.0201,
+    gearDrag: 0.00872,
+    dragCoeffFactor: 0.85,
 };
 
 const engineModelParams: EngineModelParameters = {
     maxThrust: 80_213,
     numberOfEngines: 4,
+    fuelBurnFactor: 2.73,
 };
 
 export const A380AircraftConfig: AircraftConfig = {

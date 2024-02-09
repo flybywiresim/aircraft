@@ -27,7 +27,7 @@ export class CostIndex {
         const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / config.engineModelParameters.maxThrust));
 
         // Fuel flow units are lbs/hr
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, altitude);
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, mach, altitude);
         const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2);
 
         return Vt / fuelFlow;
