@@ -5,9 +5,9 @@ export class MathUtils {
 
    static RADIANS_TO_DEGREES = 180 / Math.PI;
 
-    static DIV_FEET_TO_NAUTICAL_MILES = 6076.12;
+    static FEET_TO_NAUTICAL_MILES = 6076.12;
 
-    static DIV_METRES_TO_NAUTICAL_MILES = 1852;
+    static METRES_TO_NAUTICAL_MILES = 1852;
 
    private static optiPow10 = [];
 

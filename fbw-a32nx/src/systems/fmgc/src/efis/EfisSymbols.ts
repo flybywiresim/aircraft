@@ -670,7 +670,7 @@ export class EfisSymbols {
                         ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
                         location: runway.startLocation,
                         direction: runway.bearing,
-                        length: runway.length / MathUtils.DIV_METRES_TO_NAUTICAL_MILES,
+                        length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
                         type: NdSymbolTypeFlags.Runway,
                     });
                 }
