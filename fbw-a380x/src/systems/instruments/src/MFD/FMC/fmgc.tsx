@@ -60,6 +60,7 @@ export class FmgcData {
 
     public readonly tripWind = Subject.create<Knots | null>(null);
 
+    /** in kg */
     public readonly zeroFuelWeight = Subject.create<number | null>(null); // in kg
 
     public readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null); // in percent
@@ -273,7 +274,7 @@ export class FmgcDataService implements Fmgc {
     getFOB(): number {
         // TODO convert to a320 weights
         let fob = this.data.blockFuel.get() ?? 0;
-        if (this.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+        if (this.isAnEngineOn()) {
             fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
         }
 

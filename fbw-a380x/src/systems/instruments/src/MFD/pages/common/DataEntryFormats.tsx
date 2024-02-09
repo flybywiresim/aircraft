@@ -107,9 +107,9 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
 
     reFormatTrigger = Subject.create(false);
 
-    constructor(transAlt: Subscribable<number> = Subject.create(5000),
+    constructor(transAlt: Subscribable<number> = Subject.create(18_000),
         minValue: Subscribable<number> = Subject.create(0),
-        maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) { // It's a french aircraft, after all
+        maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
 
@@ -592,7 +592,7 @@ export class TripWindFormat implements DataEntryFormat<number> {
 export class QnhFormat implements DataEntryFormat<number> {
     public placeholder = '----';
 
-    public maxDigits = 4;
+    public maxDigits = 5;
 
     private minHpaValue = 745;
 
@@ -606,7 +606,7 @@ export class QnhFormat implements DataEntryFormat<number> {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
-        return [value.toString(), null, null] as FieldFormatTuple;
+        return [value < this.minHpaValue ? value.toFixed(2) : value.toFixed(0), null, null] as FieldFormatTuple;
     }
 
     public async parse(input: string) {
@@ -617,6 +617,8 @@ export class QnhFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) || (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)) {
             return nbr;
+        } if (Number.isNaN(nbr) === false && nbr > (this.minInHgValue * 100) && nbr <= (this.maxInHgValue * 100)) {
+            return nbr / 100;
         }
         throw new FmsError(FmsErrorType.EntryOutOfRange);
     }

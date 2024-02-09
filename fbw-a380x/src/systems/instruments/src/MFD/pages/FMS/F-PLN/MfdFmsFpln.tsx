@@ -19,6 +19,7 @@ import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -111,6 +112,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         const listWasScrolled = this.lastRenderedDisplayLineIndex !== this.displayFplnFromLineIndex.get();
         const onlyUpdatePredictions = !(activeLegIndexChanged || fpVersionIncreased || listWasScrolled);
 
+        // If we somehow ended up before the FROM waypoint, also update the internal state. Triggers a call of this function, so we can stop this call.
+        if (this.displayFplnFromLineIndex.get() < (this.loadedFlightPlan.activeLegIndex - 1)) {
+            this.displayFplnFromLineIndex.set(this.loadedFlightPlan.activeLegIndex - 1);
+            return;
+        }
+
         this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
 
         this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex ?? null;
@@ -149,7 +156,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         const shouldOnlyUpdatePredictions = this.lineData !== undefined && onlyUpdatePredictions;
 
         // Make sure that you can't scroll higher than the FROM wpt
-        const startAtIndexChecked = startAtIndex < (this.loadedFlightPlan.activeLegIndex ?? 0) - 1 ? (this.loadedFlightPlan.activeLegIndex ?? 0) - 1 : startAtIndex;
+        const startAtIndexChecked = startAtIndex < (this.loadedFlightPlan.activeLegIndex ?? 1) - 1 ? (this.loadedFlightPlan.activeLegIndex ?? 1) - 1 : startAtIndex;
 
         // Compute rest of required attributes
         this.derivedFplnLegData = [];
@@ -241,9 +248,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     transitionAltitude: (leg instanceof FlightPlanLeg) ? (leg.definition.transitionAltitude ?? 18000) : 18000,
                     altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
                     hasAltitudeConstraint: false, // TODO
+                    altitudeConstraint: null, // TODO
                     altitudeConstraintIsRespected: true,
                     speedPrediction: pwp.flightPlanInfo?.speed ?? null,
                     hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
+                    speedConstraint: null, // TODO
                     speedConstraintIsRespected: true,
                     efobPrediction: Units.poundToKilogram(
                         (this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.estimatedFuelOnBoard ?? 0),
@@ -299,11 +308,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     annotation,
                     etaOrSecondsFromPresent: predictionTimestamp(pred?.secondsFromPresent ?? 0),
                     transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
-                    altitudePrediction: pred?.altitudeConstraint ? pred?.altitudeConstraint.altitude1 : (pred?.altitude ?? 0),
-                    hasAltitudeConstraint: pred?.altitudeConstraint !== undefined,
+                    altitudePrediction: pred?.altitude ?? null,
+                    hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
+                    altitudeConstraint: leg.altitudeConstraint ?? null,
                     altitudeConstraintIsRespected: pred?.isAltitudeConstraintMet ?? true,
-                    speedPrediction: pred?.speedConstraint ? pred?.speedConstraint.speed : (pred?.speed ?? 0),
-                    hasSpeedConstraint: pred?.speedConstraint !== undefined,
+                    speedPrediction: pred?.speed ?? null,
+                    hasSpeedConstraint: leg.speedConstraint !== undefined,
+                    speedConstraint: leg.speedConstraint ?? null,
                     speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
                     efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) / 1000.0 : 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
@@ -516,11 +527,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }]);
         }, true));
 
-        this.subs.push(this.displayFplnFromLineIndex.sub((val) => {
-            this.update(val, false);
-
-            this.lastRenderedDisplayLineIndex = val;
-
+        this.subs.push(this.displayFplnFromLineIndex.sub((_) => {
+            this.onNewData();
             this.checkScrollButtons();
         }));
 
@@ -553,7 +561,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     checkScrollButtons() {
-        this.disabledScrollUp.set(!this.lineData || this.displayFplnFromLineIndex.get() <= 0);
+        // Line index for "FROM" waypoint
+        this.disabledScrollUp.set(!this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1);
         this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.lineData.length - 1);
     }
 
@@ -892,9 +901,11 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
     transitionAltitude: number;
     altitudePrediction: number | null;
     hasAltitudeConstraint: boolean;
+    altitudeConstraint: AltitudeConstraint | null;
     altitudeConstraintIsRespected: boolean;
     speedPrediction: number | null;
     hasSpeedConstraint: boolean;
+    speedConstraint: SpeedConstraint | null;
     speedConstraintIsRespected: boolean;
     efobPrediction: number;
     windPrediction: WindVector | null;
@@ -1209,7 +1220,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
             }
         }
-        if (data.hasAltitudeConstraint) {
+        if (data.hasAltitudeConstraint && data.altitudePrediction) {
             if (data.altitudeConstraintIsRespected) {
                 return (
                     <>
@@ -1223,6 +1234,19 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                     <span class="mfd-fms-fpln-leg-constraint-missed">*</span>
                     <span>{altStr}</span>
                 </>
+            );
+        } if (data.hasAltitudeConstraint && data.altitudeConstraint && !data.altitudePrediction) {
+            const isBelowTransAlt = data.altitudeConstraint.altitude1 < (data.transitionAltitude ?? 18_000);
+            const altCstr = isBelowTransAlt ? data.altitudeConstraint.altitude1.toFixed(0) : `FL${Math.round(data.altitudeConstraint.altitude1 / 100).toString()}`;
+            let cstrType = '';
+            if (data.altitudeConstraint.type === AltitudeConstraintType.atOrAbove) {
+                cstrType = '+';
+            } else if (data.altitudeConstraint.type === AltitudeConstraintType.atOrBelow) {
+                cstrType = '-';
+            }
+            const displayedStr = data.altitudeConstraint.altitude2 ? 'WINDOW' : `${cstrType}${altCstr}`;
+            return (
+                <span class="mfd-fms-fpln-leg-constraint-respected" style="font-size: 25px;">{displayedStr}</span>
             );
         }
         return <span style="margin-left: 20px;">{altStr}</span>;
@@ -1243,7 +1267,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toFixed(0) : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
         }
 
-        if (data.hasSpeedConstraint) {
+        if (data.hasSpeedConstraint && data.speedPrediction) {
             if (data.speedConstraintIsRespected) {
                 return (
                     <>
@@ -1257,6 +1281,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                     <span class="mfd-fms-fpln-leg-constraint-missed">*</span>
                     <span>{speedStr}</span>
                 </>
+            );
+        } if (data.hasSpeedConstraint && data.speedConstraint && !data.speedPrediction) {
+            return (
+                <span class="mfd-fms-fpln-leg-constraint-respected" style="margin-left: 20px; font-size: 25px;">
+                    {data.speedConstraint.speed > 2 ? data.speedConstraint.speed.toFixed(0) : `.${data.speedConstraint.speed.toFixed(2).split('.')[1]}`}
+                </span>
             );
         }
         return <span style="margin-left: 20px;">{speedStr}</span>;

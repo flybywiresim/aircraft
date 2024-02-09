@@ -124,15 +124,15 @@ const s = [
 
 /**
  * Calculate green dot speed depending on altitude and weight
- * @param m mass: gross weight in 1000 lb
+ * @param m mass: gross weight in klb
  * @param alt altitude: in feet
- * @returns green dot speed
+ * @returns green dot speed in knots
  */
-function greenDotSpeed(m: number, alt: Feet = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet')): Knots {
+function greenDotSpeed(m: number, alt: number = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet')): number {
     const greenDotTable = [
         [0, 0, 10_000, 20_000, 30_000, 40_000],
         [600, 167, 167, 168, 196, 210],
-        [700, 180, 180, 185, 1213, 226],
+        [700, 180, 180, 185, 213, 226],
         [800, 194, 194, 202, 228, 240],
         [900, 207, 207, 222, 244, 252],
         [1000, 217, 217, 238, 257, 252],
@@ -243,7 +243,7 @@ function correctMass(m: number): number {
  * @returns Mach corrected velocity in kt (CAS)
  */
 function compensateForMachEffect(v: Knots, alt: Feet): Knots {
-    return Math.ceil(alt > 20000 ? v + (alt - 20000) / 1000 : v);
+    return Math.ceil(alt > 20000 ? v + ((alt - 20000) / 1000) : v);
 }
 
 /**
@@ -324,8 +324,8 @@ export class A380OperatingSpeeds {
      * @param wind wind speed
      */
     constructor(m: number, fPos: number, gPos: number, wind: Knots = 0) {
-        // Convert mass from tons to 1000 lb
-        const klb = Units.kilogramToPound(m * 1000.0) / 1000.0;
+        // Convert mass from tons to klb (1000*lb)
+        const klb = Math.min(1200, Math.max(Units.kilogramToPound(m * 1_000) / 1_000, 600));
 
         const cm = correctMass(klb);
         this.vs = vls[fPos][cm](klb) / 1.2; // rough hack
@@ -371,7 +371,7 @@ export class A380OperatingSpeedsApproach {
      */
     constructor(m: number, isConf3: boolean, wind: Knots = 0) {
         // Convert mass from tons to 1000 lb
-        const klb = Units.kilogramToPound(m * 1000.0) / 1000.0;
+        const klb = Math.min(1200, Math.max(Units.kilogramToPound(m * 1_000) / 1_000, 600));
 
         const cm = correctMass(klb);
         this.vls = vls[isConf3 ? 3 : 4][cm](klb);

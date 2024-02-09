@@ -14,6 +14,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
+import { Units } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {
 }
@@ -106,7 +107,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 this.destEta.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
             }
             const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
-            this.destEfob.set(destEfob ? destEfob.toFixed(1) : '--.-');
+            this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '--.-');
             this.destEfobBelowMin.set(destEfob * 1_000 < (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0));
         }
 
@@ -158,9 +159,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             }
 
             if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
-                this.tripFuelWeight.set(25_000);
+                const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
                 // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
                 const fob = this.fuelOnBoard.get() ?? 0;
+                this.tripFuelWeight.set(fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob));
                 const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
                 this.extraFuelWeight.set((this.enginesWereStarted.get() === true ? fob : block)
                 - (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0)

@@ -25,6 +25,7 @@ import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 
 export function pageForUrl(url: string, bus: EventBus, mfd: DisplayInterface & MfdDisplayInterface, fmcService: FmcServiceInterface): VNode {
     switch (url) {
@@ -167,6 +168,15 @@ export function pageForUrl(url: string, bus: EventBus, mfd: DisplayInterface & M
         return (
             <MfdFmsDataStatus
                 pageTitle="STATUS"
+                bus={bus}
+                mfd={mfd}
+                fmcService={fmcService}
+            />
+        );
+    case 'fms/data/debug':
+        return (
+            <MfdFmsDataDebug
+                pageTitle="DEBUG"
                 bus={bus}
                 mfd={mfd}
                 fmcService={fmcService}

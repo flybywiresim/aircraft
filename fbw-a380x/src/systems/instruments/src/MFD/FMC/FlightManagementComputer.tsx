@@ -1,6 +1,9 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { A320FlightPlanPerformanceData, DataManager, EfisInterface, EfisSymbols, FlightPlanIndex, Navigation, NavigationDatabaseService, getFlightPhaseManager } from '@fmgc/index';
+import {
+    A320FlightPlanPerformanceData, A380AircraftConfig, DataManager, EfisInterface, EfisSymbols, FlightPlanIndex,
+    Navigation, NavigationDatabaseService, getFlightPhaseManager,
+} from '@fmgc/index';
 import { ArraySubject, ClockEvents, EventBus, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
@@ -290,16 +293,11 @@ export class FlightManagementComputer implements FmcInterface {
 
     public getGrossWeight(): Kilograms {
         // Value received from FQMS, or falls back to ZFW + FOB
-
-        // If we use A320 values for the predictions, return real weight here
         const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
-        if (zfw < 150_000) {
-            return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
-        }
 
         let fmGW = 0;
         if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
-            fmGW = (this.fmgc.getFOB() + zfw);
+            fmGW = (this.fmgc.getFOB() * 1_000 + zfw);
         } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.getFOB() * 1_000 + zfw);
         } else {
@@ -441,7 +439,7 @@ export class FlightManagementComputer implements FmcInterface {
         setInterval(() => {
             if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked) {
                 const dest = this.flightPlanService.active.destinationAirport;
-                const distanceFromPpos = distanceTo(this.navigation.getPpos() ?? { lat: 0, long: 0 }, dest.location);
+                const distanceFromPpos = distanceTo(this.navigation.getPpos() ?? { lat: 0, long: 0 }, dest?.location ?? 0);
                 if (dest && distanceFromPpos < 180) {
                     this.destDataChecked = true;
                     this.checkDestData();
@@ -679,12 +677,6 @@ export class FlightManagementComputer implements FmcInterface {
                 this.acInterface.updatePreSelSpeedMach(desPreSel);
             }
 
-            // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-            if (this.flightPlanService.active.performanceData.cruiseFlightLevel !== Math.floor(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet') / 100)) {
-                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel * 100);
-                this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0)));
-            }
-
             break;
         }
 
@@ -701,7 +693,7 @@ export class FlightManagementComputer implements FmcInterface {
 
             /** Clear pre selected speed/mach */
             this.acInterface.updatePreSelSpeedMach(null);
-            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', undefined);
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', null);
 
             break;
         }
@@ -798,15 +790,10 @@ export class FlightManagementComputer implements FmcInterface {
 
     private initMessageSettable = false;
 
-    private checkWeightSettable = true;
-
     private checkGWParams(): void {
         const fmGW = SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number');
         const eng2state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Number');
         const eng3state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Number');
-        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
-        const actualGrossWeight = SimVar.GetSimVarValue('TOTAL WEIGHT', 'Kilograms') / 1000; // TO-DO Source to be replaced with FAC-GW
-        const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7);
 
         if (eng2state === 2 || eng3state === 2) {
             if (this.gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
@@ -819,16 +806,6 @@ export class FlightManagementComputer implements FmcInterface {
             this.gwInitDisplayed++;
             this.initMessageSettable = false;
         }
-
-        // CHECK WEIGHT
-        // TO-DO Ground Speed used for redundancy and to simulate delay (~10s) for FAC parameters to be calculated, remove once FAC is available.
-        if (!this.fmgc.isOnGround() && gwMismatch && this.checkWeightSettable && gs > 180) {
-            this.addMessageToQueue(NXSystemMessages.checkWeight);
-            this.checkWeightSettable = false;
-        } else if (!gwMismatch) {
-            this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
-            this.checkWeightSettable = true;
-        }
     }
 
     private onUpdate(dt: number) {
@@ -836,9 +813,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.navaidSelectionManager.update(dt);
         this.landingSystemSelectionManager.update(dt);
         this.navaidTuner.update(dt);
-        this.efisSymbols.update(dt);
 
-        this.guidanceController.update(dt);
         const throttledDt = this.fmsUpdateThrottler.canUpdate(dt);
 
         if (throttledDt !== -1) {
@@ -848,7 +823,7 @@ export class FlightManagementComputer implements FmcInterface {
                 this.acInterface.updateTransitionAltitudeLevel();
                 this.acInterface.updatePerformanceData();
                 this.acInterface.updatePerfSpeeds();
-                this.acInterface.updateGrossWeight();
+                this.acInterface.updateWeights();
                 this.acInterface.toSpeedsChecks();
 
                 const toFlaps = this.fmgc.getTakeoffFlapsSetting();
@@ -886,6 +861,10 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         this.acInterface.updateAutopilot(dt);
+
+        this.guidanceController.update(dt);
+
+        this.efisSymbols.update(dt);
 
         this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
