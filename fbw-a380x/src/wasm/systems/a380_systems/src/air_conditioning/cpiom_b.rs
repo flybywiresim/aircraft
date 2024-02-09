@@ -68,7 +68,6 @@ impl CoreProcessingInputOutputModuleB {
         cpiom_b: [&CoreProcessingInputOutputModule; 4],
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-        number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         local_controllers: &(impl TaddShared + VcmShared),
     ) {
@@ -82,7 +81,6 @@ impl CoreProcessingInputOutputModuleB {
                 acs_overhead,
                 engines,
                 lgciu,
-                number_of_passengers,
                 pneumatic,
                 &self.cpcs_app,
             );
@@ -215,12 +213,15 @@ struct AirGenerationSystemApplication {
     pack_flow_id: [VariableIdentifier; 4],
     pack_operational_id: [VariableIdentifier; 2],
 
+    pax_number_fms_id: VariableIdentifier,
+
     aircraft_state: AirConditioningStateManager,
     fcv_timer_open: [Duration; 2], // One for each pack
     flow_demand_ratio: [Ratio; 2], // One for each pack
     flow_ratio: [Ratio; 4],        // One for each FCV
     pack_flow_demand: [MassRate; 2],
     pack_operating: [bool; 2], // One for each pack
+    pax_number_fms: usize,
 }
 
 impl AirGenerationSystemApplication {
@@ -234,7 +235,7 @@ impl AirGenerationSystemApplication {
     const FLOW_CONSTANT_C: f64 = 0.5675; // kg/s
     const FLOW_CONSTANT_XCAB: f64 = 0.00001828; // kg(feet*s)
     const A320_T0_A380_FLOW_CONVERSION_FACTOR: f64 = 2.8; // This is an assumed conversion factor for now based on number of pax
-    const A380_TOTAL_NUMBER_OF_PASSENGERS: f64 = 517.;
+    const A380_PASSENGER_FACTOR: f64 = 450.; // 517 max passengers, we set 100% flow at 450
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -242,12 +243,15 @@ impl AirGenerationSystemApplication {
             pack_operational_id: [1, 2]
                 .map(|pack| context.get_identifier(format!("COND_PACK_{}_IS_OPERATING", pack))),
 
+            pax_number_fms_id: context.get_identifier("FMS_PAX_NUMBER".to_owned()),
+
             aircraft_state: AirConditioningStateManager::new(),
             fcv_timer_open: [Duration::from_secs(0); 2],
             flow_demand_ratio: [Ratio::default(); 2],
             flow_ratio: [Ratio::default(); 4],
             pack_flow_demand: [MassRate::default(); 2],
             pack_operating: [false; 2],
+            pax_number_fms: 0,
         }
     }
 
@@ -262,7 +266,6 @@ impl AirGenerationSystemApplication {
         acs_overhead: &impl AirConditioningOverheadShared,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-        number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
     ) {
@@ -282,12 +285,7 @@ impl AirGenerationSystemApplication {
         });
 
         self.pack_flow_demand = [1, 2].map(|pack_id| {
-            self.absolute_flow_calculation(
-                acs_overhead,
-                number_of_passengers,
-                Pack(pack_id),
-                pressurization,
-            )
+            self.absolute_flow_calculation(acs_overhead, Pack(pack_id), pressurization)
         });
 
         self.update_timer(context, pneumatic);
@@ -363,7 +361,6 @@ impl AirGenerationSystemApplication {
     fn absolute_flow_calculation(
         &self,
         acs_overhead: &impl AirConditioningOverheadShared,
-        number_of_passengers: usize,
         pack: Pack,
         pressurization: &impl CabinAltitude,
     ) -> MassRate {
@@ -371,7 +368,8 @@ impl AirGenerationSystemApplication {
             acs_overhead.flow_selector_position(),
             OverheadFlowSelector::Norm
         ) {
-            number_of_passengers as f64 / Self::A380_TOTAL_NUMBER_OF_PASSENGERS
+            // Minimum 40% flow to maintain temperature with zero pax
+            (self.pax_number_fms as f64 / Self::A380_PASSENGER_FACTOR).max(0.4)
         } else {
             1.
         };
@@ -435,6 +433,10 @@ impl SimulationElement for AirGenerationSystemApplication {
             .iter()
             .zip(self.flow_ratio)
             .for_each(|(id, flow)| writer.write(id, flow));
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.pax_number_fms = reader.read(&self.pax_number_fms_id);
     }
 }
 
@@ -1024,11 +1026,12 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         const C: f64 = -3.3376e-9;
         const D: f64 = 4.5905e-4;
 
-        let target_aircraft_altitude = if self.fma_lateral_mode == 20 {
-            self.cruise_altitude
-        } else {
-            self.exterior_flight_altitude
-        };
+        let target_aircraft_altitude =
+            if self.fma_lateral_mode == 20 && self.cruise_altitude.get::<foot>() != 0. {
+                self.cruise_altitude
+            } else {
+                self.exterior_flight_altitude
+            };
         let target_aircraft_altitude_foot = target_aircraft_altitude.get::<foot>();
 
         let target_cabin_delta_p_psi = Pressure::new::<psi>(
