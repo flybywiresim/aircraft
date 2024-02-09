@@ -121,8 +121,8 @@ export class Database {
         return this.backend.getAirways(idents);
     }
 
-    public async getAirwaysByFix(fix: Waypoint | NdbNavaid | VhfNavaid): Promise<Airway[]> {
-        return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode);
+    public async getAirwaysByFix(fix: Waypoint | NdbNavaid | VhfNavaid, airwayIdent?: string): Promise<Airway[]> {
+        return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode, airwayIdent);
     }
 
     public getNearbyAirports(center: Coordinates, range: number, limit?: number, longestRunwaySurfaces?: number, longestRunwayLength?: number): Promise<readonly Airport[]> {
