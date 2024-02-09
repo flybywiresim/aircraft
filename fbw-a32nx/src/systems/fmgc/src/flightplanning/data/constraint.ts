@@ -40,7 +40,7 @@ export class ConstraintUtils {
             return { type: AltitudeConstraintType.atOrAbove, altitude1: definition.altitude1 };
         case AltitudeDescriptor.AtOrBelowAlt1:
         case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-            return { type: AltitudeConstraintType.atOrAbove, altitude1: definition.altitude1 };
+            return { type: AltitudeConstraintType.atOrBelow, altitude1: definition.altitude1 };
         case AltitudeDescriptor.BetweenAlt1Alt2:
             return { type: AltitudeConstraintType.range, altitude1: definition.altitude1, altitude2: definition.altitude2 };
         case AltitudeDescriptor.AtOrAboveAlt2:
