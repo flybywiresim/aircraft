@@ -16,11 +16,7 @@ class FlightDataRecorder {
 
   void initialize();
 
-  void update(AutopilotStateMachine* autopilotStateMachine,
-              AutopilotLawsModelClass* autopilotLaws,
-              Autothrust* autoThrust,
-              const EngineData& engineData,
-              const AdditionalData& additionalData);
+  void update(const EngineData& engineData, const AdditionalData& additionalData);
 
   void terminate();
 
