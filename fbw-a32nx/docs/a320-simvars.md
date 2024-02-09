@@ -1284,9 +1284,9 @@ These variables are the interface between the 3D model and the systems/code.
 
 ## EIS Display System
 
-- A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
+- A32NX_FCU_EFIS_{side}_NAVAID_{1|2}_MODE
     - Enum
-    - Provides the selected NAVAIDs for display on the EFIS
+    - Provides the selected NAVAID knob posiiton. For use systems, use the FCU discrete words instead.
       Value | Meaning
       --- | ---
       0 | Off
@@ -1296,9 +1296,9 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
-- A32NX_EFIS_{side}_ND_MODE
+- A32NX_FCU_EFIS_{side}_EFIS_MODE
     - Enum
-    - Provides the selected navigation display mode for the EFIS
+    - Provides the navigation display mode knob position. For use systems, use the FCU discrete words instead.
       Value | Meaning
       --- | ---
       0 | ROSE ILS
@@ -1310,9 +1310,9 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
-- A32NX_EFIS_{side}_ND_RANGE
+- A32NX_FCU_EFIS_{side}_EFIS_RANGE
     - Enum
-    - Provides the selected navigation display range for the EFIS
+    - Provides the selected navigation display range knob position. For use systems, use the FCU discrete words instead.
       Value | Meaning
       --- | ---
       0 | 10
@@ -1325,17 +1325,16 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
-- A32NX_EFIS_{side}_OPTION
-    - Enum
-    - Provides the selected EFIS option/overlay
-      Value | Meaning
-      --- | ---
-      0 | None
-      1 | Constraints
-      2 | VOR/DMEs
-      3 | Waypoints
-      4 | NDBs
-      5 | Airports
+- A32NX_FCU_EFIS_{side}_{FILTER}_LIGHT_ON
+    - Bool
+    - If the related EFIS filter is selected, this Lvar is true. For use systems, use the FCU discrete words instead.
+    - {FILTER}
+      - None
+      - Constraints
+      - VOR/DMEs
+      - Waypoints
+      - NDBs
+      - Airports
     - {side}
         - L
         - R
@@ -3065,7 +3064,169 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
 ## Autoflight (ATA 22)
 
-- - A32NX_FAC_{number}_PUSHBUTTON_PRESSED
+- A32NX_FMGC_{number}_HEALTHY
+    - Indicates if this FMGC is healthy
+    - Boolean
+
+- A32NX_FMGC_{number}_ATHR_ENGAGED
+    - Indicates if the A/THR of this FMGC is engaged
+    - Boolean
+
+- A32NX_FMGC_{number}_FD_ENGAGED
+    - Indicates if the FD of this FMGC is engaged
+    - Boolean
+
+- A32NX_FMGC_{number}_AP_ENGAGED
+    - Indicates if the AP of this FMGC is engaged
+    - Boolean
+
+- A32NX_FMGC_{number}_ROLL_FD_COMMAND
+    - The Roll FD command
+    - Arinc429<Degrees>
+
+- A32NX_FMGC_{number}_PITCH_FD_COMMAND
+    - The Pitch FD command
+    - Arinc429<Degrees>
+
+- A32NX_FMGC_{number}_YAW_FD_COMMAND
+    - The Yaw FD command
+    - Arinc429<Degrees>
+
+- A32NX_FMGC_{number}_DISCRETE_WORD_5
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Mach Selected                     |
+      | 12  | VPATH/SPEED submode active        |
+      | 13  | VPATH/THRUST submode active       |
+      | 14  | V/S selected submode active       |
+      | 15  | FPA selected submode active       |
+      | 16  | Alt selected submode active       |
+      | 19  | AUTO SPD control active           |
+      | 20  | MANUAL SPD control active         |
+      | 24  | Pitch FD bars flashing            |
+      | 27  | SPD Window Display                |
+      | 28  | Top of SPD Synchro                |
+      | 29  | FMS Mach Selection                |
+
+- A32NX_FMGC_{number}_DISCRETE_WORD_4
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | AP Instinctive Disc               |
+      | 12  | AP Engaged                        |
+      | 13  | FD Engaged                        |
+      | 14  | LAND TRK mode active              |
+      | 16  | LAND 2 Capability                 |
+      | 17  | LAND 3 FAIL PASSIVE Capability    |
+      | 18  | LAND 3 FAIL OP Capability         |
+      | 19  | AP Inop                           |
+      | 20  | LAND 2 Inop                       |
+      | 21  | LAND 3 FAIL PASSIVE Inop          |
+      | 22  | LAND 3 FAIL OP Inop               |
+      | 23  | LAND 2 Capacity                   |
+      | 24  | LAND 3 FAIL PASSIVE Capacity      |
+      | 25  | LAND 3 FAIL OP Capacity           |
+      | 26  | RWY Heading memorized             |
+
+- A32NX_FMGC_{number}_ATS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 13  | A/THR Engaged                     |
+      | 14  | A/THR Active                      |
+      | 17  | A/THR Instinctive Disconnect      |
+      | 18  | A/THR SPD MACH mode               |
+      | 19  | FCU Mach Selection                |
+      | 20  | RETARD Mode Active                |
+      | 21  | THRUST N1 Mode Active             |
+      | 22  | THRUST EPR Mode Active            |
+      | 23  | A/THR ALPHA FLOOR                 |
+      | 24  | A/THR Inop                        |
+
+- A32NX_FMGC_{number}_ATS_FMA_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | TO/GA Display                     |
+      | 12  | MCT Display                       |
+      | 13  | FLX Display                       |
+      | 14  | CLB Display                       |
+      | 15  | THR Display                       |
+      | 16  | IDLE Display                      |
+      | 17  | A.FLOOR Display                   |
+      | 18  | SPEED Display                     |
+      | 19  | MACH Display                      |
+      | 20  | ASYM Display                      |
+      | 21  | CLB Demand Display                |
+      | 22  | MCT Demand Display                |
+
+- A32NX_FMGC_{number}_DISCRETE_WORD_3
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | HDG Preset                        |
+      | 12  | ALT ACQ Arm                       |
+      | 13  | ALT ACQ Arm Possible              |
+      | 14  | NAV Arm                           |
+      | 16  | LOC Arm                           |
+      | 17  | FG Approach Phase                 |
+      | 18  | FMA LONGI Mode                    |
+      | 19  | LOC Backbeam Selection            |
+      | 20  | LAND Arm                          |
+      | 21  | GS Capt Before LOC Capt           |
+      | 22  | GLIDE Arm                         |
+      | 23  | FINAL DES Arm                     |
+      | 24  | CLB Arm                           |
+      | 25  | DES Arm                           |
+      | 26  | LONG MODE Reset                   |
+      | 27  | LAT MODE Reset                    |
+      | 28  | QFU Equal COM                     |
+      | 29  | FMA Longi Box                     |
+
+- A32NX_FMGC_{number}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Climb Mode                        |
+      | 12  | Descent Mode                      |
+      | 13  | Immediate Mode                    |
+      | 14  | Open Mode                         |
+      | 15  | Pitch T/O Mode                    |
+      | 16  | Pitch G/A Mode                    |
+      | 17  | V/S Mode                          |
+      | 18  | FPA Mode                          |
+      | 19  | ALT Mode                          |
+      | 20  | Track Mode                        |
+      | 21  | Capture Mode                      |
+      | 22  | G/S Mode                          |
+      | 23  | FINAL DES Mode                    |
+      | 24  | EXPED Mode                        |
+      | 25  | FLARE Mode                        |
+      | 26  | FMA Dash Display                  |
+      | 27  | FMA SPEED/MACH Preset Display     |
+
+- A32NX_FMGC_{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Runway Mode                       |
+      | 12  | NAV Mode                          |
+      | 13  | LOC Capture Mode                  |
+      | 14  | LOC Track Mode                    |
+      | 15  | Roll G/A Mode                     |
+      | 16  | HDG Mode                          |
+      | 17  | TRK Mode                          |
+      | 20  | Runway LOC Submode                |
+      | 21  | H/PATH Submode                    |
+      | 22  | HDG Submode                       |
+      | 23  | Runway TRK Submode                |
+      | 24  | VOR Submode                       |
+      | 25  | ALIGN Submode                     |
+      | 26  | ROLLOUT Submode                   |
+      | 28  | Roll FD Bars Flashing             |
+
+- A32NX_FAC_{number}_PUSHBUTTON_PRESSED
     - Boolean
 
 - A32NX_FAC_{number}_HEALTHY

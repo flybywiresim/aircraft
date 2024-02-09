@@ -55,7 +55,8 @@ class A32NX_BaroSelector {
         });
     }
     setBaroSelector(value) {
-        SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", value);
+        SimVar.SetSimVarValue("L:A32NX_FCU_EFIS_L_BARO_IS_INHG", "bool", !value);
+        SimVar.SetSimVarValue("L:A32NX_FCU_EFIS_R_BARO_IS_INHG", "bool", !value);
         this.baroSelectionCompleted = true;
     }
     setBaroSelectorForAirport(icao) {

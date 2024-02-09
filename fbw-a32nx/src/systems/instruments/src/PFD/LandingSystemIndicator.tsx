@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
-    private readonly lsVisible = ConsumerSubject.create(null, false);
+    private readonly lsVisible = Subject.create(false);
 
     private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
 
@@ -42,16 +43,11 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & HEvent & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FcuBus>();
 
-        // FIXME clean this up.. should be handled by an IE in the XML
-        sub.on('hEvent').handle((eventName) => {
-            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-            }
+        sub.on('fcuEisDiscreteWord2').handle((word) => {
+            this.lsVisible.set(word.getBitValueOr(22, false) || word.isFailureWarning());
         });
-
-        this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
 
         sub.on('baroCorrectedAltitude').handle((altitude) => {
             this.altitude2.setWord(altitude);
