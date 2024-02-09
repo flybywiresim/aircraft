@@ -22,8 +22,8 @@ const lnavConfig: LnavConfig = {
 const vnavConfig: VnavConfig = {
     VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
     VNAV_EMIT_CDA_FLAP_PWP: false,
-    DEBUG_PROFILE: true,
-    DEBUG_GUIDANCE: true,
+    DEBUG_PROFILE: false,
+    DEBUG_GUIDANCE: false,
     ALLOW_DEBUG_PARAMETER_INJECTION: false,
     VNAV_USE_LATCHED_DESCENT_MODE: false,
     IDLE_N1_MARGIN: 4,
