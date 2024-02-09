@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
 import { getFlightPhaseManager } from './flightphase';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
@@ -42,4 +42,5 @@ export {
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,
+    a320EfisRangeSettings,
 };

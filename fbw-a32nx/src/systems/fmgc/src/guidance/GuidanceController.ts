@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, efisRangeSettings, SimVarString } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, SimVarString } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -65,10 +65,6 @@ export interface Fmgc {
 }
 
 export class GuidanceController {
-    flightPlanManager: FlightPlanManager;
-
-    guidanceManager: GuidanceManager;
-
     lnavDriver: LnavDriver;
 
     vnavDriver: VnavDriver;
@@ -99,13 +95,13 @@ export class GuidanceController {
 
     automaticSequencing: boolean = true;
 
-    leftEfisState: EfisState
+    leftEfisState: EfisState<number>;
 
-    rightEfisState: EfisState
+    rightEfisState: EfisState<number>;
 
-    efisStateForSide: { L: EfisState, R: EfisState }
+    efisStateForSide: { L: EfisState<number>, R: EfisState<number> };
 
-    private approachMessage: string = ''
+    private approachMessage: string = '';
 
     taskQueue = new TaskQueue();
 
@@ -122,9 +118,9 @@ export class GuidanceController {
         return this.flightPlanManager._currentFlightPlanIndex === FlightPlans.Temporary;
     }
 
-    private updateEfisState(side: EfisSide, state: EfisState): void {
+    private updateEfisState(side: EfisSide, state: EfisState<number>): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
-        const ndRange = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
+        const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
             this.taskQueue.cancelAllInCategory(TaskCategory.EfisVectors);
@@ -208,10 +204,12 @@ export class GuidanceController {
         }
     }
 
-    constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager, fmgc: Fmgc) {
-        this.flightPlanManager = flightPlanManager;
-        this.guidanceManager = guidanceManager;
-
+    constructor(
+        public readonly flightPlanManager: FlightPlanManager,
+        public readonly guidanceManager: GuidanceManager,
+        private readonly efisNDRangeValues: number[],
+        fmgc: Fmgc,
+    ) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
