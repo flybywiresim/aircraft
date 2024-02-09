@@ -37,11 +37,7 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
-                                AutopilotLawsModelClass* autopilotLaws,
-                                Autothrust* autoThrust,
-                                const EngineData& engineData,
-                                const AdditionalData& additionalData) {
+void FlightDataRecorder::update(const EngineData& engineData, const AdditionalData& additionalData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -51,9 +47,6 @@ void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
   manageFlightDataRecorderFiles();
 
   // write data to file
-  fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
-  fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
-  fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
   fileStream->write((char*)(&engineData), sizeof(engineData));
   fileStream->write((char*)(&additionalData), sizeof(additionalData));
 }

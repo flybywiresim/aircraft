@@ -2,95 +2,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
-    <Template Name="FBW_Airbus_FCU_Baro_Knob">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <ANIMREF_ID>-1</ANIMREF_ID>
-            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
-            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
-            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
-            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
-            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
-            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
-            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
-            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
-            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-            <TEMPLATE_TO_CALL>FBW_Airbus_FCU_Baro_Knob_SubTemplate</TEMPLATE_TO_CALL>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_Airbus_FCU_Baro_Knob_SubTemplate">
-        <DefaultTemplateParameters>
-            <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
-            <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
-            <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
-            <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
-            <ANIMREF_ID>-1</ANIMREF_ID>
-            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
-            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
-            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
-            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-            <BARO_ID>#ID#</BARO_ID>
-            <MODE_QFE>0</MODE_QFE>
-            <MODE_QNH>1</MODE_QNH>
-            <MODE_STD_QFE>2</MODE_STD_QFE>
-            <MODE_STD_QNH>3</MODE_STD_QNH>
-            <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
-            <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
-        </DefaultTemplateParameters>
-
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
-                <ANTICLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
-                        } els{
-                            #BARO_ID# (&gt;K:KOHLSMAN_DEC)
-                        }
-                    }
-                </ANTICLOCKWISE_CODE>
-
-                <CLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
-                        } els{
-                            #BARO_ID# (&gt;K:KOHLSMAN_INC)
-                        }
-                    }
-                </CLOCKWISE_CODE>
-
-                <PULL_CODE>
-                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                </PULL_CODE>
-                <PUSH_CODE>
-                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                </PUSH_CODE>
-
-                <CENTER_RADIUS>0</CENTER_RADIUS>
-                <COUNT>36</COUNT>
-                <OVERRIDE_PUSH_ANIM_CODE>
-                    0 100
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# ==
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
-                    50
-                        (O:_PushAnimVar) ?
-                </OVERRIDE_PUSH_ANIM_CODE>
-                <WWISE_EVENT>QNHknob</WWISE_EVENT>
-                <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
-                <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
-            </UseTemplate>
-            <!--Disables FCU baro knob emissive-->
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-            </UseTemplate>
-        </Component>
-    </Template>
-
     <Template Name="FBW_Airbus_FCU_Altitude_Knob">
         <DefaultTemplateParameters>
             <ID>1</ID>
@@ -107,34 +18,24 @@
             <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Altitude_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
             <HELPID>HELPID_AUTOPILOT_ALTITUDE_INDICATOR</HELPID>
             <ID>1</ID>
-            <INCREMENT>(L:XMLVAR_Autopilot_Altitude_Increment)</INCREMENT>
             <NODE_ID>AUTOPILOT_Knob_Altitude#SUFFIX_ID#</NODE_ID>
             <PART_ID>AUTOPILOT_Knob_Altitude</PART_ID>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
-                <!-- Calculates max(ALTITUDE_LOCK - INCREMENT + (INCREMENT - ALTITUDE_LOCK % INCREMENT) % INCREMENT, 100) -->
                 <ANTICLOCKWISE_CODE>
-                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# - #INCREMENT# (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - #INCREMENT# % + 100 max (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
-                    (&gt;H:AP_KNOB_Down)
-                    (&gt;H:A320_Neo_CDU_AP_DEC_ALT)
+                    'A32NX.FCU_ALT_DEC' (&gt;F:KeyEvent)
                 </ANTICLOCKWISE_CODE>
-                <!-- Calculates min(ALTITUDE_LOCK + INCREMENT - ALTITUDE_LOCK % INCREMENT, 49000) -->
                 <CLOCKWISE_CODE>
-                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - 49000 min (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
-                    (&gt;H:AP_KNOB_Up)
-                    (&gt;H:A320_Neo_CDU_AP_INC_ALT)
+                    'A32NX.FCU_ALT_INC' (&gt;F:KeyEvent)
                 </CLOCKWISE_CODE>
-
                 <PULL_CODE>
-                    (&gt;H:A320_Neo_FCU_ALT_PULL)
-                    (&gt;H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)
+                    'A32NX.FCU_ALT_PULL' (&gt;F:KeyEvent)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_ALT_PUSH)
-                    (&gt;H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)
-                </PUSH_CODE> <!-- TODO - Change - Should be managed climb/descent (comment from Asobo) -->
+                    'A32NX.FCU_ALT_PUSH' (&gt;F:KeyEvent)
+                </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <COUNT>36</COUNT>
@@ -159,7 +60,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button">
-                <LEFT_SINGLE_CODE>(L:A32NX_TRK_FPA_MODE_ACTIVE) ! (&gt;L:A32NX_TRK_FPA_MODE_ACTIVE)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>'A32NX.FCU_TRK_FPA_TOGGLE_PUSH' (&gt;F:KeyEvent)</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -207,24 +108,16 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <CLOCKWISE_CODE>
-                    (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_HDG_INC_TRACK)
-                    } els{
-                        (&gt;H:A320_Neo_FCU_HDG_INC_HEADING)
-                    }
+                    'A32NX.FCU_HDG_INC' (&gt;F:KeyEvent)
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
-                    (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_HDG_DEC_TRACK)
-                    } els{
-                        (&gt;H:A320_Neo_FCU_HDG_DEC_HEADING)
-                    }
+                    'A32NX.FCU_HDG_DEC' (&gt;F:KeyEvent)
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
-                    (&gt;H:A320_Neo_FCU_HDG_PULL)
+                    'A32NX.FCU_HDG_PULL' (&gt;F:KeyEvent)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_HDG_PUSH)
+                    'A32NX.FCU_HDG_PUSH' (&gt;F:KeyEvent)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
@@ -272,28 +165,16 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <CLOCKWISE_CODE>
-                    (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_VS_INC_FPA)
-                    } els{
-                        (&gt;H:A320_Neo_FCU_VS_INC_VS)
-                    }
-                    (&gt;H:A320_Neo_CDU_VS)
+                    'A32NX.FCU_VS_INC' (&gt;F:KeyEvent)
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
-                    (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_VS_DEC_FPA)
-                    } els{
-                        (&gt;H:A320_Neo_FCU_VS_DEC_VS)
-                    }
-                    (&gt;H:A320_Neo_CDU_VS)
+                    'A32NX.FCU_VS_DEC' (&gt;F:KeyEvent)
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_PULL)
-                    (&gt;H:A320_Neo_CDU_VS)
+                    'A32NX.FCU_VS_PULL' (&gt;F:KeyEvent)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_PUSH)
-                    (&gt;H:A320_Neo_CDU_VS)
+                    'A32NX.FCU_VS_PUSH' (&gt;F:KeyEvent)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
@@ -335,5 +216,24 @@
             </UseTemplate>
         </Component>
 
+    </Template>
+
+    <Template Name="FBW_AIRBUS_Push_Metric_Alt_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>AIRBUS_Push_Metric_Alt</NODE_ID>
+            <ANIM_NAME>AIRBUS_Push_Metric_Alt</ANIM_NAME>
+            <PART_ID>AIRBUS_Push_Metric_Alt</PART_ID>
+            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <TOOLTIPID>%((L:A32NX_METRIC_ALT_TOGGLE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_METRIC_ALT_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_METRIC_ALT_TURN_ON%{end}</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <LEFT_SINGLE_CODE>'A32NX.FCU_METRIC_ALT_TOGGLE_PUSH' (&gt;F:KeyEvent)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 </ModelBehaviors>
