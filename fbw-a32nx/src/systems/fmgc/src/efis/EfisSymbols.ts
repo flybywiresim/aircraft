@@ -685,7 +685,7 @@ export class EfisSymbols {
         }
 
         // FP fix info
-        if (flightPlan instanceof FlightPlan) {
+        if (flightPlan instanceof FlightPlan && flightPlan.index === FlightPlanIndex.Active && !isAlternate) {
             for (let i = 0; i < 4; i++) {
                 const fixInfo = flightPlan.fixInfos[i];
 
