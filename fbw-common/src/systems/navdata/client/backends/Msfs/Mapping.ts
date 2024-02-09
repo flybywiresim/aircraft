@@ -1180,7 +1180,7 @@ export class MsfsMapping {
         return msAirport.icao.substring(7, 11);
     }
 
-    public async getAirways(fixIdent: string, icaoCode: string): Promise<Airway[]> {
+    public async getAirways(fixIdent: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
         const fixes = (await this.cache.searchByIdent(fixIdent, IcaoSearchFilter.Intersections, 100)).filter((wp) => wp.icao.substring(1, 3) === icaoCode);
         if (fixes.length < 1 || fixes[0].routes.length < 1) {
             return [];
@@ -1190,7 +1190,7 @@ export class MsfsMapping {
         }
 
         const fix = this.mapFacilityToWaypoint(fixes[0]);
-        const routes = fixes[0].routes;
+        const routes = fixes[0].routes.filter((route) => !airwayIdent || route.name === airwayIdent);
 
         const airways = routes.map((route) => ({
             databaseId: `E${icaoCode}    ${route.name}${fixIdent}`,

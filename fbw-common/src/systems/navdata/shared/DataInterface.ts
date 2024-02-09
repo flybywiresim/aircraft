@@ -166,8 +166,9 @@ export interface DataInterface {
      * Retrieve airways to/from a given fix
      * @param ident fix identifier
      * @param icaoCode 2-letter ICAO region code of the fix (to uniquely identify it)
+     * @param airwayIdent optional airway identifier to filter results by, no filter is applied if undefined
      */
-    getAirwaysByFix(ident: string, icaoCode: string): Promise<Airway[]>;
+    getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]>;
 
     getNearbyAirports(center: Coordinates, range: NauticalMiles, limit?: number, longestRunwaySurfaces?: number, longestRunwayLength?: number): Promise<readonly Airport[]>;
     getNearbyAirways(center: Coordinates, range: NauticalMiles, limit?: number, levels?: AirwayLevel): Promise<readonly Airway[]>;
