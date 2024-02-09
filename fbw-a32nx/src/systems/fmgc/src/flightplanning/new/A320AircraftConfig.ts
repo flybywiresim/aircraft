@@ -49,6 +49,7 @@ const flightModelParams: FlightModelParameters = {
 const engineModelParams: EngineModelParameters = {
     maxThrust: 27120,
     numberOfEngines: 2,
+    fuelBurnFactor: 1.0,
 };
 
 export const A320AircraftConfig: AircraftConfig = {
