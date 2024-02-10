@@ -64,6 +64,7 @@
 1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
 1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
 1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 

@@ -45,5 +45,10 @@ export const parkingChecklist: ChecklistDefinition = {
                 );
             },
         },
+        {
+            item: 'YELLOW ELEC PUMP',
+            result: 'OFF',
+            condition: () => SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'Bool') === 1,
+        },
     ],
 };
