@@ -17,10 +17,12 @@ class LateralNormalLaw final
     real_T Delay_DSTATE_o;
     real_T Delay_DSTATE_d;
     real_T pY;
+    real_T pY_e;
     uint8_T is_active_c5_LateralNormalLaw;
     uint8_T is_c5_LateralNormalLaw;
     boolean_T icLoad;
     boolean_T pY_not_empty;
+    boolean_T pY_not_empty_n;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_j;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_d;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter;
@@ -33,6 +35,7 @@ class LateralNormalLaw final
     real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T RateLimiterVariableTs_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition;
+    real_T APEngagedRateLimiter_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_k;
     real_T RateLimiterVariableTs1_InitialCondition_m;
@@ -42,10 +45,12 @@ class LateralNormalLaw final
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs1_lo;
+    real_T APEngagedRateLimiter_lo;
     real_T RateLimiterVariableTs_lo_b;
     real_T RateLimiterVariableTs1_lo_m;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs1_up;
+    real_T APEngagedRateLimiter_up;
     real_T RateLimiterVariableTs_up_d;
     real_T RateLimiterVariableTs1_up_o;
     real_T BankAngleProtection2_tableData[5];

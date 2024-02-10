@@ -375,6 +375,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
+    .provides_named_variable("AIRLINER_CRUISE_ALTITUDE")?
     .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?
