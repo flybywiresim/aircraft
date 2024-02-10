@@ -790,7 +790,7 @@ class CDUFlightPlanPage {
             mcdu.onAirport = () => { // Only called if > 4 waypoints
                 const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
                 const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
-                if (offset >= alternateAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
+                if (offset >= Math.max(destinationAirportOffset, alternateAirportOffset) && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
                     // Go back to top of flight plan page to show origin airport.
                     offset = 0;
                 } else if (offset >= destinationAirportOffset) {
