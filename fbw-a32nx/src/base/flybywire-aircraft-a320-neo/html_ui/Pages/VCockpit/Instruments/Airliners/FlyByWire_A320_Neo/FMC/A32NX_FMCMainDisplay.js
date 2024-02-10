@@ -2633,13 +2633,13 @@ class FMCMainDisplay extends BaseAirliners {
         return -1;
     }
 
-    toggleWaypointOverfly(index, callback = EmptyCallback.Void) {
+    toggleWaypointOverfly(index, fpIndex, forAlternate, callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        this.flightPlanService.toggleOverfly(index);
+        this.flightPlanService.toggleOverfly(index, fpIndex, forAlternate);
         callback();
     }
 

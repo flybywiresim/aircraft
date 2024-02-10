@@ -474,7 +474,7 @@ class CDUFlightPlanPage {
                                     CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                                     break;
                                 case FMCMainDisplay.ovfyValue:
-                                    mcdu.toggleWaypointOverfly(fpIndex, () => {
+                                    mcdu.toggleWaypointOverfly(fpIndex, forPlan, inAlternate, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
                                     });
                                     break;

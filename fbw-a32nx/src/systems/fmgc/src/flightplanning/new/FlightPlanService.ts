@@ -400,24 +400,24 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         return plan.editLegDefinition(atIndex, changes);
     }
 
-    async setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active) {
+    async setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active, alternate = false) {
         let finalIndex: number = planIndex;
         if (this.config.TMPY_ON_OVERFLY) {
             finalIndex = this.prepareDestructiveModification(planIndex);
         }
 
-        const plan = this.flightPlanManager.get(finalIndex);
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
         return plan.setOverflyAt(atIndex, overfly);
     }
 
-    async toggleOverfly(atIndex: number, planIndex = FlightPlanIndex.Active) {
+    async toggleOverfly(atIndex: number, planIndex = FlightPlanIndex.Active, alternate = false) {
         let finalIndex: number = planIndex;
         if (this.config.TMPY_ON_OVERFLY) {
             finalIndex = this.prepareDestructiveModification(planIndex);
         }
 
-        const plan = this.flightPlanManager.get(finalIndex);
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
         return plan.toggleOverflyAt(atIndex);
     }
