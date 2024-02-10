@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { a320EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -123,7 +123,11 @@ class NDInstrument implements FsInstrument {
 
         FSComponent.render(
             <DisplayUnit bus={this.bus} brightness={this.displayBrightness} powered={this.displayPowered} failed={this.displayFailed} normDmc={getDisplayIndex()}>
-                <NDComponent bus={this.bus} side={this.efisSide} />
+                <NDComponent
+                    bus={this.bus}
+                    side={this.efisSide}
+                    rangeValues={a320EfisRangeSettings}
+                />
             </DisplayUnit>,
             document.getElementById('ND_CONTENT'),
         );

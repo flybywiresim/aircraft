@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty, getRootElement } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, getRootElement, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../../../Store/store';
@@ -39,6 +39,9 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [OSKOpen, setOSKOpen] = useState(false);
+
+    const [isLookingAtLeftEfb] = useSimVar('IS CAMERA RAY INTERSECT WITH NODE:1', 'boolean');
+    const [isLookingAtRightEfb] = useSimVar('IS CAMERA RAY INTERSECT WITH NODE:2', 'boolean');
 
     const dispatch = useAppDispatch();
 
@@ -167,6 +170,14 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
             Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
         };
     }, [focused]);
+
+    useEffect(() => {
+        // we don't want to update this hook when focused changes so it is not a dep
+        // we only want to unfocus when the user was looking at the EFB and then looked away
+        if (focused && !isLookingAtLeftEfb && !isLookingAtRightEfb) {
+            blurInputField();
+        }
+    }, [isLookingAtLeftEfb, isLookingAtRightEfb]);
 
     // unfocus the search field when user presses enter
     getRootElement().addEventListener('keypress', (event: KeyboardEvent) => {
