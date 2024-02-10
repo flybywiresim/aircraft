@@ -196,6 +196,12 @@ export class PseudoFWC {
 
     private readonly pressurizationAuto = Subject.create(false);
 
+    private readonly outflowValveNotOpen = Subject.create(false);
+
+    private readonly safetyValveNotClosed = Subject.create(false);
+
+    private readonly cabinDeltaPressure = Subject.create(0);
+
     /* 22 - AUTOFLIGHT */
 
     private readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
@@ -1221,6 +1227,11 @@ export class PseudoFWC {
         this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
+
+        this.outflowValveNotOpen.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent') < 100);
+        this.safetyValveNotClosed.set(SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0);
+
+        this.cabinDeltaPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi'));
 
         /* OTHER STUFF */
 
@@ -2403,6 +2414,44 @@ export class PseudoFWC {
             simVarIsActive: this.lowDiffPress,
             whichCodeToReturn: () => [0, 1, 2],
             codesToReturn: ['213123101', '213123102', '213123103'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131232: { // OFV NOT OPEN
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+            simVarIsActive: this.outflowValveNotOpen,
+            whichCodeToReturn: () => [
+                0,
+                this.pressurizationAuto.get() ? 1 : null,
+                this.pressurizationAuto.get() ? 2 : null,
+                (this.pack1On.get() || this.pack2On.get()) ? 3 : null,
+                this.pack1On.get() ? 4 : null,
+                this.pack2On.get() ? 5 : null,
+            ],
+            codesToReturn: ['213123201', '213123202', '213123203', '213123204', '213123205', '213123206'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131233: { // SAFETY VALVE OPEN
+            flightPhaseInhib: [4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.safetyValveNotClosed, // TODO: In flight add one minute delay timer
+            whichCodeToReturn: () => [
+                0,
+                this.cabinDeltaPressure.get() < 1 ? 1 : null,
+                this.cabinDeltaPressure.get() < 1 ? 2 : null,
+                this.cabinDeltaPressure.get() < 1 ? 3 : null,
+                (this.cabinDeltaPressure.get() > 4 && this.pressurizationAuto.get()) ? 4 : null,
+                this.cabinDeltaPressure.get() > 4 ? 5 : null,
+                this.cabinDeltaPressure.get() > 4 ? 6 : null,
+                this.cabinDeltaPressure.get() > 4 ? 7 : null,
+                this.cabinDeltaPressure.get() > 4 ? 8 : null,
+            ],
+            codesToReturn: ['213123301', '213123302', '213123303', '213123304', '213123305',
+                '213123306', '213123307', '213123308', '213123309'],
             memoInhibit: () => false,
             failure: 2,
             sysPage: 2,

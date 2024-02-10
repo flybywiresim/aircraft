@@ -860,6 +860,7 @@ impl SimulationElement for A320PressurizationSystem {
         accept_iterable!(self.cpc_interface, visitor);
         accept_iterable!(self.outflow_valve, visitor);
         self.pressurization_overhead.accept(visitor);
+        self.safety_valve.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2036,6 +2037,8 @@ mod tests {
     }
 
     mod a320_pressurization_tests {
+        use systems::failures::FailureType;
+
         use super::*;
 
         #[test]
@@ -2727,6 +2730,39 @@ mod tests {
                         A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
                     )
             );
+        }
+
+        #[test]
+        fn outflow_valve_does_not_move_when_failure_active() {
+            let mut test_bed = test_bed().iterate(10);
+
+            test_bed.fail(FailureType::OutflowValveFault);
+
+            test_bed = test_bed
+                .memorize_outflow_valve_open_amount()
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(7000.), Length::new::<foot>(14000.))
+                .iterate(10);
+
+            assert!(
+                (test_bed.outflow_valve_open_amount()
+                    - test_bed.initial_outflow_valve_open_amount())
+                .abs()
+                    < Ratio::new::<percent>(1.)
+            );
+        }
+
+        #[test]
+        fn safety_valve_opens_when_failure_active() {
+            let mut test_bed = test_bed().iterate(10);
+
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
+
+            test_bed.fail(FailureType::SafetyValveFault);
+
+            test_bed = test_bed.iterate(10);
+
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
         }
 
         mod cabin_pressure_controller_tests {

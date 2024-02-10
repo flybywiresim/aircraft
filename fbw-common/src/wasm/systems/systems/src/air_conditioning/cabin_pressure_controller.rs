@@ -136,7 +136,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
             is_active: false,
             is_initialised: false,
-            failure: Failure::new(FailureType::Cpc(id)),
+            failure: Failure::new(FailureType::CpcFault(id)),
             constants: PhantomData,
         }
     }
@@ -635,6 +635,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
 
     fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.failure.accept(visitor);
+
         visitor.visit(self);
     }
 }

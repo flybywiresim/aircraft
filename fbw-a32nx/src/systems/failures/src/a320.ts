@@ -18,6 +18,8 @@ export const A320Failure = Object.freeze({
     LabGalleyFan: 21014,
     Cpc1: 21015,
     Cpc2: 21016,
+    OutflowValve: 21017,
+    SafetyValve: 21018,
 
     Fac1Failure: 22000,
     Fac2Failure: 22001,
