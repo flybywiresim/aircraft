@@ -116,8 +116,10 @@ export class DescentGuidance {
     updateProfile(profile: NavGeometryProfile) {
         this.aircraftToDescentProfileRelation.updateProfile(profile);
 
-        if (!this.aircraftToDescentProfileRelation.isValid) {
+        if (this.verticalState !== DescentVerticalGuidanceState.InvalidProfile && !this.aircraftToDescentProfileRelation.isValid) {
             this.changeState(DescentVerticalGuidanceState.InvalidProfile);
+        } else if (this.verticalState === DescentVerticalGuidanceState.InvalidProfile && this.aircraftToDescentProfileRelation.isValid) {
+            this.changeState(DescentVerticalGuidanceState.Observing);
         }
     }
 
