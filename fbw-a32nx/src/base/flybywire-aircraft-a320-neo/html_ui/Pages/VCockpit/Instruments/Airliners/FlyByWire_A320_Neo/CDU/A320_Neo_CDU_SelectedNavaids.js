@@ -21,7 +21,6 @@ NAVAID_TYPE_STRINGS = Object.freeze({
     [Fmgc.SelectedNavaidType.Ils]: 'ILSDME',
     [Fmgc.SelectedNavaidType.Gls]: 'GLS',
     [Fmgc.SelectedNavaidType.Mls]: 'MLS',
-    [LatLong.fromStringFloat]: 'bruh',
 });
 
 NAVAID_MODE_STRINGS = Object.freeze({
