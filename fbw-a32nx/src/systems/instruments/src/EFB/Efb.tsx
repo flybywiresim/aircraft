@@ -43,7 +43,6 @@ const LoadingScreen = () => (
 
 const EmptyBatteryScreen = () => (
     <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
-    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
