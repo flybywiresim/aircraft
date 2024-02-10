@@ -17,7 +17,7 @@ export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, re
         <div
             key={text}
             ref={ref}
-            className={`absolute rounded-md z-50 px-2 whitespace-nowrap border bg-theme-accent border-theme-secondary transition duration-100 pointer-events-none ${shown ? 'opacity-100' : 'opacity-0'}`}
+            className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-md border border-theme-secondary bg-theme-accent px-2 transition duration-100 ${shown ? 'opacity-100' : 'opacity-0'}`}
             style={{ top: `${posY + offsetY}px`, left: `${posX}px` }}
         >
             {text}
@@ -34,7 +34,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
     const [showTooltip, setShowTooltip] = useState(false);
     const [hiddenLocked, setHiddenLocked] = useState(false);
 
-    const timeout = useRef<NodeJS.Timeout | null>(null);
+    const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
 

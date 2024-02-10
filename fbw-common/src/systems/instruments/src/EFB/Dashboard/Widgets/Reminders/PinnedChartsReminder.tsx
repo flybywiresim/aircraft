@@ -1,5 +1,5 @@
 import React from 'react';
-import { t } from '../../../translation';
+import { t } from '../../../Localization/translation';
 import { useAppSelector } from '../../../Store/store';
 import { PinnedChartCard } from '../../../Navigation/Pages/PinnedChartsPage';
 import { RemindersSection } from './RemindersSection';
@@ -21,7 +21,7 @@ export const PinnedChartsReminder = () => {
             </div>
 
             {!pinnedCharts.length && (
-                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}</h1>
+                <h1 className="m-auto my-4 text-center font-bold opacity-60">{t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}</h1>
             )}
         </RemindersSection>
     );

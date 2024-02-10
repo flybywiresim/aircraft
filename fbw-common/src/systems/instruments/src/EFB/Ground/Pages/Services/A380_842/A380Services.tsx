@@ -16,7 +16,7 @@ import {
     // VinylFill as Wheel,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
-import { t } from '../../../../translation';
+import { t } from '../../../../Localization/translation';
 import { A380GroundServiceOutline } from '../../../../Assets/GroundServiceOutline';
 import { useAppDispatch, useAppSelector } from '../../../../Store/store';
 import {
@@ -43,7 +43,7 @@ interface ServiceButtonWrapperProps {
 // This groups buttons and sets a border and divider line
 const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
-        className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
+        className={`flex flex-col divide-y-2 divide-theme-accent overflow-hidden rounded-xl border-2 border-theme-accent ${className}`}
         style={{ position: 'absolute', left: xl, right: xr, top: y }}
     >
         {children}
@@ -98,11 +98,11 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
 
     return (
         <div
-            className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${buttonsStyles[state]} ${className}`}
+            className={`flex cursor-pointer flex-row items-center space-x-6 p-6${buttonsStyles[state]} ${className}`}
             onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
         >
             {children}
-            <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
+            <h1 className="shrink-0 text-2xl font-medium text-current">{name}</h1>
         </div>
     );
 };
@@ -522,7 +522,7 @@ export const A380Services: React.FC = () => {
                 main2LeftStatus={main2LeftDoorOpen >= 1.0}
                 main4RightStatus={main4RightDoorOpen >= 1.0}
                 upper1LeftStatus={upper1LeftDoorOpen >= 1.0}
-                className="inset-x-0 mx-auto w-full h-full text-theme-text"
+                className="inset-x-0 mx-auto h-full w-full text-theme-text"
             />
 
             <ServiceButtonWrapper xr={930} y={24}>

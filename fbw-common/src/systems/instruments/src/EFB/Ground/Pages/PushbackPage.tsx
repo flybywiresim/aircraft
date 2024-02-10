@@ -25,7 +25,7 @@ import {
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { PushbackMap } from './PushbackMap';

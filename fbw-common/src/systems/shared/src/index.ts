@@ -1,5 +1,7 @@
 export * from './failures';
 export * from './navigraph';
+export * from './simbridge';
+export * from './AircraftVersionChecker';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
 export * from './Arinc429RegisterSubject';
@@ -20,6 +22,8 @@ export * from './ata';
 export * from './AutoCallOuts';
 export * from './bitFlags';
 export * from './config';
+export * from './FbwAircraftSentryClient';
+export * from './localization';
 export * from './logic';
 export * from './navdata';
 export * from './navigraph';

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { emptyNavigraphCharts, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
 import { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
-import { t } from '../../../translation';
+import { t } from '../../../Localization/translation';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
@@ -113,21 +113,21 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+        <div className="flex h-content-section-reduced w-full flex-row overflow-x-hidden rounded-lg">
             <>
                 {!isFullScreen && (
-                    <div className="flex-shrink-0" style={{ width: '450px' }}>
-                        <div className="flex flex-row justify-center items-center">
+                    <div className="shrink-0" style={{ width: '450px' }}>
+                        <div className="flex flex-row items-center justify-center">
                             <SimpleInput
                                 placeholder="ICAO"
                                 value={searchQuery}
                                 maxLength={4}
-                                className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
+                                className={`w-full shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
 
                             {isSimbriefDataLoaded() && (
-                                <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                <SelectGroup className="shrink-0 rounded-l-none">
                                     <SelectItem
                                         className="uppercase"
                                         selected={searchQuery === departingAirport}
@@ -155,9 +155,9 @@ export const NavigraphChartUI = () => {
                             )}
                         </div>
 
-                        <div className="flex flex-row items-center w-full h-11">
+                        <div className="flex h-11 w-full flex-row items-center">
                             <ArrowReturnRight size={30} />
-                            <div className="block overflow-hidden px-4 w-full whitespace-nowrap" style={{ textOverflow: 'ellipsis' }}>
+                            <div className="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
                                 {getStatusBarText()}
                             </div>
                         </div>
@@ -169,7 +169,7 @@ export const NavigraphChartUI = () => {
                                         selected={index === selectedTabIndex}
                                         onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabIndex: index }))}
                                         key={organizedChart.name}
-                                        className="flex justify-center w-full"
+                                        className="flex w-full justify-center"
                                     >
                                         {organizedChart.name}
                                     </SelectItem>

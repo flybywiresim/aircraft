@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { IconTrash } from '@tabler/icons';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { FullscreenSettingsPage, SettingItem, SettingsPage } from '../Settings';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { NavigraphAuthUIWrapper, useNavigraphAuthInfo } from '../../Apis/Navigraph/Components/Authentication';
 import { useNavigraph } from '../../Apis/Navigraph/Navigraph';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -114,8 +114,8 @@ export const ThirdPartyOptionsPage = () => {
 
                                 <button
                                     type="button"
-                                    className="text-theme-text hover:bg-theme-body rounded-md border-2 border-red-600
-                                       bg-red-600 px-5 py-2.5 transition duration-100 hover:text-red-600"
+                                    className="rounded-md border-2 border-red-600 bg-red-600 px-5
+                                       py-2.5 text-theme-text transition duration-100 hover:bg-theme-body hover:text-red-600"
                                     onClick={handleNavigraphAccountUnlink}
                                 >
                                     {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Unlink')}
@@ -124,8 +124,8 @@ export const ThirdPartyOptionsPage = () => {
                         ) : (
                             <button
                                 type="button"
-                                className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight
-                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
+                                className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                 onClick={() => history.push('/settings/3rd-party-options/navigraph-login')}
                             >
                                 {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Link')}
@@ -144,8 +144,8 @@ export const ThirdPartyOptionsPage = () => {
                                 />
 
                                 <div
-                                    className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex w-min shrink items-center justify-center
-                                    rounded-md border-2 p-2 text-center transition duration-100"
+                                    className="flex w-min shrink items-center justify-center rounded-md border-2 border-utility-red bg-utility-red p-2
+                                    text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                                     onClick={handleOverrideSimBriefIDDelete}
                                 >
                                     <IconTrash />

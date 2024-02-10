@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';

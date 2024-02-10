@@ -6,7 +6,7 @@ import React, { useRef } from 'react';
 
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';

@@ -14,15 +14,13 @@ import {
     Wifi,
     WifiOff,
 } from 'react-bootstrap-icons';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, usePersistentProperty, useSimVar, ClientState, SimBridgeClientState } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
 import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
-import { ClientState } from '../../../../simbridge-client/src';
-import { SimBridgeClientState } from '../../../../simbridge-client/src/components/ClientState';
 
 interface QuickSettingsButtonProps {
     onClick: () => void;
@@ -35,8 +33,8 @@ const QuickSettingsButton: FC<QuickSettingsButtonProps> = forwardRef<HTMLButtonE
             ref={ref}
             type="button"
             onClick={onClick}
-            className={`flex justify-center items-center w-12 h-12 text-theme-text
-                    bg-theme-body rounded-full hover:border-4 hover:border-theme-highlight transition duration-100
+            className={`flex h-12 w-12 items-center justify-center rounded-full
+                    bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                     ${className ?? ''}`}
             {...rest}
         >
@@ -57,8 +55,8 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
             ref={ref}
             type="button"
             onClick={onClick}
-            className={`flex flex-col justify-center items-center text-theme-text
-                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100
+            className={`flex flex-col items-center justify-center rounded-md
+                   bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                    ${className ?? ''}`}
             style={{ width: '130px', height: '100px' }}
             {...rest}
@@ -172,13 +170,13 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     return (
         <>
-            <div className="absolute top-0 left-0 z-30 w-screen h-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
+            <div className="absolute left-0 top-0 z-30 h-screen w-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
 
             <div
-                className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
+                className="absolute z-40 rounded-md border border-theme-secondary bg-theme-accent p-6 transition duration-100"
                 style={{ top: '40px', right: '50px', width: '620px' }}
             >
-                <div className="flex flex-row justify-end items-center mb-5">
+                <div className="mb-5 flex flex-row items-center justify-end">
                     <span className="mr-auto">
                         <TooltipWrapper text={t('QuickControls.TT.Settings')}>
                             <QuickSettingsButton onClick={handleSettings}>
@@ -200,7 +198,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                     </TooltipWrapper>
                 </div>
 
-                <div className="flex flex-row justify-between items-center mb-8">
+                <div className="mb-8 flex flex-row items-center justify-between">
                     <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
                         <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
                             {t('QuickControls.AlignAdirs')}
@@ -241,12 +239,12 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
                 </div>
 
-                <div className="flex flex-row justify-between items-center">
+                <div className="flex flex-row items-center justify-between">
                     <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
                         <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-                            <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
+                            <div className="mr-4 flex w-[80px] flex-row items-center text-theme-text">
                                 <BrightnessHighFill size={24} />
-                                <span className="ml-2 pointer-events-none text-inherit">
+                                <span className="pointer-events-none ml-2 text-inherit">
                                     {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
                                 </span>
                             </div>
@@ -272,9 +270,9 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                         <button
                             type="button"
                             onClick={handleAutoBrightness}
-                            className={`flex justify-center items-center ml-4 text-theme-text
-                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md
-                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+                            className={`ml-4 flex items-center justify-center rounded-md
+                                                    bg-theme-body text-theme-text transition duration-100
+                                                    hover:border-4 hover:border-theme-highlight ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
                             style={{ width: '80px', height: '50px' }}
                         >
                             <BrightnessHigh size={24} />

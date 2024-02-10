@@ -6,7 +6,7 @@ import React from 'react';
 import { AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -48,17 +48,17 @@ export const Failures = () => {
             <div className="flex flex-row justify-between space-x-4">
                 <h1 className="font-bold">{t('Failures.Title')}</h1>
 
-                <div className="flex flex-row items-center py-1 px-4 space-x-2 bg-yellow-400 rounded-md">
+                <div className="flex flex-row items-center space-x-2 rounded-md bg-yellow-400 px-4 py-1">
                     <InfoCircleFill className="text-black" />
                     <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
                 </div>
             </div>
 
-            <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="mt-4 h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
                 <div className="flex flex-row space-x-4">
                     <SimpleInput
                         placeholder={t('Failures.Search')}
-                        className="flex-grow uppercase"
+                        className="grow uppercase"
                         value={searchQuery}
                         onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
                     />

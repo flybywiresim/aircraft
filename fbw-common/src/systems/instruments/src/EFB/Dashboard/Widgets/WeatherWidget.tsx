@@ -6,7 +6,7 @@ import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
 import { ConfigWeatherMap, MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 import { useAppDispatch, useAppSelector } from '../../Store/store';

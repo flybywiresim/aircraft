@@ -11,7 +11,7 @@ import {
     Sliders,
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 
 // @ts-ignore
@@ -27,7 +27,7 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) =>
         <NavLink
             to={to}
             activeClassName="bg-theme-accent !text-theme-text"
-            className="flex justify-center items-center py-3.5 px-3.5 rounded-md transition duration-100 text-theme-unselected hover:text-theme-text hover:bg-theme-accent"
+            className="flex items-center justify-center rounded-md p-3.5 text-theme-unselected transition duration-100 hover:bg-theme-accent hover:text-theme-text"
         >
             {children}
         </NavLink>
@@ -35,8 +35,8 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) =>
 );
 
 export const ToolBar = () => (
-    <nav className="flex flex-col flex-shrink-0 justify-between py-6 w-32">
-        <div className="flex flex-col items-center mt-9 space-y-4">
+    <nav className="flex w-32 shrink-0 flex-col justify-between py-6">
+        <div className="mt-9 flex flex-col items-center space-y-4">
             <ToolBarButton to="/dashboard" tooltipText={t('Dashboard.Title')}>
                 <img className="w-[35px]" src={FbwTail} alt="FbwTail" />
             </ToolBarButton>
@@ -67,7 +67,7 @@ export const ToolBar = () => (
         </div>
 
         <div className="flex flex-col items-center">
-            <div className="my-4 w-14 h-1.5 rounded-full bg-theme-accent" />
+            <div className="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
             <ToolBarButton to="/settings" tooltipText={t('Settings.Title')}>
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>

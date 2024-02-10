@@ -13,7 +13,7 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { keyboardLayoutOptions } from '../../UtilComponents/KeyboardWrapper';
-import { languageOptions, tt } from '../../translation';
+import { languageOptions, tt } from '../../Localization/translation';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);

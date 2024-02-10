@@ -4,11 +4,12 @@
 
 /* eslint-disable no-console */
 
-import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
 import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
 import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
 import { Integration } from '@sentry/types';
+import { NXDataStore } from './persistence';
+import { PopUpDialog } from './popup';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
 

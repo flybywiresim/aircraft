@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { ArrowRight } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
-import { t } from '../../../translation';
+import { t } from '../../../Localization/translation';
 
 interface RemindersSectionProps {
     title: string,
@@ -10,13 +10,13 @@ interface RemindersSectionProps {
 }
 
 export const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLinkPath, noLink }) => (
-    <div className="flex flex-col pb-6 border-b-2 border-gray-700">
-        <div className="flex flex-row justify-between items-center mb-2">
+    <div className="flex flex-col border-b-2 border-gray-700 pb-6">
+        <div className="mb-2 flex flex-row items-center justify-between">
             <h2 className="font-medium">{title}</h2>
 
             {!noLink && (
-                <Link to={pageLinkPath} className="flex items-center text-theme-highlight border-b-2 border-theme-highlight opacity-80 hover:opacity-100 transition duration-100">
-                    <span className="font-bold text-theme-highlight font-manrope">{t('Dashboard.ImportantInformation.GoToPage')}</span>
+                <Link to={pageLinkPath} className="flex items-center border-b-2 border-theme-highlight text-theme-highlight opacity-80 transition duration-100 hover:opacity-100">
+                    <span className="font-manrope font-bold text-theme-highlight">{t('Dashboard.ImportantInformation.GoToPage')}</span>
 
                     <ArrowRight className="fill-current" />
                 </Link>

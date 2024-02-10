@@ -65,11 +65,11 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
         }
     }, []);
 
-    const timeout = useRef<NodeJS.Timeout>();
+    const timeout = useRef<ReturnType<typeof setTimeout>>();
 
     return (
         <div
-            className={`w-full overflow-y-auto scrollbar ${className}`}
+            className={`scrollbar w-full overflow-y-auto ${className}`}
             style={nonRigid ? { maxHeight: `${height}rem` } : { height: `${height}rem` }}
             ref={containerRef}
             onScroll={(event) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { toNumber, last } from 'lodash';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { TODCalculator } from '../../Service/TODCalculator';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
@@ -76,14 +76,14 @@ export const Result = ({ className }: {className: string}) => {
                     return (
                         <div
                             key={headerText}
-                            className="flex flex-col justify-center items-center mb-10 last:mb-0"
+                            className="mb-10 flex flex-col items-center justify-center last:mb-0"
                         >
-                            <h1 className="mb-4 text-2xl font-medium text-center">{headerText}</h1>
+                            <h1 className="mb-4 text-center text-2xl font-medium">{headerText}</h1>
 
-                            <span className="text-6xl whitespace-nowrap">
+                            <span className="whitespace-nowrap text-6xl">
                                 {calculation}
                             </span>
-                            <span className="text-2xl whitespace-nowrap">
+                            <span className="whitespace-nowrap text-2xl">
                                 {unit}
                             </span>
 

@@ -4,12 +4,14 @@ import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { t } from '../../../../translation';
-import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
-import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
-import { ProgressBar } from '../../../../UtilComponents/Progress/Progress';
-import { SimpleInput } from '../../../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { OverWingOutline } from '../../../../Assets/OverWingOutline';
+import { t } from '../../Localization/translation';
+import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
+import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { useAppSelector } from '../../Store/store';
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { ProgressBar } from '../../UtilComponents/Progress/Progress';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { OverWingOutline } from '../../Assets/OverWingOutline';
 
 interface TankReadoutProps {
     title: string;
@@ -28,7 +30,7 @@ const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tank
     const getFuelBarPercent = (curr: number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     return (
-        <div className={`bg-theme-body w-min space-y-3 overflow-hidden p-4 ${className}`} style={{ width: `${width}px` }}>
+        <div className={`w-min space-y-3 overflow-hidden bg-theme-body p-4 ${className}`} style={{ width: `${width}px` }}>
             <div className={inlinedTitle ? 'flex flex-row items-center justify-between' : undefined}>
                 <h2>{title}</h2>
                 <p>{`${convertedFuelValue}/${round(tankValue)} ${currentUnit}`}</p>
@@ -288,7 +290,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
     const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
     return (
-        <div className="h-content-section-reduced relative mt-6 flex flex-col justify-between">
+        <div className="relative mt-6 flex h-content-section-reduced flex-col justify-between">
             <div className="z-30">
                 <div className="absolute inset-x-0 top-0 mx-auto flex flex-col items-center space-y-3">
                     <TankReadoutWidget
@@ -299,7 +301,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
                         currentUnit={massUnitForDisplay}
                         tankValue={totalFuel()}
                         convertedFuelValue={totalCurrent()}
-                        className="border-theme-accent overflow-hidden rounded-2xl border-2"
+                        className="overflow-hidden rounded-2xl border-2 border-theme-accent"
                         inlinedTitle
                         width={420}
                     />
@@ -311,13 +313,13 @@ export const A320Fuel: React.FC<FuelProps> = ({
                         currentUnit={massUnitForDisplay}
                         tankValue={centerTank()}
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
-                        className="border-theme-accent overflow-hidden rounded-2xl border-2"
+                        className="overflow-hidden rounded-2xl border-2 border-theme-accent"
                         inlinedTitle
                         width={420}
                     />
                 </div>
                 <div className="absolute inset-x-0 top-40 flex flex-row justify-between">
-                    <div className="border-theme-accent divide-theme-accent w-min divide-y overflow-hidden rounded-2xl border-2">
+                    <div className="w-min divide-y divide-theme-accent overflow-hidden rounded-2xl border-2 border-theme-accent">
                         <TankReadoutWidget
                             title={t('Ground.Fuel.LeftInnerTank')}
                             current={LInnCurrent}
@@ -337,7 +339,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="border-theme-accent divide-theme-accent w-min divide-y overflow-hidden rounded-2xl border-2">
+                    <div className="w-min divide-y divide-theme-accent overflow-hidden rounded-2xl border-2 border-theme-accent">
                         <TankReadoutWidget
                             title={t('Ground.Fuel.RightInnerTank')}
                             current={RInnCurrent}
@@ -386,22 +388,22 @@ export const A320Fuel: React.FC<FuelProps> = ({
                     />
                     {/* tl overlay */}
                     <div
-                        className="bottom-overlay-t-y left-overlay-tl bg-theme-body -rotate-26.5 absolute z-10"
+                        className="absolute bottom-overlay-t-y left-overlay-tl z-10 -rotate-26.5 bg-theme-body"
                         style={{ transform: 'rotate(-26.5deg)', width: '490px', height: '140px', bottom: '240px', left: '82px' }}
                     />
                     {/* tr overlay */}
                     <div
-                        className="right-overlay-tr bottom-overlay-t-y bg-theme-body rotate-26.5 absolute z-10"
+                        className="absolute bottom-overlay-t-y right-overlay-tr z-10 rotate-26.5 bg-theme-body"
                         style={{ transform: 'rotate(26.5deg)', width: '490px', height: '140px', bottom: '240px', right: '82px' }}
                     />
                     {/* bl overlay */}
                     <div
-                        className="bottom-overlay-b-y left-overlay-bl bg-theme-body -rotate-18.5 absolute z-10"
+                        className="absolute bottom-overlay-b-y left-overlay-bl z-10 -rotate-18.5 bg-theme-body"
                         style={{ transform: 'rotate(-18.5deg)', width: '484px', height: '101px', bottom: '78px', left: '144px' }}
                     />
                     {/* br overlay */}
                     <div
-                        className="right-overlay-br bottom-overlay-b-y bg-theme-body rotate-18.5 absolute z-10"
+                        className="absolute bottom-overlay-b-y right-overlay-br z-10 rotate-18.5 bg-theme-body"
                         style={{ transform: 'rotate(18.5deg)', width: '484px', height: '101px', bottom: '78px', right: '144px' }}
                     />
                 </div>
@@ -437,7 +439,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                                         <div
-                                            className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex h-auto items-center justify-center rounded-md rounded-l-none border-2 px-2 transition duration-100"
+                                            className="flex h-auto items-center justify-center rounded-md rounded-l-none border-2 border-theme-highlight bg-theme-highlight px-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                             onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
                                         >
                                             <CloudArrowDown size={26} />
@@ -461,7 +463,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
                     )}
                 </div>
 
-                <div className="border-theme-accent absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border px-6 py-3">
+                <div className="absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border border-theme-accent px-6 py-3">
                     <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
 
                     <SelectGroup>

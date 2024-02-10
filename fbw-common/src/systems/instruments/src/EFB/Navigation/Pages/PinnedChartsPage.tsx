@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IconArrowRight, IconTrash } from '@tabler/icons';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
@@ -62,31 +62,31 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete } : PinnedC
         <>
             {showDelete ? (
                 <div
-                    className={`relative cursor-pointer flex flex-col flex-wrap px-2 pt-3 pb-2 rounded-md rounded-md overflow-hidden ${className}`}
+                    className={`relative flex cursor-pointer flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 ${className}`}
                     onClick={() => dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }))}
                     onMouseEnter={() => setCurrentTag('DEL')}
                     onMouseLeave={() => setCurrentTag(tag)}
                 >
                     <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.Delete')}>
-                        <div className="absolute right-0 bottom-0 z-10 text-utility-red">
+                        <div className="absolute bottom-0 right-0 z-10 text-utility-red">
                             <IconTrash className="z-10" size={48} />
                         </div>
                     </TooltipWrapper>
                     <div className="opacity-70">
-                        <div className={`${getTagColor(currentTag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
-                        <h2 className="font-bold break-all">
+                        <div className={`${getTagColor(currentTag)} absolute inset-x-0 top-0 h-1.5 w-full bg-current`} />
+                        <h2 className="break-all font-bold">
                             {title}
                             {' '}
                             <div className="inline-block text-theme-unselected">{tag}</div>
                         </h2>
-                        <p className="mt-2 font-inter">{subTitle}</p>
-                        <IconArrowRight className={`opacity-0 mt-auto ml-auto ${getTagColor(tag)}`} />
+                        <p className="font-inter mt-2">{subTitle}</p>
+                        <IconArrowRight className={`ml-auto mt-auto opacity-0 ${getTagColor(tag)}`} />
                     </div>
                 </div>
             ) : (
                 <Link
                     to={`/navigation/${pathify(provider)}`}
-                    className={`${showDelete && 'rounded-t-none'} relative flex flex-col flex-wrap px-2 pt-3 pb-2 bg-theme-accent rounded-md overflow-hidden ${className}`}
+                    className={`${showDelete && 'rounded-t-none'} relative flex flex-col flex-wrap overflow-hidden rounded-md bg-theme-accent px-2 pb-2 pt-3 ${className}`}
                     onClick={() => {
                         dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
                         dispatch(editTabProperty({ tab, chartLinks: { light: '', dark: '' } }));
@@ -107,14 +107,14 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete } : PinnedC
                         dispatch(setProvider(provider));
                     }}
                 >
-                    <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
-                    <h2 className="font-bold break-all">
+                    <div className={`${getTagColor(tag)} absolute inset-x-0 top-0 h-1.5 w-full bg-current`} />
+                    <h2 className="break-all font-bold">
                         {title}
                         {' '}
                         <div className="inline-block text-theme-unselected">{tag}</div>
                     </h2>
-                    <p className="mt-2 font-inter">{subTitle}</p>
-                    <IconArrowRight className={`mt-auto ml-auto ${getTagColor(tag)}`} />
+                    <p className="font-inter mt-2">{subTitle}</p>
+                    <IconArrowRight className={`ml-auto mt-auto ${getTagColor(tag)}`} />
                 </Link>
             )}
         </>
@@ -224,13 +224,13 @@ export const PinnedChartUI = () => {
     };
 
     return (
-        <div className="p-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
             <div className="space-y-4">
                 {/* FIXME: The spacex4 is causing the keyboard to be shifted as well */}
                 <div className="flex flex-row items-center space-x-4">
                     <SimpleInput
                         placeholder={t('NavigationAndCharts.PinnedCharts.SearchPlaceholder')}
-                        className="flex-grow uppercase"
+                        className="grow uppercase"
                         value={searchQuery}
                         onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, searchQuery: value.toUpperCase() }))}
                     />
@@ -265,9 +265,9 @@ export const PinnedChartUI = () => {
                     </SelectGroup>
                 </div>
 
-                <div className="flex flex-row space-x-4 w-full">
+                <div className="flex w-full flex-row space-x-4">
                     {filterTabs.length ? (
-                        <SelectGroup className="flex-grow">
+                        <SelectGroup className="grow">
                             {filterTabs.map(({ alias }, index) => (
                                 <SelectItem
                                     key={alias}
@@ -284,14 +284,14 @@ export const PinnedChartUI = () => {
                     ) : (
                         <>
                             <div
-                                className="flex flex-grow justify-center items-center py-2 px-6 rounded-md border border-theme-accent"
+                                className="flex grow items-center justify-center rounded-md border border-theme-accent px-6 py-2"
                             >
                                 {t('NavigationAndCharts.PinnedCharts.ShowingChartsFromAllProviders')}
                             </div>
                             {editMode && (
                                 <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.RemoveAllPinnedCharts')}>
                                     <div
-                                        className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100"
+                                        className="flex w-min shrink items-center justify-center rounded-md border-2 border-utility-red bg-utility-red p-2 text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                                         onClick={removeAll}
                                     >
                                         <IconTrash />
@@ -323,7 +323,7 @@ export const PinnedChartUI = () => {
 
             {searchedCharts.length > 0 ? (
                 <ScrollableContainer height={44}>
-                    <div className="grid grid-cols-4 auto-rows-auto">
+                    <div className="grid auto-rows-auto grid-cols-4">
                         {sortedCharts.map((pinnedChart, index) => (
                             <div
                                 key={pinnedChart.chartId}
@@ -339,7 +339,7 @@ export const PinnedChartUI = () => {
                     </div>
                 </ScrollableContainer>
             ) : (
-                <div className="flex justify-center items-center rounded-lg border-2 border-theme-accent" style={{ height: '44rem' }}>
+                <div className="flex items-center justify-center rounded-lg border-2 border-theme-accent" style={{ height: '44rem' }}>
                     {t('NavigationAndCharts.PinnedCharts.NoItemsFound')}
                 </div>
             )}

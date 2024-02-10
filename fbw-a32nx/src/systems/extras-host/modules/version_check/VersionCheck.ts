@@ -18,7 +18,7 @@ export class VersionCheck {
 
     public startPublish(): void {
         console.log('VersionCheck: startPublish()');
-        AircraftVersionChecker.checkVersion();
+        AircraftVersionChecker.checkVersion('a32nx');
     }
 
     public update(): void {

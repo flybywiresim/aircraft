@@ -4,7 +4,7 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 

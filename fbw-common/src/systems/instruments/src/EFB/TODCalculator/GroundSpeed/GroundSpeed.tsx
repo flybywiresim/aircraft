@@ -1,5 +1,5 @@
 import React from 'react';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppSelector } from '../../Store/store';

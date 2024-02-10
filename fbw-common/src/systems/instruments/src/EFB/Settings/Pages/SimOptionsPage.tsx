@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -189,8 +189,8 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight
-                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
+                            className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}

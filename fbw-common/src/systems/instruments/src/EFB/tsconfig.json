@@ -1,15 +1,3 @@
 {
   "extends": "../../../tsconfig.json",
-
-  "compilerOptions": {
-    "resolveJsonModule" : true,
-    "jsx": "react", /* Required for FSComponent framework JSX */
-    "paths": {
-      "@shared/*": ["../../shared/src/*"],
-      "@failures": ["./failures/src/index.ts"],
-
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-      "@fbw-common/flypad/*": ["../../../fbw-common/src/systems/instruments/src/EFB/*"]
-    }
-  }
 }

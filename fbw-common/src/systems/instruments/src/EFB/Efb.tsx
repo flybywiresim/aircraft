@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient } from '@flybywiresim/fbw-sdk';
+import {
+    useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
+    SentryConsentState, SENTRY_CONSENT_KEY,
+} from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
@@ -35,11 +38,6 @@ import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 import { FailureDefinition } from '../../../shared/src/failures/failures-orchestrator';
-// TODO move that to fbw-common
-import {
-    SENTRY_CONSENT_KEY,
-    SentryConsentState,
-} from '../../../../../../fbw-a32nx/src/systems/sentry-client/src/FbwAircraftSentryClient';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';
@@ -439,6 +437,5 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
                 </Router>
             </ErrorBoundary>
         </FailuresOrchestratorProvider>
-
     );
 };

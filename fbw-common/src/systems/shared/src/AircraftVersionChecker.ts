@@ -3,10 +3,10 @@
 /* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { getAircraftType, NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 /**
- * Contains the a32nx_build_info.json file's information in a structured way.
+ * Contains the ${aircraft}_build_info.json file's information in a structured way.
  */
 export interface BuildInfo {
     built: string;
@@ -58,7 +58,7 @@ export class AircraftVersionChecker {
      *
      * @returns true if the aircraft version has been checked, false if no check has been commenced.
      */
-    public static async checkVersion(): Promise<boolean> {
+    public static async checkVersion(aircraft: string): Promise<boolean> {
         console.log('Checking aircraft version');
 
         this.notification = new NotificationManager();
@@ -67,8 +67,8 @@ export class AircraftVersionChecker {
         this.versionChecked = false;
         this.setOutdatedVersionFlag(false);
 
-        // Retrieve the version info from a32nx_build_info.json and GitHub
-        await this.initialize();
+        // Retrieve the version info from ${aircraft}_build_info.json and GitHub
+        await this.initialize(aircraft);
 
         // assert all version info is available
         if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
@@ -93,19 +93,16 @@ export class AircraftVersionChecker {
     }
 
     /**
-     * Reads the a32nx_build_info.json file and returns the data a BuildInfo object.
+     * Reads the ${aircraft}_build_info.json file and returns the data a BuildInfo object.
      * It returns a cached version if it has been read before as the file is not expected to change
      * during the MSFS session.
      *
      * @returns Promise on a BuildInfo object
      */
-    public static async getBuildInfo(): Promise<BuildInfo> {
+    public static async getBuildInfo(aircraft: string): Promise<BuildInfo> {
         if (this.buildInfo) {
             return this.buildInfo;
         }
-
-        const aircraft = getAircraftType();
-
         await fetch(`/VFS/${aircraft}_build_info.json`).then((response) => {
             response.json().then((json) => {
                 this.buildInfo = ({
@@ -128,7 +125,7 @@ export class AircraftVersionChecker {
      * Parses the version string and returns the version info as VersionInfoData object.
      * Note: public because of jest test
      *
-     * @param versionString as provided by the a32nx_build_info.json file.
+     * @param versionString as provided by the ${aircraft}_build_info.json file.
      * @throws Error if the version string is not in the correct format.
      */
     public static getVersionInfo(versionString: string): VersionInfoData {
@@ -151,11 +148,11 @@ export class AircraftVersionChecker {
      *
      * @private
      */
-    private static async initialize() {
-        this.releaseInfo = await GitVersions.getReleases('flybywiresim', 'a32nx', false, 0, 1);
-        this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'master');
-        this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'experimental');
-        this.buildInfo = await AircraftVersionChecker.getBuildInfo();
+    private static async initialize(aircraft: string) {
+        this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
+        this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'master');
+        this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
+        this.buildInfo = await AircraftVersionChecker.getBuildInfo(aircraft);
     }
 
     /**
@@ -266,6 +263,7 @@ export class AircraftVersionChecker {
      * @private
      */
     private static setOutdatedVersionFlag(b: boolean) {
+        // FIXME allow configuring LVar depending on plane
         SimVar.SetSimVarValue('L:A32NX_OUTDATED_VERSION', 'Bool', b ? 1 : 0);
     }
 

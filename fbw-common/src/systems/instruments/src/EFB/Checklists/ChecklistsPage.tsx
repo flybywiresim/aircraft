@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
     areAllChecklistItemsCompleted,
@@ -91,12 +91,12 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) =>
 
     return (
         <div
-            className={`flex flex-row items-center py-2 space-x-4 ${color}`}
+            className={`flex flex-row items-center space-x-4 py-2 ${color}`}
             onClick={handleChecklistItemClick}
         >
             {item.item && (
                 <div
-                    className="flex flex-shrink-0 justify-center items-center w-8 h-8 text-current border-4 border-current"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center border-4 border-current text-current"
                 >
                     {!!autoFillChecklists && item.condition && (
                         <Link45deg size={40} className={`${!autoCheckable && 'opacity-40'} ${checklistShake && 'shake text-utility-red'}`} />
@@ -106,13 +106,13 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) =>
                     )}
                 </div>
             )}
-            <div className="flex flex-row items-end w-full text-current">
-                <div className="text-current whitespace-nowrap">
+            <div className="flex w-full flex-row items-end text-current">
+                <div className="whitespace-nowrap text-current">
                     {item.item}
                     {isItemCompleted && ':'}
                 </div>
-                <div className={`h-0.5 mb-1.5 text-current bg-current ${isItemCompleted ? 'w-0 mx-2' : 'w-full mx-4'}`} />
-                <div className="text-current whitespace-nowrap">
+                <div className={`mb-1.5 h-0.5 bg-current text-current ${isItemCompleted ? 'mx-2 w-0' : 'mx-4 w-full'}`} />
+                <div className="whitespace-nowrap text-current">
                     {item.result}
                 </div>
             </div>
@@ -162,7 +162,7 @@ const CompletionButton = () => {
         if (selectedChecklistIndex < checklists.length - 1) {
             return (
                 <div
-                    className="flex justify-center items-center py-2 w-full font-bold text-center text-theme-highlight hover:text-theme-body bg-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
+                    className="flex w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-body py-2 text-center font-bold text-theme-highlight transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                     onClick={() => {
                         dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
                     }}
@@ -173,7 +173,7 @@ const CompletionButton = () => {
         }
 
         return (
-            <div className="flex justify-center items-center py-2 w-full font-bold text-center text-theme-highlight bg-theme-body rounded-md border-2 border-theme-highlight">
+            <div className="flex w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-body py-2 text-center font-bold text-theme-highlight">
                 {t('Checklists.TheLastChecklistIsComplete')}
             </div>
         );
@@ -182,7 +182,7 @@ const CompletionButton = () => {
     if (firstIncompleteIdx !== -1) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full font-bold text-center text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green rounded-md border-2 border-utility-green transition duration-100"
+                className="flex w-full items-center justify-center rounded-md border-2 border-utility-green bg-theme-body py-2 text-center font-bold text-utility-green transition duration-100 hover:bg-utility-green hover:text-theme-body"
                 onClick={() => {
                     dispatch(setChecklistItemCompletion({
                         checklistIndex: selectedChecklistIndex,
@@ -199,7 +199,7 @@ const CompletionButton = () => {
     if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full font-bold text-center text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green rounded-md border-2 border-utility-green transition duration-100"
+                className="flex w-full items-center justify-center rounded-md border-2 border-utility-green bg-theme-body py-2 text-center font-bold text-utility-green transition duration-100 hover:bg-utility-green hover:text-theme-body"
                 onClick={() => {
                     dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
                 }}
@@ -210,7 +210,7 @@ const CompletionButton = () => {
     }
 
     return (
-        <div className="flex justify-center items-center py-2 w-full font-bold text-center text-utility-green bg-theme-body rounded-md border-2 border-utility-green">
+        <div className="flex w-full items-center justify-center rounded-md border-2 border-utility-green bg-theme-body py-2 text-center font-bold text-utility-green">
             {t('Checklists.ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted')}
         </div>
     );
@@ -220,7 +220,7 @@ export const ChecklistPage = () => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
 
     return (
-        <div className="flex overflow-visible flex-col justify-between p-8 w-full rounded-lg border-2 border-theme-accent">
+        <div className="flex w-full flex-col justify-between overflow-visible rounded-lg border-2 border-theme-accent p-8">
             <ScrollableContainer innerClassName="space-y-4" height={46}>
                 {CHECKLISTS[selectedChecklistIndex].items.map((it, index) => (
                     <ChecklistItemComponent

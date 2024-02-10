@@ -5,7 +5,7 @@
 import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings';
 
@@ -112,7 +112,7 @@ export const RealismPage = () => {
                 {mcduInput === 'ENABLED' && (
                     <SettingItem name={t('Settings.Realism.McduFocusTimeout')} groupType="sub">
                         <SimpleInput
-                            className="text-center w-30"
+                            className="w-30 text-center"
                             value={mcduTimeout}
                             min={5}
                             max={120}
@@ -146,7 +146,7 @@ export const RealismPage = () => {
                 {pauseAtTod === 'ENABLED' && (
                     <SettingItem name={t('Settings.Realism.PauseAtTodDistance')} groupType="sub">
                         <SimpleInput
-                            className="text-center w-30"
+                            className="w-30 text-center"
                             value={todOffset}
                             min={0}
                             max={50.0}

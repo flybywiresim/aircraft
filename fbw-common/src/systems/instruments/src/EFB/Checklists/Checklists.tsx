@@ -6,7 +6,7 @@
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -158,13 +158,13 @@ export const Checklists = () => {
     return (
         <>
             <h1 className="mb-4 font-bold">{t('Checklists.Title')}</h1>
-            <div className="flex flex-row space-x-6 h-content-section-reduced">
-                <div className="flex flex-col flex-shrink-0 justify-between w-1/4">
+            <div className="flex h-content-section-reduced flex-row space-x-6">
+                <div className="flex w-1/4 shrink-0 flex-col justify-between">
                     <ScrollableContainer innerClassName="space-y-4" height={46}>
                         {CHECKLISTS.map((cl, index) => (
                             <div
                                 key={cl.name}
-                                className={`flex justify-center items-center w-full h-12 rounded-md transition duration-100 ${getTabClassName(index)}`}
+                                className={`flex h-12 w-full items-center justify-center rounded-md transition duration-100 ${getTabClassName(index)}`}
                                 onClick={() => handleClick(index)}
                             >
                                 {!!autoFillChecklists && firstRelevantUnmarkedIdx === index && (
@@ -177,7 +177,7 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
+                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red bg-theme-body font-bold text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
                         onClick={handleResetConfirmation}
                     >
                         {t('Checklists.ResetAll')}
@@ -185,7 +185,7 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
+                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red bg-theme-body font-bold text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
                         onClick={handleResetChecklist}
                     >
                         {t('Checklists.ResetChecklist')}

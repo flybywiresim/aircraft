@@ -3,10 +3,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Wifi, WifiOff } from 'react-bootstrap-icons';
-import { useSimVar, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentNumberProperty, usePersistentProperty, ClientState } from '@flybywiresim/fbw-sdk';
 import { useInterval } from '@flybywiresim/react-components';
-import { ClientState } from '@simbridge/index';
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
@@ -113,18 +112,18 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, []);
 
     return (
-        <div className="flex fixed z-30 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
+        <div className="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
             {outdatedVersionFlag ? (
-                <div className="flex overflow-hidden absolute left-48 justify-center items-center w-96 h-10 ">
+                <div className="absolute left-48 flex h-10 w-96 items-center justify-center overflow-hidden ">
                     <TooltipWrapper text={t('VersionCheck.TT.StatusBarWarning')}>
                         <span className="text-utility-red">{t('VersionCheck.StatusBarWarning').toUpperCase()}</span>
                     </TooltipWrapper>
                 </div>
             ) : ''}
 
-            <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
+            <div className="absolute inset-x-0 mx-auto flex w-min flex-row items-center justify-center space-x-4">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
                     <p>{getZuluFormattedTime(currentUTC)}</p>
                 )}
@@ -139,18 +138,18 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             <div className="flex items-center space-x-4">
                 {(!!showStatusBarFlightProgress && (data !== initialState.data)) && (
                     <div
-                        className="flex overflow-hidden flex-row items-center pr-10 space-x-4 h-10"
+                        className="flex h-10 flex-row items-center space-x-4 overflow-hidden pr-10"
                         onClick={() => setShowSchedTimes((old) => !old)}
                     >
-                        <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition text-right duration-100 flex flex-col space-y-1`}>
+                        <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} flex flex-col space-y-1 text-right transition duration-100`}>
                             <p>{departingAirport}</p>
                             <p>{schedOutParsed}</p>
                         </div>
-                        <div className="flex flex-row w-32">
+                        <div className="flex w-32 flex-row">
                             <div className="h-1 bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }} />
                             <div className="h-1 bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
                         </div>
-                        <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition duration-100 flex flex-col space-y-1`}>
+                        <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} flex flex-col space-y-1 transition duration-100`}>
                             <p>{arrivingAirport}</p>
                             <p>{schedInParsed}</p>
                         </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { t } from '../translation';
+import { t } from '../Localization/translation';
 import { OverviewPage } from './Pages/OverviewPage';
 import { LoadSheetWidget } from './Pages/LoadsheetPage';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -17,7 +17,7 @@ export const Dispatch = () => {
             <div className="relative mb-4">
                 <h1 className="font-bold">{t('Dispatch.Title')}</h1>
                 <Navbar
-                    className="absolute top-0 right-0"
+                    className="absolute right-0 top-0"
                     tabs={tabs}
                     basePath="/dispatch"
                 />

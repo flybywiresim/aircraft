@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, useSessionStorage } from '@flybywiresim/fbw-sdk';
-import { SentryConsentState, SENTRY_CONSENT_KEY } from '@sentry/FbwAircraftSentryClient';
-import { AircraftVersionChecker, BuildInfo } from '@shared/AircraftVersionChecker';
+import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY } from '@flybywiresim/fbw-sdk';
+import { getAirframeType } from '../../Efb';
 import { SettingsPage } from '../Settings';
 
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -36,7 +35,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
     const last = value?.substring(underline);
 
     return (
-        <div className="flex flex-row mt-2 font-mono">
+        <div className="mt-2 flex flex-row font-mono">
             <p>{title + '\u00A0'.repeat(Math.abs(SPACE_BETWEEN - title.length))}</p>
             <p className="ml-4">
                 <span className="text-theme-highlight underline">{first}</span>
@@ -59,7 +58,9 @@ export const AboutPage = () => {
 
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
-        AircraftVersionChecker.getBuildInfo().then((info) => setBuildInfo(info));
+        AircraftVersionChecker.getBuildInfo(
+            getAirframeType() === 'A320_251N' ? 'a32nx' : 'a380x',
+        ).then((info) => setBuildInfo(info));
     }, []);
 
     useEffect(() => {
@@ -70,13 +71,13 @@ export const AboutPage = () => {
 
     return (
         <SettingsPage name={t('Settings.About.Title')}>
-            <div className="flex absolute inset-y-0 flex-col justify-center px-16 pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 flex flex-col justify-center px-16">
                 <div className="flex flex-row items-center">
 
                     <div className="flex flex-col">
                         <div className="flex flex-row items-center">
                             <img className="w-[36px]" src={FbwTail} alt="" />
-                            <h1 className="ml-4 text-4xl font-bold font-manrope">flyPadOS 3</h1>
+                            <h1 className="font-manrope ml-4 text-4xl font-bold">flyPadOS 3</h1>
                         </div>
 
                         <p className="mt-3 text-2xl">
@@ -86,7 +87,7 @@ export const AboutPage = () => {
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-col justify-center mt-8">
+                <div className="mt-8 flex flex-col justify-center">
                     <p>&copy; 2020-2022 FlyByWire Simulations and its contributors, all rights reserved.</p>
                     <p>Licensed under the GNU General Public License Version 3</p>
                 </div>

@@ -4,8 +4,8 @@
 
 import { usePersistentNumberProperty, DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
 import React from 'react';
-import { pathify } from 'instruments/src/EFB/Utils/routing';
-import { t } from '../../translation';
+import { pathify } from '../../Utils/routing';
+import { t } from '../../Localization/translation';
 import { SettingItem, SettingsPage } from '../Settings';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 

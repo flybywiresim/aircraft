@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChaptersTitle, Failure } from '@flybywiresim/fbw-sdk';
 import React from 'react';
-import { Failure } from '@failures';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { FailureButton } from '../FailureButton';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppSelector } from '../../Store/store';
@@ -40,7 +39,7 @@ const FailureGroup = ({ title, failures }: FailureGroupProps) => {
         <div className="space-y-2">
             <h2>{title}</h2>
 
-            <div className="grid grid-cols-4 auto-rows-auto">
+            <div className="grid auto-rows-auto grid-cols-4">
                 {failures.map((failure, index) => (
                     <FailureButton
                         key={failure.identifier}
@@ -80,7 +79,7 @@ export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                     />
                 ))}
                 {failures.length === 0 && (
-                    <div className="flex justify-center items-center rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
+                    <div className="flex items-center justify-center rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
                         <p>{t('Failures.NoItemsFound')}</p>
                     </div>
                 )}

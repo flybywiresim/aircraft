@@ -11,7 +11,7 @@ import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
 import getDistance from 'geolib/es/getPreciseDistance';
 import { GeolibInputCoordinates } from 'geolib/es/types';
 import { BingMap } from '../../UtilComponents/BingMap';
-import { t } from '../../translation';
+import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
