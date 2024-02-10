@@ -5241,6 +5241,50 @@ class FMCMainDisplay extends BaseAirliners {
     getDistanceToDestination() {
         return this.guidanceController.alongTrackDistanceToDestination;
     }
+
+    /**
+     * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
+     * @param {import('msfs-navdata').Waypoint} waypoint
+     */
+    async directToWaypoint(waypoint) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
+    }
+
+    /**
+     * Modifies the active flight plan to go direct to a specific leg
+     * @param {number} legIndex index of leg to go direct to
+     */
+    async directToLeg(legIndex) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    }
 }
 
 FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
