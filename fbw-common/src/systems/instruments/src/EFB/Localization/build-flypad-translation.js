@@ -11,7 +11,7 @@ const { exec } = require('child_process');
 
 const fileExtension = '.json';
 const localazyConfigFile = 'localazy-flypad-download-config.json';
-const workingDir = path.resolve('flypad');
+const workingDir = path.resolve('data');
 const langFilesPath = 'downloaded';
 const convertedFilesPath = '.';
 
