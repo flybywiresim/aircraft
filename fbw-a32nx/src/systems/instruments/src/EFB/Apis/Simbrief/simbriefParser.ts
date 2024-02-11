@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 import { ISimbriefData } from './simbriefInterface';
 
 const SIMBRIEF_BASE_URL = 'https://www.simbrief.com/api/xml.fetcher.php';
@@ -11,7 +12,7 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: string): Promise<ISimbriefData> => {
+export const getSimbriefData = async (navigraphUsername: string, overrideSimbriefID: string): Promise<ISimbriefData> => {
     const simbriefApiUrl = new URL(SIMBRIEF_BASE_URL);
     const simbriefApiParams = simbriefApiUrl.searchParams;
 
@@ -22,6 +23,17 @@ export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: s
     }
 
     simbriefApiParams.append('json', '1');
+
+    // Adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
+    // The try/catch is there as the a380x build info file cannot be loaded with the current package setup/order and
+    // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X) then
+    // this try/catch could be removed, but it doesn't hurt to have it here even then as an extra safety measure
+    try {
+        const versionInfo = await AircraftVersionChecker.getBuildInfo();
+        simbriefApiParams.append('client', `fbw-${versionInfo.version}`);
+    } catch (e) {
+        console.error('Error getting build info', e);
+    }
 
     simbriefApiUrl.search = simbriefApiParams.toString();
 

@@ -6,13 +6,13 @@ import {
     MathUtils, Airport, LegType,
     Runway, RunwaySurfaceType, VhfNavaidType,
     WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
-    NdSymbolTypeFlags, EfisNdRangeValue, efisRangeSettings,
+    NdSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { NauticalMiles, bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
@@ -32,10 +32,11 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
-export class EfisSymbols {
-    private blockUpdate = false;
+export class EfisSymbols<T extends number> {
+    /** these types of legs are current not integrated into the normal symbol drawing routines */
+    static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
 
-    private guidanceController: GuidanceController;
+    private blockUpdate = false;
 
     private nearby: NearbyFacilities;
 
@@ -64,12 +65,12 @@ export class EfisSymbols {
     private lastEfisInterfaceVersion: number = -1;
 
     constructor(
-        guidanceController: GuidanceController,
+        private readonly guidanceController: GuidanceController,
         private readonly flightPlanService: FlightPlanService,
         private readonly navaidTuner: NavaidTuner,
         private readonly efisInterface: EfisInterface,
+        private readonly rangeValues: T[],
     ) {
-        this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
     }
 
@@ -161,7 +162,7 @@ export class EfisSymbols {
         const hasSuitableRunway = (airport: Airport): boolean => airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
         for (const side of EfisSymbols.sides) {
-            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
@@ -722,7 +723,7 @@ export class EfisSymbols {
         }
     }
 
-    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
+    private calculateEditArea(range: T, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
         case EfisNdMode.ARC:
             if (range <= 10) {

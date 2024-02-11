@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, efisRangeSettings, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType, Knots } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -27,6 +27,7 @@ import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { Feet, NauticalMiles } from 'msfs-geo';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 
@@ -39,21 +40,21 @@ export interface Fmgc {
     getV2Speed(): Knots;
     getTropoPause(): Feet;
     getManagedClimbSpeed(): Knots;
-    getManagedClimbSpeedMach(): Mach;
+    getManagedClimbSpeedMach(): number;
     getAccelerationAltitude(): Feet,
     getThrustReductionAltitude(): Feet,
     getOriginTransitionAltitude(): Feet | undefined,
     getCruiseAltitude(): Feet,
     getFlightPhase(): FmgcFlightPhase,
     getManagedCruiseSpeed(): Knots,
-    getManagedCruiseSpeedMach(): Mach,
+    getManagedCruiseSpeedMach(): number,
     getClimbSpeedLimit(): SpeedLimit,
     getDescentSpeedLimit(): SpeedLimit,
     getPreSelectedClbSpeed(): Knots,
     getPreSelectedCruiseSpeed(): Knots,
     getTakeoffFlapsSetting(): FlapConf | undefined
     getManagedDescentSpeed(): Knots,
-    getManagedDescentSpeedMach(): Mach,
+    getManagedDescentSpeedMach(): number,
     getApproachSpeed(): Knots,
     getFlapRetractionSpeed(): Knots,
     getSlatRetractionSpeed(): Knots,
@@ -136,13 +137,13 @@ export class GuidanceController {
 
     automaticSequencing: boolean = true;
 
-    leftEfisState: EfisState
+    leftEfisState: EfisState<number>;
 
-    rightEfisState: EfisState
+    rightEfisState: EfisState<number>;
 
-    efisStateForSide: { L: EfisState, R: EfisState }
+    efisStateForSide: { L: EfisState<number>, R: EfisState<number> };
 
-    private approachMessage: string = ''
+    private approachMessage: string = '';
 
     taskQueue = new TaskQueue();
 
@@ -154,9 +155,9 @@ export class GuidanceController {
 
     private atmosphericConditions: AtmosphericConditions;
 
-    private updateEfisState(side: EfisSide, state: EfisState): void {
+    private updateEfisState(side: EfisSide, state: EfisState<number>): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
-        const ndRange = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
+        const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
             this.taskQueue.cancelAllInCategory(TaskCategory.EfisVectors);
@@ -285,7 +286,13 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface, private readonly acConfig: AircraftConfig) {
+    constructor(
+        fmgc: Fmgc,
+        public flightPlanService: FlightPlanService,
+        private efisInterface: EfisInterface,
+        private readonly efisNDRangeValues: number[],
+        private readonly acConfig: AircraftConfig,
+    ) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 

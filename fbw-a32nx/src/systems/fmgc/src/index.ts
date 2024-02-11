@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk';
+import { ApproachType, ApproachUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -54,6 +54,7 @@ export {
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,
+    a320EfisRangeSettings,
     WaypointFactory,
     WaypointEntryUtils,
     SimBriefUplinkAdapter,
