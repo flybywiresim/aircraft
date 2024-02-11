@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
 import { NXLogicConfirmNode, NXLogicClockNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
