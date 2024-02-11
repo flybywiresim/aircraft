@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ComponentProps, Subscribable, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429WordData, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
+
+import { ArincEventBus, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 
-export interface RoseModeProps extends ComponentProps {
+export interface RoseModeProps<T extends number> extends ComponentProps {
     bus: ArincEventBus,
-    rangeValue: Subscribable<EfisNdRangeValue>,
+    rangeValues: T[],
     headingWord: Subscribable<Arinc429WordData>,
     trueHeadingWord: Subscribable<Arinc429WordData>,
     trackWord: Subscribable<Arinc429WordData>
@@ -18,7 +19,7 @@ export interface RoseModeProps extends ComponentProps {
     isUsingTrackUpMode: Subscribable<boolean>,
 }
 
-export abstract class RoseMode<P extends RoseModeProps = RoseModeProps> extends NDPage<P> {
+export abstract class RoseMode<T extends number, P extends RoseModeProps<T> = RoseModeProps<T>> extends NDPage<P> {
     abstract isVisible: Subject<boolean>;
 
     onShow() {

@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -220,9 +219,21 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new Fmgc.DataManager(this);
 
         this.efisInterface = new Fmgc.EfisInterface();
-        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterface, Fmgc.A320AircraftConfig);
-        this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.currFlightPlanService, this.navigation.getNavaidTuner(), this.efisInterface);
+        this.guidanceController = new Fmgc.GuidanceController(
+            this,
+            this.currFlightPlanService,
+            this.efisInterface,
+            Fmgc.a320EfisRangeSettings,
+            Fmgc.A320AircraftConfig
+            );
+        this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
+        this.efisSymbols = new Fmgc.EfisSymbols(
+            this.guidanceController,
+            this.currFlightPlanService,
+            this.navigation.getNavaidTuner(),
+            this.efisInterface,
+            Fmgc.a320EfisRangeSettings,
+        );
 
         Fmgc.initFmgcLoop(this, this.currFlightPlanService);
 

@@ -15,7 +15,6 @@ use systems::{
 #[cfg(test)]
 mod test;
 
-#[cfg(test)]
 pub enum A380Pax {
     MainFwdA,
     MainFwdB,
@@ -32,13 +31,11 @@ pub enum A380Pax {
     UpperMidB,
     UpperAft,
 }
-#[cfg(test)]
 impl From<A380Pax> for usize {
     fn from(value: A380Pax) -> Self {
         value as usize
     }
 }
-#[cfg(test)]
 impl From<usize> for A380Pax {
     fn from(value: usize) -> Self {
         match value {

@@ -234,11 +234,11 @@ class Drum extends DisplayComponent<DrumProperties> {
             const digitRef = FSComponent.createRef<SVGTextElement>();
 
             if (this.props.type === 'hundreds') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="13.1" y="6.8" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="13.2" y="6.8" />);
             } else if (this.props.type === 'thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="9.2" y="6.8" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="9.7" y="6.8" />);
             } else if (this.props.type === 'ten-thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="5.9" y="6.8" />);
+                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontMedium MiddleAlign ${this.color}`} x="6.05" y="6.8" />);
             } else if (this.props.type === 'tens') {
                 graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontSmallest MiddleAlign ${this.color}`} x="5.5" y="8.9133" />);
             }

@@ -426,12 +426,12 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                     ref={this.attDhText}
                     id="AttDHText"
                     x="73.511879"
-                    y="113.19068"
+                    y="115"
                     class="FontLargest Amber EndAlign Blink9Seconds TextOutline"
                 >
                     DH
                 </text>
-                <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>{this.radioAltText}</text>
+                <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="121.5" class={this.classSub}>{this.radioAltText}</text>
             </g>
         );
     }
