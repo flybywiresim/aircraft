@@ -1072,17 +1072,28 @@ function formatAlt(alt) {
 }
 
 function formatAltConstraint(mcdu, constraint, useTransAlt) {
-    // Altitude constraint types "G" and "H" are not shown in the flight plan
-    switch (constraint.type) {
-        case '@': // at
-            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '+': // atOrAbove
-            return "+" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '-': // atOrBelow
-            return "-" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case 'B': // range
-            return "WINDOW";
+    if (!constraint) {
+        return '';
     }
 
-    return '';
+    // Altitude constraint types "G" and "H" are not shown in the flight plan
+    switch (constraint.altitudeDescriptor) {
+        case '@': // AtAlt1
+        case 'I': // AtAlt1GsIntcptAlt2
+        case 'X': // AtAlt1AngleAlt2
+            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '+': // AtOrAboveAlt1
+        case 'J': // AtOrAboveAlt1GsIntcptAlt2
+        case 'V': // AtOrAboveAlt1AngleAlt2
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '-': // AtOrBelowAlt1
+        case 'Y': // AtOrBelowAlt1AngleAlt2
+            return '-' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case 'B': // BetweenAlt1Alt2
+            return 'WINDOW'
+        case 'C': // AtOrAboveAlt2:
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude2, useTransAlt);
+        default:
+            return '';
+    }
 }

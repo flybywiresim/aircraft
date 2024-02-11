@@ -280,7 +280,7 @@ class CDUVerticalRevisionPage {
             }
 
             await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, {
-                type: code,
+                altitudeDescriptor: code,
                 altitude1: altitude,
             }, forPlan, inAlternate);
 
@@ -321,7 +321,7 @@ class CDUVerticalRevisionPage {
 
                 if (Number.isFinite(confirmAlt)) {
                     await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, false, {
-                        type: confirmCode,
+                        altitudeDescriptor: confirmCode,
                         altitude1: confirmAlt,
                     }, forPlan, inAlternate);
 
@@ -341,7 +341,7 @@ class CDUVerticalRevisionPage {
                 }
                 if (Number.isFinite(confirmAlt)) {
                     await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, true, {
-                        type: confirmCode,
+                        altitudeDescriptor: confirmCode,
                         altitude1: confirmAlt,
                     }, forPlan, inAlternate);
 
@@ -365,12 +365,17 @@ class CDUVerticalRevisionPage {
             return '';
         }
 
-        switch (constraint.type) {
-            case '@': // at
+        switch (constraint.altitudeDescriptor) {
+            case '@': // AtAlt1
+            case 'I': // AtAlt1GsIntcptAlt2
+            case 'X': // AtAlt1AngleAlt2
                 return this.formatFl(Math.round(constraint.altitude1), transAltLvl);
-            case '+': // atOrAbove
+            case '+': // AtOrAboveAlt1
+            case 'J': // AtOrAboveAlt1GsIntcptAlt2
+            case 'V': // AtOrAboveAlt1AngleAlt2
                 return "+" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
-            case '-': // atOrBelow
+            case '-': // AtOrBelowAlt1
+            case 'Y': // AtOrBelowAlt1AngleAlt2
                 return "-" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
             case 'B': // range
                 if (constraint.altitude1 < constraint.altitude2) {
@@ -378,6 +383,8 @@ class CDUVerticalRevisionPage {
                 } else {
                     return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLvl) + "/-" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
                 }
+            case 'C': // AtOrAboveAlt2:
+                return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLvl);
             default:
                 return ''
         }
@@ -463,7 +470,7 @@ class CDUVerticalRevisionPage {
 
         if (alt !== undefined) {
             await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(legIndex, isDescentConstraint, {
-                type: code,
+                altitudeDescriptor: code,
                 altitude1: alt,
             }, forPlan, inAlternate);
 

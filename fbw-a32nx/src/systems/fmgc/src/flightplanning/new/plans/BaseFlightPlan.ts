@@ -43,7 +43,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConstraintUtils, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {

@@ -1527,7 +1527,7 @@ class FMCMainDisplay extends BaseAirliners {
 
 
                 if (altConstraint) {
-                    switch (altConstraint.type) {
+                    switch (altConstraint.altitudeDescriptor) {
                         case "@": // at alt 1
                         case "-": // at or below alt 1
                         case "B": // between alt 1 and alt 2
@@ -1539,9 +1539,13 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             } else if (leg.constraintType === 2 /** DES */) {
                 if (altConstraint) {
-                    switch (altConstraint.type) {
+                    switch (altConstraint.altitudeDescriptor) {
                         case "@": // at alt 1
                         case "+": // at or above alt 1
+                        case "I": // alt1 is at for FACF, Alt2 is glidelope intercept
+                        case "J": // alt1 is at or above for FACF, Alt2 is glideslope intercept
+                        case "V": // alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
+                        case "X": // alt 1 is at, Alt 2 is on the vertical angle
                         currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
                         break;
                         case "B": // between alt 1 and alt 2
