@@ -817,11 +817,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             segment.allLegs.splice(indexInSegment, 1);
         }
 
-        // TODO: should this be here?
-        if (index === this.activeLegIndex) {
-            this.sequence();
-        }
-
         this.syncSegmentLegsChange(segment);
 
         this.incrementVersion();
