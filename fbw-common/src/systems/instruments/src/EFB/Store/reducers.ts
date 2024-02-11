@@ -15,7 +15,7 @@ import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
 import pushbackReducer from './features/pushback';
 
-export const createRootReducer = (history) => combineReducers({
+export const createRootReducer = (history: any) => combineReducers({
     router: connectRouter(history),
     todCalculator: todCalculatorReducer,
     groundServicePage: groundServicePageReducer,

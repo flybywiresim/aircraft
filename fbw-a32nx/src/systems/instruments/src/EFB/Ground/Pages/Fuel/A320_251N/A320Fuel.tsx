@@ -270,7 +270,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
     };
 
     const handleFuelAutoFill = () => {
-        let fuelToLoad = -1;
+        let fuelToLoad: number;
 
         if (Units.usingMetric) {
             if (simbriefUnits === 'kgs') {

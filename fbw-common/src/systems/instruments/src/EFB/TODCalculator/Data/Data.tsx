@@ -41,7 +41,7 @@ export const Data = ({ className }: {className: string}) => {
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: pitchAngle,
     })[calculationType!] || undefined;
 
-    const inputValid = (type: TOD_CALCULATION_TYPE, input) => ({
+    const inputValid = (type: TOD_CALCULATION_TYPE, input: number) => ({
         [TOD_CALCULATION_TYPE.DISTANCE]: input > 0,
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: input < -50,
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: !!trkModeActive && input < 0,

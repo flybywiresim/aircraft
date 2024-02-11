@@ -33,7 +33,7 @@ export const LightPresets = () => {
     };
 
     // Used by JSON.stringify for converting a Map to a Json string
-    function replacer(key, value) {
+    function replacer(_key: any, value: any[]) {
         if (value instanceof Map) {
             return {
                 dataType: 'Map',
@@ -44,7 +44,7 @@ export const LightPresets = () => {
     }
 
     // Used by JSON.parse for converting a Json string to a Map
-    function reviver(key, value) {
+    function reviver(_key: any, value: { dataType: string; value: Iterable<readonly [unknown, unknown]>; }) {
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') {
                 return new Map(value.value);

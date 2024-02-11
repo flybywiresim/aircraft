@@ -15,7 +15,7 @@ export const AircraftPresets = () => {
     // requests a preset to be loaded.
     // The backend will reset the LVAR to 0 when done.
     // As long as the LVAR is 1 the backend is still applying the preset.
-    // If the LVAR is set to 0 before the backend is finished applying the preset
+    // If the LVAR is set to 0 before the backend is finished, applying, the preset
     // will be stopped by the backend.
     // The progress while loading an aircraft preset can be read from
     // the LVAR A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS.

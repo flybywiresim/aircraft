@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Route, Redirect, useHistory } from 'react-router-dom';
+import { Redirect, Route, useHistory } from 'react-router-dom';
 
 export interface PageLink {
     name: string;
@@ -35,9 +35,7 @@ type HistoryEntry = {pathname: string, search: string, hash: string, state: any,
 export const findLatestSeenPathname = (history: any, basePath: string): string | undefined => {
     // @ts-ignore
     const historyEntries: HistoryEntry[] = history.entries;
-    const lastSeenPathname = [...historyEntries].reverse().find(({ pathname }) => pathname.includes(`${basePath}/`))?.pathname;
-
-    return lastSeenPathname;
+    return [...historyEntries].reverse().find(({ pathname }) => pathname.includes(`${basePath}/`))?.pathname;
 };
 
 export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => {
@@ -45,13 +43,9 @@ export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => {
     const getRedirectPathname = useCallback(() => findLatestSeenPathname(history, basePath) ?? `${basePath}/${pathify(tabs[0].name)}`, [history, basePath, tabs]);
     const redirectPathname = useRef(getRedirectPathname());
 
-    useEffect(() => {
-        const unregisterHistoryListener = history.listen(() => {
-            redirectPathname.current = getRedirectPathname();
-        });
-
-        return unregisterHistoryListener;
-    }, []);
+    useEffect(() => history.listen(() => {
+        redirectPathname.current = getRedirectPathname();
+    }), []);
 
     return (
         <Route exact path={basePath}>

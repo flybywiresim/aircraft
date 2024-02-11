@@ -4,7 +4,7 @@ export type groundSpeed = {from: number, groundSpeed: number};
 type groundSpeedRange= {groundSpeed: number, range: [number, number]};
 
 export class TODCalculator {
-    private readonly avgGroundSpeed;
+    private readonly avgGroundSpeed: number;
 
     public constructor(private from: number, private to: number, groundSpeeds: groundSpeed[]) {
         const groundSpeedRanges = TODCalculator.findGroundSpeedRanges(groundSpeeds);
@@ -73,8 +73,8 @@ export class TODCalculator {
         const bottom = min([from, to]);
         const top = max([from, to]);
 
-        let rangeStartElementIndex;
-        let rangeEndElementIndex;
+        let rangeStartElementIndex: number;
+        let rangeEndElementIndex: number;
 
         for (let i = 0; i < groundSpeeds.length; i++) {
             const rangeStart = get(groundSpeeds, [i, 'range', 0]);

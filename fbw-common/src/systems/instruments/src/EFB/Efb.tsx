@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import {
     useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
     SentryConsentState, SENTRY_CONSENT_KEY,
+    FailureDefinition,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
@@ -37,7 +38,6 @@ import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
-import { FailureDefinition } from '../../../shared/src/failures/failures-orchestrator';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';

@@ -29,7 +29,7 @@ export const ThirdPartyOptionsPage = () => {
     const [overrideSimbriefDisplay, setOverrideSimbriefDisplay] = useState(overrideSimbriefUserID);
 
     const getSimbriefUserData = async (value: string): Promise<any> => {
-        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+        const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
         if (!value) {
             throw new Error('No SimBrief username/pilot ID provided');
@@ -108,7 +108,7 @@ export const ThirdPartyOptionsPage = () => {
                             <>
                                 <span className="py-2.5 pr-4">
                                     {navigraphAuthInfo.username}
-                                    <img src={NavigraphIcon} className="mx-1.5 mb-1 inline-block w-6" />
+                                    <img src={NavigraphIcon} className="mx-1.5 mb-1 inline-block w-6" alt="Navigrapg Icon" />
                                     {t(`Settings.ThirdPartyOptions.NavigraphAccountLink.SubscriptionStatus.${NavigraphSubscriptionStatus[navigraphAuthInfo.subscriptionStatus]}`)}
                                 </span>
 

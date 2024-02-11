@@ -10,7 +10,7 @@ import { Fuel } from './Pages/Fuel/Fuel';
 export interface StatefulButton {
     id: string,
     state: string,
-    callBack,
+    callBack: any,
     value: number,
 }
 
