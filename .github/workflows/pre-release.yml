@@ -5,19 +5,19 @@ on:
       - "v*-rc*"
 
 jobs:
-  build:
+  build_a32nx:
+    name: Build and publish A32NX
     runs-on: ubuntu-latest
     env:
-      A32NX_PRODUCTION_BUILD: 1
-      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      RELEASE_ZIP_NAME: A32NX-stable.zip
+      FBW_PRODUCTION_BUILD: 1
+      RELEASE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: Create .env file
         run: |
-          echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
+          echo FBW_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
           echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
@@ -29,15 +29,12 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          rm -rf fbw-a32nx/src
+          docker system prune -af
       - name: Build ZIP file
         run: |
-          ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
-
-          cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
-          ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
-          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../..
       - name: Create Release
         id: create_release

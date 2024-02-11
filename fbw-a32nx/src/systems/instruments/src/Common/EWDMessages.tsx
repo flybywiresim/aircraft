@@ -347,6 +347,8 @@ const EWDMessages = {
     '320005001': '\x1b<2m\x1b4mCONFIG\x1bm PARK BRK ON',
     '320006001': '\x1b<4m\x1b4mBRAKES\x1bm A/SKID N/WS FAULT',
     '320006002': '\x1b<5m MAX BRK PR......1000 PSI',
+    '320015001': '\x1b<2m\x1b4mL/G\x1bm GEAR NOT DOWN',
+    '320015501': '\x1b<2m\x1b4mL/G\x1bm GEAR NOT DOWN',
     '320018001': '\x1b<4m\x1b4mL/G\x1bm LGCIU 1 FAULT',
     '320018002': '\x1b<5m -GPWS SYS...........OFF',
     '320019001': '\x1b<4m\x1b4mL/G\x1bm LGCIU 2 FAULT',

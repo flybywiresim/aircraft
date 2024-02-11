@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 cd /external
 
@@ -11,4 +11,4 @@ for arg in "$@"; do
   fi
 done
 
-npm ci
+pnpm i

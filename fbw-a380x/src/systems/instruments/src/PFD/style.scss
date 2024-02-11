@@ -111,6 +111,10 @@
   font-size: 5.5px;
 }
 
+.FontMediumSmaller {
+  font-size: 5.4px;
+}
+
 .FontSmall {
   font-size: 5px;
 }
@@ -149,6 +153,10 @@ text.Magenta {
   fill: none;
   stroke: $display-cyan;
 }
+.Cyan.Fill.Stroke {
+  fill: $display-cyan;
+  stroke: $display-cyan;
+}
 text.Cyan {
   fill: $display-cyan;
   stroke: none;
@@ -170,6 +178,10 @@ tspan.Cyan {
 .White.Fill {
   fill: $display-white;
   stroke: none;
+}
+.White.Fill.Stroke {
+  fill: $display-white;
+  stroke: $display-white;
 }
 text.White {
   fill: $display-white;
@@ -259,7 +271,7 @@ text.Red {
   display: none;
 }
 
-.BacklightBleed {
+/* .BacklightBleed {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -267,4 +279,4 @@ text.Red {
   opacity: 0.75;
   background-color: rgba(0, 0, 255, 0.025);
   box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
-}
+} */

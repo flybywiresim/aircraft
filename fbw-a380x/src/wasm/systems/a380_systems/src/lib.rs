@@ -23,6 +23,7 @@ use self::{
     structural_flex::A380StructuralFlex,
 };
 use airframe::A380Airframe;
+use avionics_data_communication_network::A380AvionicsDataCommunicationNetworkSimvarTranslator;
 use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
@@ -38,8 +39,8 @@ use uom::si::{f64::Length, length::nautical_mile};
 use systems::{
     accept_iterable,
     apu::{
-        Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
-        AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
+        AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
+        AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
@@ -57,10 +58,11 @@ use systems::{
 
 pub struct A380 {
     adcn: A380AvionicsDataCommunicationNetwork,
+    adcn_simvar_translation: A380AvionicsDataCommunicationNetworkSimvarTranslator,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2>,
+    apu: AuxiliaryPowerUnit<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A380PneumaticOverheadPanel,
@@ -92,8 +94,12 @@ pub struct A380 {
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
+        let mut adcn = A380AvionicsDataCommunicationNetwork::new(context);
+        let adcn_simvar_translation =
+            A380AvionicsDataCommunicationNetworkSimvarTranslator::new(context, &mut adcn);
         A380 {
-            adcn: A380AvionicsDataCommunicationNetwork::new(context),
+            adcn,
+            adcn_simvar_translation,
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
@@ -203,10 +209,19 @@ impl Aircraft for A380 {
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.apu.update_after_power_distribution();
+        self.apu.update_after_power_distribution(
+            &[
+                &self.engine_1,
+                &self.engine_2,
+                &self.engine_3,
+                &self.engine_4,
+            ],
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
+        );
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.adcn.update();
+        self.adcn_simvar_translation.update(&self.adcn);
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -271,6 +286,7 @@ impl Aircraft for A380 {
                 &self.engine_4,
             ],
             &self.engine_fire_overhead,
+            &self.payload,
             &self.pneumatic,
             &self.pneumatic_overhead,
             &self.pressurization_overhead,
@@ -301,6 +317,7 @@ impl Aircraft for A380 {
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adcn.accept(visitor);
+        self.adcn_simvar_translation.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);

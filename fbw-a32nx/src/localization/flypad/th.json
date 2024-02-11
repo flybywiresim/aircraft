@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "รถบรรทุกสัมภาระ",
       "CateringTruck": "รถบรรทุกอาหาร",
       "Cones": "กรวยนิรภัย",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "ย้อนกลับบนแกน",
       "SaveAndApply": "บันทึกและใช้",
       "SetFromThrottle": "ตั้งค่าจากคันเร่ง",
-      "ThrottleConfigurationReset": "รีเซ็ตการกำหนดค่าคันเร่ง"
+      "ThrottleConfigurationReset": "รีเซ็ตการกำหนดค่าคันเร่ง",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "การตั้งค่า",
     "Unrealistic": "ไม่สมจริง",

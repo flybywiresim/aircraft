@@ -1,6 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
+import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -11,22 +11,23 @@ const DisplayRange = 600;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
-class LandingElevationIndicator extends DisplayComponent<{bus: EventBus}> {
+class LandingElevationIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
 
     private altitude = 0;
 
-    private landingElevation = 0;
+    private landingElevation = new Arinc429Word(0);
 
     private flightPhase = 0;
 
     private delta = 0;
 
     private handleLandingElevation() {
-        const delta = this.altitude - this.landingElevation;
+        const landingElevationValid = !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
+        const delta = this.altitude - this.landingElevation.value;
         const offset = (delta - DisplayRange) * DistanceSpacing / ValueSpacing;
         this.delta = delta;
-        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8)) {
+        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
             this.landingElevationIndicator.instance.classList.add('HiddenElement');
         } else {
             this.landingElevationIndicator.instance.classList.remove('HiddenElement');
@@ -106,9 +107,99 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
     }
 }
 
+class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+    private visibility = Subject.create('hidden');
+
+    private path = Subject.create('');
+
+    private altitude = 0;
+
+    private radioAltitudeValid = false;
+
+    private qnhLandingAltValid = false;
+
+    private qfeLandingAltValid = false;
+
+    private inLandingPhases = false;
+
+    private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+
+    private readonly mda = Arinc429RegisterSubject.createEmpty();
+
+    private landingElevation = new Arinc429Word(0);
+
+    private updateIndication(): void {
+        this.qnhLandingAltValid = !this.landingElevation.isFailureWarning()
+            && !this.landingElevation.isNoComputedData()
+            && this.inLandingPhases
+            && this.altMode === 'QNH';
+
+        this.qfeLandingAltValid = this.inLandingPhases
+            && this.altMode === 'QFE';
+
+        const altDelta = this.mda.get().value - this.altitude;
+
+        const showMda = (this.radioAltitudeValid || this.qnhLandingAltValid || this.qfeLandingAltValid)
+            && Math.abs(altDelta) <= 570
+            && !this.mda.get().isFailureWarning()
+            && !this.mda.get().isNoComputedData();
+
+        if (!showMda) {
+            this.visibility.set('hidden');
+            return;
+        }
+
+        const offset = altDelta * DistanceSpacing / ValueSpacing;
+        this.path.set(`m 127.9276,${80.249604 - offset} h 5.80948 v 1.124908 h -5.80948 z`);
+        this.visibility.set('visible');
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+
+        sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
+            this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
+            this.updateIndication();
+        });
+
+        sub.on('landingElevation').withArinc429Precision(0).handle((landingElevation) => {
+            this.landingElevation = landingElevation;
+            this.updateIndication();
+        });
+
+        sub.on('baroMode').whenChanged().handle((m) => {
+            this.altMode = m;
+            this.updateIndication();
+        });
+
+        sub.on('altitudeAr').withArinc429Precision(0).handle((a) => {
+            // TODO filtered alt
+            this.altitude = a.value;
+            this.updateIndication();
+        });
+
+        this.mda.sub(this.updateIndication.bind(this));
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.inLandingPhases = fp === 7 || fp === 8;
+            this.updateIndication();
+        });
+
+        sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    }
+
+    render(): VNode {
+        return (
+            <path visibility={this.visibility} id="AltTapeMdaIndicator" class="Fill Amber" d={this.path} />
+        );
+    }
+}
+
 interface AltitudeIndicatorProps {
 
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
@@ -161,7 +252,7 @@ class AltTapeBackground extends DisplayComponent<any> {
 }
 
  interface AltitudeIndicatorOfftapeProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     filteredRadioAltitude: Subscribable<number>;
 }
 
@@ -204,8 +295,8 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
             <>
                 <g ref={this.abnormal} style="display: none">
-                    <path id="AltTapeOutlineUpper" className="NormalStroke Red" d="m 117.75,38.09 h 13.10 6.73"/>
-                    <path id="AltTapeOutlineLower" className="NormalStroke Red" d="m 117.75,123.56 h 13.10 6.73"/>
+                    <path id="AltTapeOutlineUpper" className="NormalStroke Red" d="m 117.75,38.09 h 13.10 6.73" />
+                    <path id="AltTapeOutlineLower" className="NormalStroke Red" d="m 117.75,123.56 h 13.10 6.73" />
                     <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
                     <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
                 </g>
@@ -218,6 +309,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
                 <g ref={this.normal} style="display: none">
                     <path id="AltTapeOutlineUpper" class="NormalStroke White" d="m 117.75,38.09 h 13.10 6.73" />
                     <path id="AltTapeOutlineLower" class="NormalStroke White" d="m 117.75,123.56 h 13.10 6.73" />
+                    <MinimumDescentAltitudeIndicator bus={this.props.bus} />
                     <SelectedAltIndicator bus={this.props.bus} />
                     <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
                     <MetricAltIndicator bus={this.props.bus} />
@@ -231,7 +323,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 }
 
 interface SelectedAltIndicatorProps {
-    bus: EventBus
+    bus: ArincEventBus
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -360,7 +452,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('activeVerticalMode').whenChanged().handle((v) => {
             this.activeVerticalMode = v;
@@ -467,8 +559,8 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 }
 
 interface AltimeterIndicatorProps {
-    altitude: Subscribable<Number>,
-    bus: EventBus,
+    altitude: Subscribable<number>,
+    bus: ArincEventBus,
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
@@ -480,9 +572,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private unit = '';
 
-    private transAlt = 0;
+    private transAltAr = Arinc429Register.empty();
 
-    private transAltAppr = 0;
+    private transLvlAr = Arinc429Register.empty();
 
     private flightPhase = 0;
 
@@ -495,7 +587,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
             if (m === 'QFE') {
@@ -528,15 +620,15 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.handleBlink();
         });
 
-        sub.on('transAlt').whenChanged().handle((ta) => {
-            this.transAlt = ta;
+        sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
+            this.transAltAr.set(ta);
 
             this.handleBlink();
             this.getText();
         });
 
-        sub.on('transAltAppr').whenChanged().handle((ta) => {
-            this.transAltAppr = ta;
+        sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
+            this.transLvlAr.set(tl);
 
             this.handleBlink();
             this.getText();
@@ -559,12 +651,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private handleBlink() {
         if (this.mode.get() === 'STD') {
-            if (this.flightPhase > 3 && this.transAltAppr > this.props.altitude.get() && this.transAltAppr !== 0) {
+            if (this.flightPhase > 3 && this.transLvlAr.isNormalOperation() && 100 * this.transLvlAr.value > this.props.altitude.get()) {
                 this.stdGroup.instance.classList.add('BlinkInfinite');
             } else {
                 this.stdGroup.instance.classList.remove('BlinkInfinite');
             }
-        } else if (this.flightPhase <= 3 && this.transAlt < this.props.altitude.get() && this.transAlt !== 0) {
+        } else if (this.flightPhase <= 3 && this.transAltAr.isNormalOperation() && this.transAltAr.value < this.props.altitude.get()) {
             this.qfeGroup.instance.classList.add('BlinkInfinite');
         } else {
             this.qfeGroup.instance.classList.remove('BlinkInfinite');
@@ -595,7 +687,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
                     <g ref={this.qfeGroup} id="QFEGroup">
                         <path ref={this.qfeBorder} class="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />
                         <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode}</text>
-                        <text id="AltimeterSettingText" class="FontMedium MiddleAlign Cyan" x="141.25583" y="138.09006">{this.text}</text>
+                        <text id="AltimeterSettingText" class="FontMedium StartAlign Cyan" x="131" y="138.09006">{this.text}</text>
                     </g>
                 </g>
             </>

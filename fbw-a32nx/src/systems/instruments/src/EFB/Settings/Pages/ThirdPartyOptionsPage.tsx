@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -24,15 +24,6 @@ export const ThirdPartyOptionsPage = () => {
 
     const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPayloadSyncEnabled, setGsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-    const [, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
-    const [, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
-
-    useEffect(() => {
-        if (gsxFuelSyncEnabled === 1 || gsxPayloadSyncEnabled === 1) {
-            setWheelChocksEnabled(0);
-            setConesEnabled(0);
-        }
-    }, [gsxFuelSyncEnabled, gsxPayloadSyncEnabled]);
 
     const [overrideSimbriefUserID, setOverrideSimbriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [overrideSimbriefDisplay, setOverrideSimbriefDisplay] = useState(overrideSimbriefUserID);
@@ -117,14 +108,14 @@ export const ThirdPartyOptionsPage = () => {
                             <>
                                 <span className="py-2.5 pr-4">
                                     {navigraphAuthInfo.username}
-                                    <img src={NavigraphIcon} className="inline-block mx-1.5 mb-1 w-6" />
+                                    <img src={NavigraphIcon} className="mx-1.5 mb-1 inline-block w-6" />
                                     {t(`Settings.ThirdPartyOptions.NavigraphAccountLink.SubscriptionStatus.${NavigraphSubscriptionStatus[navigraphAuthInfo.subscriptionStatus]}`)}
                                 </span>
 
                                 <button
                                     type="button"
-                                    className="py-2.5 px-5 text-theme-text hover:text-red-600 bg-red-600
-                                       hover:bg-theme-body rounded-md border-2 border-red-600 transition duration-100"
+                                    className="text-theme-text hover:bg-theme-body rounded-md border-2 border-red-600
+                                       bg-red-600 px-5 py-2.5 transition duration-100 hover:text-red-600"
                                     onClick={handleNavigraphAccountUnlink}
                                 >
                                     {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Unlink')}
@@ -133,8 +124,8 @@ export const ThirdPartyOptionsPage = () => {
                         ) : (
                             <button
                                 type="button"
-                                className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
-                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight
+                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
                                 onClick={() => history.push('/settings/3rd-party-options/navigraph-login')}
                             >
                                 {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Link')}
@@ -146,15 +137,15 @@ export const ThirdPartyOptionsPage = () => {
                         <SettingItem name={t('Settings.ThirdPartyOptions.OverrideSimBriefUserID')}>
                             <div className="flex flex-row">
                                 <SimpleInput
-                                    className="mr-5 text-center w-30"
+                                    className="w-30 mr-5 text-center"
                                     value={overrideSimbriefDisplay}
                                     onBlur={(value) => handleOverrideSimbriefIDInput(value.replace(/\s/g, ''))}
                                     onChange={(value) => setOverrideSimbriefDisplay(value)}
                                 />
 
                                 <div
-                                    className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red
-                                    bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100"
+                                    className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex w-min shrink items-center justify-center
+                                    rounded-md border-2 p-2 text-center transition duration-100"
                                     onClick={handleOverrideSimBriefIDDelete}
                                 >
                                     <IconTrash />

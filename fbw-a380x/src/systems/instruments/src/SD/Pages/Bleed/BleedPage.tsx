@@ -14,7 +14,7 @@ export const BleedPage = () => {
 
     return (
         <>
-            <PageTitle showMore={false} x={5} y={28}>BLEED</PageTitle>
+            <PageTitle x={6} y={29}>BLEED</PageTitle>
 
             <BleedMixerUnit x={384} y={30} sdacDatum={sdacDatum} />
 
