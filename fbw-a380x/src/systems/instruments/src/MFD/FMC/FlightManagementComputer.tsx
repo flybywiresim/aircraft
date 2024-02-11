@@ -13,7 +13,7 @@ import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { Fix, Waypoint } from 'msfs-navdata';
-import { DatabaseItem, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, NXDataStore, UpdateThrottler, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
@@ -102,7 +102,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation);
 
-    private efisSymbols: EfisSymbols;
+    private efisSymbols: EfisSymbols<number>;
 
     private flightPhaseManager = getFlightPhaseManager();
 
@@ -137,8 +137,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface = new FmcAircraftInterface(this, this.fmgc, this.flightPlanService);
 
         this.flightPlanService.createFlightPlans();
-        this.#guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface, A380AircraftConfig);
-        this.efisSymbols = new EfisSymbols(this.#guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
+        this.#guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface, a380EfisRangeSettings, A380AircraftConfig);
+        this.efisSymbols = new EfisSymbols(this.#guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface, a380EfisRangeSettings);
 
         this.navaidTuner.init();
         this.efisSymbols.init();
