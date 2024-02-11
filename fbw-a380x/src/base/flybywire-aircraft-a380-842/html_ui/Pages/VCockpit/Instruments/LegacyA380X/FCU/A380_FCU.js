@@ -329,7 +329,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
-            this.setTextElementActive(this.textKNOTS, !(this.isManaged && !this.showSelectedSpeed));
+            if (this.isMachActive) {
+                this.setTextElementActive(this.textKNOTS, false);
+            } else {
+                this.setTextElementActive(this.textKNOTS, !(this.isManaged && !this.showSelectedSpeed));
+            }
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
                 this.textValueContent = '.8.8.8';
