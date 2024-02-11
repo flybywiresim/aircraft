@@ -391,7 +391,7 @@ class CDUPerformancePage {
         };
 
         const hasFromToPair = mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
-        const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
+        const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CLIMB;
         const isTakeoffOrClimbActive = isPhaseActive || (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF);
         const titleColor = isPhaseActive ? "green" : "white";
@@ -551,7 +551,7 @@ class CDUPerformancePage {
         const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, hasFromToPair, true);
 
         // TODO: Figure out correct condition
-        const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
+        const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
         const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedCrzSpeed !== undefined && !isPhaseActive;
         let managedSpeedCell = "{small}\xa0---/---{end}[color]white";
         if (showManagedSpeed && mcdu.flightPlanService.active.performanceData.cruiseFlightLevel && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
@@ -709,7 +709,7 @@ class CDUPerformancePage {
         const econDesMach = econDesMachPilotEntered ? mcdu.managedSpeedDescendMachPilot : mcdu.managedSpeedDescendMach;
 
         // TODO: Figure out correct condition
-        const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex) && econDesMach !== undefined && econDes !== undefined;
+        const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex) && econDesMach !== undefined && econDes !== undefined;
         const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach.toFixed(2).replace("0.", ".")}{end}`;
         const managedDescentSpeedCellSpeed = `{${econDesPilotEntered ? "big" : "small"}}/${econDes.toFixed(0)}{end}`;
 
@@ -1281,7 +1281,7 @@ class CDUPerformancePage {
     static formatCostIndexCell(mcdu, hasFromToPair, allowModification) {
         let costIndexCell = "---";
         if (hasFromToPair) {
-            if (mcdu.costIndexSet && Number.isFinite(mcdu.costIndex)) {
+            if (mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex)) {
                 costIndexCell = `${mcdu.costIndex.toFixed(0)}[color]${allowModification ? "cyan" : "green"}`;
             } else {
                 costIndexCell = "___[color]amber";

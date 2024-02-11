@@ -59,21 +59,12 @@ class CDUDirectToPage {
             Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then((w) => {
                 if (w) {
                     mcdu.eraseTemporaryFlightPlan(() => {
-                        // FIXME fm pos
-                        const ppos = {
-                            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
-                            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
-                        };
-
-                        // FIXME fm track
-                        const trueTrack = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_TRUE_TRACK', 'Number');
-                        const trueTrackWord = new Arinc429Word(trueTrack);
-
-                        if (trueTrackWord.isNormalOperation()) {
-                            mcdu.flightPlanService.directToWaypoint(ppos, trueTrackWord.value, w);
-                        }
-
-                        CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                        mcdu.directToWaypoint(w).then(() => {
+                            CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                        }).catch(err => {
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            console.error(err);
+                        })
                     });
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -126,21 +117,12 @@ class CDUDirectToPage {
                 if (waypointsCell[cellIter]) {
                     mcdu.onLeftInput[cellIter + 1] = () => {
                         mcdu.eraseTemporaryFlightPlan(() => {
-                            // FIXME fm pos
-                            const ppos = {
-                                lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
-                                long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
-                            };
-
-                            // FIXME fm track
-                            const trueTrack = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_TRUE_TRACK', 'Number');
-                            const trueTrackWord = new Arinc429Word(trueTrack);
-
-                            if (trueTrackWord.isNormalOperation()) {
-                                mcdu.flightPlanService.directToLeg(ppos, trueTrackWord.value, legIndex);
-                            }
-
-                            CDUDirectToPage.ShowPage(mcdu, leg.terminationWaypoint(), wptsListIndex);
+                            mcdu.directToLeg(legIndex).then(() => {
+                                CDUDirectToPage.ShowPage(mcdu, leg.terminationWaypoint(), wptsListIndex);
+                            }).catch(err => {
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                console.error(err);
+                            })
                         });
                     };
                 }

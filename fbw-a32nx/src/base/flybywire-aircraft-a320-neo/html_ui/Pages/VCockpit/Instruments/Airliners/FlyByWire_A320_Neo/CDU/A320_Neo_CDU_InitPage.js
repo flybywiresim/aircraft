@@ -92,7 +92,7 @@ class CDUInitPage {
                 // Cost index
                 [costIndexAction, costIndexText, costIndexColor] = new CDU_SingleValueField(mcdu,
                     "int",
-                    mcdu.costIndexSet ? mcdu.costIndex : null,
+                    mcdu.isCostIndexSet ? mcdu.costIndex : null,
                     {
                         clearable: true,
                         emptyValue: "___[color]amber",
@@ -103,9 +103,9 @@ class CDUInitPage {
                     (value) => {
                         if (value != null) {
                             mcdu.costIndex = value;
-                            // mcdu.costIndexSet = true;
+                            // mcdu.isCostIndexSet = true;
                         } else {
-                            // mcdu.costIndexSet = false;
+                            // mcdu.isCostIndexSet = false;
                             mcdu.costIndex = undefined;
                         }
                         CDUInitPage.ShowPage1(mcdu);

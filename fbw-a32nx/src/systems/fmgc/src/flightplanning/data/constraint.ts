@@ -76,7 +76,7 @@ export class ConstraintUtils {
     }
 
     static parseSpeedConstraintFromLegDefinition(definition: FlightPlanLegDefinition): SpeedConstraint | undefined {
-        if (definition?.speedDescriptor === SpeedDescriptor.Maximum) {
+        if (definition?.speedDescriptor === SpeedDescriptor.Maximum || definition?.speedDescriptor === SpeedDescriptor.Mandatory) {
             return { type: SpeedConstraintType.atOrBelow, speed: definition.speed };
         }
 

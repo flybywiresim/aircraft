@@ -180,7 +180,7 @@ A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.g
 A32NX_Util.getRadialMagVar = (facility) => {
     if (facility.subSectionCode === 0 /* VhfNavaid */) {
         if (facility.stationDeclination !== undefined) {
-            return 360 - facility.stationDeclination;
+            return facility.stationDeclination;
         }
     }
 

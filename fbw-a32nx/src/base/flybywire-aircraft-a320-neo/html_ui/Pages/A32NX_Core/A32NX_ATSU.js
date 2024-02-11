@@ -40,7 +40,7 @@ const lbsToKg = (value) => {
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
- * @return {Promise.<ISimbriefData>}
+ * @return {Promise<ISimbriefData>}
  */
 const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const navigraphUsername = NXDataStore.get("NAVIGRAPH_USERNAME", "");

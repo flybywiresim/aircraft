@@ -670,7 +670,7 @@ export class EfisSymbols {
                         ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
                         location: runway.startLocation,
                         direction: runway.bearing,
-                        length: runway.length / MathUtils.DIV_METRES_TO_NAUTICAL_MILES,
+                        length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
                         type: NdSymbolTypeFlags.Runway,
                     });
                 }
@@ -685,7 +685,7 @@ export class EfisSymbols {
         }
 
         // FP fix info
-        if (flightPlan instanceof FlightPlan) {
+        if (flightPlan instanceof FlightPlan && flightPlan.index === FlightPlanIndex.Active && !isAlternate) {
             for (let i = 0; i < 4; i++) {
                 const fixInfo = flightPlan.fixInfos[i];
 

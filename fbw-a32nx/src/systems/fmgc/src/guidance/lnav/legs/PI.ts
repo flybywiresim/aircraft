@@ -13,7 +13,7 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentType } from '@fmgc/wtsdk';
-import { bearingTo, distanceTo, placeBearingDistance, placeBearingIntersection, smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingIntersection, smallCircleGreatCircleIntersection } from 'msfs-geo';
 import { Fix, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 
 interface Segment {
@@ -109,20 +109,23 @@ export class PILeg extends Leg {
 
         this.turn1.sweepAngle = turn1Sign * Math.abs(MathUtils.diffAngle(this.straight.course, this.outbound.course));
         const tpT1FtpDist = this.radius * Math.tan(Math.abs(this.turn1.sweepAngle) * Math.PI / 360);
-        this.turn1.ftp = placeBearingDistance(
-            tp,
+        this.turn1.ftp = Avionics.Utils.bearingDistanceToCoordinates(
             this.outbound.course,
             tpT1FtpDist,
+            tp.lat,
+            tp.long,
         );
-        this.turn1.arcCentre = placeBearingDistance(
-            this.turn1.ftp,
+        this.turn1.arcCentre = Avionics.Utils.bearingDistanceToCoordinates(
             (360 + this.outbound.course + turn1Sign * 90) % 360,
             this.radius,
+            this.turn1.ftp.lat,
+            this.turn1.ftp.long,
         );
-        this.turn1.itp = placeBearingDistance(
-            tp,
+        this.turn1.itp = Avionics.Utils.bearingDistanceToCoordinates(
             (this.straight.course + 180) % 360,
             this.radius * (1 - Math.cos(this.turn1.sweepAngle * Math.PI / 180)),
+            tp.lat,
+            tp.long,
         );
         this.turn1.length = Math.abs(this.turn1.sweepAngle / 180 * this.radius);
 
@@ -163,21 +166,24 @@ export class PILeg extends Leg {
         this.outbound.length = this.radius * (1 / Math.tan(theta / 2));
         this.outbound.itp = this.turn1.ftp;
 
-        this.turn2.itp = placeBearingDistance(
-            tp,
+        this.turn2.itp = Avionics.Utils.bearingDistanceToCoordinates(
             this.outbound.course,
             this.outbound.length + tpT1FtpDist,
+            tp.lat,
+            tp.long,
         );
-        this.turn2.arcCentre = placeBearingDistance(
-            this.turn2.itp,
+        this.turn2.arcCentre = Avionics.Utils.bearingDistanceToCoordinates(
             (360 + this.outbound.course + turn2Sign * 90) % 360,
             this.radius,
+            this.turn2.itp.lat,
+            this.turn2.itp.long,
         );
         this.turn2.sweepAngle = turn2Sign * 180;
-        this.turn2.ftp = placeBearingDistance(
-            this.turn2.arcCentre,
+        this.turn2.ftp = Avionics.Utils.bearingDistanceToCoordinates(
             (360 + this.outbound.course + turn2Sign * 90) % 360,
             this.radius,
+            this.turn2.arcCentre.lat,
+            this.turn2.arcCentre.long,
         );
         this.turn2.length = Math.abs(this.turn2.sweepAngle / 180 * this.radius);
 
