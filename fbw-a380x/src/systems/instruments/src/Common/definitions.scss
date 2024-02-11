@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Ecam';
-  src: url(/Fonts/ECAMFontRegular.ttf);
+  src: url(/Fonts/FBW-Display-EIS-A380.ttf);
 }
 
 $font-size-small: 14px;
@@ -21,5 +21,6 @@ $display-green: #00ff00;
 $display-magenta: #ff94ff;
 $display-red: #ff0000;
 $display-yellow: #ffff00;
+$display-dark-blue: rgb(12, 102, 247);
 
-$display-background: #040405;
+$display-background: #000000;

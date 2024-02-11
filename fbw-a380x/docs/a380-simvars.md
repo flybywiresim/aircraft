@@ -4,7 +4,8 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#afs-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
@@ -92,6 +93,15 @@
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
+
+- A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
+    - Degrees
+    - Angular position of left nose wheel (in wheel axis not steering)
+
+- A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
+    - Degrees
+    - Angular position of right nose wheel (in wheel axis not steering)
+
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
@@ -273,6 +283,15 @@
     - Bool
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
+## Auto Flight System ATA 22
+- A380X_MFD_{side}_ACTIVE_PAGE
+    - String
+    - URI of activate page on respective MFD (e.g. fms/active/init)
+    - {side} = L or R
+
+- A32NX_FMS_PAX_NUMBER
+    - Number
+    - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
 
 ## Electrical ATA 24
 

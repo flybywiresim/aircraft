@@ -95,7 +95,8 @@ export class LandingSystemSelectionManager {
         const runway = this.flightPlanService.active.originRunway;
 
         if (runway?.lsIdent) {
-            const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
+            // const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
+            const ils = (await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([runway.lsIdent]))[0];
             this._selectedIls = ils;
             this._selectedLocCourse = ils.locBearing !== -1 ? ils.locBearing : null;
             this._selectedGsSlope = ils.gsSlope ?? null;

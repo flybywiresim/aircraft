@@ -39,7 +39,7 @@ void FlightDataRecorder::initialize() {
 
 void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
-                                AutothrustModelClass* autoThrust,
+                                Autothrust* autoThrust,
                                 const EngineData& engineData,
                                 const AdditionalData& additionalData) {
   // check if enabled

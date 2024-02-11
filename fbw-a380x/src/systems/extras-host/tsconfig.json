@@ -7,7 +7,7 @@
       "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
       "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
       "@failures": ["./failures/src/index.ts"],
-      "@fmgc/*": ["./fmgc/src/*"],
+      "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
       "@localization/*": ["../localization/*"],
       "@sentry/*": ["./sentry-client/src/*"],

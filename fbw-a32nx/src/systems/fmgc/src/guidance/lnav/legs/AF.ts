@@ -14,6 +14,7 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Waypoint } from 'msfs-navdata';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class AFLeg extends XFLeg {
