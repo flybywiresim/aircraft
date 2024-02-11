@@ -269,8 +269,6 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
 
   0.0,
 
-  0.0,
-
   -30.0,
 
   -30.0,
@@ -333,11 +331,9 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
 
   -0.25,
 
-  -6.0,
+  -3.0,
 
-  -4.0,
-
-  -4.0,
+  -12.0,
 
   -0.2,
 
@@ -369,11 +365,9 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
 
   4.0,
 
-  6.0,
+  3.0,
 
-  4.0,
-
-  4.0,
+  12.0,
 
   1.0,
 
@@ -714,6 +708,12 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
   1.0,
 
   20.0,
+
+  0.0,
+
+  2.0,
+
+  0.0,
 
 
   { 13.5, 13.5 },
@@ -1115,13 +1115,13 @@ void PitchNormalLaw::PitchNormalLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, c
   localDW->pU = rtu_U;
 }
 
-void PitchNormalLaw::PitchNormalLaw_RateLimiter_a_Reset(rtDW_RateLimiter_PitchNormalLaw_a_T *localDW)
+void PitchNormalLaw::PitchNormalLaw_RateLimiter_l_Reset(rtDW_RateLimiter_PitchNormalLaw_o_T *localDW)
 {
   localDW->pY_not_empty = false;
 }
 
-void PitchNormalLaw::PitchNormalLaw_RateLimiter_f(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T
-  *rtu_Ts, real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_a_T *localDW)
+void PitchNormalLaw::PitchNormalLaw_RateLimiter_c(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T
+  *rtu_Ts, real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_o_T *localDW)
 {
   if (!localDW->pY_not_empty) {
     localDW->pY = rtu_init;
@@ -1180,6 +1180,8 @@ void PitchNormalLaw::init(void)
   PitchNormalLaw_DWork.Delay1_DSTATE_i = PitchNormalLaw_rtP.Delay1_InitialCondition_g;
   PitchNormalLaw_DWork.Delay_DSTATE_e1 = PitchNormalLaw_rtP.RateLimiterVariableTs5_InitialCondition;
   PitchNormalLaw_DWork.Delay_DSTATE_bg = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_n;
+  PitchNormalLaw_DWork.Delay_DSTATE_o = PitchNormalLaw_rtP.Delay_InitialCondition_i;
+  PitchNormalLaw_DWork.Delay1_DSTATE_n = PitchNormalLaw_rtP.Delay1_InitialCondition_d;
   PitchNormalLaw_DWork.Delay_DSTATE_jv = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_n;
   PitchNormalLaw_DWork.Delay_DSTATE_lf = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_a;
   PitchNormalLaw_DWork.Delay_DSTATE_dv = PitchNormalLaw_rtP.RateLimiterVariableTs9_InitialCondition;
@@ -1190,7 +1192,7 @@ void PitchNormalLaw::init(void)
   PitchNormalLaw_DWork.Delay1_DSTATE_l = PitchNormalLaw_rtP.Delay1_InitialCondition_gf;
   PitchNormalLaw_DWork.Delay_DSTATE_m = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_e;
   PitchNormalLaw_DWork.Delay_DSTATE_k2 = PitchNormalLaw_rtP.Delay_InitialCondition_h;
-  PitchNormalLaw_DWork.Delay1_DSTATE_n = PitchNormalLaw_rtP.Delay1_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay1_DSTATE_ns = PitchNormalLaw_rtP.Delay1_InitialCondition_e;
   PitchNormalLaw_DWork.Delay_DSTATE_mz = PitchNormalLaw_rtP.RateLimiterVariableTs4_InitialCondition;
   PitchNormalLaw_DWork.Delay_DSTATE_jh = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_a;
   PitchNormalLaw_DWork.Delay_DSTATE_dy = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_di;
@@ -1229,6 +1231,8 @@ void PitchNormalLaw::reset(void)
   PitchNormalLaw_DWork.Delay1_DSTATE_i = PitchNormalLaw_rtP.Delay1_InitialCondition_g;
   PitchNormalLaw_DWork.Delay_DSTATE_e1 = PitchNormalLaw_rtP.RateLimiterVariableTs5_InitialCondition;
   PitchNormalLaw_DWork.Delay_DSTATE_bg = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_n;
+  PitchNormalLaw_DWork.Delay_DSTATE_o = PitchNormalLaw_rtP.Delay_InitialCondition_i;
+  PitchNormalLaw_DWork.Delay1_DSTATE_n = PitchNormalLaw_rtP.Delay1_InitialCondition_d;
   PitchNormalLaw_DWork.Delay_DSTATE_jv = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_n;
   PitchNormalLaw_DWork.Delay_DSTATE_lf = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_a;
   PitchNormalLaw_DWork.Delay_DSTATE_dv = PitchNormalLaw_rtP.RateLimiterVariableTs9_InitialCondition;
@@ -1239,7 +1243,7 @@ void PitchNormalLaw::reset(void)
   PitchNormalLaw_DWork.Delay1_DSTATE_l = PitchNormalLaw_rtP.Delay1_InitialCondition_gf;
   PitchNormalLaw_DWork.Delay_DSTATE_m = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_e;
   PitchNormalLaw_DWork.Delay_DSTATE_k2 = PitchNormalLaw_rtP.Delay_InitialCondition_h;
-  PitchNormalLaw_DWork.Delay1_DSTATE_n = PitchNormalLaw_rtP.Delay1_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay1_DSTATE_ns = PitchNormalLaw_rtP.Delay1_InitialCondition_e;
   PitchNormalLaw_DWork.Delay_DSTATE_mz = PitchNormalLaw_rtP.RateLimiterVariableTs4_InitialCondition;
   PitchNormalLaw_DWork.Delay_DSTATE_jh = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_a;
   PitchNormalLaw_DWork.Delay_DSTATE_dy = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_di;
@@ -1279,27 +1283,25 @@ void PitchNormalLaw::reset(void)
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_k);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_g3);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_c);
-  PitchNormalLaw_RateLimiter_a_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_i);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_i);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_m);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_k4);
-  PitchNormalLaw_RateLimiter_a_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_nx);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_nx);
   PitchNormalLaw_LagFilter_Reset(&PitchNormalLaw_DWork.sf_LagFilter_mf);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_h);
-  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_m);
-  PitchNormalLaw_RateLimiter_a_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_f);
-  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_f);
-  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_pr);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_ck);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_e);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_gr);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_ca);
-  PitchNormalLaw_RateLimiter_a_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_c2);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_c2);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_i);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_l);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_g);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_d);
   PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_n);
   PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter);
-  PitchNormalLaw_RateLimiter_a_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_ct);
-  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_fz);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_ct);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_f);
   PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_b);
 }
 
@@ -1338,16 +1340,17 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   real_T rtb_Divide_o4;
   real_T rtb_Divide_py;
   real_T rtb_Gain1;
-  real_T rtb_Gain1_dj;
+  real_T rtb_Gain1_b;
+  real_T rtb_Gain1_e;
   real_T rtb_Gain1_g;
   real_T rtb_Gain1_h;
+  real_T rtb_Gain1_n;
   real_T rtb_Gain1_nj;
-  real_T rtb_Gain_a5;
   real_T rtb_Gain_bu;
   real_T rtb_Gain_cb;
+  real_T rtb_Gain_mj;
   real_T rtb_Gain_ny;
   real_T rtb_Gain_ot;
-  real_T rtb_Gain_ps;
   real_T rtb_Loaddemand;
   real_T rtb_ManualSwitch;
   real_T rtb_Product1_ck;
@@ -1364,28 +1367,28 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   real_T rtb_Sum1_nd;
   real_T rtb_Sum1_nt;
   real_T rtb_Sum6;
-  real_T rtb_Sum_bh;
   real_T rtb_Switch_f;
   real_T rtb_Tsxlo;
-  real_T rtb_Y_bc;
-  real_T rtb_Y_d;
-  real_T rtb_Y_dy;
+  real_T rtb_Y_cf;
+  real_T rtb_Y_f;
+  real_T rtb_Y_g;
   real_T rtb_Y_i;
+  real_T rtb_Y_j;
+  real_T rtb_Y_n;
   real_T rtb_Y_o;
-  real_T rtb_Y_o2;
   real_T rtb_alpha_err_gain;
   real_T rtb_eta_trim_deg_rate_limit_lo_deg_s;
   real_T rtb_qk_dot_gain;
-  real_T rtb_qk_gain_HSP;
+  real_T rtb_v_target;
   int32_T rtb_in_flare;
   int32_T rtb_in_rotation;
   int32_T rtb_theta_lim;
   boolean_T rtb_OR;
   boolean_T rtb_eta_trim_deg_should_freeze;
-  PitchNormalLaw_LagFilter(rtu_In_Theta_deg, PitchNormalLaw_rtP.LagFilter_C1, rtu_In_time_dt, &rtb_Y_dy,
+  PitchNormalLaw_LagFilter(rtu_In_Theta_deg, PitchNormalLaw_rtP.LagFilter_C1, rtu_In_time_dt, &rtb_Y_cf,
     &PitchNormalLaw_DWork.sf_LagFilter);
   if (PitchNormalLaw_rtP.SwitchTheta_cDebug_CurrentSetting == 1) {
-    rtb_Y_dy = PitchNormalLaw_rtP.FlareLawTheta_cDebug_Value;
+    rtb_Y_cf = PitchNormalLaw_rtP.FlareLawTheta_cDebug_Value;
   }
 
   if (PitchNormalLaw_rtP.ManualSwitch_CurrentSetting == 1) {
@@ -1438,7 +1441,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
      case PitchNormalLaw_IN_Flare_Prepare:
       if ((*rtu_In_H_radio_ft <= 50.0) || (rtb_ManualSwitch == 1.0)) {
-        PitchNormalLaw_B.flare_Theta_c_rate_deg_s = -(std::fmax(-2.0, rtb_Y_dy) + 2.0) / 8.0;
+        PitchNormalLaw_B.flare_Theta_c_rate_deg_s = -(std::fmax(-2.0, rtb_Y_cf) + 2.0) / 8.0;
         PitchNormalLaw_DWork.is_c2_PitchNormalLaw = PitchNormalLaw_IN_Flare_Active_Armed;
         rtb_in_flare = 1;
       } else if ((*rtu_In_in_flight == 1.0) && (*rtu_In_H_radio_ft > 50.0) && (rtb_ManualSwitch == 0.0)) {
@@ -1452,7 +1455,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
      case PitchNormalLaw_IN_Flight:
       if ((*rtu_In_H_radio_ft <= 50.0) || (rtb_ManualSwitch == 1.0)) {
         PitchNormalLaw_B.flare_Theta_c_rate_deg_s = -1000.0;
-        PitchNormalLaw_B.flare_Theta_c_deg = rtb_Y_dy;
+        PitchNormalLaw_B.flare_Theta_c_deg = rtb_Y_cf;
         PitchNormalLaw_DWork.is_c2_PitchNormalLaw = PitchNormalLaw_IN_Flare_Prepare;
         rtb_in_flare = 0;
       } else {
@@ -1502,10 +1505,10 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Gain_bu = *rtu_In_nz_g - rtb_Divide1_e;
   rtb_Tsxlo = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data,
     PitchNormalLaw_rtP.uDLookupTable_tableData, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
+  rtb_v_target = *rtu_In_V_tas_kn;
   rtb_Gain_ot = *rtu_In_V_ias_kn;
-  rtb_Divide_an = *rtu_In_flaps_handle_index;
-  rtb_Gain1_g = *rtu_In_VLS_kn;
+  rtb_Gain1_g = *rtu_In_flaps_handle_index;
+  rtb_Divide_an = *rtu_In_VLS_kn;
   rtb_Gain_cb = PitchNormalLaw_rtP.Gain_Gain_a * *rtu_In_delta_eta_pos;
   if (PitchNormalLaw_DWork.is_active_c8_PitchNormalLaw == 0U) {
     PitchNormalLaw_DWork.is_active_c8_PitchNormalLaw = 1U;
@@ -1623,20 +1626,20 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
   PitchNormalLaw_RateLimiter(rtb_Product1_ck, PitchNormalLaw_rtP.RateLimiterVariableTs_up,
     PitchNormalLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_o2, &PitchNormalLaw_DWork.sf_RateLimiter);
+    PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_g, &PitchNormalLaw_DWork.sf_RateLimiter);
   if (PitchNormalLaw_DWork.is_active_c6_PitchNormalLaw == 0U) {
     PitchNormalLaw_DWork.is_active_c6_PitchNormalLaw = 1U;
     PitchNormalLaw_DWork.is_c6_PitchNormalLaw = PitchNormalLaw_IN_OFF;
     rtb_in_rotation = 0;
   } else if (PitchNormalLaw_DWork.is_c6_PitchNormalLaw == PitchNormalLaw_IN_OFF) {
-    if ((rtb_Y_o2 < 1.0) && (*rtu_In_V_tas_kn > 70.0) && ((*rtu_In_thrust_lever_1_pos >= 35.0) ||
+    if ((rtb_Y_g < 1.0) && (*rtu_In_V_tas_kn > 70.0) && ((*rtu_In_thrust_lever_1_pos >= 35.0) ||
          (*rtu_In_thrust_lever_2_pos >= 35.0))) {
       PitchNormalLaw_DWork.is_c6_PitchNormalLaw = PitchNormalLaw_IN_ON;
       rtb_in_rotation = 1;
     } else {
       rtb_in_rotation = 0;
     }
-  } else if ((rtb_Y_o2 == 1.0) || (*rtu_In_H_radio_ft > 400.0) || ((*rtu_In_V_tas_kn < 70.0) &&
+  } else if ((rtb_Y_g == 1.0) || (*rtu_In_H_radio_ft > 400.0) || ((*rtu_In_V_tas_kn < 70.0) &&
               ((*rtu_In_thrust_lever_1_pos < 35.0) || (*rtu_In_thrust_lever_2_pos < 35.0)))) {
     PitchNormalLaw_DWork.is_c6_PitchNormalLaw = PitchNormalLaw_IN_OFF;
     rtb_in_rotation = 0;
@@ -1654,49 +1657,49 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
   PitchNormalLaw_RateLimiter(rtb_Switch_f, PitchNormalLaw_rtP.RateLimiterVariableTs1_up,
     PitchNormalLaw_rtP.RateLimiterVariableTs1_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_bc, &PitchNormalLaw_DWork.sf_RateLimiter_p);
+    PitchNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_f, &PitchNormalLaw_DWork.sf_RateLimiter_p);
   PitchNormalLaw_RateLimiter(rtb_nz_limit_up_g, PitchNormalLaw_rtP.RateLimiterVariableTs2_up,
     PitchNormalLaw_rtP.RateLimiterVariableTs2_lo, rtu_In_time_dt,
     PitchNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition, &rtb_Sum6, &PitchNormalLaw_DWork.sf_RateLimiter_c);
   PitchNormalLaw_RateLimiter(rtb_nz_limit_lo_g, PitchNormalLaw_rtP.RateLimiterVariableTs3_up,
     PitchNormalLaw_rtP.RateLimiterVariableTs3_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_d, &PitchNormalLaw_DWork.sf_RateLimiter_n);
+    PitchNormalLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_j, &PitchNormalLaw_DWork.sf_RateLimiter_n);
   rtb_Saturation3_i = std::abs(PitchNormalLaw_B.flare_Theta_c_rate_deg_s) * *rtu_In_time_dt;
   rtb_Saturation3 = *rtu_In_time_dt * PitchNormalLaw_B.flare_Theta_c_rate_deg_s;
   PitchNormalLaw_DWork.Delay_DSTATE_e += std::fmax(std::fmin(PitchNormalLaw_B.flare_Theta_c_deg -
     PitchNormalLaw_DWork.Delay_DSTATE_e, rtb_Saturation3_i), rtb_Saturation3);
-  PitchNormalLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_aoa_prot_active, &rtb_Y_o,
+  PitchNormalLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_aoa_prot_active, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_eta_trim_limit_lofreeze);
   if (*rtu_In_high_aoa_prot_active) {
-    *rty_Out_eta_trim_limit_lo = rtb_Y_o;
+    *rty_Out_eta_trim_limit_lo = rtb_Y_n;
   } else {
     *rty_Out_eta_trim_limit_lo = PitchNormalLaw_rtP.Constant3_Value;
   }
 
-  PitchNormalLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_speed_prot_active, &rtb_Y_o,
+  PitchNormalLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_speed_prot_active, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_eta_trim_limit_upfreeze);
   if (*rtu_In_high_speed_prot_active) {
-    *rty_Out_eta_trim_limit_up = rtb_Y_o;
+    *rty_Out_eta_trim_limit_up = rtb_Y_n;
   } else {
     *rty_Out_eta_trim_limit_up = PitchNormalLaw_rtP.Constant2_Value;
   }
 
-  if (rtb_Divide_an == 5.0) {
+  if (rtb_Gain1_g == 5.0) {
     rtb_in_rotation = 25;
   } else {
     rtb_in_rotation = 30;
   }
 
   PitchNormalLaw_RateLimiter(static_cast<real_T>(rtb_in_rotation) - std::fmin(5.0, std::fmax(0.0, 5.0 - (rtb_Gain_ot -
-    (rtb_Gain1_g + 5.0)) * 0.25)), PitchNormalLaw_rtP.RateLimiterVariableTs6_up,
+    (rtb_Divide_an + 5.0)) * 0.25)), PitchNormalLaw_rtP.RateLimiterVariableTs6_up,
     PitchNormalLaw_rtP.RateLimiterVariableTs6_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterVariableTs6_InitialCondition, &rtb_Y_o, &PitchNormalLaw_DWork.sf_RateLimiter_o);
+    PitchNormalLaw_rtP.RateLimiterVariableTs6_InitialCondition, &rtb_Y_cf, &PitchNormalLaw_DWork.sf_RateLimiter_o);
   rtb_Saturation3 = PitchNormalLaw_rtP.Gain1_Gain_m * *rtu_In_Theta_deg;
-  rtb_Product1_ck = PitchNormalLaw_rtP.Gain2_Gain * rtb_Y_o - rtb_Saturation3;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat;
+  rtb_Product1_ck = PitchNormalLaw_rtP.Gain2_Gain * rtb_Y_cf - rtb_Saturation3;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat;
   }
 
   if (rtb_Product1_ck > PitchNormalLaw_rtP.Saturation1_UpperSat_i) {
@@ -1706,7 +1709,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   }
 
   rtb_Y_i = (PitchNormalLaw_rtP.Gain_Gain * PitchNormalLaw_rtP.Vm_currentms_Value * rtb_Gain1_h + rtb_Gain_bu) -
-    (rtb_Tsxlo / (PitchNormalLaw_rtP.Gain5_Gain * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias) * ((rtb_Divide1_e +
+    (rtb_Tsxlo / (PitchNormalLaw_rtP.Gain5_Gain * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias) * ((rtb_Divide1_e +
     look1_binlxpw(rtb_Product1_ck, PitchNormalLaw_rtP.Loaddemand1_bp01Data, PitchNormalLaw_rtP.Loaddemand1_tableData, 2U))
     - rtb_Divide1_e);
   rtb_Tsxlo = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data, PitchNormalLaw_rtP.PLUT_tableData, 1U);
@@ -1716,42 +1719,42 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Divide_o = (rtb_Gain1_h - PitchNormalLaw_DWork.Delay_DSTATE_n) / *rtu_In_time_dt;
   rtb_Gain_ot = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain * *rtu_In_V_tas_kn;
   rtb_Divide_an = (rtb_Gain_ot - PitchNormalLaw_DWork.Delay_DSTATE_c) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Divide_an, PitchNormalLaw_rtP.LagFilter_C1_i, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_LagFilter_n(rtb_Divide_an, PitchNormalLaw_rtP.LagFilter_C1_i, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_LagFilter_k);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationV_dot_UpperSat) {
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationV_dot_UpperSat) {
     rtb_Divide_c4 = PitchNormalLaw_rtP.SaturationV_dot_UpperSat;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationV_dot_LowerSat) {
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationV_dot_LowerSat) {
     rtb_Divide_c4 = PitchNormalLaw_rtP.SaturationV_dot_LowerSat;
   } else {
-    rtb_Divide_c4 = rtb_Y_o;
+    rtb_Divide_c4 = rtb_Y_n;
   }
 
-  rtb_Gain_a5 = std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos);
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_o,
+  rtb_Gain_mj = std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos);
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_WashoutFilter_k);
   rtb_Tsxlo = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1,
     PitchNormalLaw_rtP.ScheduledGain_Table, 3U);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat;
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat;
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat;
   }
 
-  rtb_Product_kz = rtb_Y_o * rtb_Tsxlo;
+  rtb_Product_kz = rtb_Y_n * rtb_Tsxlo;
   rtb_Divide_an = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_i * *rtu_In_qk_deg_s;
   rtb_Divide_cq = (rtb_Divide_an - PitchNormalLaw_DWork.Delay_DSTATE_l) / *rtu_In_time_dt;
   rtb_Gain1_g = PitchNormalLaw_rtP.Gain1_Gain_o * *rtu_In_qk_deg_s;
   rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_o,
     PitchNormalLaw_rtP.uDLookupTable_tableData_e, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_a) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_a;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_l) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_l;
+  rtb_v_target = *rtu_In_V_tas_kn;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_a) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_a;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_l) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_l;
   }
 
   rtb_Y_i = (PitchNormalLaw_rtP.Gain_Gain_al * PitchNormalLaw_rtP.Vm_currentms_Value_e * rtb_Gain1_g + rtb_Gain_bu) -
-    (rtb_Y_i / (PitchNormalLaw_rtP.Gain5_Gain_d * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias_a) * (rtb_Sum6 -
+    (rtb_Y_i / (PitchNormalLaw_rtP.Gain5_Gain_d * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_a) * (rtb_Sum6 -
     rtb_Divide1_e);
   rtb_Tsxlo = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_b, PitchNormalLaw_rtP.PLUT_tableData_b,
     1U);
@@ -1762,54 +1765,54 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Divide_l = (rtb_Gain1_g - PitchNormalLaw_DWork.Delay_DSTATE_k) / *rtu_In_time_dt;
   rtb_Saturation3_i = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_e * *rtu_In_V_tas_kn;
   rtb_Divide_m = (rtb_Saturation3_i - PitchNormalLaw_DWork.Delay_DSTATE_d) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Divide_m, PitchNormalLaw_rtP.LagFilter_C1_p, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_LagFilter_n(rtb_Divide_m, PitchNormalLaw_rtP.LagFilter_C1_p, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_LagFilter_g3);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j) {
-    rtb_Gain_ps = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_e) {
-    rtb_Gain_ps = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_e;
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j) {
+    rtb_Gain1_b = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j;
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_e) {
+    rtb_Gain1_b = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_e;
   } else {
-    rtb_Gain_ps = rtb_Y_o;
+    rtb_Gain1_b = rtb_Y_n;
   }
 
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_WashoutFilter_c);
   rtb_Tsxlo = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_n,
     PitchNormalLaw_rtP.ScheduledGain_Table_b, 3U);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_j) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_j;
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g;
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_j) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_j;
   }
 
-  rtb_Product_n3 = rtb_Y_o * rtb_Tsxlo;
+  rtb_Product_n3 = rtb_Y_n * rtb_Tsxlo;
   rtb_Divide_m = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_h * *rtu_In_qk_deg_s;
   rtb_Divide_c = (rtb_Divide_m - PitchNormalLaw_DWork.Delay_DSTATE_b) / *rtu_In_time_dt;
   rtb_Gain1_nj = PitchNormalLaw_rtP.Gain1_Gain_or * *rtu_In_qk_deg_s;
   rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_h,
     PitchNormalLaw_rtP.uDLookupTable_tableData_i, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_e) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_e;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_f) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_f;
+  rtb_v_target = *rtu_In_V_tas_kn;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_e) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_e;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_f) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_f;
   }
 
-  rtb_Bias_f = rtb_Y_i / (PitchNormalLaw_rtP.Gain5_Gain_m * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias_e;
-  PitchNormalLaw_RateLimiter_f(rtu_In_ap_theta_c_deg, PitchNormalLaw_rtP.RateLimiterVariableTs1_up_p,
+  rtb_Bias_f = rtb_Y_i / (PitchNormalLaw_rtP.Gain5_Gain_m * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_e;
+  PitchNormalLaw_RateLimiter_c(rtu_In_ap_theta_c_deg, PitchNormalLaw_rtP.RateLimiterVariableTs1_up_p,
     PitchNormalLaw_rtP.RateLimiterVariableTs1_lo_e, rtu_In_time_dt,
     PitchNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_b, &rtb_Sum6, &PitchNormalLaw_DWork.sf_RateLimiter_i);
   rtb_Sum6 -= *rtu_In_Theta_deg;
   rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.ScheduledGainAutopilotInput_BreakpointsForDimension1,
     PitchNormalLaw_rtP.ScheduledGainAutopilotInput_Table, 6U);
-  rtb_qk_gain_HSP = *rtu_In_Phi_deg;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation_UpperSat_f) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_UpperSat_f;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation_LowerSat_o1) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_LowerSat_o1;
+  rtb_v_target = *rtu_In_Phi_deg;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation_UpperSat_f) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_UpperSat_f;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation_LowerSat_o1) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_LowerSat_o1;
   }
 
-  rtb_Divide_g4 /= std::cos(PitchNormalLaw_rtP.Gain1_Gain_lm * rtb_qk_gain_HSP);
+  rtb_Divide_g4 /= std::cos(PitchNormalLaw_rtP.Gain1_Gain_lm * rtb_v_target);
   rtb_Y_i = (PitchNormalLaw_rtP.Gain_Gain_h * PitchNormalLaw_rtP.Vm_currentms_Value_p * rtb_Gain1_nj + rtb_Gain_bu) -
     ((rtb_Sum6 * rtb_Y_i + rtb_Divide_g4) - rtb_Divide1_e) * rtb_Bias_f;
   rtb_Tsxlo = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_d, PitchNormalLaw_rtP.PLUT_tableData_a,
@@ -1821,25 +1824,25 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Divide_o4 = (rtb_Gain1_nj - PitchNormalLaw_DWork.Delay_DSTATE_en) / *rtu_In_time_dt;
   rtb_Bias_f = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_g * *rtu_In_V_tas_kn;
   rtb_Sum6 = (rtb_Bias_f - PitchNormalLaw_DWork.Delay_DSTATE_i) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Sum6, PitchNormalLaw_rtP.LagFilter_C1_d, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_LagFilter_n(rtb_Sum6, PitchNormalLaw_rtP.LagFilter_C1_d, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_LagFilter_m);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_b) {
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_b) {
     rtb_Divide_a = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_b;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_l) {
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_l) {
     rtb_Divide_a = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_l;
   } else {
-    rtb_Divide_a = rtb_Y_o;
+    rtb_Divide_a = rtb_Y_n;
   }
 
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_e, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_e, rtu_In_time_dt, &rtb_Y_n,
     &PitchNormalLaw_DWork.sf_WashoutFilter_k4);
   rtb_Tsxlo = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_c,
     PitchNormalLaw_rtP.ScheduledGain_Table_h, 3U);
-  rtb_Y_dy = *rtu_In_any_ap_engaged;
+  rtb_Y_o = *rtu_In_any_ap_engaged;
   rtb_Sum6 = PitchNormalLaw_rtP.RateLimiterVariableTs8_up * *rtu_In_time_dt;
-  rtb_Y_dy = std::fmin(rtb_Y_dy - PitchNormalLaw_DWork.Delay_DSTATE_g, rtb_Sum6);
+  rtb_Y_o = std::fmin(rtb_Y_o - PitchNormalLaw_DWork.Delay_DSTATE_g, rtb_Sum6);
   rtb_Sum6 = *rtu_In_time_dt * PitchNormalLaw_rtP.RateLimiterVariableTs8_lo;
-  PitchNormalLaw_DWork.Delay_DSTATE_g += std::fmax(rtb_Y_dy, rtb_Sum6);
+  PitchNormalLaw_DWork.Delay_DSTATE_g += std::fmax(rtb_Y_o, rtb_Sum6);
   if (PitchNormalLaw_DWork.Delay_DSTATE_g > PitchNormalLaw_rtP.Saturation_UpperSat_e) {
     rtb_Sum6 = PitchNormalLaw_rtP.Saturation_UpperSat_e;
   } else if (PitchNormalLaw_DWork.Delay_DSTATE_g < PitchNormalLaw_rtP.Saturation_LowerSat_e) {
@@ -1848,29 +1851,29 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_DWork.Delay_DSTATE_g;
   }
 
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_i) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_i;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_h) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_h;
+  if (rtb_Y_n > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_i) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_i;
+  } else if (rtb_Y_n < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_h) {
+    rtb_Y_n = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_h;
   }
 
-  rtb_qk_gain_HSP = (((PitchNormalLaw_rtP.Gain3_Gain_g * rtb_Divide_c + rtb_Product1_d) + rtb_Divide_o4) +
-                     PitchNormalLaw_rtP.Gain_Gain_ae * rtb_Divide_a) + rtb_Y_o * rtb_Tsxlo;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation_UpperSat_b) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_UpperSat_b;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation_LowerSat_c) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_LowerSat_c;
+  rtb_v_target = (((PitchNormalLaw_rtP.Gain3_Gain_g * rtb_Divide_c + rtb_Product1_d) + rtb_Divide_o4) +
+                  PitchNormalLaw_rtP.Gain_Gain_ae * rtb_Divide_a) + rtb_Y_n * rtb_Tsxlo;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation_UpperSat_b) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_UpperSat_b;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation_LowerSat_c) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_LowerSat_c;
   }
 
-  rtb_Product_e = rtb_qk_gain_HSP * rtb_Sum6;
+  rtb_Product_e = rtb_v_target * rtb_Sum6;
   rtb_Sum1_nd = PitchNormalLaw_rtP.Constant_Value_i - rtb_Sum6;
-  PitchNormalLaw_RateLimiter_f(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs2_up_m,
+  PitchNormalLaw_RateLimiter_c(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs2_up_m,
     PitchNormalLaw_rtP.RateLimiterVariableTs2_lo_k, rtu_In_time_dt,
     PitchNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition_f, &rtb_Sum6, &PitchNormalLaw_DWork.sf_RateLimiter_nx);
   rtb_Divide_c = (*rtu_In_alpha_max - *rtu_In_alpha_prot) * rtb_Sum6;
-  PitchNormalLaw_LagFilter(rtu_In_alpha_deg, PitchNormalLaw_rtP.LagFilter1_C1, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_LagFilter(rtu_In_alpha_deg, PitchNormalLaw_rtP.LagFilter1_C1, rtu_In_time_dt, &rtb_Y_cf,
     &PitchNormalLaw_DWork.sf_LagFilter_mf);
-  rtb_Product1_d = rtb_Y_o - *rtu_In_alpha_prot;
+  rtb_Product1_d = rtb_Y_cf - *rtu_In_alpha_prot;
   rtb_Divide_o4 = std::fmax(std::fmax(0.0, *rtu_In_Theta_deg - 22.5), std::fmax(0.0, (std::abs(*rtu_In_Phi_deg) - 3.0) /
     6.0));
   PitchNormalLaw_WashoutFilter(rtb_Divide_o4, PitchNormalLaw_rtP.WashoutFilter_C1_b, rtu_In_time_dt, &rtb_Sum6,
@@ -1878,17 +1881,17 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Sum6 = (rtb_Divide_c - rtb_Product1_d) - rtb_Sum6;
   rtb_Divide_c = PitchNormalLaw_rtP.Subsystem1_Gain * rtb_Sum6;
   rtb_Product1_d = (rtb_Divide_c - PitchNormalLaw_DWork.Delay_DSTATE_f) / *rtu_In_time_dt;
-  rtb_Y_dy = *rtu_In_time_dt * PitchNormalLaw_rtP.Subsystem1_C1;
-  rtb_Y_i = rtb_Y_dy + PitchNormalLaw_rtP.Constant_Value_f;
-  PitchNormalLaw_DWork.Delay1_DSTATE = 1.0 / rtb_Y_i * (PitchNormalLaw_rtP.Constant_Value_f - rtb_Y_dy) *
-    PitchNormalLaw_DWork.Delay1_DSTATE + (rtb_Product1_d + PitchNormalLaw_DWork.Delay_DSTATE_g5) * (rtb_Y_dy / rtb_Y_i);
+  rtb_Y_o = *rtu_In_time_dt * PitchNormalLaw_rtP.Subsystem1_C1;
+  rtb_Y_i = rtb_Y_o + PitchNormalLaw_rtP.Constant_Value_f;
+  PitchNormalLaw_DWork.Delay1_DSTATE = 1.0 / rtb_Y_i * (PitchNormalLaw_rtP.Constant_Value_f - rtb_Y_o) *
+    PitchNormalLaw_DWork.Delay1_DSTATE + (rtb_Product1_d + PitchNormalLaw_DWork.Delay_DSTATE_g5) * (rtb_Y_o / rtb_Y_i);
   rtb_alpha_err_gain = PitchNormalLaw_rtP.alpha_err_gain_Gain * rtb_Sum6;
   rtb_Divide_o4 = PitchNormalLaw_rtP.Subsystem3_Gain * *rtu_In_V_ias_kn;
   rtb_Divide_a = (rtb_Divide_o4 - PitchNormalLaw_DWork.Delay_DSTATE_j) / *rtu_In_time_dt;
   rtb_Sum6 = *rtu_In_time_dt * PitchNormalLaw_rtP.Subsystem3_C1;
-  rtb_Y_dy = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_b;
-  PitchNormalLaw_DWork.Delay1_DSTATE_i = 1.0 / rtb_Y_dy * (PitchNormalLaw_rtP.Constant_Value_b - rtb_Sum6) *
-    PitchNormalLaw_DWork.Delay1_DSTATE_i + (rtb_Divide_a + PitchNormalLaw_DWork.Delay_DSTATE_ca) * (rtb_Sum6 / rtb_Y_dy);
+  rtb_Y_o = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_b;
+  PitchNormalLaw_DWork.Delay1_DSTATE_i = 1.0 / rtb_Y_o * (PitchNormalLaw_rtP.Constant_Value_b - rtb_Sum6) *
+    PitchNormalLaw_DWork.Delay1_DSTATE_i + (rtb_Divide_a + PitchNormalLaw_DWork.Delay_DSTATE_ca) * (rtb_Sum6 / rtb_Y_o);
   rtb_Sum6 = PitchNormalLaw_rtP.qk_gain_Gain * *rtu_In_qk_deg_s;
   rtb_qk_dot_gain = PitchNormalLaw_rtP.qk_dot_gain_Gain * *rtu_In_qk_dot_deg_s2;
   rtb_Y_i = *rtu_In_high_aoa_prot_active;
@@ -1897,24 +1900,24 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Tsxlo = *rtu_In_time_dt * PitchNormalLaw_rtP.RateLimiterVariableTs5_lo;
   PitchNormalLaw_DWork.Delay_DSTATE_e1 += std::fmax(rtb_Y_i, rtb_Tsxlo);
   if (PitchNormalLaw_DWork.Delay_DSTATE_e1 > PitchNormalLaw_rtP.Saturation_UpperSat_eo) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_UpperSat_eo;
+    rtb_Y_o = PitchNormalLaw_rtP.Saturation_UpperSat_eo;
   } else if (PitchNormalLaw_DWork.Delay_DSTATE_e1 < PitchNormalLaw_rtP.Saturation_LowerSat_h) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_LowerSat_h;
+    rtb_Y_o = PitchNormalLaw_rtP.Saturation_LowerSat_h;
   } else {
-    rtb_Y_dy = PitchNormalLaw_DWork.Delay_DSTATE_e1;
+    rtb_Y_o = PitchNormalLaw_DWork.Delay_DSTATE_e1;
   }
 
-  rtb_qk_gain_HSP = (((PitchNormalLaw_rtP.precontrol_gain_Gain * PitchNormalLaw_DWork.Delay1_DSTATE + rtb_alpha_err_gain)
-                      + PitchNormalLaw_rtP.v_dot_gain_Gain * PitchNormalLaw_DWork.Delay1_DSTATE_i) + rtb_Sum6) +
+  rtb_v_target = (((PitchNormalLaw_rtP.precontrol_gain_Gain * PitchNormalLaw_DWork.Delay1_DSTATE + rtb_alpha_err_gain) +
+                   PitchNormalLaw_rtP.v_dot_gain_Gain * PitchNormalLaw_DWork.Delay1_DSTATE_i) + rtb_Sum6) +
     rtb_qk_dot_gain;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_f) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_f;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_c) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_c;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_f) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_f;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_c) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_c;
   }
 
-  rtb_Product_k = rtb_qk_gain_HSP * rtb_Y_dy;
-  rtb_Sum1_c = PitchNormalLaw_rtP.Constant_Value_fe - rtb_Y_dy;
+  rtb_Product_k = rtb_v_target * rtb_Y_o;
+  rtb_Sum1_c = PitchNormalLaw_rtP.Constant_Value_fe - rtb_Y_o;
   rtb_Abs = std::abs(PitchNormalLaw_rtP.Constant_Value_e);
   rtb_in_rotation = *rtu_In_on_ground;
   if (rtb_in_rotation > PitchNormalLaw_rtP.LimitSwitchUp_Threshold) {
@@ -1932,17 +1935,17 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
 
   rtb_alpha_err_gain = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_j * *rtu_In_qk_deg_s;
   rtb_Divide_n = (rtb_alpha_err_gain - PitchNormalLaw_DWork.Delay_DSTATE_bg) / *rtu_In_time_dt;
-  rtb_qk_dot_gain = PitchNormalLaw_rtP.Gain1_Gain_i * *rtu_In_qk_deg_s;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_c,
+  rtb_Gain1_n = PitchNormalLaw_rtP.Gain1_Gain_i * *rtu_In_qk_deg_s;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_c,
     PitchNormalLaw_rtP.uDLookupTable_tableData_a, 6U);
-  rtb_Y_i = *rtu_In_V_tas_kn;
-  if (rtb_Y_i > PitchNormalLaw_rtP.Saturation3_UpperSat_l) {
-    rtb_Y_i = PitchNormalLaw_rtP.Saturation3_UpperSat_l;
-  } else if (rtb_Y_i < PitchNormalLaw_rtP.Saturation3_LowerSat_lu) {
-    rtb_Y_i = PitchNormalLaw_rtP.Saturation3_LowerSat_lu;
+  rtb_v_target = *rtu_In_V_tas_kn;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_l) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_l;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_lu) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_lu;
   }
 
-  rtb_Bias_fd = rtb_Y_dy / (PitchNormalLaw_rtP.Gain5_Gain_g * rtb_Y_i) + PitchNormalLaw_rtP.Bias_Bias_g;
+  rtb_Bias_fd = rtb_Y_o / (PitchNormalLaw_rtP.Gain5_Gain_g * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_g;
   if ((*rtu_In_on_ground) && (*rtu_In_qk_deg_s > 3.0)) {
     rtb_theta_lim = 6;
   } else if ((*rtu_In_on_ground) && (*rtu_In_qk_deg_s < 3.0)) {
@@ -1951,68 +1954,66 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_theta_lim = 18;
   }
 
-  PitchNormalLaw_RateLimiter(static_cast<real_T>(rtb_theta_lim),
-    PitchNormalLaw_rtP.RateLimiterFlareLawTailstrikeProtection_up,
-    PitchNormalLaw_rtP.RateLimiterFlareLawTailstrikeProtection_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterFlareLawTailstrikeProtection_InitialCondition, &rtb_Y_dy,
-    &PitchNormalLaw_DWork.sf_RateLimiter_m);
-  PitchNormalLaw_RateLimiter_f(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterDeltaEtaFlare_up,
-    PitchNormalLaw_rtP.RateLimiterDeltaEtaFlare_lo, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterDeltaEtaFlare_InitialCondition, &rtb_Y_o, &PitchNormalLaw_DWork.sf_RateLimiter_f);
-  PitchNormalLaw_LagFilter_n(rtb_Y_o, PitchNormalLaw_rtP.LagFilterdeltaetapos_C1, rtu_In_time_dt, &rtb_Y_i,
-    &PitchNormalLaw_DWork.sf_LagFilter_f);
-  rtb_Sum_bh = PitchNormalLaw_rtP.Gain_Gain_d * rtb_Y_i + PitchNormalLaw_DWork.Delay_DSTATE_e;
-  if (rtb_Sum_bh > rtb_Y_dy) {
-    rtb_Sum_bh = rtb_Y_dy;
-  } else if (rtb_Sum_bh < PitchNormalLaw_rtP.FlareLawTailstrikeProtectionLimitLo_Value) {
-    rtb_Sum_bh = PitchNormalLaw_rtP.FlareLawTailstrikeProtectionLimitLo_Value;
+  PitchNormalLaw_RateLimiter(static_cast<real_T>(rtb_theta_lim), PitchNormalLaw_rtP.RateLimiterVariableTs1_up_b,
+    PitchNormalLaw_rtP.RateLimiterVariableTs1_lo_j, rtu_In_time_dt,
+    PitchNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_n, &rtb_Y_n, &PitchNormalLaw_DWork.sf_RateLimiter_ck);
+  rtb_qk_dot_gain = PitchNormalLaw_rtP.Gain3_Gain_k * *rtu_In_delta_eta_pos;
+  rtb_qk_dot_gain += PitchNormalLaw_DWork.Delay_DSTATE_e;
+  if (rtb_qk_dot_gain > rtb_Y_n) {
+    rtb_qk_dot_gain = rtb_Y_n;
+  } else if (rtb_qk_dot_gain < PitchNormalLaw_rtP.Constant1_Value) {
+    rtb_qk_dot_gain = PitchNormalLaw_rtP.Constant1_Value;
   }
 
-  PitchNormalLaw_RateLimiter(rtb_Sum_bh, PitchNormalLaw_rtP.RateLimiterTheta_c_up,
-    PitchNormalLaw_rtP.RateLimiterTheta_c_lo, rtu_In_time_dt, PitchNormalLaw_rtP.RateLimiterTheta_c_InitialCondition,
-    &rtb_Y_o, &PitchNormalLaw_DWork.sf_RateLimiter_pr);
-  rtb_Y_o -= *rtu_In_Theta_deg;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.ScheduledGainFlareLawInput_BreakpointsForDimension1,
+  rtb_Y_o = *rtu_In_time_dt * PitchNormalLaw_rtP.LagFilter3_C1;
+  rtb_Y_i = rtb_Y_o + PitchNormalLaw_rtP.Constant_Value_fu;
+  PitchNormalLaw_DWork.Delay1_DSTATE_n = 1.0 / rtb_Y_i * (PitchNormalLaw_rtP.Constant_Value_fu - rtb_Y_o) *
+    PitchNormalLaw_DWork.Delay1_DSTATE_n + (rtb_qk_dot_gain + PitchNormalLaw_DWork.Delay_DSTATE_o) * (rtb_Y_o / rtb_Y_i);
+  PitchNormalLaw_RateLimiter(PitchNormalLaw_DWork.Delay1_DSTATE_n, PitchNormalLaw_rtP.RateLimiterVariableTs_up_n,
+    PitchNormalLaw_rtP.RateLimiterVariableTs_lo_j, rtu_In_time_dt,
+    PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_b, &rtb_Y_cf, &PitchNormalLaw_DWork.sf_RateLimiter_e);
+  rtb_Y_n = rtb_Y_cf - *rtu_In_Theta_deg;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.ScheduledGainFlareLawInput_BreakpointsForDimension1,
     PitchNormalLaw_rtP.ScheduledGainFlareLawInput_Table, 6U);
-  rtb_Y_dy = (PitchNormalLaw_rtP.Gain_Gain_i * PitchNormalLaw_rtP.Vm_currentms_Value_j * rtb_qk_dot_gain + rtb_Gain_bu)
-    - ((rtb_Y_o * rtb_Y_dy + rtb_Divide_g4) - rtb_Divide1_e) * rtb_Bias_fd;
+  rtb_Y_o = (PitchNormalLaw_rtP.Gain_Gain_i * PitchNormalLaw_rtP.Vm_currentms_Value_j * rtb_Gain1_n + rtb_Gain_bu) -
+    ((rtb_Y_n * rtb_Y_o + rtb_Divide_g4) - rtb_Divide1_e) * rtb_Bias_fd;
   rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_k, PitchNormalLaw_rtP.PLUT_tableData_bb, 1U);
-  rtb_Sum_bh = rtb_Y_dy * rtb_Y_i;
+  rtb_Bias_fd = rtb_Y_o * rtb_Y_i;
   rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_f, PitchNormalLaw_rtP.DLUT_tableData_bf, 1U);
-  rtb_qk_dot_gain = rtb_Y_dy * rtb_Y_i * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_ol;
-  rtb_Divide_py = (rtb_qk_dot_gain - PitchNormalLaw_DWork.Delay_DSTATE_jv) / *rtu_In_time_dt;
-  rtb_Bias_fd = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_m * *rtu_In_V_tas_kn;
-  rtb_Y_dy = (rtb_Bias_fd - PitchNormalLaw_DWork.Delay_DSTATE_lf) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Y_dy, PitchNormalLaw_rtP.LagFilter_C1_c, rtu_In_time_dt, &rtb_Y_o,
+  rtb_Y_n = rtb_Y_o * rtb_Y_i * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_ol;
+  rtb_Divide_py = (rtb_Y_n - PitchNormalLaw_DWork.Delay_DSTATE_jv) / *rtu_In_time_dt;
+  rtb_Gain1_n = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_m * *rtu_In_V_tas_kn;
+  rtb_Y_o = (rtb_Gain1_n - PitchNormalLaw_DWork.Delay_DSTATE_lf) / *rtu_In_time_dt;
+  PitchNormalLaw_LagFilter_n(rtb_Y_o, PitchNormalLaw_rtP.LagFilter_C1_c, rtu_In_time_dt, &rtb_Y_cf,
     &PitchNormalLaw_DWork.sf_LagFilter_gr);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_d) {
-    rtb_Y_dy = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_d;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_g) {
-    rtb_Y_dy = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_g;
+  if (rtb_Y_cf > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_d) {
+    rtb_Y_o = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_d;
+  } else if (rtb_Y_cf < PitchNormalLaw_rtP.SaturationV_dot_LowerSat_g) {
+    rtb_Y_o = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_g;
   } else {
-    rtb_Y_dy = rtb_Y_o;
+    rtb_Y_o = rtb_Y_cf;
   }
 
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_p, rtu_In_time_dt, &rtb_Y_o,
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_p, rtu_In_time_dt, &rtb_Y_cf,
     &PitchNormalLaw_DWork.sf_WashoutFilter_ca);
   rtb_Y_i = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_p,
     PitchNormalLaw_rtP.ScheduledGain_Table_i, 3U);
-  if (rtb_Y_o > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m;
-  } else if (rtb_Y_o < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_b) {
-    rtb_Y_o = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_b;
+  if (rtb_Y_cf > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m) {
+    rtb_Y_cf = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m;
+  } else if (rtb_Y_cf < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_b) {
+    rtb_Y_cf = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_b;
   }
 
-  rtb_Y_dy = (((PitchNormalLaw_rtP.Gain3_Gain_f * rtb_Divide_n + rtb_Sum_bh) + rtb_Divide_py) +
-              PitchNormalLaw_rtP.Gain_Gain_m * rtb_Y_dy) + rtb_Y_o * rtb_Y_i;
-  if (rtb_Y_dy > PitchNormalLaw_rtP.Saturation_UpperSat_cm) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_UpperSat_cm;
-  } else if (rtb_Y_dy < PitchNormalLaw_rtP.Saturation_LowerSat_p) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_LowerSat_p;
+  rtb_Y_cf = (((PitchNormalLaw_rtP.Gain3_Gain_f * rtb_Divide_n + rtb_Bias_fd) + rtb_Divide_py) +
+              PitchNormalLaw_rtP.Gain_Gain_m * rtb_Y_o) + rtb_Y_cf * rtb_Y_i;
+  if (rtb_Y_cf > PitchNormalLaw_rtP.Saturation_UpperSat_cm) {
+    rtb_Y_cf = PitchNormalLaw_rtP.Saturation_UpperSat_cm;
+  } else if (rtb_Y_cf < PitchNormalLaw_rtP.Saturation_LowerSat_p) {
+    rtb_Y_cf = PitchNormalLaw_rtP.Saturation_LowerSat_p;
   }
 
   rtb_Abs *= PitchNormalLaw_rtP.GainLo_Gain;
-  if (rtb_Y_dy <= rtb_Sum6) {
+  if (rtb_Y_cf <= rtb_Sum6) {
     if (rtb_in_rotation > PitchNormalLaw_rtP.LimitSwitchLo_Threshold) {
       rtb_Sum6 = look2_binlxpw(*rtu_In_qk_deg_s, *rtu_In_eta_deg, PitchNormalLaw_rtP.LimitLo_bp01Data,
         PitchNormalLaw_rtP.LimitLo_bp02Data, PitchNormalLaw_rtP.LimitLo_tableData, PitchNormalLaw_rtP.LimitLo_maxIndex,
@@ -2025,10 +2026,10 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
       }
     }
 
-    if (rtb_Y_dy < rtb_Abs) {
+    if (rtb_Y_cf < rtb_Abs) {
       rtb_Sum6 = rtb_Abs;
     } else {
-      rtb_Sum6 = rtb_Y_dy;
+      rtb_Sum6 = rtb_Y_cf;
     }
   }
 
@@ -2037,61 +2038,60 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   rtb_Tsxlo = *rtu_In_time_dt * PitchNormalLaw_rtP.RateLimiterVariableTs9_lo;
   PitchNormalLaw_DWork.Delay_DSTATE_dv += std::fmax(rtb_Y_i, rtb_Tsxlo);
   if (PitchNormalLaw_DWork.Delay_DSTATE_dv > PitchNormalLaw_rtP.Saturation_UpperSat_l) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_UpperSat_l;
+    rtb_Y_o = PitchNormalLaw_rtP.Saturation_UpperSat_l;
   } else if (PitchNormalLaw_DWork.Delay_DSTATE_dv < PitchNormalLaw_rtP.Saturation_LowerSat_j) {
-    rtb_Y_dy = PitchNormalLaw_rtP.Saturation_LowerSat_j;
+    rtb_Y_o = PitchNormalLaw_rtP.Saturation_LowerSat_j;
   } else {
-    rtb_Y_dy = PitchNormalLaw_DWork.Delay_DSTATE_dv;
+    rtb_Y_o = PitchNormalLaw_DWork.Delay_DSTATE_dv;
   }
 
-  rtb_Product_p = rtb_Sum6 * rtb_Y_dy;
-  rtb_Sum1_nt = PitchNormalLaw_rtP.Constant_Value_jg - rtb_Y_dy;
+  rtb_Product_p = rtb_Sum6 * rtb_Y_o;
+  rtb_Sum1_nt = PitchNormalLaw_rtP.Constant_Value_jg - rtb_Y_o;
   rtb_Abs = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_m * *rtu_In_qk_deg_s;
   rtb_Divide_e = (rtb_Abs - PitchNormalLaw_DWork.Delay_DSTATE_kd) / *rtu_In_time_dt;
-  rtb_Gain1_dj = PitchNormalLaw_rtP.Gain1_Gain_en * *rtu_In_qk_deg_s;
+  rtb_Gain1_e = PitchNormalLaw_rtP.Gain1_Gain_en * *rtu_In_qk_deg_s;
   rtb_Sum6 = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_b,
     PitchNormalLaw_rtP.uDLookupTable_tableData_h, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_b) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_b;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_e) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_e;
+  rtb_v_target = *rtu_In_V_tas_kn;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_b) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_b;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_e) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_e;
   }
 
-  rtb_Bias_p = rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_e * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias_f;
-  PitchNormalLaw_RateLimiter_f(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs_up_n,
+  rtb_Bias_p = rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_e * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_f;
+  PitchNormalLaw_RateLimiter_c(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs_up_n5,
     PitchNormalLaw_rtP.RateLimiterVariableTs_lo_c, rtu_In_time_dt,
-    PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_o, &rtb_Y_o, &PitchNormalLaw_DWork.sf_RateLimiter_c2);
-  rtb_Loaddemand = look1_binlxpw(rtb_Y_o, PitchNormalLaw_rtP.Loaddemand_bp01Data,
+    PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_o, &rtb_Y_cf, &PitchNormalLaw_DWork.sf_RateLimiter_c2);
+  rtb_Loaddemand = look1_binlxpw(rtb_Y_cf, PitchNormalLaw_rtP.Loaddemand_bp01Data,
     PitchNormalLaw_rtP.Loaddemand_tableData, 2U);
-  rtb_Y_dy = *rtu_In_delta_eta_pos - PitchNormalLaw_DWork.Delay_DSTATE_b5;
+  rtb_Y_o = *rtu_In_delta_eta_pos - PitchNormalLaw_DWork.Delay_DSTATE_b5;
   rtb_Y_i = PitchNormalLaw_rtP.RateLimiterVariableTs3_up_i * *rtu_In_time_dt;
-  rtb_Y_dy = std::fmin(rtb_Y_dy, rtb_Y_i);
+  rtb_Y_o = std::fmin(rtb_Y_o, rtb_Y_i);
   rtb_Y_i = *rtu_In_time_dt * PitchNormalLaw_rtP.RateLimiterVariableTs3_lo_b;
-  PitchNormalLaw_DWork.Delay_DSTATE_b5 += std::fmax(rtb_Y_dy, rtb_Y_i);
-  rtb_Tsxlo = std::fmax((*rtu_In_high_speed_prot_low_kn - *rtu_In_high_speed_prot_high_kn) *
-                        PitchNormalLaw_DWork.Delay_DSTATE_b5, 0.0) + *rtu_In_high_speed_prot_low_kn;
-  rtb_Y_o = PitchNormalLaw_rtP.Subsystem2_Gain * rtb_Tsxlo;
-  rtb_Divide_n = (rtb_Y_o - PitchNormalLaw_DWork.Delay_DSTATE_ku) / *rtu_In_time_dt;
+  PitchNormalLaw_DWork.Delay_DSTATE_b5 += std::fmax(rtb_Y_o, rtb_Y_i);
+  rtb_v_target = std::fmax((*rtu_In_high_speed_prot_low_kn - *rtu_In_high_speed_prot_high_kn) *
+    PitchNormalLaw_DWork.Delay_DSTATE_b5, 0.0) + *rtu_In_high_speed_prot_low_kn;
+  rtb_Y_cf = PitchNormalLaw_rtP.Subsystem2_Gain * rtb_v_target;
+  rtb_Divide_n = (rtb_Y_cf - PitchNormalLaw_DWork.Delay_DSTATE_ku) / *rtu_In_time_dt;
   rtb_Sum6 = *rtu_In_time_dt * PitchNormalLaw_rtP.Subsystem2_C1;
-  rtb_Y_dy = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_ja;
-  PitchNormalLaw_DWork.Delay1_DSTATE_l = 1.0 / rtb_Y_dy * (PitchNormalLaw_rtP.Constant_Value_ja - rtb_Sum6) *
-    PitchNormalLaw_DWork.Delay1_DSTATE_l + (rtb_Divide_n + PitchNormalLaw_DWork.Delay_DSTATE_gl) * (rtb_Sum6 / rtb_Y_dy);
-  rtb_Sum_bh = PitchNormalLaw_rtP.Subsystem_Gain * *rtu_In_V_ias_kn;
-  rtb_Divide_py = (rtb_Sum_bh - PitchNormalLaw_DWork.Delay_DSTATE_m) / *rtu_In_time_dt;
+  rtb_Y_o = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_ja;
+  PitchNormalLaw_DWork.Delay1_DSTATE_l = 1.0 / rtb_Y_o * (PitchNormalLaw_rtP.Constant_Value_ja - rtb_Sum6) *
+    PitchNormalLaw_DWork.Delay1_DSTATE_l + (rtb_Divide_n + PitchNormalLaw_DWork.Delay_DSTATE_gl) * (rtb_Sum6 / rtb_Y_o);
+  rtb_Bias_fd = PitchNormalLaw_rtP.Subsystem_Gain * *rtu_In_V_ias_kn;
+  rtb_Divide_py = (rtb_Bias_fd - PitchNormalLaw_DWork.Delay_DSTATE_m) / *rtu_In_time_dt;
   rtb_Sum6 = *rtu_In_time_dt * PitchNormalLaw_rtP.Subsystem_C1;
-  rtb_Y_dy = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_jj;
-  PitchNormalLaw_DWork.Delay1_DSTATE_n = 1.0 / rtb_Y_dy * (PitchNormalLaw_rtP.Constant_Value_jj - rtb_Sum6) *
-    PitchNormalLaw_DWork.Delay1_DSTATE_n + (rtb_Divide_py + PitchNormalLaw_DWork.Delay_DSTATE_k2) * (rtb_Sum6 / rtb_Y_dy);
+  rtb_Y_o = rtb_Sum6 + PitchNormalLaw_rtP.Constant_Value_jj;
+  PitchNormalLaw_DWork.Delay1_DSTATE_ns = 1.0 / rtb_Y_o * (PitchNormalLaw_rtP.Constant_Value_jj - rtb_Sum6) *
+    PitchNormalLaw_DWork.Delay1_DSTATE_ns + (rtb_Divide_py + PitchNormalLaw_DWork.Delay_DSTATE_k2) * (rtb_Sum6 / rtb_Y_o);
   rtb_Sum6 = *rtu_In_high_speed_prot_active;
   if (rtb_Sum6 > PitchNormalLaw_rtP.Switch2_Threshold) {
-    rtb_Y_dy = PitchNormalLaw_rtP.qk_dot_gain1_Gain * *rtu_In_qk_dot_deg_s2;
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.qk_gain_HSP_Gain * *rtu_In_qk_deg_s;
-    rtb_Tsxlo -= *rtu_In_V_ias_kn;
-    rtb_qk_gain_HSP = ((((PitchNormalLaw_rtP.precontrol_gain_HSP_Gain * PitchNormalLaw_DWork.Delay1_DSTATE_l +
-                          PitchNormalLaw_rtP.Gain6_Gain * rtb_Tsxlo) + PitchNormalLaw_rtP.v_dot_gain_HSP_Gain *
-                         PitchNormalLaw_DWork.Delay1_DSTATE_n) + rtb_qk_gain_HSP) + rtb_Y_dy) *
-      PitchNormalLaw_rtP.HSP_gain_Gain;
+    rtb_Y_o = PitchNormalLaw_rtP.qk_dot_gain1_Gain * *rtu_In_qk_dot_deg_s2;
+    rtb_Tsxlo = PitchNormalLaw_rtP.qk_gain_HSP_Gain * *rtu_In_qk_deg_s;
+    rtb_v_target -= *rtu_In_V_ias_kn;
+    rtb_v_target = ((((PitchNormalLaw_rtP.precontrol_gain_HSP_Gain * PitchNormalLaw_DWork.Delay1_DSTATE_l +
+                       PitchNormalLaw_rtP.Gain6_Gain * rtb_v_target) + PitchNormalLaw_rtP.v_dot_gain_HSP_Gain *
+                      PitchNormalLaw_DWork.Delay1_DSTATE_ns) + rtb_Tsxlo) + rtb_Y_o) * PitchNormalLaw_rtP.HSP_gain_Gain;
     if (rtb_Loaddemand > PitchNormalLaw_rtP.Saturation8_UpperSat) {
       rtb_Switch_f = PitchNormalLaw_rtP.Saturation8_UpperSat;
     } else if (rtb_Loaddemand < PitchNormalLaw_rtP.Saturation8_LowerSat) {
@@ -2100,15 +2100,15 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
       rtb_Switch_f = rtb_Loaddemand;
     }
 
-    if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation4_UpperSat) {
-      rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation4_UpperSat;
-    } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation4_LowerSat) {
-      rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation4_LowerSat;
+    if (rtb_v_target > PitchNormalLaw_rtP.Saturation4_UpperSat) {
+      rtb_v_target = PitchNormalLaw_rtP.Saturation4_UpperSat;
+    } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation4_LowerSat) {
+      rtb_v_target = PitchNormalLaw_rtP.Saturation4_LowerSat;
     }
 
-    rtb_Y_dy = rtb_Switch_f + rtb_qk_gain_HSP;
+    rtb_Y_o = rtb_Switch_f + rtb_v_target;
   } else {
-    rtb_Y_dy = PitchNormalLaw_rtP.Constant1_Value;
+    rtb_Y_o = PitchNormalLaw_rtP.Constant1_Value_g;
   }
 
   rtb_Tsxlo = PitchNormalLaw_rtP.RateLimiterVariableTs4_up * *rtu_In_time_dt;
@@ -2123,18 +2123,18 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_DWork.Delay_DSTATE_mz;
   }
 
-  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_b * PitchNormalLaw_rtP.Vm_currentms_Value_h * rtb_Gain1_dj + rtb_Gain_bu) -
-    ((((PitchNormalLaw_rtP.Constant_Value_mr - rtb_Sum6) * rtb_Loaddemand + rtb_Y_dy * rtb_Sum6) + rtb_Divide_g4) -
+  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_b * PitchNormalLaw_rtP.Vm_currentms_Value_h * rtb_Gain1_e + rtb_Gain_bu) -
+    ((((PitchNormalLaw_rtP.Constant_Value_mr - rtb_Sum6) * rtb_Loaddemand + rtb_Y_o * rtb_Sum6) + rtb_Divide_g4) -
      rtb_Divide1_e) * rtb_Bias_p;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_f, PitchNormalLaw_rtP.PLUT_tableData_k, 1U);
-  rtb_qk_gain_HSP = rtb_Sum6 * rtb_Y_dy;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_m, PitchNormalLaw_rtP.DLUT_tableData_a, 1U);
-  rtb_Divide_g4 = rtb_Sum6 * rtb_Y_dy * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_b;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_f, PitchNormalLaw_rtP.PLUT_tableData_k, 1U);
+  rtb_v_target = rtb_Sum6 * rtb_Y_o;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_m, PitchNormalLaw_rtP.DLUT_tableData_a, 1U);
+  rtb_Divide_g4 = rtb_Sum6 * rtb_Y_o * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_b;
   rtb_Y_i = (rtb_Divide_g4 - PitchNormalLaw_DWork.Delay_DSTATE_jh) / *rtu_In_time_dt;
   rtb_Tsxlo = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_c * *rtu_In_V_tas_kn;
   rtb_Sum6 = PitchNormalLaw_DWork.Delay_DSTATE_dy;
-  rtb_Y_dy = (rtb_Tsxlo - PitchNormalLaw_DWork.Delay_DSTATE_dy) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Y_dy, PitchNormalLaw_rtP.LagFilter_C1_pt, rtu_In_time_dt, &rtb_Sum6,
+  rtb_Y_o = (rtb_Tsxlo - PitchNormalLaw_DWork.Delay_DSTATE_dy) / *rtu_In_time_dt;
+  PitchNormalLaw_LagFilter_n(rtb_Y_o, PitchNormalLaw_rtP.LagFilter_C1_pt, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_LagFilter_i);
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_bx) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_bx;
@@ -2142,10 +2142,10 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_m;
   }
 
-  rtb_Gain1_dj = PitchNormalLaw_rtP.Gain_Gain_f * rtb_Sum6;
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Sum6,
+  rtb_Gain1_e = PitchNormalLaw_rtP.Gain_Gain_f * rtb_Sum6;
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_WashoutFilter_l);
-  rtb_Y_dy = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_cx,
+  rtb_Y_o = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_cx,
     PitchNormalLaw_rtP.ScheduledGain_Table_g, 3U);
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_o) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_o;
@@ -2153,32 +2153,32 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_jl;
   }
 
-  rtb_Switch_f = (((PitchNormalLaw_rtP.Gain3_Gain_c * rtb_Divide_e + rtb_qk_gain_HSP) + rtb_Y_i) + rtb_Gain1_dj) +
-    rtb_Sum6 * rtb_Y_dy;
+  rtb_Switch_f = (((PitchNormalLaw_rtP.Gain3_Gain_c * rtb_Divide_e + rtb_v_target) + rtb_Y_i) + rtb_Gain1_e) + rtb_Sum6 *
+    rtb_Y_o;
   rtb_Divide_e = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_c * *rtu_In_qk_deg_s;
   rtb_Y_i = (rtb_Divide_e - PitchNormalLaw_DWork.Delay_DSTATE_e5) / *rtu_In_time_dt;
-  rtb_Y_dy = PitchNormalLaw_rtP.Gain1_Gain_b * *rtu_In_qk_deg_s;
+  rtb_Y_o = PitchNormalLaw_rtP.Gain1_Gain_b * *rtu_In_qk_deg_s;
   rtb_Sum6 = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_a,
     PitchNormalLaw_rtP.uDLookupTable_tableData_p, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_n) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_n;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_a) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_a;
+  rtb_v_target = *rtu_In_V_tas_kn;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_n) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_n;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_a) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_a;
   }
 
-  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_p * PitchNormalLaw_rtP.Vm_currentms_Value_pb * rtb_Y_dy + rtb_Gain_bu) -
-    (rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_n * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias_ai) * (rtb_Y_d -
+  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_p * PitchNormalLaw_rtP.Vm_currentms_Value_pb * rtb_Y_o + rtb_Gain_bu) -
+    (rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_n * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_ai) * (rtb_Y_j -
     rtb_Divide1_e);
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_a, PitchNormalLaw_rtP.PLUT_tableData_o, 1U);
-  rtb_Bias_p = rtb_Sum6 * rtb_Y_dy;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_k, PitchNormalLaw_rtP.DLUT_tableData_e, 1U);
-  rtb_Y_d = rtb_Sum6 * rtb_Y_dy * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_p;
-  rtb_Loaddemand = (rtb_Y_d - PitchNormalLaw_DWork.Delay_DSTATE_gz) / *rtu_In_time_dt;
-  rtb_Gain1_dj = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_a * *rtu_In_V_tas_kn;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_a, PitchNormalLaw_rtP.PLUT_tableData_o, 1U);
+  rtb_Bias_p = rtb_Sum6 * rtb_Y_o;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_k, PitchNormalLaw_rtP.DLUT_tableData_e, 1U);
+  rtb_Y_j = rtb_Sum6 * rtb_Y_o * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_p;
+  rtb_Loaddemand = (rtb_Y_j - PitchNormalLaw_DWork.Delay_DSTATE_gz) / *rtu_In_time_dt;
+  rtb_Gain1_e = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_a * *rtu_In_V_tas_kn;
   rtb_Sum6 = PitchNormalLaw_DWork.Delay_DSTATE_lf1;
-  rtb_Y_dy = (rtb_Gain1_dj - PitchNormalLaw_DWork.Delay_DSTATE_lf1) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Y_dy, PitchNormalLaw_rtP.LagFilter_C1_l, rtu_In_time_dt, &rtb_Sum6,
+  rtb_Y_o = (rtb_Gain1_e - PitchNormalLaw_DWork.Delay_DSTATE_lf1) / *rtu_In_time_dt;
+  PitchNormalLaw_LagFilter_n(rtb_Y_o, PitchNormalLaw_rtP.LagFilter_C1_l, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_LagFilter_g);
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_m) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_m;
@@ -2187,12 +2187,12 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   }
 
   rtb_Gain_ny = PitchNormalLaw_rtP.Gain_Gain_k * rtb_Sum6;
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Sum6,
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_WashoutFilter_d);
-  rtb_Y_dy = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_f,
+  rtb_Y_o = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_f,
     PitchNormalLaw_rtP.ScheduledGain_Table_ha, 3U);
-  rtb_qk_gain_HSP = (((PitchNormalLaw_rtP.Gain3_Gain_m * rtb_Divide_cq + rtb_Product1_ck) + rtb_Divide_l) +
-                     PitchNormalLaw_rtP.Gain_Gain_j * rtb_Gain_ps) + rtb_Product_n3;
+  rtb_v_target = (((PitchNormalLaw_rtP.Gain3_Gain_m * rtb_Divide_cq + rtb_Product1_ck) + rtb_Divide_l) +
+                  PitchNormalLaw_rtP.Gain_Gain_j * rtb_Gain1_b) + rtb_Product_n3;
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_h) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_h;
   } else if (rtb_Sum6 < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_l) {
@@ -2200,11 +2200,11 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   }
 
   rtb_Product1_ck = (((PitchNormalLaw_rtP.Gain3_Gain_b * rtb_Y_i + rtb_Bias_p) + rtb_Loaddemand) + rtb_Gain_ny) +
-    rtb_Sum6 * rtb_Y_dy;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation_UpperSat_hc) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_UpperSat_hc;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation_LowerSat_a) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_LowerSat_a;
+    rtb_Sum6 * rtb_Y_o;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation_UpperSat_hc) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_UpperSat_hc;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation_LowerSat_a) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_LowerSat_a;
   }
 
   if (rtb_Switch_f > PitchNormalLaw_rtP.Saturation_UpperSat_k) {
@@ -2219,19 +2219,19 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Product1_ck = PitchNormalLaw_rtP.Saturation_LowerSat_d;
   }
 
-  PitchNormalLaw_VoterAttitudeProtection(rtb_qk_gain_HSP, rtb_Product_e + rtb_Sum1_nd * (rtb_Product_k + rtb_Sum1_c *
+  PitchNormalLaw_VoterAttitudeProtection(rtb_v_target, rtb_Product_e + rtb_Sum1_nd * (rtb_Product_k + rtb_Sum1_c *
     (rtb_Product_p + rtb_Sum1_nt * rtb_Switch_f)), rtb_Product1_ck, &rtb_Y_i);
   rtb_Divide_cq = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_k * *rtu_In_qk_deg_s;
   rtb_Divide_l = (rtb_Divide_cq - PitchNormalLaw_DWork.Delay_DSTATE_h) / *rtu_In_time_dt;
-  rtb_Y_dy = PitchNormalLaw_rtP.Gain1_Gain_lk * *rtu_In_qk_deg_s;
+  rtb_Gain1_b = PitchNormalLaw_rtP.Gain1_Gain_lk * *rtu_In_qk_deg_s;
   rtb_Sum6 = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.uDLookupTable_bp01Data_m,
     PitchNormalLaw_rtP.uDLookupTable_tableData_ax, 6U);
-  rtb_qk_gain_HSP = *rtu_In_V_tas_kn;
+  rtb_v_target = *rtu_In_V_tas_kn;
   rtb_Product1_ck = PitchNormalLaw_rtP.Gain3_Gain_g2 * PitchNormalLaw_rtP.Theta_max3_Value - rtb_Saturation3;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation3_UpperSat_ev) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_UpperSat_ev;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation3_LowerSat_k) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation3_LowerSat_k;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation3_UpperSat_ev) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_UpperSat_ev;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation3_LowerSat_k) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation3_LowerSat_k;
   }
 
   if (rtb_Product1_ck > PitchNormalLaw_rtP.Saturation2_UpperSat) {
@@ -2240,20 +2240,19 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Product1_ck = PitchNormalLaw_rtP.Saturation2_LowerSat;
   }
 
-  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_jq * PitchNormalLaw_rtP.Vm_currentms_Value_b * rtb_Y_dy + rtb_Gain_bu) -
-    (rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_mu * rtb_qk_gain_HSP) + PitchNormalLaw_rtP.Bias_Bias_m) * ((rtb_Divide1_e
-    + look1_binlxpw(rtb_Product1_ck, PitchNormalLaw_rtP.Loaddemand2_bp01Data, PitchNormalLaw_rtP.Loaddemand2_tableData,
-                    2U)) - rtb_Divide1_e);
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_e, PitchNormalLaw_rtP.PLUT_tableData_g, 1U);
-  rtb_Saturation3 = rtb_Sum6 * rtb_Y_dy;
-  rtb_Y_dy = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_hw, PitchNormalLaw_rtP.DLUT_tableData_l,
-    1U);
-  rtb_Divide1_e = rtb_Sum6 * rtb_Y_dy * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_c;
+  rtb_Sum6 = (PitchNormalLaw_rtP.Gain_Gain_jq * PitchNormalLaw_rtP.Vm_currentms_Value_b * rtb_Gain1_b + rtb_Gain_bu) -
+    (rtb_Sum6 / (PitchNormalLaw_rtP.Gain5_Gain_mu * rtb_v_target) + PitchNormalLaw_rtP.Bias_Bias_m) * ((rtb_Divide1_e +
+    look1_binlxpw(rtb_Product1_ck, PitchNormalLaw_rtP.Loaddemand2_bp01Data, PitchNormalLaw_rtP.Loaddemand2_tableData, 2U))
+    - rtb_Divide1_e);
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.PLUT_bp01Data_e, PitchNormalLaw_rtP.PLUT_tableData_g, 1U);
+  rtb_Saturation3 = rtb_Sum6 * rtb_Y_o;
+  rtb_Y_o = look1_binlxpw(*rtu_In_V_tas_kn, PitchNormalLaw_rtP.DLUT_bp01Data_hw, PitchNormalLaw_rtP.DLUT_tableData_l, 1U);
+  rtb_Divide1_e = rtb_Sum6 * rtb_Y_o * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_c;
   rtb_Product1_ck = (rtb_Divide1_e - PitchNormalLaw_DWork.Delay_DSTATE_ds) / *rtu_In_time_dt;
   rtb_Gain_bu = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_p * *rtu_In_V_tas_kn;
   rtb_Sum6 = PitchNormalLaw_DWork.Delay_DSTATE_jt;
-  rtb_Y_dy = (rtb_Gain_bu - PitchNormalLaw_DWork.Delay_DSTATE_jt) / *rtu_In_time_dt;
-  PitchNormalLaw_LagFilter_n(rtb_Y_dy, PitchNormalLaw_rtP.LagFilter_C1_f, rtu_In_time_dt, &rtb_Sum6,
+  rtb_Gain1_b = (rtb_Gain_bu - PitchNormalLaw_DWork.Delay_DSTATE_jt) / *rtu_In_time_dt;
+  PitchNormalLaw_LagFilter_n(rtb_Gain1_b, PitchNormalLaw_rtP.LagFilter_C1_f, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_LagFilter_n);
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j2) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j2;
@@ -2261,13 +2260,13 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationV_dot_LowerSat_n;
   }
 
-  rtb_Gain_ps = PitchNormalLaw_rtP.Gain_Gain_l0 * rtb_Sum6;
-  PitchNormalLaw_WashoutFilter(rtb_Gain_a5, PitchNormalLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Sum6,
+  rtb_Gain1_b = PitchNormalLaw_rtP.Gain_Gain_l0 * rtb_Sum6;
+  PitchNormalLaw_WashoutFilter(rtb_Gain_mj, PitchNormalLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Sum6,
     &PitchNormalLaw_DWork.sf_WashoutFilter);
-  rtb_Y_dy = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
+  rtb_Y_o = look1_binlxpw(*rtu_In_H_radio_ft, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
     PitchNormalLaw_rtP.ScheduledGain_Table_e, 3U);
-  rtb_qk_gain_HSP = (((PitchNormalLaw_rtP.Gain3_Gain * rtb_Divide + rtb_Product1_dm) + rtb_Divide_o) +
-                     PitchNormalLaw_rtP.Gain_Gain_l * rtb_Divide_c4) + rtb_Product_kz;
+  rtb_v_target = (((PitchNormalLaw_rtP.Gain3_Gain * rtb_Divide + rtb_Product1_dm) + rtb_Divide_o) +
+                  PitchNormalLaw_rtP.Gain_Gain_l * rtb_Divide_c4) + rtb_Product_kz;
   if (rtb_Sum6 > PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_mf) {
     rtb_Sum6 = PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_mf;
   } else if (rtb_Sum6 < PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_d) {
@@ -2275,11 +2274,11 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   }
 
   rtb_Product1_ck = (((PitchNormalLaw_rtP.Gain3_Gain_n * rtb_Divide_l + rtb_Saturation3) + rtb_Product1_ck) +
-                     rtb_Gain_ps) + rtb_Sum6 * rtb_Y_dy;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation_UpperSat_h) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_UpperSat_h;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation_LowerSat_o) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_LowerSat_o;
+                     rtb_Gain1_b) + rtb_Sum6 * rtb_Y_o;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation_UpperSat_h) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_UpperSat_h;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation_LowerSat_o) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_LowerSat_o;
   }
 
   if (rtb_Product1_ck > PitchNormalLaw_rtP.Saturation_UpperSat_a) {
@@ -2288,47 +2287,47 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Product1_ck = PitchNormalLaw_rtP.Saturation_LowerSat_k;
   }
 
-  PitchNormalLaw_VoterAttitudeProtection(rtb_qk_gain_HSP, rtb_Y_i, rtb_Product1_ck, &rtb_Y_dy);
+  PitchNormalLaw_VoterAttitudeProtection(rtb_v_target, rtb_Y_i, rtb_Product1_ck, &rtb_Y_o);
   rtb_Sum6 = look1_binlxpw(*rtu_In_V_ias_kn, PitchNormalLaw_rtP.ScheduledGain1_BreakpointsForDimension1,
     PitchNormalLaw_rtP.ScheduledGain1_Table, 4U);
-  rtb_Divide = rtb_Y_dy * rtb_Sum6;
+  rtb_Divide = rtb_Y_o * rtb_Sum6;
   rtb_Sum6 = look1_binlxpw(*rtu_In_time_dt, PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_d,
     PitchNormalLaw_rtP.ScheduledGain_Table_hh, 4U);
   rtb_Sum6 = rtb_Divide * rtb_Sum6 * PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
-  rtb_OR = ((rtb_Y_o2 == 0.0) || (*rtu_In_tracking_mode_on));
+  rtb_OR = ((rtb_Y_g == 0.0) || (*rtu_In_tracking_mode_on));
   if (*rtu_In_in_flight > PitchNormalLaw_rtP.Switch_Threshold) {
-    rtb_Y_dy = *rtu_In_eta_deg;
+    rtb_Y_o = *rtu_In_eta_deg;
   } else {
-    rtb_Y_dy = rtb_Gain_cb;
+    rtb_Y_o = rtb_Gain_cb;
   }
 
   PitchNormalLaw_DWork.icLoad = (rtb_OR || PitchNormalLaw_DWork.icLoad);
   if (PitchNormalLaw_DWork.icLoad) {
-    PitchNormalLaw_DWork.Delay_DSTATE_o = rtb_Y_dy - rtb_Sum6;
+    PitchNormalLaw_DWork.Delay_DSTATE_o3 = rtb_Y_o - rtb_Sum6;
   }
 
-  PitchNormalLaw_DWork.Delay_DSTATE_o += rtb_Sum6;
-  if (PitchNormalLaw_DWork.Delay_DSTATE_o > PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit) {
-    PitchNormalLaw_DWork.Delay_DSTATE_o = PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit;
-  } else if (PitchNormalLaw_DWork.Delay_DSTATE_o < PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_LowerLimit) {
-    PitchNormalLaw_DWork.Delay_DSTATE_o = PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_LowerLimit;
+  PitchNormalLaw_DWork.Delay_DSTATE_o3 += rtb_Sum6;
+  if (PitchNormalLaw_DWork.Delay_DSTATE_o3 > PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit) {
+    PitchNormalLaw_DWork.Delay_DSTATE_o3 = PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit;
+  } else if (PitchNormalLaw_DWork.Delay_DSTATE_o3 < PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_LowerLimit) {
+    PitchNormalLaw_DWork.Delay_DSTATE_o3 = PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_LowerLimit;
   }
 
-  if (rtb_Y_o2 > PitchNormalLaw_rtP.Saturation_UpperSat_la) {
+  if (rtb_Y_g > PitchNormalLaw_rtP.Saturation_UpperSat_la) {
     rtb_Sum6 = PitchNormalLaw_rtP.Saturation_UpperSat_la;
-  } else if (rtb_Y_o2 < PitchNormalLaw_rtP.Saturation_LowerSat_kp) {
+  } else if (rtb_Y_g < PitchNormalLaw_rtP.Saturation_LowerSat_kp) {
     rtb_Sum6 = PitchNormalLaw_rtP.Saturation_LowerSat_kp;
   } else {
-    rtb_Sum6 = rtb_Y_o2;
+    rtb_Sum6 = rtb_Y_g;
   }
 
-  rtb_Saturation3 = PitchNormalLaw_DWork.Delay_DSTATE_o * rtb_Sum6;
+  rtb_Saturation3 = PitchNormalLaw_DWork.Delay_DSTATE_o3 * rtb_Sum6;
   rtb_Divide_o = PitchNormalLaw_rtP.Constant_Value_o1 - rtb_Sum6;
-  PitchNormalLaw_RateLimiter_f(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs_up_na,
+  PitchNormalLaw_RateLimiter_c(rtu_In_delta_eta_pos, PitchNormalLaw_rtP.RateLimiterVariableTs_up_na,
     PitchNormalLaw_rtP.RateLimiterVariableTs_lo_i, rtu_In_time_dt,
     PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_m, &rtb_Y_i, &PitchNormalLaw_DWork.sf_RateLimiter_ct);
   rtb_Sum6 = *rtu_In_tailstrike_protection_on;
-  rtb_Y_dy = look2_binlxpw(*rtu_In_Theta_deg, *rtu_In_H_radio_ft, PitchNormalLaw_rtP.uDLookupTable_bp01Data_l,
+  rtb_Y_o = look2_binlxpw(*rtu_In_Theta_deg, *rtu_In_H_radio_ft, PitchNormalLaw_rtP.uDLookupTable_bp01Data_l,
     PitchNormalLaw_rtP.uDLookupTable_bp02Data, PitchNormalLaw_rtP.uDLookupTable_tableData_e5,
     PitchNormalLaw_rtP.uDLookupTable_maxIndex, 5U);
   if (rtb_Y_i > PitchNormalLaw_rtP.Saturation3_UpperSat_lt) {
@@ -2339,28 +2338,29 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Switch_f = rtb_Y_i;
   }
 
-  rtb_Sum6 = look1_binlxpw(rtb_Sum6 * rtb_Y_dy * rtb_Switch_f + rtb_Y_i, PitchNormalLaw_rtP.PitchRateDemand_bp01Data,
+  rtb_Sum6 = look1_binlxpw(rtb_Sum6 * rtb_Y_o * rtb_Switch_f + rtb_Y_i, PitchNormalLaw_rtP.PitchRateDemand_bp01Data,
     PitchNormalLaw_rtP.PitchRateDemand_tableData, 2U);
   rtb_Divide = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_j3 * rtb_Sum6;
   rtb_Divide_c4 = (rtb_Divide - PitchNormalLaw_DWork.Delay_DSTATE_ej) / *rtu_In_time_dt;
-  rtb_Y_dy = *rtu_In_qk_deg_s - rtb_Sum6;
-  rtb_Gain_a5 = PitchNormalLaw_rtP.Gain_Gain_pt * rtb_Y_dy;
-  rtb_Product1_dm = PitchNormalLaw_rtP.Gain1_Gain_d * rtb_Y_dy * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_g;
+  rtb_Y_o = *rtu_In_qk_deg_s - rtb_Sum6;
+  rtb_Gain_mj = PitchNormalLaw_rtP.Gain_Gain_pt * rtb_Y_o;
+  rtb_Product1_dm = PitchNormalLaw_rtP.Gain1_Gain_d * rtb_Y_o * PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_g;
+  rtb_Y_o = PitchNormalLaw_DWork.Delay_DSTATE_e4;
   rtb_Product_kz = (rtb_Product1_dm - PitchNormalLaw_DWork.Delay_DSTATE_e4) / *rtu_In_time_dt;
-  rtb_Y_dy = PitchNormalLaw_rtP.Gain5_Gain_h * *rtu_In_qk_dot_deg_s2;
-  rtb_Product1_ck = *rtu_In_qk_deg_s + rtb_Y_dy;
-  PitchNormalLaw_LagFilter_n(rtb_Product1_ck, PitchNormalLaw_rtP.LagFilter_C1_k, rtu_In_time_dt, &rtb_Y_dy,
-    &PitchNormalLaw_DWork.sf_LagFilter_fz);
+  rtb_Product1_ck = PitchNormalLaw_rtP.Gain5_Gain_h * *rtu_In_qk_dot_deg_s2;
+  rtb_Product1_ck += *rtu_In_qk_deg_s;
+  PitchNormalLaw_LagFilter_n(rtb_Product1_ck, PitchNormalLaw_rtP.LagFilter_C1_k, rtu_In_time_dt, &rtb_Y_o,
+    &PitchNormalLaw_DWork.sf_LagFilter_f);
   rtb_Product1_ck = PitchNormalLaw_rtP.Gain6_Gain_g * *rtu_In_qk_dot_deg_s2;
-  rtb_Divide_c4 = (((rtb_Gain_a5 + rtb_Product_kz) * PitchNormalLaw_rtP.Gain1_Gain_a + PitchNormalLaw_rtP.Gain3_Gain_e *
-                    rtb_Divide_c4) + (rtb_Y_dy - rtb_Sum6) * PitchNormalLaw_rtP.Gain4_Gain) + rtb_Product1_ck;
+  rtb_Divide_c4 = (((rtb_Gain_mj + rtb_Product_kz) * PitchNormalLaw_rtP.Gain1_Gain_a + PitchNormalLaw_rtP.Gain3_Gain_e *
+                    rtb_Divide_c4) + (rtb_Y_o - rtb_Sum6) * PitchNormalLaw_rtP.Gain4_Gain) + rtb_Product1_ck;
   rtb_Sum6 = look1_binlxpw(*rtu_In_V_ias_kn, PitchNormalLaw_rtP.ScheduledGain1_BreakpointsForDimension1_h,
     PitchNormalLaw_rtP.ScheduledGain1_Table_c, 4U);
-  rtb_Sum6 = (PitchNormalLaw_rtP.Constant2_Value_k - rtb_Y_o2) * (rtb_Divide_c4 * rtb_Sum6) *
+  rtb_Sum6 = (PitchNormalLaw_rtP.Constant2_Value_k - rtb_Y_g) * (rtb_Divide_c4 * rtb_Sum6) *
     PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain_j * *rtu_In_time_dt;
   rtb_OR = (*rtu_In_delta_eta_pos <= PitchNormalLaw_rtP.Constant_Value_o);
   rtb_OR = (rtb_OR && (*rtu_In_on_ground));
-  rtb_OR = (rtb_OR || (rtb_Y_bc == 0.0) || (*rtu_In_tracking_mode_on));
+  rtb_OR = (rtb_OR || (rtb_Y_f == 0.0) || (*rtu_In_tracking_mode_on));
   PitchNormalLaw_DWork.icLoad_p = (rtb_OR || PitchNormalLaw_DWork.icLoad_p);
   if (PitchNormalLaw_DWork.icLoad_p) {
     PitchNormalLaw_DWork.Delay_DSTATE_cl = PitchNormalLaw_rtP.Constant_Value_jk - rtb_Sum6;
@@ -2385,24 +2385,24 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     rtb_Sum6 = PitchNormalLaw_rtP.Constant1_Value_h;
   }
 
-  rtb_Y_o2 = PitchNormalLaw_DWork.Delay_DSTATE_cl + rtb_Sum6;
-  if (rtb_Y_bc > PitchNormalLaw_rtP.Saturation_UpperSat_m) {
+  rtb_Y_g = PitchNormalLaw_DWork.Delay_DSTATE_cl + rtb_Sum6;
+  if (rtb_Y_f > PitchNormalLaw_rtP.Saturation_UpperSat_m) {
     rtb_Sum6 = PitchNormalLaw_rtP.Saturation_UpperSat_m;
-  } else if (rtb_Y_bc < PitchNormalLaw_rtP.Saturation_LowerSat_b) {
+  } else if (rtb_Y_f < PitchNormalLaw_rtP.Saturation_LowerSat_b) {
     rtb_Sum6 = PitchNormalLaw_rtP.Saturation_LowerSat_b;
   } else {
-    rtb_Sum6 = rtb_Y_bc;
+    rtb_Sum6 = rtb_Y_f;
   }
 
-  rtb_qk_gain_HSP = ((PitchNormalLaw_rtP.Constant_Value_h - rtb_Sum6) * rtb_Gain_cb + rtb_Y_o2 * rtb_Sum6) *
-    rtb_Divide_o + rtb_Saturation3;
-  if (rtb_qk_gain_HSP > PitchNormalLaw_rtP.Saturation_UpperSat_kp) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_UpperSat_kp;
-  } else if (rtb_qk_gain_HSP < PitchNormalLaw_rtP.Saturation_LowerSat_a4) {
-    rtb_qk_gain_HSP = PitchNormalLaw_rtP.Saturation_LowerSat_a4;
+  rtb_v_target = ((PitchNormalLaw_rtP.Constant_Value_h - rtb_Sum6) * rtb_Gain_cb + rtb_Y_g * rtb_Sum6) * rtb_Divide_o +
+    rtb_Saturation3;
+  if (rtb_v_target > PitchNormalLaw_rtP.Saturation_UpperSat_kp) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_UpperSat_kp;
+  } else if (rtb_v_target < PitchNormalLaw_rtP.Saturation_LowerSat_a4) {
+    rtb_v_target = PitchNormalLaw_rtP.Saturation_LowerSat_a4;
   }
 
-  PitchNormalLaw_RateLimiter(rtb_qk_gain_HSP, PitchNormalLaw_rtP.RateLimitereta_up, PitchNormalLaw_rtP.RateLimitereta_lo,
+  PitchNormalLaw_RateLimiter(rtb_v_target, PitchNormalLaw_rtP.RateLimitereta_up, PitchNormalLaw_rtP.RateLimitereta_lo,
     rtu_In_time_dt, PitchNormalLaw_rtP.RateLimitereta_InitialCondition, rty_Out_eta_deg,
     &PitchNormalLaw_DWork.sf_RateLimiter_b);
   if (rtb_eta_trim_deg_should_freeze == PitchNormalLaw_rtP.CompareToConstant_const) {
@@ -2434,18 +2434,19 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
   PitchNormalLaw_DWork.Delay_DSTATE_j = rtb_Divide_o4;
   PitchNormalLaw_DWork.Delay_DSTATE_ca = rtb_Divide_a;
   PitchNormalLaw_DWork.Delay_DSTATE_bg = rtb_alpha_err_gain;
-  PitchNormalLaw_DWork.Delay_DSTATE_jv = rtb_qk_dot_gain;
-  PitchNormalLaw_DWork.Delay_DSTATE_lf = rtb_Bias_fd;
+  PitchNormalLaw_DWork.Delay_DSTATE_o = rtb_qk_dot_gain;
+  PitchNormalLaw_DWork.Delay_DSTATE_jv = rtb_Y_n;
+  PitchNormalLaw_DWork.Delay_DSTATE_lf = rtb_Gain1_n;
   PitchNormalLaw_DWork.Delay_DSTATE_kd = rtb_Abs;
-  PitchNormalLaw_DWork.Delay_DSTATE_ku = rtb_Y_o;
+  PitchNormalLaw_DWork.Delay_DSTATE_ku = rtb_Y_cf;
   PitchNormalLaw_DWork.Delay_DSTATE_gl = rtb_Divide_n;
-  PitchNormalLaw_DWork.Delay_DSTATE_m = rtb_Sum_bh;
+  PitchNormalLaw_DWork.Delay_DSTATE_m = rtb_Bias_fd;
   PitchNormalLaw_DWork.Delay_DSTATE_k2 = rtb_Divide_py;
   PitchNormalLaw_DWork.Delay_DSTATE_jh = rtb_Divide_g4;
   PitchNormalLaw_DWork.Delay_DSTATE_dy = rtb_Tsxlo;
   PitchNormalLaw_DWork.Delay_DSTATE_e5 = rtb_Divide_e;
-  PitchNormalLaw_DWork.Delay_DSTATE_gz = rtb_Y_d;
-  PitchNormalLaw_DWork.Delay_DSTATE_lf1 = rtb_Gain1_dj;
+  PitchNormalLaw_DWork.Delay_DSTATE_gz = rtb_Y_j;
+  PitchNormalLaw_DWork.Delay_DSTATE_lf1 = rtb_Gain1_e;
   PitchNormalLaw_DWork.Delay_DSTATE_h = rtb_Divide_cq;
   PitchNormalLaw_DWork.Delay_DSTATE_ds = rtb_Divide1_e;
   PitchNormalLaw_DWork.Delay_DSTATE_jt = rtb_Gain_bu;
