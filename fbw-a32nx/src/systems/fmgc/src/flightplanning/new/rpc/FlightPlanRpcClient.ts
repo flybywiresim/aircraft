@@ -9,7 +9,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
@@ -213,8 +213,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('setPilotEnteredAltitudeConstraintAt', atIndex, isDescentConstraint, constraint, planIndex, alternate);
     }
 
-    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setPilotEnteredSpeedConstraintAt', atIndex, isDescentConstraint, constraint, planIndex, alternate);
+    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, speed?: number, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setPilotEnteredSpeedConstraintAt', atIndex, isDescentConstraint, speed, planIndex, alternate);
     }
 
     addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex?: FlightPlanIndex): Promise<void> {

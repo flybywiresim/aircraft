@@ -14,6 +14,7 @@ import {
     LegType,
     ProcedureTransition,
     Runway,
+    SpeedDescriptor,
     WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
@@ -43,7 +44,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { ConstraintUtils, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {
@@ -1230,17 +1231,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.incrementVersion();
     }
 
-    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, constraint?: SpeedConstraint) {
+    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, speed?: number) {
         const element = this.elementAt(index);
 
         if (element.isDiscontinuity === true) {
             return;
         }
 
-        element.pilotEnteredSpeedConstraint = constraint;
-        if (!constraint) {
+        if (!speed) {
+            element.pilotEnteredSpeedConstraint = undefined;
             element.definition.speedDescriptor = undefined;
             element.definition.speed = undefined;
+        } else {
+            element.pilotEnteredSpeedConstraint = { speedDescriptor: SpeedDescriptor.Maximum, speed };
         }
 
         this.syncLegDefinitionChange(index);

@@ -26,7 +26,7 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { MagVar } from '@microsoft/msfs-sdk';
-import { ConstraintUtils, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
@@ -165,7 +165,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         if (this.hasPilotEnteredSpeedConstraint()) {
             return this.pilotEnteredSpeedConstraint;
         } if (this.hasDatabaseSpeedConstraint()) {
-            return ConstraintUtils.parseSpeedConstraintFromLegDefinition(this.definition);
+            return this.definition;
         }
 
         return undefined;

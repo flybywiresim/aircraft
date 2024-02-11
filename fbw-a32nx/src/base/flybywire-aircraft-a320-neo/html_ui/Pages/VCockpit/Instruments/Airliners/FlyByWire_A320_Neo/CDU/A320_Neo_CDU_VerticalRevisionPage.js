@@ -239,7 +239,7 @@ class CDUVerticalRevisionPage {
                 return;
             }
 
-            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, { speed }, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, speed, forPlan, inAlternate);
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -312,7 +312,7 @@ class CDUVerticalRevisionPage {
         } else {
             mcdu.onLeftInput[5] = async () => {
                 if (Number.isFinite(confirmSpeed)) {
-                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, false, { speed: confirmSpeed }, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, false, confirmSpeed, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -333,7 +333,7 @@ class CDUVerticalRevisionPage {
 
             mcdu.onRightInput[5] = async () => {
                 if (Number.isFinite(confirmSpeed)) {
-                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, true, { speed: confirmSpeed }, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, true, confirmSpeed, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -461,7 +461,7 @@ class CDUVerticalRevisionPage {
         }
 
         if (speed !== undefined) {
-            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(legIndex, isDescentConstraint, { speed }, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(legIndex, isDescentConstraint, speed, forPlan, inAlternate);
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 

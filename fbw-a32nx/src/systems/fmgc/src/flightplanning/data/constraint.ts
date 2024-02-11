@@ -1,12 +1,4 @@
-import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { AltitudeDescriptor, SpeedDescriptor } from '@flybywiresim/fbw-sdk';
-
-export enum AltitudeConstraintType {
-    at = '@',
-    atOrAbove = '+',
-    atOrBelow = '-',
-    range = 'B',
-}
 
 // TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)
 export enum SpeedConstraintType {
@@ -33,8 +25,8 @@ export interface AltitudeConstraint {
 }
 
 export interface SpeedConstraint {
-    type: SpeedConstraintType.atOrBelow,
-    speed: Knots,
+    speedDescriptor?: SpeedDescriptor,
+    speed?: Knots,
 }
 
 export class ConstraintUtils {
@@ -66,13 +58,5 @@ export class ConstraintUtils {
         default:
             return Infinity;
         }
-    }
-
-    static parseSpeedConstraintFromLegDefinition(definition: FlightPlanLegDefinition): SpeedConstraint | undefined {
-        if (definition?.speedDescriptor === SpeedDescriptor.Maximum || definition?.speedDescriptor === SpeedDescriptor.Mandatory) {
-            return { type: SpeedConstraintType.atOrBelow, speed: definition.speed };
-        }
-
-        return undefined;
     }
 }

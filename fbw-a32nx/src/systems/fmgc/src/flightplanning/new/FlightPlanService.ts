@@ -14,7 +14,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
@@ -368,12 +368,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         plan.setPilotEnteredAltitudeConstraintAt(atIndex, isDescentConstraint, constraint);
     }
 
-    async setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+    async setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, speed?: number, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
         const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        plan.setPilotEnteredSpeedConstraintAt(atIndex, isDescentConstraint, constraint);
+        plan.setPilotEnteredSpeedConstraintAt(atIndex, isDescentConstraint, speed);
     }
 
     async addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex = FlightPlanIndex.Active): Promise<void> {

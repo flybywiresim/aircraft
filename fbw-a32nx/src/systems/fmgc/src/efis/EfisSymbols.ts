@@ -27,7 +27,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
