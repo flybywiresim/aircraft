@@ -2765,6 +2765,19 @@ mod tests {
             assert!(test_bed.safety_valve_open_amount() > Ratio::default());
         }
 
+        #[test]
+        fn cabin_decompresses_when_failure() {
+            let mut test_bed = test_bed_in_cruise().iterate(10);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
+
+            test_bed.fail(FailureType::RapidDecompression);
+
+            test_bed = test_bed.iterate(10);
+
+            assert!(test_bed.cabin_vs().abs() > Velocity::new::<foot_per_minute>(100.));
+        }
+
         mod cabin_pressure_controller_tests {
             use super::*;
 

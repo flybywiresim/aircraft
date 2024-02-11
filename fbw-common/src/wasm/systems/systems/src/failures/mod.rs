@@ -17,6 +17,7 @@ pub enum FailureType {
     OutflowValveFault,
     SafetyValveFault,
     GalleyFans,
+    RapidDecompression,
     Generator(usize),
     ApuGenerator(usize),
     TransformerRectifier(usize),

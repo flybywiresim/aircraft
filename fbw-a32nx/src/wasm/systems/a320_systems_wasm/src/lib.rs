@@ -94,6 +94,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (21_016, FailureType::CpcFault(2)),
         (21_017, FailureType::OutflowValveFault),
         (21_018, FailureType::SafetyValveFault),
+        (21_019, FailureType::RapidDecompression),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),

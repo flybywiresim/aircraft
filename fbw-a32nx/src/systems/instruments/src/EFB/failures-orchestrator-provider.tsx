@@ -34,6 +34,7 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [21, A320Failure.Cpc2, 'Cabin Pressure Controller 2'],
     [21, A320Failure.OutflowValve, 'Outflow Valve'],
     [21, A320Failure.SafetyValve, 'Safety Valve'],
+    [21, A320Failure.RapidDecompression, 'Rapid Decompression'],
 
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],
