@@ -194,7 +194,6 @@ export class EfisSymbols {
 
             // eslint-disable-next-line no-loop-func
             const withinEditArea = (ll): boolean => {
-                // FIXME
                 if (!termination) {
                     return true;
                 }
