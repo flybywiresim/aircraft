@@ -98,7 +98,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
 
     return (
         <div
-            className={`flex cursor-pointer flex-row items-center space-x-6 p-6${buttonsStyles[state]} ${className}`}
+            className={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${buttonsStyles[state]} ${className}`}
             onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
         >
             {children}

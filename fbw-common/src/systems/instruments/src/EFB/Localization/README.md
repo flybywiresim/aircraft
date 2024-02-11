@@ -5,15 +5,12 @@ TOC:
 - [Development Process](#development-process)
 - [Build Process](#build-process)
 - [Updating the Source File](#update-source-file)
-
-OBS:
+  OBS:
 
 <span style="color: red">
-fylPad Localization files are now in the fbw-common EFB section
-The localization files for the flyPad are now in the fbw-common EFB section.
-The process is the same as described here. The only difference is the path
-to the localization files. The path is `fbw-a32nx/src/localization/flypad`
-instead of `fbw-a32nx/src/localization/a32nx`.
+Aircraft locpak localization is still in the aircraft 
+(A32NX and eventually in the A380X) folder. 
+The folder is `fbw-a32nx/src/localization`.
 </span>
 
 ## Development Process

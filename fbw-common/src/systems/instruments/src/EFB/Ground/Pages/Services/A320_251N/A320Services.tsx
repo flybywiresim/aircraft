@@ -100,7 +100,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
 
     return (
         <div
-            className={`flex cursor-pointer flex-row items-center space-x-6 p-6${buttonsStyles[state]} ${className}`}
+            className={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${buttonsStyles[state]} ${className}`}
             onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
         >
             {children}
@@ -592,7 +592,7 @@ export const A320Services: React.FC = () => {
                 {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
                 {/* the ServiceButtonWrapper has been re-used. */}
                 {!!wheelChocksEnabled && (
-                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                         <div className={`-ml-2 -mr-[2px] flex items-end justify-center ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                             <Chock size="12" stroke="4" />
                             <Wheel size="36" stroke="5" className="-mx-0.5" />
@@ -605,7 +605,7 @@ export const A320Services: React.FC = () => {
                 )}
 
                 {!!conesEnabled && (
-                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                    <div className={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                         <ConeStriped size="38" stroke="1.5" className="mr-2" />
                         <h1 className="shrink-0 text-2xl font-medium text-current">
                             {t('Ground.Services.Cones')}
