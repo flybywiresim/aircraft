@@ -140,7 +140,7 @@ export const LandingWidget = () => {
             try {
                 metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
                 if (metar.icao !== icao.toUpperCase()) {
-                    throw new Error('No METAR available');
+                    toast.error('No METAR available');
                 }
                 parsedMetar = parseMetar(metar.metarString);
             } catch (err) {
@@ -150,7 +150,7 @@ export const LandingWidget = () => {
             try {
                 const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
                 if (!response.metar) {
-                    throw new Error('No METAR available');
+                    toast.error('No METAR available');
                 }
                 parsedMetar = parseMetar(response.metar);
             } catch (err) {
@@ -427,7 +427,10 @@ export const LandingWidget = () => {
                                     <TooltipWrapper text={fillDataTooltip()}>
                                         <button
                                             onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                                            className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:bg-theme-body hover:text-theme-highlight'}`}
+                                            className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none 
+                                            border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none 
+                                            transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:bg-theme-body '
+                                                + 'hover:text-theme-highlight'}`}
                                             type="button"
                                         >
                                             <CloudArrowDown size={26} />
@@ -685,7 +688,9 @@ export const LandingWidget = () => {
                         <div className="mt-14 flex flex-row space-x-8">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={`flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight bg-theme-highlight py-2 text-theme-body outline-none hover:bg-theme-body hover:text-theme-highlight ${!areInputsValid() && 'pointer-events-none opacity-50'}`}
+                                className={`flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight 
+                                bg-theme-highlight py-2 text-theme-body outline-none hover:bg-theme-body hover:text-theme-highlight 
+                                ${!areInputsValid() && 'pointer-events-none opacity-50'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
@@ -694,7 +699,8 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
+                                className="flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red
+                                bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
                                 type="button"
                             >
                                 <Trash size={26} />
