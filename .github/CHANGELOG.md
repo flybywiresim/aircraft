@@ -64,6 +64,7 @@
 1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
 1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
 1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+2. [AP] Add NAV on GA capability - @lukecologne (luke)
 
 ## 0.11.0
 
