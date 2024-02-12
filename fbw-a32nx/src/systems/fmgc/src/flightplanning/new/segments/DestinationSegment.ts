@@ -63,6 +63,8 @@ export class DestinationSegment extends FlightPlanSegment {
 
         if (runwayIdent === undefined) {
             this.runway = undefined;
+
+            this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
         } else {
             if (!this.airport) {
                 throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
@@ -78,9 +80,9 @@ export class DestinationSegment extends FlightPlanSegment {
             }
 
             this.runway = matchingRunway;
-        }
 
-        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+            await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+        }
 
         await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
     }
