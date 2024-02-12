@@ -557,7 +557,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     init() {
         this.textHDG = this.getTextElement('HDG');
         this.textTRK = this.getTextElement('TRK');
-        this.textLAT = this.getTextElement('LAT');
         this.signDegrees = this.getTextElement('DEGREES');
         this.currentValue = -1;
         this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
@@ -728,7 +727,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             if (this.lightsTest) {
                 this.setTextElementActive(this.textHDG, true);
                 this.setTextElementActive(this.textTRK, true);
-                this.setTextElementActive(this.textLAT, true);
                 this.setElementVisibility(this.signDegrees, true);
                 this.textValueContent = '.8.8.8';
                 return;
