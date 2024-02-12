@@ -1705,6 +1705,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                     cutBefore = i;
                     break;
                 }
+
+                const xiToXf = lastLegInFirst.isXI() && element.isXF();
+
+                // TODO geometry shits the bed for CI -> IF -> XF, but stringing them is correct
+                if (xiToXf) {
+                    cutBefore = i;
+                    break;
+                }
             }
         }
 
