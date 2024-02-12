@@ -922,6 +922,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
             await this.flushOperationQueue();
         } else {
+            const previousElement = this.maybeElementAt(index - 1);
+            if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
+                this.removeElementAt(index - 1);
+                index -= 1;
+            }
+
             const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
             await this.insertElementBefore(index, leg, true);
