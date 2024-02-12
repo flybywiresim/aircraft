@@ -35,10 +35,10 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
             return;
         }
 
-        const { destinationAirport, destinationRunway, arrival } = this.flightPlan;
+        const { destinationAirport, arrival } = this.flightPlan;
 
-        if (!destinationAirport || !destinationRunway || !arrival) {
-            throw new Error('[FMS/FPM] Cannot set arrival enroute transition without destination airport, runway and STAR');
+        if (!destinationAirport || !arrival) {
+            throw new Error('[FMS/FPM] Cannot set arrival enroute transition without destination airport and STAR');
         }
 
         const arrivalEnrouteTransitions = arrival.enrouteTransitions;

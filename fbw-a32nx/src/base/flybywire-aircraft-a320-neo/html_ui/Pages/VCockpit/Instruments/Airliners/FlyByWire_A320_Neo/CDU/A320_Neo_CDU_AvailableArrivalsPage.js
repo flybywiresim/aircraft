@@ -262,9 +262,9 @@ class CDUAvailableArrivalsPage {
 
                             await mcdu.flightPlanService.setArrival(starIdent, forPlan, inAlternate);
 
-                            const approachIdent = targetPlan.approach.ident;
+                            const approach = targetPlan.approach;
 
-                            if (approachIdent !== undefined) {
+                            if (approach !== undefined) {
                                 CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
                             } else {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);

@@ -80,6 +80,8 @@ export class DestinationSegment extends FlightPlanSegment {
             this.runway = matchingRunway;
         }
 
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+
         await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
     }
 
