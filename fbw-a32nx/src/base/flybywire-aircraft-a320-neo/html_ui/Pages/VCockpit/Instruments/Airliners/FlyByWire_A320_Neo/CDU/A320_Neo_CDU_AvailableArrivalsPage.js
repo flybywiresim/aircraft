@@ -113,7 +113,7 @@ class CDUAvailableArrivalsPage {
          * @type {import('msfs-navdata').Runway[]}
          */
         const runways = targetPlan.availableDestinationRunways;
-        const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
+        const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(targetPlan.destinationAirport.ident);
 
         // Add an index member variable, so we can track the original order of approaches
         for (let j = 0; j < approaches.length; j++) {
