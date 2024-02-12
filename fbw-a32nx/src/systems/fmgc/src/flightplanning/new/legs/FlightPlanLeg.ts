@@ -283,6 +283,17 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         return this;
     }
 
+    clearConstraints() {
+        this.definition.verticalAngle = undefined;
+        this.definition.altitudeDescriptor = undefined;
+        this.definition.altitude1 = undefined;
+        this.definition.altitude2 = undefined;
+        this.definition.speedDescriptor = undefined;
+        this.definition.speed = undefined;
+        this.pilotEnteredAltitudeConstraint = undefined;
+        this.pilotEnteredSpeedConstraint = undefined;
+    }
+
     static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
