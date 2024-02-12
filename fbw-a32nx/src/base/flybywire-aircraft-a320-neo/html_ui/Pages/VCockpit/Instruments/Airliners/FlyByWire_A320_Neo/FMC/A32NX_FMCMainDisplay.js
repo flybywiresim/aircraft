@@ -2069,7 +2069,7 @@ class FMCMainDisplay extends BaseAirliners {
         let airportFrom, airportTo;
         try {
             airportFrom = await this.navigationDatabaseService.activeDatabase.searchAirport(from);
-            airportTo = await this.navigationDatabaseService.activeDatabase.searchAirport(from);
+            airportTo = await this.navigationDatabaseService.activeDatabase.searchAirport(to);
 
             if (!airportFrom || !airportTo) {
                 throw NXSystemMessages.notInDatabase;
