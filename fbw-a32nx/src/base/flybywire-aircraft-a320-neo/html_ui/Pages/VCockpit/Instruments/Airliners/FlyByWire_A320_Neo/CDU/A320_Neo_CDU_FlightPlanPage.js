@@ -369,59 +369,57 @@ class CDUFlightPlanPage {
                 const hasAltConstraint = legHasAltConstraint(wp);
                 let altitudeConstraint = Altitude.NoPrediction;
                 let altSize = "big";
-                if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.destinationLegIndex) {
-                    if (targetPlan.alternateFlightPlan.destinationRunway && Number.isFinite(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight)) {
-                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight);
-                        altColor = color;
-                        altSize = "small";
-                    } else if (targetPlan.alternateFlightPlan.destinationAirport && Number.isFinite(targetPlan.alternateFlightPlan.destinationAirport.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt);
-                        altColor = color
-                        altSize = "small";
-                    }
-                } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.originLegIndex) {
-                    if (targetPlan.alternateFlightPlan.originRunway && Number.isFinite(targetPlan.alternateFlightPlan.originRunway.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originRunway.location.alt);
-                        altColor = color;
-                    } else if (targetPlan.alternateFlightPlan.originAirport && Number.isFinite(targetPlan.alternateFlightPlan.originAirport.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originAirport.location.alt);
-                        altColor = color;
-                    }
-                } else if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
-                    if (targetPlan.destinationRunway && Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)) {
-                        altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
-                        altColor = color;
-                        altSize = "small";
-                    } else if (targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt);
-                        altColor = color
-                        altSize = "small";
-                    }
-                } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-                    if (targetPlan.originRunway && Number.isFinite(targetPlan.originRunway.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.originRunway.location.alt);
-                        altColor = color;
-                    } else if (targetPlan.originAirport && Number.isFinite(targetPlan.originAirport.location.alt)) {
-                        altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt);
-                        altColor = color;
-                    }
-                } else if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary) {
-                    if (hasAltConstraint && !isFromLeg) {
-                        if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeConstraint = `{big}${verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}"}{end}${formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude).padStart(5, "\xa0")}`;
-                            altColor = color;
-                            altSize = "small";
-                        } else {
-                            altitudeConstraint = formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude);
-                            altColor = "magenta";
-                            altSize = wp.hasPilotEnteredAltitudeConstraint() ? "big" : "small";
+                if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary) {
+                    if (verticalWaypoint && verticalWaypoint.altitude) {
+                        // Just show prediction
+                        let altPrefix = "";
+                        if (hasAltConstraint && !isFromLeg) {
+                            altPrefix = `{big}${verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}"}{end}`;
                         }
-                    // Waypoint with no alt constraint.
-                    // In this case `altitudeConstraint is actually just the predictedAltitude`
-                    } else if ((isFromLeg || !hasAltConstraint) && verticalWaypoint && verticalWaypoint.altitude) {
-                        altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude);
+
+                        altitudeConstraint = altPrefix + formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude).padStart(5, "\xa0");
                         altColor = color;
                         altSize = isFromLeg ? "big" : "small";
+                    } else if (hasAltConstraint) {
+                        altitudeConstraint = formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude);
+                        altColor = "magenta";
+                        altSize = wp.hasPilotEnteredAltitudeConstraint() ? "big" : "small";
+                    } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.destinationLegIndex) {
+                        if (legIsRunway(wp) && targetPlan.alternateFlightPlan.destinationRunway && Number.isFinite(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight)) {
+                            altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight);
+                            altColor = color;
+                            altSize = "small";
+                        } else if (legIsAirport(wp) && targetPlan.alternateFlightPlan.destinationAirport && Number.isFinite(targetPlan.alternateFlightPlan.destinationAirport.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt);
+                            altColor = color
+                            altSize = "small";
+                        }
+                    } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.originLegIndex) {
+                        if (legIsRunway(wp) && targetPlan.alternateFlightPlan.originRunway && Number.isFinite(targetPlan.alternateFlightPlan.originRunway.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originRunway.location.alt);
+                            altColor = color;
+                        } else if (legIsAirport(wp) && targetPlan.alternateFlightPlan.originAirport && Number.isFinite(targetPlan.alternateFlightPlan.originAirport.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originAirport.location.alt);
+                            altColor = color;
+                        }
+                    } else if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
+                        if (legIsRunway(wp) && targetPlan.destinationRunway && Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)) {
+                            altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
+                            altColor = color;
+                            altSize = "small";
+                        } else if (legIsAirport(wp) && targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt);
+                            altColor = color
+                            altSize = "small";
+                        }
+                    } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
+                        if (legIsRunway(wp) && targetPlan.originRunway && Number.isFinite(targetPlan.originRunway.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.originRunway.location.alt);
+                            altColor = color;
+                        } else if (legIsAirport(wp) && targetPlan.originAirport && Number.isFinite(targetPlan.originAirport.location.alt)) {
+                            altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt);
+                            altColor = color;
+                        }
                     }
                 }
 
@@ -1022,6 +1020,22 @@ function formatMachNumber(rawNumber) {
  */
 function legHasAltConstraint(leg) {
     return leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint();
+}
+
+/**
+ * @param {FlightPlanLeg} leg
+ * @return {boolean}
+ */
+function legIsRunway(leg) {
+    return leg.definition && leg.definition.waypointDescriptor === 4 /* Runway */;
+}
+
+/**
+ * @param {FlightPlanLeg} leg
+ * @return {boolean}
+ */
+function legIsAirport(leg) {
+    return leg.definition && leg.definition.waypointDescriptor === 1 /* Airport */;
 }
 
 /**
