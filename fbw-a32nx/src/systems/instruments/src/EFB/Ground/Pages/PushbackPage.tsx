@@ -248,11 +248,11 @@ export const PushbackPage = () => {
                 <br />
                 Rotation Velocity X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
                 <br />
                 Rotation Velocity Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rotation Velocity Z:
