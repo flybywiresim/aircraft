@@ -1305,6 +1305,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.textQNH = this.getTextElement('QNH');
         this.textPreSelBaro = this.getTextElement('PreSelBaroValue');
         this.currentPreSelValue = null;
+        this.resetPreSelectionTimeout = null;
         this.refresh('QFE', true, 0, 0, true);
     }
 
@@ -1315,18 +1316,29 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     }
 
     refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
-        let preSelValue = SimVar.GetSimVarValue('L:A380X_BARO_PRESELECTED', 'number');
+        let preSelValue = SimVar.GetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number');
         // Conversion of baro selection SimVar. I tried using a standard altimeter, didn't work.
-        if (preSelValue === 0) {
+        if (preSelValue < 1) {
             preSelValue = _isHGUnit ? 29.92 : 1013.25;
-            SimVar.SetSimVarValue('L:A380X_BARO_PRESELECTED', 'number', preSelValue);
+            SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
         }
         if (preSelValue < 800 && !_isHGUnit) {
             preSelValue = preSelValue / 0.02953;
-            SimVar.SetSimVarValue('L:A380X_BARO_PRESELECTED', 'number', preSelValue);
+            SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
         } else if (preSelValue > 800 && _isHGUnit) {
-            preSelValue = Math.round(preSelValue * 0.02953 / 100) * 100;
-            SimVar.SetSimVarValue('L:A380X_BARO_PRESELECTED', 'number', preSelValue);
+            preSelValue = Math.round(preSelValue * 0.02953 * 100) / 100;
+            console.log(preSelValue);
+            SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
+        }
+
+        // Display pre-selected value for only 4 seconds, then reset and hide
+        if (preSelValue !== this.currentPreSelValue || (_isHGUnit != this.isHGUnit)) {
+            clearTimeout(this.resetPreSelectionTimeout);
+            this.resetPreSelectionTimeout = setTimeout(() => {
+                this.currentPreSelValue = Simplane.getPressureSelectedUnits() === 'millibar' ? 1013.25 : 29.92;
+                SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', this.currentPreSelValue);
+                this.setTextElementActive(this.textPreSelBaro, false, true);
+            }, 4000);
         }
 
         if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (preSelValue != this.currentPreSelValue) || (_lightsTest !== this.lightsTest) || _force) {
