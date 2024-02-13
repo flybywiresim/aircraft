@@ -131,14 +131,15 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const double speedFactor =
       parkingBrakeEngaged ? (aircraftSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftSpeedFactor->get();
   const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
-  const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
+  const FLOAT64 inertiaSpeed = speedDampener.updateSpeed(tugCmdSpd);
 
-  // Based on an aircraft specific turn speed factor and the user input (0.0-1.0),
+  // Based on an aircraft-specific turn speed factor and the user input (0.0-1.0),
   // the rotation velocity is calculated in ft/sec.
   const double turnSpeedHdgFactor =
       parkingBrakeEngaged ? (aircraftTurnSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftTurnSpeedFactor->get();
-  const FLOAT64 computedRotationVelocity =
-      (inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
+  const FLOAT64 computedRotationVelocity = turnDampener.updateSpeed(
+      (inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor);
+  std::cout << "computedRotationVelocity: " << computedRotationVelocity << std::endl;
 
   // The heading of the tug is calculated based on the aircraft heading and the user input (0.0-1.0).
   const FLOAT64 computedTugHdg =

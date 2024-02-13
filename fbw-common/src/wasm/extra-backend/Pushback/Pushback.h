@@ -38,7 +38,8 @@ class Pushback : public Module {
   DataManager* dataManager = nullptr;
 
   // Used to smoothen acceleration and deceleration
-  InertialDampener inertialDampener{0.0, 0.15, 0.1};
+  InertialDampener speedDampener{0.0, 0.15, 0.1};
+  InertialDampener turnDampener{0.0, 0.01, 0.001};
 
   // LVARs
   NamedVariablePtr tugCommandedSpeedFactor;
