@@ -76,6 +76,15 @@ export const PushbackMap = () => {
     const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'bool', 50);
     const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'bool', 50);
 
+    // Tuning-factor for the turning radius indicator - as there is not relly an easy way to calculate the curvature
+    // of the turning indicator, this factor is used to "tune" the indicator to match the actual turning radius
+    const [turnIndicatorTuningFactor, setTurnIndicatorTuningFactor] = useSimVar(
+        'L:A32NX_PUSHBACK_TURN_INDICATOR_TUNING_FACTOR',
+        'number',
+        250,
+    );
+    const turnIndicatorTuningDefault = 1.35; // determined by testing
+
     // Reducer state for pushback
     const {
         mapRange,
@@ -133,9 +142,9 @@ export const PushbackMap = () => {
     };
     const mapRangeCompensationScalar = mapRange / someConstant;
     const radius = calculateTurningRadius(aircraftWheelBase, Math.abs(tugCmdHdgFactor * 90));
-    const turningRadius = radius / mapRangeCompensationScalar;
+    const turningRadius = (radius / mapRangeCompensationScalar) * turnIndicatorTuningFactor;
 
-    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
+    // Computes the offset from geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
     const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
         latLon: Coordinates, d: TScreenCoordinates,
@@ -171,6 +180,9 @@ export const PushbackMap = () => {
 
     // called once when loading and unloading the page
     useEffect(() => {
+        // set the tuning factor to a value determined by testing
+        setTurnIndicatorTuningFactor(turnIndicatorTuningDefault);
+
         let timeOutID: any = 0;
         if (centerPlaneMode) {
             // setTimeout required because when loading on runway it did not
