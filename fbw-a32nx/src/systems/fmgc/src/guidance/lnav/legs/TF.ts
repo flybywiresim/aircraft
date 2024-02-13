@@ -13,7 +13,6 @@ import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from 
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class TFLeg extends XFLeg {
@@ -22,12 +21,6 @@ export class TFLeg extends XFLeg {
     private readonly course: Degrees;
 
     private computedPath: PathVector[] = [];
-
-    // TODO: Figure out what this is for
-    altitudeConstraint: AltitudeConstraint | undefined
-
-    // TODO: Figure out what this is for
-    speedConstraint: SpeedConstraint | undefined
 
     constructor(
         public from: Fix,

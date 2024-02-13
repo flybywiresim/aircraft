@@ -474,7 +474,7 @@ class CDUFlightPlanPage {
                                     CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                                     break;
                                 case FMCMainDisplay.ovfyValue:
-                                    mcdu.toggleWaypointOverfly(fpIndex, () => {
+                                    mcdu.toggleWaypointOverfly(fpIndex, forPlan, inAlternate, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
                                     });
                                     break;
@@ -839,7 +839,7 @@ class CDUFlightPlanPage {
 
         let insertDiscontinuity = true;
         if (element.isDiscontinuity === false) {
-            if (element.isHX() || fpIndex < targetPlan.activeLegIndex) {
+            if (element.isHX() || fpIndex <= targetPlan.activeLegIndex) {
                 insertDiscontinuity = false;
             } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
                 insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
@@ -1072,17 +1072,28 @@ function formatAlt(alt) {
 }
 
 function formatAltConstraint(mcdu, constraint, useTransAlt) {
-    // Altitude constraint types "G" and "H" are not shown in the flight plan
-    switch (constraint.type) {
-        case '@': // at
-            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '+': // atOrAbove
-            return "+" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '-': // atOrBelow
-            return "-" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case 'B': // range
-            return "WINDOW";
+    if (!constraint) {
+        return '';
     }
 
-    return '';
+    // Altitude constraint types "G" and "H" are not shown in the flight plan
+    switch (constraint.altitudeDescriptor) {
+        case '@': // AtAlt1
+        case 'I': // AtAlt1GsIntcptAlt2
+        case 'X': // AtAlt1AngleAlt2
+            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '+': // AtOrAboveAlt1
+        case 'J': // AtOrAboveAlt1GsIntcptAlt2
+        case 'V': // AtOrAboveAlt1AngleAlt2
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '-': // AtOrBelowAlt1
+        case 'Y': // AtOrBelowAlt1AngleAlt2
+            return '-' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case 'B': // BetweenAlt1Alt2
+            return 'WINDOW'
+        case 'C': // AtOrAboveAlt2:
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude2, useTransAlt);
+        default:
+            return '';
+    }
 }

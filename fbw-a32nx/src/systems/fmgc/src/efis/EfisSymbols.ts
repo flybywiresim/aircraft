@@ -6,7 +6,7 @@ import {
     MathUtils, Airport, LegType,
     Runway, RunwaySurfaceType, VhfNavaidType,
     WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
-    NdSymbolTypeFlags,
+    NdSymbolTypeFlags, AltitudeDescriptor,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -27,7 +27,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
@@ -196,7 +195,6 @@ export class EfisSymbols<T extends number> {
 
             // eslint-disable-next-line no-loop-func
             const withinEditArea = (ll): boolean => {
-                // FIXME
                 if (!termination) {
                     return true;
                 }
@@ -590,18 +588,26 @@ export class EfisSymbols<T extends number> {
 
             if (efisOption === EfisOption.Constraints && !isBeforeActiveLeg) {
                 const descent = leg.constraintType === WaypointConstraintType.DES;
-                switch (altConstraint?.type) {
-                case AltitudeConstraintType.at:
+                switch (altConstraint?.altitudeDescriptor) {
+                case AltitudeDescriptor.AtAlt1:
+                case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+                case AltitudeDescriptor.AtAlt1AngleAlt2:
                     constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
                     break;
-                case AltitudeConstraintType.atOrAbove:
+                case AltitudeDescriptor.AtOrAboveAlt1:
+                case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+                case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
                     constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
                     break;
-                case AltitudeConstraintType.atOrBelow:
+                case AltitudeDescriptor.AtOrBelowAlt1:
+                case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
                     constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
                     break;
-                case AltitudeConstraintType.range:
+                case AltitudeDescriptor.BetweenAlt1Alt2:
                     constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+                    constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+                    break;
+                case AltitudeDescriptor.AtOrAboveAlt2:
                     constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
                     break;
                 default:

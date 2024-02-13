@@ -87,8 +87,6 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         if (oldApproachName !== matchingProcedure.ident) {
             // Clear flight plan approach VIA if the new approach is different
             await this.flightPlan.approachViaSegment.setProcedure(undefined);
-            // Remove strung flag because we want to restring in this case
-            this.strungEnroute = false;
         }
 
         this.flightPlan.availableApproachVias = matchingProcedure.transitions;
@@ -167,7 +165,6 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         const newSegment = new ApproachSegment(forPlan);
 
         newSegment.strung = this.strung;
-        newSegment.strungEnroute = this.strungEnroute;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
         newSegment.approach = this.approach;
 

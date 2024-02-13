@@ -9,7 +9,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
@@ -231,7 +231,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
     enableAltn(atIndexInAlternate: number, cruiseLevel: number, planIndex: number): Promise<void>;
 
-    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
+    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, speed?: number, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 
     setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 

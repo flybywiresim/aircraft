@@ -104,7 +104,14 @@ class CDUAvailableArrivalsPage {
             }
         }
 
+        /**
+         * @type {import('msfs-navdata').Approach[]}
+         */
         const approaches = targetPlan.availableApproaches;
+
+        /**
+         * @type {import('msfs-navdata').Runway[]}
+         */
         const runways = targetPlan.availableDestinationRunways;
         const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
 
@@ -116,7 +123,11 @@ class CDUAvailableArrivalsPage {
 
         // Sort the approaches in Honeywell's documented order
         const sortedApproaches = approaches.slice()
+            // The A320 cannot fly TACAN approaches
             .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
+            // filter out approaches with no matching runway, but keep circling approaches (no runway)
+            .filter((a) => a.runwayIdent === 'RW00' || !!runways.find((rw) => rw.ident === a.runwayIdent))
+            // Sort the approaches in Honeywell's documented order
             .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type])
             .map((approach) => ({ approach }))
             .concat(
