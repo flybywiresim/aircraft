@@ -17,9 +17,9 @@ import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Units, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -1235,13 +1235,15 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                     <span>{altStr}</span>
                 </>
             );
-        } if (data.hasAltitudeConstraint && data.altitudeConstraint && !data.altitudePrediction) {
+        } if (data.hasAltitudeConstraint && data.altitudeConstraint?.altitude1 && !data.altitudePrediction) {
             const isBelowTransAlt = data.altitudeConstraint.altitude1 < (data.transitionAltitude ?? 18_000);
             const altCstr = isBelowTransAlt ? data.altitudeConstraint.altitude1.toFixed(0) : `FL${Math.round(data.altitudeConstraint.altitude1 / 100).toString()}`;
             let cstrType = '';
-            if (data.altitudeConstraint.type === AltitudeConstraintType.atOrAbove) {
+            if (data.altitudeConstraint.altitudeDescriptor
+                && [AltitudeDescriptor.AtOrAboveAlt1, AltitudeDescriptor.AtOrAboveAlt1AngleAlt2, AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2, AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2].includes(data.altitudeConstraint.altitudeDescriptor)) {
                 cstrType = '+';
-            } else if (data.altitudeConstraint.type === AltitudeConstraintType.atOrBelow) {
+            } else if (data.altitudeConstraint.altitudeDescriptor
+                && [AltitudeDescriptor.AtOrBelowAlt1, AltitudeDescriptor.AtOrBelowAlt1AngleAlt2].includes(data.altitudeConstraint.altitudeDescriptor)) {
                 cstrType = '-';
             }
             const displayedStr = data.altitudeConstraint.altitude2 ? 'WINDOW' : `${cstrType}${altCstr}`;
@@ -1282,7 +1284,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                     <span>{speedStr}</span>
                 </>
             );
-        } if (data.hasSpeedConstraint && data.speedConstraint && !data.speedPrediction) {
+        } if (data.hasSpeedConstraint && data.speedConstraint?.speed && !data.speedPrediction) {
             return (
                 <span class="mfd-fms-fpln-leg-constraint-respected" style="margin-left: 20px; font-size: 25px;">
                     {data.speedConstraint.speed > 2 ? data.speedConstraint.speed.toFixed(0) : `.${data.speedConstraint.speed.toFixed(2).split('.')[1]}`}

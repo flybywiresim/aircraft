@@ -120,7 +120,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                 && ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type)
                 && fpln.loadedFlightPlan?.legElementAt(legIndex).definition.overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.fmcService.master?.flightPlanService.toggleOverfly(legIndex, planIndex),
+            onSelectCallback: () => fpln.props.fmcService.master?.flightPlanService.toggleOverfly(legIndex, planIndex, altnFlightPlan),
         },
         {
             title: 'ENABLE ALTN *',

@@ -1201,7 +1201,7 @@ export class FmcAircraftInterface {
                 continue;
             }
 
-            if (leg.constraintType === 2 /** DES */) {
+            if (leg.constraintType === 2 /** DES */ && leg.speedConstraint?.speed) {
                 if (leg.speedConstraint) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.speedConstraint.speed));
                 }
@@ -1237,12 +1237,12 @@ export class FmcAircraftInterface {
             const speedConstraint = leg.speedConstraint;
 
             if (leg.constraintType === 1 /** CLB */) {
-                if (speedConstraint) {
+                if (speedConstraint?.speed) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(speedConstraint.speed));
                 }
 
-                if (altConstraint) {
-                    switch (altConstraint.type) {
+                if (altConstraint?.altitude1) {
+                    switch (altConstraint.altitudeDescriptor) {
                     case '@': // at alt 1
                     case '-': // at or below alt 1
                     case 'B': // between alt 1 and alt 2
@@ -1253,8 +1253,8 @@ export class FmcAircraftInterface {
                     }
                 }
             } else if (leg.constraintType === 2 /** DES */) {
-                if (altConstraint) {
-                    switch (altConstraint.type) {
+                if (altConstraint?.altitude1) {
+                    switch (altConstraint.altitudeDescriptor) {
                     case '@': // at alt 1
                     case '+': // at or above alt 1
                         currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));

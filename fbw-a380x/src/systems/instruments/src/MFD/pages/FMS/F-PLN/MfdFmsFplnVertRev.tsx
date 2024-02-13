@@ -17,10 +17,11 @@ import { AltitudeOrFlightLevelFormat, SpeedKnotsFormat, TimeHHMMSSFormat } from 
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { AltitudeConstraintType, SpeedConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { SpeedConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
+import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {
 }
@@ -152,14 +153,14 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
 
             // Load altitude constraints
-            switch (leg.altitudeConstraint?.type) {
-            case AltitudeConstraintType.at:
+            switch (leg.altitudeConstraint?.altitudeDescriptor) {
+            case AltitudeDescriptor.AtAlt1:
                 this.selectedAltitudeConstraintOption.set(0);
                 break;
-            case AltitudeConstraintType.atOrAbove:
+            case AltitudeDescriptor.AtOrAboveAlt1:
                 this.selectedAltitudeConstraintOption.set(1);
                 break;
-            case AltitudeConstraintType.atOrBelow:
+            case AltitudeDescriptor.AtOrBelowAlt1:
                 this.selectedAltitudeConstraintOption.set(2);
                 break;
             default:
@@ -173,16 +174,20 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 const ac = leg.altitudeConstraint;
                 this.altConstraintDisabled.set(true);
                 // ALT window
-                if (ac.altitude1 > this.transitionAltitude.get()) {
+                if (ac.altitude1 && ac.altitude1 > this.transitionAltitude.get()) {
                     // FL
                     this.altWindowUnitLeading.set('FL');
                     this.altWindowUnitTrailing.set('');
                     this.altWindowUnitValue.set(`${(ac.altitude1 / 100).toFixed(0)}-${((ac.altitude2 ?? ac.altitude1) / 100).toFixed(0)}`);
-                } else {
+                } else if (ac.altitude1) {
                     // altitude
                     this.altWindowUnitLeading.set('');
                     this.altWindowUnitTrailing.set('FT');
                     this.altWindowUnitValue.set(`${(ac.altitude1).toFixed(0)}-${((ac.altitude2 ?? ac.altitude1)).toFixed(0)}`);
+                } else {
+                    this.altWindowUnitLeading.set('');
+                    this.altWindowUnitTrailing.set('');
+                    this.altWindowUnitValue.set('');
                 }
                 this.altWindowLabelRef.instance.style.visibility = 'visible';
                 this.altWindowValueRef.instance.style.visibility = 'visible';
@@ -211,33 +216,33 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
 
         const alt = Number.isFinite(newAlt) ? newAlt : this.altitudeConstraintInput.get();
-        if (alt && this.selectedAltitudeConstraintOption.get() !== undefined) {
+        if (alt && this.selectedAltitudeConstraintOption.get() !== null) {
             const index = this.props.fmcService.master?.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex
             + (this.selectedWaypointIndex.get() ?? 0) + 1;
             const fpln = this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get());
             const leg = fpln.legElementAt(index);
 
-            let option: AltitudeConstraintType;
+            let option: AltitudeDescriptor;
 
             switch (this.selectedAltitudeConstraintOption.get()) {
             case 0:
-                option = AltitudeConstraintType.at;
+                option = AltitudeDescriptor.AtAlt1;
                 break;
             case 1:
-                option = AltitudeConstraintType.atOrAbove;
+                option = AltitudeDescriptor.AtOrAboveAlt1;
                 break;
             case 2:
-                option = AltitudeConstraintType.atOrBelow;
+                option = AltitudeDescriptor.AtOrBelowAlt1;
                 break;
 
             default:
-                option = AltitudeConstraintType.at;
+                option = AltitudeDescriptor.AtAlt1;
                 break;
             }
 
             this.props.fmcService.master.flightPlanService.setPilotEnteredAltitudeConstraintAt(index,
                 leg.segment.class === SegmentClass.Arrival,
-                { altitude1: alt, type: option },
+                { altitude1: alt, altitudeDescriptor: option },
                 this.loadedFlightPlanIndex.get(),
                 false);
         }
@@ -345,7 +350,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
                                                 this.props.fmcService.master.flightPlanService.setPilotEnteredSpeedConstraintAt(index,
                                                     leg.segment.class === SegmentClass.Arrival,
-                                                    { speed: val ?? 90, type: SpeedConstraintType.atOrBelow },
+                                                    val ?? 250,
                                                     this.loadedFlightPlanIndex.get(),
                                                     false);
                                             }
@@ -463,13 +468,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                                     + (this.selectedWaypointIndex.get() ?? 0)
                                                     + 1;
                                                 const fpln = this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get());
-                                                const leg = fpln.legElementAt(index);
 
-                                                this.props.fmcService.master.flightPlanService.setPilotEnteredAltitudeConstraintAt(index,
-                                                    leg.segment.class === SegmentClass.Arrival,
-                                                    undefined,
-                                                    this.loadedFlightPlanIndex.get(),
-                                                    false);
+                                                const leg = fpln.legElementAt(index);
+                                                leg.clearConstraints();
                                             }
                                         }}
                                         disabled={this.altConstraintDisabled}
