@@ -6,7 +6,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { customAlphabet } from 'nanoid';
 import { render } from '@instruments/common/index';
-import { readSettingsFromPersistentStorage, migrateSettings, EfbInstrument } from '@fbw-common/flypad';
+import { readSettingsFromPersistentStorage, migrateSettings, EfbInstrument } from '@flybywiresim/flypad';
 import { A320FailureDefinitions } from '@failures';
 
 // TODO move all of this to fbw-common somehow

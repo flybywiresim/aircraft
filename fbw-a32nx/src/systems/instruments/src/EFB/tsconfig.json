@@ -8,7 +8,7 @@
       "@sentry/*": ["./sentry-client/src/*"],
       "@failures": ["./failures/src/index.ts"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-      "@fbw-common/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
     }
   }
 }
