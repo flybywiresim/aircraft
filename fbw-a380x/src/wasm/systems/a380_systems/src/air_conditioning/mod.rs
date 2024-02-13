@@ -1048,6 +1048,7 @@ impl SimulationElement for A380PressurizationOverheadPanel {
 mod tests {
     use self::local_controllers::outflow_valve_control_module::CpcsShared;
     use super::*;
+    use fxhash::FxHashMap;
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::PackFlow,
@@ -1129,18 +1130,25 @@ mod tests {
     }
 
     struct TestAdcn {
-        cpiom_b: [CoreProcessingInputOutputModule; 4],
+        cpiom_b: FxHashMap<&'static str, CoreProcessingInputOutputModule>,
     }
     impl TestAdcn {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                cpiom_b: [
-                    ("B1", ElectricalBusType::DirectCurrent(1)),
-                    ("B2", ElectricalBusType::DirectCurrentEssential),
-                    ("B3", ElectricalBusType::DirectCurrentEssential),
-                    ("B4", ElectricalBusType::DirectCurrent(2)),
-                ]
-                .map(|(name, bus)| CoreProcessingInputOutputModule::new(context, name, bus)),
+                cpiom_b: FxHashMap::from_iter(
+                    [
+                        ("B1", ElectricalBusType::DirectCurrent(1)),
+                        ("B2", ElectricalBusType::DirectCurrentEssential),
+                        ("B3", ElectricalBusType::DirectCurrentEssential),
+                        ("B4", ElectricalBusType::DirectCurrent(2)),
+                    ]
+                    .map(|(name, bus)| {
+                        (
+                            name,
+                            CoreProcessingInputOutputModule::new(context, name, bus, vec![]),
+                        )
+                    }),
+                ),
             }
         }
     }
@@ -1150,15 +1158,14 @@ mod tests {
             cpiom: &str,
         ) -> &CoreProcessingInputOutputModule {
             // If the string is not found this will panic
-            self.cpiom_b
-                .iter()
-                .find(|&module| module.name() == cpiom)
-                .unwrap()
+            self.cpiom_b.get(cpiom).unwrap()
         }
     }
     impl SimulationElement for TestAdcn {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            accept_iterable!(self.cpiom_b, visitor);
+            for cpiom in self.cpiom_b.values_mut() {
+                cpiom.accept(visitor);
+            }
             visitor.visit(self);
         }
     }

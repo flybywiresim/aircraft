@@ -23,6 +23,7 @@ use self::{
     structural_flex::A380StructuralFlex,
 };
 use airframe::A380Airframe;
+use avionics_data_communication_network::A380AvionicsDataCommunicationNetworkSimvarTranslator;
 use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
@@ -57,6 +58,7 @@ use systems::{
 
 pub struct A380 {
     adcn: A380AvionicsDataCommunicationNetwork,
+    adcn_simvar_translation: A380AvionicsDataCommunicationNetworkSimvarTranslator,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
@@ -92,8 +94,12 @@ pub struct A380 {
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
+        let mut adcn = A380AvionicsDataCommunicationNetwork::new(context);
+        let adcn_simvar_translation =
+            A380AvionicsDataCommunicationNetworkSimvarTranslator::new(context, &mut adcn);
         A380 {
-            adcn: A380AvionicsDataCommunicationNetwork::new(context),
+            adcn,
+            adcn_simvar_translation,
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
@@ -215,6 +221,7 @@ impl Aircraft for A380 {
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.adcn.update();
+        self.adcn_simvar_translation.update(&self.adcn);
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -310,6 +317,7 @@ impl Aircraft for A380 {
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adcn.accept(visitor);
+        self.adcn_simvar_translation.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
