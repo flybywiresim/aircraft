@@ -83,7 +83,7 @@ export const PushbackMap = () => {
         'number',
         250,
     );
-    const turnIndicatorTuningDefault = 1.35; // determined by testing
+    const turnIndicatorTuningDefault = getAirframeType() === 'A320_251N' ? 1.35 : 1.35; // determined by testing
 
     // Reducer state for pushback
     const {
