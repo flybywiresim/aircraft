@@ -11,8 +11,8 @@
  */
 class Pushback_A32NX : public Pushback {
   static constexpr FLOAT64 PARKING_BRAKE_FACTOR = 100.0; // slow down when parking brake is engaged by this factor
-  static constexpr FLOAT64 SPEED_FACTOR = 18.0;         // ft/sec for "VELOCITY BODY Z" (also max speed)
-  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.75;    // ft/sec for "ROTATION VELOCITY BODY Y"
+  static constexpr FLOAT64 SPEED_FACTOR = 18.0;          // ft/sec for "VELOCITY BODY Z" (also max speed)
+  static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.5;      // ft/sec for "ROTATION VELOCITY BODY Y"
 
  public:
   /**
