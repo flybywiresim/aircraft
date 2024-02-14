@@ -1,6 +1,8 @@
 // One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
 // Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
-export const A320Failure = Object.freeze({
+import {FailureDefinition} from "@flybywiresim/fbw-sdk";
+
+export const A380Failure = Object.freeze({
     TransformerRectifier1: 24000,
     TransformerRectifier2: 24001,
     TransformerRectifierEssential: 24002,
@@ -26,3 +28,6 @@ export const A320Failure = Object.freeze({
     RadioAltimeter1: 34000,
     RadioAltimeter2: 34001,
 });
+
+export const A380FailureDefinitions: FailureDefinition[] = [
+    ];
