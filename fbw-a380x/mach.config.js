@@ -33,7 +33,7 @@ module.exports = {
         msfsAvionicsInstrument('Clock'),
 
         reactInstrument('BAT'),
-        reactInstrument('EFB'),
+        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
         reactInstrument('EWD'),
         reactInstrument('MFD'),
         reactInstrument('OIT'),

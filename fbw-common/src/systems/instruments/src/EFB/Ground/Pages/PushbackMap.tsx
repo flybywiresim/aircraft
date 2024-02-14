@@ -222,6 +222,10 @@ export const PushbackMap = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
+    const mapConfigPath = getAirframeType() === 'A320_251N'
+        ? '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/'
+        : '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A380/EFB/';
+
     return (
         <>
             {/* Map Container */}
@@ -249,7 +253,7 @@ export const PushbackMap = () => {
                 {/* Map */}
                 {!process.env.VITE_BUILD && (
                     <BingMap
-                        configFolder="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/"
+                        configFolder={mapConfigPath}
                         centerLla={actualMapLatLon}
                         mapId="PUSHBACK_MAP"
                         range={mapRange}
