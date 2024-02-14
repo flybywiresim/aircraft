@@ -23,6 +23,7 @@ export const defaultTropopauseAlt = 36_090; // feet
 export const minZfwCg = 23; // %
 export const maxZfwCg = 48; // %
 
+export const minZfw = 290_000; // kg, no reference yet
 export const maxZfw = 361_000; // kg
 
 export const minGw = 270_000; // kg

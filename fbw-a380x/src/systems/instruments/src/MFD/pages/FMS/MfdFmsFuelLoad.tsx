@@ -9,7 +9,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { CostIndexFormat, PaxNbrFormat, PercentageFormat, TimeHHMMFormat, WeightFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuelPerc, maxTaxiFuel, maxZfw, maxZfwCg, minZfwCg } from '@shared/PerformanceConstants';
+import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuelPerc, maxTaxiFuel, maxZfw, maxZfwCg, minZfw, minZfwCg } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -212,7 +212,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             ZFW
                         </div>
                         <InputField<number>
-                            dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxZfw))}
+                            dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
                             value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                             mandatory={Subject.create(true)}
                             inactive={this.enginesWereStarted}

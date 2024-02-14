@@ -202,7 +202,7 @@ export class FmcAircraftInterface {
         return this.flightPlanService.active.performanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
             || this.flightPlanService.active.performanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
             || this.flightPlanService.active.performanceData.v2 < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
-            || (Number.isFinite(tow) && this.flightPlanService.active.performanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
+            || (Number.isFinite(tow) && this.flightPlanService.active.performanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get())));
     }
 
     private toSpeedsNotInserted = true;
@@ -623,13 +623,13 @@ export class FmcAircraftInterface {
         const cas = ADIRS.getCalibratedAirspeed();
         const alt = ADIRS.getBaroCorrectedAltitude();
 
-        if (this.speedLimitExceeded) {
+        if (this.speedLimitExceeded && cas && alt) {
             const resetLimitExceeded = !cas.isNormalOperation() || !alt.isNormalOperation() || alt.value > speedLimitAlt || cas.value <= (speedLimit + 5);
             if (resetLimitExceeded) {
                 this.speedLimitExceeded = false;
                 this.fmc.removeMessageFromQueue(NXSystemMessages.spdLimExceeded.text);
             }
-        } else if (cas.isNormalOperation() && alt.isNormalOperation()) {
+        } else if (cas && alt && cas.isNormalOperation() && alt.isNormalOperation()) {
             const setLimitExceeded = alt.value < (speedLimitAlt - 150) && cas.value > (speedLimit + 10);
             if (setLimitExceeded) {
                 this.speedLimitExceeded = true;
@@ -668,7 +668,7 @@ export class FmcAircraftInterface {
 
         if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Takeoff && !this.fmgc.isAllEngineOn() && this.takeoffEngineOutSpeed === undefined) {
             const casWord = ADIRS.getCalibratedAirspeed();
-            this.takeoffEngineOutSpeed = casWord.isNormalOperation() ? casWord.value : null;
+            this.takeoffEngineOutSpeed = casWord && casWord.isNormalOperation() ? casWord.value : null;
         }
 
         if (this.updateAutopilotCooldown < 0) {
@@ -1140,7 +1140,7 @@ export class FmcAircraftInterface {
     getManagedTargets(v: number, m: number) {
         const alt = ADIRS.getBaroCorrectedAltitude();
         const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-        return (alt.isNormalOperation() && alt.value > 20_000 && v > vM) ? [vM, true] : [v, false];
+        return (alt && alt.isNormalOperation() && alt.value > 20_000 && v > vM) ? [vM, true] : [v, false];
     }
 
     // TODO/VNAV: Speed constraint

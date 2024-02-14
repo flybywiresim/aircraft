@@ -9,6 +9,7 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 
 interface MfdFmsFplnDirectToProps extends AbstractMfdPageProps {
 }
@@ -24,6 +25,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
     private availableWaypoints = ArraySubject.create<string>([]);
+
+    private availableWaypointsToLegIndex: number[] = [];
 
     private selectedWaypointIndex = Subject.create<number | null>(null);
 
@@ -46,17 +49,21 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
         // Use active FPLN for building the list (page only works for active anyways)
         const activeFpln = this.props.fmcService.master?.flightPlanService.active;
-        const wpt = activeFpln?.allLegs.slice(
-            activeFpln.activeLegIndex,
-            activeFpln.firstMissedApproachLegIndex,
-        ).map((el) => {
-            if (el instanceof FlightPlanLeg && el.isXF() === true) {
-                return el.ident;
+        if (activeFpln) {
+            this.availableWaypointsToLegIndex = [];
+            const wpt = activeFpln.allLegs.slice(
+                activeFpln.activeLegIndex,
+                activeFpln.firstMissedApproachLegIndex,
+            ).map((el, idx) => {
+                if (el instanceof FlightPlanLeg && el.isXF() === true) {
+                    this.availableWaypointsToLegIndex.push(idx);
+                    return el.ident;
+                }
+                return null;
+            }).filter((el) => el !== null) as readonly string[];
+            if (wpt) {
+                this.availableWaypoints.set(wpt);
             }
-            return null;
-        }).filter((el) => el !== null) as readonly string[] | undefined;
-        if (wpt) {
-            this.availableWaypoints.set(wpt);
         }
 
         // Existance of TMPY fpln is indicator for pending direct to revision
@@ -92,16 +99,16 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             this.props.fmcService.master.resetRevisedWaypoint();
         }
 
-        const fpln = this.props.fmcService.master?.flightPlanService.active;
         if (idx >= 0) {
-            if (this.availableWaypoints.get(idx)
-                && fpln?.findLegIndexByFixIdent(this.availableWaypoints.get(idx))) {
+            const legIndex = this.availableWaypointsToLegIndex[idx];
+            if (legIndex !== undefined) {
                 this.selectedWaypointIndex.set(idx);
                 this.manualWptIdent = null;
+                const trueTrack = ADIRS.getTrueTrack();
                 await this.props.fmcService.master?.flightPlanService.directToLeg(
                     this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
-                    SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-                    fpln.findLegIndexByFixIdent(this.availableWaypoints.get(idx)),
+                    trueTrack?.isNormalOperation() ? trueTrack.value : 0,
+                    legIndex,
                     this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
                     FlightPlanIndex.Active,
                 );
@@ -154,7 +161,11 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                         freeTextAllowed
                                         containerStyle="width: 175px;"
                                         alignLabels="flex-start"
-                                        onModified={(i, text) => i && this.onDropdownModified(i, text)}
+                                        onModified={(i, text) => {
+                                            if (i) {
+                                                this.onDropdownModified(i, text);
+                                            }
+                                        }}
                                         numberOfDigitsForInputField={7}
                                         tmpyActive={this.tmpyActive}
                                     />
@@ -227,6 +238,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                         <Button
                             label="INSERT<br />DIR TO*"
                             onClick={async () => {
+                                SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
                                 this.props.fmcService.master?.flightPlanService.temporaryInsert();
                                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}

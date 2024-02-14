@@ -69,6 +69,7 @@ export class FmgcData {
 
     public readonly taxiFuelPilotEntry = Subject.create<number | null>(null); // in kg
 
+    /** in kg */
     public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === null) ? AirlineModifiableInformation.EK.taxiFuel : it)); // in kg
 
     public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== null);

@@ -23,54 +23,54 @@ const vls = [
         (m: number) => vlsConf0(m),
     ], // Clean Config
     [
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 127, 123),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 127, 123),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 600), 127, 123),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 137, 133),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 146, 143),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 155, 151),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 164, 159),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 172, 167),
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 179, 175),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 179, 175),
     ], // Config 1 + F
     [
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 122, 120),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 122, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 600), 122, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 132, 128),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 141, 137),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 149, 146),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 158, 153),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 165, 161),
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 173, 168),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 173, 168),
     ], // Config 2
     [
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 600), 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 128, 124),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 137, 133),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 145, 141),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 153, 149),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 160, 156),
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 168, 163),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 168, 163),
     ], // Config 3
     [
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.05 * (m - 600), 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 700), 125, 121),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 141, 138),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 149, 145),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 157, 152),
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 164, 159),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 164, 159),
     ], // Config Full
     [
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 133, 130),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.11 * (m - 600), 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 700), 144, 141),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 154, 150),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 900), 163, 159),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 173, 168),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1100), 181, 177),
-        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 190, 185),
+        () => interpolateForCgAndWeight(null, (cgS) => cgS, 190, 185),
     ], // Config 1
 ];
 
@@ -80,14 +80,14 @@ const vls = [
  * Indexes: 0 to 9 represent gross weight (1000 lb) in 100k lb steps from 600 to 1200.
  */
 const f2 = [
-    () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 143, 140),
+    () => interpolateForCgAndWeight(null, (cgS) => cgS, 143, 140),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 600), 143, 140),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 154, 151),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 800), 165, 161),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 175, 171),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1000), 184, 181),
     (m: number) => interpolateForCgAndWeight(m, (cgS) => cgS, 191, 189),
-    () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 191, 191),
+    () => interpolateForCgAndWeight(null, (cgS) => cgS, 191, 191),
 ];
 
 /**
@@ -96,14 +96,14 @@ const f2 = [
  * Indexes: 0 to 9 represent gross weight (1000 lb) in 100k lb steps from 600 to 1200.
  */
 const f3 = [
-    () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 130, 130),
+    () => interpolateForCgAndWeight(null, (cgS) => cgS, 130, 130),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 600), 130, 130),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 137, 134),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 146, 143),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 155, 151),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 163, 160),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.06 * (m - 1100), 171, 167),
-    () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 177, 175),
+    () => interpolateForCgAndWeight(null, (cgS) => cgS, 177, 175),
 ];
 
 /**
@@ -212,7 +212,7 @@ const vfeFS = [
  */
 function interpolateForCgAndWeight(
     m: number,
-    weightFn: (cgSpeed: number, m: number) => number,
+    weightFn: (cgSpeed: number, m?: number) => number,
     cg29Value: number,
     cg43Value: number,
     cg: number = SimVar.GetSimVarValue('CG PERCENT', 'percent'),
@@ -473,7 +473,8 @@ export class A380SpeedsUtils {
      */
     static getVs1g(mass: number, conf: number): Knots {
         const klb = Units.kilogramToPound(mass) / 1000.0;
+        const weightTableIndex = Math.max(0, Math.min(7, correctMass(klb)));
         // FIXME rough, dirty hack
-        return vls[conf][correctMass(klb)](klb) / 1.5;
+        return vls[conf][weightTableIndex](klb) / 1.5;
     }
 }

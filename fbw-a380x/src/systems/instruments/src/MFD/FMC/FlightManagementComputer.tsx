@@ -272,6 +272,7 @@ export class FlightManagementComputer implements FmcInterface {
         return false;
     }
 
+    /** in kg */
     public getLandingWeight(): number | null {
         const tow = this.getTakeoffWeight();
         const tf = this.getTripFuel();
@@ -291,6 +292,7 @@ export class FlightManagementComputer implements FmcInterface {
         return this.getGrossWeight() - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
     }
 
+    /** in kg */
     public getGrossWeight(): Kilograms {
         // Value received from FQMS, or falls back to ZFW + FOB
         const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
@@ -299,7 +301,7 @@ export class FlightManagementComputer implements FmcInterface {
         if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.getFOB() * 1_000 + zfw);
         } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
-            fmGW = (this.fmgc.getFOB() * 1_000 + zfw);
+            fmGW = (this.fmgc.data.blockFuel.get() ?? 0 + zfw);
         } else {
             fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
         }
@@ -390,9 +392,9 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanService.active.setPerformanceData('v2', 145);
         this.flightPlanService.active.setPerformanceData('costIndex', 69);
         this.fmgc.data.approachSpeed.set(145);
-        this.fmgc.data.zeroFuelWeight.set(50_000);
+        this.fmgc.data.zeroFuelWeight.set(300_000);
         this.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
-        this.fmgc.data.blockFuel.set(10_000);
+        this.fmgc.data.blockFuel.set(25_000);
         this.acInterface.setCruiseFl(230);
     }
 
