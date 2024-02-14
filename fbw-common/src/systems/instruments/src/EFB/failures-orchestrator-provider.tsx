@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { PropsWithChildren, useState } from 'react';
-import { Failure, FailuresOrchestrator, useUpdate } from '@flybywiresim/fbw-sdk';
-import { FailureDefinition } from '../../../shared/src/failures/failures-orchestrator';
+import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@flybywiresim/fbw-sdk';
 
 interface FailuresOrchestratorContext {
     allFailures: Readonly<Readonly<Failure>[]>,

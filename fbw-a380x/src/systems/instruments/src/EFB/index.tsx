@@ -7,6 +7,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { customAlphabet } from 'nanoid';
 import { render } from '@instruments/common/index';
 import { readSettingsFromPersistentStorage, migrateSettings, EfbInstrument } from '@flybywiresim/flypad';
+import {A380FailureDefinitions} from "../../../failures";
 
 // TODO move all of this to fbw-common somehow
 
@@ -37,5 +38,5 @@ if (process.env.VITE_BUILD) {
 }
 
 render(
-    <EfbInstrument failures={[]} />,
+    <EfbInstrument failures={A380FailureDefinitions} />,
 );
