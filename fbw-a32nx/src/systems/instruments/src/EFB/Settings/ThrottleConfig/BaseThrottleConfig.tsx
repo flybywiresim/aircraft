@@ -37,7 +37,7 @@ interface BaseThrottleConfigProps {
 /**
  * BaseThrottleConfig is the base component for the throttle configuration of one axis.
  * The term axis is used for available hardware axis on the throttle controller.
- * The term throttles are used for the number of throttles that are used in the aircraft.
+ * The term throttle is used for the number of throttles that are used in the aircraft.
  * @see BaseThrottleConfigProps
  * @constructor
  */
@@ -65,10 +65,10 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     // Here we configure from which axis the detent data is coming from and to which throttle(s) it should be mapped.
     // There are 5 cases:
     // 1. A320 with 1 axis and 2 throttles
-    // 2. A320 with 2 axis and 2 throttles
+    // 2. A320 with 2 axes and 2 throttles
     // 3. A380 with 1 axis and 4 throttles
-    // 4. A380 with 2 axis and 4 throttles
-    // 5. A380 with 4 axis and 4 throttles
+    // 4. A380 with 2 axes and 4 throttles
+    // 5. A380 with 4 axes and 4 throttles
 
     // A320 Case
     if (numberOfThrottles === 2) {
@@ -88,7 +88,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
-        // case when two axis are mapped to throttle 1 and 2
+        // case when two axes are mapped to throttle 1 and 2
         else if (numberOfAxis === 2) {
             throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: axisNumber.toString() }]);
             // throttle 1-2 is mapped from axis 1-2
@@ -127,8 +127,8 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
-        // case when two axis are mapped and this setting is for axis 1 for throttle 1 and 2
-        else if (numberOfAxis === 2 && axisNumber === 1) {
+        // case when two axes are mapped and this setting is for axis 1 for throttle 1 and 2
+        else if (numberOfAxis === 2) {
             const throttlesString = axisNumber === 1 ? '1 + 2' : '3 + 4';
             throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: throttlesString }]);
             // throttle 1 and 2 are mapped from axis 1, 3 and 4 are mapped from axis 2
@@ -144,7 +144,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
-        // case when four axis are mapped to four throttles
+        // case when four axes are mapped to four throttles
         else if (numberOfAxis === 4) {
             throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: axisNumber.toString() }]);
             // throttle 1-4 is mapped from axis 1-4
