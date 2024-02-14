@@ -317,8 +317,8 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getAirwaysByFix(ident: string, icaoCode: string): Promise<Airway[]> {
-        return this.mapping.getAirways(ident, icaoCode);
+    public async getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
+        return this.mapping.getAirways(ident, icaoCode, airwayIdent);
     }
 
     private async searchForFacilities<T extends SupportedFacilitySearchType>(

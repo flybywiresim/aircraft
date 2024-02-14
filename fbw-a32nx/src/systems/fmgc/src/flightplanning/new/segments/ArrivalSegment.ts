@@ -23,6 +23,8 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
     private arrival: Arrival | undefined
 
     async setProcedure(procedureIdent: string | undefined, skipUpdateLegs?: boolean) {
+        const oldArrivalName = this.arrival?.ident;
+
         if (procedureIdent === undefined) {
             this.arrival = undefined;
 
@@ -65,6 +67,11 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
         this.arrival = matchingArrival;
         this.allLegs.length = 0;
         this.strung = false;
+
+        if (oldArrivalName !== matchingArrival.ident) {
+            // Clear enroute transition if arrival is different
+            this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+        }
 
         const mappedArrivalLegs = legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingArrival.ident, WaypointConstraintType.DES));
 

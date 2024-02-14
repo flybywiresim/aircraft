@@ -1,12 +1,4 @@
-import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { AltitudeDescriptor, SpeedDescriptor } from '@flybywiresim/fbw-sdk';
-
-export enum AltitudeConstraintType {
-    at = '@',
-    atOrAbove = '+',
-    atOrBelow = '-',
-    range = 'B',
-}
 
 // TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)
 export enum SpeedConstraintType {
@@ -16,70 +8,55 @@ export enum SpeedConstraintType {
 }
 
 export interface AltitudeConstraint {
-    type: AltitudeConstraintType,
-    altitude1: Feet,
-    altitude2?: Feet,
+    /**
+     * Specifies the meaning of the altitude1 and altitude2 properties
+     */
+    altitudeDescriptor?: AltitudeDescriptor;
+
+    /**
+     * altitudeDescriptor property specifies the meaning of this property
+     */
+    altitude1?: Feet;
+
+    /**
+     * altitudeDescriptor property specifies the meaning of this property
+     */
+    altitude2?: Feet;
 }
 
 export interface SpeedConstraint {
-    type: SpeedConstraintType.atOrBelow,
-    speed: Knots,
+    speedDescriptor?: SpeedDescriptor,
+    speed?: Knots,
 }
 
 export class ConstraintUtils {
-    static parseAltConstraintFromLegDefinition(definition: FlightPlanLegDefinition): AltitudeConstraint | undefined {
-        // Type G and H constraints are ignored by the FMS
-        switch (definition?.altitudeDescriptor) {
+    static minimumAltitude(constraint: AltitudeConstraint): Feet {
+        switch (constraint?.altitudeDescriptor) {
         case AltitudeDescriptor.AtAlt1:
         case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
         case AltitudeDescriptor.AtAlt1AngleAlt2:
-            return { type: AltitudeConstraintType.at, altitude1: definition.altitude1 };
         case AltitudeDescriptor.AtOrAboveAlt1:
         case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
         case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-            return { type: AltitudeConstraintType.atOrAbove, altitude1: definition.altitude1 };
-        case AltitudeDescriptor.AtOrBelowAlt1:
-        case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-            return { type: AltitudeConstraintType.atOrAbove, altitude1: definition.altitude1 };
-        case AltitudeDescriptor.BetweenAlt1Alt2:
-            return { type: AltitudeConstraintType.range, altitude1: definition.altitude1, altitude2: definition.altitude2 };
-        case AltitudeDescriptor.AtOrAboveAlt2:
-            return { type: AltitudeConstraintType.atOrAbove, altitude1: definition.altitude2 };
-        default:
-            return undefined;
-        }
-    }
-
-    static minimumAltitude(constraint: AltitudeConstraint): Feet {
-        switch (constraint?.type) {
-        case AltitudeConstraintType.at:
-        case AltitudeConstraintType.atOrAbove:
             return constraint.altitude1;
-        case AltitudeConstraintType.range:
+        case AltitudeDescriptor.BetweenAlt1Alt2:
             return constraint.altitude2;
-        case AltitudeConstraintType.atOrBelow:
         default:
             return -Infinity;
         }
     }
 
     static maximumAltitude(constraint: AltitudeConstraint): Feet {
-        switch (constraint?.type) {
-        case AltitudeConstraintType.at:
-        case AltitudeConstraintType.atOrBelow:
-        case AltitudeConstraintType.range:
+        switch (constraint?.altitudeDescriptor) {
+        case AltitudeDescriptor.AtAlt1:
+        case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+        case AltitudeDescriptor.AtAlt1AngleAlt2:
+        case AltitudeDescriptor.AtOrBelowAlt1:
+        case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+        case AltitudeDescriptor.BetweenAlt1Alt2:
             return constraint.altitude1;
         default:
-        case AltitudeConstraintType.atOrAbove:
             return Infinity;
         }
-    }
-
-    static parseSpeedConstraintFromLegDefinition(definition: FlightPlanLegDefinition): SpeedConstraint | undefined {
-        if (definition?.speedDescriptor === SpeedDescriptor.Maximum) {
-            return { type: SpeedConstraintType.atOrBelow, speed: definition.speed };
-        }
-
-        return undefined;
     }
 }

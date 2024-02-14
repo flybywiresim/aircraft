@@ -26,7 +26,7 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { MagVar } from '@microsoft/msfs-sdk';
-import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
@@ -157,7 +157,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         if (this.hasPilotEnteredAltitudeConstraint()) {
             return this.pilotEnteredAltitudeConstraint;
         } if (this.hasDatabaseAltitudeConstraint()) {
-            return ConstraintUtils.parseAltConstraintFromLegDefinition(this.definition);
+            return this.definition;
         }
 
         return undefined;
@@ -167,7 +167,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         if (this.hasPilotEnteredSpeedConstraint()) {
             return this.pilotEnteredSpeedConstraint;
         } if (this.hasDatabaseSpeedConstraint()) {
-            return ConstraintUtils.parseSpeedConstraintFromLegDefinition(this.definition);
+            return this.definition;
         }
 
         return undefined;
@@ -285,6 +285,17 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         return this;
     }
 
+    clearConstraints() {
+        this.definition.verticalAngle = undefined;
+        this.definition.altitudeDescriptor = undefined;
+        this.definition.altitude1 = undefined;
+        this.definition.altitude2 = undefined;
+        this.definition.speedDescriptor = undefined;
+        this.definition.speed = undefined;
+        this.pilotEnteredAltitudeConstraint = undefined;
+        this.pilotEnteredSpeedConstraint = undefined;
+    }
+
     static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
@@ -303,7 +314,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             type: LegType.FC,
             overfly: false,
             waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
-            magneticCourse: MagVar.trueToMagnetic(bearing, magVar),
+            magneticCourse: A32NX_Util.trueToMagnetic(bearing, magVar),
             length: 0.1,
         }, '', '', undefined);
     }

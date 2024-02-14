@@ -7,7 +7,6 @@ import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { Navigation } from '@fmgc/navigation/Navigation';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 abstract class TurnAreaExceedance implements FMMessageSelector {
@@ -29,17 +28,13 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
     }
 
     process(deltaTime: number): FMMessageUpdate {
-        if (!this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
-            return FMMessageUpdate.NO_ACTION;
-        }
-
         const gs = this.navigation.groundSpeed;
         const dtg = this.guidanceController.activeLegDtg ?? Infinity;
         const ttg = gs > 10 ? 3600 * dtg / gs : Infinity;
-        const nextLeg = this.guidanceController.activeGeometry.legs.get(this.guidanceController.activeLegIndex + 1);
+        const nextLeg = this.guidanceController.activeGeometry?.legs?.get(this.guidanceController.activeLegIndex + 1);
 
         // if within 1.5 min of PI and it's path goes outside the coded distance limit
-        const turnAreaExceeded = ttg <= 90 && nextLeg instanceof PILeg && nextLeg.turnAreaExceeded;
+        const turnAreaExceeded = ttg <= 90 && nextLeg && nextLeg instanceof PILeg && nextLeg.turnAreaExceeded;
 
         this.trigRising.input = turnAreaExceeded;
         this.trigRising.update(deltaTime);

@@ -278,32 +278,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-        // TODO port over somehow ?
-        // this.flightPlanManager.onCurrentGameFlightLoaded(() => {
-        //     this.flightPlanManager.updateFlightPlan(() => {
-        //         this.flightPlanManager.updateCurrentApproach();
-        //         const callback = () => {
-        //             this.flightPlanManager.createNewFlightPlan();
-        //             SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-        //             SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-        //             SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-        //             SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        //             const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
-        //             console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
-        //             if (cruiseAlt > 0) {
-        //                 this.cruiseFlightLevel = cruiseAlt;
-        //                 this._cruiseFlightLevel = cruiseAlt;
-        //             }
-        //         };
-        //         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
-        //         if (arrivalIndex >= 0) {
-        //             this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback).catch(console.error);
-        //         } else {
-        //             callback();
-        //         }
-        //     });
-        // });
-
         this.updateFuelVars();
         this.updatePerfSpeeds();
 
@@ -335,7 +309,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     initVariables(resetTakeoffData = true) {
         this.costIndex = undefined;
-        // this.costIndexSet = false;
+        // this.isCostIndexSet = false;
         this.maxCruiseFL = 390;
         this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
@@ -1553,7 +1527,7 @@ class FMCMainDisplay extends BaseAirliners {
 
 
                 if (altConstraint) {
-                    switch (altConstraint.type) {
+                    switch (altConstraint.altitudeDescriptor) {
                         case "@": // at alt 1
                         case "-": // at or below alt 1
                         case "B": // between alt 1 and alt 2
@@ -1565,9 +1539,13 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             } else if (leg.constraintType === 2 /** DES */) {
                 if (altConstraint) {
-                    switch (altConstraint.type) {
+                    switch (altConstraint.altitudeDescriptor) {
                         case "@": // at alt 1
                         case "+": // at or above alt 1
+                        case "I": // alt1 is at for FACF, Alt2 is glidelope intercept
+                        case "J": // alt1 is at or above for FACF, Alt2 is glideslope intercept
+                        case "V": // alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
+                        case "X": // alt 1 is at, Alt 2 is on the vertical angle
                         currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
                         break;
                         case "B": // between alt 1 and alt 2
@@ -2000,7 +1978,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                    // this.costIndexSet = true;
+                    // this.isCostIndexSet = true;
                     this.costIndex = value;
                     this.updateManagedSpeeds();
                     return true;
@@ -2659,13 +2637,13 @@ class FMCMainDisplay extends BaseAirliners {
         return -1;
     }
 
-    toggleWaypointOverfly(index, callback = EmptyCallback.Void) {
+    toggleWaypointOverfly(index, fpIndex, forAlternate, callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        this.flightPlanService.toggleOverfly(index);
+        this.flightPlanService.toggleOverfly(index, fpIndex, forAlternate);
         callback();
     }
 
@@ -2996,7 +2974,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         const origin = this.flightPlanService.active.originAirport;
 
-        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        let elevation = 0;
         if (origin) {
             elevation = origin.location.alt;
         }
@@ -4986,7 +4964,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    get costIndexSet() {
+    get isCostIndexSet() {
         const plan = this.currFlightPlanService.active;
 
         if (plan) {
@@ -5266,6 +5244,50 @@ class FMCMainDisplay extends BaseAirliners {
 
     getDistanceToDestination() {
         return this.guidanceController.alongTrackDistanceToDestination;
+    }
+
+    /**
+     * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
+     * @param {import('msfs-navdata').Waypoint} waypoint
+     */
+    async directToWaypoint(waypoint) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
+    }
+
+    /**
+     * Modifies the active flight plan to go direct to a specific leg
+     * @param {number} legIndex index of leg to go direct to
+     */
+    async directToLeg(legIndex) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
     }
 }
 

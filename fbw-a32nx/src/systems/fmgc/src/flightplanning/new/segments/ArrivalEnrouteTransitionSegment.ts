@@ -74,6 +74,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
         this.strung = false;
 
         this.flightPlan.syncSegmentLegsChange(this);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
     }
 

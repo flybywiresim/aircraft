@@ -137,7 +137,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         const magVar = MagVar.get(ppos.lat, ppos.long);
-        const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
+        const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
         const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
@@ -172,7 +172,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         const magVar = MagVar.get(ppos.lat, ppos.long);
-        const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
+        const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
         const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
@@ -215,18 +215,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         const xFLegIndexInPlan = this.allLegs.findIndex((it, index) => index > discontinuityIndex && it.isDiscontinuity === false && it.isXF());
 
         if (xFLegIndexInPlan !== -1) {
+            // Remove elements to next XF leg
+            this.removeRange(discontinuityIndex + 1, xFLegIndexInPlan);
+            this.incrementVersion();
+
+            // Replace next XF leg with IF leg if not already IF or CF
             const [segment, xfLegIndexInSegment] = this.segmentPositionForIndex(xFLegIndexInPlan);
             const xfLegAfterDiscontinuity = segment.allLegs[xfLegIndexInSegment] as FlightPlanLeg;
 
-            // Remove non-ground-referenced leg after the discontinuity before the XF leg
-            // and insert new IF leg
-            const numberOfLegsToRemove = Math.max(0, xFLegIndexInPlan - discontinuityIndex);
-            const iFLegAfterDiscontinuity = FlightPlanLeg.fromEnrouteFix(segment, xfLegAfterDiscontinuity.definition.waypoint, '', LegType.IF)
-                .withDefinitionFrom(xfLegAfterDiscontinuity)
-                .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
+            if (xfLegAfterDiscontinuity.type !== LegType.IF && xfLegAfterDiscontinuity.type !== LegType.CF) {
+                const iFLegAfterDiscontinuity = FlightPlanLeg.fromEnrouteFix(segment, xfLegAfterDiscontinuity.definition.waypoint, '', LegType.IF)
+                    .withDefinitionFrom(xfLegAfterDiscontinuity)
+                    .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
 
-            segment.allLegs.splice(xfLegIndexInSegment - numberOfLegsToRemove + 1, numberOfLegsToRemove, iFLegAfterDiscontinuity);
-            this.incrementVersion();
+                segment.allLegs.splice(xfLegIndexInSegment, 1, iFLegAfterDiscontinuity);
+                this.incrementVersion();
+            }
         }
     }
 

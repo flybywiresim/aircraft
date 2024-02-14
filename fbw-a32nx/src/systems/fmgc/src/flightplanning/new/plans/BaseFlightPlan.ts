@@ -14,6 +14,7 @@ import {
     LegType,
     ProcedureTransition,
     Runway,
+    SpeedDescriptor,
     WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
@@ -43,7 +44,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {
@@ -176,6 +177,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.allLegs[this.activeLegIndex];
     }
 
+    private setActiveLegIndex(index: number) {
+        this.activeLegIndex = index;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: index });
+    }
+
     /**
      * Returns the index of the last leg before the active leg, or -1 if none is found
      * We can have a discontinuity before the active leg. In this case, return the leg before that discontinuity
@@ -275,8 +281,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // Set active leg again because the index might've changed when we moved it into enroute
         const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
-        this.activeLegIndex = activeIndex;
-        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+        this.setActiveLegIndex(activeIndex);
     }
 
     version = 0;
@@ -812,11 +817,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             segment.allLegs.splice(indexInSegment, 1);
         }
 
-        // TODO: should this be here?
-        if (index === this.activeLegIndex) {
-            this.sequence();
-        }
-
         this.syncSegmentLegsChange(segment);
 
         this.incrementVersion();
@@ -922,10 +922,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
             await this.flushOperationQueue();
         } else {
-            const [insertSegment] = this.segmentPositionForIndex(index);
-            const leg = FlightPlanLeg.fromEnrouteFix(insertSegment, waypoint);
+            const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
-            await this.insertElementBefore(index, leg, false);
+            await this.insertElementBefore(index, leg, true);
         }
     }
 
@@ -1159,9 +1158,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         if (insertDiscontinuity) {
             this.incrementVersion();
 
-            const elementAfterInserted = startSegment.allLegs[indexInStartSegment + 1];
+            const elementAfterInserted = this.allLegs[index + 1];
 
-            if (elementAfterInserted.isDiscontinuity === false) {
+            if (elementAfterInserted?.isDiscontinuity === false) {
                 startSegment.insertBefore(indexInStartSegment + 1, { isDiscontinuity: true });
                 this.incrementVersion();
             }
@@ -1227,17 +1226,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.incrementVersion();
     }
 
-    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, constraint?: SpeedConstraint) {
+    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, speed?: number) {
         const element = this.elementAt(index);
 
         if (element.isDiscontinuity === true) {
             return;
         }
 
-        element.pilotEnteredSpeedConstraint = constraint;
-        if (!constraint) {
+        if (!speed) {
+            element.pilotEnteredSpeedConstraint = undefined;
             element.definition.speedDescriptor = undefined;
             element.definition.speed = undefined;
+        } else {
+            element.pilotEnteredSpeedConstraint = { speedDescriptor: SpeedDescriptor.Maximum, speed };
         }
 
         this.syncLegDefinitionChange(index);
@@ -1568,39 +1569,49 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const departureSegments = segments.filter((s) => s.class === SegmentClass.Departure);
         const arrivalSegments = segments.filter((s) => s.class === SegmentClass.Arrival);
 
-        // String all departure segments among each other
-        for (let i = 0; i < departureSegments.length; i++) {
-            const segment = departureSegments[i];
-            const nextSegment = this.nextSegment(segment);
+        if (options & RestringOptions.RestringDeparture) {
+            // String all departure segments among each other
+            for (let i = 0; i < departureSegments.length; i++) {
+                const segment = departureSegments[i];
+                const nextSegment = this.nextSegment(segment);
 
-            if (nextSegment?.class === SegmentClass.Departure) {
-                this.stringSegmentsBackwards(segment, nextSegment);
-                this.stringSegmentsForwards(segment, nextSegment);
+                if (nextSegment?.class === SegmentClass.Departure) {
+                    this.stringSegmentsForwards(segment, nextSegment);
+                }
+
+                segment.insertNecessaryDiscontinuities();
             }
 
-            segment.insertNecessaryDiscontinuities();
-        }
-
-        // String entire departure to the rest of the route
-        if (options & RestringOptions.RestringDeparture) {
+            // String entire departure to the rest of the route
             this.stringDepartureToDownstream();
         }
 
-        // String all arrival segments among each other
-        for (let i = 0; i < arrivalSegments.length; i++) {
-            const segment = arrivalSegments[i];
-            const nextSegment = this.nextSegment(segment);
+        if (options & RestringOptions.RestringArrival) {
+            // String all arrival segments among each other
+            for (let i = 0; i < arrivalSegments.length; i++) {
+                const segment = arrivalSegments[i];
+                const nextSegment = this.nextSegment(segment);
 
-            if (nextSegment?.class === SegmentClass.Arrival) {
-                this.stringSegmentsBackwards(segment, nextSegment);
-                this.stringSegmentsForwards(segment, nextSegment);
+                if (nextSegment?.class === SegmentClass.Arrival) {
+                    this.stringSegmentsForwards(segment, nextSegment);
+                }
+
+                segment.insertNecessaryDiscontinuities();
             }
 
-            segment.insertNecessaryDiscontinuities();
-        }
+            // It's important we only string backwards once we've strung everything forwards
+            for (let i = 0; i < arrivalSegments.length; i++) {
+                const segment = arrivalSegments[i];
+                const nextSegment = this.nextSegment(segment);
 
-        // String entire arrival to the rest of the route
-        if (options & RestringOptions.RestringArrival) {
+                if (nextSegment?.class === SegmentClass.Arrival) {
+                    this.stringSegmentsBackwards(segment, nextSegment);
+                }
+
+                segment.insertNecessaryDiscontinuities();
+            }
+
+            // String entire arrival to the rest of the route
             this.stringArrivalToUpstream();
         }
 
@@ -1612,6 +1623,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.adjustTFLegs();
 
         this.incrementVersion();
+        this.selectActiveLeg();
     }
 
     private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
@@ -1723,7 +1735,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     private stringSegmentsBackwards(first: FlightPlanSegment, second: FlightPlanSegment) {
-        if (!first || !second || first.strung || first.allLegs.length === 0 || second.allLegs.length === 0 || (second instanceof EnrouteSegment && second.isSequencedMissedApproach)) {
+        if (!first || !second || first.allLegs.length === 0 || second.allLegs.length === 0) {
             return;
         }
 
@@ -1765,13 +1777,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             if (bothXf) {
                 if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
-                    // Transfer leg type from firstLegInSecond definition onto element
-                    element.type = firstLegInSecond.definition.type;
-                    Object.assign(element.definition, firstLegInSecond.definition);
-
-                    // Annotation of element should be used
-                    [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, element.annotation);
-
+                    // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
                     second.allLegs.shift();
                     second.flightPlan.syncSegmentLegsChange(first);
                     cutBefore = i;
@@ -1794,7 +1800,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
             }
 
-            first.strung = false;
             return;
         }
 
@@ -1809,8 +1814,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
-
-        first.strung = true;
     }
 
     private stringDepartureToDownstream() {
@@ -1863,31 +1866,37 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         // Check if same point occurs downroute
-        const duplicate = this.findDuplicateReverse(firstArrivalLeg.terminationWaypoint(), firstArrivalLegIndexInPlan);
-        if (duplicate) {
-            // If it does, remove everything inbetween
-            const [duplicateSegment, duplicateIndexInSegment, duplicatePlanIndex] = duplicate;
+        if (firstArrivalLeg.isXF()) {
+            const duplicate = this.findDuplicateReverse(firstArrivalLeg.terminationWaypoint(), firstArrivalLegIndexInPlan);
+            if (duplicate) {
+                // If it does, remove everything inbetween
+                const [duplicateSegment, duplicateIndexInSegment, duplicatePlanIndex] = duplicate;
 
-            const duplicateBeforeActiveLeg = duplicatePlanIndex < this.activeLegIndex;
-            const originAndDestination = duplicatePlanIndex === this.originLegIndex && firstArrivalLegIndexInPlan === this.destinationLegIndex;
+                const duplicateBeforeActiveLeg = duplicatePlanIndex < this.activeLegIndex;
+                const originAndDestination = duplicatePlanIndex === this.originLegIndex && firstArrivalLegIndexInPlan === this.destinationLegIndex;
 
-            if (duplicateBeforeActiveLeg || (originAndDestination && this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity !== true)) {
-                // Do not string origin to destination
-                this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
-                this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, firstArrivalSegment);
-            } else {
-                const duplicateLeg = duplicateSegment.allLegs[duplicateIndexInSegment];
-                if (duplicateLeg.isDiscontinuity === true) {
-                    throw new Error('[FMS/FPM] Duplicate leg cannot be a discontinuity');
+                if (!duplicateBeforeActiveLeg && !originAndDestination) {
+                    const duplicateLeg = duplicateSegment.allLegs[duplicateIndexInSegment];
+                    if (duplicateLeg.isDiscontinuity === true) {
+                        throw new Error('[FMS/FPM] Duplicate leg cannot be a discontinuity');
+                    }
+
+                    duplicateLeg.withDefinitionFrom(firstArrivalLeg).withPilotEnteredDataFrom(firstArrivalLeg);
+
+                    this.removeRange(duplicatePlanIndex + 1, firstArrivalLegIndexInPlan + 1);
+                    duplicateSegment.strung = true;
+
+                    return;
                 }
-
-                // Copy annotation
-                firstArrivalLeg.annotation = duplicateLeg.annotation;
-
-                this.removeRange(duplicatePlanIndex, firstArrivalLegIndexInPlan);
-                duplicateSegment.strung = true;
             }
-        } else if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity !== true) {
+        }
+
+        // Unstring
+        const lastUpstreamElement = this.allLegs[firstArrivalLegIndexInPlan - 1];
+        if (lastUpstreamElement?.isDiscontinuity === false) {
+            // I'm not sure if constraints should really just be cleared, but we want to remove the STAR constraints at least
+            lastUpstreamElement.clearConstraints();
+
             // Insert disco otherwise
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
             this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this.enrouteSegment);
@@ -2029,6 +2038,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
     }
 
+    private selectActiveLeg() {
+        // If we're on an arrival segment and select a different arrival, the active leg should be the first leg of the arrival
+        if (this.activeLegIndex === -1) {
+            return;
+        }
+
+        const [_, __, indexInPlan] = this.findFirstArrivalLeg();
+        if (indexInPlan === -1) {
+            return;
+        }
+
+        if (this.activeLegIndex > indexInPlan) {
+            console.log('[FMS/FPM] Active leg index is after the first arrival leg, resetting');
+            this.setActiveLegIndex(indexInPlan);
+        }
+    }
+
     private async rebuildArrivalAndApproachSegments() {
         // We call the segment functions here, otherwise we infinitely enqueue restrings and rebuilds since calling
         // the methods on BaseFlightPlan flush the op queue
@@ -2143,6 +2169,22 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         return lowestClimbConstraint;
+    }
+
+    deduplicateDownstreamAt(atIndex: number, keepUpstreamVsDownstream: boolean = false) {
+        const leg = this.legElementAt(atIndex);
+        if (!leg.isXF() && !leg.isFX() && !leg.isHX()) {
+            throw new Error('[FMS/FPM] Can only deduplicate XF, FX or HX legs');
+        }
+
+        const duplicate = this.findDuplicate(leg.terminationWaypoint(), atIndex);
+        if (!duplicate) {
+            return;
+        }
+
+        const [_, __, planIndex] = duplicate;
+        this.removeRange(keepUpstreamVsDownstream ? atIndex + 1 : atIndex, keepUpstreamVsDownstream ? planIndex + 1 : planIndex);
+        this.incrementVersion();
     }
 }
 

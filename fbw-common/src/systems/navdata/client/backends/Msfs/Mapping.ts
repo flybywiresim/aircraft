@@ -513,6 +513,8 @@ export class MsfsMapping {
 
             const levelOfService = this.mapRnavTypeFlags(approach.rnavTypeFlags);
 
+            const transitions = this.mapApproachTransitions(approach, facilities, msAirport, approachName, icaoCode);
+
             return {
                 sectionCode: SectionCode.Airport,
                 subSectionCode: AirportSubsectionCode.ApproachProcedures,
@@ -524,7 +526,7 @@ export class MsfsMapping {
                 type: this.mapApproachType(approach.approachType),
                 authorisationRequired,
                 levelOfService,
-                transitions: approach.transitions.map((trans) => this.mapApproachTransition(trans, facilities, msAirport, approachName, icaoCode)),
+                transitions,
                 legs: approach.finalLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, icaoCode, approach.approachType, rnp)),
                 missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, icaoCode)),
             };
@@ -647,6 +649,58 @@ export class MsfsMapping {
         const wps = await this.cache.getFacilities(icaos.filter((icao) => icao.charAt(0) === 'W'), LoadType.Intersection);
 
         return new Map<string, JS_Facility>([...wps, ...ndbs, ...vors]);
+    }
+
+    private mapApproachTransitions(approach: JS_Approach, facilities: Map<string, JS_Facility>, airport: JS_FacilityAirport, procedureIdent: string, icaoCode: string) {
+        const transitions = approach.transitions.map((trans) => this.mapApproachTransition(trans, facilities, airport, procedureIdent, icaoCode));
+
+        approach.transitions.forEach((trans) => {
+            // if the trans name is empty (in some 3pd navdata), fill it with the IAF name
+            if (trans.name.trim().length === 0) {
+                trans.name = FacilityCache.ident(trans.legs[0].fixIcao);
+            }
+
+            // Fix up navigraph approach transitions which hide IAPs inside other transitions rather
+            // than splitting them out as they should be in MSFS data. Unfortunately this means
+            // these transitions cannot be synced to the sim's flight plan system for ATC etc. as
+            // they're not visible without this hack.
+            // Note: it is safe to append to the array inside the forEach by the ECMA spec, and the appended
+            // elements will not be visited.
+            for (let i = 1; i < trans.legs.length; i++) {
+                const leg = trans.legs[i];
+                if ((leg.fixTypeFlags & FixTypeFlags.IAF) > 0 && (leg.type === MsLegType.TF || leg.type === MsLegType.IF)) {
+                    const iafIdent = FacilityCache.ident(leg.fixIcao);
+                    // this is a transition in itself... check that it doesn't already exist
+                    if (transitions.find((t) => t.ident === iafIdent) !== undefined) {
+                        continue;
+                    }
+
+                    transitions.push(
+                        this.mapApproachTransition(
+                            this.createMsApproachTransition(iafIdent, trans.legs.slice(i)),
+                            facilities,
+                            airport,
+                            procedureIdent,
+                            icaoCode,
+                        ),
+                    );
+                }
+            }
+        });
+
+        return transitions;
+    }
+
+    private createMsApproachTransition(name: string, legs: JS_Leg[]): JS_ApproachTransition {
+        // copy the IAF leg before we mutate it!
+        legs[0] = { ...legs[0] };
+        legs[0].type = MsLegType.IF;
+
+        return {
+            name,
+            legs,
+            __Type: 'JS_ApproachTransition',
+        };
     }
 
     private mapApproachTransition(
@@ -1126,7 +1180,7 @@ export class MsfsMapping {
         return msAirport.icao.substring(7, 11);
     }
 
-    public async getAirways(fixIdent: string, icaoCode: string): Promise<Airway[]> {
+    public async getAirways(fixIdent: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
         const fixes = (await this.cache.searchByIdent(fixIdent, IcaoSearchFilter.Intersections, 100)).filter((wp) => wp.icao.substring(1, 3) === icaoCode);
         if (fixes.length < 1 || fixes[0].routes.length < 1) {
             return [];
@@ -1136,7 +1190,7 @@ export class MsfsMapping {
         }
 
         const fix = this.mapFacilityToWaypoint(fixes[0]);
-        const routes = fixes[0].routes;
+        const routes = fixes[0].routes.filter((route) => !airwayIdent || route.name === airwayIdent);
 
         const airways = routes.map((route) => ({
             databaseId: `E${icaoCode}    ${route.name}${fixIdent}`,

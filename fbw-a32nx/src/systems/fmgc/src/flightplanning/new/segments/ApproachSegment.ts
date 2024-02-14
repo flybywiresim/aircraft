@@ -84,8 +84,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         );
         this.flightPlan.missedApproachSegment.setMissedApproachLegs(mappedMissedApproachLegs);
 
-        // Clear flight plan approach via if the new approach is different
         if (oldApproachName !== matchingProcedure.ident) {
+            // Clear flight plan approach VIA if the new approach is different
             await this.flightPlan.approachViaSegment.setProcedure(undefined);
         }
 
