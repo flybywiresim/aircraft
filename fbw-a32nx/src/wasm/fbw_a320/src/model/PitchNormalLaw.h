@@ -38,7 +38,7 @@ class PitchNormalLaw final
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_RateLimiter_PitchNormalLaw_a_T {
+  struct rtDW_RateLimiter_PitchNormalLaw_o_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
@@ -68,6 +68,8 @@ class PitchNormalLaw final
     real_T Delay1_DSTATE_i;
     real_T Delay_DSTATE_e1;
     real_T Delay_DSTATE_bg;
+    real_T Delay_DSTATE_o;
+    real_T Delay1_DSTATE_n;
     real_T Delay_DSTATE_jv;
     real_T Delay_DSTATE_lf;
     real_T Delay_DSTATE_dv;
@@ -78,7 +80,7 @@ class PitchNormalLaw final
     real_T Delay1_DSTATE_l;
     real_T Delay_DSTATE_m;
     real_T Delay_DSTATE_k2;
-    real_T Delay1_DSTATE_n;
+    real_T Delay1_DSTATE_ns;
     real_T Delay_DSTATE_mz;
     real_T Delay_DSTATE_jh;
     real_T Delay_DSTATE_dy;
@@ -88,7 +90,7 @@ class PitchNormalLaw final
     real_T Delay_DSTATE_h;
     real_T Delay_DSTATE_ds;
     real_T Delay_DSTATE_jt;
-    real_T Delay_DSTATE_o;
+    real_T Delay_DSTATE_o3;
     real_T Delay_DSTATE_ej;
     real_T Delay_DSTATE_e4;
     real_T Delay_DSTATE_cl;
@@ -105,18 +107,16 @@ class PitchNormalLaw final
     boolean_T icLoad;
     boolean_T icLoad_p;
     rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_b;
-    rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_ct;
-    rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_fz;
+    rtDW_RateLimiter_PitchNormalLaw_o_T sf_RateLimiter_ct;
+    rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_f;
     rtDW_WashoutFilter_PitchNormalLaw_T sf_WashoutFilter_h;
-    rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_nx;
-    rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_i;
-    rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_c2;
+    rtDW_RateLimiter_PitchNormalLaw_o_T sf_RateLimiter_nx;
+    rtDW_RateLimiter_PitchNormalLaw_o_T sf_RateLimiter_i;
+    rtDW_RateLimiter_PitchNormalLaw_o_T sf_RateLimiter_c2;
     rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_o;
     rtDW_LagFilter_PitchNormalLaw_T sf_LagFilter_mf;
-    rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_pr;
-    rtDW_RateLimiter_PitchNormalLaw_a_T sf_RateLimiter_f;
-    rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_m;
-    rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_f;
+    rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_ck;
+    rtDW_RateLimiter_PitchNormalLaw_T sf_RateLimiter_e;
     rtDW_WashoutFilter_PitchNormalLaw_T sf_WashoutFilter_ca;
     rtDW_LagFilter_PitchNormalLaw_d_T sf_LagFilter_gr;
     rtDW_WashoutFilter_PitchNormalLaw_T sf_WashoutFilter_c;
@@ -164,7 +164,7 @@ class PitchNormalLaw final
     real_T WashoutFilter_C1_b;
     real_T Subsystem1_C1;
     real_T Subsystem3_C1;
-    real_T LagFilterdeltaetapos_C1;
+    real_T LagFilter3_C1;
     real_T LagFilter_C1_c;
     real_T WashoutFilter_C1_p;
     real_T Subsystem2_C1;
@@ -227,9 +227,8 @@ class PitchNormalLaw final
     real_T DiscreteDerivativeVariableTs2_InitialCondition_m;
     real_T RateLimiterVariableTs5_InitialCondition;
     real_T DiscreteDerivativeVariableTs1_InitialCondition_n;
-    real_T RateLimiterFlareLawTailstrikeProtection_InitialCondition;
-    real_T RateLimiterDeltaEtaFlare_InitialCondition;
-    real_T RateLimiterTheta_c_InitialCondition;
+    real_T RateLimiterVariableTs1_InitialCondition_n;
+    real_T RateLimiterVariableTs_InitialCondition_b;
     real_T DiscreteDerivativeVariableTs_InitialCondition_n;
     real_T DiscreteDerivativeVariableTs2_InitialCondition_a;
     real_T RateLimiterVariableTs9_InitialCondition;
@@ -276,9 +275,8 @@ class PitchNormalLaw final
     real_T RateLimiterVariableTs8_lo;
     real_T RateLimiterVariableTs2_lo_k;
     real_T RateLimiterVariableTs5_lo;
-    real_T RateLimiterFlareLawTailstrikeProtection_lo;
-    real_T RateLimiterDeltaEtaFlare_lo;
-    real_T RateLimiterTheta_c_lo;
+    real_T RateLimiterVariableTs1_lo_j;
+    real_T RateLimiterVariableTs_lo_j;
     real_T RateLimiterVariableTs9_lo;
     real_T RateLimiterVariableTs_lo_c;
     real_T RateLimiterVariableTs3_lo_b;
@@ -294,11 +292,10 @@ class PitchNormalLaw final
     real_T RateLimiterVariableTs8_up;
     real_T RateLimiterVariableTs2_up_m;
     real_T RateLimiterVariableTs5_up;
-    real_T RateLimiterFlareLawTailstrikeProtection_up;
-    real_T RateLimiterDeltaEtaFlare_up;
-    real_T RateLimiterTheta_c_up;
-    real_T RateLimiterVariableTs9_up;
+    real_T RateLimiterVariableTs1_up_b;
     real_T RateLimiterVariableTs_up_n;
+    real_T RateLimiterVariableTs9_up;
+    real_T RateLimiterVariableTs_up_n5;
     real_T RateLimiterVariableTs3_up_i;
     real_T RateLimiterVariableTs4_up;
     real_T RateLimiterVariableTs_up_na;
@@ -317,7 +314,7 @@ class PitchNormalLaw final
     real_T LimitLo_bp02Data[5];
     real_T ConstantLo_Value;
     real_T LimitSwitchLo_Threshold;
-    real_T FlareLawTailstrikeProtectionLimitLo_Value;
+    real_T Constant1_Value;
     real_T qk_dot_gain1_Gain;
     real_T qk_gain_HSP_Gain;
     real_T v_dot_gain_HSP_Gain;
@@ -328,7 +325,7 @@ class PitchNormalLaw final
     real_T Saturation4_LowerSat;
     real_T Saturation8_UpperSat;
     real_T Saturation8_LowerSat;
-    real_T Constant1_Value;
+    real_T Constant1_Value_g;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
     real_T Constant1_Value_h;
@@ -451,7 +448,10 @@ class PitchNormalLaw final
     real_T Saturation3_LowerSat_lu;
     real_T Gain5_Gain_g;
     real_T Bias_Bias_g;
-    real_T Gain_Gain_d;
+    real_T Gain3_Gain_k;
+    real_T Delay_InitialCondition_i;
+    real_T Constant_Value_fu;
+    real_T Delay1_InitialCondition_d;
     real_T PLUT_tableData_bb[2];
     real_T PLUT_bp01Data_k[2];
     real_T DLUT_tableData_bf[2];
@@ -622,9 +622,9 @@ class PitchNormalLaw final
   static void PitchNormalLaw_WashoutFilter_Reset(rtDW_WashoutFilter_PitchNormalLaw_T *localDW);
   static void PitchNormalLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_WashoutFilter_PitchNormalLaw_T *localDW);
-  static void PitchNormalLaw_RateLimiter_a_Reset(rtDW_RateLimiter_PitchNormalLaw_a_T *localDW);
-  static void PitchNormalLaw_RateLimiter_f(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
-    real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_a_T *localDW);
+  static void PitchNormalLaw_RateLimiter_l_Reset(rtDW_RateLimiter_PitchNormalLaw_o_T *localDW);
+  static void PitchNormalLaw_RateLimiter_c(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
+    real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_o_T *localDW);
   static void PitchNormalLaw_VoterAttitudeProtection(real_T rtu_input, real_T rtu_input_l, real_T rtu_input_o, real_T
     *rty_vote);
 };
