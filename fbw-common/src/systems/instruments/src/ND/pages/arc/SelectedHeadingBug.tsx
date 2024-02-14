@@ -44,12 +44,11 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
     }, this.headingWord, this.isSelectedHeadingShown, this.diffSubject, this.props.mode);
 
     // eslint-disable-next-line
-    private readonly textShown = MappedSubject.create(([headingWord, selected, diff, mode]) => {
-        if (!headingWord.isNormalOperation()) {
+    private readonly textShown = MappedSubject.create(([headingWord, isShown, diff, mode]) => {
+        if (!isShown) {
             return false;
         }
-
-        if (selected < 0) {
+        if (!headingWord.isNormalOperation()) {
             return false;
         }
 
@@ -62,7 +61,7 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         }
 
         return Math.abs(diff) > 48;
-    }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
+    }, this.headingWord, this.isSelectedHeadingShown, this.diffSubject, this.props.mode);
 
     private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
         return `rotate(${diff} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
