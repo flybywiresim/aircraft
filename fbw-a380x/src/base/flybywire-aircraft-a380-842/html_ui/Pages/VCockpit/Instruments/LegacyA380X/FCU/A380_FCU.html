@@ -1,20 +1,5 @@
-<!--
-  ~ A32NX
-  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
-  ~
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <link rel="stylesheet" href="A380_FCU.css" />
 
@@ -25,11 +10,10 @@
             <div id="LargeScreen">
                 <div id="Speed">
                     <svg width="100%" height="100%">
-                        <text id="MACH" class="Common Inactive" x="0%" y="30%">MACH</text>
-                        <text id="SPD" class="Common Active" x="44%" y="20%">SPD</text>
+                        <text id="MACH" class="Common Inactive" x="0%" y="20%">MACH</text>
+                        <text id="SPD" class="Common Active" x="47%" y="20%">SPD</text>
                         <text id="Value" class="Common Value" x="6%" y="86%">---</text>
-                        <circle id="Illuminator" r="7%" cx="73%" cy="62%" />
-                        <text id="KNOTS" class="Common Active" x="79%" y="97%">KT</text>
+                        <text id="KNOTS" class="Common Inactive" x="79%" y="97%">KT</text>
                     </svg>
                 </div>
 
@@ -37,10 +21,8 @@
                     <svg width="100%" height="100%">
                         <text id="HDG" class="Common Active" x="13%" y="20%">HDG</text>
                         <text id="TRK" class="Common Inactive" x="47%" y="20%">TRK</text>
-                        <text id="LAT" class="Common Inactive" x="64%" y="20%">LAT</text>
                         <text id="Value" class="Common Value" x="11%" y="86%">---</text>
-                        <circle id="Illuminator" r="7%" cx="73%" cy="62%" />
-                        <text id="DEGREES" class="Common Active" x="80%" y="62%">&#176;</text>
+                        <text id="DEGREES" class="Common Value" x="86%" y="86%">&#176;</text>
                     </svg>
                 </div>
 
@@ -66,13 +48,14 @@
                 <div id="Selected">
                     <svg width="100%" height="100%">
                         <text id="QNH" class="Common Active BaroValue" x="5%" y="26%">QNH</text>
-                        <text id="QFE" class="Common Inactive BaroValue" x="84%" y="26%" text-anchor="end">QFE</text>
+                        <text id="QFE" class="Common Inactive BaroValue" x="40%" y="26%">QFE</text>
                         <text id="Value" class="Common Value BaroValue" x="4%" y="86%">00.00</text>
                     </svg>
                 </div>
                 <div id="Standard">
                     <svg width="100%" height="100%">
-                        <text class="Common Value BaroValue" x="4%" y="95%">Std</text>
+                        <text id="PreSelBaroValue" class="Common Active BaroValue" x="100%" y="26%" text-anchor="end">1013</text>
+                        <text class="Common Value BaroValue" x="4%" y="86%">Std</text>
                     </svg>
                 </div>
             </div>
@@ -87,7 +70,29 @@
             <img style="position: absolute; top: 2300px; left: 1130px" width="620px" src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/WX.png" />
             <img style="position: absolute; top: 2300px; left: 2080px" width="620px" src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/TERR.png" />
             <img style="position: absolute; top: 2300px; left: 3030px" width="620px" src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/TRAF.png" />
-            <img style="position: absolute; top: 2300px; left: 3980px   " width="620px" src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/POINTER2.png" />
+            <img style="position: absolute; top: 2300px; left: 3980px" width="620px" src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/POINTER2.png" />
+
+            <img style="position: absolute; top: 2900px; left: 300px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/CSTR.png" />
+            <img style="position: absolute; top: 2900px; left: 1190px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/WPT.png" />
+            <img style="position: absolute; top: 2900px; left: 2140px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/VORD.png" />
+            <img style="position: absolute; top: 2900px; left: 3090px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/NDB.png" />
+            <img style="position: absolute; top: 2900px; left: 4040px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/ARPT.png" />
+
+            <img style="position: absolute; top: 3450px; left: 300px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/POINTER1.png" />
+            <img style="position: absolute; top: 3450px; left: 1190px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/WX.png" />
+            <img style="position: absolute; top: 3450px; left: 2140px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/TERR.png" />
+            <img style="position: absolute; top: 3450px; left: 3090px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/TRAF.png" />
+            <img style="position: absolute; top: 3450px; left: 4040px" width="620px"
+                src="/Pages/VCockpit/Instruments/LegacyA380X/FCU/Images/POINTER2.png" />
         </div>
     </div>
 </script>

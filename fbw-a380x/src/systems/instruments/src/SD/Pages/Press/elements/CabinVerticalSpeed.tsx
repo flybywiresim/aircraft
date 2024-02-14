@@ -5,7 +5,8 @@ import React from 'react';
 
 const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
-    const cabinAltManMode = false;
+    const [cabinVsTarget] = useSimVar('L:A32NX_PRESS_CABIN_VS_TARGET', 'feet per minute', 500);
+    const [cabVsAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO', 'bool', 500);
 
     const radius = 88;
     const min = -2;
@@ -16,7 +17,7 @@ const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
     return (
         <>
             <g id="VsIndicator">
-                <text className="F29 LS1 Center Green" x={x - 109} y={y - 142}>{!cabinAltManMode ? 'AUTO' : 'MAN'}</text>
+                <text className="F29 LS1 Center Green" x={x - 109} y={y - 142}>{cabVsAutoMode ? 'AUTO' : 'MAN'}</text>
                 <text className="F29 LS1 Center White" x={x - 15} y={y - 142}>V/S</text>
                 <text className="F24 Center Cyan" x={x - 43} y={y - 105}>FT/MIN</text>
                 <text className={`F35 EndAlign  ${Math.abs(Math.round(cabinVs / 50) * 50) > 1800 ? 'GreenTextPulse' : 'Green'}`} x={x + 128} y={y + 13}>{Math.round(cabinVs / 50) * 50}</text>
@@ -104,7 +105,7 @@ const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
                         multiplierOuter={1.01}
                     />
                     <ThrottlePositionDonutComponent
-                        value={((cabinVs / 50) * 50) / 1000} // TODO: Change this once we have v/s target modelled
+                        value={((cabinVsTarget / 50) * 50) / 1000}
                         x={x}
                         y={y}
                         min={min}
@@ -112,7 +113,7 @@ const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className={`SW3 NoFill ${!cabinAltManMode ? 'Magenta' : 'Cyan'}`}
+                        className={`SW3 NoFill ${cabVsAutoMode ? 'Magenta' : 'Cyan'}`}
                         outerMultiplier={1.1}
                         donutRadius={6}
                     />

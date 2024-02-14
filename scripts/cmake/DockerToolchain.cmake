@@ -1,0 +1,8 @@
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR AMD64)
+
+set(MSFS_SDK "/workdir/MSFS_SDK")
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_WASM_LINKER "wasm-ld")
+set(CMAKE_WASM_OPTIMIZER "wasm-opt")

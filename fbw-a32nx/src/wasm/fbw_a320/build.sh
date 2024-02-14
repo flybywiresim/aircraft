@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) 2021-2023 FlyByWire Simulations
+#
+# SPDX-License-Identifier: GPL-3.0
+
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm/fbw_common"
@@ -13,7 +17,7 @@ else
   CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
-set -ex
+set -e
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
@@ -120,7 +124,7 @@ clang++ \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_mvZvttxs.cpp" \
+  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
@@ -138,11 +142,8 @@ clang++ \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 
-
 # restore directory
 popd
-
-
 
 # link modules
 wasm-ld \

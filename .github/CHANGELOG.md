@@ -22,6 +22,48 @@
 1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
 1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
 1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
+1. [OVHD] LDG ELEV now has auto position - @tracernz (Mike)
+1. [EFB] Added new F/O camera view, and adjusted captain view to suit new flyPad orientation - @tracernz (Mike)
+1. [OVHD] Fire button LEDs now split by power supply - @tracernz (Mike), @Repsol2k
+1. [OVHD] No PED Label instead of NO SMOKING when selected - @tracernz (Mike)
+1. [FWC/PANEL] GEAR NOT DOWN warnings added including red arrow on panel - @tracernz (Mike)
+1. [MODEL] Fixed some glaring issues with the flight deck model - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Replaced overhead decals - @Repsol2k
+1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Folding armrests - @Repsol2k
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
+1. [EWD] Fixed PACKS indication when no FADECS - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
+1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
+1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
+1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
+1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
+1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
+1. [FCU] Fixed SPD display in MACH mode to include decimal - @budzique (Joe Jackson)
+1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
+1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
+1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
+1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+1. [ND] Fixed manual/RMP tuning flags for ADFs - @tracernz (Mike)
+1. [EFCS] Freeze rudder trim when below 200 ft RA - @aguther (Andreas Guther)
+1. [AP] Tuning of Autoland especially in Crosswind situations - @aguther (Andreas Guther)
+1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
+1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
+1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
+1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
 
 ## 0.11.0

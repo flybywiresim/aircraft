@@ -1344,10 +1344,10 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
       bool elac2EmerPowersupplyNoseWheelCondition =
           elac2EmerPowersupplyNoseGearConditionLatch.update(noseGearNotUplocked, !elac2EmerPowersupplyRelayOutput);
 
-      bool blueLowPressure = !idHydBluePressurised->get();
+      bool blueHighPressure = idHydBluePressurised->get();
 
       bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput &&
-                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueLowPressure);
+                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
 
       powerSupplyAvailable = elac2EmerPowersupplyActive ? idElecBat2HotBusPowered->get() : idElecDcBus2Powered->get();
     }
@@ -1902,7 +1902,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.is_FLX_active = autoThrust.getExternalOutputs().out.data_computed.is_FLX_active;
     autopilotStateMachineInput.in.input.Slew_trigger = wasInSlew;
     autopilotStateMachineInput.in.input.MACH_mode = simData.is_mach_mode_active;
-    autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == 2);
+    autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
     autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
     autopilotStateMachineInput.in.input.FDR_event = idFdrEvent->get();
     autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
@@ -2039,7 +2039,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   // CAT3 requires two valid RA which are not simulated yet
   bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
   int numberOfAutopilotsEngaged = autopilotStateMachineOutput.enabled_AP1 + autopilotStateMachineOutput.enabled_AP2;
-  bool autoThrustEngaged = (autoThrustOutput.status == 2);
+  bool autoThrustEngaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
   bool radioAltimeterAvailable = (simData.H_radio_ft <= 5000);
   bool isCat1 = landModeArmedOrActive;
   bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
@@ -2529,13 +2529,13 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   idAutothrustN1_TLA_2->set(autoThrustOutput.N1_TLA_2_percent);
   idAutothrustReverse_1->set(autoThrustOutput.is_in_reverse_1);
   idAutothrustReverse_2->set(autoThrustOutput.is_in_reverse_2);
-  idAutothrustThrustLimitType->set(autoThrustOutput.thrust_limit_type);
+  idAutothrustThrustLimitType->set(static_cast<int32_t>(autoThrustOutput.thrust_limit_type));
   idAutothrustThrustLimit->set(autoThrustOutput.thrust_limit_percent);
   idAutothrustN1_c_1->set(autoThrustOutput.N1_c_1_percent);
   idAutothrustN1_c_2->set(autoThrustOutput.N1_c_2_percent);
-  idAutothrustStatus->set(autoThrustOutput.status);
-  idAutothrustMode->set(autoThrustOutput.mode);
-  idAutothrustModeMessage->set(autoThrustOutput.mode_message);
+  idAutothrustStatus->set((int32_t)autoThrustOutput.status);
+  idAutothrustMode->set(static_cast<int32_t>(autoThrustOutput.mode));
+  idAutothrustModeMessage->set(static_cast<int32_t>(autoThrustOutput.mode_message));
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();

@@ -1,3 +1,7 @@
+use super::{
+    AvionicsDataCommunicationNetworkEndpoint, AvionicsDataCommunicationNetworkMessageData,
+    AvionicsDataCommunicationNetworkMessageIdentifier,
+};
 use crate::{
     shared::{power_supply_relay::PowerSupplyRelay, ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -5,6 +9,8 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write,
     },
 };
+use fxhash::FxHashMap;
+use std::{cell::RefCell, rc::Rc};
 
 enum PowerSupply {
     Single(ElectricalBusType),
@@ -20,6 +26,14 @@ pub struct AvionicsFullDuplexSwitch {
     failure_indication: bool,
     available_id: VariableIdentifier,
     routing_update_required: bool,
+    adcn_messages: Rc<
+        RefCell<
+            FxHashMap<
+                AvionicsDataCommunicationNetworkMessageIdentifier,
+                AvionicsDataCommunicationNetworkMessageData,
+            >,
+        >,
+    >,
 }
 
 impl AvionicsFullDuplexSwitch {
@@ -37,6 +51,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -58,6 +73,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -81,8 +97,50 @@ impl AvionicsFullDuplexSwitch {
     pub fn routing_update_required(&self) -> bool {
         self.routing_update_required
     }
-}
 
+    pub fn get_adcn_messages(
+        &self,
+    ) -> Rc<
+        RefCell<
+            FxHashMap<
+                AvionicsDataCommunicationNetworkMessageIdentifier,
+                AvionicsDataCommunicationNetworkMessageData,
+            >,
+        >,
+    > {
+        self.adcn_messages.clone()
+    }
+
+    pub fn set_adcn_messages(
+        &mut self,
+        adcn_messages: Rc<
+            RefCell<
+                FxHashMap<
+                    AvionicsDataCommunicationNetworkMessageIdentifier,
+                    AvionicsDataCommunicationNetworkMessageData,
+                >,
+            >,
+        >,
+    ) {
+        self.adcn_messages = adcn_messages;
+    }
+}
+impl AvionicsDataCommunicationNetworkEndpoint for AvionicsFullDuplexSwitch {
+    fn recv_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+    ) -> Option<AvionicsDataCommunicationNetworkMessageData> {
+        self.adcn_messages.borrow().get(id).cloned()
+    }
+
+    fn send_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+        value: AvionicsDataCommunicationNetworkMessageData,
+    ) {
+        self.adcn_messages.borrow_mut().insert(*id, value);
+    }
+}
 impl SimulationElement for AvionicsFullDuplexSwitch {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         if let PowerSupply::Relay(ref mut power_supply_relay) = self.power_supply {

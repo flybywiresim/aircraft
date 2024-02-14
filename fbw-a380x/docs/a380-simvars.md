@@ -7,10 +7,11 @@
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
-  - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
-  - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
+  - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
+  - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
+  - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
 
@@ -79,9 +80,27 @@
         - ELEC_IDG_3
         - ELEC_IDG_4
 
+- A32NX_OVHD_{name}_PB_IS_DISC
+    - Bool
+    - True when the idg is disconnected
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+        - ELEC_IDG_3
+        - ELEC_IDG_4
+
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
+
+- A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
+    - Degrees
+    - Angular position of left nose wheel (in wheel axis not steering)
+
+- A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
+    - Degrees
+    - Angular position of right nose wheel (in wheel axis not steering)
+
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
@@ -171,6 +190,33 @@
         - FWD
         - AFT
 
+- A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
+    - Bool
+    - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
+
+- A32NX_PRESS_CABIN_ALTITUDE_TARGET
+    - Feet
+    - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
+
+- A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
+    - Number
+        - 0 if no failure
+        - 1 or 2 if single channel failure (for failed channel id)
+        - 3 if dual channel failure
+    - {id} 1 to 4
+
+- A32NX_PRESS_DIFF_PRESS_HI
+    - Bool
+    - True when FWC condition for "DIFF PRESS HI" is met (differential pressure between 8.92 and 9.2 PSI)
+
+- A32NX_PRESS_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
+
+- A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS NEGATIVE DIFF PRESS" is met (differential pressure lower than -0.72 PSI)
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
     - Rotation amount of the overhead temperature selectors for the cockpit and the cabin
@@ -215,6 +261,27 @@
 - A32NX_OVHD_CARGO_AIR_HEATER_PB_HAS_FAULT
     - Bool
     - True if the bulk cargo heater is failed
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual altitude pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_KNOB
+    - Feet
+    - Value in feet of the manually selected cabin target altitude on the overhead panel
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual vertical speed pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_KNOB
+    - Feet per minute
+    - Value in feet per minute of the manually selected cabin vertical speed on the overhead panel
+
+- A32NX_OVHD_VENT_AIR_EXTRACT_PB_IS_ON
+    - Bool
+    - True if the overhead manual extract vent override pushbutton is on (illuminated)
+
 
 ## Electrical ATA 24
 
@@ -477,7 +544,7 @@
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
 
-## ECAM Control Panel ATA 34
+## ECAM Control Panel ATA 31
 
 - A380X_ECAM_CP_SELECTED_PAGE
     - Enum
@@ -499,7 +566,7 @@
       F/CTL    | 12
       VIDEO    | 13
 
-## EFIS Control Panel ATA 34
+## EFIS Control Panel ATA 31
 
 - A380X_EFIS_{side}_LS_BUTTON_IS_ON
     - Boolean
@@ -545,6 +612,11 @@
     - Whether the TRAF button is activated
     - {side} = L or R
 
+- A380X_EFIS_{side}_BARO_PRESELECTED
+    - Number (hPa or inHg)
+    - Pre-selected QNH when in STD mode
+    - {side} = L or R
+
 ## Bleed Air ATA 36
 
 - A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE
@@ -580,6 +652,16 @@
 - A32NX_IOM_<NAME>_AVAIL
   - Bool
   - Indicates if a specific IOM system is available
+
+## Auxiliary Power Unit ATA 49
+
+- A32NX_APU_N2
+  - `Arinc429Word<Percent>`
+  - The APU's N2 rotations per minute in percentage of the maximum RPM
+
+- A32NX_APU_FUEL_USED
+  - `Arinc429Word<Mass>`
+  - The APU fuel used, in kilograms
 
 ## Hydraulics
 

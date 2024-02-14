@@ -187,13 +187,11 @@ export class NXApiConnector {
         const retval: AtsuMessage[] = [];
 
         if (NXApiConnector.connected) {
-            if (NXApiConnector.updateCounter++ % 4 === 0) {
-                const status = NXApiConnector.createAircraftStatus();
-                if (status !== undefined) {
-                    const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
-                    if (code !== AtsuStatusCodes.Ok) {
-                        return [AtsuStatusCodes.ComFailed, retval];
-                    }
+            const status = NXApiConnector.createAircraftStatus();
+            if (status !== undefined) {
+                const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
+                if (code !== AtsuStatusCodes.Ok) {
+                    return [AtsuStatusCodes.ComFailed, retval];
                 }
             }
 
@@ -217,10 +215,13 @@ export class NXApiConnector {
         return [AtsuStatusCodes.Ok, retval];
     }
 
+    /**
+     * Gets the interval to poll the NX API in milliseconds.
+     * Warning: This will return a different random time on each invocation!
+     * @returns The polling interval in milliseconds.
+     */
     public static pollInterval(): number {
-        return 15000;
+        // To relax the weight on API, we choose a random number between 45 and 75
+        return Math.random() * 30_000 + 45_000;
     }
 }
-
-NXDataStore.set('PLAN_ORIGIN', '');
-NXDataStore.set('PLAN_DESTINATION', '');
