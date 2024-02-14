@@ -34,7 +34,7 @@ import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 import { GenericFcuEvents } from './types/GenericFcuEvents';
 import { ArincEventBus } from '../../../shared/src/ArincEventBus';
-import { EfisNdMode, EfisSide, EfisNdRangeValue, efisRangeSettings } from '../NavigationDisplay';
+import { EfisNdMode, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
 import { MathUtils } from '../../../shared/src/MathUtils';
@@ -49,16 +49,18 @@ export const getDisplayIndex = () => {
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
-export interface NDProps {
+export interface NDProps<T extends number> {
     bus: ArincEventBus,
 
     side: EfisSide,
+
+    rangeValues: T[],
 }
 
-export class NDComponent extends DisplayComponent<NDProps> {
-    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
+export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly isUsingTrackUpMode = Subject.create(false);
 
@@ -74,17 +76,15 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly trueRefActive = Subject.create(false);
 
-    private readonly mapRangeRadius = Subject.create<EfisNdRangeValue>(10);
+    private readonly roseLSPage = FSComponent.createRef<RoseLSPage<T>>();
 
-    private readonly roseLSPage = FSComponent.createRef<RoseLSPage>();
+    private readonly roseVorPage = FSComponent.createRef<RoseVorPage<T>>();
 
-    private readonly roseVorPage = FSComponent.createRef<RoseVorPage>();
+    private readonly roseNavPage = FSComponent.createRef<RoseNavPage<T>>();
 
-    private readonly roseNavPage = FSComponent.createRef<RoseNavPage>();
+    private readonly arcPage = FSComponent.createRef<ArcModePage<T>>();
 
-    private readonly arcPage = FSComponent.createRef<ArcModePage>();
-
-    private readonly planPage = FSComponent.createRef<PlanModePage>();
+    private readonly planPage = FSComponent.createRef<PlanModePage<T>>();
 
     private currentPageMode = Subject.create(EfisNdMode.ARC);
 
@@ -152,8 +152,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
-        sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.mapRangeRadius.set(efisRangeSettings[value]);
+        sub.on('ndRangeSetting').whenChanged().handle(() => {
             this.invalidateRange();
         });
 
@@ -265,7 +264,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows ILS2  */
                         index={this.props.side === 'L' ? 2 : 1}
@@ -277,7 +276,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         /* Capt ND shows VOR1  */
                         index={this.props.side === 'L' ? 1 : 2}
@@ -289,12 +288,13 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius}
+                        rangeValues={this.props.rangeValues}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage
                         ref={this.arcPage}
                         bus={this.props.bus}
+                        rangeValues={this.props.rangeValues}
                         headingWord={this.headingWord}
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
@@ -304,6 +304,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <PlanModePage
                         ref={this.planPage}
                         bus={this.props.bus}
+                        rangeValues={this.props.rangeValues}
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
 
@@ -450,7 +451,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
         ([visible, boxed]) => visible && boxed,
         this.props.visible,
         this.props.boxed,
-    )
+    );
 
     private readonly boxX = MappedSubject.create(
         ([x]) => x - 34,
@@ -499,7 +500,7 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
     private gridTrackText = MappedSubject.create(
         ([gridTrack]) => gridTrack.toFixed(0).padStart(3, '0'),
         this.props.gridTrack,
-    )
+    );
 
     render(): VNode | null {
         return (
@@ -546,7 +547,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
-    )
+    );
 
     private readonly trueRefVisible = MappedSubject.create(
         ([isTrueRef, isPlanMode]) => isTrueRef && !isPlanMode,
@@ -561,7 +562,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         this.trueTrackWord,
         this.approachMessageValue,
         this.trueRefVisible,
-    )
+    );
 
     private readonly trueFlagX = MappedSubject.create(
         ([gridTrack]) => 384 + (gridTrack ? -50 : 4),
@@ -576,7 +577,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
     private readonly trueFlagBoxed = MappedSubject.create(
         ([apprMsg]) => apprMsg.length === 0,
         this.approachMessageValue,
-    )
+    );
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -657,7 +658,10 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly visibleSub = Subject.create(false);
 
     private readonly bearingContainerVisible = MappedSubject.create(
-        ([trueRef, bearing, trueBearing, isNormalOperation]) => isNormalOperation && Number.isFinite(trueRef ? trueBearing : bearing),
+        ([trueRef, bearing, trueBearing, isNormalOperation]) => {
+            const activeBearing = trueRef ? trueBearing : bearing;
+            return isNormalOperation && Number.isFinite(activeBearing) && activeBearing !== -1;
+        },
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
@@ -669,7 +673,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
-    )
+    );
 
     private readonly toWptIdentValue = Subject.create('');
 

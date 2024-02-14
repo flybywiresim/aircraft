@@ -220,9 +220,15 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new Fmgc.DataManager(this);
 
         this.efisInterface = new Fmgc.EfisInterface();
-        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterface);
-        this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.currFlightPlanService, this.navigation.getNavaidTuner(), this.efisInterface);
+        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterface, Fmgc.a320EfisRangeSettings);
+        this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
+        this.efisSymbols = new Fmgc.EfisSymbols(
+            this.guidanceController,
+            this.currFlightPlanService,
+            this.navigation.getNavaidTuner(),
+            this.efisInterface,
+            Fmgc.a320EfisRangeSettings,
+        );
 
         Fmgc.initFmgcLoop(this, this.currFlightPlanService);
 
@@ -2069,7 +2075,7 @@ class FMCMainDisplay extends BaseAirliners {
         let airportFrom, airportTo;
         try {
             airportFrom = await this.navigationDatabaseService.activeDatabase.searchAirport(from);
-            airportTo = await this.navigationDatabaseService.activeDatabase.searchAirport(from);
+            airportTo = await this.navigationDatabaseService.activeDatabase.searchAirport(to);
 
             if (!airportFrom || !airportTo) {
                 throw NXSystemMessages.notInDatabase;

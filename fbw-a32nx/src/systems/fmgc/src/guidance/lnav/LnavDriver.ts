@@ -14,12 +14,11 @@ import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadi
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseCaptureTransition';
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { distanceTo } from 'msfs-geo';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
@@ -105,7 +104,6 @@ export class LnavDriver implements GuidanceComponent {
                 if (LnavConfig.DEBUG_GUIDANCE) {
                     console.log('[FMS/LNAV] No leg at activeLegIdx!');
                 }
-
                 return;
             }
 
@@ -354,13 +352,9 @@ export class LnavDriver implements GuidanceComponent {
 
             SimVar.SetSimVarValue('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', dtg ?? 0);
 
-            // Update EFIS active waypoint info
-
-            this.updateEfisData(activeLeg, gs);
+            const flightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') as FmgcFlightPhase;
 
             // Sequencing
-
-            const flightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') as FmgcFlightPhase;
 
             const canSequence = !activeLeg.disableAutomaticSequencing && flightPhase >= FmgcFlightPhase.Takeoff;
 
@@ -434,41 +428,7 @@ export class LnavDriver implements GuidanceComponent {
         return undefined;
     }
 
-    /**
-     * Updates the EFIS TO WPT data
-     *
-     * @param activeLeg currently active display leg
-     * @param gs        current ground speed in knots
-     *
-     * @private
-     */
-    private updateEfisData(activeLeg: Leg, gs: Knots) {
-        const termination = activeLeg instanceof XFLeg ? activeLeg.fix.location : activeLeg.getPathEndPoint();
-
-        const efisTrueBearing = termination ? bearingTo(this.ppos, termination) : -1;
-        const efisBearing = termination ? A32NX_Util.trueToMagnetic(
-            efisTrueBearing,
-            Facilities.getMagVar(this.ppos.lat, this.ppos.long),
-        ) : -1;
-
-        // Don't compute distance and ETA for XM legs
-        const efisDistance = activeLeg instanceof VMLeg ? -1 : distanceTo(this.ppos, termination);
-        const efisEta = activeLeg instanceof VMLeg ? -1 : LnavDriver.legEta(this.ppos, gs, termination);
-
-        // FIXME should be NCD if no FM position
-
-        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_BEARING', 'Degrees', efisBearing);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING', 'Degrees', efisTrueBearing);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_DISTANCE', 'Number', efisDistance);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_ETA', 'Seconds', efisEta);
-
-        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_BEARING', 'Degrees', efisBearing);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_TRUE_BEARING', 'Degrees', efisTrueBearing);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_DISTANCE', 'Number', efisDistance);
-        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_ETA', 'Seconds', efisEta);
-    }
-
-    private static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
+    public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
         // FIXME use a more accurate estimate, calculate in predictions
 
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));

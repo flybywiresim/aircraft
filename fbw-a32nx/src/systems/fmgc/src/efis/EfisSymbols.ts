@@ -6,7 +6,7 @@ import {
     MathUtils, Airport, LegType,
     Runway, RunwaySurfaceType, VhfNavaidType,
     WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
-    NdSymbolTypeFlags, EfisNdRangeValue, efisRangeSettings, AltitudeDescriptor,
+    NdSymbolTypeFlags, AltitudeDescriptor,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -31,7 +31,7 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
-export class EfisSymbols {
+export class EfisSymbols<T extends number> {
     private blockUpdate = false;
 
     private guidanceController: GuidanceController;
@@ -67,6 +67,7 @@ export class EfisSymbols {
         private readonly flightPlanService: FlightPlanService,
         private readonly navaidTuner: NavaidTuner,
         private readonly efisInterface: EfisInterface,
+        private readonly rangeValues: T[],
     ) {
         this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
@@ -160,7 +161,7 @@ export class EfisSymbols {
         const hasSuitableRunway = (airport: Airport): boolean => airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
         for (const side of EfisSymbols.sides) {
-            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
@@ -728,7 +729,7 @@ export class EfisSymbols {
         }
     }
 
-    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
+    private calculateEditArea(range: T, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
         case EfisNdMode.ARC:
             if (range <= 10) {
