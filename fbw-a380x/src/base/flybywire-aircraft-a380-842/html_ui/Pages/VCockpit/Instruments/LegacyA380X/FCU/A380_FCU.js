@@ -1327,7 +1327,6 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
             SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
         } else if (preSelValue > 800 && _isHGUnit) {
             preSelValue = Math.round(preSelValue * 0.02953 * 100) / 100;
-            console.log(preSelValue);
             SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
         }
 
