@@ -139,15 +139,15 @@ impl A380HydraulicReservoirFactory {
         Reservoir::new(
             context,
             HydraulicColor::Green,
-            Volume::new::<liter>(23.),
-            Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6) + reservoir_offset_when_gear_up,
+            Volume::new::<liter>(100.),
+            Volume::new::<liter>(90.),
+            Volume::new::<gallon>(12.) + reservoir_offset_when_gear_up,
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
-                Pressure::new::<psi>(22.),
+                Pressure::new::<psi>(21.76),
                 PressureSwitchType::Relative,
             )],
-            Volume::new::<liter>(3.),
+            Volume::new::<liter>(5.),
         )
     }
 
@@ -155,15 +155,15 @@ impl A380HydraulicReservoirFactory {
         Reservoir::new(
             context,
             HydraulicColor::Yellow,
-            Volume::new::<liter>(20.),
-            Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6),
+            Volume::new::<liter>(100.),
+            Volume::new::<liter>(90.),
+            Volume::new::<gallon>(12.7),
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
-                Pressure::new::<psi>(22.),
+                Pressure::new::<psi>(21.76),
                 PressureSwitchType::Relative,
             )],
-            Volume::new::<liter>(3.),
+            Volume::new::<liter>(5.),
         )
     }
 }
