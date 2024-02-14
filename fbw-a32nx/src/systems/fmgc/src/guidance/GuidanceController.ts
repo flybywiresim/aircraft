@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, efisRangeSettings, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -28,6 +28,8 @@ import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
+import { XFLeg } from './lnav/legs/XF';
+import { VMLeg } from './lnav/legs/VM';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -135,13 +137,13 @@ export class GuidanceController {
 
     automaticSequencing: boolean = true;
 
-    leftEfisState: EfisState
+    leftEfisState: EfisState<number>;
 
-    rightEfisState: EfisState
+    rightEfisState: EfisState<number>;
 
-    efisStateForSide: { L: EfisState, R: EfisState }
+    efisStateForSide: { L: EfisState<number>, R: EfisState<number> };
 
-    private approachMessage: string = ''
+    private approachMessage: string = '';
 
     taskQueue = new TaskQueue();
 
@@ -153,9 +155,9 @@ export class GuidanceController {
 
     private atmosphericConditions: AtmosphericConditions;
 
-    private updateEfisState(side: EfisSide, state: EfisState): void {
+    private updateEfisState(side: EfisSide, state: EfisState<number>): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
-        const ndRange = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
+        const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
             this.taskQueue.cancelAllInCategory(TaskCategory.EfisVectors);
@@ -284,7 +286,46 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface) {
+    private updateEfisData() {
+        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
+        const flightPhase = getFlightPhaseManager().phase;
+        const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
+        const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
+        if (activeLeg) {
+            const termination = activeLeg instanceof XFLeg ? activeLeg.terminationWaypoint.location : activeLeg.getPathEndPoint();
+            const ppos = this.lnavDriver.ppos;
+            const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
+            const efisBearing = termination ? A32NX_Util.trueToMagnetic(
+                efisTrueBearing,
+                Facilities.getMagVar(ppos.lat, ppos.long),
+            ) : -1;
+
+            // Don't compute distance and ETA for XM legs
+            const efisDistance = activeLeg instanceof VMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
+            const efisEta = activeLeg instanceof VMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination);
+
+            // FIXME should be NCD if no FM position
+            this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
+            this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'R');
+        } else {
+            this.updateEfisVars(-1, -1, -1, -1, 'L');
+            this.updateEfisVars(-1, -1, -1, -1, 'R');
+        }
+    }
+
+    private updateEfisVars(bearing: number, trueBearing: number, distance: number, eta: number, side: string): void {
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_BEARING`, 'Degrees', bearing);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, 'Degrees', trueBearing);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number', distance);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds', eta);
+    }
+
+    constructor(
+        fmgc: Fmgc,
+        private readonly flightPlanService: FlightPlanService,
+        private efisInterface: EfisInterface,
+        private readonly efisNDRangeValues: number[],
+    ) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
@@ -413,6 +454,8 @@ export class GuidanceController {
             console.error('[FMS] Error during LNAV driver update. See exception below.');
             console.error(e);
         }
+
+        this.updateEfisData();
 
         try {
             this.vnavDriver.update(deltaTime);

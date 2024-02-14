@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_FacComputer_types_h_
 #define RTW_HEADER_FacComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
@@ -453,85 +452,6 @@ struct fac_outputs
   base_fac_discrete_outputs discrete_outputs;
   base_fac_analog_outputs analog_outputs;
   base_fac_bus bus_outputs;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-#define DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-
-struct struct_2OohiAWrazWy5wDS5iisgF
-{
-  real_T SSM;
-  real_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_fAEsrEZhvvruiP1ICEwvRC_
-#define DEFINED_TYPEDEF_FOR_struct_fAEsrEZhvvruiP1ICEwvRC_
-
-struct struct_fAEsrEZhvvruiP1ICEwvRC
-{
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF gamma_a_deg;
-  struct_2OohiAWrazWy5wDS5iisgF gamma_t_deg;
-  struct_2OohiAWrazWy5wDS5iisgF total_weight_lbs;
-  struct_2OohiAWrazWy5wDS5iisgF center_of_gravity_pos_percent;
-  struct_2OohiAWrazWy5wDS5iisgF sideslip_target_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fac_slat_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fac_flap_angle;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_2;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_travel_limit_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_yaw_damper_deg;
-  struct_2OohiAWrazWy5wDS5iisgF estimated_sideslip_deg;
-  struct_2OohiAWrazWy5wDS5iisgF v_alpha_lim_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_ls_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_stall_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_alpha_prot_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_stall_warn_kn;
-  struct_2OohiAWrazWy5wDS5iisgF speed_trend_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_3_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_4_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_man_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_max_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_fe_next_kn;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_3;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_4;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_5;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_rudder_trim_deg;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_trim_pos_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
-#define DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
-
-struct struct_NHciy9HFthvyJ1C8wWfWlB
-{
-  real_T estimated_beta_deg;
-  real_T beta_target_deg;
-  boolean_T beta_target_visible;
-  boolean_T alpha_floor_condition;
-  real_T alpha_filtered_deg;
-  real_T computed_weight_lbs;
-  real_T computed_cg_percent;
-  real_T v_alpha_max_kn;
-  real_T v_alpha_prot_kn;
-  real_T v_stall_warn_kn;
-  real_T v_ls_kn;
-  real_T v_stall_kn;
-  real_T v_3_kn;
-  boolean_T v_3_visible;
-  real_T v_4_kn;
-  boolean_T v_4_visible;
-  real_T v_man_kn;
-  boolean_T v_man_visible;
-  real_T v_max_kn;
-  real_T v_fe_next_kn;
-  real_T v_fe_next_visible;
-  real_T v_c_trend_kn;
 };
 
 #endif

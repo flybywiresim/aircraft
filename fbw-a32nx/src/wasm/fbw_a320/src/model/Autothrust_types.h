@@ -1,38 +1,39 @@
 #ifndef RTW_HEADER_Autothrust_types_h_
 #define RTW_HEADER_Autothrust_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_
 #define DEFINED_TYPEDEF_FOR_athr_mode_
 
-typedef enum {
-  athr_mode_NONE = 0,
-  athr_mode_MAN_TOGA,
-  athr_mode_MAN_GA_SOFT,
-  athr_mode_MAN_FLEX,
-  athr_mode_MAN_DTO,
-  athr_mode_MAN_MCT,
-  athr_mode_MAN_THR,
-  athr_mode_SPEED,
-  athr_mode_MACH,
-  athr_mode_THR_MCT,
-  athr_mode_THR_CLB,
-  athr_mode_THR_LVR,
-  athr_mode_THR_IDLE,
-  athr_mode_A_FLOOR,
-  athr_mode_TOGA_LK
-} athr_mode;
+enum class athr_mode
+  : int32_T {
+  NONE = 0,
+  MAN_TOGA,
+  MAN_GA_SOFT,
+  MAN_FLEX,
+  MAN_DTO,
+  MAN_MCT,
+  MAN_THR,
+  SPEED,
+  MACH,
+  THR_MCT,
+  THR_CLB,
+  THR_LVR,
+  THR_IDLE,
+  A_FLOOR,
+  TOGA_LK
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_status_
 #define DEFINED_TYPEDEF_FOR_athr_status_
 
-typedef enum {
-  athr_status_DISENGAGED = 0,
-  athr_status_ENGAGED_ARMED,
-  athr_status_ENGAGED_ACTIVE
-} athr_status;
+enum class athr_status
+  : int32_T {
+  DISENGAGED = 0,
+  ENGAGED_ARMED,
+  ENGAGED_ACTIVE
+};
 
 #endif
 
@@ -145,28 +146,30 @@ struct athr_in
 #ifndef DEFINED_TYPEDEF_FOR_athr_thrust_limit_type_
 #define DEFINED_TYPEDEF_FOR_athr_thrust_limit_type_
 
-typedef enum {
-  athr_thrust_limit_type_NONE = 0,
-  athr_thrust_limit_type_CLB,
-  athr_thrust_limit_type_MCT,
-  athr_thrust_limit_type_FLEX,
-  athr_thrust_limit_type_TOGA,
-  athr_thrust_limit_type_REVERSE
-} athr_thrust_limit_type;
+enum class athr_thrust_limit_type
+  : int32_T {
+  NONE = 0,
+  CLB,
+  MCT,
+  FLEX,
+  TOGA,
+  REVERSE
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_message_
 #define DEFINED_TYPEDEF_FOR_athr_mode_message_
 
-typedef enum {
-  athr_mode_message_NONE = 0,
-  athr_mode_message_THR_LK,
-  athr_mode_message_LVR_TOGA,
-  athr_mode_message_LVR_CLB,
-  athr_mode_message_LVR_MCT,
-  athr_mode_message_LVR_ASYM
-} athr_mode_message;
+enum class athr_mode_message
+  : int32_T {
+  NONE = 0,
+  THR_LK,
+  LVR_TOGA,
+  LVR_CLB,
+  LVR_MCT,
+  LVR_ASYM
+};
 
 #endif
 

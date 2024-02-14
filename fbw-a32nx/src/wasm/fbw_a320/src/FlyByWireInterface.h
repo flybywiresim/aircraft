@@ -124,8 +124,8 @@ class FlyByWireInterface {
   AutopilotLawsModelClass::ExternalInputs_AutopilotLaws_T autopilotLawsInput = {};
   ap_raw_output autopilotLawsOutput;
 
-  AutothrustModelClass autoThrust;
-  AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
+  Autothrust autoThrust;
+  Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
   base_ra_bus raBusOutputs[2] = {};
