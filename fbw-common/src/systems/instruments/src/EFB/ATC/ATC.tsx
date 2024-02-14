@@ -242,7 +242,7 @@ export const ATC = () => {
                                 .filter((c) => filterControllers(c))
                                 .map((controller, index) => (
                                     <FrequencyCard
-                                        key={controller.frequency}
+                                        key={controller.callsign}
                                         className={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
                                         callsign={controller.callsign}
                                         frequency={controller.frequency}
