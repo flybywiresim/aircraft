@@ -1,8 +1,6 @@
 #include "AutopilotStateMachine.h"
-#include "AutopilotStateMachine_private.h"
 
-AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotStateMachineModelClass::
-  AutopilotStateMachine_P{
+AutopilotStateMachine::Parameters_AutopilotStateMachine_T AutopilotStateMachine::AutopilotStateMachine_P{
 
   {
     {
@@ -137,7 +135,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       0.0,
-      fm_requested_vertical_mode_NONE,
+      fm_requested_vertical_mode::NONE,
       0.0,
       0.0,
       false,
@@ -167,10 +165,10 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       },
 
       {
-        lateral_mode_NONE,
+        lateral_mode::NONE,
         false,
         false,
-        lateral_law_NONE,
+        lateral_law::NONE,
         0.0
       }
     },
@@ -192,10 +190,10 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       },
 
       {
-        lateral_mode_NONE,
+        lateral_mode::NONE,
         false,
         false,
-        lateral_law_NONE,
+        lateral_law::NONE,
         0.0
       }
     },
@@ -232,12 +230,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       },
 
       {
-        vertical_mode_NONE,
-        athr_requested_mode_NONE,
+        vertical_mode::NONE,
+        athr_requested_mode::NONE,
         false,
         0.0,
         false,
-        vertical_law_NONE,
+        vertical_law::NONE,
         0.0,
         0.0,
         0.0,
@@ -248,7 +246,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         false,
-        NONE,
+        tcas_sub_mode::NONE,
         false,
         false,
         false,
@@ -288,12 +286,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       },
 
       {
-        vertical_mode_NONE,
-        athr_requested_mode_NONE,
+        vertical_mode::NONE,
+        athr_requested_mode::NONE,
         false,
         0.0,
         false,
-        vertical_law_NONE,
+        vertical_law::NONE,
         0.0,
         0.0,
         0.0,
@@ -304,7 +302,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         false,
-        NONE,
+        tcas_sub_mode::NONE,
         false,
         false,
         false,
@@ -474,12 +472,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
     },
 
     {
-      vertical_mode_NONE,
-      athr_requested_mode_NONE,
+      vertical_mode::NONE,
+      athr_requested_mode::NONE,
       false,
       0.0,
       false,
-      vertical_law_NONE,
+      vertical_law::NONE,
       0.0,
       0.0,
       0.0,
@@ -490,7 +488,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
-      NONE,
+      tcas_sub_mode::NONE,
       false,
       false,
       false,
@@ -516,10 +514,10 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
     },
 
     {
-      lateral_mode_NONE,
+      lateral_mode::NONE,
       false,
       false,
-      lateral_law_NONE,
+      lateral_law::NONE,
       0.0
     }
   },
