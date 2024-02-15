@@ -101,6 +101,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
         if (idx >= 0) {
             const legIndex = this.availableWaypointsToLegIndex[idx];
+            this.props.fmcService.master?.setRevisedWaypoint(legIndex, FlightPlanIndex.Active, false);
             if (legIndex !== undefined) {
                 this.selectedWaypointIndex.set(idx);
                 this.manualWptIdent = null;
