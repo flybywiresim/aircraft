@@ -41,7 +41,7 @@ AudioMarkerListen=True
 AudioDmeListen=False
 AudioAdfListen=False
 AudioAdf2Listen=False
-AvionicsSwitch=False
+AvionicsSwitch=True
 
 [Engine Parameters.1.0]
 ThrottleLeverPct=0
