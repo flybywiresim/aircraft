@@ -143,9 +143,9 @@ class AutopilotLawsModelClass final
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_k;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_g;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_hp;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_a;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_k;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_cs;
-    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_a;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_g;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_d;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_m;
@@ -241,7 +241,7 @@ class AutopilotLawsModelClass final
     real_T LowPassFilter_C1_d1;
     real_T LagFilter_C1_b;
     real_T LagFilter_C1_gh;
-    real_T WashoutFilter1_C1_h;
+    real_T WashoutFilterBeta_c_C1;
     real_T LagFilter_C1_i;
     real_T LagFilter1_C1_d;
     real_T HighPassFilter_C2;
@@ -1000,7 +1000,6 @@ class AutopilotLawsModelClass final
     rtu_VS_AP, real_T rtu_VLS_FD, real_T rtu_VLS_AP, real_T rtu_VMAX_FD, real_T rtu_VMAX_AP, real_T rtu_margin, real_T
     *rty_FD, real_T *rty_AP);
   static void AutopilotLaws_VSLimiter(real_T rtu_u, const ap_laws_output *rtu_in, real_T *rty_y);
-  static void AutopilotLaws_VSLimiter_f(real_T rtu_u, const ap_laws_output *rtu_in, real_T *rty_y);
   static void AutopilotLaws_SignalEnablerGSTrack(real_T rtu_u, boolean_T rtu_e, real_T *rty_y);
   static void AutopilotLaws_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };
