@@ -15,8 +15,12 @@ const BatRoot = () => {
         setSelectedBattery(0);
     }
 
+    // mapping of knob (lvar) values to battery numbers to allow easy lvar and model values
+    const batteryMap = [4, 3, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
+    const batteryNumber = batteryMap[selectedBattery];
+
     // OVHD BAT selector is OFF
-    if (selectedBattery === 0) {
+    if (batteryNumber === 0) {
         return (
             <></>
         );
@@ -24,7 +28,7 @@ const BatRoot = () => {
 
     return (
         <svg className="bat-svg" viewBox="0 0 200 100">
-            <BatDisplay batteryNumber={selectedBattery} x="184" y="45"/>
+            <BatDisplay batteryNumber={batteryNumber} x="184" y="45"/>
         </svg>
     );
 };
