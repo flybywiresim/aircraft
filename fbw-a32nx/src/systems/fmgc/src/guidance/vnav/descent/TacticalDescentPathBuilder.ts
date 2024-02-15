@@ -1,4 +1,5 @@
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -51,8 +52,8 @@ export type DecelerationSchedule = {
 export class TacticalDescentPathBuilder {
     private levelFlightStrategy: VerticalSpeedStrategy;
 
-    constructor(private observer: VerticalProfileComputationParametersObserver, atmosphericConditions: AtmosphericConditions) {
-        this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0);
+    constructor(private observer: VerticalProfileComputationParametersObserver, atmosphericConditions: AtmosphericConditions, private readonly acConfig: AircraftConfig) {
+        this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0, this.acConfig);
     }
 
     /**
