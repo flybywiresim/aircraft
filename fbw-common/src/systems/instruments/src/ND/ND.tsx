@@ -658,7 +658,10 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly visibleSub = Subject.create(false);
 
     private readonly bearingContainerVisible = MappedSubject.create(
-        ([trueRef, bearing, trueBearing, isNormalOperation]) => isNormalOperation && Number.isFinite(trueRef ? trueBearing : bearing),
+        ([trueRef, bearing, trueBearing, isNormalOperation]) => {
+            const activeBearing = trueRef ? trueBearing : bearing;
+            return isNormalOperation && Number.isFinite(activeBearing) && activeBearing !== -1;
+        },
         this.trueRefActive,
         this.bearing,
         this.trueBearing,

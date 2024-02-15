@@ -135,7 +135,8 @@ class AutopilotStateMachine final
     boolean_T sTCAS_l;
     boolean_T wasFlightPlanAvailable;
     boolean_T wasFlightPlanAvailable_not_empty;
-    boolean_T state_c;
+    boolean_T wasInSrsGa;
+    boolean_T state_d;
     boolean_T state_k;
     boolean_T state_j;
     boolean_T sFINAL_DES;

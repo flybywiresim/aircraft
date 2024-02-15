@@ -33,10 +33,9 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class EfisSymbols<T extends number> {
-    /** these types of legs are current not integrated into the normal symbol drawing routines */
-    static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
-
     private blockUpdate = false;
+
+    private guidanceController: GuidanceController;
 
     private nearby: NearbyFacilities;
 
@@ -65,12 +64,13 @@ export class EfisSymbols<T extends number> {
     private lastEfisInterfaceVersion: number = -1;
 
     constructor(
-        private readonly guidanceController: GuidanceController,
+        guidanceController: GuidanceController,
         private readonly flightPlanService: FlightPlanService,
         private readonly navaidTuner: NavaidTuner,
         private readonly efisInterface: EfisInterface,
         private readonly rangeValues: T[],
     ) {
+        this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
     }
 

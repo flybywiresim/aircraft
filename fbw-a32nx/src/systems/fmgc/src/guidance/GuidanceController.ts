@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType, Knots } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -27,9 +27,10 @@ import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
-import { Feet, NauticalMiles } from 'msfs-geo';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
+import { XFLeg } from './lnav/legs/XF';
+import { VMLeg } from './lnav/legs/VM';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -40,21 +41,21 @@ export interface Fmgc {
     getV2Speed(): Knots;
     getTropoPause(): Feet;
     getManagedClimbSpeed(): Knots;
-    getManagedClimbSpeedMach(): number;
+    getManagedClimbSpeedMach(): Mach;
     getAccelerationAltitude(): Feet,
     getThrustReductionAltitude(): Feet,
     getOriginTransitionAltitude(): Feet | undefined,
     getCruiseAltitude(): Feet,
     getFlightPhase(): FmgcFlightPhase,
     getManagedCruiseSpeed(): Knots,
-    getManagedCruiseSpeedMach(): number,
+    getManagedCruiseSpeedMach(): Mach,
     getClimbSpeedLimit(): SpeedLimit,
     getDescentSpeedLimit(): SpeedLimit,
     getPreSelectedClbSpeed(): Knots,
     getPreSelectedCruiseSpeed(): Knots,
     getTakeoffFlapsSetting(): FlapConf | undefined
     getManagedDescentSpeed(): Knots,
-    getManagedDescentSpeedMach(): number,
+    getManagedDescentSpeedMach(): Mach,
     getApproachSpeed(): Knots,
     getFlapRetractionSpeed(): Knots,
     getSlatRetractionSpeed(): Knots,
@@ -286,9 +287,43 @@ export class GuidanceController {
         }
     }
 
+    private updateEfisData() {
+        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
+        const flightPhase = getFlightPhaseManager().phase;
+        const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
+        const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
+        if (activeLeg) {
+            const termination = activeLeg instanceof XFLeg ? activeLeg.terminationWaypoint.location : activeLeg.getPathEndPoint();
+            const ppos = this.lnavDriver.ppos;
+            const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
+            const efisBearing = termination ? A32NX_Util.trueToMagnetic(
+                efisTrueBearing,
+                Facilities.getMagVar(ppos.lat, ppos.long),
+            ) : -1;
+
+            // Don't compute distance and ETA for XM legs
+            const efisDistance = activeLeg instanceof VMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
+            const efisEta = activeLeg instanceof VMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination, this.acConfig);
+
+            // FIXME should be NCD if no FM position
+            this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
+            this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'R');
+        } else {
+            this.updateEfisVars(-1, -1, -1, -1, 'L');
+            this.updateEfisVars(-1, -1, -1, -1, 'R');
+        }
+    }
+
+    private updateEfisVars(bearing: number, trueBearing: number, distance: number, eta: number, side: string): void {
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_BEARING`, 'Degrees', bearing);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, 'Degrees', trueBearing);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number', distance);
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds', eta);
+    }
+
     constructor(
         fmgc: Fmgc,
-        public flightPlanService: FlightPlanService,
+        private readonly flightPlanService: FlightPlanService,
         private efisInterface: EfisInterface,
         private readonly efisNDRangeValues: number[],
         private readonly acConfig: AircraftConfig,
@@ -298,8 +333,8 @@ export class GuidanceController {
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-        this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
-        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, this.acConfig);
+        this.lnavDriver = new LnavDriver(flightPlanService, this, acConfig);
+        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, acConfig);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
         this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterface);
     }
@@ -421,6 +456,8 @@ export class GuidanceController {
             console.error('[FMS] Error during LNAV driver update. See exception below.');
             console.error(e);
         }
+
+        this.updateEfisData();
 
         try {
             this.vnavDriver.update(deltaTime);

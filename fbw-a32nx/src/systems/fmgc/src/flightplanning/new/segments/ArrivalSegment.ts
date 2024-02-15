@@ -46,8 +46,8 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
         const { destinationAirport, destinationRunway } = this.flightPlan.destinationSegment;
 
-        if (!destinationAirport || !destinationRunway) {
-            throw new Error('[FMS/FPM] Cannot set approach without destination airport and runway');
+        if (!destinationAirport) {
+            throw new Error('[FMS/FPM] Cannot set approach without destination airport');
         }
 
         const arrivals = await db.getArrivals(destinationAirport.ident);
@@ -90,7 +90,7 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
         this.allLegs.push(...mappedArrivalLegs);
 
-        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(destinationRunway.ident);
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(destinationRunway?.ident);
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
