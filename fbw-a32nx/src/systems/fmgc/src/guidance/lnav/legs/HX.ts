@@ -13,7 +13,6 @@ import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuida
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
-import { placeBearingDistance } from 'msfs-geo';
 import { PathVector, PathVectorType } from '../PathVector';
 
 interface HxGeometry {
@@ -144,31 +143,36 @@ abstract class HXLeg extends XFLeg {
         const radius = this.radius;
         const turnSign = this.turnDirection === TurnDirection.Left ? -1 : 1;
 
-        const fixA = placeBearingDistance(
-            this.fix.location,
+        const fixA = Avionics.Utils.bearingDistanceToCoordinates(
             this.inboundLegCourse + turnSign * 90,
             radius * 2,
+            this.fix.location.lat,
+            this.fix.location.long,
         );
-        const fixB = placeBearingDistance(
-            fixA,
+        const fixB = Avionics.Utils.bearingDistanceToCoordinates(
             this.outboundLegCourse,
             legLength,
+            fixA.lat,
+            fixA.long,
         );
-        const fixC = placeBearingDistance(
-            this.fix.location,
+        const fixC = Avionics.Utils.bearingDistanceToCoordinates(
             this.outboundLegCourse,
             legLength,
+            this.fix.location.lat,
+            this.fix.location.long,
         );
 
-        const arcCentreFix1 = placeBearingDistance(
-            this.fix.location,
+        const arcCentreFix1 = Avionics.Utils.bearingDistanceToCoordinates(
             this.inboundLegCourse + turnSign * 90,
             radius,
+            this.fix.location.lat,
+            this.fix.location.long,
         );
-        const arcCentreFix2 = placeBearingDistance(
-            fixC,
+        const arcCentreFix2 = Avionics.Utils.bearingDistanceToCoordinates(
             this.inboundLegCourse + turnSign * 90,
             radius,
+            fixC.lat,
+            fixC.long,
         );
 
         return {

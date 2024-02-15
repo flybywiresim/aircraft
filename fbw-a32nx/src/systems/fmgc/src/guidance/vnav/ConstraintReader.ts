@@ -13,7 +13,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
@@ -43,7 +42,7 @@ export class ConstraintReader {
     public finalDescentAngle = -3;
 
     // If you change this property here, make sure you also reset it properly in `reset`
-    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
+    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.FEET_TO_NAUTICAL_MILES;
 
     public get distanceToPresentPosition(): NauticalMiles {
         return this.totalFlightPlanDistance - this.distanceToEnd;
@@ -94,11 +93,19 @@ export class ConstraintReader {
             const speedConstraint = leg.speedConstraint;
 
             if (leg.constraintType === WaypointConstraintType.CLB) {
-                if (altConstraint && altConstraint.type !== AltitudeConstraintType.atOrAbove) {
-                    this.climbAlitudeConstraints.push({
-                        distanceFromStart: legDistanceFromStart,
-                        maxAltitude: altConstraint.altitude1,
-                    });
+                if (altConstraint) {
+                    switch (altConstraint.altitudeDescriptor) {
+                    case '@': // at alt 1
+                    case '-': // at or below alt 1
+                    case 'B': // between alt 1 and alt 2
+                        this.climbAlitudeConstraints.push({
+                            distanceFromStart: legDistanceFromStart,
+                            maxAltitude: altConstraint.altitude1,
+                        });
+                        break;
+                    default:
+                        // not constraining
+                    }
                 }
 
                 if (speedConstraint && speedConstraint.speed > 100) {
@@ -109,10 +116,27 @@ export class ConstraintReader {
                 }
             } else if (leg.constraintType === WaypointConstraintType.DES) {
                 if (altConstraint) {
-                    this.descentAltitudeConstraints.push({
-                        distanceFromStart: legDistanceFromStart,
-                        constraint: altConstraint,
-                    });
+                    switch (altConstraint.altitudeDescriptor) {
+                    case '@': // at alt 1
+                    case '+': // at or above alt 1
+                    case 'I': // alt1 is at for FACF, Alt2 is glidelope intercept
+                    case 'J': // alt1 is at or above for FACF, Alt2 is glideslope intercept
+                    case 'V': // alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
+                    case 'X': // alt 1 is at, Alt 2 is on the vertical angle
+                        this.descentAltitudeConstraints.push({
+                            distanceFromStart: legDistanceFromStart,
+                            constraint: altConstraint,
+                        });
+                        break;
+                    case 'B': // between alt 1 and alt 2
+                        this.descentAltitudeConstraints.push({
+                            distanceFromStart: legDistanceFromStart,
+                            constraint: altConstraint,
+                        });
+                        break;
+                    default:
+                            // not constraining
+                    }
                 }
 
                 if (speedConstraint && speedConstraint.speed > 100) {
@@ -184,7 +208,7 @@ export class ConstraintReader {
 
         this.totalFlightPlanDistance = 0;
         this.finalDescentAngle = -3;
-        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
+        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.FEET_TO_NAUTICAL_MILES;
         this.finalAltitude = 50;
     }
 

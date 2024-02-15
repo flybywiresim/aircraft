@@ -9,7 +9,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
 /**
  * Loads an airport from the navigation database
  *
- * @param icao airport icao code
+ * @param icao 4-char airport icao code
  *
  * @throws if the airport is not found
  */

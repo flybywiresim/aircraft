@@ -303,7 +303,7 @@ export class GuidanceController {
 
             // Don't compute distance and ETA for XM legs
             const efisDistance = activeLeg instanceof VMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-            const efisEta = activeLeg instanceof VMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination, this.acConfig);
+            const efisEta = activeLeg instanceof VMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination);
 
             // FIXME should be NCD if no FM position
             this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');

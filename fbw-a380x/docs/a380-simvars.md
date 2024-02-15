@@ -8,8 +8,8 @@
   - [Auto Flight System ATA 22](#afs-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
-  - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
-  - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
+  - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
+  - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -554,7 +554,7 @@
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
 
-## ECAM Control Panel ATA 34
+## ECAM Control Panel ATA 31
 
 - A380X_ECAM_CP_SELECTED_PAGE
     - Enum
@@ -576,7 +576,7 @@
       F/CTL    | 12
       VIDEO    | 13
 
-## EFIS Control Panel ATA 34
+## EFIS Control Panel ATA 31
 
 - A380X_EFIS_{side}_LS_BUTTON_IS_ON
     - Boolean
@@ -620,6 +620,11 @@
 - A380X_EFIS_{side}_TRAF_BUTTON_IS_ON
     - Boolean
     - Whether the TRAF button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_BARO_PRESELECTED
+    - Number (hPa or inHg)
+    - Pre-selected QNH when in STD mode
     - {side} = L or R
 
 ## Bleed Air ATA 36

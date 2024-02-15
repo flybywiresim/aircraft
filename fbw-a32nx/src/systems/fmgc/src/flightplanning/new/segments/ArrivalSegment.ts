@@ -71,10 +71,6 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
         if (oldArrivalName !== matchingArrival.ident) {
             // Clear enroute transition if arrival is different
             this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
-
-            // Changing the arrival should trigger a restringing to the enroute
-            this.strungEnroute = false;
-            this.flightPlan.arrivalRunwayTransitionSegment.strungEnroute = false;
         }
 
         const mappedArrivalLegs = legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingArrival.ident, WaypointConstraintType.DES));
@@ -101,7 +97,6 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
         const newSegment = new ArrivalSegment(forPlan);
 
         newSegment.strung = this.strung;
-        newSegment.strungEnroute = this.strungEnroute;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
         newSegment.arrival = this.arrival;
 

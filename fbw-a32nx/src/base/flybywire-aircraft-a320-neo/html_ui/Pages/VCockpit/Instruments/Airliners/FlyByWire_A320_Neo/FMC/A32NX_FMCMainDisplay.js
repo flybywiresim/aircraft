@@ -289,32 +289,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-        // TODO port over somehow ?
-        // this.flightPlanManager.onCurrentGameFlightLoaded(() => {
-        //     this.flightPlanManager.updateFlightPlan(() => {
-        //         this.flightPlanManager.updateCurrentApproach();
-        //         const callback = () => {
-        //             this.flightPlanManager.createNewFlightPlan();
-        //             SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-        //             SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-        //             SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-        //             SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        //             const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
-        //             console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
-        //             if (cruiseAlt > 0) {
-        //                 this.cruiseFlightLevel = cruiseAlt;
-        //                 this._cruiseFlightLevel = cruiseAlt;
-        //             }
-        //         };
-        //         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
-        //         if (arrivalIndex >= 0) {
-        //             this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback).catch(console.error);
-        //         } else {
-        //             callback();
-        //         }
-        //     });
-        // });
-
         this.updateFuelVars();
         this.updatePerfSpeeds();
 

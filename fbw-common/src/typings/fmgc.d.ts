@@ -1,6 +1,8 @@
 import type {
     GuidanceController as GuidanceController_,
-    FlightPlanService as FlightPlanService_,
+    GuidanceManager as GuidanceManager_,
+    FlightPlanManager as FlightPlanManager_,
+    ManagedFlightPlan as ManagedFlightPlan_,
     getFlightPhaseManager as getFlightPhaseManager_,
     EfisSymbols as EfisSymbols_,
 } from "../../../fbw-a32nx/src/systems/fmgc/src";
@@ -13,7 +15,11 @@ declare global {
     namespace Fmgc {
         const GuidanceController: typeof GuidanceController_
 
-        const FlightPlanService: typeof FlightPlanService_
+        const GuidanceManager: typeof GuidanceManager_
+
+        const FlightPlanManager: typeof FlightPlanManager_
+
+        const ManagedFlightPlan: typeof ManagedFlightPlan_
 
         const EfisSymbols: typeof EfisSymbols_
 

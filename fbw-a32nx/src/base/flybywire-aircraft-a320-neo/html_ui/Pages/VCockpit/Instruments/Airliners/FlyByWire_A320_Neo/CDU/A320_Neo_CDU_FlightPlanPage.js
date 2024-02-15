@@ -424,8 +424,8 @@ class CDUFlightPlanPage {
                 }
 
                 // forced turn indication if next leg is not a course reversal
-                if (wpNext && legTurnIsForced(wpNext) && !legTypeIsCourseReversal(wpNext)) {
-                    if (wpNext.turnDirection === 1) {
+                if (wpNext && wpNext.isDiscontinuity === false && legTurnIsForced(wpNext) && !legTypeIsCourseReversal(wpNext)) {
+                    if (wpNext.definition.turnDirection === 'L') {
                         ident += "{";
                     } else {
                         ident += "}";
@@ -472,7 +472,7 @@ class CDUFlightPlanPage {
                                     CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                                     break;
                                 case FMCMainDisplay.ovfyValue:
-                                    mcdu.toggleWaypointOverfly(fpIndex, () => {
+                                    mcdu.toggleWaypointOverfly(fpIndex, forPlan, inAlternate, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
                                     });
                                     break;
@@ -788,7 +788,7 @@ class CDUFlightPlanPage {
             mcdu.onAirport = () => { // Only called if > 4 waypoints
                 const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
                 const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
-                if (offset >= alternateAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
+                if (offset >= Math.max(destinationAirportOffset, alternateAirportOffset) && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
                     // Go back to top of flight plan page to show origin airport.
                     offset = 0;
                 } else if (offset >= destinationAirportOffset) {
@@ -837,7 +837,7 @@ class CDUFlightPlanPage {
 
         let insertDiscontinuity = true;
         if (element.isDiscontinuity === false) {
-            if (element.isHX() || fpIndex < targetPlan.activeLegIndex) {
+            if (element.isHX() || fpIndex <= targetPlan.activeLegIndex) {
                 insertDiscontinuity = false;
             } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
                 insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
@@ -982,23 +982,32 @@ function emptyFplnPage(forPlan) {
     ];
 }
 
-function legTypeIsCourseReversal(wp) {
-    switch (wp.additionalData.legType) {
-        case 12: // HA
-        case 13: // HF
-        case 14: // HM
-        case 16: // PI
+/**
+ * Check whether leg is a course reversal leg
+ * @param {FlightPlanLeg} leg
+ * @returns true if leg is a course reversal leg
+ */
+function legTypeIsCourseReversal(leg) {
+    switch (leg.type) {
+        case 'HA':
+        case 'HF':
+        case 'HM':
+        case 'PI':
             return true;
         default:
     }
     return false;
 }
 
-function legTurnIsForced(wp) {
+/**
+ * Check whether leg has a coded forced turn direction
+ * @param {FlightPlanLeg} leg
+ * @returns true if leg has coded forced turn direction
+ */
+function legTurnIsForced(leg) {
     // forced turns are only for straight legs
-    return (wp.turnDirection === 1 /* Left */ || wp.turnDirection === 2 /* Right */)
-        // eslint-disable-next-line semi-spacing
-        && wp.additionalData.legType !== 1 /* AF */ && wp.additionalData.legType !== 17 /* RF */;
+    return (leg.definition.turnDirection === 'L' /* Left */ || leg.definition.turnDirection === 'R' /* Right */)
+        && leg.type !== 'AF' && leg.type !== 'RF';
 }
 
 function formatMachNumber(rawNumber) {
@@ -1077,17 +1086,28 @@ function formatAlt(alt) {
 }
 
 function formatAltConstraint(mcdu, constraint, useTransAlt) {
-    // Altitude constraint types "G" and "H" are not shown in the flight plan
-    switch (constraint.type) {
-        case '@': // at
-            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '+': // atOrAbove
-            return "+" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case '-': // atOrBelow
-            return "-" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-        case 'B': // range
-            return "WINDOW";
+    if (!constraint) {
+        return '';
     }
 
-    return '';
+    // Altitude constraint types "G" and "H" are not shown in the flight plan
+    switch (constraint.altitudeDescriptor) {
+        case '@': // AtAlt1
+        case 'I': // AtAlt1GsIntcptAlt2
+        case 'X': // AtAlt1AngleAlt2
+            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '+': // AtOrAboveAlt1
+        case 'J': // AtOrAboveAlt1GsIntcptAlt2
+        case 'V': // AtOrAboveAlt1AngleAlt2
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '-': // AtOrBelowAlt1
+        case 'Y': // AtOrBelowAlt1AngleAlt2
+            return '-' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case 'B': // BetweenAlt1Alt2
+            return 'WINDOW'
+        case 'C': // AtOrAboveAlt2:
+            return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude2, useTransAlt);
+        default:
+            return '';
+    }
 }

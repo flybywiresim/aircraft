@@ -111,7 +111,6 @@ class NDInstrument implements FsInstrument {
                     side={this.efisSide}
                     rangeValues={a380EfisRangeSettings}
                 />
-                <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
             </CdsDisplayUnit>,
             document.getElementById('ND_CONTENT'),
         );

@@ -7,7 +7,8 @@ import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
@@ -250,14 +251,19 @@ export class NavGeometryProfile extends BaseGeometryProfile {
             return 0;
         }
 
-        switch (constraint.type) {
-        case AltitudeConstraintType.at:
+        switch (constraint.altitudeDescriptor) {
+        case AltitudeDescriptor.AtAlt1:
+        case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+        case AltitudeDescriptor.AtAlt1AngleAlt2:
             return predictedAltitude - constraint.altitude1;
-        case AltitudeConstraintType.atOrAbove:
+        case AltitudeDescriptor.AtOrAboveAlt1:
+        case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+        case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
             return Math.min(predictedAltitude - constraint.altitude1, 0);
-        case AltitudeConstraintType.atOrBelow:
+        case AltitudeDescriptor.AtOrBelowAlt1:
+        case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
             return Math.max(predictedAltitude - constraint.altitude1, 0);
-        case AltitudeConstraintType.range:
+        case AltitudeDescriptor.BetweenAlt1Alt2:
             if (predictedAltitude >= constraint.altitude1) {
                 return predictedAltitude - constraint.altitude1;
             } if (predictedAltitude <= constraint.altitude2) {
@@ -265,8 +271,9 @@ export class NavGeometryProfile extends BaseGeometryProfile {
             }
 
             return 0;
+        case AltitudeDescriptor.AtOrAboveAlt2:
+            return Math.min(predictedAltitude - constraint.altitude2, 0);
         default:
-            console.error('Invalid altitude constraint type');
             return 0;
         }
     }
