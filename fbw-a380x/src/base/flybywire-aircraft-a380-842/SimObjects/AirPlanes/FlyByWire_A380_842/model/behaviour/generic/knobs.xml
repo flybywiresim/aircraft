@@ -1,0 +1,24 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+
+    <!-- OVHD BAT Display Selector -->
+    <Template Name="FBW_A380X_OVHD_BAT_KNOB_TEMPLATE">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_XStates">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>turnknob</WWISE_EVENT>
+                <NUM_STATES>5</NUM_STATES>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A380X_#NODE_ID#_POSITION</SWITCH_POSITION_VAR>
+                <ANIMREF_ID>0</ANIMREF_ID>
+                <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+                <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+</ModelBehaviors>

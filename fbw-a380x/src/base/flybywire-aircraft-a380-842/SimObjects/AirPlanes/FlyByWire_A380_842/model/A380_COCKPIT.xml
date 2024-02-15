@@ -27,6 +27,7 @@
         <!-- A380X Includes - Libraries -->
         <Include RelativeFile="behaviour\generic\buttons.xml" />
         <Include RelativeFile="behaviour\generic\gear.xml" />
+        <Include RelativeFile="behaviour\generic\knobs.xml" />
 
         <!-- A380X Includes - External Components -->
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
@@ -2754,6 +2755,19 @@
                     <ANIMTIP_1>Set pack flow to LO</ANIMTIP_1>
                     <ANIMTIP_2>Set pack flow to NORM</ANIMTIP_2>
                     <ANIMTIP_2>Set pack flow to HIGH</ANIMTIP_2>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="Overhead_Bat_Display">
+                <UseTemplate Name="FBW_A380X_OVHD_BAT_KNOB_TEMPLATE">
+                    <NODE_ID>KNOB_OVHD_BAT</NODE_ID>
+                    <PART_ID>KNOB_OVHD_BAT</PART_ID>
+                    <TOOLTIPID>BAT DISPLAY SELECTOR</TOOLTIPID>
+                    <ANIMTIP_0>Set battery to ESS</ANIMTIP_0>
+                    <ANIMTIP_1>Set battery to APU</ANIMTIP_1>
+                    <ANIMTIP_2>Set battery to OFF</ANIMTIP_2>
+                    <ANIMTIP_3>Set battery to BAT 1</ANIMTIP_3>
+                    <ANIMTIP_4>Set battery to BAT 2</ANIMTIP_4>
                 </UseTemplate>
             </Component>
 
