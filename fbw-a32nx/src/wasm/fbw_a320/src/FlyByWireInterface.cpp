@@ -100,6 +100,14 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update autopilot state machine
   result &= updateAutopilotStateMachine(calculatedSampleTime);
 
+  // do not further process when active pause is on
+  // this position was chosen by intention to allow update of AP modes
+  // drawback is that flight director does not update during active pause but that is better
+  // than having a jump after ending active pause, which happens when AP laws are also processed
+  if (simConnectInterface.isSimInActivePause()) {
+    return result;
+  }
+
   // update autopilot laws
   result &= updateAutopilotLaws(calculatedSampleTime);
 
