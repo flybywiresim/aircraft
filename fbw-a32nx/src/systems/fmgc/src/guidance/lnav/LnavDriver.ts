@@ -7,7 +7,6 @@ import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
 import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
@@ -19,6 +18,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
@@ -61,7 +61,7 @@ export class LnavDriver implements GuidanceComponent {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    constructor(private readonly flightPlanService: FlightPlanService, guidanceController: GuidanceController) {
+    constructor(private readonly flightPlanService: FlightPlanService, guidanceController: GuidanceController, private readonly acConfig: AircraftConfig) {
         this.guidanceController = guidanceController;
         this.lastAvail = null;
         this.lastLaw = null;
@@ -101,7 +101,7 @@ export class LnavDriver implements GuidanceComponent {
             const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
 
             if (!activeLeg) {
-                if (LnavConfig.DEBUG_GUIDANCE) {
+                if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
                     console.log('[FMS/LNAV] No leg at activeLegIdx!');
                 }
                 return;
@@ -346,7 +346,7 @@ export class LnavDriver implements GuidanceComponent {
                 console.error('[FMS/LNAV] Guidance parameters from geometry are null.');
             }
 
-            if (LnavConfig.DEBUG_GUIDANCE) {
+            if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
                 SimVar.SetSimVarValue('L:A32NX_FM_TURN_STATE', 'Enum', this.turnState);
             }
 
@@ -428,13 +428,13 @@ export class LnavDriver implements GuidanceComponent {
         return undefined;
     }
 
-    public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
+    public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates, acConfig: AircraftConfig): number {
         // FIXME use a more accurate estimate, calculate in predictions
 
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
         const nauticalMilesToGo = distanceTo(ppos, termination);
-        const secondsToGo = (nauticalMilesToGo / Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+        const secondsToGo = (nauticalMilesToGo / Math.max(acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
 
         const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 
