@@ -652,8 +652,11 @@ mod tests {
             self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
             self.write_by_name("AIRSPEED TRUE", Velocity::new::<knot>(150.));
 
-            self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
-            self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION", 0.);
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 10.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 10.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 5.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 5.);
 
             self.command(|a| a.set_left_flaps(0.5));
             self.command(|a| a.set_right_flaps(0.5));
@@ -665,22 +668,22 @@ mod tests {
             self = self.spoilers_retracted();
             self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
             self.write_by_name("AIRSPEED TRUE", Velocity::new::<knot>(200.));
+            self.write_by_name("CONTACT POINT COMPRESSION", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:1", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:2", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:3", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:4", 0.);
-            self.write_by_name("CONTACT POINT COMPRESSION:5", 0.);
 
             self
         }
 
         fn steady_on_ground(mut self) -> Self {
             self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
-            self.write_by_name("CONTACT POINT COMPRESSION:1", 70.);
-            self.write_by_name("CONTACT POINT COMPRESSION:2", 70.);
-            self.write_by_name("CONTACT POINT COMPRESSION:3", 70.);
-            self.write_by_name("CONTACT POINT COMPRESSION:4", 70.);
-            self.write_by_name("CONTACT POINT COMPRESSION:5", 70.);
+            self.write_by_name("CONTACT POINT COMPRESSION", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 30.);
 
             self
         }

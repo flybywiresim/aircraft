@@ -46,21 +46,26 @@ struct LandingGearWeightOnWheelsEstimator {
     right_body_compression: Ratio,
 }
 impl LandingGearWeightOnWheelsEstimator {
-    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:0";
+    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
     const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
     const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
     const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
+    // const MSFS_SPRING_EXPONENT: f64 = 1.2;
+
+    // const NOSE_SPRING_RATIO: f64 = 1.478;
+    // const NOSE_SPRING_CONSTANT: f64 = 90588.8;
+    // const NOSE_MAX_COMPRESSION_FT: f64 = 1.560;
     // Weight estimation is in the form of weight = X * compression_percent^(Y)
-    const NOSE_GEAR_X_COEFF: f64 = 2.22966;
-    const NOSE_GEAR_Y_POW: f64 = 2.2953179884;
+    const NOSE_GEAR_X_COEFF: f64 = 500.;
+    const NOSE_GEAR_Y_POW: f64 = 1.22;
 
-    const WING_GEAR_X_COEFF: f64 = 5.5;
-    const WING_GEAR_Y_POW: f64 = 2.6;
+    const WING_GEAR_X_COEFF: f64 = 1200.;
+    const WING_GEAR_Y_POW: f64 = 1.2;
 
-    const BODY_GEAR_X_COEFF: f64 = 7.5;
-    const BODY_GEAR_Y_POW: f64 = 2.5;
+    const BODY_GEAR_X_COEFF: f64 = 1000.;
+    const BODY_GEAR_Y_POW: f64 = 1.33;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -125,10 +130,42 @@ impl LandingGearWeightOnWheelsEstimator {
 impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.center_compression = reader.read(&self.center_compression_id);
-        self.left_wing_compression = reader.read(&self.left_body_compression_id);
-        self.right_wing_compression = reader.read(&self.right_body_compression_id);
-        self.left_body_compression = reader.read(&self.left_wing_compression_id);
-        self.right_body_compression = reader.read(&self.right_wing_compression_id);
+        self.left_wing_compression = reader.read(&self.left_wing_compression_id);
+        self.right_wing_compression = reader.read(&self.right_wing_compression_id);
+        self.left_body_compression = reader.read(&self.left_body_compression_id);
+        self.right_body_compression = reader.read(&self.right_body_compression_id);
+
+        // let current_compression_ft =
+        //     Self::NOSE_MAX_COMPRESSION_FT * self.center_compression.get::<ratio>();
+
+        // let nose_ratio = 1. / Self::MSFS_SPRING_EXPONENT
+        //     + (Self::NOSE_SPRING_RATIO
+        //         * current_compression_ft.powf(Self::MSFS_SPRING_EXPONENT - 1.)
+        //         - 1. / Self::MSFS_SPRING_EXPONENT)
+        //         * self.center_compression.get::<ratio>();
+
+        // let nose_weight_lbs = Self::NOSE_SPRING_CONSTANT * nose_ratio * current_compression_ft;
+
+        // println!(
+        //     "NOSE comp {:.5}  current comp ft {:.2} ratio {:.2} weight lbs {:.0}",
+        //     self.center_compression.get::<ratio>(),
+        //     current_compression_ft,
+        //     nose_ratio,
+        //     nose_weight_lbs
+        // );
+
+        // let raw_read: f64 = reader.read(&self.left_wing_compression_id);
+        // println!(
+        //     "LW comp {:.5} raw {:.5} current comp ft {:.2}",
+        //     self.left_wing_compression.get::<ratio>(),
+        //     raw_read,
+        //     current_compression_ft
+        // );
+
+        // println!(
+        //     "Tot nose weight on wheels {:.0} kg",
+        //     self.total_weight_on_wheels().get::<kilogram>()
+        // );
     }
 }
 
