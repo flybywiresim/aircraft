@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, EfisNdMode, Arinc429ConsumerSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -21,13 +21,14 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
 
     private readonly selected = Subject.create(0);
 
+    private readonly isSelectedHeadingShown = ConsumerSubject.create(null, false);
+
     // eslint-disable-next-line
-    private readonly bugShown = MappedSubject.create(([headingWord, selected, diff, mode]) => {
-        if (!headingWord.isNormalOperation()) {
+    private readonly bugShown = MappedSubject.create(([headingWord, isShown, diff, mode]) => {
+        if (!isShown) {
             return false;
         }
-
-        if (selected < 0) {
+        if (!headingWord.isNormalOperation()) {
             return false;
         }
 
@@ -40,15 +41,14 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         }
 
         return diff <= 48;
-    }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
+    }, this.headingWord, this.isSelectedHeadingShown, this.diffSubject, this.props.mode);
 
     // eslint-disable-next-line
-    private readonly textShown = MappedSubject.create(([headingWord, selected, diff, mode]) => {
-        if (!headingWord.isNormalOperation()) {
+    private readonly textShown = MappedSubject.create(([headingWord, isShown, diff, mode]) => {
+        if (!isShown) {
             return false;
         }
-
-        if (selected < 0) {
+        if (!headingWord.isNormalOperation()) {
             return false;
         }
 
@@ -61,7 +61,7 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         }
 
         return Math.abs(diff) > 48;
-    }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
+    }, this.headingWord, this.isSelectedHeadingShown, this.diffSubject, this.props.mode);
 
     private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
         return `rotate(${diff} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
@@ -78,6 +78,8 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         });
 
         this.headingWord.setConsumer(sub.on('heading').withArinc429Precision(2));
+
+        this.isSelectedHeadingShown.setConsumer(sub.on('showSelectedHeading').whenChanged());
 
         this.headingWord.sub((_v) => this.handleDisplay(), true);
     }
