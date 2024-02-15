@@ -70,6 +70,13 @@ export const BatDisplay = ({ batteryNumber, x, y }) => {
         }
     });
 
+    // OVHD BAT selector is OFF
+    if (batteryNumber === 0) {
+        return (
+            <text x={x} y={y}>00.0V</text>
+        );
+    }
+
     return (
         <text x={x} y={y}>
             {digits[0]}
