@@ -100,14 +100,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update autopilot state machine
   result &= updateAutopilotStateMachine(calculatedSampleTime);
 
-  // do not further process when active pause is on
-  // this position was chosen by intention to allow update of AP modes
-  // drawback is that flight director does not update during active pause but that is better
-  // than having a jump after ending active pause, which happens when AP laws are also processed
-  if (simConnectInterface.isSimInActivePause()) {
-    return result;
-  }
-
   // update autopilot laws
   result &= updateAutopilotLaws(calculatedSampleTime);
 
@@ -163,8 +155,11 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update FO side with FO Sync ON
   result &= updateFoSide(calculatedSampleTime);
 
-  // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  // do not further process when active pause is on
+  if (!simConnectInterface.isSimInActivePause()) {
+    // update flight data recorder
+    flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  }
 
   // if default AP is on -> disconnect it
   if (simConnectInterface.getSimData().autopilot_master_on) {
@@ -1241,6 +1236,11 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppElacIndex = elacIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
@@ -1378,6 +1378,11 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 }
 
 bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
@@ -1600,6 +1605,11 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 }
 
 bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInputRudderTrim trimInput = simConnectInterface.getSimInputRudderTrim();
@@ -2144,6 +2154,11 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 }
 
 bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   // get data from interface ------------------------------------------------------------------------------------------
   SimData simData = simConnectInterface.getSimData();
 
@@ -2497,6 +2512,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
     autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
     autoThrustInput.in.input.target_TCAS_RA_rate_fpm = autopilotStateMachineOutput.H_dot_c_fpm;
+    autoThrustInput.in.input.tracking_mode_on_override = simConnectInterface.isSimInActivePause();
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
