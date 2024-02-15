@@ -8,7 +8,7 @@ import {BatDisplay} from '@flybywiresim/bat';
 import {useSimVar} from '@flybywiresim/fbw-sdk';
 
 const BatRoot = () => {
-    const [selectedBattery, setSelectedBattery] = useSimVar('L:A380X_KNOB_OVHD_BAT_POSITION', 'Number', 200);
+    const [selectedBattery, setSelectedBattery] = useSimVar('L:A380X_KNOB_OVHD_BAT_POSITION', 'Number', 100);
 
     // set to OFF if the value is out of range
     if (selectedBattery < 0 || selectedBattery > 4) {
@@ -19,7 +19,7 @@ const BatRoot = () => {
     const batteryMap = [4, 3, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
     return (
         <svg className="bat-svg" viewBox="0 0 200 100">
-            <BatDisplay batteryNumber={batteryMap[selectedBattery]} x="184" y="45"/>
+            <BatDisplay batteryNumber={batteryMap[selectedBattery]} x="196" y="48"/>
         </svg>
     );
 };

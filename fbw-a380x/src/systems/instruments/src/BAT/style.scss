@@ -19,7 +19,9 @@ $colour-main: hsl(40, 100%, 50%);
 
 text {
   fill: $colour-main;
-  font-family: Digital;
-  font-size: 52px;
+  font-family: Digital, ui-monospace;
+  font-size: 56px;
   text-anchor: end;
+  letter-spacing: 0.1em;
+  vertical-align: center;
 }
