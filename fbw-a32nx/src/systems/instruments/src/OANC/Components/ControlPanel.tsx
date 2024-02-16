@@ -8,7 +8,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { AmdbAirportSearchResult } from '@flybywiresim/fbw-sdk';
-import { NavigraphAmdbClient } from '../api/NavigraphAmdbClient';
+import { NavigraphAmdbClient } from '@flybywiresim/oanc';
 import { RadioButtonGroup } from './RadioButtonGroup';
 import { DropdownMenu } from './DropdownMenu';
 

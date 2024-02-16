@@ -8,6 +8,8 @@ import { ContextMenu } from 'instruments/src/OANC/Components/ContextMenu';
 import { ControlPanel } from './Components/ControlPanel';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
+import './styles.scss';
+
 class A32NX_OANC extends BaseInstrument {
     private bus: EventBus;
 
