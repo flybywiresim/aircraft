@@ -1654,7 +1654,8 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template"></UseTemplate>
+                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template">
+                </UseTemplate>
 
                 <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown.
                 Ensure it is always >0.9 -->
@@ -2379,7 +2380,6 @@
                         <ANIM_NAME>KNOB_OVHD_BAT</ANIM_NAME>
                         <TOOLTIPID>BAT DISPLAY SELECTOR</TOOLTIPID>
                         <WWISE_EVENT>turnknob</WWISE_EVENT>
-                        <NUM_STATES>5</NUM_STATES>
                         <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                         <ARROW_TYPE>Curved</ARROW_TYPE>
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -2387,11 +2387,17 @@
                         <ANIMREF_ID>0</ANIMREF_ID>
                         <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
                         <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+                        <NUM_STATES>5</NUM_STATES>
                         <ANIMTIP_0>Set battery to ESS</ANIMTIP_0>
                         <ANIMTIP_1>Set battery to APU</ANIMTIP_1>
                         <ANIMTIP_2>Set battery to OFF</ANIMTIP_2>
                         <ANIMTIP_3>Set battery to BAT 1</ANIMTIP_3>
                         <ANIMTIP_4>Set battery to BAT 2</ANIMTIP_4>
+                        <CODE_POS_0/>
+                        <CODE_POS_1/>
+                        <CODE_POS_2/>
+                        <CODE_POS_3/>
+                        <CODE_POS_4/>
                     </UseTemplate>
                 </Component>
 
@@ -4329,7 +4335,8 @@
                         <Component ID="Data_Loading_Selector">
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
-                                <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+                                <LEFT_SINGLE_CODE>
+                                </LEFT_SINGLE_CODE>
                                 <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
                                 <MOMENTARY />
                                 <NO_SEQ1 />
