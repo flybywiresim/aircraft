@@ -1119,10 +1119,6 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
 
-        println!(
-            "lift {:.2}",
-            test_bed.current_total_lift().get::<newton>() / 9.8
-        );
         assert!(
             test_bed.current_total_lift().get::<newton>() / 9.8
                 < WingFlexTestBed::NOMINAL_WEIGHT_KG
