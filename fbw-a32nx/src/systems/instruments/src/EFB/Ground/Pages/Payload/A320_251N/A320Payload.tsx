@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { SeatFlags, Units, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { SeatOutlineBg } from 'instruments/src/EFB/Assets/SeatOutlineBg';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
@@ -14,6 +14,7 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+import { GsxMenuPrepChoices, GsxMenuStates } from '../../../Ground';
 
 interface A320Props {
     simbriefUnits: string,
@@ -30,6 +31,11 @@ interface A320Props {
     boardingRate: string,
     setBoardingStarted: (boardingStarted: any) => void,
     setBoardingRate: (boardingRate: any) => void,
+
+    gsxMenuCurrentState: GsxMenuStates,
+    setGsxMenuCurrentState: (state: GsxMenuStates) => void,
+    selectGsxMenuChoice: (choice: number) => void,
+    gsxPayloadSyncEnabled: boolean
 }
 export const A320Payload: React.FC<A320Props> = ({
     simbriefUnits,
@@ -45,6 +51,10 @@ export const A320Payload: React.FC<A320Props> = ({
     boardingRate,
     setBoardingStarted,
     setBoardingRate,
+    gsxMenuCurrentState,
+    setGsxMenuCurrentState,
+    selectGsxMenuChoice,
+    gsxPayloadSyncEnabled,
 }) => {
     const { showModal } = useModals();
 
@@ -125,10 +135,15 @@ export const A320Payload: React.FC<A320Props> = ({
     const [displayZfw, setDisplayZfw] = useState(true);
 
     // GSX
-    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
+
+    const [, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
+    const [, setGsxPilotsNotBoarding] = useSimVar('L:FSDT_GSX_PILOTS_NOT_BOARDING', 'Number', 223);
+    const [, setGsxPilotsNotDeBoarding] = useSimVar('L:FSDT_GSX_PILOTS_NOT_DEBOARDING', 'Number', 223);
+    const [, setGsxCrewNotBoarding] = useSimVar('L:FSDT_GSX_CREW_NOT_BOARDING', 'Number', 223);
+    const [, setGsxCrewNotDeBoarding] = useSimVar('L:FSDT_GSX_CREW_NOT_DEBOARDING', 'Number', 223);
+
     const gsxStates = {
         AVAILABLE: 1,
         NOT_AVAILABLE: 2,
@@ -241,7 +256,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, gw, zfw]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxPayloadSyncEnabled && boardingStarted) {
             return;
         }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
@@ -249,7 +264,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [cargoMap]);
 
     const onClickSeat = useCallback((stationIndex: number, seatId: number) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxPayloadSyncEnabled && boardingStarted) {
             return;
         }
 
@@ -275,6 +290,40 @@ export const A320Payload: React.FC<A320Props> = ({
         totalPaxDesired,
     ]);
 
+    const handleGsxCrewAndPilotsBoarding = (isNotBoarding: boolean) => {
+        setGsxPilotsNotBoarding(isNotBoarding ? 1 : 0);
+        setGsxPilotsNotDeBoarding(isNotBoarding ? 1 : 0);
+        setGsxCrewNotBoarding(isNotBoarding ? 1 : 0);
+        setGsxCrewNotDeBoarding(isNotBoarding ? 1 : 0);
+    };
+
+    const handleGsxBoardingConfirmation = (isNotBoarding: boolean) => {
+        console.log(`GSX: Crew and Pilots isNotBoardingStatus: ${isNotBoarding}`);
+        handleGsxCrewAndPilotsBoarding(isNotBoarding);
+        if (gsxMenuCurrentState === GsxMenuStates.PREP) {
+            console.log('GSX: Requesting Boarding.');
+            selectGsxMenuChoice(GsxMenuPrepChoices.RQST_BOARD);
+        }
+    };
+
+    const handleBoarding = () => {
+        if (!gsxPayloadSyncEnabled) {
+            console.log(`GSX Payload is disabled, setting boarding state to opposite of ${boardingStarted}`);
+            setBoardingStarted(!boardingStarted);
+            return;
+        }
+        showModal(
+            <PromptModal
+                title={`${t('Ground.Payload.Gsx.CrewBoardConfirmationTitle')}`}
+                bodyText=""
+                confirmText={`${t('Ground.Payload.Gsx.CrewBoardConfirm')}`}
+                cancelText={`${t('Ground.Payload.Gsx.CrewBoardCancel')}`}
+                onCancel={() => handleGsxBoardingConfirmation(true)}
+                onConfirm={() => handleGsxBoardingConfirmation(false)}
+            />,
+        );
+    };
+
     const handleDeboarding = useCallback(() => {
         if (!boardingStarted) {
             showModal(
@@ -294,6 +343,7 @@ export const A320Payload: React.FC<A320Props> = ({
             );
             return;
         }
+        console.log('Deboarding triggered, setting boarding to false');
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
 
@@ -371,7 +421,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [coldAndDark, boardingRate]);
 
     useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             switch (gsxBoardingState) {
             // If boarding has been requested, performed or completed
             case gsxStates.REQUESTED:
@@ -386,7 +436,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [gsxBoardingState]);
 
     useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             switch (gsxDeBoardingState) {
             case gsxStates.REQUESTED:
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
@@ -400,6 +450,7 @@ export const A320Payload: React.FC<A320Props> = ({
                 break;
             case gsxStates.COMPLETED:
                 // If deboarding is completed
+                console.log('GSX: GSX Deboarding state is completed, setting boarding started to false');
                 setBoardingStarted(false);
                 break;
             default:
@@ -430,7 +481,7 @@ export const A320Payload: React.FC<A320Props> = ({
             );
         }
 
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             if (boardingStarted) {
                 setShowSimbriefButton(false);
                 return;
@@ -500,7 +551,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                     loadsheet={Loadsheet}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
-                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
+                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
                                     displayZfw={displayZfw}
                                     boardingStarted={boardingStarted}
                                     totalPax={totalPax}
@@ -526,7 +577,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                 <hr className="mb-4 border-gray-700" />
                                 <div className="flex flex-row justify-start items-center">
                                     <MiscParamsInput
-                                        disable={gsxPayloadSyncEnabled === 1 && boardingStarted}
+                                        disable={gsxPayloadSyncEnabled && boardingStarted}
                                         minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
                                         maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
                                         defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}
@@ -539,9 +590,15 @@ export const A320Payload: React.FC<A320Props> = ({
                                         setPaxWeight={setPaxWeight}
                                         setBagWeight={setPaxBagWeight}
                                     />
-                                    {gsxPayloadSyncEnabled !== 1 && (
-                                        <BoardingInput boardingStatusClass={boardingStatusClass} boardingStarted={boardingStarted} totalPax={totalPax} totalCargo={totalCargo} setBoardingStarted={setBoardingStarted} handleDeboarding={handleDeboarding} />
-                                    )}
+                                    <BoardingInput
+                                        boardingStatusClass={boardingStatusClass}
+                                        boardingStarted={boardingStarted}
+                                        totalPax={totalPax}
+                                        totalCargo={totalCargo}
+                                        handleBoarding={handleBoarding}
+                                        handleDeboarding={handleDeboarding}
+                                        gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
+                                    />
                                 </div>
                             </Card>
                             {showSimbriefButton
@@ -558,7 +615,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                     </TooltipWrapper>
                                 )}
                         </div>
-                        {(gsxPayloadSyncEnabled !== 1) && (
+                        {(!gsxPayloadSyncEnabled) && (
                             <div className="flex flex-row mt-4">
                                 <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
                                     <div className="flex flex-row justify-between items-center">
@@ -607,9 +664,9 @@ export const A320Payload: React.FC<A320Props> = ({
                                 </Card>
                             </div>
                         )}
-                        {gsxPayloadSyncEnabled === 1 && (
+                        {gsxPayloadSyncEnabled && (
                             <div className="pt-6 pl-2">
-                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
+                                {t('Ground.Payload.Gsx.PayloadSyncEnabled')}
                             </div>
                         )}
                     </div>

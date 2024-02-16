@@ -973,8 +973,6 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 self.emit_stop_boarding();
             }
         } else {
-            self.emit_stop_boarding();
-            self.stop_boarding_sounds();
             self.gsx_driver.update(
                 &mut self.passenger_deck,
                 &mut self.cargo_deck,

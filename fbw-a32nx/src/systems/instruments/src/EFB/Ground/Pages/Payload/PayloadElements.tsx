@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ArrowLeftRight, BoxArrowRight, BriefcaseFill, CaretDownFill, PersonFill, Shuffle, StopCircleFill } from 'react-bootstrap-icons';
+import { useSimVar, Units } from '@flybywiresim/fbw-sdk';
 import { ProgressBar } from '../../../UtilComponents/Progress/Progress';
 import { t } from '../../../translation';
 import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { Units } from '../../../../../../../../../fbw-common/src/systems/shared/src';
 import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
 
 export type Loadsheet = {
@@ -159,39 +159,55 @@ interface BoardingInputProps {
     boardingStarted: boolean,
     totalPax: number,
     totalCargo: number,
-    setBoardingStarted: (boardingStarted: boolean) => void,
+    handleBoarding: () => void,
     handleDeboarding: () => void,
+    gsxPayloadSyncEnabled: boolean
 }
 
-export const BoardingInput: React.FC<BoardingInputProps> = ({ boardingStatusClass, boardingStarted, totalPax, totalCargo, setBoardingStarted, handleDeboarding }) => (
-    <>
-        <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
-            <button
-                type="button"
-                className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 ${boardingStatusClass} bg-current`}
-                onClick={() => setBoardingStarted(!boardingStarted)}
-            >
-                <div className="text-theme-body">
-                    <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
-                    <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
-                </div>
-            </button>
-        </TooltipWrapper>
+export const BoardingInput: React.FC<BoardingInputProps> = ({ boardingStatusClass, boardingStarted, totalPax, totalCargo, handleBoarding, handleDeboarding, gsxPayloadSyncEnabled }) => {
+    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
 
-        <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
-            <button
-                type="button"
-                className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
-                onClick={() => handleDeboarding()}
-            >
-                <div className="text-theme-body">
-                    {' '}
-                    <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
-                </div>
-            </button>
-        </TooltipWrapper>
-    </>
-);
+    const hideGsxButton = useMemo(() => {
+        if (!gsxPayloadSyncEnabled) {
+            return false;
+        }
+
+        return boardingStarted;
+    }, [boardingStarted, gsxPayloadSyncEnabled, gsxDeBoardingState]);
+
+    return (
+        <>
+            <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
+                <button
+                    type="button"
+                    className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 ${boardingStatusClass} bg-current ${hideGsxButton ? 'pointer-events-none' : ''}`}
+                    onClick={() => handleBoarding()}
+                    disabled={hideGsxButton}
+                >
+                    <div className="text-theme-body">
+                        <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
+                        { !(gsxPayloadSyncEnabled) && <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} /> }
+                    </div>
+                </button>
+            </TooltipWrapper>
+
+            {/* TODO figure out how to dynamically  disable this button */}
+            <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
+                <button
+                    type="button"
+                    className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'} ${hideGsxButton ? 'pointer-events-none' : ''}`}
+                    onClick={() => handleDeboarding()}
+                    disabled={hideGsxButton}
+                >
+                    <div className="text-theme-body">
+                        {' '}
+                        <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
+                    </div>
+                </button>
+            </TooltipWrapper>
+        </>
+    );
+};
 
 interface NumberUnitDisplayProps {
     /**

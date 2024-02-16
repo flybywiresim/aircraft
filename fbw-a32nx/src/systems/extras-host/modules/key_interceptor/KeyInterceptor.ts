@@ -41,9 +41,12 @@ export class KeyInterceptor {
     private registerIntercepts() {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
+        this.keyInterceptManager.interceptKey('EXTERNAL_SYSTEM_TOGGLE', true);
+        this.keyInterceptManager.interceptKey('EXTERNAL_SYSTEM_SET', true);
 
         const subscriber = this.eventBus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
+            console.log(`KeyInterceptor: ${keyData.key} intercepted, value 0:${keyData.value0}, value 1:${keyData.value1}, value 2:${keyData.value2} `);
             switch (keyData.key) {
             case 'ENGINE_AUTO_START':
                 console.log('KeyInterceptor: ENGINE_AUTO_START');
@@ -52,6 +55,17 @@ export class KeyInterceptor {
             case 'ENGINE_AUTO_SHUTDOWN':
                 console.log('KeyInterceptor: ENGINE_AUTO_SHUTDOWN');
                 this.engineAutoStopAction();
+                break;
+            /*
+              This does not work, there's a suspicion that it's being
+              intercepted elsewhere and not being passed-through. I've disabled
+              the GSx Menu which *succesfully* intercepts this toggle, and still no logs
+             */
+            case 'EXTERNAL_SYSTEM_TOGGLE':
+                console.log('KeyInterceptor: EXTERNAL_SYSTEM_TOGGLE');
+                break;
+            case 'EXTERNAL_SYSTEM_SET':
+                console.log('KeyInterceptor: EXTERNAL_SYSTEM_SET');
                 break;
             default:
                 break;

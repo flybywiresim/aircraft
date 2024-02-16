@@ -7,6 +7,7 @@ import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPu
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
+import { GsxInterceptor } from './modules/gsx/GsxInterceptor';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -40,6 +41,7 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly keyInterceptor: KeyInterceptor;
 
+    private readonly gsxInterceptor: GsxInterceptor;
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -60,6 +62,7 @@ class ExtrasHost extends BaseInstrument {
         this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+        this.gsxInterceptor = new GsxInterceptor(this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -82,6 +85,7 @@ class ExtrasHost extends BaseInstrument {
         this.pushbuttonCheck.connectedCallback();
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();
+        this.gsxInterceptor.connectedCallback();
     }
 
     public Update(): void {
@@ -94,6 +98,7 @@ class ExtrasHost extends BaseInstrument {
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
                 this.simVarPublisher.startPublish();
+                this.gsxInterceptor.startPublish();
             }
             this.gameState = gs;
         } else {
@@ -102,6 +107,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck.update();
         this.keyInterceptor.update();
+        this.gsxInterceptor.update()
     }
 }
 

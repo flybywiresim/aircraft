@@ -10,17 +10,17 @@ import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
 import getDistance from 'geolib/es/getPreciseDistance';
 import { GeolibInputCoordinates } from 'geolib/es/types';
-import { BingMap } from '../../UtilComponents/BingMap';
-import { t } from '../../translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { useAppDispatch, useAppSelector } from '../../Store/store';
+import { BingMap } from '../../../UtilComponents/BingMap';
+import { t } from '../../../translation';
+import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
+import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import {
     setActualMapLatLon,
     setAircraftIconPosition,
     setCenterPlaneMode,
     setMapRange,
     TScreenCoordinates,
-} from '../../Store/features/pushback';
+} from '../../../Store/features/pushback';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;

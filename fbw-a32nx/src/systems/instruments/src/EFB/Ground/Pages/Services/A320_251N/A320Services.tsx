@@ -33,6 +33,8 @@ import {
     setJetWayButtonState,
     setAsuButtonState,
 } from '../../../../Store/features/groundServicePage';
+import { ServiceProps } from '../../ServicesPage';
+import { GsxMenuPrepChoices } from '../../../Ground';
 
 interface ServiceButtonWrapperProps {
     className?: string,
@@ -42,7 +44,7 @@ interface ServiceButtonWrapperProps {
 }
 
 // This groups buttons and sets a border and divider line
-const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
+export const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
         className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
         style={{ position: 'absolute', left: xl, right: xr, top: y }}
@@ -109,7 +111,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
     );
 };
 
-export const A320Services: React.FC = () => {
+export const A320Services: React.FC<ServiceProps> = ({ setGsxMenuChoice, gsxRefuelSyncEnabled, gsxPayloadSyncEnabled }) => {
     const dispatch = useAppDispatch();
 
     // Flight state
@@ -139,15 +141,31 @@ export const A320Services: React.FC = () => {
     const toggleCabinLeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
     const toggleCabinRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 2);
     const toggleJetBridgeAndStairs = () => {
-        SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
-        SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
+        if (gsxPayloadSyncEnabled) {
+            setGsxMenuChoice(GsxMenuPrepChoices.OP_STAIR);
+        } else {
+            SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
+            SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
+        }
     };
     const toggleCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
     const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
     const toggleAftLeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
     const toggleAftRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
-    const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
-    const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
+    const toggleCateringTruck = () => {
+        if (gsxPayloadSyncEnabled) {
+            setGsxMenuChoice(GsxMenuPrepChoices.RQST_CTR);
+        } else {
+            SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
+        }
+    };
+    const toggleFuelTruck = () => {
+        if (gsxRefuelSyncEnabled) {
+            setGsxMenuChoice(GsxMenuPrepChoices.RQST_REFUL);
+        } else {
+            SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
+        }
+    };
     const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
     const toggleAsu = () => setAsuActive(!asuActive);
 
@@ -626,13 +644,16 @@ export const A320Services: React.FC = () => {
                 </GroundServiceButton>
 
                 {/* GPU */}
-                <GroundServiceButton
-                    name={t('Ground.Services.ExternalPower')}
-                    state={gpuButtonState}
-                    onClick={() => handleButtonClick(ServiceButton.Gpu)}
-                >
-                    <PlugFill size={36} />
-                </GroundServiceButton>
+                {/* This is disabled until I can handle multiple menu steps */}
+                {(!gsxRefuelSyncEnabled && !gsxPayloadSyncEnabled) && (
+                    <GroundServiceButton
+                        name={t('Ground.Services.ExternalPower')}
+                        state={gpuButtonState}
+                        onClick={() => handleButtonClick(ServiceButton.Gpu)}
+                    >
+                        <PlugFill size={36} />
+                    </GroundServiceButton>
+                )}
 
                 {/* CARGO DOOR */}
                 <GroundServiceButton
@@ -644,13 +665,15 @@ export const A320Services: React.FC = () => {
                 </GroundServiceButton>
 
                 {/* BAGGAGE TRUCK */}
-                <GroundServiceButton
-                    name={t('Ground.Services.BaggageTruck')}
-                    state={baggageButtonState}
-                    onClick={() => handleButtonClick(ServiceButton.BaggageTruck)}
-                >
-                    <HandbagFill size={36} />
-                </GroundServiceButton>
+                {!gsxPayloadSyncEnabled && (
+                    <GroundServiceButton
+                        name={t('Ground.Services.BaggageTruck')}
+                        state={baggageButtonState}
+                        onClick={() => handleButtonClick(ServiceButton.BaggageTruck)}
+                    >
+                        <HandbagFill size={36} />
+                    </GroundServiceButton>
+                )}
 
             </ServiceButtonWrapper>
 

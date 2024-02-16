@@ -157,7 +157,12 @@
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "Gsx": {
+        "PayloadSyncEnabled": "GSX Payload Sync Enabled",
+        "CrewBoardConfirmationTitle": "Would you like to board crew?",
+        "CrewBoardConfirm": "Yes",
+        "CrewBoardCancel": "No"
+      },
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -457,7 +462,16 @@
     "TugDirection": "Tug Direction",
     "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Tug Speed",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Use Controller Input",
+    "Gsx": {
+      "RequestPushback": "Request Pushback",
+      "NoseRight": "Nose Right",
+      "NoseLeft": "Nose Left",
+      "Straight": "Straight",
+      "ConfirmEngineStart": "Confirm Good Start",
+      "AbortPushback": "Abort Pushback",
+      "StopPushback": "Stop Pushback"
+    }
   },
   "QuickControls": {
     "AlignAdirs": "Align ADIRS",
@@ -610,6 +624,7 @@
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxPushbackEnabled": "GSX Pushback Enabled",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
