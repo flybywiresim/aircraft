@@ -8,7 +8,7 @@ import { Arinc429RegisterSubject, EfisNdMode, NavAidMode } from '@flybywiresim/f
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../types/GenericVorEvents';
-import { Layer } from '../Layer';
+import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { GenericFlightManagementBusEvents } from '../types/GenericFlightManagementBusEvents';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, mode: Subscribable<EfisNdMode> }> {

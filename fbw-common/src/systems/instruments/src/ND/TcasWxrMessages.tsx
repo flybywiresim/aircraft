@@ -5,7 +5,7 @@
 import { FSComponent, DisplayComponent, VNode, Subject, MappedSubject, EventBus, Subscribable } from '@microsoft/msfs-sdk';
 
 import { EfisNdMode, TcasWxrMessage } from '@flybywiresim/fbw-sdk';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { GenericTcasEvents } from './types/GenericTcasEvents';
 
 export interface TcasWXMessagesProps {

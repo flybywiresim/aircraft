@@ -12,7 +12,7 @@ import { GenericFmsEvents } from './types/GenericFmsEvents';
 import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
 import { Flag, FlagProps } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';

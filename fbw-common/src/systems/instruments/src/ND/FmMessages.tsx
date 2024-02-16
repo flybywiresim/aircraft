@@ -6,7 +6,7 @@ import { ArraySubject, DisplayComponent, EventBus, FSComponent, Subject, Subscri
 import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { EfisNdMode } from '../NavigationDisplay';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
 
 export interface FmMessagesProps {
