@@ -147,7 +147,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }, true));
 
         this.subs.push(this.props.selectedIndex.sub((value) => {
-            if ((value !== null)) {
+            if (value !== null && this.props.values.get(value)) {
                 this.inputFieldValue.set(this.props.values.get(value));
             }
         }));
