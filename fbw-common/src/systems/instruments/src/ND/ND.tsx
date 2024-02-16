@@ -363,7 +363,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
 
-                    <g id="radio_needles" clipPath={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
+                    <g id="radio_needles" clip-path={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
 
                         <RadioNeedle
                             bus={this.props.bus}
@@ -653,7 +653,10 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly visibleSub = Subject.create(false);
 
     private readonly bearingContainerVisible = MappedSubject.create(
-        ([trueRef, bearing, trueBearing, isNormalOperation]) => isNormalOperation && Number.isFinite(trueRef ? trueBearing : bearing),
+        ([trueRef, bearing, trueBearing, isNormalOperation]) => {
+            const activeBearing = trueRef ? trueBearing : bearing;
+            return isNormalOperation && Number.isFinite(activeBearing) && activeBearing !== -1;
+        },
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
