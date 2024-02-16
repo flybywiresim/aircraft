@@ -131,6 +131,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false) {
+        if (targetLegIndex >= this.firstMissedApproachLegIndex) {
+            throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
+        }
+
         const targetLeg = this.legElementAt(targetLegIndex);
         if (!targetLeg.isXF()) {
             throw new Error('[FPM] Cannot direct to a non-XF leg');
@@ -166,7 +170,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // TODO withAbeam
         // TODO handle direct-to into the alternate (make alternate active...?
         const existingLegIndex = this.allLegs.findIndex((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint));
-        if (existingLegIndex !== -1) {
+        if (existingLegIndex !== -1 && existingLegIndex < this.firstMissedApproachLegIndex) {
             this.directToLeg(ppos, trueTrack, existingLegIndex, withAbeam);
             return;
         }
