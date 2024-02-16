@@ -80,6 +80,8 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // register key event handler
     // remove when aileron events can be processed via SimConnect
     register_key_event_handler_EX1(static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(processKeyEvent), NULL);
+    // register for pause event
+    SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SYSTEM_EVENT_PAUSE, "Pause_EX1");
     // send initial event to FCU to force HDG mode
     execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
@@ -94,6 +96,8 @@ void SimConnectInterface::disconnect() {
     // unregister key event handler
     // remove when aileron events can be processed via SimConnect
     unregister_key_event_handler_EX1(static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(processKeyEvent), NULL);
+    // unregister from pause events
+    SimConnect_UnsubscribeFromSystemEvent(hSimConnect, Events::SYSTEM_EVENT_PAUSE);
     // info message
     std::cout << "WASM: Disconnecting..." << std::endl;
     // close connection
@@ -114,6 +118,18 @@ void SimConnectInterface::setSampleTime(double sampleTime) {
 void SimConnectInterface::updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate) {
   this->minSimulationRate = minSimulationRate;
   this->maxSimulationRate = maxSimulationRate;
+}
+
+bool SimConnectInterface::isSimInAnyPause() {
+  return (pauseState > 0);
+}
+
+bool SimConnectInterface::isSimInActivePause() {
+  return (pauseState == 4);
+}
+
+bool SimConnectInterface::isSimInPause() {
+  return (pauseState == 8);
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -1470,6 +1486,14 @@ void SimConnectInterface::simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT
 void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DWORD data0) {
   // process depending on event id
   switch (eventId) {
+    case Events::SYSTEM_EVENT_PAUSE: {
+      pauseState = static_cast<long>(data0);
+      std::cout << "WASM: SYSTEM_EVENT_PAUSE: ";
+      std::cout << static_cast<long>(data0);
+      std::cout << std::endl;
+      break;
+    }
+
     case Events::AXIS_ELEVATOR_SET: {
       simInput.inputs[AXIS_ELEVATOR_SET] = static_cast<long>(data0) / 16384.0;
       if (loggingFlightControlsEnabled) {
