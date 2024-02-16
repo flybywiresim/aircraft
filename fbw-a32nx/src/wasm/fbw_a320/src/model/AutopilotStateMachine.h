@@ -135,7 +135,8 @@ class AutopilotStateMachine final
     boolean_T sTCAS_l;
     boolean_T wasFlightPlanAvailable;
     boolean_T wasFlightPlanAvailable_not_empty;
-    boolean_T state_c;
+    boolean_T wasInSrsGa;
+    boolean_T state_d;
     boolean_T state_k;
     boolean_T state_j;
     boolean_T sFINAL_DES;
@@ -295,7 +296,6 @@ class AutopilotStateMachine final
   void AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_ON(const ap_sm_output *BusAssignment);
-  void AutopilotStateMachine_GA_TRK_during(void);
   boolean_T AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment);
