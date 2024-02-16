@@ -14,7 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/perfor
  * An alternate flight plan shares its origin with the destination of a regular flight plan
  */
 export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends BaseFlightPlan<P> {
-    override originSegment: AlternateOriginSegment;
+    override originSegment: AlternateOriginSegment = undefined;
 
     constructor(
         index: number,
