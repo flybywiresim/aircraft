@@ -2371,6 +2371,30 @@
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
 
+                <!-- Overhead Battery Voltage Display Selector -->
+                <Component ID="KNOB_OVHD_BAT" Node="KNOB_OVHD_BAT">
+                    <UseTemplate Name="ASOBO_GT_Switch_XStates">
+                        <NODE_ID>KNOB_OVHD_BAT</NODE_ID>
+                        <PART_ID>KNOB_OVHD_BAT</PART_ID>
+                        <ANIM_NAME>KNOB_OVHD_BAT</ANIM_NAME>
+                        <TOOLTIPID>BAT DISPLAY SELECTOR</TOOLTIPID>
+                        <WWISE_EVENT>turnknob</WWISE_EVENT>
+                        <NUM_STATES>5</NUM_STATES>
+                        <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                        <ARROW_TYPE>Curved</ARROW_TYPE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A380X_KNOB_OVHD_BAT_POSITION</SWITCH_POSITION_VAR>
+                        <ANIMREF_ID>0</ANIMREF_ID>
+                        <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+                        <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+                        <ANIMTIP_0>Set battery to ESS</ANIMTIP_0>
+                        <ANIMTIP_1>Set battery to APU</ANIMTIP_1>
+                        <ANIMTIP_2>Set battery to OFF</ANIMTIP_2>
+                        <ANIMTIP_3>Set battery to BAT 1</ANIMTIP_3>
+                        <ANIMTIP_4>Set battery to BAT 2</ANIMTIP_4>
+                    </UseTemplate>
+                </Component>
+
                 <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
                     <PART_ID>BATTERY_MASTER_SWITCH_1</PART_ID>
@@ -2755,30 +2779,6 @@
                     <ANIMTIP_1>Set pack flow to LO</ANIMTIP_1>
                     <ANIMTIP_2>Set pack flow to NORM</ANIMTIP_2>
                     <ANIMTIP_2>Set pack flow to HIGH</ANIMTIP_2>
-                </UseTemplate>
-            </Component>
-
-            <!-- Overhead Battery Voltage Display Selector -->
-            <Component ID="KNOB_OVHD_BAT" Node="KNOB_OVHD_BAT">
-                <UseTemplate Name="ASOBO_GT_Switch_XStates">
-                    <NODE_ID>KNOB_OVHD_BAT</NODE_ID>
-                    <PART_ID>KNOB_OVHD_BAT</PART_ID>
-                    <ANIM_NAME>KNOB_OVHD_BAT</ANIM_NAME>
-                    <TOOLTIPID>BAT DISPLAY SELECTOR</TOOLTIPID>
-                    <WWISE_EVENT>turnknob</WWISE_EVENT>
-                    <NUM_STATES>5</NUM_STATES>
-                    <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                    <ARROW_TYPE>Curved</ARROW_TYPE>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>A380X_KNOB_OVHD_BAT_POSITION</SWITCH_POSITION_VAR>
-                    <ANIMREF_ID>0</ANIMREF_ID>
-                    <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-                    <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-                    <ANIMTIP_0>Set battery to ESS</ANIMTIP_0>
-                    <ANIMTIP_1>Set battery to APU</ANIMTIP_1>
-                    <ANIMTIP_2>Set battery to OFF</ANIMTIP_2>
-                    <ANIMTIP_3>Set battery to BAT 1</ANIMTIP_3>
-                    <ANIMTIP_4>Set battery to BAT 2</ANIMTIP_4>
                 </UseTemplate>
             </Component>
 
