@@ -8,15 +8,8 @@ use crate::simulation::{
 };
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::radian,
-    f64::*,
-    force::newton,
-    length::meter,
-    mass::kilogram,
-    ratio::percent,
-    ratio::ratio,
-    velocity::{knot, meter_per_second},
+    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
+    mass::kilogram, ratio::percent, ratio::ratio, velocity::meter_per_second,
 };
 
 use std::time::Duration;
