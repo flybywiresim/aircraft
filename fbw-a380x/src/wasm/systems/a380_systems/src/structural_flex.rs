@@ -653,10 +653,10 @@ mod tests {
             self.write_by_name("AIRSPEED TRUE", Velocity::new::<knot>(150.));
 
             self.write_by_name("CONTACT POINT COMPRESSION", 0.);
-            self.write_by_name("CONTACT POINT COMPRESSION:1", 10.);
-            self.write_by_name("CONTACT POINT COMPRESSION:2", 10.);
-            self.write_by_name("CONTACT POINT COMPRESSION:3", 5.);
-            self.write_by_name("CONTACT POINT COMPRESSION:4", 5.);
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 20.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 20.);
 
             self.command(|a| a.set_left_flaps(0.5));
             self.command(|a| a.set_right_flaps(0.5));
@@ -679,11 +679,11 @@ mod tests {
 
         fn steady_on_ground(mut self) -> Self {
             self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
-            self.write_by_name("CONTACT POINT COMPRESSION", 30.);
-            self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
-            self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
-            self.write_by_name("CONTACT POINT COMPRESSION:3", 30.);
-            self.write_by_name("CONTACT POINT COMPRESSION:4", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION", 80.);
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 80.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 80.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 80.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 80.);
 
             self
         }
@@ -1119,6 +1119,10 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
 
+        println!(
+            "lift {:.2}",
+            test_bed.current_total_lift().get::<newton>() / 9.8
+        );
         assert!(
             test_bed.current_total_lift().get::<newton>() / 9.8
                 < WingFlexTestBed::NOMINAL_WEIGHT_KG
