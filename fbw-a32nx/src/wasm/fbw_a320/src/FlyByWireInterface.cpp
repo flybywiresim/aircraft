@@ -74,6 +74,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
+  // get sim data
+  SimData simData = simConnectInterface.getSimData();
+
   // update performance monitoring
   result &= updatePerformanceMonitoring(sampleTime);
 
@@ -87,10 +90,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= handleFcuInitialization(calculatedSampleTime);
 
   // do not process laws in pause or slew
-  if (simConnectInterface.getSimData().slew_on) {
+  if (simData.slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
+  } else if (pauseDetected || simData.cameraState >= 10.0 || !idIsReady->get() || simData.simulationTime < 2) {
     return result;
   }
 
@@ -162,7 +165,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   // if default AP is on -> disconnect it
-  if (simConnectInterface.getSimData().autopilot_master_on) {
+  if (simData.autopilot_master_on) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::AUTOPILOT_OFF);
   }
 
@@ -1354,8 +1357,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 
       bool blueHighPressure = idHydBluePressurised->get();
 
-      bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput &&
-                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
+      bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput && (elac2EmerPowersupplyTimerRelayOutput ||
+                                                                            elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
 
       powerSupplyAvailable = elac2EmerPowersupplyActive ? idElecBat2HotBusPowered->get() : idElecDcBus2Powered->get();
     }
