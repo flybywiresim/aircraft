@@ -26,6 +26,14 @@
 
 ## Uncategorized
 
+- A32NX_AIRCRAFT_TYPE
+    - Enum
+    - Indicates the aircraft type
+        Aircraft | Value
+        --- | ---
+        A320_251N | 0
+        A380_842 | 1
+
 - A32NX_IS_READY
     - Bool
     - Indicates that the JavaScript part is ready
@@ -42,16 +50,16 @@
 - A32NX_START_STATE
     - Enum
     - Indicates the state in which MSFS started
-    - State | Value
-            --- | ---
-      Hangar | 1
-      Apron | 2
-      Taxi | 3
-      Runway | 4
-      Climb | 5
-      Cruise | 6
-      Approach | 7
-      Final | 8
+        State | Value
+        --- | ---
+        Hangar | 1
+        Apron | 2
+        Taxi | 3
+        Runway | 4
+        Climb | 5
+        Cruise | 6
+        Approach | 7
+        Final | 8
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM

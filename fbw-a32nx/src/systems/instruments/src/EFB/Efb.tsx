@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient, AircraftType } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
@@ -73,9 +73,19 @@ interface BatteryStatus {
 export const usePower = () => React.useContext(PowerContext);
 
 // this returns either `A380_842` or `A320_251N` depending on the aircraft
-export const getAirframeType = () => new URL(
-    document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'),
-).searchParams.get('Airframe');
+export function getAirframeType(): AircraftType {
+    const airframe = new URL(
+        document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')
+    ).searchParams.get('Airframe');
+
+    switch (airframe) {
+        case 'A320_251N':
+            return AircraftType.A320_251N;
+        case 'A380_842':
+            return AircraftType.A380_842;
+    }
+}
+
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);

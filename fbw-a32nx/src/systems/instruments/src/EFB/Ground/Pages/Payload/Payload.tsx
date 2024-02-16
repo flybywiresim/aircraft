@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AircraftType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { getAirframeType } from '../../../Efb';
 import { A320Payload } from './A320_251N/A320Payload';
 import { A380Payload } from './A380_842/A380Payload';
@@ -28,7 +28,7 @@ export const Payload = () => {
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
 
     switch (getAirframeType()) {
-    case 'A380_842':
+    case AircraftType.A380_842:
         return (
             <A380Payload
                 simbriefUnits={simbriefUnits}
@@ -46,7 +46,7 @@ export const Payload = () => {
                 setBoardingRate={setBoardingRate}
             />
         );
-    case 'A320_251N':
+    case AircraftType.A320_251N:
     default:
         return (
             <A320Payload

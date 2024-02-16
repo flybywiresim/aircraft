@@ -1,5 +1,6 @@
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { FmgcComponent } from './FmgcComponent';
+import { AircraftType } from '@flybywiresim/fbw-sdk';
 
 export class ReadySignal implements FmgcComponent {
     private baseInstrument: BaseInstrument = null;
@@ -16,6 +17,7 @@ export class ReadySignal implements FmgcComponent {
             && SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
             // set ready signal that JS code is initialized and flight is actually started
             // -> user pressed 'READY TO FLY' button
+            SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_TYPE', 'enum', AircraftType.A320_251N);
             SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
         }
     }

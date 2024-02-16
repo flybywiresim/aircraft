@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { AircraftType, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
