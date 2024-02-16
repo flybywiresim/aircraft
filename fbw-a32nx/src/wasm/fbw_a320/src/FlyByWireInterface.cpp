@@ -86,11 +86,12 @@ bool FlyByWireInterface::update(double sampleTime) {
   // handle initialization
   result &= handleFcuInitialization(calculatedSampleTime);
 
+  SimData simData = simConnectInterface.getSimData();
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
+  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0 || !idIsReady->get() || simData.simulationTime < 2) {
     return result;
   }
 
@@ -1354,8 +1355,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 
       bool blueHighPressure = idHydBluePressurised->get();
 
-      bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput &&
-                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
+      bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput && (elac2EmerPowersupplyTimerRelayOutput ||
+                                                                            elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
 
       powerSupplyAvailable = elac2EmerPowersupplyActive ? idElecBat2HotBusPowered->get() : idElecDcBus2Powered->get();
     }
