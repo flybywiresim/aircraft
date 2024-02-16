@@ -5,6 +5,7 @@
 import { FSComponent, DisplayComponent, VNode, MapSubject, Subscribable, Subscription, SubscribableUtils } from '@microsoft/msfs-sdk';
 
 import './ContextMenu.scss';
+import { ContextMenuItemData } from '@flybywiresim/oanc';
 
 export interface ContextMenuProps {
     isVisible: Subscribable<boolean>,
@@ -50,14 +51,6 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
             </div>
         );
     }
-}
-
-export interface ContextMenuItemData {
-    name: string,
-
-    disabled?: boolean | Subscribable<boolean>,
-
-    onPressed?: () => void,
 }
 
 export interface ContextMenuItemProps {

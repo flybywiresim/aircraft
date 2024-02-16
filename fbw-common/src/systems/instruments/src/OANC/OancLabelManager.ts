@@ -8,7 +8,7 @@ import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { filterLabel, OancLabelFilter } from './OancLabelFIlter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
-import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle, pointDistance } from './OancMapUtils';
+import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';
 
 export class OancLabelManager {
     constructor(
@@ -109,7 +109,7 @@ export class OancLabelManager {
                     let x: number;
                     let y: number;
                     if (intersections.length > 1) {
-                        const s1dlc = pointDistance(intersections[0][0], intersections[0][1], lcx, lcy);
+                        // const s1dlc = pointDistance(intersections[0][0], intersections[0][1], lcx, lcy);
                         // const s2dlc = pointDistance(intersections[1][0], intersections[1][1], lcx, lcy);
 
                         // const offset = s2dlc - s1dlc;

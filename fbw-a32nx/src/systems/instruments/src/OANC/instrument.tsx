@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { Oanc } from './Oanc';
+import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane, Subject, SubscribableMapFunctions, Wait } from '@microsoft/msfs-sdk';
+import { ContextMenuItemData, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, Oanc, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { ContextMenu } from 'instruments/src/OANC/Components/ContextMenu';
+import { ControlPanel } from './Components/ControlPanel';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
-
-import './styles.scss';
 
 class A32NX_OANC extends BaseInstrument {
     private bus: EventBus;
@@ -26,6 +26,45 @@ class A32NX_OANC extends BaseInstrument {
     private gameState = 0;
 
     private oancRef = FSComponent.createRef<Oanc>();
+
+    public readonly controlPanelRef = FSComponent.createRef<ControlPanel>();
+
+    private readonly contextMenuItems: ContextMenuItemData[] = [
+        { name: 'ADD CROSS', disabled: true },
+        { name: 'ADD FLAG', disabled: true },
+        {
+            name: 'MENU',
+            onPressed: () => {
+                this.controlPanelVisible.set(!this.controlPanelVisible.get());
+                this.contextMenuVisible.set(false);
+            },
+        },
+        { name: 'ERASE ALL CROSSES', disabled: true },
+        { name: 'ERASE ALL FLAGS', disabled: true },
+        {
+            name: 'CENTER ON ACFT',
+            disabled: this.oancRef.getOrDefault() !== null ? this.oancRef.instance.aircraftWithinAirport.map(SubscribableMapFunctions.not()) : true,
+            onPressed: async () => {
+                if (this.oancRef.getOrDefault() !== null) {
+                    await this.oancRef.instance.enablePanningTransitions();
+                    this.oancRef.instance.panOffsetX.set(0);
+                    this.oancRef.instance.panOffsetY.set(0);
+                    await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+                    await this.oancRef.instance.disablePanningTransitions();
+                }
+            },
+        },
+    ];
+
+    private readonly contextMenuVisible = Subject.create(false);
+
+    private readonly contextMenuX = Subject.create(0);
+
+    private readonly contextMenuY = Subject.create(0);
+
+    private readonly controlPanelVisible = Subject.create(false);
+
+    private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
 
     constructor() {
         super();
@@ -54,7 +93,45 @@ class A32NX_OANC extends BaseInstrument {
 
         this.backplane.init();
 
-        FSComponent.render(<Oanc bus={this.bus} ref={this.oancRef} />, document.getElementById('OANC_CONTENT'));
+        FSComponent.render(
+            <div class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
+                <div ref={this.waitScreenRef} class="oanc-waiting-screen">
+                    PLEASE WAIT
+                </div>
+                <Oanc
+                    bus={this.bus}
+                    ref={this.oancRef}
+                    setSelectedAirport={(arpt) => {
+                        if (this.controlPanelRef.getOrDefault()) {
+                            this.controlPanelRef.instance.setSelectedAirport(arpt);
+                        }
+                    }}
+                    contextMenuVisible={this.contextMenuVisible}
+                    contextMenuItems={this.contextMenuItems}
+                    contextMenuX={this.contextMenuX}
+                    contextMenuY={this.contextMenuY}
+                    waitScreenRef={this.waitScreenRef}
+                />
+                <ContextMenu
+                    isVisible={this.contextMenuVisible}
+                    x={this.contextMenuX}
+                    y={this.contextMenuY}
+                    items={this.contextMenuItems}
+                    closeMenu={() => this.contextMenuVisible.set(false)}
+                />
+
+                <ControlPanel
+                    ref={this.controlPanelRef}
+                    amdbClient={this.oancRef.instance.amdbClient}
+                    isVisible={this.controlPanelVisible}
+                    onSelectAirport={(icao) => this.oancRef.instance.loadAirportMap(icao)}
+                    closePanel={() => this.controlPanelVisible.set(false)}
+                    onZoomIn={() => this.oancRef.instance.handleZoomIn()}
+                    onZoomOut={() => this.oancRef.instance.handleZoomOut()}
+                />
+            </div>,
+            document.getElementById('OANC_CONTENT'),
+        );
 
         // Remove "instrument didn't load" text
         document.getElementById('OANC_CONTENT').querySelector(':scope > h1').remove();

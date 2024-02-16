@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-    ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, SubscribableArrayEventType,
-    SubscribableMapFunctions, UnitType, VNode, Wait,
+    ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, SubscribableArrayEventType,
+    UnitType, VNode, Wait,
 } from '@microsoft/msfs-sdk';
 import {
     AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType, EfisNdMode,
     MapParameters,
+    AmdbAirportSearchResult,
 } from '@flybywiresim/fbw-sdk';
 import {
     BBox, bbox, bboxPolygon, booleanPointInPolygon, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon,
@@ -17,23 +18,21 @@ import {
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
+import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
-import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { pointAngle, pointDistance } from './OancMapUtils';
-import { ContextMenu, ContextMenuItemData } from './Components/ContextMenu';
-import { ControlPanel } from './Components/ControlPanel';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
 
 const FEATURE_DRAW_PER_FRAME = 50;
 
-const ZOOM_TRANSITION_TIME_MS = 300;
+export const ZOOM_TRANSITION_TIME_MS = 300;
 
 const PAN_MIN_MOVEMENT = 10;
 
@@ -83,15 +82,25 @@ export interface Label {
     associatedFeature: Feature<Geometry, AmdbProperties>,
 }
 
+export interface ContextMenuItemData {
+    name: string,
+
+    disabled?: boolean | Subscribable<boolean>,
+
+    onPressed?: () => void,
+}
+
 export interface OancProps extends ComponentProps {
     bus: EventBus,
+    setSelectedAirport: (airport: AmdbAirportSearchResult) => void;
+    contextMenuVisible: Subject<boolean>;
+    contextMenuX: Subject<number>;
+    contextMenuY: Subject<number>;
+    contextMenuItems: ContextMenuItemData[];
+    waitScreenRef: NodeReference<HTMLDivElement>;
 }
 
 export class Oanc extends DisplayComponent<OancProps> {
-    private readonly controlPanelRef = FSComponent.createRef<ControlPanel>();
-
-    private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
-
     private readonly animationContainerRef = [
         FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
@@ -128,14 +137,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
 
-    private readonly contextMenuVisible = Subject.create(false);
-
-    private readonly contextMenuX = Subject.create(0);
-
-    private readonly contextMenuY = Subject.create(0);
-
-    private readonly controlPanelVisible = Subject.create(false);
-
     public data: AmdbFeatureCollection | undefined;
 
     private dataBbox: BBox | undefined;
@@ -168,7 +169,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
     ];
 
-    private amdbClient = new NavigraphAmdbClient();
+    public amdbClient = new NavigraphAmdbClient();
 
     private labelManager = new OancLabelManager(this);
 
@@ -219,7 +220,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public readonly referencePos: Coordinates = { lat: 0, long: 0 };
 
-    private readonly aircraftWithinAirport = Subject.create(false);
+    public readonly aircraftWithinAirport = Subject.create(false);
 
     public readonly projectedPpos: Position = [0, 0];
 
@@ -257,31 +258,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly aircraftRotation = Subject.create(0);
 
-    private readonly contextMenuItems: ContextMenuItemData[] = [
-        { name: 'ADD CROSS', disabled: true },
-        { name: 'ADD FLAG', disabled: true },
-        {
-            name: 'MENU',
-            onPressed: () => {
-                this.controlPanelVisible.set(!this.controlPanelVisible.get());
-                this.contextMenuVisible.set(false);
-            },
-        },
-        { name: 'ERASE ALL CROSSES', disabled: true },
-        { name: 'ERASE ALL FLAGS', disabled: true },
-        {
-            name: 'CENTER ON ACFT',
-            disabled: this.aircraftWithinAirport.map(SubscribableMapFunctions.not()),
-            onPressed: async () => {
-                await this.enablePanningTransitions();
-                this.panOffsetX.set(0);
-                this.panOffsetY.set(0);
-                await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
-                await this.disablePanningTransitions();
-            },
-        },
-    ];
-
     public getZoomLevelInverseScale() {
         const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -303,7 +279,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.loadAirportMap('LFPG');
         this.amdbClient.searchForAirports('LFPG').then((airports) => {
-            this.controlPanelRef.instance.setSelectedAirport(airports[0]);
+            this.props.setSelectedAirport(airports[0]);
         });
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
@@ -356,10 +332,13 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.positionVisible.sub((visible) => this.positionTextRef.instance.style.visibility = visible ? 'inherit' : 'hidden');
     }
 
-    private async loadAirportMap(icao: string) {
+    public async loadAirportMap(icao: string) {
         this.dataLoading = true;
 
-        this.waitScreenRef.instance.style.visibility = 'visible';
+        if (this.props.waitScreenRef.getOrDefault()) {
+            this.props.waitScreenRef.instance.style.visibility = 'visible';
+        }
+
         this.clearData();
         this.clearMap();
 
@@ -377,15 +356,15 @@ export class Oanc extends DisplayComponent<OancProps> {
         const features = Object.values(data).reduce((acc, it) => [...acc, ...it.features], [] as Feature<Geometry, AmdbProperties>[]);
         const airportMap: AmdbFeatureCollection = featureCollection(features);
 
-        const wsg84ReferencePoint = wgs84ArpDat.aerodromereferencepoint.features[0];
+        const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint.features[0];
 
-        if (!wsg84ReferencePoint) {
+        if (!wgs84ReferencePoint) {
             console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point not found');
             return;
         }
 
-        const refPointLat = (wsg84ReferencePoint.geometry as Point).coordinates[1];
-        const refPointLong = (wsg84ReferencePoint.geometry as Point).coordinates[0];
+        const refPointLat = (wgs84ReferencePoint.geometry as Point).coordinates[1];
+        const refPointLong = (wgs84ReferencePoint.geometry as Point).coordinates[0];
         const projectionScale = 1000;
 
         if (!refPointLat || !refPointLong || !projectionScale) {
@@ -396,9 +375,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.data = airportMap;
 
-        this.dataAirportName.set(wsg84ReferencePoint.properties.name);
+        this.dataAirportName.set(wgs84ReferencePoint.properties.name);
         this.dataAirportIcao.set(icao);
-        this.dataAirportIata.set(wsg84ReferencePoint.properties.iata);
+        this.dataAirportIata.set(wgs84ReferencePoint.properties.iata);
 
         // Figure out the boundaries of the map data
 
@@ -726,7 +705,9 @@ export class Oanc extends DisplayComponent<OancProps> {
         if (this.lastLayerDrawnIndex > this.layerCanvasRefs.length - 1) {
             this.doneDrawing = true;
 
-            this.waitScreenRef.instance.style.visibility = 'hidden';
+            if (this.props.waitScreenRef.getOrDefault()) {
+                this.props.waitScreenRef.instance.style.visibility = 'hidden';
+            }
 
             this.labelManager.reflowLabels();
 
@@ -780,7 +761,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.panOffsetY.set(0);
     }
 
-    private async disablePanningTransitions(): Promise<void> {
+    public async disablePanningTransitions(): Promise<void> {
         for (const container of this.panContainerRef) {
             container.instance.style.transition = 'reset';
         }
@@ -790,7 +771,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.panBeingAnimated.set(false);
     }
 
-    private async enablePanningTransitions(): Promise<void> {
+    public async enablePanningTransitions(): Promise<void> {
         for (const container of this.panContainerRef) {
             container.instance.style.transition = `transform ${ZOOM_TRANSITION_TIME_MS}ms linear`;
         }
@@ -860,13 +841,13 @@ export class Oanc extends DisplayComponent<OancProps> {
         }
     }
 
-    private handleZoomIn(): void {
+    public handleZoomIn(): void {
         if (this.zoomLevelIndex.get() !== 0) {
             this.zoomLevelIndex.set(this.zoomLevelIndex.get() - 1);
         }
     }
 
-    private handleZoomOut(): void {
+    public handleZoomOut(): void {
         if (this.zoomLevelIndex.get() !== ZOOM_LEVELS.length - 1) {
             this.zoomLevelIndex.set(this.zoomLevelIndex.get() + 1);
         }
@@ -901,11 +882,11 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private handleCursorPanStop(event: MouseEvent): void {
-        this.contextMenuX.set(event.screenX);
-        this.contextMenuY.set(event.screenY);
+        this.props.contextMenuX.set(event.screenX);
+        this.props.contextMenuY.set(event.screenY);
         if (!this.isPanning) {
             this.isPanningArmed = false;
-            this.contextMenuVisible.set(!this.contextMenuVisible.get());
+            this.props.contextMenuVisible.set(!this.props.contextMenuVisible.get());
         }
         this.isPanning = false;
     }
@@ -943,11 +924,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     render(): VNode | null {
         return (
-            <div class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
-                <div ref={this.waitScreenRef} class="oanc-waiting-screen">
-                    PLEASE WAIT
-                </div>
-
+            <>
                 <svg viewBox="0 0 768 768" style="position: absolute;">
                     <defs>
                         <clipPath id="rose-mode-map-clip">
@@ -1032,24 +1009,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
                 <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
 
-                <ContextMenu
-                    isVisible={this.contextMenuVisible}
-                    x={this.contextMenuX}
-                    y={this.contextMenuY}
-                    items={this.contextMenuItems}
-                    closeMenu={() => this.contextMenuVisible.set(false)}
-                />
-
-                <ControlPanel
-                    ref={this.controlPanelRef}
-                    amdbClient={this.amdbClient}
-                    isVisible={this.controlPanelVisible}
-                    onSelectAirport={(icao) => this.loadAirportMap(icao)}
-                    closePanel={() => this.controlPanelVisible.set(false)}
-                    onZoomIn={() => this.handleZoomIn()}
-                    onZoomOut={() => this.handleZoomOut()}
-                />
-
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
                 >
@@ -1084,7 +1043,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                     rotation={this.interpolatedMapHeading}
                     isMapPanned={this.isMapPanned}
                 />
-            </div>
+            </>
         );
     }
 }
