@@ -14,15 +14,15 @@ export function getAircraftType(): string {
     const aircraftType :AircraftType = SimVar.GetSimVarValue('L:A32NX_AIRCRAFT_TYPE', 'enum');
     let aircraft: string;
 
-    switch(aircraftType) {
-        case AircraftType.A320_251N:
-            aircraft = 'a32nx';
-            break;
-        case AircraftType.A380_842:
-            aircraft = 'a380x';
-            break;
-        default:
-            aircraft = 'other';
+    switch (aircraftType) {
+    case AircraftType.A320_251N:
+        aircraft = 'a32nx';
+        break;
+    case AircraftType.A380_842:
+        aircraft = 'a380x';
+        break;
+    default:
+        aircraft = 'other';
     }
 
     return aircraft;

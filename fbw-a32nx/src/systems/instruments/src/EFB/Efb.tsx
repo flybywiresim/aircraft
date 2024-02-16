@@ -74,18 +74,21 @@ export const usePower = () => React.useContext(PowerContext);
 
 // this returns either `A380_842` or `A320_251N` depending on the aircraft
 export function getAirframeType(): AircraftType {
-    const airframe = new URL(
-        document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')
-    ).searchParams.get('Airframe');
+    const airframe = new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
+    let airframeType: AircraftType;
 
     switch (airframe) {
-        case 'A320_251N':
-            return AircraftType.A320_251N;
-        case 'A380_842':
-            return AircraftType.A380_842;
+    case 'A380_842':
+        airframeType = AircraftType.A380_842;
+        break;
+    case 'A320_251N':
+    default:
+        airframeType = AircraftType.A320_251N;
+        break;
     }
-}
 
+    return airframeType;
+}
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);

@@ -1,6 +1,6 @@
+import { AircraftType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { FmgcComponent } from './FmgcComponent';
-import { AircraftType } from '@flybywiresim/fbw-sdk';
 
 export class ReadySignal implements FmgcComponent {
     private baseInstrument: BaseInstrument = null;
