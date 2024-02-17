@@ -68,6 +68,7 @@ mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
+pub mod brakes;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -1920,7 +1921,7 @@ impl A380Hydraulic {
         context: &UpdateContext,
         engines: [&impl Engine; 4],
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -2195,7 +2196,7 @@ impl A380Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
@@ -3136,6 +3137,8 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 }
 
 use std::fmt::Display;
+
+use self::brakes::A380AutobrakePanel;
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum A380EngineDrivenPumpId {
     Edp1a,
@@ -3957,7 +3960,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
         alternate_circuit: &BrakeCircuit,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -4358,13 +4361,13 @@ impl A380AutobrakeController {
     fn determine_mode(
         &mut self,
         context: &UpdateContext,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
     ) -> AutobrakeMode {
         if self.should_disarm(context) {
-            AutobrakeMode::NONE
+            autobrake_panel.disarm_knob()
         } else {
-            match autobrake_panel.pressed_mode() {
-                Some(mode) if self.mode == mode => AutobrakeMode::NONE,
+            match autobrake_panel.selected_mode() {
+                Some(mode) if self.mode == mode => A380AutobrakePosition::NONE,
                 Some(mode)
                     if mode != AutobrakeMode::MAX
                         || !self.should_reject_max_mode_after_time_in_flight.output() =>
@@ -4487,7 +4490,7 @@ impl A380AutobrakeController {
     fn update(
         &mut self,
         context: &UpdateContext,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,

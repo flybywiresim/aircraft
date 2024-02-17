@@ -426,9 +426,6 @@ pub enum AutobrakeMode {
     LOW = 1,
     MED = 2,
     MAX = 3,
-    HIGH = 4,
-    RTO = 5,
-    BTV = 6,
 }
 impl From<f64> for AutobrakeMode {
     fn from(value: f64) -> Self {
@@ -437,9 +434,6 @@ impl From<f64> for AutobrakeMode {
             1 => AutobrakeMode::LOW,
             2 => AutobrakeMode::MED,
             3 => AutobrakeMode::MAX,
-            4 => AutobrakeMode::HIGH,
-            5 => AutobrakeMode::RTO,
-            6 => AutobrakeMode::BTV,
             _ => AutobrakeMode::NONE,
         }
     }
