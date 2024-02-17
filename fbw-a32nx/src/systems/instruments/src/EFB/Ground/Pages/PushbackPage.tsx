@@ -3,18 +3,24 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useRef } from 'react';
-import { useSimVar, useSplitSimVar, MathUtils, usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { MathUtils, usePersistentNumberProperty, useSimVar, useSplitSimVar } from '@flybywiresim/fbw-sdk';
 import {
     ArrowDown,
     ArrowLeft,
-    ArrowRight, ArrowsAngleContract, ArrowsAngleExpand,
+    ArrowRight,
+    ArrowsAngleContract,
+    ArrowsAngleExpand,
     ArrowUp,
     ChevronDoubleDown,
     ChevronDoubleUp,
     ChevronLeft,
-    ChevronRight, DashCircle, DashCircleFill,
+    ChevronRight,
+    DashCircle,
+    DashCircleFill,
     PauseCircleFill,
-    PlayCircleFill, ToggleOff, ToggleOn,
+    PlayCircleFill,
+    ToggleOff,
+    ToggleOn,
     TruckFlatbed,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
@@ -39,17 +45,15 @@ export const PushbackPage = () => {
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
     const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 100);
-    const [pushbackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
-    const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
-    const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
+    const [pushbackWait, setPushbackWait] = useSimVar('PUSHBACK WAIT', 'bool', 100);
+    const [pushbackAttached] = useSimVar('PUSHBACK ATTACHED', 'bool', 100);
+    const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Degrees', 100);
 
     const [useControllerInput, setUseControllerInput] = usePersistentNumberProperty('PUSHBACK_USE_CONTROLLER_INPUT', 1);
     const [rudderPosition] = useSimVar('L:A32NX_RUDDER_PEDAL_POSITION', 'number', 50);
     const [elevatorPosition] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number', 50);
 
     const [planeGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots', 100);
-    const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
-    const [planeHeadingMagnetic] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees', 100);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 250);
@@ -57,11 +61,6 @@ export const PushbackPage = () => {
     const [tugCmdHdgFactor, setCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'number', 100);
     const [tugCmdSpdFactor, setCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'number', 100);
 
-    // debug info only - can be removed eventually
-    const [tugCmdHdg] = useSimVar('L:A32NX_PUSHBACK_HDG', 'number', 100);
-    const [tugCmdSpd] = useSimVar('L:A32NX_PUSHBACK_SPD', 'number', 100);
-    const [tugInertiaSpeed] = useSimVar('L:A32NX_PUSHBACK_INERTIA_SPD', 'number', 100);
-    const [updateDeltaTime] = useSimVar('L:A32NX_PUSHBACK_UPDT_DELTA', 'number', 0);
     const [showDebugInfo, setShowDebugInfo] = useSimVar('L:A32NX_PUSHBACK_DEBUG', 'bool', 100);
 
     // Required so these can be used inside the useEffect return callback
@@ -133,14 +132,6 @@ export const PushbackPage = () => {
         setCmdSpdFactor(MathUtils.clamp(speed, -1, 1));
     };
 
-    const handleTugDirectionLeft = () => {
-        handleTugDirection(tugCmdHdgFactor - 0.1);
-    };
-
-    const handleTugDirectionRight = () => {
-        handleTugDirection(tugCmdHdgFactor + 0.1);
-    };
-
     const handleTugDirection = (value: number) => {
         setCmdHdgFactor(MathUtils.clamp(value, -1, 1));
     };
@@ -164,7 +155,7 @@ export const PushbackPage = () => {
         });
     }, []);
 
-    // Update commanded heading from rudder input
+    // Update commanded heading and speed from input
     useEffect(() => {
         if (!pushbackActive || !useControllerInput) {
             return;
@@ -172,23 +163,16 @@ export const PushbackPage = () => {
         // create deadzone
         if (rudderPosition > -0.05 && rudderPosition < 0.05) {
             setCmdHdgFactor(0);
-            return;
-        }
-        setCmdHdgFactor(rudderPosition / 100);
-    }, [rudderPosition]);
-
-    // Update commanded speed from elevator input
-    useEffect(() => {
-        if (!pushbackActive || !useControllerInput) {
-            return;
+        } else {
+            setCmdHdgFactor(rudderPosition / 100);
         }
         // create deadzone
         if (elevatorPosition > -0.05 && elevatorPosition < 0.05) {
             setCmdSpdFactor(0);
-            return;
+        } else {
+            setCmdSpdFactor(-elevatorPosition);
         }
-        setCmdSpdFactor(-elevatorPosition);
-    }, [elevatorPosition]);
+    }, [rudderPosition, elevatorPosition]);
 
     // Make sure to deactivate the pushback system completely when leaving ground
     useEffect(() => {
@@ -199,15 +183,15 @@ export const PushbackPage = () => {
 
     // Debug info for pushback movement - can be removed eventually
     const debugInformation = () => (
-        <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-50">
-            <div className="overflow-hidden text-black text-m">
+        <div className="absolute inset-x-0 z-50 mx-4 flex grow justify-between border-gray-100 bg-gray-100 font-mono text-black opacity-50">
+            <div className="text-m overflow-hidden text-black">
                 pushbackSystemEnabled:
                 {' '}
                 {pushbackSystemEnabled}
                 <br />
                 deltaTime:
                 {' '}
-                {updateDeltaTime.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_UPDT_DELTA', 'number'), 3).toFixed(3)}
                 <br />
                 pushBackWait:
                 {' '}
@@ -232,9 +216,6 @@ export const PushbackPage = () => {
                 tugAngle:
                 {' '}
                 {pushbackAngle.toFixed(3)}
-                {' ('}
-                {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
-                °)
                 <br />
                 NW STRG DISC MEMO
                 {' '}
@@ -248,14 +229,14 @@ export const PushbackPage = () => {
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100'), 3).toFixed(3)}
             </div>
-            <div className="overflow-hidden text-black text-m">
+            <div className="text-m overflow-hidden text-black">
                 Heading (True):
                 {' '}
-                {planeHeadingTrue.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees'), 3).toFixed(3)}
                 <br />
                 Heading (Magnetic):
                 {' '}
-                {planeHeadingMagnetic.toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'), 3).toFixed(3)}
                 <br />
                 tCHeadingF:
                 {' '}
@@ -263,15 +244,15 @@ export const PushbackPage = () => {
                 <br />
                 tCHeading :
                 {' '}
-                {tugCmdHdg.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_HDG', 'degrees'), 3).toFixed(3)}
                 <br />
                 Rotation Velocity X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
                 <br />
                 Rotation Velocity Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rotation Velocity Z:
@@ -281,19 +262,30 @@ export const PushbackPage = () => {
                 {' '}
                 Rot. Accel. X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel. Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel Z:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
+                <br />
+                {' '}
+                Counter Rot. Accel X:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'feet per second squared'), 3).toFixed(3)}
+                {' '}
+                <br />
+                {' '}
+                Pitch:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees'), 3).toFixed(3)}
             </div>
-            <div className="overflow-hidden text-black text-m">
+            <div className="text-m overflow-hidden text-black">
                 acGroundSpeed:
                 {' '}
                 {planeGroundSpeed.toFixed(3)}
@@ -308,23 +300,23 @@ export const PushbackPage = () => {
                 <br />
                 tCSpeed:
                 {' '}
-                {tugCmdSpd.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_SPD', 'feet per second'), 3).toFixed(3)}
                 <br />
                 tInertiaSpeed:
                 {' '}
-                {tugInertiaSpeed.toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_INERTIA_SPD', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity X:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity Y:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per second'), 3).toFixed(3)}
                 <br />
                 Velocity Z:
                 {' '}
-                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number'), 3).toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'feet per second'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Accel. X:
@@ -340,6 +332,12 @@ export const PushbackPage = () => {
                 Accel Z:
                 {' '}
                 {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
+                <br />
+                {' '}
+                Rel. Wind Z:
+                {' '}
+                {MathUtils.round(SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second'), 3).toFixed(3)}
+                m/s
             </div>
         </div>
     );
@@ -363,14 +361,14 @@ export const PushbackPage = () => {
 
     return (
         <>
-            <div className="flex relative flex-col space-y-4 w-full h-full">
+            <div className="relative flex h-full w-full flex-col space-y-4">
 
                 {/* Map Container */}
-                <div className="flex flex-col flex-grow space-y-4">
+                <div className="flex grow flex-col space-y-4">
                     <PushbackMap />
                 </div>
 
-                <div className="absolute right-0 left-0">
+                <div className="absolute inset-x-0">
                     {showDebugInfo ? debugInformation() : <></>}
                 </div>
 
@@ -382,7 +380,7 @@ export const PushbackPage = () => {
                 )}
 
                 {/* Manual Pushback Controls */}
-                <div className={`flex flex-col p-6 h-full space-y-2 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable && 'opacity-20 pointer-events-none'}`}>
+                <div className={`flex h-full flex-col space-y-2 rounded-lg border-2 border-theme-accent p-6 ${!pushbackUIAvailable && 'pointer-events-none opacity-20'}`}>
                     <div className="flex flex-row space-x-4">
 
                         {/* Pushback System enabled On/Off */}
@@ -390,7 +388,7 @@ export const PushbackPage = () => {
                             <div className="w-full">
                                 <p
                                     className="text-center"
-                                    onDoubleClick={() => setShowDebugInfo((old) => !old)}
+                                    onDoubleClick={() => setShowDebugInfo((old: any) => !old)}
                                 >
                                     {t('Pushback.SystemEnabledOn')}
                                 </p>
@@ -398,7 +396,7 @@ export const PushbackPage = () => {
                                     <button
                                         type="button"
                                         onClick={handleEnableSystem}
-                                        className="flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
+                                        className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-green-600 text-theme-text opacity-60 transition duration-100 hover:opacity-100"
                                     >
                                         <ToggleOn size={50} />
                                     </button>
@@ -408,7 +406,7 @@ export const PushbackPage = () => {
                             <div className="w-full">
                                 <p
                                     className="text-center"
-                                    onDoubleClick={() => setShowDebugInfo((old) => !old)}
+                                    onDoubleClick={() => setShowDebugInfo((old: any) => !old)}
                                 >
                                     {t('Pushback.SystemEnabledOff')}
                                 </p>
@@ -416,7 +414,7 @@ export const PushbackPage = () => {
                                     <button
                                         type="button"
                                         onClick={handleEnableSystem}
-                                        className={`flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 {${!pushbackUIAvailable && 'opacity-30 pointer-events-none'}`}
+                                        className={`{ flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-red-600 text-theme-text opacity-60 transition duration-100 hover:opacity-100${!pushbackUIAvailable && 'pointer-events-none opacity-30'}`}
                                     >
                                         <ToggleOff size={50} />
                                     </button>
@@ -425,7 +423,7 @@ export const PushbackPage = () => {
                         )}
 
                         {/* Call Tug */}
-                        <div className={`w-full ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}>
+                        <div className={`w-full ${!pushbackSystemEnabled && 'pointer-events-none opacity-30'}`}>
                             <p className="text-center">
                                 {callTugLabel()}
                             </p>
@@ -433,7 +431,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleCallTug}
-                                    className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                    className={`duration-100'} flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent text-theme-text opacity-60 transition hover:opacity-100 ${tugInTransit ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'pointer-events-none opacity-30'}`}
                                 >
                                     <TruckFlatbed size={50} />
                                     {' '}
@@ -448,7 +446,7 @@ export const PushbackPage = () => {
 
                         {/* Parking Brake */}
                         <div className="w-full">
-                            <p className="text-center jus">
+                            <p className="jus text-center">
                                 {t('Pushback.ParkingBrake.Title')}
                                 {' '}
                                 {parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}
@@ -456,20 +454,20 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.SetReleaseParkingBrake')}>
                                 <button
                                     type="button"
-                                    onClick={() => setParkingBrakeEngaged((old) => !old)}
-                                    className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable && 'opacity-30 pointer-events-none'}`}
+                                    onClick={() => setParkingBrakeEngaged((old: any) => !old)}
+                                    className={`text-utility-white flex h-20 w-full items-center justify-center rounded-md opacity-60 transition duration-100 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable && 'pointer-events-none opacity-30'}`}
                                 >
                                     {parkingBrakeEngaged ? (
-                                        <DashCircleFill className="transform" size={40} />
+                                        <DashCircleFill className="" size={40} />
                                     ) : (
-                                        <DashCircle className="transform -rotate-90" size={40} />
+                                        <DashCircle className="-rotate-90" size={40} />
                                     )}
                                 </button>
                             </TooltipWrapper>
                         </div>
                     </div>
 
-                    <div className={`flex flex-row space-x-4 ${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`flex flex-row space-x-4 ${!pushbackActive && 'pointer-events-none opacity-30'}`}>
 
                         {/* Backward Button */}
                         <div className="w-full">
@@ -479,7 +477,7 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
                                 <button
                                     type="button"
-                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                     onClick={() => handleTugSpeed(tugCmdSpdFactor - 0.1)}
                                 >
                                     <ArrowDown size={40} />
@@ -495,7 +493,7 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
                                 <button
                                     type="button"
-                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                     onClick={() => handleTugSpeed(tugCmdSpdFactor + 0.1)}
                                 >
                                     <ArrowUp size={40} />
@@ -512,7 +510,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={stopMovement}
-                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                 >
                                     {tugCmdSpdFactor !== 0 ? (
                                         <PauseCircleFill size={40} />
@@ -531,8 +529,8 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.Left')}>
                                 <button
                                     type="button"
-                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                                    onClick={() => handleTugDirectionLeft()}
+                                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                                    onClick={() => handleTugDirection(tugCmdHdgFactor - 0.05)}
                                 >
                                     <ArrowLeft size={40} />
                                 </button>
@@ -547,8 +545,8 @@ export const PushbackPage = () => {
                             <TooltipWrapper text={t('Pushback.TT.Right')}>
                                 <button
                                     type="button"
-                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                                    onClick={() => handleTugDirectionRight()}
+                                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                                    onClick={() => handleTugDirection(tugCmdHdgFactor + 0.05)}
                                 >
                                     <ArrowRight size={40} />
                                 </button>
@@ -557,13 +555,13 @@ export const PushbackPage = () => {
                     </div>
 
                     {/* Direction Slider */}
-                    <div className={`${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`${!pushbackActive && 'pointer-events-none opacity-30'}`}>
                         <p className="text-center">
                             {t('Pushback.TugDirection')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.SliderDirection')}>
                             <div className="flex flex-row items-center space-x-4">
-                                <p className="font-bold text-unselected"><ChevronLeft /></p>
+                                <p className="text-unselected font-bold"><ChevronLeft /></p>
                                 <Slider
                                     ref={directionSliderRef}
                                     onChange={(value) => handleTugDirection(value)}
@@ -574,30 +572,30 @@ export const PushbackPage = () => {
                                     value={tugCmdHdgFactor}
                                     startPoint={0}
                                 />
-                                <p className="font-bold text-unselected"><ChevronRight /></p>
+                                <p className="text-unselected font-bold"><ChevronRight /></p>
                             </div>
                         </TooltipWrapper>
                     </div>
 
                     {/* Speed Slider */}
-                    <div className={`${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`${!pushbackActive && 'pointer-events-none opacity-30'}`}>
                         <p className="text-center">
                             {t('Pushback.TugSpeed')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.SliderSpeed')}>
                             <div className="flex flex-row items-center space-x-4">
-                                <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
+                                <p className="text-unselected font-bold"><ChevronDoubleDown /></p>
                                 <Slider
                                     ref={speedSliderRef}
                                     onChange={(value) => handleTugSpeed(value)}
                                     onAfterChange={() => speedSliderRef.current.blur()}
                                     min={-1}
-                                    step={0.1}
+                                    step={0.01}
                                     max={1}
                                     value={tugCmdSpdFactor}
                                     startPoint={0}
                                 />
-                                <p className="font-bold text-unselected">
+                                <p className="text-unselected font-bold">
                                     <ChevronDoubleUp />
                                 </p>
                             </div>
@@ -605,7 +603,7 @@ export const PushbackPage = () => {
                     </div>
 
                     <TooltipWrapper text={t('Pushback.TT.UseControllerInput')}>
-                        <div className={`flex flex-row items-center h-10 ${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
+                        <div className={`flex h-10 flex-row items-center ${!pushbackActive && 'pointer-events-none opacity-30'}`}>
                             <div className="mr-4">
                                 {t('Pushback.UseControllerInput')}
                             </div>
