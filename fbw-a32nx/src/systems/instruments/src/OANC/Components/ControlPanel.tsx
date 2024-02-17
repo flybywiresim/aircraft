@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-    ArraySubject, ComponentProps, DisplayComponent, DmsFormatter2, FSComponent, MappedSubscribable, MapSubject, Subject, Subscribable, Subscription, UnitType,
+    ArraySubject, ComponentProps, DisplayComponent, FSComponent, MappedSubscribable, MapSubject, Subject, Subscribable, Subscription,
     VNode,
 } from '@microsoft/msfs-sdk';
 
 import { AmdbAirportSearchResult } from '@flybywiresim/fbw-sdk';
-import { NavigraphAmdbClient } from '@flybywiresim/oanc';
+import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient } from '@flybywiresim/oanc';
 import { RadioButtonGroup } from './RadioButtonGroup';
 import { DropdownMenu } from './DropdownMenu';
 
@@ -28,37 +28,7 @@ export interface ControlPanelProps extends ComponentProps {
     onZoomOut: () => void,
 }
 
-class ControlPanelStore {
-    public readonly airports = ArraySubject.create<AmdbAirportSearchResult>();
-
-    public readonly sortedAirports = ArraySubject.create<AmdbAirportSearchResult>();
-
-    public readonly airportSearchMode = Subject.create(ControlPanelAirportSearchMode.Icao);
-
-    public readonly airportSearchData = ArraySubject.create<string>();
-
-    public readonly airportSearchSelectedSearchLetterIndex = Subject.create(0);
-
-    public readonly airportSearchSelectedAirportIndex = Subject.create(0);
-
-    public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
-
-    public readonly isAirportSelectionPending = Subject.create(false);
-}
-
-enum ControlPanelAirportSearchMode {
-    Icao,
-    Iata,
-    City,
-}
-
 export class ControlPanel extends DisplayComponent<ControlPanelProps> {
-    private static readonly LAT_FORMATTER = DmsFormatter2.create('{dd}°{mm}.{s}{+[N]-[S]}', UnitType.DEGREE, 0.1);
-
-    private static readonly LONG_FORMATTER = DmsFormatter2.create('{ddd}°{mm}.{s}{+[E]-[W]}', UnitType.DEGREE, 0.1);
-
-    private static readonly LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
     private readonly airportSearchAirportDropdownRef = FSComponent.createRef<DropdownMenu>();
 
     private readonly displayAirportButtonRef = FSComponent.createRef<HTMLButtonElement>();
@@ -104,11 +74,11 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         });
 
         this.subscriptions.push(
-            this.store.airports.sub(() => this.sotAirports(this.store.airportSearchMode.get())),
+            this.store.airports.sub(() => this.sortAirports(this.store.airportSearchMode.get())),
         );
 
         this.subscriptions.push(
-            this.store.airportSearchMode.sub((mode) => this.sotAirports(mode)),
+            this.store.airportSearchMode.sub((mode) => this.sortAirports(mode)),
         );
 
         this.subscriptions.push(
@@ -121,7 +91,7 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         const searchMode = this.store.airportSearchMode.get();
         const sortedAirports = this.store.sortedAirports.getArray();
 
-        const prop = ControlPanel.getSearchModeProp(searchMode);
+        const prop = ControlPanelUtils.getSearchModeProp(searchMode);
 
         this.store.airportSearchData.set(sortedAirports.map((it) => (it[prop] as string).toUpperCase()));
     }
@@ -131,10 +101,10 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         this.store.airportSearchSelectedAirportIndex.set(this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === airport.idarpt));
     }
 
-    private sotAirports(mode: ControlPanelAirportSearchMode) {
+    private sortAirports(mode: ControlPanelAirportSearchMode) {
         const array = this.store.airports.getArray().slice();
 
-        const prop = ControlPanel.getSearchModeProp(mode);
+        const prop = ControlPanelUtils.getSearchModeProp(mode);
 
         array.sort((a, b) => {
             if (a[prop] < b[prop]) {
@@ -168,8 +138,8 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
             throw new Error('');
         }
 
-        const firstLetter = airport[ControlPanel.getSearchModeProp(this.store.airportSearchMode.get())][0];
-        this.store.airportSearchSelectedSearchLetterIndex.set(ControlPanel.LETTERS.findIndex((it) => it === firstLetter));
+        const firstLetter = airport[ControlPanelUtils.getSearchModeProp(this.store.airportSearchMode.get())][0];
+        this.store.airportSearchSelectedSearchLetterIndex.set(ControlPanelUtils.LETTERS.findIndex((it) => it === firstLetter));
 
         const airportIndexInSearchData = indexInSearchData ?? this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === icao);
 
@@ -184,12 +154,12 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         this.store.airportSearchMode.set(newSearchMode);
 
         if (selectedAirport !== null) {
-            const prop = ControlPanel.getSearchModeProp(newSearchMode);
+            const prop = ControlPanelUtils.getSearchModeProp(newSearchMode);
 
             const firstLetter = selectedAirport[prop][0];
             const airportIndexInSearchData = this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === selectedAirport.idarpt);
 
-            this.store.airportSearchSelectedSearchLetterIndex.set(ControlPanel.LETTERS.findIndex((it) => it === firstLetter));
+            this.store.airportSearchSelectedSearchLetterIndex.set(ControlPanelUtils.LETTERS.findIndex((it) => it === firstLetter));
             this.store.airportSearchSelectedAirportIndex.set(airportIndexInSearchData);
         }
     };
@@ -230,9 +200,9 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
                         <div class="oanc-control-panel-arpt-sel-left-dropdowns">
                             <div class="oanc-control-panel-arpt-sel-left-letter-dropdown">
                                 <DropdownMenu
-                                    values={ArraySubject.create(ControlPanel.LETTERS)}
+                                    values={ArraySubject.create(ControlPanelUtils.LETTERS)}
                                     selectedIndex={this.store.airportSearchSelectedSearchLetterIndex}
-                                    onModified={(newSelectedIndex) => this.handleSelectSearchLetter(newSelectedIndex, ControlPanel.LETTERS[newSelectedIndex])}
+                                    onModified={(newSelectedIndex) => this.handleSelectSearchLetter(newSelectedIndex, ControlPanelUtils.LETTERS[newSelectedIndex])}
                                     freeTextAllowed={false}
                                     numberOfDigitsForInputField={1}
                                     idPrefix="oanc-search-letter"
@@ -286,7 +256,7 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
                                     return '';
                                 }
 
-                                return `${ControlPanel.LAT_FORMATTER(it.coordinates.lat)}/${ControlPanel.LONG_FORMATTER(it.coordinates.lon)}`;
+                                return `${ControlPanelUtils.LAT_FORMATTER(it.coordinates.lat)}/${ControlPanelUtils.LONG_FORMATTER(it.coordinates.lon)}`;
                             })}
                         </span>
 
@@ -307,23 +277,6 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
                 </div>
             </div>
         );
-    }
-
-    private static getSearchModeProp(mode: ControlPanelAirportSearchMode): keyof AmdbAirportSearchResult {
-        let prop: keyof AmdbAirportSearchResult;
-        switch (mode) {
-        default:
-        case ControlPanelAirportSearchMode.Icao:
-            prop = 'idarpt';
-            break;
-        case ControlPanelAirportSearchMode.Iata:
-            prop = 'iata';
-            break;
-        case ControlPanelAirportSearchMode.City:
-            prop = 'name';
-            break;
-        }
-        return prop;
     }
 }
 

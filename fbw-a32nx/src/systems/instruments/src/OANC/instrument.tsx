@@ -114,14 +114,6 @@ class A32NX_OANC extends BaseInstrument {
                     contextMenuY={this.contextMenuY}
                     waitScreenRef={this.waitScreenRef}
                 />
-                <ContextMenu
-                    isVisible={this.contextMenuVisible}
-                    x={this.contextMenuX}
-                    y={this.contextMenuY}
-                    items={this.contextMenuItems}
-                    closeMenu={() => this.contextMenuVisible.set(false)}
-                />
-
                 <ControlPanel
                     ref={this.controlPanelRef}
                     amdbClient={this.oancRef.instance.amdbClient}
@@ -130,6 +122,13 @@ class A32NX_OANC extends BaseInstrument {
                     closePanel={() => this.controlPanelVisible.set(false)}
                     onZoomIn={() => this.oancRef.instance.handleZoomIn()}
                     onZoomOut={() => this.oancRef.instance.handleZoomOut()}
+                />
+                <ContextMenu
+                    isVisible={this.contextMenuVisible}
+                    x={this.contextMenuX}
+                    y={this.contextMenuY}
+                    items={this.contextMenuItems}
+                    closeMenu={() => this.contextMenuVisible.set(false)}
                 />
             </div>,
             document.getElementById('OANC_CONTENT'),
