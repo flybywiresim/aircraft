@@ -23,7 +23,7 @@
 /* Values in gallons */
 struct Configuration {
   double fuelCenter = 0;
-  double fuelLeft = 329.06;
+  double fuelLeft = 411.34;
   double fuelRight = fuelLeft;
   double fuelLeftAux = 0;
   double fuelRightAux = fuelLeftAux;
@@ -1330,8 +1330,8 @@ class EngineControl {
   Configuration loadConfiguration(const mINI::INIStructure& structure) {
     return {
         mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 329.06),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 329.06),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 411.34),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 411.34),
         mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 0),
         mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 0),
     };
