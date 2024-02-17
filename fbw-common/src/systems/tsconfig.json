@@ -18,7 +18,8 @@
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
       "@typings/*": ["../typings/*"],
-      "@flybywiresim/fbw-sdk": ["./index.ts"]
+      "@flybywiresim/fbw-sdk": ["./index.ts"],
+      "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
     }
   }
 }

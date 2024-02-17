@@ -7,7 +7,7 @@ type CardProps = {
     className?: string,
 };
 
-const Card: React.FC<CardProps> = ({ title, childrenContainerClassName = '', children, className }) => (
+export const Card: React.FC<CardProps> = ({ title, childrenContainerClassName = '', children, className }) => (
     <div className={className}>
         {!!title && <h1 className="mb-4 text-2xl font-medium">{title}</h1>}
 

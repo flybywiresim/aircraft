@@ -1,4 +1,4 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -25,11 +25,8 @@ import {
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
-import { t } from '../../Localization/translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
+import { t, PromptModal, useModals, TooltipWrapper, Toggle } from '@flybywiresim/flypad';
 import { PushbackMap } from './PushbackMap';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
 
 export const PushbackPage = () => {
     const { showModal } = useModals();
@@ -38,8 +35,8 @@ export const PushbackPage = () => {
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum', 250);
 
     // This is used to completely turn off the pushback for compatibility with other
-    // pushback add-ons. Only watching sim variables like PUSHBACK STATE or
-    // Pushback Available leads to conflicts as other add-on also read/write them.
+    // pushback add-ons. Only watching sim variables like 'PUSHBACK STATE' or
+    // 'PUSHBACK AVAILABLE' leads to conflicts as other add-on also read/write them.
     // It is implemented as a LVAR to allow 3rd parties to see that the a32nx pushback is active
     // and to be able to deactivate themselves or the a32nx pushback system if required.
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);

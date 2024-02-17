@@ -1,10 +1,8 @@
 import React from 'react';
 
-import { t } from '../Localization/translation';
+import { t, Navbar, TabRoutes, PageLink, PageRedirect } from '@flybywiresim/flypad';
 import { OverviewPage } from './Pages/OverviewPage';
 import { LoadSheetWidget } from './Pages/LoadsheetPage';
-import { Navbar } from '../UtilComponents/Navbar';
-import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 export const Dispatch = () => {
     const tabs: PageLink[] = [

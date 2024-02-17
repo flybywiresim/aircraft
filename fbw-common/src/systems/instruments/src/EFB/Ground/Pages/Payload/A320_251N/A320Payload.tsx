@@ -2,18 +2,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { Card, t, TooltipWrapper, SelectGroup, SelectItem, PromptModal, useModals } from '@flybywiresim/flypad';
 import { SeatOutlineBg } from '../../../../Assets/SeatOutlineBg';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-import { t } from '../../../../Localization/translation';
-import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
+
 import Loadsheet from './a20nv55.json';
-import Card from '../../../../UtilComponents/Card/Card';
-import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
+
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
-import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 
 interface A320Props {
     simbriefUnits: string,

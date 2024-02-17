@@ -2,17 +2,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { t, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card } from '@flybywiresim/flypad';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-import { t } from '../../../../Localization/translation';
-import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
+
 import Loadsheet from './a380v3.json';
-import Card from '../../../../UtilComponents/Card/Card';
-import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
+
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
-import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+
 import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
 
 interface A380Props {

@@ -6,20 +6,15 @@ import React, { FC, useEffect, useRef } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import {
     ArchiveFill,
-    // ConeStriped,
     DoorClosedFill,
     HandbagFill,
     PersonPlusFill,
     PlugFill,
-    // TriangleFill as Chock,
     Truck,
-    // VinylFill as Wheel,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
-import { t } from '../../../../Localization/translation';
-import { A380GroundServiceOutline } from '../../../../Assets/GroundServiceOutline';
-import { useAppDispatch, useAppSelector } from '../../../../Store/store';
 import {
+    t, useAppDispatch, useAppSelector, A380GroundServiceOutline,
     setBoarding1DoorButtonState,
     setBoarding2DoorButtonState,
     setBoarding3DoorButtonState,
@@ -30,8 +25,7 @@ import {
     setFuelTruckButtonState,
     setGpuButtonState,
     setJetWayButtonState,
-} from '../../../../Store/features/groundServicePage';
-// import { getAirframeType } from '../../../../Efb';
+} from '@flybywiresim/flypad';
 
 interface ServiceButtonWrapperProps {
     className?: string,

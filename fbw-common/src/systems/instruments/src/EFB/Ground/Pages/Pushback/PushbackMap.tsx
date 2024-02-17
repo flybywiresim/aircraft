@@ -1,4 +1,4 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -10,18 +10,15 @@ import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
 import getDistance from 'geolib/es/getPreciseDistance';
 import { GeolibInputCoordinates } from 'geolib/es/types';
-import { BingMap } from '../../UtilComponents/BingMap';
-import { t } from '../../Localization/translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { useAppDispatch, useAppSelector } from '../../Store/store';
+import { BingMap, t, TooltipWrapper, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import {
     setActualMapLatLon,
     setAircraftIconPosition,
     setCenterPlaneMode,
     setMapRange,
     TScreenCoordinates,
-} from '../../Store/features/pushback';
-import { getAirframeType } from '../../Efb';
+} from '../../../Store/features/pushback';
+import { getAirframeType } from '../../../Efb';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;

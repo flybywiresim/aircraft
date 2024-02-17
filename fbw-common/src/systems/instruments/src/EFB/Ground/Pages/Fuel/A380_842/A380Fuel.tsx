@@ -7,11 +7,7 @@ import { useSimVar, usePersistentNumberProperty, usePersistentProperty, Units } 
 import Card from 'instruments/src/EFB/UtilComponents/Card/Card';
 import { A380FuelOutline } from 'instruments/src/EFB/Assets/FuelOutline';
 import Slider from 'rc-slider';
-import { t } from '../../../../translation';
-import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
-import { SimpleInput } from '../../../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
-import { ProgressBar } from '../../../../UtilComponents/Progress/Progress';
+import { t, TooltipWrapper, SimpleInput, SelectGroup, SelectItem, ProgressBar } from '@flybywiresim/flypad';
 
 // Page is very WIP, needs to be cleaned up and refactored
 
@@ -31,7 +27,7 @@ const ValueSimbriefInput: React.FC<ValueSimbriefInputProps> = ({ min, max, value
         <div className="flex flex-row">
             <div className="relative">
                 <SimpleInput
-                    className={`${showSimbriefButton && 'rounded-r-none'} my-2 w-full font-mono ${(disabled ? 'placeholder:text-theme-body text-theme-body cursor-not-allowed' : '')}`}
+                    className={`${showSimbriefButton && 'rounded-r-none'} my-2 w-full font-mono ${(disabled ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : '')}`}
                     fontSizeClassName="text-2xl"
                     number
                     min={min}
@@ -45,9 +41,9 @@ const ValueSimbriefInput: React.FC<ValueSimbriefInputProps> = ({ min, max, value
                 && (
                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                         <div
-                            className={`text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight my-2 flex
-                                        h-auto items-center justify-center
-                                        rounded-md rounded-l-none border-2 px-2 transition duration-100`}
+                            className={`my-2 flex h-auto items-center justify-center rounded-md rounded-l-none
+                                        border-2 border-theme-highlight bg-theme-highlight
+                                        px-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight`}
                             onClick={onClickSync}
                         >
                             <CloudArrowDown size={26} />
@@ -275,7 +271,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
     return (
         <div className="relative flex flex-col justify-center">
-            <div className="h-content-section-reduced relative flex w-full flex-row justify-between">
+            <div className="relative flex h-content-section-reduced w-full flex-row justify-between">
                 <Card className="absolute left-0 top-6 flex w-fit" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                     <table className="table-fixed">
                         <tbody>
@@ -479,7 +475,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     </table>
                 </Card>
                 <A380FuelOutline
-                    className="text-theme-text absolute inset-x-0 right-4 top-20 mx-auto flex h-full w-full"
+                    className="absolute inset-x-0 right-4 top-20 mx-auto flex h-full w-full text-theme-text"
                     feed1Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / OUTER_FEED_MAX_KG) * 100}
                     feed2Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / INNER_FEED_MAX_KG) * 100}
                     feed3Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / INNER_FEED_MAX_KG) * 100}
@@ -569,7 +565,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                 </div>
             </div>
 
-            <div className="border-theme-accent absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border px-6 py-3">
+            <div className="absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border border-theme-accent px-6 py-3">
                 <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
                 <SelectGroup>
                     <SelectItem selected={canRefuel() ? refuelRate === '2' : !canRefuel()} onSelect={() => setRefuelRate('2')}>{t('Settings.Instant')}</SelectItem>

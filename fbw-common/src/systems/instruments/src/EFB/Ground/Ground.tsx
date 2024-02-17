@@ -1,24 +1,18 @@
-import React from 'react';
-import { t } from '../Localization/translation';
-import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
-import { Navbar } from '../UtilComponents/Navbar';
-import { ServicesPage } from './Pages/ServicesPage';
-import { PushbackPage } from './Pages/PushbackPage';
-import { Payload } from './Pages/Payload/Payload';
-import { Fuel } from './Pages/Fuel/Fuel';
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 
-export interface StatefulButton {
-    id: string,
-    state: string,
-    callBack: any,
-    value: number,
-}
+import React from 'react';
+import { Navbar, t, PageLink, PageRedirect, TabRoutes } from '@flybywiresim/flypad';
+import { ServicesPage } from './Pages/Services/ServicesPage';
+import { PushbackPage } from './Pages/Pushback/PushbackPage';
+import { PayloadPage } from './Pages/Payload/PayloadPage';
+import { Fuel } from './Pages/Fuel/Fuel';
 
 export const Ground = () => {
     const tabs: PageLink[] = [
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
         { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <Fuel /> },
-        { name: 'Payload', alias: t('Ground.Payload.Title'), component: <Payload /> },
+        { name: 'Payload', alias: t('Ground.Payload.Title'), component: <PayloadPage /> },
         { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
     ];
 

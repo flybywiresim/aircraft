@@ -1,11 +1,8 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { ArrowLeftRight, BoxArrowRight, BriefcaseFill, CaretDownFill, PersonFill, Shuffle, StopCircleFill } from 'react-bootstrap-icons';
-import { ProgressBar } from '../../../UtilComponents/Progress/Progress';
-import { t } from '../../../Localization/translation';
-import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
-import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { Units } from '../../../../../../shared/src';
+import { Units } from '@flybywiresim/fbw-sdk';
+import { ProgressBar, t, TooltipWrapper, SimpleInput } from '@flybywiresim/flypad';
 import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
 
 export type Loadsheet = {

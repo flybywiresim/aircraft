@@ -4,14 +4,7 @@ import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { t } from '../../Localization/translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
-import { useAppSelector } from '../../Store/store';
-import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { ProgressBar } from '../../UtilComponents/Progress/Progress';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { OverWingOutline } from '../../Assets/OverWingOutline';
+import { t, TooltipWrapper, SelectGroup, SelectItem, ProgressBar, SimpleInput, OverWingOutline } from '@flybywiresim/flypad';
 
 interface TankReadoutProps {
     title: string;

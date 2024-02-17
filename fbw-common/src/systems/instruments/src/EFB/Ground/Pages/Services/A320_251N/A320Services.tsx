@@ -17,10 +17,8 @@ import {
     Fan,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
-import { t } from '../../../../Localization/translation';
-import { GroundServiceOutline } from '../../../../Assets/GroundServiceOutline';
-import { useAppDispatch, useAppSelector } from '../../../../Store/store';
 import {
+    t, GroundServiceOutline, useAppDispatch, useAppSelector,
     setBoarding1DoorButtonState,
     setBoarding2DoorButtonState,
     setBoarding3DoorButtonState,
@@ -32,7 +30,7 @@ import {
     setGpuButtonState,
     setJetWayButtonState,
     setAsuButtonState,
-} from '../../../../Store/features/groundServicePage';
+} from '@flybywiresim/flypad';
 
 interface ServiceButtonWrapperProps {
     className?: string,

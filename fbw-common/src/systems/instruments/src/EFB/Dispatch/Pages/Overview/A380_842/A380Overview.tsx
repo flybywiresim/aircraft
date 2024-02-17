@@ -6,8 +6,7 @@ import React, { FC } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
 import { useSimVar, Units } from '@flybywiresim/fbw-sdk';
-import { t } from '../../../../translation';
-import { A380NoseOutline } from '../../../../Assets/NoseOutline';
+import { t, A380NoseOutline } from '@flybywiresim/flypad';
 
 interface InformationEntryProps {
     title: string;
@@ -16,7 +15,7 @@ interface InformationEntryProps {
 
 const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) => (
     <div>
-        <div className="text-theme-highlight flex flex-row items-center space-x-4">
+        <div className="flex flex-row items-center space-x-4 text-theme-highlight">
             {children}
             <p className="whitespace-nowrap">{title}</p>
         </div>
@@ -45,12 +44,12 @@ export const A380Overview = () => {
     };
 
     return (
-        <div className="h-content-section-reduced border-theme-accent mr-3 w-min overflow-hidden rounded-lg border-2 p-6">
+        <div className="mr-3 h-content-section-reduced w-min overflow-hidden rounded-lg border-2 border-theme-accent p-6">
             <h1 className="font-bold">Airbus A380</h1>
             <p>{airline}</p>
 
             <div className="mt-6 flex items-center justify-center">
-                <A380NoseOutline className="text-theme-text -ml-56 mr-32 h-64" />
+                <A380NoseOutline className="-ml-56 mr-32 h-64 text-theme-text" />
             </div>
 
             <div className="mt-8 flex flex-row space-x-16">

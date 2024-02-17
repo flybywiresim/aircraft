@@ -7,12 +7,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { t } from '../../Localization/translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
-import { useAppDispatch, useAppSelector } from '../../Store/store';
-import { setOfpScroll } from '../../Store/features/dispatchPage';
+import {
+    t, TooltipWrapper, ScrollableContainer, fetchSimbriefDataAction,
+    isSimbriefDataLoaded, useAppDispatch, useAppSelector, setOfpScroll,
+} from '@flybywiresim/flypad';
 
 const NoSimBriefDataOverlay = () => {
     const dispatch = useAppDispatch();
