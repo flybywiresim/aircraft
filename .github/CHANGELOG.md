@@ -65,6 +65,7 @@
 1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
 1. [AP] Add NAV on GA capability - @lukecologne (luke)
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
+1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
 
 ## 0.11.0
