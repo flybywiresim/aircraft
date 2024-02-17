@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { get, orderBy, min, max, inRange, set, last, head } from 'lodash';
 
 export type groundSpeed = {from: number, groundSpeed: number};

@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { cockpitPreparationChecklist } from './CockpitPreparation';
 import { beforeStartChecklist } from './BeforeStart';
 import { afterStartChecklist } from './AfterStart';

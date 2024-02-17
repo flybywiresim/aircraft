@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { ChevronDown } from 'react-bootstrap-icons';
 import { ScrollableContainer } from '../../ScrollableContainer';

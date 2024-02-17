@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC } from 'react';
 import { ArrowRight } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';

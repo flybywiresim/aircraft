@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useEffect, useRef, useState } from 'react';
 
 interface ScrollableContainerProps {

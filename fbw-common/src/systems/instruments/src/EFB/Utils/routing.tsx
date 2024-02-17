@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Redirect, Route, useHistory } from 'react-router-dom';
 

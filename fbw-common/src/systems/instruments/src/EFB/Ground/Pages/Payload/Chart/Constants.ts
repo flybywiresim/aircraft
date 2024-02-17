@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 export const CanvasConst = Object.freeze({
     yScale: 200,
     cgAngle: Math.PI / 224,

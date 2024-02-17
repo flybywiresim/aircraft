@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 // https://docs.flybywiresim.com/pilots-corner/a32nx-briefing/a32nx_api/
 
 import { ChecklistDefinition } from '../Checklists';

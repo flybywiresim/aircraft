@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';

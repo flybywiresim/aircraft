@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { usePersistentNumberProperty, DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
