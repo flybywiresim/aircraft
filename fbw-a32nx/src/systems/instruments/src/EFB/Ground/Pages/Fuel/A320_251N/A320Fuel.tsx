@@ -121,7 +121,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
     const airplaneCanRefuel = useCallback(() => {
         if (refuelRate !== '2') {
             if (!canRefuel()) {
-            if (!canRefuel()) {
                 setRefuelRate('2');
             }
         }
@@ -132,7 +131,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
             }
 
             // In-flight refueling with GSX Sync enabled
-            return !canRefuel() && refuelRate === '2';
             return !canRefuel() && refuelRate === '2';
         }
         return true;
@@ -284,32 +282,25 @@ export const A320Fuel: React.FC<FuelProps> = ({
         }
     };
 
+    const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
+
     const handleSimbriefFuelSync = () => {
         let fuelToLoad = -1;
 
         if (Units.usingMetric) {
             if (simbriefUnits === 'kgs') {
                 fuelToLoad = roundUpNearest100(simbriefPlanRamp);
-        if (Units.usingMetric) {
-            if (simbriefUnits === 'kgs') {
-                fuelToLoad = roundUpNearest100(simbriefPlanRamp);
             } else {
-                fuelToLoad = roundUpNearest100(Units.poundToKilogram(simbriefPlanRamp));
                 fuelToLoad = roundUpNearest100(Units.poundToKilogram(simbriefPlanRamp));
             }
         } else if (simbriefUnits === 'kgs') {
             fuelToLoad = roundUpNearest100(Units.kilogramToPound(simbriefPlanRamp));
-        } else if (simbriefUnits === 'kgs') {
-            fuelToLoad = roundUpNearest100(Units.kilogramToPound(simbriefPlanRamp));
         } else {
-            fuelToLoad = roundUpNearest100(simbriefPlanRamp);
             fuelToLoad = roundUpNearest100(simbriefPlanRamp);
         }
 
         updateDesiredFuel(fuelToLoad.toString());
     };
-
-    const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
     return (
         <div className="h-content-section-reduced relative mt-6 flex flex-col justify-between">
@@ -320,7 +311,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                         current={totalCurrent()}
                         target={totalTarget}
                         capacity={totalFuel()}
-                        currentUnit={massUnitForDisplay}
                         currentUnit={massUnitForDisplay}
                         tankValue={totalFuel()}
                         convertedFuelValue={totalCurrent()}
@@ -333,7 +323,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                         current={centerCurrent}
                         target={centerTarget}
                         capacity={CENTER_TANK_GALLONS}
-                        currentUnit={massUnitForDisplay}
                         currentUnit={massUnitForDisplay}
                         tankValue={centerTank()}
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
@@ -350,7 +339,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             target={LInnTarget}
                             capacity={INNER_CELL_GALLONS}
                             currentUnit={massUnitForDisplay}
-                            currentUnit={massUnitForDisplay}
                             tankValue={innerCell()}
                             convertedFuelValue={convertFuelValue(LInnCurrent)}
                         />
@@ -359,7 +347,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             current={LOutCurrent}
                             target={LOutTarget}
                             capacity={OUTER_CELL_GALLONS}
-                            currentUnit={massUnitForDisplay}
                             currentUnit={massUnitForDisplay}
                             tankValue={outerCell()}
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
@@ -372,7 +359,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             target={RInnTarget}
                             capacity={INNER_CELL_GALLONS}
                             currentUnit={massUnitForDisplay}
-                            currentUnit={massUnitForDisplay}
                             tankValue={innerCell()}
                             convertedFuelValue={convertFuelValueCenter(RInnCurrent)}
                         />
@@ -381,7 +367,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             current={ROutCurrent}
                             target={ROutTarget}
                             capacity={OUTER_CELL_GALLONS}
-                            currentUnit={massUnitForDisplay}
                             currentUnit={massUnitForDisplay}
                             tankValue={outerCell()}
                             convertedFuelValue={convertFuelValueCenter(ROutCurrent)}
@@ -463,7 +448,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
                                         onChange={(x) => updateDesiredFuel(x)}
                                     />
                                     <div className="absolute right-4 top-2 text-lg text-gray-400">{massUnitForDisplay}</div>
-                                    <div className="absolute right-4 top-2 text-lg text-gray-400">{massUnitForDisplay}</div>
                                 </div>
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
@@ -497,20 +481,15 @@ export const A320Fuel: React.FC<FuelProps> = ({
 
                     <SelectGroup>
                         <SelectItem selected={canRefuel() ? refuelRate === '2' : !canRefuel()} onSelect={() => setRefuelRate('2')}>{t('Settings.Instant')}</SelectItem>
-                        <SelectItem selected={canRefuel() ? refuelRate === '2' : !canRefuel()} onSelect={() => setRefuelRate('2')}>{t('Settings.Instant')}</SelectItem>
 
                         <TooltipWrapper text={`${!canRefuel() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
-                        <TooltipWrapper text={`${!canRefuel() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <div>
-                                <SelectItem className={`${!canRefuel() && 'opacity-20'}`} disabled={!canRefuel()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>{t('Settings.Fast')}</SelectItem>
                                 <SelectItem className={`${!canRefuel() && 'opacity-20'}`} disabled={!canRefuel()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>{t('Settings.Fast')}</SelectItem>
                             </div>
                         </TooltipWrapper>
 
                         <TooltipWrapper text={`${!canRefuel() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
-                        <TooltipWrapper text={`${!canRefuel() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <div>
-                                <SelectItem className={`${!canRefuel() && 'opacity-20'}`} disabled={!canRefuel()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>{t('Settings.Real')}</SelectItem>
                                 <SelectItem className={`${!canRefuel() && 'opacity-20'}`} disabled={!canRefuel()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>{t('Settings.Real')}</SelectItem>
                             </div>
                         </TooltipWrapper>
