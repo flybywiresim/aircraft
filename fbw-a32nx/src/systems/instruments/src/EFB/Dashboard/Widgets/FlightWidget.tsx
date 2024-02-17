@@ -15,6 +15,7 @@ import { useAppSelector, useAppDispatch } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { t } from '../../translation';
 import { getAirframeType } from '../../Efb';
+import { AC_TYPE } from '../../Enum/Airframe';
 
 interface InformationEntryProps {
     title: string;
@@ -163,7 +164,7 @@ export const FlightWidget = () => {
                         {' '}
                         |
                         {' '}
-                        {airframe === 'A380_842' ? 'A380-842' : 'A320-251N'}
+                        {(airframe !== null ? AC_TYPE[airframe] : 'A320-251N')}
                     </h1>
                 )}
             </div>

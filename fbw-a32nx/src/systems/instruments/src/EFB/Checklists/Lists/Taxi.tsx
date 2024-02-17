@@ -30,5 +30,9 @@ export const taxiChecklist: ChecklistDefinition = {
             item: 'ECAM MEMO',
             result: 'TO NO BLUE',
         },
+        {
+            item: 'CABIN',
+            result: 'READY',
+        },
     ],
 };
