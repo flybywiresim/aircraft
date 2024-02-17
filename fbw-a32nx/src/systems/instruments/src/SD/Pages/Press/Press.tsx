@@ -13,6 +13,7 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import './Press.scss';
 
 export const PressPage: FC = () => {
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
     const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
@@ -20,11 +21,11 @@ export const PressPage: FC = () => {
     const cpc2SysFault = cpc2DiscreteWord.isFailureWarning();
 
     // SYS is visible if the system is active or if it is failed
-    const cpc1SysVisible = cpc1DiscreteWord.getBitValueOr(11, false) || cpc1SysFault;
-    const cpc2SysVisible = cpc2DiscreteWord.getBitValueOr(11, false) || cpc2SysFault;
+    const cpc1SysVisible = (autoMode && cpc1DiscreteWord.getBitValueOr(11, false)) || cpc1SysFault;
+    const cpc2SysVisible = (autoMode && cpc2DiscreteWord.getBitValueOr(11, false)) || cpc2SysFault;
 
-    const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
+    const cabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
+    const deltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
@@ -32,10 +33,10 @@ export const PressPage: FC = () => {
     const [cabinAltGaugeCss, setCabinAltGaugeCss] = useState('');
 
     useEffect(() => {
-        if (Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550) {
+        if (Math.round(cabinAlt.value / 50) * 50 >= 8800 && Math.round(cabinAlt.value / 50) * 50 < 9550) {
             setCabinAltTextCss('GreenTextPulse');
             setCabinAltGaugeCss('GreenIndicatorPulse');
-        } else if (Math.round(cabinAlt / 50) * 50 >= 9550) {
+        } else if (Math.round(cabinAlt.value / 50) * 50 >= 9550) {
             setCabinAltTextCss('Red');
             setCabinAltGaugeCss('Red');
         } else {
@@ -44,7 +45,7 @@ export const PressPage: FC = () => {
         }
     }, [cabinAlt]);
 
-    const deltaPress = splitDecimals(MathUtils.clamp(deltaPsi, -9.9, 9.9));
+    const deltaPress = splitDecimals(MathUtils.clamp(deltaPsi.value, -9.9, 9.9));
     const cax = 455;
     const dpx = 110;
     const y = 165;
@@ -64,11 +65,11 @@ export const PressPage: FC = () => {
             <g id="DeltaPressure">
                 <text className="Large Center" x={dpx - 5} y="80">@P</text>
                 <text className="Medium Center Cyan" x={dpx - 5} y="100">PSI</text>
-                <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 38} y={y + 25}>
+                <text className={`Huge End ${deltaPsi.value < -0.4 || deltaPsi.value >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 38} y={y + 25}>
                     {deltaPress[0]}
                 </text>
-                <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 53} y={y + 25}>.</text>
-                <text className={`Standard End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 63} y={y + 25}>{deltaPress[1]}</text>
+                <text className={`Huge End ${deltaPsi.value < -0.4 || deltaPsi.value >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 53} y={y + 25}>.</text>
+                <text className={`Standard End ${deltaPsi.value < -0.4 || deltaPsi.value >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 63} y={y + 25}>{deltaPress[1]}</text>
                 <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
                     <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} visible className="Gauge Amber" />
                     <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={218} visible className="Gauge Amber" />
@@ -99,7 +100,7 @@ export const PressPage: FC = () => {
                         textNudgeX={5}
                     />
                     <GaugeMarkerComponent
-                        value={MathUtils.clamp(MathUtils.round(deltaPsi, 1), -1, 9)}
+                        value={MathUtils.clamp(MathUtils.round(deltaPsi.value, 1), -1, 9)}
                         x={dpx}
                         y={y}
                         min={-1}
@@ -107,7 +108,7 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
-                        className={`GaugeIndicator ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''}`}
+                        className={`GaugeIndicator ${deltaPsi.value < -0.4 || deltaPsi.value >= 8.5 ? 'Amber' : ''}`}
                         indicator
                     />
                 </GaugeComponent>
@@ -125,7 +126,7 @@ export const PressPage: FC = () => {
                     x={cax + 85}
                     y={y + 25}
                 >
-                    {Math.round(MathUtils.clamp(cabinAlt, -9950, 32750) / 50) * 50}
+                    {Math.round(MathUtils.clamp(cabinAlt.value, -9950, 32750) / 50) * 50}
                 </text>
                 <GaugeComponent
                     x={cax}
@@ -187,7 +188,7 @@ export const PressPage: FC = () => {
                         textNudgeX={5}
                     />
                     <GaugeMarkerComponent
-                        value={MathUtils.clamp(Math.round(cabinAlt / 25) * 25 / 1000, -0.625, 10.625)}
+                        value={MathUtils.clamp(Math.round(cabinAlt.value / 25) * 25 / 1000, -0.625, 10.625)}
                         x={cax}
                         y={y}
                         min={-0.625}
@@ -257,15 +258,15 @@ type CabinVerticalSpeedComponentType = {
 }
 
 const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius }) => {
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
+    const cabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
 
     return (
         <>
             <g id="VsIndicator">
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
-                <text className={`Huge End ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>
-                    {Math.round(MathUtils.clamp(cabinVs, -6350, 6350) / 50) * 50}
+                <text className={`Huge End ${Math.abs(Math.round(cabinVs.value / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>
+                    {Math.round(MathUtils.clamp(cabinVs.value, -6350, 6350) / 50) * 50}
                 </text>
                 <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="GaugeComponent Gauge">
                     <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
@@ -274,7 +275,7 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
-                        value={MathUtils.clamp(Math.round(cabinVs / 50) * 50 / 1000, -2.25, 2.25)}
+                        value={MathUtils.clamp(Math.round(cabinVs.value / 50) * 50 / 1000, -2.25, 2.25)}
                         x={vsx}
                         y={y}
                         min={-2}
@@ -282,7 +283,7 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
                         radius={radius}
                         startAngle={180}
                         endAngle={0}
-                        className={`GaugeIndicator ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenIndicatorPulse' : ''}`}
+                        className={`GaugeIndicator ${Math.abs(Math.round(cabinVs.value / 50) * 50) > 1750 ? 'GreenIndicatorPulse' : ''}`}
                         indicator
                     />
                 </GaugeComponent>
@@ -292,29 +293,25 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
 };
 
 const PressureComponent = () => {
-    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
-    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
-    const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
+    const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+    const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+    const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
+
+    const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
+    const landingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 1000);
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
 
     useEffect(() => {
-        setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
-        if (landingElevDialPosition === 0) {
-            // On Auto
-            const nearestfifty = Math.round(landingRunwayElevation / 50) * 50;
-            setLdgElevValue(landingRunwayElevation > -5000 ? nearestfifty.toString() : 'XX');
-            setCssLdgElevName(landingRunwayElevation > -5000 ? 'Green' : 'Amber');
-        } else {
-            // On manual
-            const nearestfifty = Math.round(landingElev / 50) * 50;
-            setLdgElevValue(nearestfifty.toString());
-            setCssLdgElevName('Green');
-        }
-    }, [landingElevDialPosition, landingRunwayElevation, landingElev]);
+        setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
+        const nearestfifty = Math.round(landingElevation.value / 50) * 50;
+
+        setLdgElevValue(nearestfifty.toString());
+        setCssLdgElevName(landingElevation.value > -5000 ? 'Green' : 'Amber');
+    }, [landingElevationIsMan, landingElevation]);
 
     return (
         <>
@@ -387,7 +384,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
     const ofy = 425;
     const ofradius = 72;
 
-    const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+    const outflowValueOpenPercentage = useArinc429Var('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 500);
 
     return (
         <>
@@ -395,14 +392,14 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                 x={ofx}
                 y={ofy}
                 radius={ofradius}
-                startAngle={270 + (outflowValueOpenPercentage / 100 * 90)}
+                startAngle={270 + (outflowValueOpenPercentage.value / 100 * 90)}
                 endAngle={360}
                 visible
                 className="Gauge"
             >
                 <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} visible className="Gauge Amber" />
                 <GaugeMarkerComponent
-                    value={outflowValueOpenPercentage}
+                    value={outflowValueOpenPercentage.value}
                     x={ofx}
                     y={ofy}
                     min={0}
@@ -410,7 +407,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                     radius={ofradius}
                     startAngle={270}
                     endAngle={360}
-                    className={flightPhase >= 5 && flightPhase <= 7 && outflowValueOpenPercentage > 95 ? 'AmberLine' : 'GreenLine'}
+                    className={flightPhase >= 5 && flightPhase <= 7 && outflowValueOpenPercentage.value > 95 ? 'AmberLine' : 'GreenLine'}
                     indicator
                     multiplierOuter={1}
                 />

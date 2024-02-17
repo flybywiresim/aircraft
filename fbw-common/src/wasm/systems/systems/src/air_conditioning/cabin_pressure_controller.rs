@@ -1,8 +1,10 @@
 use crate::{
     failures::{Failure, FailureType},
     shared::{
-        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, pid::PidController, AverageExt,
-        CabinSimulation, ControllerSignal, EngineCorrectedN1,
+        arinc429::{Arinc429Word, SignStatus},
+        low_pass_filter::LowPassFilter,
+        pid::PidController,
+        AverageExt, CabinSimulation, ControllerSignal, EngineCorrectedN1, Resolution,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -29,11 +31,9 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
     cabin_vs_id: VariableIdentifier,
     cabin_delta_pressure_id: VariableIdentifier,
-    fwc_excess_cabin_altitude_id: VariableIdentifier,
-    fwc_excess_residual_pressure_id: VariableIdentifier,
-    fwc_low_diff_pressure_id: VariableIdentifier,
     outflow_valve_open_percentage_id: VariableIdentifier,
     safety_valve_open_percentage_id: VariableIdentifier,
+    landing_elevation_id: VariableIdentifier,
 
     auto_landing_elevation_id: VariableIdentifier,
     destination_qnh_id: VariableIdentifier,
@@ -88,14 +88,11 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
             cabin_delta_pressure_id: context
                 .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
-            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
-            fwc_excess_residual_pressure_id: context
-                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
-            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
             outflow_valve_open_percentage_id: context
                 .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
             safety_valve_open_percentage_id: context
                 .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
+            landing_elevation_id: context.get_identifier("PRESS_LANDING_ELEVATION".to_owned()),
 
             auto_landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
@@ -548,6 +545,53 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
     }
 
+    fn cabin_delta_p_out(&self) -> Pressure {
+        // Correct format for ARINC delta P
+        let delta_p_psi = self
+            .cabin_delta_p()
+            .get::<psi>()
+            .clamp(-6., 12.)
+            .resolution(0.075);
+        Pressure::new::<psi>(delta_p_psi)
+    }
+
+    fn cabin_altitude_out(&self) -> Length {
+        // Correct format for ARINC altitude
+        let altitude_ft = self
+            .cabin_altitude()
+            .get::<foot>()
+            .clamp(-15000., 30000.)
+            .resolution(16.);
+        Length::new::<foot>(altitude_ft)
+    }
+
+    fn cabin_vertical_speed_out(&self) -> Velocity {
+        let vertical_speed_fpm = self
+            .cabin_vertical_speed()
+            .get::<foot_per_minute>()
+            .clamp(-6400., 6400.)
+            .resolution(50.);
+        Velocity::new::<foot_per_minute>(vertical_speed_fpm)
+    }
+
+    fn outflow_valve_open_amount_out(&self) -> Ratio {
+        let outflow_valve_position_pct = self
+            .outflow_valve_open_amount
+            .get::<percent>()
+            .clamp(0., 100.)
+            .resolution(1.);
+        Ratio::new::<percent>(outflow_valve_position_pct)
+    }
+
+    fn landing_elevation_out(&self) -> Length {
+        let landing_elevation_ft = self
+            .landing_elevation
+            .get::<foot>()
+            .clamp(-2000., 14000.)
+            .resolution(32.);
+        Length::new::<foot>(landing_elevation_ft)
+    }
+
     pub fn landing_elevation(&self) -> Length {
         self.landing_elevation
     }
@@ -600,29 +644,38 @@ impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
 
 impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
+        let ssm = if self.is_active {
+            SignStatus::NormalOperation
+        } else if self.failure.is_active() {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NoComputedData
+        };
+
         if self.is_active {
-            writer.write(&self.cabin_altitude_id, self.cabin_altitude());
-            writer.write(
-                &self.outflow_valve_open_percentage_id,
-                self.outflow_valve_open_amount,
-            );
+            // Safety valve open percentage is not sent by the CPC in real life
             writer.write(
                 &self.safety_valve_open_percentage_id,
                 self.safety_valve_open_amount,
             );
-            writer.write(
-                &self.cabin_vs_id,
-                self.cabin_vertical_speed().get::<foot_per_minute>(),
-            );
-            writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_p());
 
-            // FWC warning signals
-            writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
-            writer.write(
-                &self.fwc_excess_residual_pressure_id,
-                self.is_excessive_residual_pressure(),
+            writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
+            writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
+            writer.write_arinc429(
+                &self.outflow_valve_open_percentage_id,
+                self.outflow_valve_open_amount_out(),
+                ssm,
             );
-            writer.write(&self.fwc_low_diff_pressure_id, self.is_low_diff_pressure());
+            writer.write_arinc429(
+                &self.cabin_vs_id,
+                self.cabin_vertical_speed_out().get::<foot_per_minute>(),
+                ssm,
+            );
+            writer.write_arinc429(
+                &self.landing_elevation_id,
+                self.landing_elevation_out(),
+                ssm,
+            );
         }
     }
 

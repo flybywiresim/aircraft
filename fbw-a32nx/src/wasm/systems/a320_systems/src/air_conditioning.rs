@@ -886,16 +886,16 @@ impl PressurizationSystemInterfaceUnit {
             self.discrete_word = Arinc429Word::new(0, SignStatus::FailureWarning);
         } else {
             self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
-
-            self.discrete_word.set_bit(11, cpc.is_active());
-            self.discrete_word.set_bit(12, cpc.has_fault());
-            self.discrete_word
-                .set_bit(13, cpc.is_excessive_residual_pressure());
-            self.discrete_word.set_bit(14, cpc.is_excessive_alt());
-            self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
-            self.discrete_word
-                .set_bit(17, !cpc.landing_elevation_is_auto());
         }
+
+        self.discrete_word.set_bit(11, cpc.is_active());
+        self.discrete_word.set_bit(12, cpc.has_fault());
+        self.discrete_word
+            .set_bit(13, cpc.is_excessive_residual_pressure());
+        self.discrete_word.set_bit(14, cpc.is_excessive_alt());
+        self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
+        self.discrete_word
+            .set_bit(17, !cpc.landing_elevation_is_auto());
     }
 }
 
@@ -2233,7 +2233,6 @@ mod tests {
         #[test]
         fn cpc_switches_if_man_mode_is_engaged_for_at_least_10_seconds() {
             let mut test_bed = test_bed();
-
             assert_eq!(test_bed.active_system(), 1);
 
             test_bed = test_bed
@@ -2242,7 +2241,6 @@ mod tests {
                 .run_with_delta_of(Duration::from_secs_f64(11.))
                 .command_mode_sel_pb_auto()
                 .iterate(2);
-
             assert_eq!(test_bed.active_system(), 2);
         }
 

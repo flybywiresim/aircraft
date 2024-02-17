@@ -1228,10 +1228,10 @@ export class PseudoFWC {
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
-        this.outflowValveNotOpen.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent') < 100);
+        this.outflowValveNotOpen.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(0) < 99);
         this.safetyValveNotClosed.set(SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0);
 
-        this.cabinDeltaPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi'));
+        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE').valueOr(0));
 
         /* OTHER STUFF */
 

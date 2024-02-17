@@ -2760,10 +2760,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - True if the hot air trim system has a fault
 
 - A32NX_PRESS_CPC_{number}_DISCRETE_WORD
+    - Arinc429<Discrete>
     - Number 1 or 2
     - Discrete Data word of the Cabin Pressure Controller bus output (label 057)
     - Bits with * not yet implemented
-    - Arinc429<Discrete>
     - | Bit |                      Description                     |
       |:---:|:----------------------------------------------------:|
       | 11  | System in control                                    |
@@ -2787,16 +2787,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 29  | Spare                                                |
 
 - A32NX_PRESS_CABIN_ALTITUDE
-    - Feet
+    - Arinc429Word<Feet>
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
 
 - A32NX_PRESS_CABIN_DELTA_PRESSURE
-    - PSI
+    - Arinc429Word<PSI>
     - The difference in pressure between the cabin interior and the exterior air.
       Positive when cabin pressure is higher than external pressure.
 
 - A32NX_PRESS_CABIN_VS
-    - Feet per minute
+    - Arinc429Word<FPM>
     - Rate of pressurization or depressurization of the cabin expressed as altitude change
 
 - A32NX_PRESS_ACTIVE_CPC_SYS
@@ -2804,28 +2804,30 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates which cabin pressure controller is active. 0 indicates neither is active.
 
 - A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE
-    - Ratio
+    - Arinc429Word<Percent>
     - Percent open of the cabin pressure outflow valve
 
 - A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
-    - Ratio
+    - Percent
     - Percent open of the cabin pressure safety valves
 
-- A32NX_PRESS_AUTO_LANDING_ELEVATION
-    - **Deprecated**, - ** Deprecated, see `A32NX_FM{number}_LANDING_ELEVATION`
-    - Feet
-    - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+- A32NX_PRESS_LANDING_ELEVATION
+    - Arinc429Word<Feet>
+    - Target landing elevation used by the pressurization system
 
 - A32NX_PRESS_EXCESS_CAB_ALT
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "EXCESS CAB ALT" is met
 
 - A32NX_PRESS_EXCESS_RESIDUAL_PR
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "EXCES RESIDUAL PR" is met
 
 - A32NX_PRESS_LOW_DIFF_PR
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "LO DIFF PR" is met
 
 - A32NX_OVHD_PRESS_LDG_ELEV_KNOB
