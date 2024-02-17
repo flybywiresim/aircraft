@@ -29,9 +29,5 @@ export const securingAircraftChecklist: ChecklistDefinition = {
                 return batOneOff && batTwoOff;
             },
         },
-        {
-            item: 'EFBs',
-            result: 'OFF',
-        },
     ],
 };

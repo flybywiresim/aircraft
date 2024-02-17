@@ -4,6 +4,7 @@ mod brakes;
 mod cargo_doors;
 mod elevators;
 mod flaps;
+mod fuel;
 mod gear;
 mod nose_wheel_steering;
 mod payload;
@@ -18,6 +19,7 @@ use brakes::brakes;
 use cargo_doors::cargo_doors;
 use elevators::elevators;
 use flaps::flaps;
+use fuel::fuel;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
 use payload::payload;
@@ -61,6 +63,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_engine_anti_ice(4)?
+    .with_wing_anti_ice()?
     .with_failures(vec![
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
@@ -262,6 +266,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("CENTER WHEEL ROTATION ANGLE", "Degrees", 0)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
@@ -370,6 +375,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
+    .provides_named_variable("AIRLINER_CRUISE_ALTITUDE")?
     .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?
@@ -426,6 +432,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(rudder)?
     .with_aspect(gear)?
     .with_aspect(payload)?
+    .with_aspect(fuel)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A380::new)?;
 

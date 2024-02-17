@@ -1,7 +1,7 @@
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 
 type N1LimitProps = {

@@ -1,5 +1,3 @@
-import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
-
 declare global {
     type NauticalMiles = number;
     type Heading = number;
@@ -57,9 +55,6 @@ declare global {
         ACE_REMOTE_IS_CONNECTED: boolean | undefined
     }
 
-    namespace Fmgc {
-        const FlightPhaseManager: typeof FlightPhaseManager_
-    }
 }
 
 export {};

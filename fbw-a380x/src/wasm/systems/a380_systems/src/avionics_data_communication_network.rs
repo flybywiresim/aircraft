@@ -1,9 +1,9 @@
 use crate::systems::{
-    accept_iterable,
     integrated_modular_avionics::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
-        input_output_module::InputOutputModule,
+        input_output_module::InputOutputModule, AvionicsDataCommunicationNetwork,
+        AvionicsDataCommunicationNetworkMessageIdentifier,
     },
     shared::ElectricalBusType,
     simulation::{
@@ -12,9 +12,14 @@ use crate::systems::{
     },
 };
 use fxhash::FxHashMap;
-use std::collections::VecDeque;
-use std::vec::Vec;
+use std::{
+    cell::{Ref, RefCell},
+    collections::VecDeque,
+    rc::Rc,
+    vec::Vec,
+};
 
+// TODO: deprecate
 pub(crate) trait CoreProcessingInputOutputModuleShared {
     fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule;
 }
@@ -64,159 +69,171 @@ impl RoutingTableEntry {
 // The routing tables define the upper triangular matrix for the two networks.
 // A breadth-first-search is used to update the routing table per AFDX switch.
 pub struct A380AvionicsDataCommunicationNetwork {
-    afdx_switches: [AvionicsFullDuplexSwitch; 16],
+    afdx_switches: [Rc<RefCell<AvionicsFullDuplexSwitch>>; 16],
     afdx_networks: [FxHashMap<u8, Vec<u8>>; 2],
-    cpio_modules: [CoreProcessingInputOutputModule; 22],
-    io_modules: [InputOutputModule; 8],
+    cpio_modules: FxHashMap<&'static str, CoreProcessingInputOutputModule>,
+    io_modules: FxHashMap<&'static str, InputOutputModule>,
     routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
     publish_routing_table: bool,
+    next_message_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
+    message_identifiers: FxHashMap<String, AvionicsDataCommunicationNetworkMessageIdentifier>,
 }
 
 impl A380AvionicsDataCommunicationNetwork {
     pub fn new(context: &mut InitContext) -> Self {
-        let mut first_network = FxHashMap::default();
-        first_network.insert(0, vec![1, 2, 7]);
-        first_network.insert(1, vec![0, 3, 7]);
-        first_network.insert(2, vec![0, 3, 4, 6, 7]);
-        first_network.insert(3, vec![1, 2, 5, 6, 7]);
-        first_network.insert(4, vec![2, 5, 6]);
-        first_network.insert(5, vec![3, 4, 6]);
-        first_network.insert(6, vec![2, 3, 4, 5]);
-        first_network.insert(7, vec![0, 1, 2, 3]);
+        let first_network = FxHashMap::from_iter([
+            (0, vec![1, 2, 7]),
+            (1, vec![0, 3, 7]),
+            (2, vec![0, 3, 4, 6, 7]),
+            (3, vec![1, 2, 5, 6, 7]),
+            (4, vec![2, 5, 6]),
+            (5, vec![3, 4, 6]),
+            (6, vec![2, 3, 4, 5]),
+            (7, vec![0, 1, 2, 3]),
+        ]);
+        let second_network = FxHashMap::from_iter([
+            (8, vec![9, 10, 15]),
+            (9, vec![8, 11, 15]),
+            (10, vec![8, 11, 12, 14, 15]),
+            (11, vec![9, 10, 13, 14, 15]),
+            (12, vec![10, 13, 14]),
+            (13, vec![11, 12, 14]),
+            (14, vec![10, 11, 12, 13]),
+            (15, vec![8, 9, 10, 11]),
+        ]);
 
-        let mut second_network = FxHashMap::default();
-        second_network.insert(8, vec![9, 10, 15]);
-        second_network.insert(9, vec![8, 11, 15]);
-        second_network.insert(10, vec![8, 11, 12, 14, 15]);
-        second_network.insert(11, vec![9, 10, 13, 14, 15]);
-        second_network.insert(12, vec![10, 13, 14]);
-        second_network.insert(13, vec![11, 12, 14]);
-        second_network.insert(14, vec![10, 11, 12, 13]);
-        second_network.insert(15, vec![8, 9, 10, 11]);
+        let afdx_switches = [
+            (1, (ElectricalBusType::DirectCurrentEssential, None)),
+            (2, (ElectricalBusType::DirectCurrent(2), None)),
+            (3, (ElectricalBusType::DirectCurrentEssential, None)),
+            (4, (ElectricalBusType::DirectCurrent(2), None)),
+            (5, (ElectricalBusType::DirectCurrentEssential, None)),
+            (6, (ElectricalBusType::DirectCurrent(2), None)),
+            (7, (ElectricalBusType::DirectCurrent(2), None)),
+            (9, (ElectricalBusType::DirectCurrentEssential, None)),
+            (
+                11,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (12, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                13,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (14, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                15,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (16, (ElectricalBusType::DirectCurrent(1), None)),
+            (17, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                19,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+        ]
+        .map(|(id, (primary_power_supply, secondary_power_supply))| {
+            Rc::new(
+                if let Some(secondary_power_supply) = secondary_power_supply {
+                    RefCell::new(AvionicsFullDuplexSwitch::new_dual_power_supply(
+                        context,
+                        id,
+                        primary_power_supply,
+                        secondary_power_supply,
+                    ))
+                } else {
+                    RefCell::new(AvionicsFullDuplexSwitch::new_single_power_supply(
+                        context,
+                        id,
+                        primary_power_supply,
+                    ))
+                },
+            )
+        });
+
+        let io_modules = FxHashMap::from_iter(
+            [
+                ("A1", 1, ElectricalBusType::DirectCurrentEssential),
+                ("A2", 2, ElectricalBusType::DirectCurrent(2)),
+                ("A3", 1, ElectricalBusType::DirectCurrentEssential),
+                ("A4", 2, ElectricalBusType::DirectCurrent(2)),
+                ("A5", 3, ElectricalBusType::DirectCurrentEssential),
+                ("A6", 4, ElectricalBusType::DirectCurrent(2)),
+                ("A7", 3, ElectricalBusType::DirectCurrentEssential),
+                ("A8", 4, ElectricalBusType::DirectCurrent(2)),
+            ]
+            .map(|(name, connected_switch, power_supply)| {
+                (
+                    name,
+                    InputOutputModule::new(
+                        context,
+                        name,
+                        power_supply,
+                        [connected_switch, connected_switch + 10]
+                            .map(|id| afdx_switches[Self::map_switch_id(id)].clone())
+                            .to_vec(),
+                    ),
+                )
+            }),
+        );
+
+        let cpio_modules = FxHashMap::from_iter(
+            [
+                ("A1", 7, ElectricalBusType::DirectCurrent(1)),
+                ("A2", 5, ElectricalBusType::DirectCurrentEssential),
+                ("A3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("A4", 6, ElectricalBusType::DirectCurrent(2)),
+                ("B1", 7, ElectricalBusType::DirectCurrent(1)),
+                ("B2", 5, ElectricalBusType::DirectCurrentEssential),
+                ("B3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("B4", 6, ElectricalBusType::DirectCurrent(2)),
+                ("C1", 3, ElectricalBusType::DirectCurrentEssential),
+                ("C2", 4, ElectricalBusType::DirectCurrent(2)),
+                ("D1", 3, ElectricalBusType::DirectCurrent(1)),
+                ("D3", 3, ElectricalBusType::DirectCurrent(1)),
+                ("E1", 5, ElectricalBusType::DirectCurrent(1)),
+                ("E2", 6, ElectricalBusType::DirectCurrent(2)),
+                ("F1", 5, ElectricalBusType::DirectCurrentEssential),
+                ("F2", 6, ElectricalBusType::DirectCurrentGndFltService),
+                ("F3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("F4", 6, ElectricalBusType::DirectCurrentGndFltService),
+                ("G1", 7, ElectricalBusType::DirectCurrent(1)),
+                ("G2", 6, ElectricalBusType::DirectCurrent(2)),
+                ("G3", 7, ElectricalBusType::DirectCurrent(2)),
+                ("G4", 6, ElectricalBusType::DirectCurrent(2)),
+            ]
+            .map(|(name, connected_switch, bus)| {
+                (
+                    name,
+                    CoreProcessingInputOutputModule::new(
+                        context,
+                        name,
+                        bus,
+                        [connected_switch, connected_switch + 10]
+                            .map(|id| afdx_switches[Self::map_switch_id(id)].clone())
+                            .to_vec(),
+                    ),
+                )
+            }),
+        );
 
         Self {
-            afdx_switches: [
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    1,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    2,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    3,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    4,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    5,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    6,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    7,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    9,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    11,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    12,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    13,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    14,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    15,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    16,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    17,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    19,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-            ],
+            afdx_switches,
             afdx_networks: [first_network, second_network],
-            io_modules: [
-                InputOutputModule::new(context, "A1", ElectricalBusType::DirectCurrentEssential),
-                InputOutputModule::new(context, "A2", ElectricalBusType::DirectCurrent(2)),
-                InputOutputModule::new(context, "A3", ElectricalBusType::DirectCurrentEssential),
-                InputOutputModule::new(context, "A4", ElectricalBusType::DirectCurrent(2)),
-                InputOutputModule::new(context, "A5", ElectricalBusType::DirectCurrentEssential),
-                InputOutputModule::new(context, "A6", ElectricalBusType::DirectCurrent(2)),
-                InputOutputModule::new(context, "A7", ElectricalBusType::DirectCurrentEssential),
-                InputOutputModule::new(context, "A8", ElectricalBusType::DirectCurrent(2)),
-            ],
-            cpio_modules: [
-                ("A1", ElectricalBusType::DirectCurrent(1)),
-                ("A2", ElectricalBusType::DirectCurrentEssential),
-                ("A3", ElectricalBusType::DirectCurrentEssential),
-                ("A4", ElectricalBusType::DirectCurrent(2)),
-                ("B1", ElectricalBusType::DirectCurrent(1)),
-                ("B2", ElectricalBusType::DirectCurrentEssential),
-                ("B3", ElectricalBusType::DirectCurrentEssential),
-                ("B4", ElectricalBusType::DirectCurrent(2)),
-                ("C1", ElectricalBusType::DirectCurrentEssential),
-                ("C2", ElectricalBusType::DirectCurrent(2)),
-                ("D1", ElectricalBusType::DirectCurrent(1)),
-                ("D3", ElectricalBusType::DirectCurrent(1)),
-                ("E1", ElectricalBusType::DirectCurrent(1)),
-                ("E2", ElectricalBusType::DirectCurrent(2)),
-                ("F1", ElectricalBusType::DirectCurrentEssential),
-                ("F2", ElectricalBusType::DirectCurrentGndFltService),
-                ("F3", ElectricalBusType::DirectCurrentEssential),
-                ("F4", ElectricalBusType::DirectCurrentGndFltService),
-                ("G1", ElectricalBusType::DirectCurrent(1)),
-                ("G2", ElectricalBusType::DirectCurrent(2)),
-                ("G3", ElectricalBusType::DirectCurrent(2)),
-                ("G4", ElectricalBusType::DirectCurrent(2)),
-            ]
-            .map(|(name, bus)| CoreProcessingInputOutputModule::new(context, name, bus)),
+            io_modules,
+            cpio_modules,
             routing_tables: [
                 [
                     vec![
@@ -324,11 +341,13 @@ impl A380AvionicsDataCommunicationNetwork {
                 ],
             ],
             publish_routing_table: true,
+            next_message_identifier: AvionicsDataCommunicationNetworkMessageIdentifier::default(),
+            message_identifiers: FxHashMap::default(),
         }
     }
 
     fn switches_reachable(
-        afdx_switches: &[AvionicsFullDuplexSwitch; 16],
+        afdx_switches: &[Rc<RefCell<AvionicsFullDuplexSwitch>>; 16],
         network: &FxHashMap<u8, Vec<u8>>,
         from: u8,
         to: u8,
@@ -336,7 +355,7 @@ impl A380AvionicsDataCommunicationNetwork {
         let mut frontier: VecDeque<u8> = VecDeque::new();
         let mut visited: Vec<u8> = Vec::new();
 
-        if !afdx_switches[from as usize].is_available() {
+        if !afdx_switches[from as usize].borrow().is_available() {
             return false;
         }
 
@@ -353,7 +372,7 @@ impl A380AvionicsDataCommunicationNetwork {
 
             let neighbors = &network[&node];
             for &neighbor in neighbors {
-                if afdx_switches[neighbor as usize].is_available()
+                if afdx_switches[neighbor as usize].borrow().is_available()
                     && visited[neighbor as usize] == 0xff
                 {
                     visited[neighbor as usize] = node;
@@ -378,11 +397,52 @@ impl A380AvionicsDataCommunicationNetwork {
         }
     }
 
+    fn update_switch_messages(&mut self, network: usize) {
+        let mut initialised = [false; 16];
+        for (&switch_id, neighbours) in &self.afdx_networks[network] {
+            let switch_id = switch_id as usize;
+            if !initialised[switch_id] {
+                let messages = if let Some(neighboor) = neighbours.iter().find_map(|&id| {
+                    let id = id as usize;
+                    (initialised[id] && self.afdx_switches[id].borrow().is_available())
+                        .then_some(id)
+                }) {
+                    self.afdx_switches[neighboor].borrow().get_adcn_messages()
+                } else {
+                    Rc::new(FxHashMap::default().into())
+                };
+                RefCell::borrow_mut(&self.afdx_switches[switch_id]).set_adcn_messages(messages);
+            }
+
+            let current_switch = &mut self.afdx_switches[switch_id];
+            if current_switch.borrow().is_available() {
+                let current_messages = current_switch.borrow().get_adcn_messages();
+
+                for &neighbour in neighbours {
+                    let neighbour = neighbour as usize;
+                    if !initialised[neighbour] {
+                        let neighbouring_switch = &mut self.afdx_switches[neighbour];
+                        let messages = if neighbouring_switch.borrow().is_available() {
+                            current_messages.clone()
+                        } else {
+                            Rc::new(FxHashMap::default().into())
+                        };
+                        RefCell::borrow_mut(neighbouring_switch).set_adcn_messages(messages);
+                        initialised[neighbour] = true;
+                    }
+                }
+            }
+
+            initialised[switch_id] = true;
+        }
+    }
+
     pub fn update(&mut self) {
         let mut update_network_a = false;
         let mut update_network_b = false;
 
-        for (i, afdx) in self.afdx_switches.iter_mut().enumerate() {
+        for (i, afdx) in self.afdx_switches.iter().enumerate() {
+            let mut afdx = RefCell::borrow_mut(afdx);
             afdx.update();
             if afdx.routing_update_required() {
                 if i >= 8 {
@@ -395,31 +455,75 @@ impl A380AvionicsDataCommunicationNetwork {
 
         if update_network_a {
             self.update_routing_table(0, 0);
+            self.update_switch_messages(0);
         }
 
         if update_network_b {
             self.update_routing_table(1, 8);
+            self.update_switch_messages(1);
         }
 
         self.publish_routing_table = update_network_a | update_network_b;
+    }
+
+    const fn map_switch_id(id: u8) -> usize {
+        let id = id as usize;
+        match id {
+            1..=7 => id - 1,
+            9 => 7,
+            11..=17 => id - 3,
+            19 => 15,
+            _ => panic!("Unknown switch id"),
+        }
     }
 }
 
 impl CoreProcessingInputOutputModuleShared for A380AvionicsDataCommunicationNetwork {
     fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule {
         // If the string is not found this will panic
-        self.cpio_modules
-            .iter()
-            .find(|&module| module.name() == cpiom)
-            .unwrap()
+        self.cpio_modules.get(cpiom).unwrap()
+    }
+}
+
+impl<'a> AvionicsDataCommunicationNetwork<'a> for A380AvionicsDataCommunicationNetwork {
+    type NetworkEndpoint = AvionicsFullDuplexSwitch;
+    type NetworkEndpointRef = Ref<'a, AvionicsFullDuplexSwitch>;
+
+    fn get_message_identifier(
+        &mut self,
+        name: String,
+    ) -> AvionicsDataCommunicationNetworkMessageIdentifier {
+        *self.message_identifiers.entry(name).or_insert_with(|| {
+            let identifier = self.next_message_identifier;
+            self.next_message_identifier = identifier.next();
+            identifier
+        })
+    }
+
+    fn get_endpoint(&'a self, id: u8) -> Self::NetworkEndpointRef {
+        self.afdx_switches[Self::map_switch_id(id)].borrow()
+    }
+
+    fn get_cpiom(&self, name: &str) -> &CoreProcessingInputOutputModule {
+        &self.cpio_modules[name]
+    }
+
+    fn get_iom(&self, name: &str) -> &InputOutputModule {
+        &self.io_modules[name]
     }
 }
 
 impl SimulationElement for A380AvionicsDataCommunicationNetwork {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.afdx_switches, visitor);
-        accept_iterable!(self.cpio_modules, visitor);
-        accept_iterable!(self.io_modules, visitor);
+        for switch in &self.afdx_switches {
+            RefCell::borrow_mut(switch).accept(visitor);
+        }
+        for cpiom in self.cpio_modules.values_mut() {
+            cpiom.accept(visitor);
+        }
+        for iom in self.io_modules.values_mut() {
+            iom.accept(visitor);
+        }
         visitor.visit(self);
     }
 
@@ -435,11 +539,29 @@ impl SimulationElement for A380AvionicsDataCommunicationNetwork {
     }
 }
 
+// This struct is intended to translate simvar values to ADCN messages
+// and ADCN messages to simvars.
+pub struct A380AvionicsDataCommunicationNetworkSimvarTranslator {}
+impl A380AvionicsDataCommunicationNetworkSimvarTranslator {
+    pub fn new<'a>(
+        _context: &mut InitContext,
+        _adcn: &mut impl AvionicsDataCommunicationNetwork<'a>,
+    ) -> Self {
+        Self {}
+    }
+
+    pub fn update<'a>(&mut self, _adcn: &impl AvionicsDataCommunicationNetwork<'a>) {}
+}
+impl SimulationElement for A380AvionicsDataCommunicationNetworkSimvarTranslator {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        integrated_modular_avionics::{
+            AvionicsDataCommunicationNetworkEndpoint, AvionicsDataCommunicationNetworkMessageData,
+        },
         shared::PotentialOrigin,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -478,6 +600,30 @@ mod tests {
         fn set_elec_powered(&mut self, is_powered: bool) {
             self.is_elec_powered = is_powered;
         }
+
+        fn get_message_identifier(
+            &mut self,
+            name: String,
+        ) -> AvionicsDataCommunicationNetworkMessageIdentifier {
+            self.adcn.get_message_identifier(name)
+        }
+
+        fn send_message(
+            &self,
+            switch_id: u8,
+            id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+            message: AvionicsDataCommunicationNetworkMessageData,
+        ) {
+            self.adcn.get_endpoint(switch_id).send_value(id, message);
+        }
+
+        fn recv_message(
+            &self,
+            switch_id: u8,
+            id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+        ) -> Option<AvionicsDataCommunicationNetworkMessageData> {
+            self.adcn.get_endpoint(switch_id).recv_value(id)
+        }
     }
     impl Aircraft for AdcnTestAircraft {
         fn update_before_power_distribution(
@@ -504,6 +650,16 @@ mod tests {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.adcn.accept(visitor);
             visitor.visit(self);
+        }
+    }
+
+    #[test]
+    fn switch_mapping() {
+        for (i, id) in [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 13, 14, 15, 16, 17, 19]
+            .iter()
+            .enumerate()
+        {
+            assert_eq!(A380AvionicsDataCommunicationNetwork::map_switch_id(*id), i);
         }
     }
 
@@ -663,5 +819,128 @@ mod tests {
         assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_9_REACHABLE");
         assert!(!reachable);
+    }
+
+    #[test]
+    fn network1_can_send_messages() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.run();
+        test_bed.command(|a| a.send_message(1, &message_id, message_sent.clone()));
+        for i in (1..=7).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, Some(message_sent.clone()));
+        }
+        for i in (11..=17).chain(19..=19) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+    }
+
+    #[test]
+    fn network2_can_send_messages() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.run();
+        test_bed.command(|a| a.send_message(11, &message_id, message_sent.clone()));
+        for i in (1..=7).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+        for i in (11..=17).chain(19..=19) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, Some(message_sent.clone()));
+        }
+    }
+
+    #[test]
+    fn network1_cannot_send_messages_without_elec() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        test_bed.run();
+        test_bed.command(|a| a.send_message(1, &message_id, message_sent.clone()));
+        for i in (2..=7).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+        for i in (11..=17).chain(19..=19) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+    }
+
+    #[test]
+    fn network2_cannot_send_messages_without_elec() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        test_bed.run();
+        test_bed.command(|a| a.send_message(11, &message_id, message_sent.clone()));
+        for i in (1..=7).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+        for i in (12..=17).chain(19..=19) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+    }
+
+    #[test]
+    fn failed_switch_not_sending_or_receiving() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.write_by_name("AFDX_SWITCH_1_FAILURE", true);
+        test_bed.run();
+        test_bed.command(|a| a.send_message(1, &message_id, message_sent.clone()));
+        for i in (2..=7).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+    }
+
+    #[test]
+    fn split_network() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        let mut message_id = Default::default();
+        test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
+        let message1 = AvionicsDataCommunicationNetworkMessageData::Str("message1");
+        let message2 = AvionicsDataCommunicationNetworkMessageData::Str("message2");
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.write_by_name("AFDX_SWITCH_3_FAILURE", true);
+        test_bed.write_by_name("AFDX_SWITCH_4_FAILURE", true);
+        test_bed.run();
+        test_bed.command(|a| a.send_message(9, &message_id, message1.clone()));
+        test_bed.command(|a| a.send_message(7, &message_id, message2.clone()));
+        for i in (1..=2).chain(9..=9) {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, Some(message1.clone()));
+        }
+        for i in 3..=4 {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, None);
+        }
+        for i in 5..=7 {
+            let message = test_bed.query(|a| a.recv_message(i, &message_id));
+            assert_eq!(message, Some(message2.clone()));
+        }
     }
 }
