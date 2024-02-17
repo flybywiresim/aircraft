@@ -279,17 +279,6 @@ struct ap_laws_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_ap_output_law_
-#define DEFINED_TYPEDEF_FOR_ap_output_law_
-
-struct ap_output_law
-{
-  real_T flight_director;
-  real_T autopilot;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_lateral_mode_
 #define DEFINED_TYPEDEF_FOR_lateral_mode_
 

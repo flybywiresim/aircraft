@@ -199,7 +199,7 @@ export class Vhf {
 
         // get all airports
         return new Promise((resolve) => {
-            SimVar.GetSimVarArrayValues(requestBatch, (airports) => {
+            SimVar.GetSimVarArrayValues(requestBatch, (airports: any[]) => {
                 airports.forEach((fetched) => {
                     // format: 'TYPE(one char) ICAO '
                     const icao = fetched[0].substr(2).trim();

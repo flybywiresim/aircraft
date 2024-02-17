@@ -288,18 +288,17 @@ void FacComputer::step()
   real32_T rtb_r;
   real32_T rtb_theta;
   real32_T rtb_theta_dot;
-  real32_T rtb_y_i;
-  real32_T rtb_y_j4;
-  uint32_T rtb_y_c;
-  uint32_T rtb_y_g1;
-  uint32_T rtb_y_kg;
-  uint32_T rtb_y_lx;
-  uint32_T rtb_y_m;
-  uint32_T rtb_y_n;
-  uint32_T rtb_y_np;
+  real32_T rtb_y_a;
+  real32_T rtb_y_mb;
+  uint32_T rtb_y_au;
+  uint32_T rtb_y_ig;
+  uint32_T rtb_y_k;
+  uint32_T rtb_y_l2;
+  uint32_T rtb_y_p;
+  uint32_T rtb_y_p2;
+  uint32_T rtb_y_ph;
   boolean_T rtb_VectorConcatenate[19];
-  boolean_T guard1{ false };
-
+  boolean_T guard1;
   boolean_T rtb_AND1;
   boolean_T rtb_BusAssignment_h_logic_on_ground;
   boolean_T rtb_BusAssignment_h_logic_speed_scale_visible;
@@ -321,8 +320,8 @@ void FacComputer::step()
   boolean_T rtb_irOwnInvalid;
   boolean_T rtb_rudderTravelLimEngaged;
   boolean_T rtb_rudderTrimEngaged;
-  boolean_T rtb_y_h;
-  boolean_T rtb_y_mv;
+  boolean_T rtb_y_lg;
+  boolean_T rtb_y_pm;
   boolean_T rtb_yawDamperEngaged;
   boolean_T rudderTravelLimCanEngage;
   boolean_T rudderTrimCanEngage;
@@ -367,40 +366,40 @@ void FacComputer::step()
     }
 
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5,
-      FacComputer_P.BitfromLabel1_bit, &rtb_y_c);
-    FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5, &rtb_y_mv);
-    rtb_AND1 = ((rtb_y_c != 0U) && rtb_y_mv);
+      FacComputer_P.BitfromLabel1_bit, &rtb_y_p2);
+    FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5, &rtb_y_lg);
+    rtb_AND1 = ((rtb_y_p2 != 0U) && rtb_y_lg);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5,
-      FacComputer_P.BitfromLabel4_bit, &rtb_y_kg);
+      FacComputer_P.BitfromLabel4_bit, &rtb_y_au);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5,
-      FacComputer_P.BitfromLabel3_bit, &rtb_y_np);
+      FacComputer_P.BitfromLabel3_bit, &rtb_y_k);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5,
-      FacComputer_P.BitfromLabel2_bit, &rtb_y_c);
+      FacComputer_P.BitfromLabel2_bit, &rtb_y_p2);
     FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_1, &rtb_DataTypeConversion_kr);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_2,
-      FacComputer_P.BitfromLabel_bit, &rtb_y_m);
-    FacComputer_MATLABFunction_p((FacComputer_U.in.discrete_inputs.nose_gear_pressed == (rtb_y_m != 0U)),
+      FacComputer_P.BitfromLabel_bit, &rtb_y_p);
+    FacComputer_MATLABFunction_p((FacComputer_U.in.discrete_inputs.nose_gear_pressed == (rtb_y_p != 0U)),
       FacComputer_U.in.time.dt, FacComputer_P.ConfirmNode_isRisingEdge, FacComputer_P.ConfirmNode_timeDelay, &rtb_OR1,
       &FacComputer_DWork.sf_MATLABFunction_ax);
     rtb_Memory = (rtb_DataTypeConversion_kr && rtb_OR1);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_2,
-      FacComputer_P.BitfromLabel5_bit, &rtb_y_m);
+      FacComputer_P.BitfromLabel5_bit, &rtb_y_p);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_2,
-      FacComputer_P.BitfromLabel6_bit, &rtb_y_lx);
+      FacComputer_P.BitfromLabel6_bit, &rtb_y_l2);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_3,
-      FacComputer_P.BitfromLabel7_bit, &rtb_y_n);
+      FacComputer_P.BitfromLabel7_bit, &rtb_y_ph);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.lgciu_own_bus.discrete_word_3,
-      FacComputer_P.BitfromLabel8_bit, &rtb_y_g1);
+      FacComputer_P.BitfromLabel8_bit, &rtb_y_ig);
     if (rtb_Memory) {
-      rtb_y_mv = (rtb_y_m != 0U);
-      rtb_Switch_i_idx_1 = (rtb_y_lx != 0U);
-      rtb_Switch_i_idx_2 = ((rtb_y_n != 0U) || (rtb_y_g1 != 0U));
+      rtb_y_lg = (rtb_y_p != 0U);
+      rtb_Switch_i_idx_1 = (rtb_y_l2 != 0U);
+      rtb_Switch_i_idx_2 = ((rtb_y_ph != 0U) || (rtb_y_ig != 0U));
     } else if (rtb_AND1) {
-      rtb_y_mv = (rtb_y_kg != 0U);
-      rtb_Switch_i_idx_1 = (rtb_y_np != 0U);
-      rtb_Switch_i_idx_2 = (rtb_y_c != 0U);
+      rtb_y_lg = (rtb_y_au != 0U);
+      rtb_Switch_i_idx_1 = (rtb_y_k != 0U);
+      rtb_Switch_i_idx_2 = (rtb_y_p2 != 0U);
     } else {
-      rtb_y_mv = FacComputer_P.Constant_Value_c;
+      rtb_y_lg = FacComputer_P.Constant_Value_c;
       rtb_Switch_i_idx_1 = FacComputer_P.Constant_Value_c;
       rtb_Switch_i_idx_2 = FacComputer_P.Constant_Value_c;
     }
@@ -488,7 +487,7 @@ void FacComputer::step()
     rtb_Switch1_a = rtb_theta_dot;
     rtb_BusAssignment_m_logic_lgciu_own_valid = rtb_Memory;
     rtb_AND1 = ((!rtb_Memory) && (!rtb_AND1));
-    rtb_DataTypeConversion_kr = (rtb_y_mv || rtb_Switch_i_idx_1);
+    rtb_DataTypeConversion_kr = (rtb_y_lg || rtb_Switch_i_idx_1);
     yawDamperCanEngage = (FacComputer_U.in.discrete_inputs.yaw_damper_has_hyd_press &&
                           FacComputer_U.in.discrete_inputs.fac_engaged_from_switch);
     yawDamperHasPriority_tmp = !FacComputer_U.in.discrete_inputs.is_unit_1;
@@ -512,13 +511,13 @@ void FacComputer::step()
     rtb_BusAssignment_h_logic_speed_scale_visible = rtb_OR1;
     FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.elac_1_bus.rudder_pedal_position_deg,
       &rtb_DataTypeConversion_kr);
-    FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg, &rtb_y_h);
+    FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg, &rtb_y_pm);
     Vtas = std::fmax(rtb_V_tas * 0.5144, 60.0);
     rtb_beDot = rtb_V_ias * 0.5144;
     if (rtb_V_ias >= 60.0F) {
       if (rtb_DataTypeConversion_kr) {
         u0 = FacComputer_U.in.bus_inputs.elac_1_bus.rudder_pedal_position_deg.Data;
-      } else if (rtb_y_h) {
+      } else if (rtb_y_pm) {
         u0 = FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
       } else {
         u0 = FacComputer_P.Constant_Value_n;
@@ -535,7 +534,7 @@ void FacComputer::step()
                           &FacComputer_DWork.sf_LagFilter_b);
     FacComputer_LagFilter_k(FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_right_percent.Data -
       FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_left_percent.Data, FacComputer_P.LagFilter1_C1,
-      FacComputer_U.in.time.dt, &rtb_y_i, &FacComputer_DWork.sf_LagFilter_k);
+      FacComputer_U.in.time.dt, &rtb_y_mb, &FacComputer_DWork.sf_LagFilter_k);
     if (rtb_alpha > FacComputer_P.Saturation_UpperSat_a) {
       u0 = FacComputer_P.Saturation_UpperSat_a;
     } else if (rtb_alpha < FacComputer_P.Saturation_LowerSat_l) {
@@ -548,7 +547,7 @@ void FacComputer::step()
                           &FacComputer_DWork.sf_LagFilter_f);
     FacComputer_LagFilter_k(FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_left_percent.Data -
       FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_right_percent.Data, FacComputer_P.LagFilter3_C1,
-      FacComputer_U.in.time.dt, &rtb_y_j4, &FacComputer_DWork.sf_LagFilter_d);
+      FacComputer_U.in.time.dt, &rtb_y_a, &FacComputer_DWork.sf_LagFilter_d);
     if (rtb_V_ias > FacComputer_P.Saturation1_UpperSat_o) {
       rtb_Y_g4 = FacComputer_P.Saturation1_UpperSat_o;
     } else if (rtb_V_ias < FacComputer_P.Saturation1_LowerSat_n) {
@@ -557,36 +556,36 @@ void FacComputer::step()
       rtb_Y_g4 = rtb_V_ias;
     }
 
-    rtb_beDot = (rtb_Switch1_a * rtb_y_j4 * FacComputer_P.Gain5_Gain + FacComputer_P.Gain4_Gain * rtb_y_i) / rtb_Y_g4 /
+    rtb_beDot = (rtb_Switch1_a * rtb_y_a * FacComputer_P.Gain5_Gain + FacComputer_P.Gain4_Gain * rtb_y_mb) / rtb_Y_g4 /
       rtb_Y_g4 * FacComputer_P.Gain_Gain_k;
     FacComputer_LagFilter(static_cast<real_T>(rtb_alpha), FacComputer_P.LagFilter_C1_f, FacComputer_U.in.time.dt,
                           &rtb_Y_g4, &FacComputer_DWork.sf_LagFilter_c);
     rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg = rtb_Y_g4;
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2,
-      FacComputer_P.BitfromLabel6_bit_m, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel6_bit_m, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2,
-      FacComputer_P.BitfromLabel7_bit_i, &rtb_y_c);
-    rtb_y_h = (rtb_OR1 || (rtb_y_c != 0U));
+      FacComputer_P.BitfromLabel7_bit_i, &rtb_y_p2);
+    rtb_y_pm = (rtb_OR1 || (rtb_y_p2 != 0U));
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel_bit_i, &rtb_y_c);
-    rtb_DataTypeConversion_kr = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_i, &rtb_y_p2);
+    rtb_DataTypeConversion_kr = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel1_bit_b, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel1_bit_b, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel2_bit_d, &rtb_y_c);
-    rtb_DataTypeConversion_mg = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel2_bit_d, &rtb_y_p2);
+    rtb_DataTypeConversion_mg = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel3_bit_n, &rtb_y_c);
-    rtb_DataTypeConversion_l2 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_n, &rtb_y_p2);
+    rtb_DataTypeConversion_l2 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel4_bit_c, &rtb_y_c);
-    rtb_DataTypeConversion_cl = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel4_bit_c, &rtb_y_p2);
+    rtb_DataTypeConversion_cl = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel5_bit_g, &rtb_y_c);
+      FacComputer_P.BitfromLabel5_bit_g, &rtb_y_p2);
     FacComputer_MATLABFunction_d(rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
-      rtb_DataTypeConversion_l2, rtb_DataTypeConversion_cl, (rtb_y_c != 0U), &rtb_Switch4_f);
+      rtb_DataTypeConversion_l2, rtb_DataTypeConversion_cl, (rtb_y_p2 != 0U), &rtb_Switch4_f);
     FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), rtb_Switch4_f,
       FacComputer_P.alphafloor_bp01Data, FacComputer_P.alphafloor_bp02Data, FacComputer_P.alphafloor_tableData,
       FacComputer_P.alphafloor_maxIndex, 4U), FacComputer_P.RateLimiterGenericVariableTs1_up,
@@ -659,13 +658,13 @@ void FacComputer::step()
     FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
       &rtb_DataTypeConversion_kr);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel9_bit, &rtb_y_c);
-    rtb_Memory = ((rtb_y_c != 0U) && rtb_DataTypeConversion_kr);
+      FacComputer_P.BitfromLabel9_bit, &rtb_y_p2);
+    rtb_Memory = ((rtb_y_p2 != 0U) && rtb_DataTypeConversion_kr);
     FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
       &rtb_DataTypeConversion_kr);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel8_bit_i, &rtb_y_c);
-    rtb_Memory = (rtb_Memory || ((rtb_y_c != 0U) && rtb_DataTypeConversion_kr));
+      FacComputer_P.BitfromLabel8_bit_i, &rtb_y_p2);
+    rtb_Memory = (rtb_Memory || ((rtb_y_p2 != 0U) && rtb_DataTypeConversion_kr));
     guard1 = false;
     if ((rtb_alpha_floor_inhib == 0) && (rtb_mach < 0.6)) {
       if (rtb_Switch4_f >= 4.0) {
@@ -685,30 +684,30 @@ void FacComputer::step()
     }
 
     if (guard1) {
-      if ((rtb_alpha_floor_inhib != 0) || (!rtb_y_h) || (!rtb_Memory)) {
+      if ((rtb_alpha_floor_inhib != 0) || (!rtb_y_pm) || (!rtb_Memory)) {
         FacComputer_DWork.sAlphaFloor = 0.0;
       }
     }
 
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel_bit_a, &rtb_y_c);
-    rtb_Memory = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_a, &rtb_y_p2);
+    rtb_Memory = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel1_bit_i, &rtb_y_c);
-    rtb_y_h = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel1_bit_i, &rtb_y_p2);
+    rtb_y_pm = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel2_bit_di, &rtb_y_c);
-    rtb_DataTypeConversion_kr = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel2_bit_di, &rtb_y_p2);
+    rtb_DataTypeConversion_kr = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel3_bit_g, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_g, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel4_bit_f, &rtb_y_c);
-    rtb_DataTypeConversion_mg = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel4_bit_f, &rtb_y_p2);
+    rtb_DataTypeConversion_mg = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel5_bit_g3, &rtb_y_c);
-    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_h, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
-      (rtb_y_c != 0U), &rtb_Switch4_f);
+      FacComputer_P.BitfromLabel5_bit_g3, &rtb_y_p2);
+    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_pm, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
+      (rtb_y_p2 != 0U), &rtb_Switch4_f);
     FacComputer_RateLimiter(look1_binlxpw(rtb_Switch4_f, FacComputer_P.alpha0_bp01Data, FacComputer_P.alpha0_tableData,
       5U), FacComputer_P.RateLimiterGenericVariableTs1_up_g, FacComputer_P.RateLimiterGenericVariableTs1_lo_n,
       FacComputer_U.in.time.dt, FacComputer_P.reset_Value_k, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_c);
@@ -744,24 +743,24 @@ void FacComputer::step()
 
     rtb_BusAssignment_kv_flight_envelope_v_stall_warn_kn = rtb_Switch4_f;
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel_bit_k, &rtb_y_c);
-    rtb_Memory = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_k, &rtb_y_p2);
+    rtb_Memory = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel1_bit_c, &rtb_y_c);
-    rtb_y_h = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel1_bit_c, &rtb_y_p2);
+    rtb_y_pm = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel2_bit_g, &rtb_y_c);
-    rtb_DataTypeConversion_kr = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel2_bit_g, &rtb_y_p2);
+    rtb_DataTypeConversion_kr = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel3_bit_d, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_d, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel4_bit_a, &rtb_y_c);
-    rtb_DataTypeConversion_mg = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel4_bit_a, &rtb_y_p2);
+    rtb_DataTypeConversion_mg = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel5_bit_j, &rtb_y_c);
-    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_h, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
-      (rtb_y_c != 0U), &rtb_Switch4_f);
+      FacComputer_P.BitfromLabel5_bit_j, &rtb_y_p2);
+    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_pm, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
+      (rtb_y_p2 != 0U), &rtb_Switch4_f);
     FacComputer_MATLABFunction2(look1_binlxpw(rtb_Switch4_f, FacComputer_P.uDLookupTable3_bp01Data,
       FacComputer_P.uDLookupTable3_tableData, 5U), look1_binlxpw(rtb_Switch4_f, FacComputer_P.uDLookupTable2_bp01Data,
       FacComputer_P.uDLookupTable2_tableData, 5U), static_cast<real_T>(rtb_DataTypeConversion2), &rtb_Y_g4);
@@ -801,7 +800,7 @@ void FacComputer::step()
       rtb_Switch1_a = FacComputer_P.Saturation1_LowerSat_o;
     }
 
-    if ((!rtb_AND1) && rtb_y_mv && rtb_Switch_i_idx_1) {
+    if ((!rtb_AND1) && rtb_y_lg && rtb_Switch_i_idx_1) {
       FacComputer_DWork.takeoff_config = rtb_Switch4_f;
     } else if (FacComputer_DWork.takeoff_config != rtb_Switch4_f) {
       FacComputer_DWork.takeoff_config = -1.0;
@@ -850,49 +849,49 @@ void FacComputer::step()
     rtb_Switch4_f = std::fmax(FacComputer_P.Gain_Gain_o * rtb_Switch4_f, rtb_Y_g4);
     rtb_v_gd = (rtb_Gain_a * 2.0 + 85.0) + std::fmax(rtb_alt - 20000.0, 0.0) / 1000.0;
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel_bit_b, &rtb_y_c);
-    rtb_Memory = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_b, &rtb_y_p2);
+    rtb_Memory = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel1_bit_ca, &rtb_y_c);
-    rtb_y_h = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel1_bit_ca, &rtb_y_p2);
+    rtb_y_pm = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel2_bit_b, &rtb_y_c);
-    rtb_DataTypeConversion_kr = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel2_bit_b, &rtb_y_p2);
+    rtb_DataTypeConversion_kr = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel3_bit_l, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_l, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel4_bit_l, &rtb_y_c);
-    rtb_DataTypeConversion_mg = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel4_bit_l, &rtb_y_p2);
+    rtb_DataTypeConversion_mg = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel5_bit_j4, &rtb_y_c);
-    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_h, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
-      (rtb_y_c != 0U), &rtb_Y_g4);
-    rtb_y_h = ((rtb_Y_g4 == FacComputer_P.CompareToConstant3_const) || (rtb_Y_g4 ==
-                FacComputer_P.CompareToConstant1_const));
+      FacComputer_P.BitfromLabel5_bit_j4, &rtb_y_p2);
+    FacComputer_MATLABFunction_d(rtb_Memory, rtb_y_pm, rtb_DataTypeConversion_kr, rtb_OR1, rtb_DataTypeConversion_mg,
+      (rtb_y_p2 != 0U), &rtb_Y_g4);
+    rtb_y_pm = ((rtb_Y_g4 == FacComputer_P.CompareToConstant3_const) || (rtb_Y_g4 ==
+      FacComputer_P.CompareToConstant1_const));
     rtb_Memory = (rtb_Y_g4 == FacComputer_P.CompareToConstant_const_k);
     rtb_BusAssignment_g5_flight_envelope_v_stall_kn = rtb_Y_br;
     rtb_DataTypeConversion_kr = ((rtb_Y_g4 == FacComputer_P.CompareToConstant4_const) || (rtb_Y_g4 ==
       FacComputer_P.CompareToConstant2_const));
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel_bit_g, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_g, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel1_bit_j, &rtb_y_c);
-    rtb_DataTypeConversion_mg = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel1_bit_j, &rtb_y_p2);
+    rtb_DataTypeConversion_mg = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel2_bit_n, &rtb_y_c);
-    rtb_DataTypeConversion_l2 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel2_bit_n, &rtb_y_p2);
+    rtb_DataTypeConversion_l2 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel3_bit_h, &rtb_y_c);
-    rtb_DataTypeConversion_cl = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_h, &rtb_y_p2);
+    rtb_DataTypeConversion_cl = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel4_bit_l5, &rtb_y_c);
-    rtb_DataTypeConversion_jc = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel4_bit_l5, &rtb_y_p2);
+    rtb_DataTypeConversion_jc = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
-      FacComputer_P.BitfromLabel5_bit_c, &rtb_y_c);
+      FacComputer_P.BitfromLabel5_bit_c, &rtb_y_p2);
     FacComputer_MATLABFunction_d(rtb_OR1, rtb_DataTypeConversion_mg, rtb_DataTypeConversion_l2,
-      rtb_DataTypeConversion_cl, rtb_DataTypeConversion_jc, (rtb_y_c != 0U), &rtb_Switch1_a);
+      rtb_DataTypeConversion_cl, rtb_DataTypeConversion_jc, (rtb_y_p2 != 0U), &rtb_Switch1_a);
     rtb_BusAssignment_f_flight_envelope_v_fe_next_kn = look1_binlxpw(rtb_Switch1_a,
       FacComputer_P.uDLookupTable1_bp01Data, FacComputer_P.uDLookupTable1_tableData, 5U);
     rtb_DataTypeConversion_mg = ((rtb_Switch1_a < FacComputer_P.CompareToConstant_const_i) && (rtb_alt <=
@@ -944,14 +943,14 @@ void FacComputer::step()
           (rtb_DataTypeConversion_cl) << 1)) << 1) + FacComputer_DWork.Memory_PreviousInput];
     rtb_DataTypeConversion_l2 = !rtb_rudderTrimEngaged;
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel_bit_j, &rtb_y_c);
+      FacComputer_P.BitfromLabel_bit_j, &rtb_y_p2);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel1_bit_e, &rtb_y_kg);
+      FacComputer_P.BitfromLabel1_bit_e, &rtb_y_au);
     if (rtb_OR1) {
       if (FacComputer_U.in.bus_inputs.fmgc_own_bus.fg_radio_height_ft.Data >= FacComputer_P.Switch6_Threshold_n) {
-        if ((rtb_y_c != 0U) && FacComputer_U.in.discrete_inputs.elac_1_healthy) {
+        if ((rtb_y_p2 != 0U) && FacComputer_U.in.discrete_inputs.elac_1_healthy) {
           u0 = FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
-        } else if ((rtb_y_kg != 0U) && FacComputer_U.in.discrete_inputs.elac_2_healthy) {
+        } else if ((rtb_y_au != 0U) && FacComputer_U.in.discrete_inputs.elac_2_healthy) {
           u0 = FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
         } else {
           u0 = FacComputer_P.Constant1_Value_m;
@@ -1000,16 +999,16 @@ void FacComputer::step()
       FacComputer_U.in.analog_inputs.rudder_trim_position_deg, rtb_DataTypeConversion_l2, &rtb_Y_l,
       &FacComputer_DWork.sf_RateLimiter_l);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel_bit_c, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel_bit_c, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel1_bit_n, &rtb_y_c);
-    rtb_DataTypeConversion_l2 = (rtb_OR1 && FacComputer_U.in.discrete_inputs.elac_1_healthy && (rtb_y_c != 0U));
+      FacComputer_P.BitfromLabel1_bit_n, &rtb_y_p2);
+    rtb_DataTypeConversion_l2 = (rtb_OR1 && FacComputer_U.in.discrete_inputs.elac_1_healthy && (rtb_y_p2 != 0U));
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel3_bit_k, &rtb_y_c);
-    rtb_OR1 = (rtb_y_c != 0U);
+      FacComputer_P.BitfromLabel3_bit_k, &rtb_y_p2);
+    rtb_OR1 = (rtb_y_p2 != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
-      FacComputer_P.BitfromLabel4_bit_k, &rtb_y_c);
+      FacComputer_P.BitfromLabel4_bit_k, &rtb_y_p2);
     if ((!FacComputer_DWork.pY_not_empty) || (!FacComputer_DWork.pU_not_empty)) {
       FacComputer_DWork.pU = rtb_r;
       FacComputer_DWork.pU_not_empty = true;
@@ -1022,7 +1021,7 @@ void FacComputer::step()
     FacComputer_DWork.pY = (2.0 - rtb_Y_g4) / (rtb_Y_g4 + 2.0) * FacComputer_DWork.pY + (rtb_r * rtb_Y_br -
       FacComputer_DWork.pU * rtb_Y_br);
     FacComputer_DWork.pU = rtb_r;
-    if (rtb_DataTypeConversion_l2 || (rtb_OR1 && FacComputer_U.in.discrete_inputs.elac_2_healthy && (rtb_y_c != 0U))) {
+    if (rtb_DataTypeConversion_l2 || (rtb_OR1 && FacComputer_U.in.discrete_inputs.elac_2_healthy && (rtb_y_p2 != 0U))) {
       if (rtb_DataTypeConversion_l2) {
         rtb_Y_g4 = FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
       } else {
@@ -1099,7 +1098,7 @@ void FacComputer::step()
     rtb_VectorConcatenate[16] = FacComputer_P.Constant10_Value;
     rtb_VectorConcatenate[17] = FacComputer_P.Constant10_Value;
     rtb_VectorConcatenate[18] = FacComputer_P.Constant10_Value;
-    FacComputer_MATLABFunction_g(rtb_VectorConcatenate, &rtb_y_j4);
+    FacComputer_MATLABFunction_g(rtb_VectorConcatenate, &rtb_y_a);
     if (FacComputer_P.Constant_Value_b5) {
       rtb_v_alpha_lim_kn_SSM = static_cast<int32_T>(FacComputer_P.EnumeratedConstant2_Value);
       rtb_v_ls_kn_SSM = static_cast<int32_T>(FacComputer_P.EnumeratedConstant2_Value);
@@ -1136,7 +1135,7 @@ void FacComputer::step()
         rtb_v_3_kn_SSM = static_cast<int32_T>(FacComputer_P.EnumeratedConstant_Value);
       }
 
-      if (rtb_BusAssignment_h_logic_speed_scale_visible && rtb_y_h) {
+      if (rtb_BusAssignment_h_logic_speed_scale_visible && rtb_y_pm) {
         rtb_v_4_kn_SSM = static_cast<int32_T>(FacComputer_P.EnumeratedConstant1_Value);
       } else {
         rtb_v_4_kn_SSM = static_cast<int32_T>(FacComputer_P.EnumeratedConstant_Value);
@@ -1175,7 +1174,7 @@ void FacComputer::step()
     rtb_VectorConcatenate[16] = FacComputer_P.Constant18_Value;
     rtb_VectorConcatenate[17] = FacComputer_P.Constant18_Value;
     rtb_VectorConcatenate[18] = FacComputer_P.Constant18_Value;
-    FacComputer_MATLABFunction_g(rtb_VectorConcatenate, &rtb_y_i);
+    FacComputer_MATLABFunction_g(rtb_VectorConcatenate, &rtb_y_mb);
     rtb_VectorConcatenate[0] = FacComputer_P.Constant9_Value;
     rtb_VectorConcatenate[1] = FacComputer_P.Constant9_Value;
     rtb_VectorConcatenate[2] = FacComputer_P.Constant9_Value;
@@ -1203,7 +1202,7 @@ void FacComputer::step()
     rtb_VectorConcatenate[4] = FacComputer_P.Constant19_Value;
     rtb_VectorConcatenate[5] = rtb_BusAssignment_m_logic_lgciu_own_valid;
     rtb_VectorConcatenate[6] = rtb_AND1;
-    rtb_VectorConcatenate[7] = rtb_y_mv;
+    rtb_VectorConcatenate[7] = rtb_y_lg;
     rtb_VectorConcatenate[8] = rtb_Switch_i_idx_1;
     rtb_VectorConcatenate[9] = rtb_Switch_i_idx_2;
     rtb_VectorConcatenate[10] = FacComputer_P.Constant19_Value;
@@ -1222,7 +1221,7 @@ void FacComputer::step()
     FacComputer_Y.out.laws.rudder_travel_lim_command_deg = rtb_Y_g4;
     FacComputer_Y.out.logic.lgciu_own_valid = rtb_BusAssignment_m_logic_lgciu_own_valid;
     FacComputer_Y.out.logic.all_lgciu_lost = rtb_AND1;
-    FacComputer_Y.out.logic.left_main_gear_pressed = rtb_y_mv;
+    FacComputer_Y.out.logic.left_main_gear_pressed = rtb_y_lg;
     FacComputer_Y.out.logic.right_main_gear_pressed = rtb_Switch_i_idx_1;
     FacComputer_Y.out.logic.main_gear_out = rtb_Switch_i_idx_2;
     FacComputer_Y.out.logic.on_ground = rtb_BusAssignment_h_logic_on_ground;
@@ -1275,7 +1274,7 @@ void FacComputer::step()
     FacComputer_Y.out.flight_envelope.v_3_kn = rtb_BusAssignment_g5_flight_envelope_v_3_kn;
     FacComputer_Y.out.flight_envelope.v_3_visible = rtb_DataTypeConversion_kr;
     FacComputer_Y.out.flight_envelope.v_4_kn = rtb_Switch4_f;
-    FacComputer_Y.out.flight_envelope.v_4_visible = rtb_y_h;
+    FacComputer_Y.out.flight_envelope.v_4_visible = rtb_y_pm;
     FacComputer_Y.out.flight_envelope.v_man_kn = rtb_v_gd;
     FacComputer_Y.out.flight_envelope.v_man_visible = rtb_Memory;
     FacComputer_Y.out.flight_envelope.v_max_kn = rtb_Switch4_j;
@@ -1330,7 +1329,7 @@ void FacComputer::step()
     FacComputer_Y.out.bus_outputs.fac_flap_angle.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
     FacComputer_Y.out.bus_outputs.fac_flap_angle.Data = FacComputer_P.Constant1_Value_k;
     FacComputer_Y.out.bus_outputs.discrete_word_2.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.discrete_word_2.Data = rtb_y_j4;
+    FacComputer_Y.out.bus_outputs.discrete_word_2.Data = rtb_y_a;
     FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.SSM = static_cast<uint32_T>
       (FacComputer_P.EnumeratedConstant1_Value);
     FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.Data = static_cast<real32_T>
@@ -1373,7 +1372,7 @@ void FacComputer::step()
     FacComputer_Y.out.bus_outputs.v_fe_next_kn.Data = static_cast<real32_T>
       (rtb_BusAssignment_f_flight_envelope_v_fe_next_kn);
     FacComputer_Y.out.bus_outputs.discrete_word_3.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.discrete_word_3.Data = rtb_y_i;
+    FacComputer_Y.out.bus_outputs.discrete_word_3.Data = rtb_y_mb;
     FacComputer_Y.out.bus_outputs.discrete_word_4.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
     FacComputer_Y.out.bus_outputs.discrete_word_5.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
     FacComputer_Y.out.bus_outputs.delta_r_rudder_trim_deg.SSM = static_cast<uint32_T>
