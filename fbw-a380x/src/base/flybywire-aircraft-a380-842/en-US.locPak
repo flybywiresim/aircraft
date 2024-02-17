@@ -6,8 +6,7 @@
       "AIRCRAFT.UI_MANUFACTURER": "Airbus",
       "AIRCRAFT.UI_MODEL": "A380",
       "AIRCRAFT.UI_VARIATION": "Airbus",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+
       "A380X.LOADING.TIPS.A380_001": "The FlyByWire A380X is a collaboration between hundreds of individual contributors.",
       "A380X.LOADING.TIPS.A380_002": "Development of the FlyByWire A380X first started in October 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
@@ -17,6 +16,17 @@
       "A380X.LOADING.TIPS.A380_007": "The volume of all three decks (including the cargo hold) is 1,570 m3. This is enough space for 35 million ping-pong balls.",
       "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
+
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB": "Battery Voltage Indicator Selector Knob",
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_ESS": "Shows the voltage of the ESS battery",
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_APU": "Shows the voltage of the APU battery",
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_OFF":  "Shows no valid voltage (00.0V)",
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT1": "Shows the voltage of battery 1",
+      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT2": "Shows the voltage of battery 2"
+
     }
   }
 }
