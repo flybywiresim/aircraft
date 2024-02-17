@@ -121,7 +121,7 @@ export class FlightPhaseManager {
 
     handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
         const currentFlightLevel = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
-        if (this.activePhase === FmgcFlightPhase.Approach || this.activePhase === FmgcFlightPhase.GoAround) {
+        if (this.activePhase === FmgcFlightPhase.Approach) {
             this.changePhase(FmgcFlightPhase.Climb);
         } else if (currentFlightLevel < newCruiseFlightLevel
             && this.activePhase === FmgcFlightPhase.Descent) {
