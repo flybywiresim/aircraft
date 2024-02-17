@@ -8,15 +8,8 @@ use crate::simulation::{
 };
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::radian,
-    f64::*,
-    force::newton,
-    length::meter,
-    mass::kilogram,
-    ratio::percent,
-    ratio::ratio,
-    velocity::{knot, meter_per_second},
+    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
+    mass::kilogram, ratio::percent, ratio::ratio, velocity::meter_per_second,
 };
 
 use std::time::Duration;
@@ -46,21 +39,21 @@ struct LandingGearWeightOnWheelsEstimator {
     right_body_compression: Ratio,
 }
 impl LandingGearWeightOnWheelsEstimator {
-    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:0";
+    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
     const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
     const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
     const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
     // Weight estimation is in the form of weight = X * compression_percent^(Y)
-    const NOSE_GEAR_X_COEFF: f64 = 2.22966;
-    const NOSE_GEAR_Y_POW: f64 = 2.2953179884;
+    const NOSE_GEAR_X_COEFF: f64 = 0.005;
+    const NOSE_GEAR_Y_POW: f64 = 3.6;
 
-    const WING_GEAR_X_COEFF: f64 = 5.5;
-    const WING_GEAR_Y_POW: f64 = 2.6;
+    const WING_GEAR_X_COEFF: f64 = 0.006;
+    const WING_GEAR_Y_POW: f64 = 3.85;
 
-    const BODY_GEAR_X_COEFF: f64 = 7.5;
-    const BODY_GEAR_Y_POW: f64 = 2.5;
+    const BODY_GEAR_X_COEFF: f64 = 0.0055;
+    const BODY_GEAR_Y_POW: f64 = 3.85;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -125,10 +118,10 @@ impl LandingGearWeightOnWheelsEstimator {
 impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.center_compression = reader.read(&self.center_compression_id);
-        self.left_wing_compression = reader.read(&self.left_body_compression_id);
-        self.right_wing_compression = reader.read(&self.right_body_compression_id);
-        self.left_body_compression = reader.read(&self.left_wing_compression_id);
-        self.right_body_compression = reader.read(&self.right_wing_compression_id);
+        self.left_wing_compression = reader.read(&self.left_wing_compression_id);
+        self.right_wing_compression = reader.read(&self.right_wing_compression_id);
+        self.left_body_compression = reader.read(&self.left_body_compression_id);
+        self.right_body_compression = reader.read(&self.right_body_compression_id);
     }
 }
 
@@ -139,6 +132,8 @@ pub struct WingLift {
     total_lift: Force,
 
     ground_weight_ratio: Ratio,
+
+    ground_wow_filtered: LowPassFilter<f64>,
 }
 impl WingLift {
     pub fn new(context: &mut InitContext) -> Self {
@@ -146,6 +141,8 @@ impl WingLift {
             gear_weight_on_wheels: LandingGearWeightOnWheelsEstimator::new(context),
             total_lift: Force::default(),
             ground_weight_ratio: Ratio::default(),
+
+            ground_wow_filtered: LowPassFilter::new(Duration::from_millis(650)),
         }
     }
 
@@ -159,13 +156,10 @@ impl WingLift {
         let lift_1g = 9.8 * cur_weight_kg;
         let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
+        self.ground_wow_filtered.update(context.delta(), lift_wow);
+
         let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
-            // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() < 20. {
-                0.
-            } else {
-                (lift_1g + lift_wow).max(0.)
-            }
+            (lift_1g + self.ground_wow_filtered.output()).max(0.)
         } else {
             lift_1g + lift_delta_from_accel_n
         };
