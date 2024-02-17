@@ -69,6 +69,7 @@
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
 1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
 1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [Fuel] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter (\_Chaoz_)
 
 ## 0.11.0
 
