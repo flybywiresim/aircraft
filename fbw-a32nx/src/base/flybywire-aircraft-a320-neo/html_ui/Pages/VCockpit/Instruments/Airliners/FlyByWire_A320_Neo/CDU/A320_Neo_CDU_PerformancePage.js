@@ -225,7 +225,7 @@ class CDUPerformancePage {
         const eoAcc = plan.performanceData.engineOutAccelerationAltitude;
         const eoAccPilot = plan.performanceData.engineOutAccelerationAltitudeIsPilotEntered;
 
-        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== undefined ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== undefined ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
+        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== null ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== null ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
 
         mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
             if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
@@ -236,7 +236,7 @@ class CDUPerformancePage {
         };
 
         // eng out acceleration altitude
-        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== undefined ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
+        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.trySetEngineOutAcceleration(value)) {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
