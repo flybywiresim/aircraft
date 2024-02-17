@@ -6,11 +6,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, usePersistentNumberProperty, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
-// import Slider from 'rc-slider';
-import Card from 'instruments/src/EFB/UtilComponents/Card/Card';
-import { A380FuelOutline } from 'instruments/src/EFB/Assets/FuelOutline';
 import Slider from 'rc-slider';
-import { t, TooltipWrapper, SimpleInput, SelectGroup, SelectItem, ProgressBar } from '@flybywiresim/flypad';
+import { Card, A380FuelOutline, t, TooltipWrapper, SimpleInput, SelectGroup, SelectItem, ProgressBar } from '@flybywiresim/flypad';
 
 // Page is very WIP, needs to be cleaned up and refactored
 

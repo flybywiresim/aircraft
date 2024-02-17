@@ -5,6 +5,7 @@ export * from './Efb';
 export * from './Assets/Error';
 export * from './Assets/GroundServiceOutline';
 export * from './Assets/NoseOutline';
+export * from './Assets/FuelOutline';
 export * from './Assets/OverWingOutline';
 export * from './Localization/translation';
 export * from './Settings/Migration';
