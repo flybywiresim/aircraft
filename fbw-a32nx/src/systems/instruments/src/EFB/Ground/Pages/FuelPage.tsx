@@ -58,7 +58,7 @@ export const FuelPage = () => {
     const INNER_CELL_GALLONS = 1816;
     const CENTER_TANK_GALLONS = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
-    const CenterTotalRefuelTimeSeconds = 180;
+    const CenterTotalRefuelTimeSeconds = 1200;
 
     const { usingMetric } = Units;
     const [currentUnit] = useState(usingMetric ? 'KG' : 'LB');
@@ -253,8 +253,9 @@ export const FuelPage = () => {
         const totalWingFuel = TOTAL_FUEL_GALLONS - CENTER_TANK_GALLONS;
         const differentialFuelWings = Math.abs(currentWingFuel() - targetWingFuel());
         const differentialFuelCenter = Math.abs(centerTarget - centerCurrent);
-        estimatedTimeSeconds += (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
-        estimatedTimeSeconds += (differentialFuelCenter / CENTER_TANK_GALLONS) * CenterTotalRefuelTimeSeconds;
+        const estimatedTimeSecondsWing = (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
+        const estimatedTimeSecondsCenter = (differentialFuelCenter / CENTER_TANK_GALLONS) * CenterTotalRefuelTimeSeconds;
+        estimatedTimeSeconds = Math.max(estimatedTimeSecondsWing, estimatedTimeSecondsCenter);
         if (refuelRate === '1') { // fast
             estimatedTimeSeconds /= 5;
         }
