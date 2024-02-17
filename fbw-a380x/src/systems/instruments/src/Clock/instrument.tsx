@@ -2,7 +2,7 @@ import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
 import { ClockRoot, ClockSimvarPublisher } from '@flybywiresim/clock';
 
 // eslint-disable-next-line camelcase
-class A32NX_Clock extends BaseInstrument {
+class A380X_Clock extends BaseInstrument {
     private bus: EventBus;
 
     private readonly hEventPublisher: HEventPublisher;
@@ -25,7 +25,7 @@ class A32NX_Clock extends BaseInstrument {
     }
 
     get templateID(): string {
-        return 'A32NX_Clock';
+        return 'A380X_Clock';
     }
 
     public onInteractionEvent(args: string[]): void {
@@ -56,7 +56,7 @@ class A32NX_Clock extends BaseInstrument {
         FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
 
         // Remove "instrument didn't load" text
-        document.getElementById('Clock_CONTENT').querySelector(':scope > h1').remove();
+        document?.getElementById('Clock_CONTENT')?.querySelector(':scope > h1')?.remove();
     }
 
     public Update(): void {
@@ -74,4 +74,4 @@ class A32NX_Clock extends BaseInstrument {
     }
 }
 
-registerInstrument('a32nx-clock', A32NX_Clock);
+registerInstrument('a380x-clock', A380X_Clock);
