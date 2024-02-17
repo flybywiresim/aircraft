@@ -1,12 +1,30 @@
 use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    VariableIdentifier,
+    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+    SimulatorWriter, VariableIdentifier, Write, Writer,
 };
 use nalgebra::Vector3;
 use num_traits::Zero;
 use uom::si::{f64::Mass, mass::kilogram};
 
 pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum RefuelRate {
+    Real,
+    Fast,
+    Instant,
+}
+read_write_enum!(RefuelRate);
+impl From<f64> for RefuelRate {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => RefuelRate::Real,
+            1 => RefuelRate::Fast,
+            2 => RefuelRate::Instant,
+            i => panic!("Cannot convert from {} to RefuelRate.", i),
+        }
+    }
+}
 
 pub trait FuelPayload {
     fn total_load(&self) -> Mass;
@@ -23,6 +41,7 @@ pub trait FuelCG {
 pub struct FuelInfo<'a> {
     pub fuel_tank_id: &'a str,
     pub position: (f64, f64, f64),
+    pub total_capacity_gallons: f64,
 }
 
 #[derive(Debug)]
@@ -30,13 +49,15 @@ pub struct FuelTank {
     fuel_id: VariableIdentifier,
     location: Vector3<f64>,
     quantity: Mass,
+    write: bool,
 }
 impl FuelTank {
-    pub fn new(context: &mut InitContext, id: &str, location: Vector3<f64>) -> Self {
+    pub fn new(context: &mut InitContext, id: &str, location: Vector3<f64>, write: bool) -> Self {
         FuelTank {
             fuel_id: context.get_identifier(id.to_owned()),
             location,
             quantity: Mass::default(),
+            write,
         }
     }
 
@@ -47,11 +68,31 @@ impl FuelTank {
     pub fn quantity(&self) -> Mass {
         self.quantity
     }
+
+    pub fn set_quantity(&mut self, quantity: Mass) {
+        self.quantity = quantity;
+    }
 }
 impl SimulationElement for FuelTank {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let volume: f64 = reader.read(&self.fuel_id);
         self.quantity = Mass::new::<kilogram>(volume * FUEL_GALLONS_TO_KG);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.write {
+            writer.write(
+                &self.fuel_id,
+                if self.quantity.is_zero() {
+                    0.
+                } else {
+                    self.quantity.get::<kilogram>() / FUEL_GALLONS_TO_KG
+                },
+            );
+        }
+    }
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
     }
 }
 
@@ -81,6 +122,10 @@ impl<const N: usize> FuelSystem<N> {
 
     pub fn tank_has_fuel(&self, t: usize) -> bool {
         self.unlimited_fuel || !self.fuel_tanks[t].quantity().is_zero()
+    }
+
+    pub fn set_tank_quantity(&mut self, t: usize, quantity: Mass) {
+        self.fuel_tanks[t].set_quantity(quantity);
     }
 
     pub fn center_of_gravity(&self) -> Vector3<f64> {

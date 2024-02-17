@@ -175,6 +175,7 @@ class SimConnectInterface {
     SIM_RATE_INCR,
     SIM_RATE_DECR,
     SIM_RATE_SET,
+    SYSTEM_EVENT_PAUSE,
   };
 
   SimConnectInterface() = default;
@@ -298,6 +299,10 @@ class SimConnectInterface {
 
   void updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate);
 
+  bool isSimInAnyPause();
+  bool isSimInActivePause();
+  bool isSimInPause();
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
@@ -352,6 +357,8 @@ class SimConnectInterface {
   int elacDisabled = -1;
   int secDisabled = -1;
   int facDisabled = -1;
+
+  long pauseState = 0;
 
   // change to non-static when aileron events can be processed via SimConnect
   static bool loggingFlightControlsEnabled;
