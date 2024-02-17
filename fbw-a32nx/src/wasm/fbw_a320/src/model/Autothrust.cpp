@@ -193,6 +193,7 @@ void Autothrust::step()
   real_T rtb_Gain2;
   real_T rtb_Gain3;
   real_T rtb_Saturation;
+  real_T rtb_Switch2;
   real_T rtb_Switch_dx;
   real_T rtb_Switch_m;
   real_T rtb_Y_e;
@@ -223,16 +224,16 @@ void Autothrust::step()
   Phi_rad = 0.017453292519943295 * rtb_Gain3;
   rtb_Saturation = std::sin(Theta_rad);
   Theta_rad = std::cos(Theta_rad);
-  rtb_Switch_dx = std::sin(Phi_rad);
+  rtb_Switch_m = std::sin(Phi_rad);
   Phi_rad = std::cos(Phi_rad);
   result_tmp[0] = Theta_rad;
   result_tmp[3] = 0.0;
   result_tmp[6] = -rtb_Saturation;
-  result_tmp[1] = rtb_Switch_dx * rtb_Saturation;
+  result_tmp[1] = rtb_Switch_m * rtb_Saturation;
   result_tmp[4] = Phi_rad;
-  result_tmp[7] = Theta_rad * rtb_Switch_dx;
+  result_tmp[7] = Theta_rad * rtb_Switch_m;
   result_tmp[2] = Phi_rad * rtb_Saturation;
-  result_tmp[5] = 0.0 - rtb_Switch_dx;
+  result_tmp[5] = 0.0 - rtb_Switch_m;
   result_tmp[8] = Phi_rad * Theta_rad;
   for (i = 0; i < 3; i++) {
     result[i] = (result_tmp[i + 3] * Autothrust_U.in.data.by_m_s2 + result_tmp[i] * Autothrust_U.in.data.bx_m_s2) +
@@ -240,14 +241,14 @@ void Autothrust::step()
   }
 
   rtb_Saturation = Autothrust_P.Gain_Gain_d * Autothrust_U.in.data.gear_strut_compression_1 -
-    Autothrust_P.Constant1_Value_l;
+    Autothrust_P.Constant1_Value;
   if (rtb_Saturation > Autothrust_P.Saturation_UpperSat_p) {
     rtb_Saturation = Autothrust_P.Saturation_UpperSat_p;
   } else if (rtb_Saturation < Autothrust_P.Saturation_LowerSat_h) {
     rtb_Saturation = Autothrust_P.Saturation_LowerSat_h;
   }
 
-  Phi_rad = Autothrust_P.Gain1_Gain_n * Autothrust_U.in.data.gear_strut_compression_2 - Autothrust_P.Constant1_Value_l;
+  Phi_rad = Autothrust_P.Gain1_Gain_n * Autothrust_U.in.data.gear_strut_compression_2 - Autothrust_P.Constant1_Value;
   if (Phi_rad > Autothrust_P.Saturation1_UpperSat_g) {
     Phi_rad = Autothrust_P.Saturation1_UpperSat_g;
   } else if (Phi_rad < Autothrust_P.Saturation1_LowerSat_o) {
@@ -608,6 +609,18 @@ void Autothrust::step()
     Theta_rad = Autothrust_U.in.input.thrust_limit_MCT_percent;
   }
 
+  if ((!Autothrust_U.in.input.tracking_mode_on_override) > Autothrust_P.Switch2_Threshold) {
+    if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
+      rtb_Switch2 = Autothrust_P.Saturation_UpperSat_l;
+    } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
+      rtb_Switch2 = Autothrust_P.Saturation_LowerSat_i;
+    } else {
+      rtb_Switch2 = Autothrust_U.in.input.mode_requested;
+    }
+  } else {
+    rtb_Switch2 = Autothrust_P.Constant1_Value_k;
+  }
+
   result[0] = Autothrust_U.in.input.V_LS_kn;
   result[1] = Autothrust_U.in.input.V_c_kn;
   result[2] = Autothrust_U.in.input.V_MAX_kn;
@@ -677,9 +690,9 @@ void Autothrust::step()
   Autothrust_LeadLagFilter(Autothrust_P.ktstomps_Gain_h * rtb_Switch_m, Autothrust_P.LowPassFilter_C1,
     Autothrust_P.LowPassFilter_C2, Autothrust_P.LowPassFilter_C3, Autothrust_P.LowPassFilter_C4, Autothrust_U.in.time.dt,
     &rtb_Switch_m, &Autothrust_DWork.sf_LeadLagFilter_h);
-  rtb_Cos1 = (rtb_Switch_dx + rtb_Switch_m) * Autothrust_P.mpstokts_Gain * Autothrust_P.Gain4_Gain * look1_binlxpw
+  rtb_Switch_m = (rtb_Switch_dx + rtb_Switch_m) * Autothrust_P.mpstokts_Gain * Autothrust_P.Gain4_Gain * look1_binlxpw
     (rtb_Y_e, Autothrust_P.ScheduledGain1_BreakpointsForDimension1, Autothrust_P.ScheduledGain1_Table, 4U) + rtb_Y_e;
-  rtb_Cos = Autothrust_P.DiscreteDerivativeVariableTs_Gain * rtb_Cos1;
+  rtb_Cos = Autothrust_P.DiscreteDerivativeVariableTs_Gain * rtb_Switch_m;
   Autothrust_LagFilter((rtb_Cos - Autothrust_DWork.Delay_DSTATE) / Autothrust_U.in.time.dt, Autothrust_P.LagFilter_C1,
                        Autothrust_U.in.time.dt, &rtb_Y_e, &Autothrust_DWork.sf_LagFilter);
   Autothrust_LagFilter(Autothrust_U.in.data.nz_g, Autothrust_P.LagFilter1_C1, Autothrust_U.in.time.dt, &rtb_y_cq,
@@ -696,21 +709,13 @@ void Autothrust::step()
   Autothrust_DWork.pY += std::fmax(std::fmin(static_cast<real_T>(Autothrust_U.in.input.is_alt_soft_mode_active) -
     Autothrust_DWork.pY, std::abs(Autothrust_P.RateLimiterVariableTs_up) * Autothrust_U.in.time.dt), -std::abs
     (Autothrust_P.RateLimiterVariableTs_lo) * Autothrust_U.in.time.dt);
-  if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
-    rtb_Switch_m = Autothrust_P.Saturation_UpperSat_l;
-  } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
-    rtb_Switch_m = Autothrust_P.Saturation_LowerSat_i;
-  } else {
-    rtb_Switch_m = Autothrust_U.in.input.mode_requested;
-  }
-
-  switch (static_cast<int32_T>(rtb_Switch_m)) {
+  switch (static_cast<int32_T>(rtb_Switch2)) {
    case 0:
-    rtb_Switch_m = Autothrust_P.Constant1_Value;
+    rtb_Switch_m = Autothrust_P.Constant1_Value_k;
     break;
 
    case 1:
-    rtb_Switch_m = ((Autothrust_P.Gain_Gain * rtb_Cos1 + rtb_Y_e) + (Autothrust_P.Gain1_Gain * rtb_Gain2 +
+    rtb_Switch_m = ((Autothrust_P.Gain_Gain * rtb_Switch_m + rtb_Y_e) + (Autothrust_P.Gain1_Gain * rtb_Gain2 +
       Autothrust_P.Gain3_Gain * rtb_Switch_dx)) * look1_binlxpw(std::fmin
       (rtb_BusAssignment_n.data.commanded_engine_N1_1_percent, rtb_BusAssignment_n.data.commanded_engine_N1_1_percent),
       Autothrust_P.ScheduledGain2_BreakpointsForDimension1, Autothrust_P.ScheduledGain2_Table, 3U) * look1_binlxpw
