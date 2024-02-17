@@ -8,11 +8,11 @@ import {BatDisplay} from '@flybywiresim/bat';
 import {useSimVar} from '@flybywiresim/fbw-sdk';
 
 const BatRoot = () => {
-    const [selectedBattery, setSelectedBattery] = useSimVar('L:A380X_KNOB_OVHD_BAT_POSITION', 'Number', 100);
+    const [selectedBattery, setSelectedBattery] = useSimVar('L:A380X_OVHD_BAT_DISPLAY_SELECTOR_KNOB', 'Number', 100);
 
     // set to OFF if the value is out of range
     if (selectedBattery < 0 || selectedBattery > 4) {
-        setSelectedBattery(0);
+        setSelectedBattery(2);
     }
 
     // mapping of knob (lvar) values to battery numbers to allow easy lvar and model values

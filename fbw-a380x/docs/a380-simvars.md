@@ -20,11 +20,11 @@
 - A380X_OVHD_ANN_LT_POSITION
     - Enum
     - Represents the state of the ANN LT switch
-    - State    | Value
-      -------- | ----
-      TEST     | 0
-      BRT      | 1
-      DIM      | 2
+    - | State | Value |
+      |-------|-------|
+      | TEST  | 0     |
+      | BRT   | 1     |
+      | DIM   | 2     |
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -92,6 +92,13 @@
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
+
+- A380X_OVHD_BAT_DISPLAY_SELECTOR_KNOB
+    - Number
+    - The position of the battery display knob from left to right 
+    - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
+    - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
+        - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
 
 - A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
     - Degrees
@@ -490,7 +497,7 @@
         - 3
         - 4
 
-## Indicating/Recording ATA 31
+## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
   - Bool
@@ -549,22 +556,22 @@
 - A380X_ECAM_CP_SELECTED_PAGE
     - Enum
     - Currently requested page on the ECAM CP
-    - State    | Value
-      -------- | ----
-      ENG      | 0
-      BLEED    | 1
-      PRESS    | 2
-      EL/AC    | 3
-      FUEL     | 4
-      HYD      | 5
-      C/B      | 6
-      APU      | 7
-      COND     | 8
-      DOOR     | 9
-      EL/DC    | 10
-      WHEEL    | 11
-      F/CTL    | 12
-      VIDEO    | 13
+    - | State | Value |
+      |-------|-------|
+      | ENG   | 0     |
+      | BLEED | 1     |
+      | PRESS | 2     |
+      | EL/AC | 3     |
+      | FUEL  | 4     |
+      | HYD   | 5     |
+      | C/B   | 6     |
+      | APU   | 7     |
+      | COND  | 8     |
+      | DOOR  | 9     |
+      | EL/DC | 10    |
+      | WHEEL | 11    |
+      | F/CTL | 12    |
+      | VIDEO | 13    |
 
 ## EFIS Control Panel ATA 31
 
@@ -587,20 +594,20 @@
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WPT      | 0
-      VORD     | 1
-      NDB      | 2
+    - | State | Value |
+      |-------|-------|
+      | WPT   | 0     |
+      | VORD  | 1     |
+      | NDB   | 2     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WX       | 0
-      TERR     | 1
+    - | State | Value |
+      |-------|-------|
+      | WX    | 0     |
+      | TERR  | 1     |
 
 - A380X_EFIS_{side}_ARPT_BUTTON_IS_ON
     - Boolean
