@@ -2460,7 +2460,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     case Events::THROTTLE_60: {
-      throttleAxis[0]->onEventThrottleSet_50();
+      throttleAxis[0]->onEventThrottleSet_60();
       throttleAxis[1]->onEventThrottleSet_60();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_60" << std::endl;
