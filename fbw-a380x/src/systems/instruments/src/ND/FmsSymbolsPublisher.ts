@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
-import { EfisSide, NdSymbol, NdTraffic } from '@flybywiresim/fbw-sdk';
+import { EfisSide, GenericDataListenerSync, NdSymbol, NdTraffic } from '@flybywiresim/fbw-sdk';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
-import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface FmsSymbolsData {
     symbols: NdSymbol[],

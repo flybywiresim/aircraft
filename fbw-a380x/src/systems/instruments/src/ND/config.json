@@ -1,6 +1,6 @@
 {
   "index": "./instrument.tsx",
-  "isInteractive": false,
+  "isInteractive": true,
   "extraDeps": [
     "fbw-common/src/systems/instruments/src/ND"
   ]
