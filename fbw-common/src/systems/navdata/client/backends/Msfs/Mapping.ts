@@ -688,7 +688,31 @@ export class MsfsMapping {
             }
         });
 
+        this.makeTransitionIdentsUnique(transitions);
+
         return transitions;
+    }
+
+    private makeTransitionIdentsUnique(transitions: ProcedureTransition[]) {
+        const groupedTransitions = transitions.reduce((acc, transition) => {
+            if (!acc.has(transition.ident)) {
+                acc.set(transition.ident, []);
+            }
+            acc.get(transition.ident)?.push(transition);
+            return acc;
+        }, new Map<string, ProcedureTransition[]>());
+
+        groupedTransitions.forEach((group, ident) => {
+            if (group.length > 1) {
+                for (let i = 0; i < group.length; i++) {
+                    if (ident.length < 5) {
+                        group[i].ident = `${ident}${i + 1}`;
+                    } else {
+                        group[i].ident = `${ident.substring(0, ident.length - 1)}${i + 1}`;
+                    }
+                }
+            }
+        });
     }
 
     private createMsApproachTransition(name: string, legs: JS_Leg[]): JS_ApproachTransition {

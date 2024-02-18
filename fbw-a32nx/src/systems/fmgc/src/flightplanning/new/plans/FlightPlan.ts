@@ -131,6 +131,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false) {
+        if (targetLegIndex >= this.firstMissedApproachLegIndex) {
+            throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
+        }
+
         const targetLeg = this.legElementAt(targetLegIndex);
         if (!targetLeg.isXF()) {
             throw new Error('[FPM] Cannot direct to a non-XF leg');
@@ -166,7 +170,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // TODO withAbeam
         // TODO handle direct-to into the alternate (make alternate active...?
         const existingLegIndex = this.allLegs.findIndex((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint));
-        if (existingLegIndex !== -1) {
+        if (existingLegIndex !== -1 && existingLegIndex < this.firstMissedApproachLegIndex) {
             this.directToLeg(ppos, trueTrack, existingLegIndex, withAbeam);
             return;
         }
@@ -288,10 +292,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     override async newDest(index: number, airportIdent: string): Promise<void> {
         await super.newDest(index, airportIdent);
-        // TODO: Maybe delete alternate flightplan entirely?
-        await this.alternateFlightPlan.setDeparture(undefined);
-        await this.alternateFlightPlan.setOriginRunway(undefined);
-        await this.alternateFlightPlan.setOriginAirport(airportIdent);
+
+        this.deleteAlternateFlightPlan();
     }
 
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
