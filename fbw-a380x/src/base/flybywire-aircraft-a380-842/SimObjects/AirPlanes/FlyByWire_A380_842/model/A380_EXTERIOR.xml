@@ -35,21 +35,27 @@
             </UseTemplate>
 
             <!-- LH Body Gear -->
-            <UseTemplate Name="ASOBO_GEAR_Back_Template">
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>l_b_gear</ANIM_NAME>
-                <ID>1</ID>
+                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:1, Percent) 0.5 * +</ANIM_CODE>
             </UseTemplate>
 
             <!-- RH Body Gear -->
-            <UseTemplate Name="ASOBO_GEAR_Back_Template">
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>r_b_gear</ANIM_NAME>
-                <ID>1</ID>
+                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:2, Percent) 0.5 * +</ANIM_CODE>
             </UseTemplate>
 
             <!-- LH Wing Gear-->
-            <UseTemplate Name="ASOBO_GEAR_Left_Template">
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>l_w_gear</ANIM_NAME>
-                <ID>1</ID>
+                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:3, Percent) 0.5 * + </ANIM_CODE>
+            </UseTemplate>
+
+            <!-- RH Wing Gear-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>r_w_gear</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:4, Percent) 0.5 * +</ANIM_CODE>
             </UseTemplate>
 
             <!-- LH Body Gear Door-->
@@ -64,11 +70,6 @@
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
-            <!-- RH Wing Gear-->
-            <UseTemplate Name="ASOBO_GEAR_Right_Template">
-                <ANIM_NAME>r_w_gear</ANIM_NAME>
-                <ID>1</ID>
-            </UseTemplate>
 
             <!-- RH Body Gear Door-->
             <UseTemplate Name="ASOBO_GT_Anim">
@@ -114,7 +115,7 @@
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
-            <!-- Body Gear Roation-->
+            <!-- Body Gear Rotation-->
             <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
                 <ANIM_NAME>b_tire_key</ANIM_NAME>
                 <NODE_ID_STILL>LANDINGGEAR_Back_Wheel1_Still_Right</NODE_ID_STILL>
@@ -143,14 +144,7 @@
             <!-- Compression -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>c_gear_comp</ANIM_NAME>
-                <ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent over 100) 100 *</ANIM_CODE>
-            </UseTemplate>
-
-            <!-- EXTENSION AND COMPRESSION -->
-            <UseTemplate Name="ASOBO_GT_Anim">
-                <ANIM_NAME>c_gear_comp</ANIM_NAME>
-                <ANIM_CODE>(A:CONTACT POINT POSITION:0, Percent) (A:CONTACT POINT COMPRESSION:0,
-                    Percent over 100) 100 *</ANIM_CODE>
+                <ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent)</ANIM_CODE>
             </UseTemplate>
         </Component>
 

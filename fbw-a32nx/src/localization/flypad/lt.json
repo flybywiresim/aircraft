@@ -84,6 +84,7 @@
       "Route": "Maršrutas",
       "SimBriefDataNotYetLoaded": "SimBrief duomenys dar neužkrauti.",
       "Title": "Jūsų skrydis",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Kuras išpylamas",
       "EstimatedDuration": "Numatoma trukmė (min)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Kairysis vidinis kuro bakas",
       "LeftOuterTank": "Kairysis išorinis kuro bakas",
       "ReadyToStart": "Pasiruošę pradėti",
@@ -494,6 +495,7 @@
       "PaxSigns": "Keleivių ženklai",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "Satcom": "Satcom palydovinė antena",
+      "Select": "Select",
       "ThrustReductionHeight": "Traukos mažinimo aukštis (pėdos)",
       "Title": "Lėktuvo parinktys",
       "WeightUnit": "Svorio vienetai"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU girdimas pilotų kabinoje",
       "Title": "Garsai",
       "WindInteriorVolume": "Vėjo garsumas viduje"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Greita",
     "Instant": "Momentinė",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Taikyti",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ar tikrai norite iš naujo nustatyti dabartinius droselio konfigūracijos nustatymus į numatytąsias būsenas? Šis veiksmas yra negrįžtamas.",
       "Axis": "Ašis",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Atgal",
       "ConfigureEnd": "Konfigūruoti pabaigą",
       "ConfigureStart": "Starto konfiguracija",
       "CurrentValue": "Dabartinė vertė",
       "Deadband": "Negyva juosta",
       "ErrorOverlapMsg": "persipina su",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Nepriklausoma ašis",
       "LoadFromFile": "Įkelti iš failo",
       "PleaseEnterAValidDeadzone": "Prašome įvesti tinkamą negyvą juostą",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Išsaugoti ir taikyti",
       "SetFromThrottle": "Nustatyti iš droselio",
       "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Nustatymai",
     "Unrealistic": "Nerealistiška",

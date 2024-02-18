@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "SimObjectBase.hpp"
+#include "SimUnits.h"
 #include "UpdateMode.h"
 #include "logging.h"
 

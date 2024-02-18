@@ -64,6 +64,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = undefined;
         this._minDestFob = undefined;
         this._minDestFobEntered = undefined;
+        this._isBelowMinDestFob = undefined;
         this._defaultRouteFinalTime = undefined;
         this._fuelPredDone = undefined;
         this._fuelPlanningPhase = undefined;
@@ -372,6 +373,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = false;
         this._minDestFob = 0;
         this._minDestFobEntered = false;
+        this._isBelowMinDestFob = false;
         this._defaultRouteFinalTime = 45;
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
@@ -597,6 +599,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateMinimums();
             this.updateIlsCourse();
             this.updatePerfPageAltPredictions();
+            this.checkEFOBBelowMin();
         }
 
         this.A32NXCore.update();
@@ -619,7 +622,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
-
         this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
@@ -2157,7 +2159,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
-                if (value < this._minDestFob) {
+                if (value < this._routeAltFuelWeight + this.getRouteFinalFuelWeight()) {
                     this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
@@ -4192,29 +4194,47 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     checkEFOBBelowMin() {
+        if (this._fuelPredDone) {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
-        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
 
-        if (EFOBBelMin < this._minDestFob) {
-            if (this.isAnEngineOn()) {
-                setTimeout(() => {
-                    this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === true;
-                    }, () => {
-                        this._EfobBelowMinClr = true;
-                    });
-                }, 180000);
+        if (this._minDestFob) {
+            // round & only use 100kgs precision since thats how it is displayed in fuel pred
+            const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
+            const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+            if (!this._isBelowMinDestFob) {
+                if (destEfob < roundedMinDestFob) {
+                    this._isBelowMinDestFob = true;
+                    // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
+                    if (this.isAnEngineOn()) {
+                        setTimeout(() => {
+                            this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                                return this._EfobBelowMinClr === true;
+                            }, () => {
+                                this._EfobBelowMinClr = true;
+                            });
+                        }, 120000);
+                    } else {
+                        this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                            return this._EfobBelowMinClr === true;
+                        }, () => {
+                            this._EfobBelowMinClr = true;
+                        });
+                    }
+                }
             } else {
-                this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                    return this._EfobBelowMinClr === true;
-                }, () => {
-                    this._EfobBelowMinClr = true;
-                });
+                // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
+                if (roundedMinDestFob) {
+                    if (destEfob - roundedMinDestFob >= 0.3) {
+                        this._isBelowMinDestFob = false;
+                        this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
+                    }
+                }
             }
         }
     }
+}
 
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {

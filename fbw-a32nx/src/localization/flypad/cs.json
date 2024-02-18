@@ -84,6 +84,7 @@
       "Route": "Trať",
       "SimBriefDataNotYetLoaded": "SimBrief data nejsou načtena.",
       "Title": "Váš let",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -494,6 +495,7 @@
       "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
       "WeightUnit": "Jednotky hmotnosti"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "Slyšitelné PTU v kokpitu",
       "Title": "Zvuky",
       "WindInteriorVolume": "Hlasitost větru v interiéru"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Rychlý",
     "Instant": "Okamžitý",
@@ -592,6 +600,7 @@
         "SettingTitle": "Propojení s účtem Navigraph",
         "SubscriptionStatus": {
           "None": "Žádný",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Odpojit účet"
@@ -608,12 +617,14 @@
       "Apply": "Použít",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Jste si jisti, že chcete resetovat aktuální konfiguraci plynových pák do výchozího stavu? Tato akce je nevratná.",
       "Axis": "Osa",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Zpět",
       "ConfigureEnd": "Horní hranice",
       "ConfigureStart": "Spodní hranice",
       "CurrentValue": "Aktuální hodnota",
       "Deadband": "Mrtvá zóna",
       "ErrorOverlapMsg": "se překrývá s",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Nezávislé osy",
       "LoadFromFile": "Načíst ze souboru",
       "PleaseEnterAValidDeadzone": "Prosím zadejte platnou mrtvou zónu",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Uložit a použít",
       "SetFromThrottle": "Nastavit z plynové páky",
       "ThrottleConfigurationReset": "Reset konfigurace plynových pák",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Nastavení",
     "Unrealistic": "Nerealistické",

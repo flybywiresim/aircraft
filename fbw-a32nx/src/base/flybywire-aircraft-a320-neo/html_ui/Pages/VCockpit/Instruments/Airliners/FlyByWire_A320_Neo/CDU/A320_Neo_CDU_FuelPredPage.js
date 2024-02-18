@@ -163,7 +163,7 @@ class CDUFuelPredPage {
                 if (alternate) {
                     altIdentCell = alternate.ident;
                     altEFOBCell = (NXUnits.kgToUser(mcdu.getAltEFOB(true))).toFixed(1);
-                    altEFOBCellColor = mcdu.getAltEFOB(true) < mcdu._minDestFob ? "[color]amber" : "[color]green";
+                    altEFOBCellColor = "[color]green";
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);
@@ -173,7 +173,8 @@ class CDUFuelPredPage {
                 if (dest) {
                     destIdentCell = dest.ident;
                 }
-                destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(true))).toFixed(1);
+                let efob = mcdu.getDestEFOB(true);
+                destEFOBCell = (NXUnits.kgToUser(efob)).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
                     : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
@@ -189,9 +190,7 @@ class CDUFuelPredPage {
                     }
                 }
 
-                destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
-
 
                 rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
                 if (!mcdu._rteReservedWeightEntered) {
@@ -255,6 +254,8 @@ class CDUFuelPredPage {
                 if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
                     zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
                 }
+
+                destEFOBCellColor = mcdu._isBelowMinDestFob ? "[color]amber" : "[color]green";
             }
         }
 
