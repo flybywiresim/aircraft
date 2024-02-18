@@ -29,7 +29,7 @@ import { FlightPlanTest } from './modules/flight_plan_test/FlightPlanTest';
  * - `update` is called in every update call of the simulator, but only after `startPublish` is called
  */
 class ExtrasHost extends BaseInstrument {
-    private bus: EventBus = new EventBus();
+    private readonly bus: EventBus;
 
     private readonly notificationManager: NotificationManager;
 
@@ -60,6 +60,7 @@ class ExtrasHost extends BaseInstrument {
     constructor() {
         super();
 
+        this.bus = new EventBus();
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
 
