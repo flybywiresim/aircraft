@@ -212,6 +212,7 @@
 
 .mfd-dropdown-menu {
   background-color: $display-mfd-darker-grey;
+  font-family: "Ecam", monospace;
   min-width: 100%;
   position: absolute;
   z-index: 60;
@@ -223,6 +224,7 @@
 
 .mfd-dropdown-menu-element {
   color: $display-white;
+  font-family: "Ecam", monospace;
   font-size: 20px;
   padding: 12px 16px;
   display: block;

@@ -489,7 +489,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                         <span class="mfd-value bigger">{this.activeDatabase}</span>
                                     </div>
                                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                                        <Button label="SWAP" onClick={() => console.log('SWAP')} buttonStyle="padding: 20px 30px 20px 30px;" />
+                                        <Button label="SWAP" disabled={Subject.create(true)} onClick={() => console.log('SWAP')} buttonStyle="padding: 20px 30px 20px 30px;" />
                                     </div>
                                     <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
                                         <span class="mfd-label" style="margin-bottom: 10px;">SECOND</span>
