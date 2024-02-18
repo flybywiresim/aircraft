@@ -84,6 +84,7 @@
       "Route": "루트",
       "SimBriefDataNotYetLoaded": "SimBrief 데이터가 로드되지 않았습니다.",
       "Title": "운항 정보",
+      "ToastFuelPayloadImported": "연료 및 수화물이 탑재되었습니다!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "배유중",
       "EstimatedDuration": "예상 시간 (분)",
       "EstimatedTime": "예상 시간",
-      "GSXFuelSyncEnabled": "GSX 연료 동기화 활성화",
+      "GSXFuelSyncEnabled": "GSX 급유차량 호출",
       "LeftInnerTank": "좌측 내부 탱크",
       "LeftOuterTank": "좌측 외부 탱크",
       "ReadyToStart": "급유 준비 완료",
@@ -185,7 +186,7 @@
       "Title": "푸시백"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "에어 스타트 유닛(ASU)",
       "BaggageTruck": "수하물 트럭",
       "CateringTruck": "기내식 트럭",
       "Cones": "안전콘",
@@ -494,6 +495,7 @@
       "PaxSigns": "승객 사인",
       "RmpVhfSpacing": "RMP VHF 주파수 간격",
       "Satcom": "Satcom",
+      "Select": "선택",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
       "WeightUnit": "무게 단위"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "조종석에서 PTU 동작음 듣기",
       "Title": "오디오",
       "WindInteriorVolume": "기내 바람 음량"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "글라이드 슬로프 캡쳐 시 비활성화됨",
+      "Reset": "재설정",
+      "ResetStandardConfig": "기본 설정으로 재설정",
+      "Title": "자동 콜아웃"
     },
     "Fast": "빠름",
     "Instant": "즉시",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph 계정 연결",
         "SubscriptionStatus": {
           "None": "없음",
+          "Unknown": "알 수 없음",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "계정 연결 해제"
@@ -608,12 +617,14 @@
       "Apply": "적용",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "현재 쓰로틀 구성 설정을 기본 상태로 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
       "Axis": "축",
+      "AxisDescription": "쓰로틀 $throttles를 $axis축에 할당",
       "Back": "이전",
       "ConfigureEnd": "끝 값",
       "ConfigureStart": "시작 값",
       "CurrentValue": "현재 값",
       "Deadband": "데드존",
       "ErrorOverlapMsg": "이(가) 다음과 겹칩니다 :",
+      "FourThrottleWarning": "MSFS는 축 1에 쓰로틀 1+2를, 축 2에 쓰로틀 3+4를 할당합니다.",
       "IndependentAxis": "독립 축",
       "LoadFromFile": "파일에서 불러오기",
       "PleaseEnterAValidDeadzone": "올바른 데드존을 입력하십시오",
@@ -624,7 +635,7 @@
       "SaveAndApply": "저장 및 적용",
       "SetFromThrottle": "쓰로틀 값으로 설정",
       "ThrottleConfigurationReset": "쓰로틀 설정 초기화",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA 축"
     },
     "Title": "설정",
     "Unrealistic": "비현실적",
