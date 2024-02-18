@@ -145,6 +145,8 @@ class NDInstrument implements FsInstrument {
 
     private oansContainerRef = FSComponent.createRef<HTMLDivElement>();
 
+    private oansControlPanelContainerRef = FSComponent.createRef<HTMLDivElement>();
+
     constructor() {
         const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
         const stateSubject = Subject.create<'L' | 'R'>(side);
@@ -223,13 +225,15 @@ class NDInstrument implements FsInstrument {
                         values={this.oansContextMenuItems}
                     />
                     <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
-                    <OansControlPanel
-                        ref={this.controlPanelRef}
-                        bus={this.bus}
-                        side={this.efisSide}
-                        isVisible={this.controlPanelVisible}
-                        togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
-                    />
+                    <div ref={this.oansControlPanelContainerRef}>
+                        <OansControlPanel
+                            ref={this.controlPanelRef}
+                            bus={this.bus}
+                            side={this.efisSide}
+                            isVisible={this.controlPanelVisible}
+                            togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
+                        />
+                    </div>
                     <MouseCursor side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')} ref={this.mouseCursorRef} />
                 </CdsDisplayUnit>
             </div>,
@@ -281,9 +285,11 @@ class NDInstrument implements FsInstrument {
             if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
                 this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
                 this.oansContainerRef.instance.style.display = 'block';
+                this.oansControlPanelContainerRef.instance.style.display = 'block';
             } else {
                 this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
                 this.oansContainerRef.instance.style.display = 'none';
+                this.oansControlPanelContainerRef.instance.style.display = 'none';
             }
         }
     }

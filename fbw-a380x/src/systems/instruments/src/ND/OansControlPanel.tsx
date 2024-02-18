@@ -16,6 +16,7 @@ import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
+import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
@@ -127,11 +128,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.store.sortedAirports.sub(() => this.updateAirportSearchData(), true),
         );
 
-        const sub = this.props.bus.getSubscriber<FmsVars & OansControlEvents>();
+        const sub = this.props.bus.getSubscriber<FmsSymbolsData>();
 
-        sub.on('ndSetOrigin').whenChanged().handle((it) => this.originAirport.set(it));
-        sub.on('ndSetDestination').whenChanged().handle((it) => this.destAirport.set(it));
-        sub.on('ndSetAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
+        sub.on('oansOrigin').whenChanged().handle((it) => this.originAirport.set(it));
+        sub.on('oansDestination').whenChanged().handle((it) => this.destAirport.set(it));
+        sub.on('oansAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }

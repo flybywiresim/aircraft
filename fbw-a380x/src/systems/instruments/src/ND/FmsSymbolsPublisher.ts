@@ -4,6 +4,7 @@
 
 import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
 import { EfisSide, GenericDataListenerSync, NdSymbol, NdTraffic } from '@flybywiresim/fbw-sdk';
+
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 
 export interface FmsSymbolsData {
@@ -11,7 +12,13 @@ export interface FmsSymbolsData {
     vectorsActive: PathVector[],
     vectorsDashed: PathVector[],
     vectorsTemporary: PathVector[],
+    vectorsMissed: PathVector[],
+    vectorsAlternate: PathVector[],
+    vectorsSecondary: PathVector[],
     traffic: NdTraffic[],
+    oansOrigin: string,
+    oansDestination: string,
+    oansAlternate: string,
 }
 
 export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
@@ -36,8 +43,32 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
             this.publish('vectorsTemporary', data);
         }, `A32NX_EFIS_VECTORS_${side}_TEMPORARY`));
 
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsMissed', data);
+        }, `A32NX_EFIS_VECTORS_${side}_MISSED`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsAlternate', data);
+        }, `A32NX_EFIS_VECTORS_${side}_ALTERNATE`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsSecondary', data);
+        }, `A32NX_EFIS_VECTORS_${side}_SECONDARY`));
+
         this.events.push(new GenericDataListenerSync((ev, data: NdTraffic[]) => {
             this.publish('traffic', data);
         }, 'A32NX_TCAS_TRAFFIC'));
+
+        this.events.push(new GenericDataListenerSync((ev, data: string) => {
+            this.publish('oansOrigin', data);
+        }, `A380X_OANS_${side}_FMS_ACTIVE_ORIGIN`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: string) => {
+            this.publish('oansDestination', data);
+        }, `A380X_OANS_${side}_FMS_ACTIVE_DESTINATION`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: string) => {
+            this.publish('oansAlternate', data);
+        }, `A380X_OANS_${side}_FMS_ACTIVE_ALTERNATE`));
     }
 }
