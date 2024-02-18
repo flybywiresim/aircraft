@@ -914,24 +914,36 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     async insertWaypointBefore(index: number, waypoint: Fix) {
         const duplicate = this.findDuplicate(waypoint, index);
         if (duplicate) {
-            // If the waypoint already exists, remove everything between the two waypoints
-            const duplicatePlanIndex = duplicate[2];
+            const [duplicateSegment, duplicateIndex, duplicatePlanIndex] = duplicate;
+            if (duplicatePlanIndex < this.firstMissedApproachLegIndex) {
+                // If the waypoint already exists, remove everything between the two waypoints
+                const duplicateLeg = duplicateSegment.allLegs[duplicateIndex];
+                if (duplicateLeg.isDiscontinuity === true) {
+                    throw new Error('[FMS/FPM] Duplicate waypoint was a discontinuity');
+                }
 
-            this.removeRange(index, duplicatePlanIndex);
+                // Make new leg a TF leg. If this is not allowed, it will be converted when we restring
+                const leg = FlightPlanLeg.fromEnrouteFix(duplicateSegment, waypoint)
+                    .withDefinitionFrom(duplicateLeg)
+                    .withPilotEnteredDataFrom(duplicateLeg);
 
-            this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-            await this.flushOperationQueue();
-        } else {
-            const previousElement = this.maybeElementAt(index - 1);
-            if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
-                this.removeElementAt(index - 1);
-                index -= 1;
+                this.removeRange(index, duplicatePlanIndex + 1);
+
+                await this.insertElementBefore(index, leg);
+
+                return;
             }
-
-            const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
-
-            await this.insertElementBefore(index, leg, true);
         }
+
+        const previousElement = this.maybeElementAt(index - 1);
+        if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
+            this.removeElementAt(index - 1);
+            index -= 1;
+        }
+
+        const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
+
+        await this.insertElementBefore(index, leg, true);
     }
 
     /**

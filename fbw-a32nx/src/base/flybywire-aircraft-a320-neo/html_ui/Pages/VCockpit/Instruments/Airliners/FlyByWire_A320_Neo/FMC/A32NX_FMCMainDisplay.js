@@ -2675,10 +2675,10 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
-            const oldCruiseLevel = this.currFlightPlanService.active.performanceData.cruiseFlightLevel;
+            const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex)
-            this.checkCruiseLevel(oldCruiseLevel);
+            this.checkDestination(oldDestination);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
@@ -2694,11 +2694,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    checkCruiseLevel(oldCruiseLevel) {
-        const newLevel = this.currFlightPlanService.active.performanceData.cruiseFlightLevel;
+    checkDestination(oldDestination) {
+        const newDestination = this.currFlightPlanService.active.destinationAirport.ident;
 
-        if (newLevel !== oldCruiseLevel) {
-            this.onUpdateCruiseLevel(newLevel)
+        // Enabling alternate or new DEST should sequence out of the GO AROUND phase
+        if (newDestination !== oldDestination) {
+            this.flightPhaseManager.handleNewDestinationAirportEntered();
         }
     }
 
