@@ -8,7 +8,6 @@ import { Arinc429RegisterSubject, EfisNdMode, NavAidMode } from '@flybywiresim/f
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../types/GenericVorEvents';
-import { Layer } from '../Layer';
 import { GenericFlightManagementBusEvents } from '../types/GenericFlightManagementBusEvents';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, mode: Subscribable<EfisNdMode> }> {
@@ -115,7 +114,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.props.mode,
     );
 
-    private readonly visibilitySub = MappedSubject.create(
+    private readonly isVisible = MappedSubject.create(
         ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
     );
 
@@ -149,7 +148,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <g visibility={this.visibilitySub}>
+            <g visibility={this.isVisible}>
                 <path
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
@@ -231,6 +230,10 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.adfFrequency,
     );
 
+    private readonly isVisible = MappedSubject.create(
+        ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
+    );
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -243,7 +246,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <Layer x={0} y={0} visible={this.props.visible}>
+            <g visibility={this.isVisible}>
                 <path
                     d={this.path}
                     strokw-width={2}
@@ -260,7 +263,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 <text visibility={this.frequencyVisibility} x={this.x} y={722} font-size={24} class="Green">{this.adfFrequency.map((it) => Math.floor(it).toFixed(0))}</text>
 
                 <TuningModeIndicator bus={this.props.bus} index={this.props.index} adf />
-            </Layer>
+            </g>
         );
     }
 }
@@ -290,6 +293,7 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
 
             if (this.props.roundedThreshold && value >= this.props.roundedThreshold) {
                 this.intPartText.set(value.toFixed(0));
+                this.decimalPartText.set('');
                 this.showDecimal.set(false);
             } else {
                 const [intPart, decimalPart] = value.toFixed(this.props.digits).split('.', 2);

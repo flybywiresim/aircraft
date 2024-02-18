@@ -192,8 +192,8 @@ void SecComputer::step()
   uint32_T rtb_Switch7_c;
   uint32_T rtb_Switch9_c;
   uint32_T rtb_y;
-  uint32_T rtb_y_d;
-  uint32_T rtb_y_m;
+  uint32_T rtb_y_g5;
+  uint32_T rtb_y_io;
   boolean_T rtb_VectorConcatenate[19];
   boolean_T abnormalCondition;
   boolean_T canEngageInPitch;
@@ -247,8 +247,8 @@ void SecComputer::step()
       SecComputer_DWork.is_c8_SecComputer = SecComputer_IN_NO_ACTIVE_CHILD;
       SecComputer_DWork.is_active_c30_SecComputer = 0U;
       SecComputer_DWork.is_c30_SecComputer = SecComputer_IN_NO_ACTIVE_CHILD;
-      SecComputer_DWork.on_ground_time = 0.0;
       SecComputer_B.in_flight = 0.0;
+      SecComputer_DWork.on_ground_time = 0.0;
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_ndv);
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_gf);
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_h);
@@ -861,19 +861,19 @@ void SecComputer::step()
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
       SecComputer_P.BitfromLabel1_bit_c, &rtb_y);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
-      SecComputer_P.BitfromLabel2_bit_o, &rtb_y_m);
+      SecComputer_P.BitfromLabel2_bit_o, &rtb_y_g5);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
-      SecComputer_P.BitfromLabel3_bit_j, &rtb_y_d);
+      SecComputer_P.BitfromLabel3_bit_j, &rtb_y_io);
     if (SecComputer_U.in.bus_inputs.elac_1_bus.roll_spoiler_command_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
          NormalOperation)) {
       pair1SpdBrkCommand = SecComputer_U.in.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data;
       rtb_y_gp = (rtb_Switch7_c != 0U);
-      rtb_y_p = (rtb_y_m != 0U);
+      rtb_y_p = (rtb_y_g5 != 0U);
     } else if (SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM == static_cast<uint32_T>
                (SignStatusMatrix::NormalOperation)) {
       pair1SpdBrkCommand = SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
       rtb_y_gp = (rtb_y != 0U);
-      rtb_y_p = (rtb_y_d != 0U);
+      rtb_y_p = (rtb_y_io != 0U);
     } else {
       pair1SpdBrkCommand = rtb_Switch3 * 35.0 / 25.0;
       rtb_y_gp = true;
@@ -987,9 +987,9 @@ void SecComputer::step()
     pair1RollCommand = pair1SpdBrkCommand;
     u0 = rtb_handleIndex;
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
-      SecComputer_P.BitfromLabel_bit_a1, &rtb_y_d);
+      SecComputer_P.BitfromLabel_bit_a1, &rtb_y_io);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
-      SecComputer_P.BitfromLabel1_bit_gf, &rtb_y_m);
+      SecComputer_P.BitfromLabel1_bit_gf, &rtb_y_g5);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       SecComputer_P.BitfromLabel2_bit_n, &rtb_y);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
@@ -998,11 +998,11 @@ void SecComputer::step()
       SecComputer_P.BitfromLabel4_bit_n, &rtb_DataTypeConversion1);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       SecComputer_P.BitfromLabel5_bit_m, &rtb_Switch7_c);
-    if (rtb_y_d != 0U) {
+    if (rtb_y_io != 0U) {
       rtb_handleIndex = 0.0;
-    } else if ((rtb_y_m != 0U) && (rtb_Switch7_c != 0U)) {
+    } else if ((rtb_y_g5 != 0U) && (rtb_Switch7_c != 0U)) {
       rtb_handleIndex = 1.0;
-    } else if ((rtb_y_m != 0U) && (rtb_Switch7_c == 0U)) {
+    } else if ((rtb_y_g5 != 0U) && (rtb_Switch7_c == 0U)) {
       rtb_handleIndex = 2.0;
     } else if (rtb_y != 0U) {
       rtb_handleIndex = 3.0;

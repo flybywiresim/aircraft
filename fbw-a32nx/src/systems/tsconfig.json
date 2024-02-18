@@ -25,6 +25,7 @@
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+      "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
     }
   },
 }

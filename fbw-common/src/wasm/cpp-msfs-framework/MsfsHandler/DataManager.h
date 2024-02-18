@@ -229,7 +229,7 @@ class DataManager {
    *
    * @param varName Name of the variable in the sim
    * @param unit SimUnit of the variable (default=Number)
-   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
+   * @param autoReading optional if variable should be read automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable

@@ -5,13 +5,17 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 export type EfisSide = 'L' | 'R'
 
-export type EfisNdRangeValue = 10 | 20 | 40 | 80 | 160 | 320;
+export type A320EfisNdRangeValue = 10 | 20 | 40 | 80 | 160 | 320;
 
-export const efisRangeSettings: EfisNdRangeValue[] = [10, 20, 40, 80, 160, 320];
+export type A320EfisOansNdRangeValue = -1 | 10 | 20 | 40 | 80 | 160 | 320;
 
-export type EfisOansNdRangeValue = -1 | 10 | 20 | 40 | 80 | 160 | 320;
+export type A380EfisNdRangeValue = -1 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
 
-export const efisOansRangeSettings: EfisOansNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320];
+export const a320EfisRangeSettings: A320EfisNdRangeValue[] = [10, 20, 40, 80, 160, 320];
+
+export const a320EfisOansRangeSettings: A320EfisOansNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320];
+
+export const a380EfisRangeSettings: A380EfisNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320, 640];
 
 export enum EfisNdMode {
     ROSE_ILS,
