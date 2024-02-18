@@ -59,6 +59,7 @@
     "====== A380 =================": "==========================================",
 
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
+    "build-a380x:efb-translation": "cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js",
 
     "build-a380x:extras-host": "node fbw-a380x/src/systems/extras-host/build.js",
     "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",
