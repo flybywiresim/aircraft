@@ -9,7 +9,7 @@ TOC:
 OBS:
 
 <span style="color: red">
-fylPad Localization files are now in the fbw-common EFB section
+flyPad Localization files are now in the fbw-common EFB section
 The localization files for the flyPad are now in the fbw-common EFB section.
 The process is the same as described here. The only difference is the path
 to the localization files. The path is `fbw-a32nx/src/localization/flypad`

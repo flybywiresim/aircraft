@@ -1,3 +1,5 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 // One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
 // Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
 import { FailureDefinition } from "@flybywiresim/fbw-sdk";
