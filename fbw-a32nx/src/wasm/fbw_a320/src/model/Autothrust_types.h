@@ -127,6 +127,7 @@ struct athr_input
   boolean_T ATHR_reset_disable;
   boolean_T is_TCAS_active;
   real_T target_TCAS_RA_rate_fpm;
+  boolean_T tracking_mode_on_override;
 };
 
 #endif
