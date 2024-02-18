@@ -23,3 +23,6 @@ CAUTION: Use this command if you want to deprecate keys which are not present in
 
 Use the option `-s` for a test run. Remove this option to actually upload the file.
 
+## Find all keys used in the xml files
+
+`find . -name "*.xml" -type f -exec grep -o 'TT:[^<]*' {} \; | sort | uniq`
