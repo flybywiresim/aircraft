@@ -26,3 +26,6 @@ Use the option `-s` for a test run. Remove this option to actually upload the fi
 ## Find all keys used in the xml files
 
 `find . -name "*.xml" -type f -exec grep -o 'TT:[^<]*' {} \; | sort | uniq`
+
+Search for tooltip tags strings: '(?<=.*>).*?(?=</.*TIP)' 
+Search for tooltip tags strings not starting with TT:: '(?<=.*>)(?!TT).*?(?=</.*TIP)' 
