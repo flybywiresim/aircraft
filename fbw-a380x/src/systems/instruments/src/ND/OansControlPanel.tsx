@@ -453,7 +453,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                                     this.handleSelectAirport(airport);
                                                 }
                                             }}
-                                            disabled={this.altnAirport.map((it) => !it)}
+                                            disabled={this.originAirport.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
@@ -464,7 +464,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                                     this.handleSelectAirport(airport);
                                                 }
                                             }}
-                                            disabled={this.altnAirport.map((it) => !it)}
+                                            disabled={this.destAirport.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
