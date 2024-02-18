@@ -194,11 +194,25 @@ export class PseudoFWC {
 
     private readonly cpc2Fault = Subject.create(false);
 
+    private readonly bothCpcFault = new NXLogicConfirmNode(3, false);
+
+    private readonly bothCpcFaultOutput = Subject.create(false);
+
     private readonly pressurizationAuto = Subject.create(false);
 
-    private readonly outflowValveNotOpen = Subject.create(false);
+    private readonly outflowValveOpenAmount = Subject.create(0);
 
-    private readonly safetyValveNotClosed = Subject.create(false);
+    private readonly outflowValveNotOpen = new NXLogicConfirmNode(70);
+
+    private readonly outflowValveResetCondition = new NXLogicConfirmNode(30);
+
+    private readonly outflowValveNotOpenOutput = Subject.create(false);
+
+    private readonly outflowValveNotOpenSetReset = new NXLogicMemoryNode();
+
+    private readonly safetyValveNotClosedAir = new NXLogicConfirmNode(60);
+
+    private readonly safetyValveNotClosedOutput = Subject.create(false);
 
     private readonly cabinDeltaPressure = Subject.create(0);
 
@@ -1209,6 +1223,7 @@ export class PseudoFWC {
 
         this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
         this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
+        this.bothCpcFaultOutput.set(this.bothCpcFault.write(this.cpc1Fault.get() && this.cpc2Fault.get(), deltaTime));
 
         this.excessPressure.set(activeCpc.bitValueOr(14, false));
         this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
@@ -1228,8 +1243,16 @@ export class PseudoFWC {
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
-        this.outflowValveNotOpen.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(0) < 99);
-        this.safetyValveNotClosed.set(SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0);
+        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(0));
+        this.outflowValveNotOpenOutput.set(
+            this.outflowValveNotOpenSetReset.write(this.outflowValveNotOpen.write((this.outflowValveOpenAmount.get() < 85) && [8, 9, 10].includes(this.fwcFlightPhase.get()), deltaTime),
+                this.outflowValveOpenAmount.get() > 95 || this.outflowValveResetCondition.write(this.fwcFlightPhase.get() === 1, deltaTime)),
+        );
+
+        const safetyValveNotClosed = SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0;
+        this.safetyValveNotClosedAir.write(safetyValveNotClosed, deltaTime);
+        this.safetyValveNotClosedOutput.set((safetyValveNotClosed && [1, 2, 3].includes(this.fwcFlightPhase.get()))
+            || (this.safetyValveNotClosedAir.read() && this.fwcFlightPhase.get() === 6));
 
         this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE').valueOr(0));
 
@@ -2397,7 +2420,7 @@ export class PseudoFWC {
         },
         2131224: { // SYS 1+2 FAULT
             flightPhaseInhib: [4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => cpc1Fault && cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            simVarIsActive: this.bothCpcFaultOutput,
             whichCodeToReturn: () => [
                 0,
                 this.pressurizationAuto.get() ? 1 : null,
@@ -2421,11 +2444,11 @@ export class PseudoFWC {
         },
         2131232: { // OFV NOT OPEN
             flightPhaseInhib: [3, 4, 5, 6, 7, 8],
-            simVarIsActive: this.outflowValveNotOpen,
+            simVarIsActive: this.outflowValveNotOpenOutput,
             whichCodeToReturn: () => [
                 0,
                 this.pressurizationAuto.get() ? 1 : null,
-                this.pressurizationAuto.get() ? 2 : null,
+                this.outflowValveOpenAmount.get() < 95 ? 2 : null,
                 (this.pack1On.get() || this.pack2On.get()) ? 3 : null,
                 this.pack1On.get() ? 4 : null,
                 this.pack2On.get() ? 5 : null,
@@ -2438,12 +2461,12 @@ export class PseudoFWC {
         },
         2131233: { // SAFETY VALVE OPEN
             flightPhaseInhib: [4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.safetyValveNotClosed, // TODO: In flight add one minute delay timer
+            simVarIsActive: this.safetyValveNotClosedOutput,
             whichCodeToReturn: () => [
                 0,
                 this.cabinDeltaPressure.get() < 1 ? 1 : null,
                 this.cabinDeltaPressure.get() < 1 ? 2 : null,
-                this.cabinDeltaPressure.get() < 1 ? 3 : null,
+                (this.cabinDeltaPressure.get() < 1 && !this.excessPressure.get()) ? 3 : null,
                 (this.cabinDeltaPressure.get() > 4 && this.pressurizationAuto.get()) ? 4 : null,
                 this.cabinDeltaPressure.get() > 4 ? 5 : null,
                 this.cabinDeltaPressure.get() > 4 ? 6 : null,
