@@ -5,7 +5,7 @@
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
 import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
 
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
@@ -263,7 +263,7 @@ class NDInstrument implements FsInstrument {
         this.ndContainerRef.instance.addEventListener('mousemove', this.oansRef.instance.handleCursorPanMove.bind(this.oansRef.instance));
         this.ndContainerRef.instance.addEventListener('mouseup', this.oansRef.instance.handleCursorPanStop.bind(this.oansRef.instance));
 
-        const sub = this.bus.getSubscriber<FcuSimVars>();
+        const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();
 
         sub.on('ndMode').whenChanged().handle((mode) => {
             this.efisNdMode = mode;
@@ -279,10 +279,10 @@ class NDInstrument implements FsInstrument {
     private updateNdOansVisibility() {
         if (this.oansContainerRef.getOrDefault()) {
             if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-                this.bus.getPublisher<NDControlEvents>().pub('show_oans', true);
+                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
                 this.oansContainerRef.instance.style.display = 'block';
             } else {
-                this.bus.getPublisher<NDControlEvents>().pub('show_oans', false);
+                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
                 this.oansContainerRef.instance.style.display = 'none';
             }
         }

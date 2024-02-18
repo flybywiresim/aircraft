@@ -45,9 +45,9 @@ export class ControlPanelStore {
 
     public readonly airportSearchData = ArraySubject.create<string>();
 
-    public readonly airportSearchSelectedSearchLetterIndex = Subject.create(0);
+    public readonly airportSearchSelectedSearchLetterIndex = Subject.create<number | null>(null);
 
-    public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(0);
+    public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(null);
 
     public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 

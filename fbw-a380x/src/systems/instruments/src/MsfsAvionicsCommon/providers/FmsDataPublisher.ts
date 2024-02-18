@@ -19,9 +19,6 @@ export interface FmsVars {
     toWptEta: number;
     apprMessage0: number;
     apprMessage1: number;
-    origin: string;
-    destination: string;
-    alternate: string;
 }
 
 export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R'> {
@@ -47,10 +44,6 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
             ['toWptEta', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_ETA`, type: SimVarValueType.Seconds }],
             ['apprMessage0', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_0`, type: SimVarValueType.Number }],
             ['apprMessage1', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_1`, type: SimVarValueType.Number }],
-            ['origin', { name: (_side) => 'L:A380X_FMS_ACTIVE_ORIGIN', type: SimVarValueType.String }],
-            ['destination', { name: (_side) => 'L:A380X_FMS_ACTIVE_DESTINATION', type: SimVarValueType.String }],
-            ['alternate', { name: (_side) => 'L:A380X_FMS_ACTIVE_ALTERNATE', type: SimVarValueType.String }],
-
         ]), stateSubject, bus);
     }
 }

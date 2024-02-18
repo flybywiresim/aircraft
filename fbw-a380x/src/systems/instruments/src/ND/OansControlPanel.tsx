@@ -127,15 +127,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.store.sortedAirports.sub(() => this.updateAirportSearchData(), true),
         );
 
-        const sub = this.props.bus.getSubscriber<FmsVars>();
-        // sub.on('displayAirport').whenChanged().handle((it) => console.log(1, it));
+        const sub = this.props.bus.getSubscriber<FmsVars & OansControlEvents>();
 
-        sub.on('origin').whenChanged().handle((it) => {
-            console.warn('yol');
-            this.originAirport.set(it);
-        });
-        sub.on('destination').whenChanged().handle((it) => this.destAirport.set(it));
-        sub.on('alternate').whenChanged().handle((it) => this.altnAirport.set(it));
+        sub.on('ndSetOrigin').whenChanged().handle((it) => this.originAirport.set(it));
+        sub.on('ndSetDestination').whenChanged().handle((it) => this.destAirport.set(it));
+        sub.on('ndSetAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
@@ -208,11 +204,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private handleDisplayAirport = () => {
         if (!this.store.selectedAirport.get()) {
-            throw new Error('');
+            throw new Error('[OANS] Empty airport selected for display.');
         }
-
-        // This doesn't work when two instruments are in the same VCockpit it seems
-        // this.syncer.sendEvent(`A380X_OANS_${this.props.side}_DISPLAY_AIRPORT`, this.store.selectedAirport.get().idarpt);
 
         this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt);
         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
