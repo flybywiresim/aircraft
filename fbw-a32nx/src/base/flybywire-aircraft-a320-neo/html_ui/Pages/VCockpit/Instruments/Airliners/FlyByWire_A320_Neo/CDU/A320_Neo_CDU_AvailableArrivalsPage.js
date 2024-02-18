@@ -424,7 +424,7 @@ class CDUAvailableArrivalsPage {
             const via = availableApproachVias[index];
 
             if (selectedApproach && via) {
-                rows[2 * i + 1][0] = `${via.ident === (selectedApproachVia ? selectedApproachVia.ident : undefined) ? " " : "{"}${via.ident}[color]cyan`;
+                rows[2 * i + 1][0] = `${via.ident === (selectedApproachVia ? selectedApproachVia.ident : undefined) ? "{green} " : "{cyan}{"}${via.ident}{end}`;
 
                 mcdu.onLeftInput[i + 2] = async () => {
                     await mcdu.flightPlanService.setApproachVia(via.ident, forPlan, inAlternate);
