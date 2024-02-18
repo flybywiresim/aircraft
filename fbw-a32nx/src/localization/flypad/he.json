@@ -84,6 +84,7 @@
       "Route": "מסלול",
       "SimBriefDataNotYetLoaded": "נתוני SimBrief טרם נטענו",
       "Title": "הטיסה שלך",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "ריקון דלק",
       "EstimatedDuration": "זמן משוער (דקות)",
       "EstimatedTime": "זמן משוער",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "מיכל פנימי שמאלי",
       "LeftOuterTank": "מיכל חיצוני שמאלי",
       "ReadyToStart": "מוכן להתחיל",
@@ -494,6 +495,7 @@
       "PaxSigns": "שלטי נוסעים",
       "RmpVhfSpacing": "פאנל רדיו - מרווח תדרי VHF",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "גובה הפחתת דחף (רגל)",
       "Title": "אפשרויות מטוס / תוכניות סיכות",
       "WeightUnit": "יחידת משקל"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU נשמע בתא הטייס",
       "Title": "שמע",
       "WindInteriorVolume": "שמע רוח - פנימי"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "מהיר",
     "Instant": "מיידי",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "הפעל",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "האם אתה בטוח שברצונך לאפס את הגדרות תצורת המצערת הנוכחיות למצב ברירת המחדל שלהן? פעולה זו בלתי הפיכה.",
       "Axis": "ציר",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "חזרה",
       "ConfigureEnd": "הגדר סוף",
       "ConfigureStart": "הגדר התחלה",
       "CurrentValue": "ערך נוכחי",
       "Deadband": "שטח מת",
       "ErrorOverlapMsg": "חופף עם",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "ציר נפרד",
       "LoadFromFile": "טען מקובץ",
       "PleaseEnterAValidDeadzone": "נא להזין אזור מת חוקי",
@@ -624,7 +635,7 @@
       "SaveAndApply": "שמור והחל",
       "SetFromThrottle": "הגדר מהמצערת",
       "ThrottleConfigurationReset": "איפוס תצורת מצערת",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "הגדרות",
     "Unrealistic": "לא מציאותי",

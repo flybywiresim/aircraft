@@ -84,6 +84,7 @@
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief gegevens zijn nog niet geladen.",
       "Title": "Jouw Vlucht",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Defueling",
       "EstimatedDuration": "Geschatte duur (minuten)",
       "EstimatedTime": "Geschatte tijdsduur",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Linker binnentank",
       "LeftOuterTank": "Linker buitentank",
       "ReadyToStart": "Klaar om te starten",
@@ -494,6 +495,7 @@
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Afstand",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Hoogte stuwkrachtreductie (ft)",
       "Title": "Vliegtuig Opties / Pin Programma's",
       "WeightUnit": "Gewichtseenheid"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU hoorbaar in cockpit",
       "Title": "Audio",
       "WindInteriorVolume": "Volume wind in cabine"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Snel",
     "Instant": "Direct",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Toepassen",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Weet u zeker dat u uw huidige instellingen voor de throttle configuratie wilt resetten naar hun standaardstatus? Deze actie is onomkeerbaar.",
       "Axis": "As",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Terug",
       "ConfigureEnd": "Einde configureren",
       "ConfigureStart": "Start configureren",
       "CurrentValue": "Huidige waarde",
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "overlapt met",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Onafhankelijke as",
       "LoadFromFile": "Laden vanuit bestand",
       "PleaseEnterAValidDeadzone": "Voer een geldige deadzone in",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Opslaan en toepassen",
       "SetFromThrottle": "Zet van throttle",
       "ThrottleConfigurationReset": "Throttle configuratie herstellen",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Instellingen",
     "Unrealistic": "Onrealistisch",

@@ -84,6 +84,7 @@
       "Route": "Διαδρομή",
       "SimBriefDataNotYetLoaded": "Τα Δεδομένα Simbrief δεν έχουν ακόμη φορτωθεί.",
       "Title": "Η Πτήση σας",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "Βάρος Μηδενικού Καυσίμου"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Διαδικασία Εξαγωγής Καυσίμου",
       "EstimatedDuration": "Εκτιμώμενη Διάρκεια (Λεπτά)",
       "EstimatedTime": "Εκτιμώμενος Χρόνος",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Αριστερή Εσωτερική Δεξαμενή",
       "LeftOuterTank": "Αριστερή Εξωτερική Δεξαμενή",
       "ReadyToStart": "Έτοιμοι για Εκκίνηση",
@@ -494,6 +495,7 @@
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
       "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
       "WeightUnit": "Μονάδα Βάρους"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU ακουόμενο στο θάλαμο του πιλοτηρίου",
       "Title": "Ήχος",
       "WindInteriorVolume": "Εσωτερική  Ένταση Ήχου Αέρα "
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Γρήγορα",
     "Instant": "Στιγμιαία",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Εφαρμογή",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Είστε βέβαιοι ότι θέλετε να επαναφέρετε τις τρέχουσες ρυθμίσεις του γκαζιού στις προεπιλεγμένες καταστάσεις τους; Αυτή η ενέργεια είναι μη αναστρέψιμη.",
       "Axis": "Άξονας",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Προηγούμενο",
       "ConfigureEnd": "Ρύθμιση Τέλους",
       "ConfigureStart": "Ρύθμιση Παραμέτρων Έναρξης",
       "CurrentValue": "Τρέχουσα Τιμή",
       "Deadband": "Νεκρή ζώνη",
       "ErrorOverlapMsg": "επικαλύπτεται με",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Ανεξάρτητος Άξονας",
       "LoadFromFile": "Φόρτωση από Aρχείο",
       "PleaseEnterAValidDeadzone": "Παρακαλώ εισαγάγετε ένα έγκυρο deadzone",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Αποθήκευση και Εφαρμογή",
       "SetFromThrottle": "Θέστε από Γκάζι",
       "ThrottleConfigurationReset": "Επαναφορά Ρύθμισης Γκαζιού",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Ρυθμίσεις",
     "Unrealistic": "Μη Ρεαλιστικό",

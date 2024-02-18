@@ -84,6 +84,7 @@
       "Route": "ルート",
       "SimBriefDataNotYetLoaded": "SimBriefのデータはまだ読み込まれていません。",
       "Title": "あなたのフライト",
+      "ToastFuelPayloadImported": "燃料と積載物のインポート完了!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "燃料の取り出し中",
       "EstimatedDuration": "推定所要時間(分)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX給油同期有効",
+      "GSXFuelSyncEnabled": "GSXで給油を要請できます",
       "LeftInnerTank": "左内側タンク",
       "LeftOuterTank": "左外側タンク",
       "ReadyToStart": "準備完了",
@@ -494,6 +495,7 @@
       "PaxSigns": "乗客サイン",
       "RmpVhfSpacing": "RMP VHF 周波数間隔",
       "Satcom": "Satcom",
+      "Select": "設定",
       "ThrustReductionHeight": "推力低減高度(ft)",
       "Title": "機体オプション/Pin Programs",
       "WeightUnit": "重量単位"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "コックピットでPTU音が聞こえるようにする",
       "Title": "オーディオ",
       "WindInteriorVolume": "風の機内音量"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "グライドスロープを捕捉したらコールアウトを抑制",
+      "Reset": "リセット",
+      "ResetStandardConfig": "構成をリセット",
+      "Title": "自動コールアウト"
     },
     "Fast": "高速",
     "Instant": "即時",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraphアカウント連携",
         "SubscriptionStatus": {
           "None": "サブスクリプション無し",
+          "Unknown": "不明",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "アカウントの連携を解除"
@@ -608,12 +617,14 @@
       "Apply": "適用",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "現在のスロットル構成設定をデフォルトの状態にリセットしてよろしいですか？この操作は元に戻せません。",
       "Axis": "軸",
+      "AxisDescription": "スロットル $throttles の軸 $axis",
       "Back": "戻る",
       "ConfigureEnd": "終了値を設定",
       "ConfigureStart": "開始値を設定",
       "CurrentValue": "現在の値",
       "Deadband": "デッドバンド",
       "ErrorOverlapMsg": "が次の項目と重複:",
+      "FourThrottleWarning": "スロットル1+2には軸1を、スロットル3+4には軸2を使用するようにMSFSを設定してください。",
       "IndependentAxis": "独立した軸",
       "LoadFromFile": "ファイルから読み込む",
       "PleaseEnterAValidDeadzone": "有効なデッドバンドを入力してください",

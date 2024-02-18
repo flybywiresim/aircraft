@@ -84,6 +84,7 @@
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief-Daten noch nicht geladen.",
       "Title": "Aktueller Flug",
+      "ToastFuelPayloadImported": "Treibstoff und Beladung importiert!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Enttanken",
       "EstimatedDuration": "Geschätzte Dauer (Minuten)",
       "EstimatedTime": "Geschätzte Dauer",
-      "GSXFuelSyncEnabled": "GSX Betankungssynchronisation aktiviert",
+      "GSXFuelSyncEnabled": "GSX Tankwagen rufen",
       "LeftInnerTank": "Linker innerer Tank",
       "LeftOuterTank": "Linker äußerer Tank",
       "ReadyToStart": "Bereit zum Tanken",
@@ -494,6 +495,7 @@
       "PaxSigns": "Passagier-Anzeigen",
       "RmpVhfSpacing": "RMP VHF Kanalraster",
       "Satcom": "Satcom anzeigen",
+      "Select": "Konfigurieren",
       "ThrustReductionHeight": "Flughöhe für Schubreduzierung (Fuß)",
       "Title": "Flugzeug-Optionen/Pin Programming",
       "WeightUnit": "Gewichtseinheit"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU im Cockpit hörbar",
       "Title": "Audio",
       "WindInteriorVolume": "Lautstärke der Windgeräusche im Innern"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Unterdrückt, wenn auf dem Gleitweg",
+      "Reset": "Zurücksetzen",
+      "ResetStandardConfig": "Auf Standardkonfiguration zurücksetzen",
+      "Title": "Automatische Call-Outs"
     },
     "Fast": "Schnell",
     "Instant": "Sofort",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph-Kontolink",
         "SubscriptionStatus": {
           "None": "Keine Navigraph Subscription",
+          "Unknown": "Unbekannt",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Kontoverknüpfung aufheben"
@@ -608,12 +617,14 @@
       "Apply": "Anwenden",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sollen die aktuellen Einstellungen für die Schubhebelkalibrierung zurückgesetzt werden? Diese Aktion kann nicht rückgängig gemacht werden. ",
       "Axis": "Achse",
+      "AxisDescription": "Achse $axis für Schubhebel $throttles",
       "Back": "Zurück",
       "ConfigureEnd": "Toleranzbereich Ende",
       "ConfigureStart": "Toleranzbereich Anfang",
       "CurrentValue": "Aktueller Wert",
       "Deadband": "Toleranzbereich",
       "ErrorOverlapMsg": "überlappt mit",
+      "FourThrottleWarning": "Bitte daran denken, MSFS so zu konfigurieren, dass Achse 1 für Schubhebel 1+2 und Achse 2 für Schubhebel 3+4 verwendet wird.",
       "IndependentAxis": "Unabhängige Achsen",
       "LoadFromFile": "Aus Datei laden",
       "PleaseEnterAValidDeadzone": "Bitte einen gültigen Toleranzbereich angeben",

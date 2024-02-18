@@ -84,6 +84,7 @@
       "Route": "मार्ग",
       "SimBriefDataNotYetLoaded": "सिमब्रीफ डेटा अभी लोड नहीं हुआ है।",
       "Title": "आपकी उड़ान",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "तेल निकालना",
       "EstimatedDuration": "अनुमानित अवधि (मिनट)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "बांहिनी अंद्रुंडी टंकी ",
       "LeftOuterTank": "बाहीनी बाहरी टंकी ",
       "ReadyToStart": "शुरू करने के लिए तैयार",
@@ -494,6 +495,7 @@
       "PaxSigns": "यात्री संकेत",
       "RmpVhfSpacing": "आरएमपी वीएचएफ स्पेसिंग",
       "Satcom": "सैटकॉम",
+      "Select": "Select",
       "ThrustReductionHeight": "थ्रस्ट रिडक्शन हाइट (ft)",
       "Title": "विमान विकल्प/पिन प्रोग्राम",
       "WeightUnit": "वज़न इकाई"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "कॉकपिट में पीटीयू ऑडिबल",
       "Title": "ऑडियो",
       "WindInteriorVolume": "विंड इंटीरियर वॉल्यूम"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "फ़ास्ट",
     "Instant": "तुरंत",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "लागू करें",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "क्या आप वाकई अपनी वर्तमान थ्रॉटल कॉन्फ़िगरेशन सेटिंग्स को उनके डिफ़ॉल्ट स्थिति में रीसेट करना चाहते हैं? यह क्रिया अपरिवर्तनीय है।",
       "Axis": "एक्सिस",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "वापस",
       "ConfigureEnd": "एंड कॉन्फ़िगर करें",
       "ConfigureStart": "स्टार्ट कॉन्फ़िगर करें",
       "CurrentValue": "वर्तमान मूल्य",
       "Deadband": "डेडबैंड",
       "ErrorOverlapMsg": "के साथ ओवरलैप होता है",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "इंडिपेंडेंट ऐक्सिस",
       "LoadFromFile": "टेक्स्ट की तरह लोड करें",
       "PleaseEnterAValidDeadzone": "कृपया एक मान्य डेडज़ोन दर्ज करें",
@@ -624,7 +635,7 @@
       "SaveAndApply": "सहेजें और लागू करें",
       "SetFromThrottle": "थ्रॉटल से सेट करें",
       "ThrottleConfigurationReset": "थ्रॉटल कॉन्फ़िगरेशन रीसेट",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "सेटिंग",
     "Unrealistic": "अवास्तविक",
