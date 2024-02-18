@@ -2,9 +2,9 @@ import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, S
 import './style.scss';
 
 export interface ContextMenuElement {
-    title: string;
-    disabled: boolean;
-    onSelectCallback: () => void;
+    name: string;
+    disabled: boolean | Subscribable<boolean>;
+    onPressed: () => void;
 }
 
 interface ContextMenuProps extends ComponentProps {
@@ -54,7 +54,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
                 document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => {
                     if (val.disabled === false) {
                         this.hideMenu();
-                        val.onSelectCallback();
+                        val.onPressed();
                     }
                 });
             });
@@ -74,7 +74,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
                             class={`mfd-context-menu-element${el.disabled === true ? ' disabled' : ''}`}
                             id={`${this.props.idPrefix}_${idx}`}
                         >
-                            {el.title}
+                            {el.name}
                         </span>
                     ), this)}
                 </div>
@@ -86,7 +86,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
                 document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
                     if (val.disabled === false) {
                         this.hideMenu();
-                        val.onSelectCallback();
+                        val.onPressed();
                     }
                 });
             });

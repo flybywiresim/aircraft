@@ -13,7 +13,7 @@ import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } fro
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
 /**
- * Interface between FMS and aircraft through SimVars and ARINC values (mostly data being sent here)
+ * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {

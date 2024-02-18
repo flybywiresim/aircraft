@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -29,7 +29,7 @@ interface InputFieldProps<T> extends ComponentProps {
     errorHandler?: (errorType: FmsErrorType) => void;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
-    alignText?: 'flex-start' | 'center' | 'flex-end';
+    alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
     tmpyActive?: Subscribable<boolean>;
     // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
@@ -64,6 +64,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private isFocused = Subject.create(false);
 
     private isValidating = Subject.create(false);
+
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignText ?? 'center', true);
 
     private onNewValue() {
         // Don't update if field is being edited
@@ -203,7 +205,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.instance.classList.remove('mandatory');
             }
             this.modifiedFieldValue.set(null);
-            this.spanningDivRef.instance.style.justifyContent = this.props.alignText ?? 'center';
+            this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
             this.updateDisplayElement();
         }
     }
@@ -232,7 +234,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.instance.classList.add('mandatory');
             }
 
-            this.spanningDivRef.instance.style.justifyContent = this.props.alignText ?? 'center';
+            this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
             this.textInputRef.instance.classList.remove('editing');
         }
     }

@@ -1,4 +1,4 @@
-import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -15,7 +15,7 @@ interface DropdownMenuProps extends ComponentProps {
     onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
     inactive?: Subscribable<boolean>;
     containerStyle?: string;
-    alignLabels?: 'flex-start' | 'center' | 'flex-end';
+    alignLabels?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
     numberOfDigitsForInputField?: number;
     tmpyActive?: Subscribable<boolean>;
 }
@@ -48,6 +48,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private renderedDropdownOptions = ArraySubject.create<string>();
 
     private renderedDropdownOptionsIndices: number[] = [];
+
+    private onDropdownOpenedCallback: (() => void | undefined) | undefined = undefined;
+
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignLabels ?? 'center', true);
 
     clickHandler(i: number, thisArg: DropdownMenu) {
         if (this.props.inactive?.get() === false) {
@@ -120,7 +124,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                     <span
                         id={`${this.props.idPrefix}_${idx}`}
                         class="mfd-dropdown-menu-element"
-                        style={`text-align: ${this.props.alignLabels};`}
+                        style={this.alignTextSub.map((it) => `text-align: ${it};`)}
                     >
                         {el}
                     </span>
@@ -168,6 +172,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
 
+            this.onDropdownOpenedCallback?.();
+            this.onDropdownOpenedCallback = undefined;
+
             if (!this.freeTextEntered) {
                 if (val === true) {
                     this.inputFieldRef.instance.textInputRef.instance.focus();
@@ -190,6 +197,20 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }, true));
 
         // TODO add KCCU events
+    }
+
+    /**
+     * Scrolls the dropdown list to the given index
+     *
+     * @param index the index of the value to scroll to
+     */
+    public scrollToValue(index: number): void {
+        this.onDropdownOpenedCallback = () => {
+            const element = Array.from(this.dropdownMenuRef.instance.children)
+                .find((it) => it.id === `${this.props.idPrefix}_${index}`);
+
+            this.dropdownMenuRef.instance.scrollTop = (element as unknown as { offsetTop: number }).offsetTop;
+        };
     }
 
     public destroy(): void {
