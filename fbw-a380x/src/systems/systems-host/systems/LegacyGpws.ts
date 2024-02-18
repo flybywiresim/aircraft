@@ -1,30 +1,7 @@
-// Note the master copy of these flags is contained in `fbw-a32nx\src\systems\shared\src\AutoCallOuts.ts`
-// Please do not edit here unless copying from there.
-
 import { Arinc429Word, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-// eslint-disable-next-line camelcase
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
-
-/** Bit flags for the radio auto call outs (for CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS). */
-const RadioAutoCallOutFlags = Object.freeze({
-    TwoThousandFiveHundred: 1 << 0,
-    TwentyFiveHundred: 1 << 1,
-    TwoThousand: 1 << 2,
-    OneThousand: 1 << 3,
-    FiveHundred: 1 << 4,
-    FourHundred: 1 << 5,
-    ThreeHundred: 1 << 6,
-    TwoHundred: 1 << 7,
-    OneHundred: 1 << 8,
-    Fifty: 1 << 9,
-    Forty: 1 << 10,
-    Thirty: 1 << 11,
-    Twenty: 1 << 12,
-    Ten: 1 << 13,
-    Five: 1 << 14,
-    FiveHundredGlide: 1 << 15,
-});
+import { RadioAutoCallOutFlags } from '../../../../../fbw-a32nx/src/systems/shared/src/AutoCallOuts';
 
 /** The default (Airbus basic configuration) radio altitude auto call outs. */
 const DEFAULT_RADIO_AUTO_CALL_OUTS = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.OneThousand | RadioAutoCallOutFlags.FourHundred
