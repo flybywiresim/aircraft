@@ -84,6 +84,7 @@
       "Route": "Trasa",
       "SimBriefDataNotYetLoaded": "SimBrief dáta ešte neboli načítané.",
       "Title": "Váš let",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Odčerpávanie paliva",
       "EstimatedDuration": "Odhadovaná dĺžka trvania (minúty)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Ľavá vnútorná nádrž",
       "LeftOuterTank": "Ľavá vonkajšia nádrž",
       "ReadyToStart": "Pripravený na štart",
@@ -494,6 +495,7 @@
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP vzdialenosť VHF",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Výška redukcie ťahu (ft)",
       "Title": "Nastavenia lietadla / Pin programy",
       "WeightUnit": "Jednotka hmotnosti"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU Počuteľný v kokpite",
       "Title": "Zvuk",
       "WindInteriorVolume": "Zvuk vetra v interiéri"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Rýchlo",
     "Instant": "Okamžite",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Použiť",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ste si istí, že chcete obnoviť aktuálne nastavenia konfigurácie škrtiacej klapky na predvolené stavy? Táto akcia je nezvratná.",
       "Axis": "Os",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Späť",
       "ConfigureEnd": "Konfigurovať koniec",
       "ConfigureStart": "Konfigurovať Štart",
       "CurrentValue": "Aktuálna hodnota",
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "prekrýva",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Nezávislá os",
       "LoadFromFile": "Načítať zo súboru",
       "PleaseEnterAValidDeadzone": "Zadajte platnú mŕtvu zónu",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Uložiť a použiť",
       "SetFromThrottle": "Nastav od škrtiacej klapky",
       "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Nastavenia",
     "Unrealistic": "Nereálne",

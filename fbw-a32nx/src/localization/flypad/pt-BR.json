@@ -84,6 +84,7 @@
       "Route": "Rota",
       "SimBriefDataNotYetLoaded": "Os dados do SimBrief ainda não foram carregados.",
       "Title": "Seu voo",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "ZFW": "ZFW"
     }
   },
@@ -131,7 +132,7 @@
       "Defueling": "Desabastecimento",
       "EstimatedDuration": "Duração estimada (minutos)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
       "LeftInnerTank": "Tanque interno esquerdo",
       "LeftOuterTank": "Tanque externo esquerdo",
       "ReadyToStart": "Pronto para começar",
@@ -494,6 +495,7 @@
       "PaxSigns": "Aviso de Passageiros",
       "RmpVhfSpacing": "Espaçamento RMP VHF",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Altura de redução de empuxo (ft)",
       "Title": "Opções da aeronave / Programas fixados",
       "WeightUnit": "Unidade de peso"
@@ -530,6 +532,12 @@
       "PtuAudibleInCockpit": "PTU audível no cockpit",
       "Title": "Áudio",
       "WindInteriorVolume": "Volume do vento no interior"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
     },
     "Fast": "Rápido",
     "Instant": "Instantâneo",
@@ -592,6 +600,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
@@ -608,12 +617,14 @@
       "Apply": "Aplicar",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Você tem certeza de que deseja redefinir as configurações atuais do acelerador para os estados padrão? Essa ação é irreversível.",
       "Axis": "Eixo",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Voltar",
       "ConfigureEnd": "Configurar fim",
       "ConfigureStart": "Configurar o início",
       "CurrentValue": "Valor atual",
       "Deadband": "Zona morta",
       "ErrorOverlapMsg": "sobrepõe-se com",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
       "IndependentAxis": "Eixos Independentes",
       "LoadFromFile": "Carregar do arquivo",
       "PleaseEnterAValidDeadzone": "Insira uma zona morta válida",
@@ -624,7 +635,7 @@
       "SaveAndApply": "Salvar e aplicar",
       "SetFromThrottle": "Definir através do acelerador",
       "ThrottleConfigurationReset": "Redefinir configuração do acelerador",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Configurações",
     "Unrealistic": "Irrealista",

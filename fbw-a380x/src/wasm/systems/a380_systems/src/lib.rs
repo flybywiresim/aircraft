@@ -312,6 +312,7 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.fuel.update(context);
     }
 }
 impl SimulationElement for A380 {
