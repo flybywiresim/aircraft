@@ -1,12 +1,14 @@
 import React from 'react';
-import { useSimVar } from '@instruments/common/simVars';
 import { Position } from '@instruments/common/types';
+import { useArinc429Var } from '@instruments/common/arinc429';
 
 
 const LandingElevation: React.FC<Position> = ({ x, y }) => {
-    const [landingElev] = useSimVar('L:A32NX_FM1_LANDING_ELEVATION', 'feet', 100);
+    // The A380 doesn't have manual landing elevation selector
+    // Fixme: this value should come from the pressurization system but for now we can take it directly from the FMS
+    const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
 
-    const ldgElevValue = Math.round(landingElev / 50) * 50;
+    const ldgElevValue = Math.round(landingElev.value / 50) * 50;
 
     return (
         <>
