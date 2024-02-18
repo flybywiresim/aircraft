@@ -2155,6 +2155,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             destinationAirport: this.destinationSegment?.destinationAirport?.ident ?? '',
 
             originAirport: this.originSegment?.originAirport?.ident ?? '',
+            originRunway: this.originRunway?.ident ?? '',
+            destinationRunway: this.destinationRunway?.ident ?? '',
 
             segments: {
                 originSegment: this.originSegment.serialize(),
@@ -2222,7 +2224,9 @@ export interface SerializedFlightPlan {
     performanceData?: SerializedFlightPlanPerformanceData,
 
     destinationAirport: string,
+    destinationRunway: string,
     originAirport: string,
+    originRunway: string,
 
     segments: {
         originSegment: SerializedFlightPlanSegment,
