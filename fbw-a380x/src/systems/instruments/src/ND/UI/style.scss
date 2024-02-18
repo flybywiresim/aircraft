@@ -1,9 +1,9 @@
-@import "../../../MsfsAvionicsCommon/definitions.scss";
+@import "../../MsfsAvionicsCommon/definitions.scss";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -331,6 +331,7 @@
   display: flex;
   flex: 1;
   border-bottom: 2px solid $display-light-grey;
+  font-family: "Ecam", monospace !important;
 }
 
 .mfd-top-tab-navigator-bar-element-label {
@@ -383,6 +384,7 @@
   display: flex;
   align-items: center;
   border: 2px solid transparent;
+  font-family: "Ecam", monospace !important;
 }
 
 .mfd-radio-button + .mfd-radio-button {
@@ -443,6 +445,7 @@
 
 .mfd-context-menu {
   background-color: $display-mfd-darker-grey;
+  font-family: "Ecam", monospace !important;
   border: 2px outset $display-light-grey;
   position: absolute;
   z-index: 10;
@@ -452,6 +455,7 @@
 
 .mfd-context-menu-element {
   color: $display-white;
+  font-family: "Ecam", monospace !important;
   font-size: 22px;
   text-align: left;
   padding: 7px 2px;

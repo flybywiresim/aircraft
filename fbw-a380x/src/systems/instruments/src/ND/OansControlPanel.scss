@@ -1,9 +1,9 @@
-﻿@import "../../MsfsAvionicsCommon/definitions.scss";
+﻿@import "../MsfsAvionicsCommon/definitions.scss";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -12,6 +12,7 @@ $display-mfd-darker-grey: #3c3c3c;
 
 .oans-info-box {
   background-color: $display-mfd-darker-grey;
+  font-family: "Ecam", monospace !important;
   border: 2px outset $display-light-grey;
   padding: 9px 12px 5px 12px;
 }

@@ -9,7 +9,7 @@ import {
 import {
     AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType, EfisNdMode,
     MapParameters,
-    AmdbAirportSearchResult,
+    EfisSide,
 } from '@flybywiresim/fbw-sdk';
 import {
     BBox, bbox, bboxPolygon, booleanPointInPolygon, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon,
@@ -17,6 +17,7 @@ import {
 } from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
+import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
 import { STYLE_DATA } from './style-data';
@@ -92,11 +93,11 @@ export interface ContextMenuItemData {
 
 export interface OancProps extends ComponentProps {
     bus: EventBus,
-    setSelectedAirport: (airport: AmdbAirportSearchResult) => void;
-    contextMenuVisible: Subject<boolean>;
-    contextMenuX: Subject<number>;
-    contextMenuY: Subject<number>;
-    contextMenuItems: ContextMenuItemData[];
+    side: EfisSide,
+    contextMenuVisible?: Subject<boolean>;
+    contextMenuX?: Subject<number>;
+    contextMenuY?: Subject<number>;
+    contextMenuItems?: ContextMenuItemData[];
     waitScreenRef: NodeReference<HTMLDivElement>;
 }
 
@@ -271,15 +272,14 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.cursorSurfaceRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
         this.cursorSurfaceRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-        const subs = this.props.bus.getSubscriber<FcuSimVars>();
+        const subs = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents>();
 
         this.efisNDModeSub.setConsumer(subs.on('ndMode'));
 
         this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
 
-        this.loadAirportMap('LFPG');
-        this.amdbClient.searchForAirports('LFPG').then((airports) => {
-            this.props.setSelectedAirport(airports[0]);
+        subs.on('oansDisplayAirport').whenChanged().handle((airport) => {
+            this.loadAirportMap(airport);
         });
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
@@ -853,13 +853,13 @@ export class Oanc extends DisplayComponent<OancProps> {
         }
     }
 
-    private handleCursorPanStart(event: MouseEvent): void {
+    public handleCursorPanStart(event: MouseEvent): void {
         this.isPanningArmed = true;
         this.panArmedX.set(event.screenX);
         this.panArmedY.set(event.screenY);
     }
 
-    private handleCursorPanMove(event: MouseEvent): void {
+    public handleCursorPanMove(event: MouseEvent): void {
         if (this.isPanningArmed) {
             const adx = Math.abs(event.screenX - this.panArmedX.get());
             const ady = Math.abs(event.screenY - this.panArmedY.get());
@@ -881,12 +881,12 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.lastPanY = event.screenY;
     }
 
-    private handleCursorPanStop(event: MouseEvent): void {
-        this.props.contextMenuX.set(event.screenX);
-        this.props.contextMenuY.set(event.screenY);
+    public handleCursorPanStop(event: MouseEvent): void {
+        this.props.contextMenuX?.set(event.screenX);
+        this.props.contextMenuY?.set(event.screenY);
         if (!this.isPanning) {
             this.isPanningArmed = false;
-            this.props.contextMenuVisible.set(!this.props.contextMenuVisible.get());
+            this.props.contextMenuVisible?.set(!this.props.contextMenuVisible.get());
         }
         this.isPanning = false;
     }
@@ -1016,21 +1016,6 @@ export class Oanc extends DisplayComponent<OancProps> {
                     <div class="oanc-bottom-mask">
                         <span ref={this.positionTextRef} class="oanc-position">{this.positionString}</span>
                     </div>
-
-                    {/* TODO this is rendered by ND */}
-                    <span class="oanc-speed-info" id="oanc-speed-info-line1">
-                        <span id="oanc-speed-info-1">GS</span>
-                        <span id="oanc-speed-info-2">0</span>
-                        <span id="oanc-speed-info-3">TAS</span>
-                        <span id="oanc-speed-info-4">---</span>
-                    </span>
-
-                    {/* TODO this is rendered by ND */}
-                    <span class="oanc-wind-info">
-                        <span id="oanc-wind-info-1">---</span>
-                        <span id="oanc-wind-info-2">/</span>
-                        <span id="oanc-wind-info-3">---</span>
-                    </span>
 
                     <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span>
                     <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span>

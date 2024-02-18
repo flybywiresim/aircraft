@@ -1,6 +1,6 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { DataEntryFormat } from 'instruments/src/ND/OANC/DataEntryFormats';
+import { DataEntryFormat } from 'instruments/src/ND/UI/DataEntryFormats';
 
 // eslint-disable-next-line max-len
 export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
@@ -63,8 +63,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private isValidating = Subject.create(false);
 
-    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignText, true);
-
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignText ?? 'center', true);
 
     private onNewValue() {
         // Don't update if field is being edited
@@ -257,6 +256,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         try {
             newValue = await this.props.dataEntryFormat.parse(input);
         } catch (msg: unknown) {
+            // no op
         }
 
         let updateWasSuccessful = true;

@@ -1,30 +1,27 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import './Common/style.scss';
+import './UI/style.scss';
 import './OansControlPanel.scss';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, MapSubject, MappedSubscribable, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/ND/OANC/Common/Button';
-import { OansRunwayInfoBox } from 'instruments/src/ND/OANC/OANSRunwayInfoBox';
+import { Button } from 'instruments/src/ND/UI/Button';
+import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient } from '@flybywiresim/oanc';
-import { AmdbAirportSearchResult } from '@flybywiresim/fbw-sdk';
-import { DropdownMenu } from './Common/DropdownMenu';
-import { RadioButtonGroup } from './Common/RadioButtonGroup';
-import { InputField } from './Common/InputField';
-import { LengthFormat } from './Common/DataEntryFormats';
-import { IconButton } from './Common/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from './Common/TopTabNavigator';
+import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
+import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
+import { DropdownMenu } from './UI/DropdownMenu';
+import { RadioButtonGroup } from './UI/RadioButtonGroup';
+import { InputField } from './UI/InputField';
+import { LengthFormat } from './UI/DataEntryFormats';
+import { IconButton } from './UI/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
-    amdbClient: NavigraphAmdbClient,
+    side: EfisSide;
     isVisible: Subscribable<boolean>,
-    onSelectAirport: (airportIcao: string) => void,
     togglePanel: () => void,
-    onZoomIn: () => void,
-    onZoomOut: () => void,
 }
 
 export enum EntityTypes {
@@ -40,6 +37,8 @@ const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export class OansControlPanel extends DisplayComponent<OansProps> {
     private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
+    private amdbClient = new NavigraphAmdbClient();
+
     private oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private readonly airportSearchAirportDropdownRef = FSComponent.createRef<DropdownMenu>();
@@ -52,7 +51,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private readonly style = MapSubject.create<string, string>();
 
-    private readonly activeTabIndex = Subject.create<1 | 2 | 3>(2);
+    private readonly activeTabIndex = Subject.create<number>(2);
 
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
@@ -66,7 +65,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private selectedEntityIndex = Subject.create<number | null>(0);
 
-    private selectedEntityString = Subject.create(null);
+    private selectedEntityString = Subject.create<string | null>(null);
 
     private originAirport = Subject.create<string | null>(null);
 
@@ -98,11 +97,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }
     }
 
-    // Necessary to enable mouse interaction
-    get isInteractive(): boolean {
-        return true;
-    }
-
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -116,16 +110,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
         );
 
-        this.props.amdbClient.searchForAirports('').then((airports) => {
+        this.amdbClient.searchForAirports('').then((airports) => {
             this.store.airports.set(airports);
         });
 
         this.subs.push(
-            this.store.airports.sub(() => this.sortAirports(this.store.airportSearchMode.get())),
+            this.store.airports.sub(() => this.sortAirports(this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao)),
         );
 
         this.subs.push(
-            this.store.airportSearchMode.sub((mode) => this.sortAirports(mode)),
+            this.store.airportSearchMode.sub((mode) => this.sortAirports(mode ?? ControlPanelAirportSearchMode.Icao)),
         );
 
         this.subs.push(
@@ -134,8 +128,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         );
 
         const sub = this.props.bus.getSubscriber<FmsVars>();
+        // sub.on('displayAirport').whenChanged().handle((it) => console.log(1, it));
 
-        sub.on('origin').whenChanged().handle((it) => this.originAirport.set(it));
+        sub.on('origin').whenChanged().handle((it) => {
+            console.warn('yol');
+            this.originAirport.set(it);
+        });
         sub.on('destination').whenChanged().handle((it) => this.destAirport.set(it));
         sub.on('alternate').whenChanged().handle((it) => this.altnAirport.set(it));
 
@@ -146,14 +144,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         const searchMode = this.store.airportSearchMode.get();
         const sortedAirports = this.store.sortedAirports.getArray();
 
-        const prop = ControlPanelUtils.getSearchModeProp(searchMode);
+        const prop = ControlPanelUtils.getSearchModeProp(searchMode ?? ControlPanelAirportSearchMode.Icao);
 
         this.store.airportSearchData.set(sortedAirports.map((it) => (it[prop] as string).toUpperCase()));
     }
 
     public setSelectedAirport(airport: AmdbAirportSearchResult) {
         this.store.selectedAirport.set(airport);
-        this.store.airportSearchSelectedAirportIndex.set(this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === airport.idarpt));
+        const foundIndex = this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === airport.idarpt);
+        this.store.airportSearchSelectedAirportIndex.set(foundIndex === -1 ? null : foundIndex);
     }
 
     private sortAirports(mode: ControlPanelAirportSearchMode) {
@@ -181,7 +180,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             throw new Error('');
         }
 
-        const firstLetter = airport[ControlPanelUtils.getSearchModeProp(this.store.airportSearchMode.get())][0];
+        const firstLetter = airport[ControlPanelUtils.getSearchModeProp(this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao)][0];
         this.store.airportSearchSelectedSearchLetterIndex.set(ControlPanelUtils.LETTERS.findIndex((it) => it === firstLetter));
 
         const airportIndexInSearchData = indexInSearchData ?? this.store.sortedAirports.getArray().findIndex((it) => it.idarpt === icao);
@@ -212,7 +211,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             throw new Error('');
         }
 
-        this.props.onSelectAirport(this.store.selectedAirport.get().idarpt);
+        // This doesn't work when two instruments are in the same VCockpit it seems
+        // this.syncer.sendEvent(`A380X_OANS_${this.props.side}_DISPLAY_AIRPORT`, this.store.selectedAirport.get().idarpt);
+
+        this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt);
         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
     }
 
@@ -390,7 +392,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                                 values={this.store.airportSearchData}
                                                 selectedIndex={this.store.airportSearchSelectedAirportIndex}
                                                 onModified={(newSelectedIndex) => {
-                                                    this.handleSelectAirport(this.store.sortedAirports.get(newSelectedIndex).idarpt, newSelectedIndex);
+                                                    this.handleSelectAirport(this.store.sortedAirports.get(newSelectedIndex ?? 0).idarpt, newSelectedIndex ?? undefined);
                                                 }}
                                                 freeTextAllowed={false}
                                                 numberOfDigitsForInputField={7}
@@ -451,19 +453,34 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                     >
                                         <Button
                                             label={this.originAirport.map((it) => (it ? (<>{it}</>) : (<>ORIGIN</>)))}
-                                            onClick={() => this.handleSelectAirport(this.originAirport.get())}
+                                            onClick={() => {
+                                                const airport = this.originAirport.get();
+                                                if (airport) {
+                                                    this.handleSelectAirport(airport);
+                                                }
+                                            }}
                                             disabled={this.altnAirport.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
                                             label={this.destAirport.map((it) => (it ? (<>{it}</>) : (<>DEST</>)))}
-                                            onClick={() => this.handleSelectAirport(this.destAirport.get())}
+                                            onClick={() => {
+                                                const airport = this.destAirport.get();
+                                                if (airport) {
+                                                    this.handleSelectAirport(airport);
+                                                }
+                                            }}
                                             disabled={this.altnAirport.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
                                             label={this.altnAirport.map((it) => (it ? (<>{it}</>) : (<>ALTN</>)))}
-                                            onClick={() => this.handleSelectAirport(this.altnAirport.get())}
+                                            onClick={() => {
+                                                const airport = this.altnAirport.get();
+                                                if (airport) {
+                                                    this.handleSelectAirport(airport);
+                                                }
+                                            }}
                                             disabled={this.altnAirport.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />

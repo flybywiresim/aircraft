@@ -9,7 +9,7 @@ type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitT
 export interface DataEntryFormat<T> {
     placeholder: string;
     maxDigits: number;
-    format(value: T): FieldFormatTuple;
+    format(value: T | null): FieldFormatTuple;
     parse(input: string): Promise<T | null>;
     /**
      * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
@@ -71,8 +71,7 @@ export class LengthFormat implements DataEntryFormat<number> {
         }
         if (nbr > this.maxValue || nbr < this.minValue) {
             return null;
-        } else {
-            return null;
         }
+        return null;
     }
 }

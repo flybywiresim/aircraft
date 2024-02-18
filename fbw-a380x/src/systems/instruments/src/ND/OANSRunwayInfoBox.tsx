@@ -1,10 +1,10 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import './Common/style.scss';
-import { EntityTypes } from 'instruments/src/ND/OANC/OansControlPanel';
+import './UI/style.scss';
+import { EntityTypes } from 'instruments/src/ND/OansControlPanel';
 
 interface OansRunwayInfoBoxProps {
     rwyOrStand: Subscribable<EntityTypes | null>;
-    selectedEntity: Subscribable<string>;
+    selectedEntity: Subscribable<string | null>;
     tora: Subscribable<number>;
     lda: Subscribable<number>;
     ldaIsReduced: Subscribable<boolean>;

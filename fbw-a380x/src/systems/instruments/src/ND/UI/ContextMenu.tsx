@@ -93,7 +93,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         }, true));
 
         // Close dropdown menu if clicked outside
-        document.getElementById('MFD_CONTENT')?.addEventListener('click', () => {
+        document.getElementById('ND_CONTENT')?.addEventListener('click', () => {
             if ((Date.now() - this.openedAt) > 100 && this.props.opened.get() === true) {
                 this.hideMenu();
             }

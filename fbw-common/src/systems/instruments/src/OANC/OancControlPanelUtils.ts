@@ -41,13 +41,13 @@ export class ControlPanelStore {
 
     public readonly sortedAirports = ArraySubject.create<AmdbAirportSearchResult>();
 
-    public readonly airportSearchMode = Subject.create(ControlPanelAirportSearchMode.Icao);
+    public readonly airportSearchMode = Subject.create<number | null>(ControlPanelAirportSearchMode.Icao);
 
     public readonly airportSearchData = ArraySubject.create<string>();
 
     public readonly airportSearchSelectedSearchLetterIndex = Subject.create(0);
 
-    public readonly airportSearchSelectedAirportIndex = Subject.create(0);
+    public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(0);
 
     public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 

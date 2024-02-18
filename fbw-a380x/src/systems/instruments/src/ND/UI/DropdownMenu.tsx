@@ -1,7 +1,7 @@
 import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { InputField } from 'instruments/src/ND/OANC/Common/InputField';
-import { DropdownFieldFormat } from 'instruments/src/ND/OANC/Common/DataEntryFormats';
+import { InputField } from 'instruments/src/ND/UI/InputField';
+import { DropdownFieldFormat } from 'instruments/src/ND/UI/DataEntryFormats';
 
 interface DropdownMenuProps extends ComponentProps {
     values: SubscribableArray<string>;
@@ -49,9 +49,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private renderedDropdownOptionsIndices: number[] = [];
 
-    private onDropdownOpenedCallback: () => void | undefined;
+    private onDropdownOpenedCallback: (() => void | undefined) | undefined = undefined;
 
-    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignLabels, true);
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignLabels ?? 'center', true);
 
     clickHandler(i: number, thisArg: DropdownMenu) {
         if (this.props.inactive?.get() === false) {
@@ -141,7 +141,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         this.subs.push(this.props.values.sub((index, type, item, array) => {
             const selectedIndex = this.props.selectedIndex.get();
-            const value = array[selectedIndex];
+            const value = array[selectedIndex ?? 0];
 
             if (selectedIndex !== undefined && selectedIndex !== null && value !== null && value !== undefined) {
                 this.setInputFieldValue(value);

@@ -1,6 +1,6 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { TriangleDown, TriangleUp } from 'instruments/src/ND/OANC/Common/shapes';
+import { TriangleDown, TriangleUp } from 'instruments/src/ND/UI/shapes';
 
 export type ButtonMenuItem = {
     label: string;

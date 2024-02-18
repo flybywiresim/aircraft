@@ -21,12 +21,10 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
     private updateVisibility() {
         if (this.ndMode === EfisNdMode.PLAN) {
             this.topRef.instance.style.display = 'none';
+        } else if (this.ndRangeSetting === -1) {
+            this.topRef.instance.style.display = 'none';
         } else {
-            if (this.ndRangeSetting === -1) {
-                this.topRef.instance.style.display = 'none';
-            } else {
-                this.topRef.instance.style.display = 'block';
-            }
+            this.topRef.instance.style.display = 'block';
         }
     }
 
@@ -43,7 +41,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
         sub.on('ndRangeSetting').whenChanged().handle((range) => {
             this.ndRangeSetting = a380EfisRangeSettings[range];
             this.updateVisibility();
-        })
+        });
     }
 
     render(): VNode {

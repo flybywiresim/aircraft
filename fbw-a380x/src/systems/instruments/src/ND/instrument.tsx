@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
-import { a380EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
+import { Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
 
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/OANC/Common/ContextMenu';
-import { Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
-import { OansControlPanel } from 'instruments/src/ND/OANC/OansControlPanel';
-import { MouseCursor } from './OANC/Common/MouseCursor';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
+import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
+import { MouseCursor } from './UI/MouseCursor';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -34,7 +34,7 @@ declare type MousePosition = {
 }
 
 class NDInstrument implements FsInstrument {
-    public readonly instrument: BaseInstrument;
+    public readonly instrument!: BaseInstrument;
 
     private readonly efisSide: EfisSide;
 
@@ -62,13 +62,11 @@ class NDInstrument implements FsInstrument {
 
     private readonly egpwcBusPublisher: EgpwcBusPublisher;
 
-    private readonly hEventPublisher;
+    private readonly hEventPublisher: HEventPublisher;
 
     private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
     private readonly clock: Clock;
-
-    private oancRef = FSComponent.createRef<Oanc>();
 
     public readonly controlPanelRef = FSComponent.createRef<OansControlPanel>();
 
@@ -82,7 +80,7 @@ class NDInstrument implements FsInstrument {
 
     private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
 
-    private contextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
+    private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
         {
             name: 'ADD CROSS',
             disabled: true,
@@ -116,12 +114,12 @@ class NDInstrument implements FsInstrument {
             name: 'CENTER ON ACFT',
             disabled: false,
             onPressed: async () => {
-                if (this.oancRef.getOrDefault() !== null) {
-                    await this.oancRef.instance.enablePanningTransitions();
-                    this.oancRef.instance.panOffsetX.set(0);
-                    this.oancRef.instance.panOffsetY.set(0);
+                if (this.oansRef.getOrDefault() !== null) {
+                    await this.oansRef.instance.enablePanningTransitions();
+                    this.oansRef.instance.panOffsetX.set(0);
+                    this.oansRef.instance.panOffsetY.set(0);
                     await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
-                    await this.oancRef.instance.disablePanningTransitions();
+                    await this.oansRef.instance.disablePanningTransitions();
                 }
             },
         },
@@ -139,7 +137,13 @@ class NDInstrument implements FsInstrument {
 
     private ndContainerRef = FSComponent.createRef<HTMLDivElement>();
 
-    private oancContainerRef = FSComponent.createRef<HTMLDivElement>();
+    private efisNdMode = EfisNdMode.ARC;
+
+    private efisCpRange: A380EfisNdRangeValue = 10;
+
+    private oansRef = FSComponent.createRef<Oanc>();
+
+    private oansContainerRef = FSComponent.createRef<HTMLDivElement>();
 
     constructor() {
         const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
@@ -191,6 +195,20 @@ class NDInstrument implements FsInstrument {
         FSComponent.render(
             <div ref={this.topRef}>
                 <CdsDisplayUnit bus={this.bus} displayUnitId={DisplayUnitID.CaptNd} test={Subject.create(-1)} failed={Subject.create(false)}>
+                    <div ref={this.oansContainerRef} class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
+                        <div ref={this.waitScreenRef} class="oanc-waiting-screen">
+                            PLEASE WAIT
+                        </div>
+                        <Oanc
+                            bus={this.bus}
+                            side={this.efisSide}
+                            ref={this.oansRef}
+                            waitScreenRef={this.waitScreenRef}
+                            contextMenuVisible={this.contextMenuVisible}
+                            contextMenuX={this.contextMenuX}
+                            contextMenuY={this.contextMenuY}
+                        />
+                    </div>
                     <div ref={this.ndContainerRef}>
                         <NDComponent
                             bus={this.bus}
@@ -202,77 +220,72 @@ class NDInstrument implements FsInstrument {
                         ref={this.contextMenuRef}
                         opened={this.contextMenuOpened}
                         idPrefix="contextMenu"
-                        values={this.contextMenuItems}
+                        values={this.oansContextMenuItems}
                     />
                     <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
-                    <div ref={this.oancContainerRef} class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
-                        <div ref={this.waitScreenRef} class="oanc-waiting-screen">
-                            PLEASE WAIT
-                        </div>
-                        <Oanc
-                            bus={this.bus}
-                            ref={this.oancRef}
-                            setSelectedAirport={(arpt) => {
-                                if (this.controlPanelRef.getOrDefault()) {
-                                    this.controlPanelRef.instance.setSelectedAirport(arpt);
-                                }
-                            }}
-                            contextMenuVisible={this.contextMenuVisible}
-                            contextMenuItems={this.contextMenuItems.get()}
-                            contextMenuX={this.contextMenuX}
-                            contextMenuY={this.contextMenuY}
-                            waitScreenRef={this.waitScreenRef}
-                        />
-                        <OansControlPanel
-                            ref={this.controlPanelRef}
-                            bus={this.bus}
-                            amdbClient={this.oancRef.instance.amdbClient}
-                            isVisible={this.controlPanelVisible}
-                            onSelectAirport={(icao) => this.oancRef.instance.loadAirportMap(icao)}
-                            togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
-                            onZoomIn={() => this.oancRef.instance.handleZoomIn()}
-                            onZoomOut={() => this.oancRef.instance.handleZoomOut()}
-                        />
-                    </div>
-                    <MouseCursor side={Subject.create('CAPT')} ref={this.mouseCursorRef} />
+                    <OansControlPanel
+                        ref={this.controlPanelRef}
+                        bus={this.bus}
+                        side={this.efisSide}
+                        isVisible={this.controlPanelVisible}
+                        togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
+                    />
+                    <MouseCursor side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')} ref={this.mouseCursorRef} />
                 </CdsDisplayUnit>
             </div>,
             document.getElementById('ND_CONTENT'),
         );
 
         // Remove "instrument didn't load" text
-        document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('ND_CONTENT')?.querySelector(':scope > h1')?.remove();
 
         this.topRef.instance.addEventListener('mousemove', (ev) => {
             this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
         });
 
-        this.oancContainerRef.instance.addEventListener('contextmenu', (e) => {
+        this.ndContainerRef.instance.addEventListener('contextmenu', (e) => {
             // Not firing right now, use double click
             this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
             this.contextMenuRef.instance.display(e.clientX, e.clientY);
         });
 
-        this.oancContainerRef.instance.addEventListener('dblclick', (e) => {
+        this.ndContainerRef.instance.addEventListener('dblclick', (e) => {
             this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
             this.contextMenuRef.instance.display(e.clientX, e.clientY);
         });
 
-        this.oancContainerRef.instance.addEventListener('click', () => {
+        this.ndContainerRef.instance.addEventListener('click', () => {
             this.contextMenuRef.instance.hideMenu();
         });
 
+        // OANS move cursor
+        this.ndContainerRef.instance.addEventListener('mousedown', this.oansRef.instance.handleCursorPanStart.bind(this.oansRef.instance));
+        this.ndContainerRef.instance.addEventListener('mousemove', this.oansRef.instance.handleCursorPanMove.bind(this.oansRef.instance));
+        this.ndContainerRef.instance.addEventListener('mouseup', this.oansRef.instance.handleCursorPanStop.bind(this.oansRef.instance));
+
         const sub = this.bus.getSubscriber<FcuSimVars>();
 
-        sub.on('ndRangeSetting').whenChanged().handle((range) => {
-            if (range === 0 && this.ndContainerRef.getOrDefault() && this.oancContainerRef.getOrDefault()) {
-                this.ndContainerRef.instance.style.display = 'none';
-                this.oancContainerRef.instance.style.display = 'block';
-            } else if (this.ndContainerRef.getOrDefault() && this.oancContainerRef.getOrDefault()) {
-                this.ndContainerRef.instance.style.display = 'block';
-                this.oancContainerRef.instance.style.display = 'none';
-            }
+        sub.on('ndMode').whenChanged().handle((mode) => {
+            this.efisNdMode = mode;
+            this.updateNdOansVisibility();
         });
+
+        sub.on('ndRangeSetting').whenChanged().handle((range) => {
+            this.efisCpRange = a380EfisRangeSettings[range];
+            this.updateNdOansVisibility();
+        });
+    }
+
+    private updateNdOansVisibility() {
+        if (this.oansContainerRef.getOrDefault()) {
+            if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
+                this.bus.getPublisher<NDControlEvents>().pub('show_oans', true);
+                this.oansContainerRef.instance.style.display = 'block';
+            } else {
+                this.bus.getPublisher<NDControlEvents>().pub('show_oans', false);
+                this.oansContainerRef.instance.style.display = 'none';
+            }
+        }
     }
 
     /**
@@ -281,8 +294,8 @@ class NDInstrument implements FsInstrument {
     public Update(): void {
         this.backplane.onUpdate();
 
-        if (this.oancRef.getOrDefault()) {
-            this.oancRef.instance.Update();
+        if (this.oansRef.getOrDefault()) {
+            this.oansRef.instance.Update();
         }
     }
 
@@ -327,7 +340,7 @@ const original = document.createElement.bind(document);
 
 const extraSvgTags = ['tspan'];
 
-document.createElement = ((tagName, options) => {
+document.createElement = ((tagName: string, options: ElementCreationOptions | undefined) => {
     if (extraSvgTags.includes(tagName)) {
         return document.createElementNS('http://www.w3.org/2000/svg', tagName, options);
     }

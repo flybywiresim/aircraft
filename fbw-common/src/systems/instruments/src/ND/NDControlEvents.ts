@@ -77,4 +77,9 @@ export interface NDControlEvents {
      * Event for the CHRONO button being pushed
      */
     chrono_pushed: void,
+
+    /**
+     * (A380 relevant): Hide or show certain parts of ND, to display OANS underneath
+     */
+    show_oans: boolean,
 }

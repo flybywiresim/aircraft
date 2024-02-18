@@ -118,6 +118,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         return !headingWord.isNormalOperation();
     }, this.headingWord, this.currentPageMode);
 
+    private showOans: boolean = false;
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -161,6 +163,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         this.mapRecomputing.sub((recomputing) => {
             this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
         });
+
+        sub.on('show_oans').whenChanged().handle((show) => this.showOans = show);
     }
 
     // eslint-disable-next-line arrow-body-style
@@ -250,8 +254,20 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         }
     }
 
+    private oansOverlay: VNode =
+        <>
+            <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                <WindIndicator bus={this.props.bus} />
+                <SpeedIndicator bus={this.props.bus} />
+            </svg>
+            <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
+                <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+            </svg>
+        </>;
+
     render(): VNode | null {
-        return (
+        return this.showOans ? this.oansOverlay : (
             <>
                 {/* ND Vector graphics - bottom layer */}
                 <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">

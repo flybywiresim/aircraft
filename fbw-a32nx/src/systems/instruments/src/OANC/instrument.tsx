@@ -4,13 +4,17 @@
 
 import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane, Subject, SubscribableMapFunctions, Wait } from '@microsoft/msfs-sdk';
 import { ContextMenuItemData, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, Oanc, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { ContextMenu } from 'instruments/src/OANC/Components/ContextMenu';
+import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { ControlPanel } from './Components/ControlPanel';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './styles.scss';
 
 class A32NX_OANC extends BaseInstrument {
+    private readonly efisSide: EfisSide;
+
     private bus: EventBus;
 
     private readonly backplane = new InstrumentBackplane();
@@ -70,6 +74,7 @@ class A32NX_OANC extends BaseInstrument {
 
     constructor() {
         super();
+        this.efisSide = getDisplayIndex() === 1 ? 'L' : 'R';
         this.bus = new EventBus();
         this.fcuBusPublisher = new FcuBusPublisher(this.bus, 'L');
         this.hEventPublisher = new HEventPublisher(this.bus);
@@ -102,12 +107,8 @@ class A32NX_OANC extends BaseInstrument {
                 </div>
                 <Oanc
                     bus={this.bus}
+                    side={this.efisSide}
                     ref={this.oancRef}
-                    setSelectedAirport={(arpt) => {
-                        if (this.controlPanelRef.getOrDefault()) {
-                            this.controlPanelRef.instance.setSelectedAirport(arpt);
-                        }
-                    }}
                     contextMenuVisible={this.contextMenuVisible}
                     contextMenuItems={this.contextMenuItems}
                     contextMenuX={this.contextMenuX}
