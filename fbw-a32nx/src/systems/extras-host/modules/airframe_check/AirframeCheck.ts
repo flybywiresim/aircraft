@@ -21,7 +21,7 @@ export class AirframeCheck {
 
         const airframe = new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
         let aircraftType: AircraftType;
-    
+
         switch (airframe) {
         case 'A380_842':
             aircraftType = AircraftType.A380_842;

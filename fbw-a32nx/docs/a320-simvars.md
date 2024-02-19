@@ -31,8 +31,9 @@
     - Indicates the aircraft type
         Aircraft | Value
         --- | ---
-        A320_251N | 0
-        A380_842 | 1
+        Unknown | 0
+        A320_251N | 1
+        A380_842 | 2
 
 - A32NX_IS_READY
     - Bool
