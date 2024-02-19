@@ -2,17 +2,19 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 import React from 'react';
+import { AircraftType, useSimVar } from '@flybywiresim/fbw-sdk';
 import { A320Overview } from 'instruments/src/EFB/Dispatch/Pages/Overview/A320_251N/A320Overview';
 import { A380Overview } from 'instruments/src/EFB/Dispatch/Pages/Overview/A380_842/A380Overview';
-import { getAirframeType } from '../../Efb';
 
 export const OverviewPage = () => {
-    switch (getAirframeType()) {
-    case 'A320_251N':
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
+
+    switch (airframe) {
+    case AircraftType.A320_251N:
         return (
             <A320Overview />
         );
-    case 'A380_842':
+    case AircraftType.A380_842:
         return (
             <A380Overview />
         );

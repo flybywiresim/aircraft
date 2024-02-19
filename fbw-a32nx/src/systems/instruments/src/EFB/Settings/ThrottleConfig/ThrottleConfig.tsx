@@ -142,7 +142,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             ...getOverlapErrors(2, throttleTwoSimvars),
         ];
         // to avoid false errors on the A320 when only 2 axis are used
-        if (airframe === AircraftType.A380_842) {
+        if (airframe === 'A380_842') {
             errors.push(...getOverlapErrors(3, throttleThreeSimvars));
             errors.push(...getOverlapErrors(4, throttleFourSimvars));
         }
@@ -232,7 +232,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             >
                 2
             </SelectItem>
-            {airframe === AircraftType.A380_842 && (
+            {airframe === 'A380_842' && (
                 <SelectItem
                     selected={axisNum === 4}
                     onSelect={() => setAxisNum(4)}
@@ -350,13 +350,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const getAxis = () => {
         switch (axisNum) {
         case 4:
-            if (airframe === AircraftType.A380_842) {
+            if (airframe === 'A380_842') {
                 return fourAxis;
             }
             console.warn('A320 does not have 4 axis - defaulting to 2 axis');
             return twoAxisA320;
         case 2:
-            if (airframe === AircraftType.A380_842) {
+            if (airframe === 'A380_842') {
                 return twoAxisA380;
             }
             return twoAxisA320;

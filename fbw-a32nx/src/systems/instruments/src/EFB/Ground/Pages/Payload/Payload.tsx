@@ -11,6 +11,7 @@ import { useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 
 export const Payload = () => {
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
@@ -25,7 +26,6 @@ export const Payload = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
     switch (airframe) {
     case AircraftType.A380_842:
