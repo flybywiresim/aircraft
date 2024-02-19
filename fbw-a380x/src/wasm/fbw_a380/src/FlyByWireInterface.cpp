@@ -32,11 +32,11 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  bool success = simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
-                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
-                                     idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+  bool success = simConnectInterface.connect(
+      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, secDisabled, facDisabled,
+      throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(), idMaximumSimulationRate->get(),
+      limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
     std::cout << "WASM: Request data failed!" << std::endl;
@@ -73,6 +73,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
+  // get sim data
+  SimData simData = simConnectInterface.getSimData();
+
   // update performance monitoring
   result &= updatePerformanceMonitoring(sampleTime);
 
@@ -86,10 +89,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= handleFcuInitialization(calculatedSampleTime);
 
   // do not process laws in pause or slew
-  if (simConnectInterface.getSimData().slew_on) {
+  if (simData.slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
+  } else if (pauseDetected || simData.cameraState >= 10.0 || !idIsReady->get() || simData.simulationTime < 2) {
     return result;
   }
 
@@ -154,11 +157,14 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update FO side with FO Sync ON
   result &= updateFoSide(calculatedSampleTime);
 
-  // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  // do not further process when active pause is on
+  if (!simConnectInterface.isSimInActivePause()) {
+    // update flight data recorder
+    flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  }
 
   // if default AP is on -> disconnect it
-  if (simConnectInterface.getSimData().autopilot_master_on) {
+  if (simData.autopilot_master_on) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::AUTOPILOT_OFF);
   }
 
@@ -1265,6 +1271,11 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
   SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
@@ -1485,6 +1496,11 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 }
 
 bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
@@ -1745,6 +1761,11 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 // }
 
 bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInputRudderTrim trimInput = simConnectInterface.getSimInputRudderTrim();
