@@ -96,7 +96,7 @@ const ElecPump = ({ x, y, label, side, systemPressureSwitch }: ElecPumpProps) =>
             <text x={isGreen ? 21 : -35} y={10} className={`F25 ${triangleColor === 'Amber' ? 'Amber' : 'White'}`}>
                 {label}
             </text>
-            <path d={`m 0 0 l ${isGreen ? '' : '-'}13 -9 l 0 18 z`} className={`${triangleColor} ${isElecPumpActive ? `${triangleColor}Fill` : ''} SW3`} />
+            <path d={`m 0 0 l ${isGreen ? '' : '-'}13 -9 l 0 18 z`} className={`${triangleColor} ${triangleColor}Fill SW3`} />
             <path d={`m 0 0 h ${isGreen ? '-30' : '27'}`} className={`${triangleColor} SW2 ${isElecPumpActive && systemPressureSwitch ? '' : 'Hide'}`} />
             <text x={-14} y={label === 'A' ? -14 : 34} className={isOverheat ? 'Amber F19' : 'Hide'}>OVHT</text>
         </g>
