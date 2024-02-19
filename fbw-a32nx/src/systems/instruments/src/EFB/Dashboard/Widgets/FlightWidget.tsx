@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AircraftType, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
@@ -136,7 +136,7 @@ export const FlightWidget = () => {
                         {' '}
                         |
                         {' '}
-                        {'A320-251N'}
+                        {airframe === AircraftType.A320_251N ? 'A320-251N' : 'A380-842'}
                     </h1>
                 )}
             </div>
