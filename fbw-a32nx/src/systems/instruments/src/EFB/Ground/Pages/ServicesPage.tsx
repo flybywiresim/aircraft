@@ -3,13 +3,12 @@
 
 /* eslint-disable no-console */
 import React, { useState } from 'react';
-import { AircraftType } from '@flybywiresim/fbw-sdk';
+import { AircraftType, useSimVar } from '@flybywiresim/fbw-sdk';
 import { A380Services } from './Services/A380_842/A380Services';
 import { A320Services } from './Services/A320_251N/A320Services';
-import { getAirframeType } from '../../Efb';
 
 export const ServicesPage = () => {
-    const [airframe] = useState(getAirframeType());
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum')
 
     switch (airframe) {
     case AircraftType.A380_842:

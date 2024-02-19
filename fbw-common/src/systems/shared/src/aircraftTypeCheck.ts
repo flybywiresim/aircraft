@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export enum AircraftType {
-    A320_251N = 0,
-    A380_842 = 1
+    Unknown = 0,
+    A320_251N = 1,
+    A380_842 = 2
 }
 
 /**
@@ -21,6 +22,7 @@ export function getAircraftType(): string {
     case AircraftType.A380_842:
         aircraft = 'a380x';
         break;
+    case AircraftType.Unknown:
     default:
         aircraft = 'other';
     }

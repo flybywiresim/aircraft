@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { AircraftType, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { AircraftType, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
@@ -71,7 +71,7 @@ export const FlightWidget = () => {
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
-    const [airframe] = useState(getAirframeType());
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
     const {
         schedIn,

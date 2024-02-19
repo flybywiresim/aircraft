@@ -5,7 +5,6 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
 import { AircraftType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { getAirframeType } from '../../../Efb';
 import { A320Payload } from './A320_251N/A320Payload';
 import { A380Payload } from './A380_842/A380Payload';
 import { useAppSelector } from '../../../Store/store';
@@ -26,8 +25,9 @@ export const Payload = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
-    switch (getAirframeType()) {
+    switch (airframe) {
     case AircraftType.A380_842:
         return (
             <A380Payload
