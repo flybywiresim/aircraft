@@ -1394,9 +1394,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
   prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
@@ -1608,9 +1608,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
   secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
   secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
   secs[secIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
   secs[secIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
