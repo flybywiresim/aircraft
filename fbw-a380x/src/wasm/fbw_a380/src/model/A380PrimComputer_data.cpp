@@ -3326,7 +3326,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
+  0.25,
+
   0.0,
+
+  0.25,
 
   0.0,
 

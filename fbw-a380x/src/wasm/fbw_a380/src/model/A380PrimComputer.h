@@ -63,7 +63,7 @@ class A380PrimComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_g;
+    real_T eventTime_d;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_b;
@@ -81,7 +81,7 @@ class A380PrimComputer final
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
     boolean_T sProtActive;
-    boolean_T eventTime_not_empty_a;
+    boolean_T eventTime_not_empty_e;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_al4;
@@ -483,7 +483,9 @@ class A380PrimComputer final
     real_T Gain4_Gain;
     real_T Gain5_Gain;
     real_T Constant8_Value_d;
+    real_T Gain_Gain_a;
     real_T Constant_Value_g;
+    real_T Gain_Gain_g;
     real_T Constant_Value_af;
     real32_T Constant10_Value_l;
     real32_T Constant9_Value_m;
