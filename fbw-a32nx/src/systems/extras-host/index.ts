@@ -47,8 +47,6 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
 
-    private readonly syncThrottler: UpdateThrottler;
-
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -71,8 +69,6 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
         this.flightPlanTest = new FlightPlanTest(this.bus);
         this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
-
-        this.syncThrottler = new UpdateThrottler(5000);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -112,9 +108,6 @@ class ExtrasHost extends BaseInstrument {
             this.gameState = gs;
         } else {
             this.simVarPublisher.onUpdate();
-            if (this.syncThrottler.canUpdate(this.deltaTime) > 0) {
-                this.flightPlanAsoboSync.update();
-            }
         }
 
         this.versionCheck.update();
