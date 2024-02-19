@@ -93,7 +93,7 @@
     - Bool
     - True when the AC ESS FEED push button is NORMAL
 
-- A380X_OVHD_BAT_DISPLAY_SELECTOR_KNOB
+- A380X_OVHD_ELEC_BAT_SELECTOR_KNOB
     - Number
     - The position of the battery display knob from left to right 
     - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4

@@ -17,16 +17,13 @@
       "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
 
+      "A380X.TOOLTIPS.STATE_ESS": "ESS",
+      "A380X.TOOLTIPS.STATE_APU": "APU",
+      "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Battery Voltage Selector",
+      "A380X.TOOLTIPS.BAT_SELECTOR_ACTION":  "Select the battery voltage to display",
+
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB": "Battery Voltage Indicator Selector Knob",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_ESS": "Shows the voltage of the ESS battery",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_APU": "Shows the voltage of the APU battery",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_OFF":  "Shows no valid voltage (00.0V)",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT1": "Shows the voltage of battery 1",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT2": "Shows the voltage of battery 2"
-
     }
   }
 }
