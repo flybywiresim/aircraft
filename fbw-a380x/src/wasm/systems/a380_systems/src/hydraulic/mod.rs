@@ -70,6 +70,8 @@ mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod brakes;
 
+use brakes::A380AutobrakeController;
+
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
 
@@ -1921,7 +1923,7 @@ impl A380Hydraulic {
         context: &UpdateContext,
         engines: [&impl Engine; 4],
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &A380AutobrakePanel,
+        autobrake_panel: &mut A380AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -2196,7 +2198,7 @@ impl A380Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &A380AutobrakePanel,
+        autobrake_panel: &mut A380AutobrakePanel,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
@@ -3960,7 +3962,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
         alternate_circuit: &BrakeCircuit,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
-        autobrake_panel: &A380AutobrakePanel,
+        autobrake_panel: &mut A380AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -4268,275 +4270,6 @@ impl SimulationElement for A380BrakingForce {
 
         self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
         self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
-    }
-}
-
-/// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
-/// that we expect for the plane
-pub struct A380AutobrakeController {
-    armed_mode_id: VariableIdentifier,
-    armed_mode_id_set: VariableIdentifier,
-    decel_light_id: VariableIdentifier,
-    active_id: VariableIdentifier,
-    ground_spoilers_out_sec1_id: VariableIdentifier,
-    ground_spoilers_out_sec2_id: VariableIdentifier,
-    ground_spoilers_out_sec3_id: VariableIdentifier,
-    external_disarm_event_id: VariableIdentifier,
-
-    deceleration_governor: AutobrakeDecelerationGovernor,
-
-    target: Acceleration,
-    mode: AutobrakeMode,
-
-    arming_is_allowed_by_bcu: bool,
-    left_brake_pedal_input: Ratio,
-    right_brake_pedal_input: Ratio,
-
-    ground_spoilers_are_deployed: bool,
-    last_ground_spoilers_are_deployed: bool,
-
-    should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
-    should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
-
-    external_disarm_event: bool,
-}
-impl A380AutobrakeController {
-    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
-
-    // Dynamic decel target map versus time for any mode that needs it
-    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 4.5];
-
-    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
-
-    const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
-    const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
-
-    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
-    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
-
-    fn new(context: &mut InitContext) -> A380AutobrakeController {
-        A380AutobrakeController {
-            armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
-            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
-            decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
-            active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
-            ground_spoilers_out_sec1_id: context
-                .get_identifier("SEC_1_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec2_id: context
-                .get_identifier("SEC_2_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec3_id: context
-                .get_identifier("SEC_3_GROUND_SPOILER_OUT".to_owned()),
-            external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
-
-            deceleration_governor: AutobrakeDecelerationGovernor::new(),
-            target: Acceleration::new::<meter_per_second_squared>(0.),
-            mode: AutobrakeMode::NONE,
-            arming_is_allowed_by_bcu: context.is_in_flight(),
-            left_brake_pedal_input: Ratio::new::<percent>(0.),
-            right_brake_pedal_input: Ratio::new::<percent>(0.),
-            ground_spoilers_are_deployed: false,
-            last_ground_spoilers_are_deployed: false,
-            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
-                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            )
-            .starting_as(context.is_in_flight(), false),
-            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
-                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            )
-            .starting_as(context.is_in_flight()),
-            external_disarm_event: false,
-        }
-    }
-
-    fn spoilers_retracted_during_this_update(&self) -> bool {
-        !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
-    }
-
-    fn brake_output(&self) -> Ratio {
-        Ratio::new::<ratio>(self.deceleration_governor.output())
-    }
-
-    fn determine_mode(
-        &mut self,
-        context: &UpdateContext,
-        autobrake_panel: &A380AutobrakePanel,
-    ) -> AutobrakeMode {
-        if self.should_disarm(context) {
-            autobrake_panel.disarm_knob()
-        } else {
-            match autobrake_panel.selected_mode() {
-                Some(mode) if self.mode == mode => A380AutobrakePosition::NONE,
-                Some(mode)
-                    if mode != AutobrakeMode::MAX
-                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
-                {
-                    mode
-                }
-                Some(_) | None => self.mode,
-            }
-        }
-    }
-
-    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm(context)
-    }
-
-    fn is_armed(&self) -> bool {
-        self.mode != AutobrakeMode::NONE
-    }
-
-    fn is_decelerating(&self) -> bool {
-        match self.mode {
-            AutobrakeMode::NONE => false,
-            AutobrakeMode::LOW | AutobrakeMode::MED => {
-                self.deceleration_demanded()
-                    && self
-                        .deceleration_governor
-                        .is_on_target(Ratio::new::<percent>(
-                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
-                        ))
-            }
-            _ => {
-                self.deceleration_demanded()
-                    && self.deceleration_governor.decelerating_at_or_above_rate(
-                        Acceleration::new::<meter_per_second_squared>(
-                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
-                        ),
-                    )
-            }
-        }
-    }
-
-    fn deceleration_demanded(&self) -> bool {
-        self.deceleration_governor.is_engaged()
-            && self.target.get::<meter_per_second_squared>() < 0.
-    }
-
-    fn should_disarm_due_to_pedal_input(&self) -> bool {
-        match self.mode {
-            AutobrakeMode::NONE => false,
-            AutobrakeMode::LOW | AutobrakeMode::MED => {
-                self.left_brake_pedal_input > Ratio::new::<percent>(53.)
-                    || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
-                    || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
-                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
-            }
-            AutobrakeMode::MAX => {
-                self.left_brake_pedal_input > Ratio::new::<percent>(77.)
-                    || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
-                    || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
-                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
-            }
-            _ => false,
-        }
-    }
-
-    fn should_disarm(&self, context: &UpdateContext) -> bool {
-        // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
-        // an unintended disarm is not happening
-        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
-            || self.spoilers_retracted_during_this_update()
-            || self.should_disarm_after_time_in_flight.output()
-            || self.external_disarm_event
-            || (self.mode == AutobrakeMode::MAX
-                && self.should_reject_max_mode_after_time_in_flight.output())
-    }
-
-    fn calculate_target(&mut self) -> Acceleration {
-        Acceleration::new::<meter_per_second_squared>(match self.mode {
-            AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
-            AutobrakeMode::LOW => interpolation(
-                &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
-                &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
-                self.deceleration_governor.time_engaged().as_secs_f64(),
-            ),
-            AutobrakeMode::MED => interpolation(
-                &Self::MED_MODE_DECEL_PROFILE_TIME_S,
-                &Self::MED_MODE_DECEL_PROFILE_ACCEL_MS2,
-                self.deceleration_governor.time_engaged().as_secs_f64(),
-            ),
-            AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
-            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
-        })
-    }
-
-    fn update_input_conditions(
-        &mut self,
-        context: &UpdateContext,
-        allow_arming: bool,
-        pedal_input_left: Ratio,
-        pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
-    ) {
-        let in_flight_lgciu1 =
-            !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
-        let in_flight_lgciu2 =
-            !lgciu2.right_gear_compressed(false) && !lgciu2.left_gear_compressed(false);
-
-        self.should_disarm_after_time_in_flight
-            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
-        self.should_reject_max_mode_after_time_in_flight
-            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
-
-        self.arming_is_allowed_by_bcu = allow_arming;
-        self.left_brake_pedal_input = pedal_input_left;
-        self.right_brake_pedal_input = pedal_input_right;
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        autobrake_panel: &A380AutobrakePanel,
-        allow_arming: bool,
-        pedal_input_left: Ratio,
-        pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
-    ) {
-        self.update_input_conditions(
-            context,
-            allow_arming,
-            pedal_input_left,
-            pedal_input_right,
-            lgciu1,
-            lgciu2,
-        );
-        self.mode = self.determine_mode(context, autobrake_panel);
-
-        self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor(context));
-
-        self.target = self.calculate_target();
-        self.deceleration_governor.update(context, self.target);
-    }
-}
-impl SimulationElement for A380AutobrakeController {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.armed_mode_id, self.mode as u8 as f64);
-        writer.write(&self.armed_mode_id_set, -1.);
-        writer.write(&self.decel_light_id, self.is_decelerating());
-        writer.write(&self.active_id, self.deceleration_demanded());
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
-        let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
-        let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = sec_1_gnd_splrs_out
-            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out)
-            || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
-        self.external_disarm_event = reader.read(&self.external_disarm_event_id);
-
-        // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
-        if readed_mode >= 0.0 {
-            self.mode = readed_mode.into();
-        }
     }
 }
 
@@ -6811,7 +6544,7 @@ mod tests {
             engine_4: TrentEngine,
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
-            autobrake_panel: AutobrakePanel,
+            autobrake_panel: A380AutobrakePanel,
             engine_fire_overhead: EngineFireOverheadPanel<4>,
 
             landing_gear: LandingGear,
@@ -6860,7 +6593,7 @@ mod tests {
                     engine_4: TrentEngine::new(context, 4),
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
-                    autobrake_panel: AutobrakePanel::new(context),
+                    autobrake_panel: A380AutobrakePanel::new(context),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
                     landing_gear: LandingGear::new(context),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
@@ -7133,7 +6866,7 @@ mod tests {
                         &self.engine_4,
                     ],
                     &self.overhead,
-                    &self.autobrake_panel,
+                    &mut self.autobrake_panel,
                     &self.engine_fire_overhead,
                     &self.lgcius,
                     &self.pneumatics,
