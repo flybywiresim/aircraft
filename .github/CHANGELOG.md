@@ -68,6 +68,7 @@
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
 1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
 1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
 
 ## 0.11.0
