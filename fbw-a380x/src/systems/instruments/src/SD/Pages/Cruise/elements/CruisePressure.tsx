@@ -4,10 +4,8 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
 export const CruisePressure = () => {
-    // The A380 doesn't have manual landing elevation selector
-    // Fixme: this value should come from the pressurization system but for now we can take it directly from the FMS
     const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
-    const autoMode = true; // TODO useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
+    const autoMode = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('Green');
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
