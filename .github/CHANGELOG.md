@@ -69,6 +69,7 @@
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
 1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
 1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
 
 ## 0.11.0
 
