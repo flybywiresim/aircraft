@@ -95,6 +95,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
 
+    private renderedFplnLines: NodeReference<FplnLegLine>[] = [];
+
     protected onNewData(): void {
         if (!this.loadedFlightPlan) {
             return;
@@ -364,9 +366,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         // Delete all lines only if re-render is neccessary.
         if (shouldOnlyUpdatePredictions === false && this.linesDivRef.getOrDefault()) {
+            this.renderedFplnLines.forEach((line) => {
+                line.instance.destroy();
+            });
             while (this.linesDivRef.instance.firstChild) {
                 this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
             }
+            this.renderedFplnLines = [];
         }
 
         const untilLegIndex = Math.min(this.lineData.length, startAtIndexChecked + (this.tmpyActive.get() ? 8 : 9));
@@ -409,9 +415,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 this.renderedLineData[lineIndex].set(clonedLineData);
 
                 if (shouldOnlyUpdatePredictions === false && this?.renderedLineData[lineIndex]?.get() !== null && this.linesDivRef.getOrDefault()) {
-                    const node = (
+                    let lineRef: NodeReference<FplnLegLine> = FSComponent.createRef<FplnLegLine>();
+                    const node: VNode = (
                         <FplnLegLine
                             data={this.renderedLineData[lineIndex]}
+                            ref={lineRef}
                             previousRow={Subject.create(previousRow)}
                             openRevisionsMenuCallback={() => {
                                 const line = this.lineData[drawIndex];
@@ -440,6 +448,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         />
                     );
                     FSComponent.render(node, this.linesDivRef.instance);
+                    this.renderedFplnLines.push(lineRef);
                 }
             }
         }
@@ -1037,6 +1046,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         });
 
         this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', () => this.props.callbacks.rta());
+    }
+
+    public destroy(): void {
+        this.subs.forEach((sub) => sub.destroy());
+        this.lineColor.destroy();
+        super.destroy();
     }
 
     private onNewData(data: FplnLineDisplayData): void {
