@@ -4,10 +4,9 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
 export const CruisePressure = () => {
+    // TODO: Handle landing elevation invalid SSM
     const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
-    const autoMode = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'Bool', 1000);
-    const [ldgElevValue, setLdgElevValue] = useState('XX');
-    const [cssLdgElevName, setCssLdgElevName] = useState('Green');
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'Bool', 1000);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
@@ -18,18 +17,14 @@ export const CruisePressure = () => {
 
     const deltaPress = splitDecimals(deltaPsi);
 
-    useEffect(() => {
-        const ldgElevValue = Math.round(landingElev.value / 50) * 50;
-        setLdgElevValue(ldgElevValue.toString());
-        setCssLdgElevName('Green');
-    }, [ldgElevValue]);
+    const ldgElevValue = Math.round(landingElev.value / 50) * 50;
 
     return (
         <>
             <g id="LandingElevation" className={autoMode ? 'Show' : 'Hide'}>
                 <text className="F26 MiddleAlign White LS1" x="470" y="355">LDG ELEVN</text>
 
-                <text id="LandingElevation" className={`F29 EndAlign ${cssLdgElevName}`} x="653" y="359">{ldgElevValue}</text>
+                <text id="LandingElevation" className={`F29 EndAlign Green`} x="653" y="359">{ldgElevValue}</text>
                 <text className="F22 Cyan" x="658" y="359">FT</text>
             </g>
 
