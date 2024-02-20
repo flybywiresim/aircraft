@@ -21,6 +21,7 @@ import {
     setMapRange,
     TScreenCoordinates,
 } from '../../Store/features/pushback';
+import { getAirframeType } from '../../Efb';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -44,20 +45,26 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
     ].join(' ');
 };
 
-const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
-    <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
-        <path
-            d={describeArc(turningRadius,
-                turningRadius,
-                turningRadius,
-                0,
-                45 + 45 * (19 / turningRadius))}
-            fill="none"
-            stroke="white"
-            strokeWidth="2"
-        />
-    </svg>
-);
+const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => {
+    // 19 seems to be an arbitrary number to make the arc look good - initial developer did not document this
+    const magicNumber = 45 + 45 * (19 / turningRadius);
+    return (
+        <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
+            <path
+                d={describeArc(
+                    turningRadius,
+                    turningRadius,
+                    turningRadius,
+                    0,
+                    magicNumber,
+                )}
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+            />
+        </svg>
+    );
+};
 
 export const PushbackMap = () => {
     const dispatch = useAppDispatch();
@@ -69,9 +76,14 @@ export const PushbackMap = () => {
     const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'bool', 50);
     const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'bool', 50);
 
-    // This constant has been determined via testing - needs more "thought"
-    // It describes the ratio between the map and real distance
-    const someConstant = 0.48596;
+    // Tuning-factor for the turning radius indicator - as there is not relly an easy way to calculate the curvature
+    // of the turning indicator, this factor is used to "tune" the indicator to match the actual turning radius
+    const [turnIndicatorTuningFactor, setTurnIndicatorTuningFactor] = useSimVar(
+        'L:A32NX_PUSHBACK_TURN_INDICATOR_TUNING_FACTOR',
+        'number',
+        250,
+    );
+    const turnIndicatorTuningDefault = getAirframeType() === 'A320_251N' ? 1.35 : 1.35; // determined by testing
 
     // Reducer state for pushback
     const {
@@ -80,6 +92,16 @@ export const PushbackMap = () => {
         actualMapLatLon,
         aircraftIconPosition,
     } = useAppSelector((state) => state.pushback.pushbackState);
+
+    // This constant has been determined via testing - needs more "thought"
+    // It describes the ratio between the map and real distance
+    const someConstant = 0.48596;
+
+    // Aircraft wheelbase in meters
+    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2021-11/Airbus-Commercial-Aircraft-AC-A320.pdf
+    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2022-02/Airbus-A380-Facts-and-Figures-February-2022.pdf
+    const aircraftWheelBase = getAirframeType() === 'A380_842' ? 31.9 : 12.64;
+    const aircraftLengthMeter = getAirframeType() === 'A380_842' ? 72.72 : 37.57;
 
     // Map
     const [mouseDown, setMouseDown] = useState(false);
@@ -108,10 +130,9 @@ export const PushbackMap = () => {
     };
 
     // Calculates the size in pixels based on the real A320 length and the current zoom
-    const a320IconSize = (mapRange) => {
+    const aircraftIconSize = (mapRange: number) => {
         const pixelPerMeter = someConstant * 10; // at 0.1 range
-        const a320LengthMeter = 37.57;
-        return MathUtils.clamp(a320LengthMeter * pixelPerMeter * (0.1 / mapRange), 15, 1000);
+        return MathUtils.clamp(aircraftLengthMeter * pixelPerMeter * (0.1 / mapRange), 15, 1000);
     };
 
     // Calculates turning radius for the Turning prediction arc
@@ -119,8 +140,11 @@ export const PushbackMap = () => {
         const tanDeg = Math.tan(turnAngle * Math.PI / 180);
         return wheelBase / tanDeg;
     };
+    const mapRangeCompensationScalar = mapRange / someConstant;
+    const radius = calculateTurningRadius(aircraftWheelBase, Math.abs(tugCmdHdgFactor * 90));
+    const turningRadius = (radius / mapRangeCompensationScalar) * turnIndicatorTuningFactor;
 
-    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
+    // Computes the offset from geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
     const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
         latLon: Coordinates, d: TScreenCoordinates,
@@ -156,6 +180,9 @@ export const PushbackMap = () => {
 
     // called once when loading and unloading the page
     useEffect(() => {
+        // set the tuning factor to a value determined by testing
+        setTurnIndicatorTuningFactor(turnIndicatorTuningDefault);
+
         let timeOutID: any = 0;
         if (centerPlaneMode) {
             // setTimeout required because when loading on runway it did not
@@ -195,14 +222,11 @@ export const PushbackMap = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
-    const mapRangeCompensationScalar = mapRange / someConstant;
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCmdHdgFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCmdSpdFactor) / 0.2);
-
     return (
         <>
             {/* Map Container */}
             <div
-                className="flex overflow-hidden relative flex-col flex-grow space-y-4 h-[430px] rounded-lg border-2 border-theme-accent"
+                className="relative flex h-[430px] grow flex-col space-y-4 overflow-hidden rounded-lg border-2 border-theme-accent"
                 onMouseDown={(e) => {
                     setMouseDown(true);
                     setDragStartCoords({ x: e.pageX, y: e.pageY });
@@ -234,16 +258,16 @@ export const PushbackMap = () => {
                 )}
 
                 {/* Aircraft and Turning Radius Indicator */}
-                <div className="flex absolute inset-0 justify-center items-center">
+                <div className="absolute inset-0 flex items-center justify-center">
                     {centerPlaneMode && !Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
                         && (
                             <div
                                 className="absolute"
                                 style={{
                                     transform: `rotate(-90deg) 
-                                scaleX(${tugCmdSpdFactor >= 0 ? 1 : -1}) 
-                                scaleY(${tugCmdHdgFactor >= 0 ? 1 : -1}) 
-                                translateY(${turningRadius}px)`,
+                                    scaleX(${tugCmdSpdFactor >= 0 ? 1 : -1}) 
+                                    scaleY(${tugCmdHdgFactor >= 0 ? 1 : -1}) 
+                                    translateY(${turningRadius}px)`,
                                 }}
                             >
                                 <TurningRadiusIndicator turningRadius={turningRadius} />
@@ -252,22 +276,22 @@ export const PushbackMap = () => {
                     <IconPlane
                         className="text-theme-highlight"
                         style={{ transform: `rotate(-90deg) translateY(${Math.sign(aircraftIconPosition.x) * Math.min(1000, Math.abs(aircraftIconPosition.x))}px) translateX(${Math.sign(aircraftIconPosition.y) * Math.min(1000, Math.abs(aircraftIconPosition.y))}px)` }}
-                        size={a320IconSize(mapRange)}
+                        size={aircraftIconSize(mapRange)}
                         strokeLinejoin="miter"
                         stroke={1}
                     />
                 </div>
 
                 {/* Map Controls */}
-                <div className="flex overflow-hidden absolute right-6 bottom-6 z-30 flex-col rounded-md cursor-pointer">
+                <div className="absolute bottom-6 right-6 z-30 flex cursor-pointer flex-col overflow-hidden rounded-md">
                     <TooltipWrapper text={t('Pushback.TT.CenterPlaneMode')}>
                         <button
                             type="button"
                             onClick={() => handleCenterPlaneModeChange()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <IconPlane
-                                className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
+                                className={`-rotate-90 text-white${centerPlaneMode && 'fill-current'}`}
                                 size={40}
                                 strokeLinejoin="round"
                             />
@@ -277,7 +301,7 @@ export const PushbackMap = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomIn()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <ZoomIn size={40} />
                         </button>
@@ -286,7 +310,7 @@ export const PushbackMap = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomOut()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                         >
                             <ZoomOut size={40} />
                         </button>
