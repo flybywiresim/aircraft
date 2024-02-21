@@ -2236,6 +2236,8 @@ impl A380Hydraulic {
             engine1,
             engine2,
             adirs,
+            self.left_spoilers.ground_spoilers_are_requested()
+                && self.right_spoilers.ground_spoilers_are_requested(),
         );
 
         self.pushback_tug.update(context);
@@ -3972,6 +3974,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
         engine1: &impl Engine,
         engine2: &impl Engine,
         adirs: &impl AdirsMeasurementOutputs,
+        placeholder_ground_spoilers_out: bool,
     ) {
         self.update_steering_demands(lgciu1, engine1, engine2);
 
@@ -3986,6 +3989,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             self.right_brake_pilot_input,
             lgciu1,
             lgciu2,
+            placeholder_ground_spoilers_out,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -6274,6 +6278,11 @@ impl SpoilerGroup {
     fn positions(&self) -> &[f64; 8] {
         &self.spoiler_positions
     }
+
+    fn ground_spoilers_are_requested(&self) -> bool {
+        self.hydraulic_controllers[0].requested_position() > Ratio::new::<ratio>(0.1)
+            && self.hydraulic_controllers[1].requested_position() > Ratio::new::<ratio>(0.1)
+    }
 }
 impl SimulationElement for SpoilerGroup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6497,7 +6506,7 @@ mod tests {
             }
         }
         impl AdirsMeasurementOutputs for A380TestAdirus {
-            fn is_fully_aligned(&self, adiru_number: usize) -> bool {
+            fn is_fully_aligned(&self, _: usize) -> bool {
                 self.any_aligned
             }
 
@@ -7647,16 +7656,14 @@ mod tests {
             }
 
             fn set_deploy_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", true);
-                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", true);
-                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", true);
+                self = self.set_right_spoilers_out();
+                self = self.set_left_spoilers_out();
                 self
             }
 
             fn set_retract_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", false);
-                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", false);
-                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", false);
+                self = self.set_right_spoilers_in();
+                self = self.set_left_spoilers_in();
                 self
             }
 
@@ -7892,7 +7899,7 @@ mod tests {
                 self
             }
 
-            fn _set_right_spoilers_in(mut self) -> Self {
+            fn set_right_spoilers_in(mut self) -> Self {
                 self = self._set_right_spoiler_in(1);
                 self = self._set_right_spoiler_in(2);
                 self = self._set_right_spoiler_in(3);
@@ -7916,7 +7923,7 @@ mod tests {
                 self
             }
 
-            fn _set_left_spoilers_in(mut self) -> Self {
+            fn set_left_spoilers_in(mut self) -> Self {
                 self = self._set_left_spoiler_in(1);
                 self = self._set_left_spoiler_in(2);
                 self = self._set_left_spoiler_in(3);
@@ -9508,7 +9515,7 @@ mod tests {
 
         #[test]
         // Should disable with one pedals > 42° over max range of 79.4° thus 52%
-        fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
+        fn autobrakes_l2_disengage_at_52_on_one_pedal_input() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -9553,7 +9560,7 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_max_disarm_after_10s_in_flight() {
+        fn autobrakes_rto_disarm_after_10s_in_flight() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()

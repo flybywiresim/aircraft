@@ -642,9 +642,6 @@ impl PressSingleSignalButton {
     }
 
     pub fn is_pressed(&self) -> bool {
-        if self.is_pressed {
-            println!("PRESSSSSSSEEEEEEEDDDDDDDD")
-        }
         self.is_pressed
     }
 }

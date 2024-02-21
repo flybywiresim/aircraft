@@ -1,69 +1,24 @@
 use systems::{
-    accept_iterable,
-    engine::Engine,
-    hydraulic::{
-        aerodynamic_model::AerodynamicModel,
-        brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
-            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
-        },
-        bypass_pin::BypassPin,
-        cargo_doors::{CargoDoor, HydraulicDoorController},
-        flap_slat::FlapSlatAssembly,
-        landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
-        linear_actuator::{
-            Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
-            ElectroHydrostaticBackup, ElectroHydrostaticPowered, HydraulicAssemblyController,
-            HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
-            LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
-        },
-        nose_steering::{
-            SteeringActuator, SteeringAngleLimiter, SteeringController, SteeringRatioToAngle,
-        },
-        pumps::PumpCharacteristics,
-        pushback::PushbackTug,
-        trimmable_horizontal_stabilizer::{
-            TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
-        },
-        Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
-        HydraulicCircuitController, HydraulicPressureSensors, ManualPump, PressureSwitch,
-        PressureSwitchType, PriorityValve, PumpController, Reservoir,
-    },
-    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
-    overhead::{
-        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton,
-        PressSingleSignalButton,
-    },
+    hydraulic::brake_circuit::AutobrakeDecelerationGovernor,
+    overhead::PressSingleSignalButton,
     shared::{
-        interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
+        interpolation, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, LgciuInterface,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::degree,
-    angular_velocity::{radian_per_second, revolution_per_minute},
-    electric_current::ampere,
     f64::*,
-    length::meter,
-    mass::kilogram,
-    pressure::psi,
     ratio::{percent, ratio},
-    velocity::knot,
-    volume::{cubic_inch, gallon, liter},
-    volume_rate::gallon_per_second,
 };
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum A380AutobrakeKnobPosition {
     DISARM = 0,
     LOW = 1,
@@ -86,7 +41,7 @@ impl From<f64> for A380AutobrakeKnobPosition {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum A380AutobrakeMode {
     DISARM = 0,
     LOW = 1,
@@ -118,6 +73,8 @@ pub struct A380AutobrakePanel {
 
     selected_mode: A380AutobrakeKnobPosition,
     rto_button: PressSingleSignalButton,
+
+    mode_has_changed: bool,
 }
 impl A380AutobrakePanel {
     pub fn new(context: &mut InitContext) -> A380AutobrakePanel {
@@ -126,11 +83,17 @@ impl A380AutobrakePanel {
 
             selected_mode: A380AutobrakeKnobPosition::DISARM,
             rto_button: PressSingleSignalButton::new(context, "AUTOBRK_RTO_ARM"),
+
+            mode_has_changed: true,
         }
     }
 
     pub fn selected_mode(&self) -> A380AutobrakeKnobPosition {
         self.selected_mode
+    }
+
+    pub fn selected_mode_has_changed(&self) -> bool {
+        self.mode_has_changed
     }
 
     pub fn rto_pressed(&self) -> bool {
@@ -146,9 +109,16 @@ impl SimulationElement for A380AutobrakePanel {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         let raw_read: f64 = reader.read(&self.selected_mode_id);
-        self.selected_mode = raw_read.into();
+        let new_mode: A380AutobrakeKnobPosition = raw_read.into();
 
-        println!("PANEL Reading sel mode: {:1}", raw_read);
+        self.mode_has_changed = self.selected_mode != new_mode;
+
+        self.selected_mode = new_mode;
+
+        // println!(
+        //     "PANEL Reading sel mode: {:?} HAS CHANGED {:?}",
+        //     new_mode, self.mode_has_changed
+        // );
     }
 }
 
@@ -172,8 +142,8 @@ impl A380AutobrakeKnobSelectorSolenoid {
         }
     }
 
-    fn disarm(&mut self) {
-        self.disarm_request = self.is_powered;
+    fn disarm(&mut self, solenoid_should_disarm: bool) {
+        self.disarm_request = self.is_powered && solenoid_should_disarm;
     }
 }
 impl SimulationElement for A380AutobrakeKnobSelectorSolenoid {
@@ -190,15 +160,14 @@ impl SimulationElement for A380AutobrakeKnobSelectorSolenoid {
 /// that we expect for the plane
 pub struct A380AutobrakeController {
     armed_mode_id: VariableIdentifier,
-    armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
-    ground_spoilers_out_sec1_id: VariableIdentifier,
-    ground_spoilers_out_sec2_id: VariableIdentifier,
-    ground_spoilers_out_sec3_id: VariableIdentifier,
+    rto_mode_armed_id: VariableIdentifier,
+
     external_disarm_event_id: VariableIdentifier,
 
     deceleration_governor: AutobrakeDecelerationGovernor,
+    decelerating_light: bool,
 
     target: Acceleration,
     mode: A380AutobrakeMode,
@@ -218,6 +187,8 @@ pub struct A380AutobrakeController {
     autobrake_knob: A380AutobrakeKnobSelectorSolenoid,
 
     external_disarm_event: bool,
+
+    placeholder_ground_spoilers_out: bool,
 }
 impl A380AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: Duration = Duration::from_secs(10);
@@ -238,24 +209,22 @@ impl A380AutobrakeController {
     const RTO_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
 
-    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
-    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
+    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LANDING_MODE: f64 = 80.;
+    const MARGIN_PERCENT_TO_TARGET_TO_REMOVE_DECEL_IN_LANDING_MODE: f64 = 70.;
+    const TARGET_TO_SHOW_DECEL_IN_RTO_MS2: f64 = -2.7;
+    const TARGET_TO_REMOVE_DECEL_IN_RTO_MS2: f64 = -2.;
 
     pub fn new(context: &mut InitContext) -> A380AutobrakeController {
         A380AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
-            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
-            ground_spoilers_out_sec1_id: context
-                .get_identifier("SEC_1_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec2_id: context
-                .get_identifier("SEC_2_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec3_id: context
-                .get_identifier("SEC_3_GROUND_SPOILER_OUT".to_owned()),
+            rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
+
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
 
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
+            decelerating_light: false,
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: A380AutobrakeMode::DISARM,
             arming_is_allowed_by_bcu: context.is_in_flight(),
@@ -283,6 +252,8 @@ impl A380AutobrakeController {
             ),
 
             external_disarm_event: false,
+
+            placeholder_ground_spoilers_out: false,
         }
     }
 
@@ -304,27 +275,33 @@ impl A380AutobrakeController {
         autobrake_panel: &mut A380AutobrakePanel,
     ) -> A380AutobrakeMode {
         if self.should_disarm(context, &autobrake_panel) {
-            self.autobrake_knob.disarm();
+            self.autobrake_knob.disarm(true);
             self.nose_gear_was_compressed_once = false;
             return A380AutobrakeMode::DISARM;
         }
 
-        if autobrake_panel.rto_pressed()
-            && !self.should_reject_rto_mode_after_time_in_flight.output()
+        if self.mode == A380AutobrakeMode::RTO
+            || autobrake_panel.rto_pressed()
+                && !self.should_reject_rto_mode_after_time_in_flight.output()
         {
             if autobrake_panel.selected_mode() != A380AutobrakeKnobPosition::DISARM {
-                self.autobrake_knob.disarm();
+                self.autobrake_knob.disarm(true);
             }
 
             A380AutobrakeMode::RTO
         } else {
-            match autobrake_panel.selected_mode() {
-                A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
-                A380AutobrakeKnobPosition::LOW => A380AutobrakeMode::LOW,
-                A380AutobrakeKnobPosition::L1 => A380AutobrakeMode::L1,
-                A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
-                A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
-                A380AutobrakeKnobPosition::BTV => A380AutobrakeMode::BTV,
+            self.autobrake_knob.disarm(false);
+            if autobrake_panel.selected_mode_has_changed() {
+                match autobrake_panel.selected_mode() {
+                    A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
+                    A380AutobrakeKnobPosition::LOW => A380AutobrakeMode::LOW,
+                    A380AutobrakeKnobPosition::L1 => A380AutobrakeMode::L1,
+                    A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
+                    A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
+                    A380AutobrakeKnobPosition::BTV => A380AutobrakeMode::BTV,
+                }
+            } else {
+                self.mode
             }
         }
     }
@@ -335,6 +312,7 @@ impl A380AutobrakeController {
         autobrake_panel: &A380AutobrakePanel,
     ) -> bool {
         self.is_armed()
+            && self.ground_spoilers_are_deployed
             && (self.ground_spoilers_are_deployed_since_5s.output()
                 || self.nose_gear_was_compressed_once)
             && !self.should_disarm(context, autobrake_panel)
@@ -345,23 +323,53 @@ impl A380AutobrakeController {
     }
 
     fn is_decelerating(&self) -> bool {
+        self.decelerating_light
+    }
+
+    fn update_decelerating(&mut self) {
+        if !self.deceleration_demanded() {
+            self.decelerating_light = false;
+            return;
+        }
+
         match self.mode {
-            A380AutobrakeMode::DISARM => false,
-            A380AutobrakeMode::LOW | A380AutobrakeMode::L1 | A380AutobrakeMode::L2 => {
-                self.deceleration_demanded()
-                    && self
-                        .deceleration_governor
-                        .is_on_target(Ratio::new::<percent>(
-                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
-                        ))
+            A380AutobrakeMode::DISARM => self.decelerating_light = false,
+            A380AutobrakeMode::LOW
+            | A380AutobrakeMode::L1
+            | A380AutobrakeMode::L2
+            | A380AutobrakeMode::HIGH
+            | A380AutobrakeMode::BTV => {
+                if self
+                    .deceleration_governor
+                    .is_on_target(Ratio::new::<percent>(
+                        Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LANDING_MODE,
+                    ))
+                {
+                    self.decelerating_light = true;
+                } else if !self
+                    .deceleration_governor
+                    .is_on_target(Ratio::new::<percent>(
+                        Self::MARGIN_PERCENT_TO_TARGET_TO_REMOVE_DECEL_IN_LANDING_MODE,
+                    ))
+                {
+                    self.decelerating_light = false;
+                }
             }
             _ => {
-                self.deceleration_demanded()
-                    && self.deceleration_governor.decelerating_at_or_above_rate(
-                        Acceleration::new::<meter_per_second_squared>(
-                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
-                        ),
-                    )
+                if self
+                    .deceleration_governor
+                    .decelerating_at_or_above_rate(Acceleration::new::<meter_per_second_squared>(
+                        Self::TARGET_TO_SHOW_DECEL_IN_RTO_MS2,
+                    ))
+                {
+                    self.decelerating_light = true;
+                } else if !self.deceleration_governor.decelerating_at_or_above_rate(
+                    Acceleration::new::<meter_per_second_squared>(
+                        Self::TARGET_TO_REMOVE_DECEL_IN_RTO_MS2,
+                    ),
+                ) {
+                    self.decelerating_light = false;
+                }
             }
         }
     }
@@ -375,13 +383,17 @@ impl A380AutobrakeController {
         // Thresholds from A320, TBC for A380
         match self.mode {
             A380AutobrakeMode::DISARM => false,
-            A380AutobrakeMode::LOW | A380AutobrakeMode::L1 | A380AutobrakeMode::L2 => {
+            A380AutobrakeMode::LOW
+            | A380AutobrakeMode::L1
+            | A380AutobrakeMode::L2
+            | A380AutobrakeMode::HIGH
+            | A380AutobrakeMode::BTV => {
                 self.left_brake_pedal_input > Ratio::new::<percent>(53.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
                         && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
             }
-            A380AutobrakeMode::HIGH => {
+            A380AutobrakeMode::RTO => {
                 self.left_brake_pedal_input > Ratio::new::<percent>(77.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
@@ -399,7 +411,7 @@ impl A380AutobrakeController {
             || self.spoilers_retracted_during_this_update()
             || self.rto_mode_deselected_this_update(autobrake_panel)
             || self.should_disarm_after_time_in_flight.output()
-            || self.external_disarm_event
+            || (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO)
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
     }
@@ -483,7 +495,14 @@ impl A380AutobrakeController {
         pedal_input_right: Ratio,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
+        placeholder_ground_spoilers_out: bool,
     ) {
+        println!(
+            "AB spoilers {:?}  Decel time{:.1}",
+            placeholder_ground_spoilers_out,
+            self.deceleration_governor.time_engaged().as_secs_f64()
+        );
+
         self.update_input_conditions(
             context,
             allow_arming,
@@ -492,6 +511,7 @@ impl A380AutobrakeController {
             lgciu1,
             lgciu2,
         );
+
         self.mode = self.determine_mode(context, autobrake_panel);
 
         self.deceleration_governor
@@ -499,6 +519,9 @@ impl A380AutobrakeController {
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
+        self.update_decelerating();
+
+        self.placeholder_ground_spoilers_out = placeholder_ground_spoilers_out;
     }
 }
 impl SimulationElement for A380AutobrakeController {
@@ -510,23 +533,19 @@ impl SimulationElement for A380AutobrakeController {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
-        writer.write(&self.armed_mode_id_set, -1.);
         writer.write(&self.decel_light_id, self.is_decelerating());
         writer.write(&self.active_id, self.deceleration_demanded());
+        writer.write(&self.rto_mode_armed_id, self.mode == A380AutobrakeMode::RTO);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
-        let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
-        let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = sec_1_gnd_splrs_out
-            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out)
-            || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
+        self.ground_spoilers_are_deployed = self.placeholder_ground_spoilers_out;
+
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
+        let readed_mode = reader.read_f64(&self.armed_mode_id);
         if readed_mode >= 0.0 {
             self.mode = readed_mode.into();
         }

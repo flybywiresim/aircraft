@@ -92,9 +92,9 @@
                 <TOOLTIPID>ARM RTO</TOOLTIPID>
                 <DISABLE_SEQ1 />
                 <MOMENTARY />
-                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 ==</SEQ2_CODE>
-                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_RTO_ARMED)</SEQ2_CODE>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</LEFT_LEAVE_CODE>
             </UseTemplate>
 
             <!-- AUTO BRK selector knob -->
