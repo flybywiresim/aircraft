@@ -91,7 +91,9 @@
                 (L:A380X_EFIS_L_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_L_OPTION)
                 (L:A380X_EFIS_R_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_R_OPTION)
 
-                (L:A32NX_AUTOBRAKES_ARMED_MODE) (&gt;L:A380X_KNOB_SWITCHING_BRK_Position)
+                (L:A32NX_AUTOBRAKES_DISARM_KNOB_REQ) 1 == if{
+                    0 (&gt;L:A32NX_AUTOBRAKES_SELECTED_MODE)
+                }
 
                 (O:PrevPot7Value) s0
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) s1
@@ -2071,18 +2073,6 @@
         </Component>
 
         <Component ID="Front_Middle">
-            <UseTemplate Name="FBW_Push_Toggle">
-                <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
-                <PART_ID>BRKFAN</PART_ID>
-                <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
-                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                <SEQ1_CODE>(L:A32NX_BRAKES_HOT, Bool)</SEQ1_CODE>
-                <SEQ2_CODE>(L:A32NX_BRAKE_FAN, Bool)</SEQ2_CODE>
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake
-                    fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
-            </UseTemplate>
-
             <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
@@ -2112,57 +2102,6 @@
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
-                <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
-                <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
-                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE,
-                    Number) 1 == and</SEQ1_CODE>
-                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 1 ==</SEQ2_CODE>
-                <MOMENTARY />
-                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                <TOOLTIPID>Auto brake LOW</TOOLTIPID>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
-                <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
-                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE,
-                    Number) 2 == and</SEQ1_CODE>
-                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 2 ==</SEQ2_CODE>
-                <MOMENTARY />
-                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                <TOOLTIPID>Auto brake MEDIUM</TOOLTIPID>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
-                <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
-                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE,
-                    Number) 3 == and</SEQ1_CODE>
-                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 ==</SEQ2_CODE>
-                <MOMENTARY />
-                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
             <UseTemplate Name="FBW_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>

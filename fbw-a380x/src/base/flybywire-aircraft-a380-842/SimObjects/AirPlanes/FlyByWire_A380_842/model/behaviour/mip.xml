@@ -25,11 +25,11 @@
             <UseTemplate Name="ASOBO_GT_Switch_XStates">
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <WWISE_EVENT>turnknob</WWISE_EVENT>
-                <NUM_STATES>4</NUM_STATES>
+                <NUM_STATES>6</NUM_STATES>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                <SWITCH_POSITION_VAR>A380X_#NODE_ID#_Position</SWITCH_POSITION_VAR>
+                <SWITCH_POSITION_VAR>A32NX_AUTOBRAKES_SELECTED_MODE</SWITCH_POSITION_VAR>
                 <ANIMREF_ID>0</ANIMREF_ID>
                 <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
                 <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
