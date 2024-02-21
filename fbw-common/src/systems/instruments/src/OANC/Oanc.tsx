@@ -246,6 +246,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
+    private readonly efisOansRangeSub = ConsumerSubject.create<number>(null, 4);
+
     private readonly overlayNDModeSub = Subject.create(EfisNdMode.PLAN);
 
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
@@ -286,6 +288,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.efisNDModeSub.setConsumer(subs.on('ndMode'));
 
         this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
+
+        this.efisOansRangeSub.setConsumer(subs.on('oansRange'));
+
+        this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range));
 
         subs.on('oansDisplayAirport').whenChanged().handle((airport) => {
             this.loadAirportMap(airport);

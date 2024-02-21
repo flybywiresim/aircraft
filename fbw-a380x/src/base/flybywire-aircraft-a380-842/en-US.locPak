@@ -17,6 +17,8 @@
       "A380X.LOADING.TIPS.A380_007": "The volume of all three decks (including the cargo hold) is 1,570 m3. This is enough space for 35 million ping-pong balls.",
       "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
+      "COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE": "Change ND mode",
+      "COCKPIT.TOOLTIPS.EFIS_CP_ND_RANGE": "Change ND range",
     }
   }
 }

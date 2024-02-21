@@ -4,19 +4,18 @@ import './UI/style.scss';
 import './OansControlPanel.scss';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, MapSubject, MappedSubscribable, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
+import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
 
 import { Button } from 'instruments/src/ND/UI/Button';
 import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
-import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
+import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { DropdownMenu } from './UI/DropdownMenu';
 import { RadioButtonGroup } from './UI/RadioButtonGroup';
 import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;

@@ -12,4 +12,5 @@ export interface FcuSimVars {
     navaidMode2: NavAidMode,
     /** State of the LS pushbutton on the EFIS control panel. */
     efisLsActive: boolean,
+    oansRange: number;
 }
