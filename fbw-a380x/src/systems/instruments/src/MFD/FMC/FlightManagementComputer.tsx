@@ -655,7 +655,7 @@ export class FlightManagementComputer implements FmcInterface {
 
             if (!this.flightPlanService.active.performanceData.cruiseFlightLevel) {
                 this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100);
-                SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100);
+                SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0));
             }
 
             break;

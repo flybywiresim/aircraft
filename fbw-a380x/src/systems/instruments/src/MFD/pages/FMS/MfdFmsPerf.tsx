@@ -1575,6 +1575,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         componentIfFalse={(
                                             <Button
+                                                disabled={Subject.create(true)}
                                                 label="NOISE"
                                                 onClick={() => {
                                                     this.props.fmcService.master?.fmgc.data.noiseEnabled.set(true);
