@@ -22,8 +22,8 @@ use uom::si::{
 pub enum A380AutobrakeKnobPosition {
     DISARM = 0,
     LOW = 1,
-    L1 = 2,
-    L2 = 3,
+    L2 = 2,
+    L3 = 3,
     HIGH = 4,
     BTV = 5,
 }
@@ -32,8 +32,8 @@ impl From<f64> for A380AutobrakeKnobPosition {
         match value as u8 {
             0 => A380AutobrakeKnobPosition::DISARM,
             1 => A380AutobrakeKnobPosition::LOW,
-            2 => A380AutobrakeKnobPosition::L1,
-            3 => A380AutobrakeKnobPosition::L2,
+            2 => A380AutobrakeKnobPosition::L2,
+            3 => A380AutobrakeKnobPosition::L3,
             4 => A380AutobrakeKnobPosition::HIGH,
             5 => A380AutobrakeKnobPosition::BTV,
             _ => A380AutobrakeKnobPosition::DISARM,
@@ -45,24 +45,22 @@ impl From<f64> for A380AutobrakeKnobPosition {
 pub enum A380AutobrakeMode {
     DISARM = 0,
     LOW = 1,
-    L1 = 2,
-    L2 = 3,
+    L2 = 2,
+    L3 = 3,
     HIGH = 4,
     BTV = 5,
     RTO = 6,
-    ROP = 7,
 }
 impl From<f64> for A380AutobrakeMode {
     fn from(value: f64) -> Self {
         match value as u8 {
             0 => A380AutobrakeMode::DISARM,
             1 => A380AutobrakeMode::LOW,
-            2 => A380AutobrakeMode::L1,
-            3 => A380AutobrakeMode::L2,
+            2 => A380AutobrakeMode::L2,
+            3 => A380AutobrakeMode::L3,
             4 => A380AutobrakeMode::HIGH,
             5 => A380AutobrakeMode::BTV,
             6 => A380AutobrakeMode::RTO,
-            7 => A380AutobrakeMode::ROP,
             _ => A380AutobrakeMode::DISARM,
         }
     }
@@ -114,11 +112,6 @@ impl SimulationElement for A380AutobrakePanel {
         self.mode_has_changed = self.selected_mode != new_mode;
 
         self.selected_mode = new_mode;
-
-        // println!(
-        //     "PANEL Reading sel mode: {:?} HAS CHANGED {:?}",
-        //     new_mode, self.mode_has_changed
-        // );
     }
 }
 
@@ -201,8 +194,8 @@ impl A380AutobrakeController {
     const BTV_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 3.99, 4., 6.];
 
     const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -2.];
-    const L1_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -2.5];
-    const L2_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -3.];
+    const L2_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -2.5];
+    const L3_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -3.];
     const HIGH_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., -2., -3.5];
     const BTV_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., -1., -2.5];
 
@@ -295,8 +288,8 @@ impl A380AutobrakeController {
                 match autobrake_panel.selected_mode() {
                     A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
                     A380AutobrakeKnobPosition::LOW => A380AutobrakeMode::LOW,
-                    A380AutobrakeKnobPosition::L1 => A380AutobrakeMode::L1,
                     A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
+                    A380AutobrakeKnobPosition::L3 => A380AutobrakeMode::L3,
                     A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
                     A380AutobrakeKnobPosition::BTV => A380AutobrakeMode::BTV,
                 }
@@ -335,8 +328,8 @@ impl A380AutobrakeController {
         match self.mode {
             A380AutobrakeMode::DISARM => self.decelerating_light = false,
             A380AutobrakeMode::LOW
-            | A380AutobrakeMode::L1
             | A380AutobrakeMode::L2
+            | A380AutobrakeMode::L3
             | A380AutobrakeMode::HIGH
             | A380AutobrakeMode::BTV => {
                 if self
@@ -384,8 +377,8 @@ impl A380AutobrakeController {
         match self.mode {
             A380AutobrakeMode::DISARM => false,
             A380AutobrakeMode::LOW
-            | A380AutobrakeMode::L1
             | A380AutobrakeMode::L2
+            | A380AutobrakeMode::L3
             | A380AutobrakeMode::HIGH
             | A380AutobrakeMode::BTV => {
                 self.left_brake_pedal_input > Ratio::new::<percent>(53.)
@@ -424,14 +417,14 @@ impl A380AutobrakeController {
                 &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
                 self.deceleration_governor.time_engaged().as_secs_f64(),
             ),
-            A380AutobrakeMode::L1 => interpolation(
-                &Self::NORMAL_MODE_DECEL_PROFILE_TIME_S,
-                &Self::L1_MODE_DECEL_PROFILE_ACCEL_MS2,
-                self.deceleration_governor.time_engaged().as_secs_f64(),
-            ),
             A380AutobrakeMode::L2 => interpolation(
                 &Self::NORMAL_MODE_DECEL_PROFILE_TIME_S,
                 &Self::L2_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            A380AutobrakeMode::L3 => interpolation(
+                &Self::NORMAL_MODE_DECEL_PROFILE_TIME_S,
+                &Self::L3_MODE_DECEL_PROFILE_ACCEL_MS2,
                 self.deceleration_governor.time_engaged().as_secs_f64(),
             ),
             A380AutobrakeMode::HIGH => interpolation(
@@ -440,7 +433,7 @@ impl A380AutobrakeController {
                 self.deceleration_governor.time_engaged().as_secs_f64(),
             ),
             A380AutobrakeMode::BTV => self.compute_btv_decel_target_ms2(),
-            A380AutobrakeMode::RTO | A380AutobrakeMode::ROP => Self::RTO_MODE_DECEL_TARGET_MS2,
+            A380AutobrakeMode::RTO => Self::RTO_MODE_DECEL_TARGET_MS2,
             _ => Self::OFF_MODE_DECEL_TARGET_MS2,
         })
     }
@@ -498,9 +491,10 @@ impl A380AutobrakeController {
         placeholder_ground_spoilers_out: bool,
     ) {
         println!(
-            "AB spoilers {:?}  Decel time{:.1}",
+            "AB spoilers {:?}  Decel time{:.1} allow arming {:?}",
             placeholder_ground_spoilers_out,
-            self.deceleration_governor.time_engaged().as_secs_f64()
+            self.deceleration_governor.time_engaged().as_secs_f64(),
+            allow_arming
         );
 
         self.update_input_conditions(

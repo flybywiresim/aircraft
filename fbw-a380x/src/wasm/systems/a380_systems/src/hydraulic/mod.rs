@@ -6473,15 +6473,20 @@ mod tests {
             ratio::{percent, ratio},
         };
 
-        #[derive(Default)]
         struct A380TestAdirus {
             airspeed: Velocity,
             any_aligned: bool,
         }
         impl A380TestAdirus {
+            fn default() -> Self {
+                Self {
+                    airspeed: Velocity::default(),
+                    any_aligned: true,
+                }
+            }
+
             fn update(&mut self, context: &UpdateContext) {
                 self.airspeed = context.true_airspeed();
-                self.any_aligned = true;
             }
 
             fn set_aligned(&mut self, is_aligned: bool) {
@@ -6975,6 +6980,10 @@ mod tests {
                 self
             }
 
+            fn set_adirs_not_aligned(&mut self) {
+                self.command(|a| a.set_adirs_alignement(false));
+            }
+
             fn is_green_edp_commanded_on(&self) -> bool {
                 self.query(|a| a.is_green_edp_commanded_on())
             }
@@ -7245,6 +7254,11 @@ mod tests {
                     .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
+            }
+
+            fn adirs_not_aligned(mut self) -> Self {
+                self.set_adirs_not_aligned();
+                self
             }
 
             fn sim_not_ready(mut self) -> Self {
@@ -7628,7 +7642,7 @@ mod tests {
                 self
             }
 
-            fn set_autobrake_l2(mut self) -> Self {
+            fn set_autobrake_l3(mut self) -> Self {
                 self.write_by_name("AUTOBRAKES_SELECTED_MODE", 3.);
                 self
             }
@@ -9293,7 +9307,7 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_arms_in_flight_lo_or_l1_or_l2_or_hi() {
+        fn autobrakes_arms_in_flight_lo_or_l3() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -9309,10 +9323,10 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::LOW);
 
             test_bed = test_bed
-                .set_autobrake_l2()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
         }
 
         #[test]
@@ -9327,17 +9341,17 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
-                .set_autobrake_l2()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             // sim is not ready --> no disarm
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             // sim is now ready --> disarm expected
             test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(1));
@@ -9356,10 +9370,10 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
-                .set_autobrake_l2()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_anti_skid(false)
@@ -9515,7 +9529,7 @@ mod tests {
 
         #[test]
         // Should disable with one pedals > 42° over max range of 79.4° thus 52%
-        fn autobrakes_l2_disengage_at_52_on_one_pedal_input() {
+        fn autobrakes_l3_disengage_at_52_on_one_pedal_input() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -9525,16 +9539,16 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_l2()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9544,7 +9558,7 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9592,18 +9606,41 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             test_bed = test_bed
-                .set_autobrake_l2()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+        }
+
+        #[test]
+        fn autobrakes_disarm_if_no_adirs() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_l3()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+
+            test_bed = test_bed
+                .adirs_not_aligned()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
