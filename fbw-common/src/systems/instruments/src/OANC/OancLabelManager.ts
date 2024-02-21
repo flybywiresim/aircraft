@@ -10,9 +10,9 @@ import { filterLabel, OancLabelFilter } from './OancLabelFIlter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';
 
-export class OancLabelManager {
+export class OancLabelManager<T extends number> {
     constructor(
-        public oanc: Oanc,
+        public oanc: Oanc<T>,
     ) {
     }
 

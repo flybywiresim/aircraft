@@ -15,9 +15,9 @@ const OANC_VALID_POSITION_INDICATION_FEATURE_TYPES = [
     FeatureType.Blastpad,
 ];
 
-export class OancPositionComputer {
+export class OancPositionComputer<T extends number> {
     constructor(
-        private readonly oanc: Oanc,
+        private readonly oanc: Oanc<T>,
     ) {
     }
 

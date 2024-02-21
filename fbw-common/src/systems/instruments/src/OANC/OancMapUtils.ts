@@ -47,7 +47,7 @@ export function intersectLineWithRectangle(x1: number, y1: number, x2: number, y
 
 export function isPointInRectangle(px: number, py: number, rx: number, ry: number, rw: number, rh: number): boolean {
     return (px >= rx && px <= (rx + rw))
-    && (ry >= ry && ry <= (ry + rh));
+    && (py >= ry && ry <= (ry + rh));
 }
 
 function lineLine(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): [number, number] | undefined {

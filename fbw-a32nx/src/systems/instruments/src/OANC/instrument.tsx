@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane, Subject, SubscribableMapFunctions, Wait } from '@microsoft/msfs-sdk';
-import { ContextMenuItemData, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, Oanc, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { A320EfisZoomRangeValue, ContextMenuItemData, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, Oanc, ZOOM_TRANSITION_TIME_MS, a320EfisZoomRangeSettings } from '@flybywiresim/oanc';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { ContextMenu } from 'instruments/src/OANC/Components/ContextMenu';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
@@ -31,7 +31,7 @@ class A32NX_OANC extends BaseInstrument {
      */
     private gameState = 0;
 
-    private oancRef = FSComponent.createRef<Oanc>();
+    private oancRef = FSComponent.createRef<Oanc<A320EfisZoomRangeValue>>();
 
     public readonly controlPanelRef = FSComponent.createRef<ControlPanel>();
 
@@ -114,6 +114,7 @@ class A32NX_OANC extends BaseInstrument {
                     contextMenuX={this.contextMenuX}
                     contextMenuY={this.contextMenuY}
                     waitScreenRef={this.waitScreenRef}
+                    zoomValues={a320EfisZoomRangeSettings}
                 />
                 <ControlPanel
                     ref={this.controlPanelRef}

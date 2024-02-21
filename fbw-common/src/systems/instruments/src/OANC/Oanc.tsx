@@ -48,15 +48,20 @@ const LABEL_POLYGON_STRUCTURE_TYPES = [
     PolygonStructureType.TerminalBuilding,
 ];
 
-export const ZOOM_LEVELS = [0.2, 0.5, 1, 2.5];
+export type A320EfisZoomRangeValue = 0.2 | 0.5 | 1 | 2.5;
+
+export type A380EfisZoomRangeValue = 0.2 | 0.5 | 1 | 2 | 5;
+
+export const a320EfisZoomRangeSettings: A320EfisZoomRangeValue[] = [0.2, 0.5, 1, 2.5];
+
+export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1, 2, 5];
 
 const DEFAULT_SCALE_NM = 0.539957;
-
-const ZOOM_LEVEL_SCALES = ZOOM_LEVELS.map((it) => (1 / (it * 2 / DEFAULT_SCALE_NM)));
 
 const LAYER_VISIBILITY_RULES = [
     [true, true, true, true, false, false, true],
     [true, true, true, true, false, false, false],
+    [false, true, false, false, true, true, false],
     [false, true, false, false, true, true, false],
     [false, true, false, false, true, true, false],
 ];
@@ -65,6 +70,7 @@ export const LABEL_VISIBILITY_RULES = [
     true,
     true,
     true,
+    false,
     false,
 ];
 
@@ -91,7 +97,7 @@ export interface ContextMenuItemData {
     onPressed?: () => void,
 }
 
-export interface OancProps extends ComponentProps {
+export interface OancProps<T extends number> extends ComponentProps {
     bus: EventBus,
     side: EfisSide,
     contextMenuVisible?: Subject<boolean>;
@@ -99,9 +105,10 @@ export interface OancProps extends ComponentProps {
     contextMenuY?: Subject<number>;
     contextMenuItems?: ContextMenuItemData[];
     waitScreenRef: NodeReference<HTMLDivElement>;
+    zoomValues: T[],
 }
 
-export class Oanc extends DisplayComponent<OancProps> {
+export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     private readonly animationContainerRef = [
         FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
@@ -172,9 +179,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public amdbClient = new NavigraphAmdbClient();
 
-    private labelManager = new OancLabelManager(this);
+    private labelManager = new OancLabelManager<T>(this);
 
-    private positionComputer = new OancPositionComputer(this);
+    private positionComputer = new OancPositionComputer<T>(this);
 
     public dataLoading = false;
 
@@ -231,7 +238,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public readonly interpolatedMapHeading = Subject.create(0);
 
-    public readonly zoomLevelIndex = Subject.create(0);
+    public readonly zoomLevelIndex: Subject<number> = Subject.create(this.props.zoomValues.length - 1);
 
     public readonly canvasCentreReferencedMapParams = new MapParameters();
 
@@ -259,10 +266,12 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly aircraftRotation = Subject.create(0);
 
+    private readonly zoomLevelScales: number[] = this.props.zoomValues.map((it) => (1 / (it * 2 / DEFAULT_SCALE_NM)));
+
     public getZoomLevelInverseScale() {
         const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
-        return ZOOM_LEVEL_SCALES[this.zoomLevelIndex.get()] * multiplier;
+        return this.zoomLevelScales[this.zoomLevelIndex.get()] * multiplier;
     }
 
     onAfterRender(node: VNode) {
@@ -848,7 +857,7 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     public handleZoomOut(): void {
-        if (this.zoomLevelIndex.get() !== ZOOM_LEVELS.length - 1) {
+        if (this.zoomLevelIndex.get() !== this.props.zoomValues.length - 1) {
             this.zoomLevelIndex.set(this.zoomLevelIndex.get() + 1);
         }
     }
@@ -999,7 +1008,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                     <div ref={this.panContainerRef[1]} style="position: absolute;">
                         <OancMovingModeOverlay
                             bus={this.props.bus}
-                            oansRange={this.zoomLevelIndex.map((it) => ZOOM_LEVELS[it])}
+                            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
                             ndMode={this.overlayNDModeSub}
                             rotation={this.interpolatedMapHeading}
                             isMapPanned={this.isMapPanned}
@@ -1023,7 +1032,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
                 <OancStaticModeOverlay
                     bus={this.props.bus}
-                    oansRange={this.zoomLevelIndex.map((it) => ZOOM_LEVELS[it])}
+                    oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
                     ndMode={this.overlayNDModeSub}
                     rotation={this.interpolatedMapHeading}
                     isMapPanned={this.isMapPanned}

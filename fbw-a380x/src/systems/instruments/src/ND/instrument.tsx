@@ -5,7 +5,7 @@
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
 import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
 
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
@@ -141,7 +141,7 @@ class NDInstrument implements FsInstrument {
 
     private efisCpRange: A380EfisNdRangeValue = 10;
 
-    private oansRef = FSComponent.createRef<Oanc>();
+    private oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
 
     private oansContainerRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -209,6 +209,7 @@ class NDInstrument implements FsInstrument {
                             contextMenuVisible={this.contextMenuVisible}
                             contextMenuX={this.contextMenuX}
                             contextMenuY={this.contextMenuY}
+                            zoomValues={a380EfisZoomRangeSettings}
                         />
                     </div>
                     <div ref={this.ndContainerRef}>
