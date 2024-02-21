@@ -1,14 +1,12 @@
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
 export const CruisePressure = () => {
-    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
-    const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
-    const autoMode = true; // TODO useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
-    const [ldgElevValue, setLdgElevValue] = useState('XX');
-    const [cssLdgElevName, setCssLdgElevName] = useState('Green');
-    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
+    // TODO: Handle landing elevation invalid SSM
+    const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'Bool', 1000);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
@@ -19,26 +17,14 @@ export const CruisePressure = () => {
 
     const deltaPress = splitDecimals(deltaPsi);
 
-    useEffect(() => {
-        if (landingElevDialPosition === 0) {
-            // On Auto
-            const nearestfifty = Math.round(landingRunwayElevation / 50) * 50;
-            setLdgElevValue(landingRunwayElevation > -5000 ? nearestfifty.toString() : 'XX');
-            setCssLdgElevName(landingRunwayElevation > -5000 ? 'Green' : 'Amber');
-        } else {
-            // On manual
-            const nearestfifty = Math.round(landingElev / 50) * 50;
-            setLdgElevValue(nearestfifty.toString());
-            setCssLdgElevName('Green');
-        }
-    }, [landingElevDialPosition, landingRunwayElevation]);
+    const ldgElevValue = Math.round(landingElev.value / 50) * 50;
 
     return (
         <>
             <g id="LandingElevation" className={autoMode ? 'Show' : 'Hide'}>
                 <text className="F26 MiddleAlign White LS1" x="470" y="355">LDG ELEVN</text>
 
-                <text id="LandingElevation" className={`F29 EndAlign ${cssLdgElevName}`} x="653" y="359">{ldgElevValue}</text>
+                <text id="LandingElevation" className={`F29 EndAlign Green`} x="653" y="359">{ldgElevValue}</text>
                 <text className="F22 Cyan" x="658" y="359">FT</text>
             </g>
 
