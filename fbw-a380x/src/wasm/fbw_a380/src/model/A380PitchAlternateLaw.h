@@ -38,8 +38,8 @@ class A380PitchAlternateLaw final
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_o;
     real_T pY;
-    uint8_T is_active_c7_A380PitchAlternateLaw;
-    uint8_T is_c7_A380PitchAlternateLaw;
+    uint8_T is_active_c1_A380PitchAlternateLaw;
+    uint8_T is_c1_A380PitchAlternateLaw;
     uint8_T is_active_c8_A380PitchAlternateLaw;
     uint8_T is_c8_A380PitchAlternateLaw;
     uint8_T is_active_c9_A380PitchAlternateLaw;

@@ -1283,8 +1283,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   if (A380PitchNormalLaw_DWork.is_active_c7_A380PitchNormalLaw == 0U) {
     A380PitchNormalLaw_DWork.is_active_c7_A380PitchNormalLaw = 1U;
     A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
-    rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-    rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+    rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+    rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
     rtb_nz_limit_up_g = 2.0;
     rtb_nz_limit_lo_g = 0.0;
   } else {
@@ -1292,19 +1292,19 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
      case A380PitchNormalLaw_IN_flight_clean:
       if (*rtu_In_flaps_handle_index != 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_flaps;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       } else if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       } else {
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.3;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.15;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.15;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
       }
@@ -1313,19 +1313,19 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
      case A380PitchNormalLaw_IN_flight_flaps:
       if (*rtu_In_flaps_handle_index == 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_clean;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.3;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.15;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.15;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
       } else if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       } else {
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       }
@@ -1334,19 +1334,19 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
      default:
       if ((A380PitchNormalLaw_B.in_flight != 0.0) && (*rtu_In_flaps_handle_index == 0.0)) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_clean;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.3;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.15;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.15;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
       } else if ((A380PitchNormalLaw_B.in_flight != 0.0) && (*rtu_In_flaps_handle_index != 0.0)) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_flaps;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       } else {
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       }

@@ -229,7 +229,7 @@ struct base_prim_out_bus
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
   base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
+  base_arinc_429 discrete_status_word_1;
 };
 
 #endif
@@ -451,6 +451,8 @@ struct base_sec_logic_outputs
   boolean_T rudder_trim_avail;
   boolean_T rudder_trim_engaged;
   boolean_T aileron_droop_active;
+  boolean_T ths_automatic_mode_active;
+  real_T ths_manual_mode_c_deg_s;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
   boolean_T left_sidestick_disabled;

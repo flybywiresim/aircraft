@@ -427,8 +427,8 @@ void A380PitchAlternateLaw::reset(void)
   A380PitchAlternateLaw_DWork.icLoad = true;
   A380PitchAlternateLaw_DWork.is_active_c9_A380PitchAlternateLaw = 0U;
   A380PitchAlternateLaw_DWork.is_c9_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
-  A380PitchAlternateLaw_DWork.is_active_c7_A380PitchAlternateLaw = 0U;
-  A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
+  A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw = 0U;
+  A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
   rtb_nz_limit_up_g = 0.0;
   rtb_nz_limit_lo_g = 0.0;
   A380PitchAlternateLaw_RateLimiter_Reset(&A380PitchAlternateLaw_DWork.sf_RateLimiter);
@@ -518,26 +518,26 @@ void A380PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu
   }
 
   rtb_Gain5 = A380PitchAlternateLaw_rtP.Gain5_Gain * rtb_Switch_c;
-  if (A380PitchAlternateLaw_DWork.is_active_c7_A380PitchAlternateLaw == 0U) {
-    A380PitchAlternateLaw_DWork.is_active_c7_A380PitchAlternateLaw = 1U;
-    A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
-    rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-    rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+  if (A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw == 0U) {
+    A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw = 1U;
+    A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
+    rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+    rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
     rtb_nz_limit_up_g = 2.0;
     rtb_nz_limit_lo_g = 0.0;
   } else {
-    switch (A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw) {
+    switch (A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw) {
      case A380PitchAlternateLaw_IN_flight_clean:
       if (*rtu_In_flaps_handle_index != 0.0) {
-        A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_flight_flaps;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_flight_flaps;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       } else {
-        A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       }
@@ -545,23 +545,23 @@ void A380PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu
 
      case A380PitchAlternateLaw_IN_flight_flaps:
       if (*rtu_In_flaps_handle_index == 0.0) {
-        A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_flight_clean;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.3;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
+        A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_flight_clean;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.15;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.15;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
       } else {
-        A380PitchAlternateLaw_DWork.is_c7_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
-        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+        A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
+        rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+        rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
       }
       break;
 
      default:
-      rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
-      rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
+      rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
+      rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
       rtb_nz_limit_up_g = 2.0;
       rtb_nz_limit_lo_g = 0.0;
       break;

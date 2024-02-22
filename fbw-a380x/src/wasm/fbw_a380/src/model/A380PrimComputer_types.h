@@ -30,6 +30,20 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
 #define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
 
@@ -287,7 +301,7 @@ struct base_prim_out_bus
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
   base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
+  base_arinc_429 discrete_status_word_1;
 };
 
 #endif
@@ -409,20 +423,6 @@ struct base_prim_lateral_surface_positions
   real_T right_spoiler_8_deg;
   real_T upper_rudder_deg;
   real_T lower_rudder_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
 };
 
 #endif
@@ -561,6 +561,8 @@ struct base_prim_logic_outputs
   boolean_T rudder_2_electric_mode_engaged;
   boolean_T aileron_droop_active;
   boolean_T aileron_antidroop_active;
+  boolean_T ths_automatic_mode_active;
+  real_T ths_manual_mode_c_deg_s;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
   boolean_T left_sidestick_disabled;
