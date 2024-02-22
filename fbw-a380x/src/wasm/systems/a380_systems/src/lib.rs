@@ -29,7 +29,7 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use fuel::FuelLevel;
-use hydraulic::{brakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
+use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::A380RadioAltimeters;
 use payload::A380Payload;

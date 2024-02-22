@@ -64,9 +64,8 @@ mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
-pub mod brakes;
-
-use brakes::A380AutobrakeController;
+pub mod autobrakes;
+use autobrakes::A380AutobrakeController;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -3141,7 +3140,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 
 use std::fmt::Display;
 
-use self::brakes::A380AutobrakePanel;
+use self::autobrakes::A380AutobrakePanel;
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum A380EngineDrivenPumpId {
     Edp1a,
@@ -6439,7 +6438,7 @@ mod tests {
         use super::*;
         use rstest::rstest;
 
-        use brakes::A380AutobrakeMode;
+        use autobrakes::A380AutobrakeMode;
         use systems::{
             electrical::{
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
