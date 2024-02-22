@@ -44,6 +44,11 @@ export enum LsCategory {
 }
 
 export interface ProcedureTransition {
+    /**
+     * An arbitrary identifier to uniquely identify this transition
+     * This should not be used for anything else but to determine if two transitions are the same
+     */
+    databaseId: string,
     ident: string,
     legs: ProcedureLeg[],
 }

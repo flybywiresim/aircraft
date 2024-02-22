@@ -258,10 +258,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         await this.setDestinationAirport(this.alternateDestinationAirport.ident);
         await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
         // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
-        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.ident ?? undefined);
-        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.ident ?? undefined);
-        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.ident ?? undefined);
-        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
+        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
+        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
+        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.databaseId ?? undefined);
 
         const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount

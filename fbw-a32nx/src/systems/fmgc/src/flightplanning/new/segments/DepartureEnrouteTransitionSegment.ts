@@ -21,8 +21,8 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
 
     private departureEnrouteTransition: ProcedureTransition | undefined = undefined
 
-    setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (ident === undefined) {
+    setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined) {
             this.departureEnrouteTransition = undefined;
 
             if (!skipUpdateLegs) {
@@ -42,10 +42,10 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
 
         const originEnrouteTransitions = originDeparture.enrouteTransitions;
 
-        const matchingOriginEnrouteTransition = originEnrouteTransitions.find((transition) => transition.ident === ident);
+        const matchingOriginEnrouteTransition = originEnrouteTransitions.find((transition) => transition.databaseId === databaseId);
 
         if (!matchingOriginEnrouteTransition) {
-            throw new Error(`[FMS/FPM] Can't find origin enroute transition '${ident}' for ${originAirport.ident} ${originDeparture.ident}`);
+            throw new Error(`[FMS/FPM] Can't find origin enroute transition '${databaseId}' for ${originAirport.ident} ${originDeparture.ident}`);
         }
 
         this.departureEnrouteTransition = matchingOriginEnrouteTransition;

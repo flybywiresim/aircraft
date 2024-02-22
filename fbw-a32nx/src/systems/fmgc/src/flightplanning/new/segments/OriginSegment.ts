@@ -129,7 +129,7 @@ export class OriginSegment extends FlightPlanSegment {
         if (this.runway) {
             const newRunwayCompatibleSids = await db.getDepartures(this.runway.airportIdent, this.runway.ident);
 
-            const currentSidCompatibleWithNewRunway = newRunwayCompatibleSids.some((departure) => departure.ident === this.flightPlan.originDeparture?.ident);
+            const currentSidCompatibleWithNewRunway = newRunwayCompatibleSids.some((departure) => departure.databaseId === this.flightPlan.originDeparture?.databaseId);
 
             if (currentSidCompatibleWithNewRunway) {
                 const currentSidNewRunwayTransition = this.flightPlan.originDeparture.runwayTransitions.find((transition) => transition.ident === this.runway.ident);

@@ -679,8 +679,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.departureSegment.originDeparture;
     }
 
-    async setDeparture(procedureIdent: string | undefined) {
-        await this.departureSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    async setDeparture(databaseId: string | undefined) {
+        await this.departureSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -693,10 +693,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the departure enroute transition
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setDepartureEnrouteTransition(transitionIdent: string | undefined) {
-        await this.departureEnrouteTransitionSegment.setProcedure(transitionIdent);
+    async setDepartureEnrouteTransition(databaseId: string | undefined) {
+        await this.departureEnrouteTransitionSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -709,10 +709,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the arrival enroute transition
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setArrivalEnrouteTransition(transitionIdent: string | undefined) {
-        await this.arrivalEnrouteTransitionSegment.setProcedure(transitionIdent);
+    async setArrivalEnrouteTransition(databaseId: string | undefined) {
+        await this.arrivalEnrouteTransitionSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -722,8 +722,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.arrivalSegment.procedure;
     }
 
-    async setArrival(procedureIdent: string | undefined) {
-        await this.arrivalSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    async setArrival(databaseId: string | undefined) {
+        await this.arrivalSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -740,10 +740,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the approach via
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setApproachVia(transitionIdent: string | undefined) {
-        await this.approachViaSegment.setProcedure(transitionIdent);
+    async setApproachVia(databaseId: string | undefined) {
+        await this.approachViaSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -753,8 +753,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.approachSegment.procedure;
     }
 
-    async setApproach(procedureIdent: string | undefined) {
-        await this.approachSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    /**
+     * Sets the approach
+     *
+     * @param databaseId the approach databaseId or `undefined` for NONE
+     */
+    async setApproach(databaseId: string | undefined) {
+        await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -2086,19 +2091,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // the methods on BaseFlightPlan flush the op queue
 
         if (this.approach) {
-            await this.approachSegment.setProcedure(this.approach.ident);
+            await this.approachSegment.setProcedure(this.approach.databaseId);
         }
 
         if (this.approachVia) {
-            await this.approachViaSegment.setProcedure(this.approachVia.ident);
+            await this.approachViaSegment.setProcedure(this.approachVia.databaseId);
         }
 
         if (this.arrival) {
-            await this.arrivalSegment.setProcedure(this.arrival.ident);
+            await this.arrivalSegment.setProcedure(this.arrival.databaseId);
         }
 
         if (this.arrivalEnrouteTransition) {
-            await this.arrivalEnrouteTransitionSegment.setProcedure(this.arrivalEnrouteTransition.ident);
+            await this.arrivalEnrouteTransitionSegment.setProcedure(this.arrivalEnrouteTransition.databaseId);
         }
 
         await this.destinationSegment.refresh(false);

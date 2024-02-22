@@ -23,8 +23,8 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
     allLegs: FlightPlanLeg[] = []
 
-    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (ident === undefined) {
+    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined) {
             this.originDeparture = undefined;
 
             if (!skipUpdateLegs) {
@@ -51,10 +51,10 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
             throw new Error(`[FMS/FPM] Cannot find procedures at ${this.flightPlan.originAirport.ident}`);
         }
 
-        const matchingProcedure = proceduresAtAirport.find((proc) => proc.ident === ident);
+        const matchingProcedure = proceduresAtAirport.find((proc) => proc.databaseId === databaseId);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find procedure '${ident}' for ${this.flightPlan.originAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find procedure '${databaseId}' for ${this.flightPlan.originAirport.ident}`);
         }
 
         this.originDeparture = matchingProcedure;

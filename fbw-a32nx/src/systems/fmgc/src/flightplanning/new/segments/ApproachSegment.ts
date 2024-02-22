@@ -23,12 +23,12 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     private approach: Approach | undefined
 
-    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
         const oldApproachName = this.flightPlan.approach?.ident;
 
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-        if (ident === undefined) {
+        if (databaseId === undefined) {
             this.approach = undefined;
 
             if (!skipUpdateLegs) {
@@ -52,10 +52,10 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
         const approaches = await db.getApproaches(destinationAirport.ident);
 
-        const matchingProcedure = approaches.find((approach) => approach.ident === ident);
+        const matchingProcedure = approaches.find((approach) => approach.databaseId === databaseId);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find approach procedure '${ident}' for ${destinationAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find approach procedure '${databaseId}' for ${destinationAirport.ident}`);
         }
 
         this.approach = matchingProcedure;
