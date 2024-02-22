@@ -265,7 +265,7 @@ impl A380AutobrakeController {
     fn determine_mode(
         &mut self,
         context: &UpdateContext,
-        autobrake_panel: &mut A380AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
     ) -> A380AutobrakeMode {
         if self.should_disarm(context, autobrake_panel) {
             self.disarm_actions();
@@ -485,7 +485,7 @@ impl A380AutobrakeController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        autobrake_panel: &mut A380AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,

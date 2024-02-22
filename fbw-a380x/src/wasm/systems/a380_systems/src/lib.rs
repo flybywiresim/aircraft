@@ -239,7 +239,7 @@ impl Aircraft for A380 {
                 &self.engine_4,
             ],
             &self.hydraulic_overhead,
-            &mut self.autobrake_panel,
+            &self.autobrake_panel,
             &self.engine_fire_overhead,
             &self.lgcius,
             &self.pneumatic,
