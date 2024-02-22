@@ -165,7 +165,7 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Transponder On",       2080, false, 1000,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                  "1 (>L:A32NX_TRANSPONDER_MODE)"},
         ProcedureStep{"ATC ALT RPTG On",      2090, false, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                    "1 (>L:A32NX_SWITCH_ATC_ALT)"},
         ProcedureStep{"TCAS TRAFFIC ABV",     2100, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",      "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
-        ProcedureStep{"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
+        ProcedureStep{"Autobrake RTO",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 6 ==",             "1 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
         ProcedureStep{"TERR ON ND Capt. On",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
         ProcedureStep{"T.O. Config",          3085, false, 2000,  "",                                                 "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
       },

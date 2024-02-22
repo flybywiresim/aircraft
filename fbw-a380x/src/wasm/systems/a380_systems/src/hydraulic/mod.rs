@@ -2,7 +2,6 @@ use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
-    acceleration::meter_per_second_squared,
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
@@ -21,10 +20,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
-        brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
-            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
-        },
+        brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
@@ -52,13 +48,12 @@ use systems::{
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AdirsMeasurementOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked,
-        DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
-        ElectricalBuses, EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle,
-        LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
-        SurfacesPositions,
+        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
     },
 };
@@ -6441,8 +6436,6 @@ mod tests {
     use super::*;
 
     mod a380_hydraulics {
-        use std::default;
-
         use super::*;
         use rstest::rstest;
 
@@ -7647,7 +7640,7 @@ mod tests {
                 self
             }
 
-            fn set_autobrake_high(mut self) -> Self {
+            fn _set_autobrake_high(mut self) -> Self {
                 self.write_by_name("AUTOBRAKES_SELECTED_MODE", 4.);
                 self
             }

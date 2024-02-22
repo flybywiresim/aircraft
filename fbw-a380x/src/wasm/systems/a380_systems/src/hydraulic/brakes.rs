@@ -267,9 +267,8 @@ impl A380AutobrakeController {
         context: &UpdateContext,
         autobrake_panel: &mut A380AutobrakePanel,
     ) -> A380AutobrakeMode {
-        if self.should_disarm(context, &autobrake_panel) {
-            self.autobrake_knob.disarm(true);
-            self.nose_gear_was_compressed_once = false;
+        if self.should_disarm(context, autobrake_panel) {
+            self.disarm_actions();
             return A380AutobrakeMode::DISARM;
         }
 
@@ -305,7 +304,7 @@ impl A380AutobrakeController {
         autobrake_panel: &A380AutobrakePanel,
     ) -> bool {
         self.is_armed()
-            && self.ground_spoilers_are_deployed
+            && self.ground_spoilers_are_deployed // We wait 5s after deploy, but they need to be deployed even if nose compressed
             && (self.ground_spoilers_are_deployed_since_5s.output()
                 || self.nose_gear_was_compressed_once)
             && !self.should_disarm(context, autobrake_panel)
@@ -319,7 +318,8 @@ impl A380AutobrakeController {
         self.decelerating_light
     }
 
-    fn update_decelerating(&mut self) {
+    /// Handles the hysteresis for decel light depending on normal vs RTO modes
+    fn update_decelerating_light_info(&mut self) {
         if !self.deceleration_demanded() {
             self.decelerating_light = false;
             return;
@@ -348,7 +348,7 @@ impl A380AutobrakeController {
                     self.decelerating_light = false;
                 }
             }
-            _ => {
+            A380AutobrakeMode::RTO => {
                 if self
                     .deceleration_governor
                     .decelerating_at_or_above_rate(Acceleration::new::<meter_per_second_squared>(
@@ -392,7 +392,6 @@ impl A380AutobrakeController {
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
                         && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
             }
-            _ => false,
         }
     }
 
@@ -407,6 +406,11 @@ impl A380AutobrakeController {
             || (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO)
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
+    }
+
+    fn disarm_actions(&mut self) {
+        self.autobrake_knob.disarm(true);
+        self.nose_gear_was_compressed_once = false;
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -434,7 +438,6 @@ impl A380AutobrakeController {
             ),
             A380AutobrakeMode::BTV => self.compute_btv_decel_target_ms2(),
             A380AutobrakeMode::RTO => Self::RTO_MODE_DECEL_TARGET_MS2,
-            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
         })
     }
 
@@ -513,7 +516,7 @@ impl A380AutobrakeController {
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
-        self.update_decelerating();
+        self.update_decelerating_light_info();
 
         self.placeholder_ground_spoilers_out = placeholder_ground_spoilers_out;
     }

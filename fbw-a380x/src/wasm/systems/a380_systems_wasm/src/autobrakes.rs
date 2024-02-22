@@ -35,6 +35,8 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
             .afterwards_reset_to(0.)
     };
 
+    // Mapping msfs 320 bindings to some 380 modes
+    // LO -> LO  / MED -> BRK 3 / HI -> RTO
     builder.event_to_variable(
         "AUTOBRAKE_LO_SET",
         EventToVariableMapping::Value(1.),
@@ -43,14 +45,14 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_MED_SET",
-        EventToVariableMapping::Value(2.),
+        EventToVariableMapping::Value(3.),
         Variable::named("AUTOBRAKES_SELECTED_MODE"),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_HI_SET",
         EventToVariableMapping::Value(4.),
-        Variable::named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+        Variable::named("OVHD_AUTOBRK_RTO_ARM_IS_PRESSED"),
         options,
     )?;
     builder.event_to_variable(
@@ -85,13 +87,13 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         options_set,
     )?;
     builder.event_to_variable(
-        "A32NX.AUTOBRAKE_SET_L1",
+        "A32NX.AUTOBRAKE_SET_L2",
         EventToVariableMapping::Value(2.),
         Variable::named("AUTOBRAKES_SELECTED_MODE"),
         options_set,
     )?;
     builder.event_to_variable(
-        "A32NX.AUTOBRAKE_SET_L2",
+        "A32NX.AUTOBRAKE_SET_L3",
         EventToVariableMapping::Value(3.),
         Variable::named("AUTOBRAKES_SELECTED_MODE"),
         options_set,
