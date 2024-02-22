@@ -32,6 +32,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
                 this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
             );
+            this.props.fmcService.master?.acInterface.updateOansAirports();
             this.props.visible.set(false);
             this.newDest.set('');
             this.props.fmcService.master?.resetRevisedWaypoint();

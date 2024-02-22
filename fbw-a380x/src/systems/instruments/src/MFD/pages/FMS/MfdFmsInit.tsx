@@ -168,6 +168,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         }
 
         this.props.fmcService.master.flightPlanService.uplinkInsert();
+        this.props.fmcService.master?.acInterface.updateOansAirports();
         this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
         // Don't insert weights for now, something seems broken here
@@ -231,6 +232,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                                 const toIcao = this.toIcao.get();
                                 if (v && toIcao) {
                                     await this.props.fmcService.master?.flightPlanService.newCityPair(v, toIcao, this.altnIcao.get() ?? undefined);
+                                    this.props.fmcService.master?.acInterface.updateOansAirports();
                                 }
                             }}
                             mandatory={Subject.create(true)}
@@ -249,6 +251,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                                     const fromIcao = this.fromIcao.get();
                                     if (v && fromIcao) {
                                         await this.props.fmcService.master?.flightPlanService.newCityPair(fromIcao, v, this.altnIcao.get() ?? undefined);
+                                        this.props.fmcService.master?.acInterface.updateOansAirports();
                                     }
                                 }
                             }}
@@ -265,6 +268,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                                 this.altnIcao.set(v);
                                 if (v) {
                                     await this.props.fmcService.master?.flightPlanService.setAlternate(v);
+                                    this.props.fmcService.master?.acInterface.updateOansAirports();
                                 }
                             }}
                             mandatory={Subject.create(true)}

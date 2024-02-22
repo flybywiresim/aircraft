@@ -146,6 +146,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
                 this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan?.performanceData.vr !== null, undefined);
             }
         }
+
+        this.props.fmcService.master?.acInterface.updateOansAirports();
+        this.props.fmcService.master?.acInterface.updateLandingRunway();
     }
 
     public destroy(): void {

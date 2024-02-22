@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -23,6 +23,8 @@ export class FmcAircraftInterface {
         private flightPlanService: FlightPlanService,
     ) {
     }
+
+    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
     // ARINC words
     // arinc bus output words
@@ -366,6 +368,32 @@ export class FmcAircraftInterface {
         const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
 
         return (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination));
+    }
+
+    updateOansAirports() {
+        if (this.flightPlanService.hasActive) {
+            if (this.flightPlanService.active?.originAirport.ident) {
+                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
+                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
+            }
+
+            if (this.flightPlanService.active?.destinationAirport.ident) {
+                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
+                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
+            }
+
+            if (this.flightPlanService.active?.alternateDestinationAirport.ident) {
+                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
+                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
+            }
+        }
+    }
+
+    updateLandingRunway() {
+        if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway.ident) {
+            this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
+            this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
+        }
     }
 
     activatePreSelSpeedMach(preSel: number) {

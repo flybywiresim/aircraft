@@ -125,7 +125,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         {
             name: 'ENABLE ALTN *',
             disabled: false,
-            onPressed: () => fpln.props.fmcService.master?.flightPlanService.enableAltn(legIndex, planIndex),
+            onPressed: () => {
+                fpln.props.fmcService.master?.flightPlanService.enableAltn(legIndex, planIndex);
+                fpln.props.fmcService.master?.acInterface.updateOansAirports();
+            },
         },
         {
             name: 'NEW DEST',
