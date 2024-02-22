@@ -10,12 +10,11 @@
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ausgewählten Steuerkurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
 
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB": "Batteriespannungsanzeiger Wahlschalter",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_ESS": "Zeigt die Spannung der ESS Batterie an",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_APU": "Zeigt die Spannung der APU Batterie an",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_OFF":  "Zeigt keine Spannung an (00.0V)",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT1": "Zeigt die Spannung der Batterie 1 an",
-      "COCKPIT.TOOLTIPS.BATTERY_VOLTAGE_INDICATOR_KNOB_BAT2": "Zeigt die Spannung der Batterie 2 an"
+      "A380X.TOOLTIPS.STATE_ESS": "ESS",
+      "A380X.TOOLTIPS.STATE_APU": "APU",
+      "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Wahlschalter für Batteriespannungsanzeige",
+      "A380X.TOOLTIPS.BAT_SELECTOR_ACTION":  "Wählen Sie die Batterie, deren Spannung angezeigt werden soll"
+
     }
   }
 }
