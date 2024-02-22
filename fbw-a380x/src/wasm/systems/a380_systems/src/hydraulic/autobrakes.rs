@@ -493,13 +493,6 @@ impl A380AutobrakeController {
         lgciu2: &impl LgciuInterface,
         placeholder_ground_spoilers_out: bool,
     ) {
-        println!(
-            "AB spoilers {:?}  Decel time{:.1} allow arming {:?}",
-            placeholder_ground_spoilers_out,
-            self.deceleration_governor.time_engaged().as_secs_f64(),
-            allow_arming
-        );
-
         self.update_input_conditions(
             context,
             allow_arming,
