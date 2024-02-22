@@ -62,7 +62,7 @@ export type AirportInfo = {
 }
 
 export class ChartFoxClient {
-    private static token = process.env.CHARTFOX_SECRET;
+    private static token = '';
 
     public static sufficientEnv() {
         return !!ChartFoxClient.token;

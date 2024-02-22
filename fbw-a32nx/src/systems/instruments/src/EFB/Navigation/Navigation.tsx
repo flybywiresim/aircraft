@@ -18,6 +18,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { ChartFoxPage } from 'instruments/src/EFB/Navigation/Pages/ChartFoxPage/ChartFoxPage';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 // import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
@@ -42,6 +43,7 @@ import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
     { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'ChartFox', alias: '', component: <ChartFoxPage />, associatedTab: NavigationTab.CHARTFOX },
     { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
@@ -51,8 +53,9 @@ export const Navigation = () => {
 
     if (navigationTabs) {
         navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
-        navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
-        navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
+        navigationTabs[1].alias = t('NavigationAndCharts.ChartFox.Title');
+        navigationTabs[2].alias = t('NavigationAndCharts.LocalFiles.Title');
+        navigationTabs[3].alias = t('NavigationAndCharts.PinnedCharts.Title');
     }
 
     return (

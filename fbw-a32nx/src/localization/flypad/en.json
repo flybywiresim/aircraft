@@ -239,6 +239,21 @@
       "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
       "Title": "Navigraph"
     },
+    "ChartFox": {
+      "AirportDoesNotExist": "Airport Does Not Exist",
+      "GoToThirdPartyOptions": {
+        "Title": "Go to 3rd Party Options to link ChartFox account",
+        "Button": "3rd Party Options"
+      },
+      "AuthenticateWithChartFox": "Authenticate with ChartFox",
+      "InsufficientEnv": "Insufficient .env File",
+      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
+      "LoadingMsg": "Loading",
+      "NoAirportSelected": "No Airport Selected",
+      "ResetChartFoxAuthentication": "Reset ChartFox Authentication",
+      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
+      "Title": "ChartFox"
+    },
     "PinnedCharts": {
       "Delete": "Delete",
       "Edit": "Edit",
