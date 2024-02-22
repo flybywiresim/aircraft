@@ -2319,6 +2319,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::AUTO_THROTTLE_DISCONNECT: {
       simInputThrottles.ATHR_disconnect = 1;
       std::cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << std::endl;
+
+      // Re emitting masked event for autobrake disconnection
       execute_calculator_code("(>K:A32NX.AUTO_THROTTLE_DISCONNECT)", nullptr, nullptr, nullptr);
       break;
     }
