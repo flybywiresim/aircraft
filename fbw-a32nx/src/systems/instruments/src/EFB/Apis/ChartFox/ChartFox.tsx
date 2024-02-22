@@ -1,4 +1,15 @@
-export type ChartFoxChartMeta = {
+import React, { useContext } from 'react';
+
+export const ChartFoxContext = React.createContext<ChartFoxClient>(undefined!);
+
+export const useChartFox = () => useContext(ChartFoxContext);
+
+export enum SourceUrlType {
+    Pdf = 0,
+    Image = 1
+}
+
+export type ChartFoxChart = {
     id: string,
     parentId: string | null,
     name: string,
@@ -6,10 +17,11 @@ export type ChartFoxChartMeta = {
     typeKey: string,
     url: string,
     sourceUrl: string,
-    sourceUrlType: number,
+    sourceUrlType: SourceUrlType,
     georefs: ChartFoxGeoRef[],
     hasGeoreferences: boolean,
     updatedAt: string,
+    runways: string[],
 }
 
 export type ChartFoxGeoRef = {
@@ -26,6 +38,7 @@ export type ChartFoxGroupedChart = {
     name: string,
     type: number,
     typeKey: string,
+    runways: string[],
 }
 
 export type ChartFoxAirportCharts = {
@@ -36,6 +49,18 @@ export type ChartFoxAirportCharts = {
     reference: ChartFoxGroupedChart[],
 }
 
+export const emptyChartFoxCharts = {
+    arrival: [],
+    approach: [],
+    airport: [],
+    departure: [],
+    reference: [],
+};
+
+export type AirportInfo = {
+    name: string,
+}
+
 export class ChartFoxClient {
     private static token = process.env.CHARTFOX_SECRET;
 
@@ -43,7 +68,19 @@ export class ChartFoxClient {
         return !!ChartFoxClient.token;
     }
 
-    public async getChartMeta(id: string): Promise<ChartFoxChartMeta> {
+    public async getChartUrl(id: string): Promise<string> {
+        const chart = await this.getChart(id);
+
+        // let url = chart.url;
+        const url = chart.url;
+        if (chart.sourceUrlType === SourceUrlType.Pdf) {
+            // turn the pdf into an image and use createObjectURL()
+        }
+
+        return url;
+    }
+
+    public async getChart(id: string): Promise<ChartFoxChart> {
         if (!ChartFoxClient.sufficientEnv() || id === '') {
             return null;
         }
@@ -81,6 +118,7 @@ export class ChartFoxClient {
                 })),
                 hasGeoreferences: jsonValue.has_georeferences,
                 updatedAt: jsonValue.updated_at,
+                runways: jsonValue.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             };
         } catch (e) {
             console.log(`Error getting ChartFox chart: ${e}`);
@@ -89,17 +127,9 @@ export class ChartFoxClient {
         return null;
     }
 
-    public async getChartList(icao: string): Promise<ChartFoxAirportCharts> {
-        const defaultResponse: ChartFoxAirportCharts = {
-            arrival: [],
-            approach: [],
-            airport: [],
-            departure: [],
-            reference: [],
-        };
-
+    public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
         if (!ChartFoxClient.sufficientEnv() || icao.length !== 4) {
-            return defaultResponse;
+            return null;
         }
 
         try {
@@ -112,7 +142,34 @@ export class ChartFoxClient {
             });
 
             if (!chartJsonResp.ok) {
-                return defaultResponse;
+                return null;
+            }
+
+            const chartJson = await chartJsonResp.json();
+            return { name: chartJson.airport.name };
+        } catch (_) {
+            console.log('Token Authentication Failed. #CF101');
+        }
+
+        return null;
+    }
+
+    public async getChartList(icao: string): Promise<ChartFoxAirportCharts> {
+        if (!ChartFoxClient.sufficientEnv() || icao.length !== 4) {
+            return emptyChartFoxCharts;
+        }
+
+        try {
+            const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'authorization': `Bearer ${ChartFoxClient.token}`,
+                },
+            });
+
+            if (!chartJsonResp.ok) {
+                return emptyChartFoxCharts;
             }
 
             const chartJson = await chartJsonResp.json();
@@ -122,6 +179,7 @@ export class ChartFoxClient {
                 name: chart.name,
                 type: chart.type,
                 typeKey: chart.type_key,
+                runways: chart.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             }));
 
             const unknownArray: ChartFoxGroupedChart[] = chartJson.props.groupedCharts['0'].map((chart) => ({
@@ -129,6 +187,7 @@ export class ChartFoxClient {
                 name: chart.name,
                 type: chart.type,
                 typeKey: chart.type_key,
+                runways: chart.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             }));
 
             const sidArray: ChartFoxGroupedChart[] = chartJson.props.groupedCharts['4'].map((chart) => ({
@@ -136,6 +195,7 @@ export class ChartFoxClient {
                 name: chart.name,
                 type: chart.type,
                 typeKey: chart.type_key,
+                runways: chart.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             }));
 
             const starArray: ChartFoxGroupedChart[] = chartJson.props.groupedCharts['5'].map((chart) => ({
@@ -143,6 +203,7 @@ export class ChartFoxClient {
                 name: chart.name,
                 type: chart.type,
                 typeKey: chart.type_key,
+                runways: chart.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             }));
 
             const approachArray: ChartFoxGroupedChart[] = chartJson.props.groupedCharts['6'].map((chart) => ({
@@ -150,6 +211,7 @@ export class ChartFoxClient {
                 name: chart.name,
                 type: chart.type,
                 typeKey: chart.type_key,
+                runways: chart.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             }));
 
             return {
@@ -163,6 +225,6 @@ export class ChartFoxClient {
             console.log('Token Authentication Failed. #CF101');
         }
 
-        return defaultResponse;
+        return emptyChartFoxCharts;
     }
 }

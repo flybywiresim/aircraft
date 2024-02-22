@@ -15,12 +15,14 @@ type ThemedChart = {
 
 export enum ChartProvider {
     NAVIGRAPH = 'NAVIGRAPH',
-    LOCAL_FILES = 'LOCAL_FILES'
+    LOCAL_FILES = 'LOCAL_FILES',
+    CHARTFOX = 'CHARTFOX'
 }
 
 export enum NavigationTab {
     NAVIGRAPH = 'NAVIGRAPH',
     LOCAL_FILES = 'LOCAL_FILES',
+    CHARTFOX = 'CHARTFOX',
     PINNED_CHARTS = 'PINNED_CHARTS'
 }
 
@@ -62,6 +64,7 @@ interface InitialChartState {
     usingDarkTheme: boolean;
     [NavigationTab.NAVIGRAPH]: ProviderTabInfo;
     [NavigationTab.LOCAL_FILES]: ProviderTabInfo;
+    [NavigationTab.CHARTFOX]: ProviderTabInfo;
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: string;
         selectedProvider: ChartProvider | 'ALL';
@@ -106,6 +109,32 @@ const initialState: InitialChartState = {
         },
     },
     [NavigationTab.LOCAL_FILES]: {
+        chartRotation: 0,
+        searchQuery: '',
+        selectedTabIndex: 0,
+        isFullScreen: false,
+        chartDimensions: {
+            width: 0,
+            height: 0,
+        },
+        chartName: {
+            light: '',
+            dark: '',
+        },
+        chartId: '',
+        chartLinks: {
+            light: '',
+            dark: '',
+        },
+        pagesViewable: 1,
+        currentPage: 1,
+        chartPosition: {
+            positionX: 0,
+            positionY: 0,
+            scale: 1,
+        },
+    },
+    [NavigationTab.CHARTFOX]: {
         chartRotation: 0,
         searchQuery: '',
         selectedTabIndex: 0,
