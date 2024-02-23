@@ -390,9 +390,12 @@ export class FmcAircraftInterface {
     }
 
     updateLandingRunway() {
-        if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway.ident) {
+        if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway) {
             this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
             this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
+
+            this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY_LENGTH', this.flightPlanService.active.destinationRunway.length);
+            this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY_LENGTH', this.flightPlanService.active.destinationRunway.length);
         }
     }
 
