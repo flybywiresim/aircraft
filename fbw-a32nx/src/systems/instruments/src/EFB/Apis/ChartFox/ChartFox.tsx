@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { sampleData } from './Samples';
 
 export const ChartFoxContext = React.createContext<ChartFoxClient>(undefined!);
 
@@ -61,15 +62,20 @@ export type AirportInfo = {
     name: string,
 }
 
+export const UseChartFoxSamples = true;
+
 export class ChartFoxClient {
     private static token = '';
 
     public static sufficientEnv() {
-        return !!ChartFoxClient.token;
+        // return !!ChartFoxClient.token;
+        return true;
     }
 
     public async getChartUrl(id: string): Promise<string> {
+        console.log(`get chart with id ${id}`);
         const chart = await this.getChart(id);
+        console.log(chart);
 
         // let url = chart.url;
         const url = chart.url;
@@ -86,19 +92,23 @@ export class ChartFoxClient {
         }
 
         try {
-            const jsonResp = await fetch(`https://api.chartfox.org/v2/charts/${id}`, {
-                headers: {
-                    'content-type': 'application/json',
-                    'authorization': `Bearer ${ChartFoxClient.token}`,
-                },
-            });
+            let jsonValue;
+            if (UseChartFoxSamples) {
+                jsonValue = sampleData[id];
+            } else {
+                const jsonResp = await fetch(`https://api.chartfox.org/v2/charts/${id}`, {
+                    headers: {
+                        'content-type': 'application/json',
+                        'authorization': `Bearer ${ChartFoxClient.token}`,
+                    },
+                });
 
-            if (!jsonResp.ok) {
-                return null;
+                if (!jsonResp.ok) {
+                    return null;
+                }
+
+                jsonValue = await jsonResp.json();
             }
-
-            const jsonValue = await jsonResp.json();
-
             return {
                 id: jsonValue.id,
                 parentId: jsonValue.parent_id,
@@ -118,7 +128,7 @@ export class ChartFoxClient {
                 })),
                 hasGeoreferences: jsonValue.has_georeferences,
                 updatedAt: jsonValue.updated_at,
-                runways: jsonValue.find((meta) => meta.type_key === 'Runways')?.value ?? [],
+                runways: jsonValue.meta.find((meta) => meta.type_key === 'Runways')?.value ?? [],
             };
         } catch (e) {
             console.log(`Error getting ChartFox chart: ${e}`);
@@ -133,22 +143,29 @@ export class ChartFoxClient {
         }
 
         try {
-            const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    'authorization': `Bearer ${ChartFoxClient.token}`,
-                },
-            });
+            let chartJson;
+            if (UseChartFoxSamples) {
+                chartJson = sampleData[icao];
+            } else {
+                const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                        'authorization': `Bearer ${ChartFoxClient.token}`,
+                    },
+                });
 
-            if (!chartJsonResp.ok) {
-                return null;
+                if (!chartJsonResp.ok) {
+                    return null;
+                }
+
+                chartJson = await chartJsonResp.json();
             }
 
-            const chartJson = await chartJsonResp.json();
             return { name: chartJson.airport.name };
-        } catch (_) {
-            console.log('Token Authentication Failed. #CF101');
+        } catch (e) {
+            // console.log('Token Authentication Failed. #CF101');
+            console.log(e);
         }
 
         return null;
@@ -160,20 +177,24 @@ export class ChartFoxClient {
         }
 
         try {
-            const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    'authorization': `Bearer ${ChartFoxClient.token}`,
-                },
-            });
+            let chartJson;
+            if (UseChartFoxSamples) {
+                chartJson = sampleData[icao];
+            } else {
+                const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                        'authorization': `Bearer ${ChartFoxClient.token}`,
+                    },
+                });
 
-            if (!chartJsonResp.ok) {
-                return emptyChartFoxCharts;
+                if (!chartJsonResp.ok) {
+                    return emptyChartFoxCharts;
+                }
+
+                chartJson = await chartJsonResp.json();
             }
-
-            const chartJson = await chartJsonResp.json();
-
             const groundLayoutArray: ChartFoxGroupedChart[] = chartJson.props.groupedCharts['3'].map((chart) => ({
                 id: chart.id,
                 name: chart.name,
@@ -221,8 +242,9 @@ export class ChartFoxClient {
                 departure: sidArray,
                 reference: unknownArray,
             };
-        } catch (_) {
-            console.log('Token Authentication Failed. #CF101');
+        } catch (e) {
+            // console.log('Token Authentication Failed. #CF101');
+            console.log(e);
         }
 
         return emptyChartFoxCharts;

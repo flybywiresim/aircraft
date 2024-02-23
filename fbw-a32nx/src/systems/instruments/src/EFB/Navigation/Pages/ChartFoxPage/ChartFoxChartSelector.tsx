@@ -175,7 +175,7 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
                                             </div>
                                         </div>
                                         <div className="m-2 flex flex-col">
-                                            <span>{chart.typeKey}</span>
+                                            <span>{chart.name}</span>
                                             <span className="text-theme-text bg-theme-secondary mr-auto mt-0.5 rounded-md px-2 text-sm">
                                                 {/* TODO: Figure out what to use instead of indexNumber */}
                                                 {/* {chart.indexNumber} */}
@@ -233,7 +233,7 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
                                     </div>
                                 </div>
                                 <div className="m-2 flex flex-col">
-                                    <span>{chart.typeKey}</span>
+                                    <span>{chart.name}</span>
                                     <span
                                         className="text-theme-text bg-theme-secondary mr-auto rounded-sm px-2 text-sm"
                                     >
