@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
+import { AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '../../../common/src';
 
 export interface RouterFmsMessages {
     routerDatalinkStatus: {

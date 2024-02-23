@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 864 864">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+        fill: none;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-6 {
+        stroke: #fff;
+      }
+
+      .cls-2 {
+        stroke-width: .75px;
+      }
+
+      .cls-3, .cls-5 {
+        stroke-width: 2px;
+      }
+
+      .cls-4 {
+        stroke-width: .5px;
+      }
+
+      .cls-7 {
+        fill: #fff;
+        opacity: .08;
+      }
+
+      .cls-5 {
+        stroke: #68c13a;
+      }
+
+      .cls-6 {
+        stroke-width: .25px;
+      }
+    </style>
+  </defs>
+  <g id="Upper_Deck_Doors" data-name="Upper Deck Doors">
+    <polygon id="Transparent_White_Fill" data-name="Transparent White Fill" class="cls-7" points="405.08 104.78 399.67 158.33 399.67 571 402.92 624.56 462.78 624.56 467.22 571 467.22 158.33 461.25 104.78 405.08 104.78"/>
+    <g id="Aft_Upper_Doors" data-name="Aft Upper Doors">
+      <path id="AFT-UPP_R_Door" data-name="AFT-UPP R Door" class="cls-5" d="m467.22,562.27h-6.75c-.92,0-1.66-.58-1.66-1.3v-5.71c0-.72.74-1.3,1.66-1.3h6.75"/>
+      <path id="AFT-UPP_L_Door" data-name="AFT-UPP L Door" class="cls-5" d="m399.67,562.27h6.86c.92,0,1.66-.58,1.66-1.3v-5.71c0-.72-.74-1.3-1.66-1.3h-6.86"/>
+    </g>
+    <g id="Mid_Upper_Doors" data-name="Mid Upper Doors">
+      <path id="MID-UPP_R_Door" data-name="MID-UPP R Door" class="cls-5" d="m467.22,463.47h-6.75c-.92,0-1.66-.58-1.66-1.3v-5.71c0-.72.74-1.3,1.66-1.3h6.75"/>
+      <path id="MID-UPP_L_Door" data-name="MID-UPP L Door" class="cls-5" d="m399.67,463.47h6.86c.92,0,1.66-.58,1.66-1.3v-5.71c0-.72-.74-1.3-1.66-1.3h-6.86"/>
+    </g>
+    <g id="Forward_Upper_Doors" data-name="Forward Upper Doors">
+      <path id="FWD-UPP_R_Door" data-name="FWD-UPP R Door" class="cls-5" d="m467.22,250.71h-6.75c-.92,0-1.66-.58-1.66-1.3v-5.71c0-.72.74-1.3,1.66-1.3h6.75"/>
+      <path id="FWD-UPP_L_Door" data-name="FWD-UPP L Door" class="cls-5" d="m399.67,250.71h6.86c.92,0,1.66-.58,1.66-1.3v-5.71c0-.72-.74-1.3-1.66-1.3h-6.86"/>
+    </g>
+    <polygon id="White_Outline" data-name="White Outline" class="cls-3" points="405.64 104.66 399.67 158.22 399.67 570.88 404.11 624.33 462.78 624.44 467.22 571 467.22 158.33 461.25 104.78 405.64 104.66"/>
+  </g>
+  <g id="BASE_SVG" data-name="BASE SVG">
+    <path id="Fuselage" class="cls-1" d="m431.03,789.53h-2.69c-3.94-12.17-9.25-29.88-11.11-41.86s-4.22-48.22-10.44-72.44c-11.33-39.33-12.89-79.56-12.89-98.67,0,0,0-401.75,0-401.78,0-8.18,2.13-45.6,8.44-76.22,6.22-30.25,21.04-53.67,31.08-53.67h.05c10.04,0,24.87,23.42,31.09,53.67,6.3,30.63,8.44,68.04,8.44,76.22,0,.03,0,401.78,0,401.78,0,19.11-1.56,59.33-12.89,98.67-6.22,24.22-8.52,60.1-10.44,72.44-1.87,11.98-7.17,29.69-11.11,41.86h-2.69"/>
+    <g id="Wide_Fuselage" data-name="Wide Fuselage">
+      <path id="L_Wide_Fuselage" data-name="L Wide Fuselage" class="cls-2" d="m393.89,503.17c-.68-3.22-1.76-7.84-2.48-13.47-2.91-22.78-3.39-37.64-3.36-48.04.08-30.96.12-46.44.95-66.21.89-21.14,2.35-48.81,4.89-81.51"/>
+      <path id="R_Wide_Fuselage" data-name="R Wide Fuselage" class="cls-2" d="m473,503.17c.68-3.22,1.76-7.84,2.48-13.47,2.91-22.78,3.39-37.64,3.36-48.04-.08-30.96-.12-46.44-.95-66.21-.89-21.14-2.35-48.81-4.89-81.51"/>
+    </g>
+    <path id="Rudder" class="cls-1" d="m437.01,624.56c2.44,9.92,4.99,27.84,4.99,51.11,0,18.11-8.47,151.2-8.47,151.2h-.18s-8.47-133.09-8.47-151.2c0-23.27,2.55-41.2,4.99-51.11h7.13Z"/>
+    <g id="Horizontal_Stablizer" data-name="Horizontal Stablizer">
+      <g id="Left_Horizontal_Stablizer" data-name="Left Horizontal Stablizer">
+        <polyline id="Walk" class="cls-6" points="410.5 695.5 333.33 751.17 344.17 770.67 414.83 728.5"/>
+        <g id="Left_Elevator" data-name="Left Elevator">
+          <line id="Left_Elevator_Seperator" data-name="Left Elevator Seperator" class="cls-6" x1="376.58" y1="760.58" x2="376.58" y2="784.28"/>
+          <polyline id="Left_Elevator_Box" data-name="Left Elevator Box" class="cls-4" points="416 741.56 287.78 803.44 286.62 817.41"/>
+        </g>
+        <path id="Left_Stablizer" data-name="Left Stablizer" class="cls-2" d="m421.08,767.89l-149.64,55.11,4.61-26.83c2.22-8.17,5.44-16.39,11.83-21.94l114-88.11c3-2.33,5.05-4.67,5.24-9.49"/>
+      </g>
+      <g id="Right_Horizontal_Stablizer" data-name="Right Horizontal Stablizer">
+        <polyline id="Walk-2" data-name="Walk" class="cls-6" points="456.39 695.5 533.56 751.17 522.72 770.67 452.06 728.5"/>
+        <g id="Right_Elevator" data-name="Right Elevator">
+          <line id="Right_Elevator_Seperator" data-name="Right Elevator Seperator" class="cls-6" x1="490.31" y1="760.58" x2="490.31" y2="784.28"/>
+          <polyline id="Right_Elevator_Box" data-name="Right Elevator Box" class="cls-4" points="450.89 741.56 579.11 803.44 580.26 817.41"/>
+        </g>
+        <path id="Right_Stablizer" data-name="Right Stablizer" class="cls-2" d="m445.81,767.89l149.64,55.11-4.61-26.83c-2.22-8.17-5.44-16.39-11.83-21.94l-114-88.11c-3-2.33-5.05-4.67-5.24-9.49"/>
+      </g>
+    </g>
+    <g id="Wings">
+      <g id="Left_Wing" data-name="Left Wing">
+        <g id="ENG_2" data-name="ENG 2">
+          <path id="Exhaust_Nozzle" data-name="Exhaust Nozzle" class="cls-4" d="m264.02,350.22c.28,3.12.67,5.52,1.36,7.22"/>
+          <path id="Inlet_Leading_Edge" data-name="Inlet Leading Edge" class="cls-4" d="m257,293.94c0-.95,38.11-.95,38.11,0"/>
+          <g id="Cowling">
+            <path id="Cowling_L_Rear_Edge" data-name="Cowling L Rear Edge" class="cls-6" d="m255.36,330.38c5.22.2,8.93.29,16.03.29"/>
+            <path id="Cowling_R_Rear_Edge" data-name="Cowling R Rear Edge" class="cls-6" d="m296.51,330.34c-5.67.22-10.86.34-17.54.33"/>
+            <path id="Cowling_L_Froward_Edge" data-name="Cowling L Froward Edge" class="cls-6" d="m255.09,307.94c5.1-.26,10.73-.42,17.15-.42"/>
+            <path id="Cowling_R_Foward_Edge" data-name="Cowling R Foward Edge" class="cls-6" d="m297.05,307.97c-5.1-.26-12.05-.45-18.48-.46"/>
+          </g>
+          <path id="Strake" class="cls-6" d="m289.95,312.93c-.31,2.6-1.15,12.29-1.56,13.85.1.1,3.64.21,3.64.21.1-2.29-.83-12.08-2.08-14.06Z"/>
+          <g id="Pylon">
+            <line id="Pylon_Beam_Rear" data-name="Pylon Beam Rear" class="cls-6" x1="278.81" y1="326.42" x2="271.5" y2="326.42"/>
+            <line id="Pylon_Beam_Front" data-name="Pylon Beam Front" class="cls-6" x1="278.81" y1="313.74" x2="271.86" y2="313.74"/>
+            <path id="Pylon-2" data-name="Pylon" class="cls-4" d="m278.97,346.89s-.17-33.71-.17-33.8c0-3.82-.21-10.05-3.43-10.05h0c-3.22,0-3.51,6.23-3.51,10.05,0,.08-1.11,40.73-1.11,40.73"/>
+          </g>
+          <path id="Housing" class="cls-2" d="m296.14,332.83c.46-4.24,1.17-10.9,1.17-15.55,0-19.22-3.01-26.97-4.15-27.47-3.69-1.19-29.97-1.08-34.17,0-1.32.43-4.15,8.25-4.15,27.47s3.39,32.89,4.06,32.89c.08.08,12.46.04,12.46.04"/>
+        </g>
+        <g id="ENG_1" data-name="ENG 1">
+          <path id="Exhaust_Nozzle-2" data-name="Exhaust Nozzle" class="cls-4" d="m146.75,433.33c.28,3.12,1.43,7.96,2.12,9.66"/>
+          <path id="Inlet_Leading_Edge-2" data-name="Inlet Leading Edge" class="cls-4" d="m139.73,377.05c0-.95,38.11-.95,38.11,0"/>
+          <g id="Cowling-2" data-name="Cowling">
+            <path id="Cowling_L_Rear_Edge-2" data-name="Cowling L Rear Edge" class="cls-6" d="m138.09,413.49c5.22.2,8.93.29,16.03.29"/>
+            <path id="Cowling_R_Rear_Edge-2" data-name="Cowling R Rear Edge" class="cls-6" d="m179.23,413.45c-5.67.22-10.86.34-17.54.33"/>
+            <path id="Cowling_L_Froward_Edge-2" data-name="Cowling L Froward Edge" class="cls-6" d="m137.81,391.05c5.1-.26,10.73-.42,17.15-.42"/>
+            <path id="Cowling_R_Foward_Edge-2" data-name="Cowling R Foward Edge" class="cls-6" d="m179.77,391.08c-5.1-.26-12.05-.45-18.48-.46"/>
+          </g>
+          <path id="Strake-2" data-name="Strake" class="cls-6" d="m172.67,396.04c-.31,2.6-1.15,12.29-1.56,13.85.1.1,3.64.21,3.64.21.1-2.29-.83-12.08-2.08-14.06Z"/>
+          <g id="Pylon-3" data-name="Pylon">
+            <line id="Pylon_Beam_Rear-2" data-name="Pylon Beam Rear" class="cls-6" x1="161.53" y1="409.53" x2="154.23" y2="409.53"/>
+            <line id="Pylon_Beam_Front-2" data-name="Pylon Beam Front" class="cls-6" x1="161.53" y1="396.85" x2="154.58" y2="396.85"/>
+            <path id="Pylon-4" data-name="Pylon" class="cls-4" d="m161.7,433.56s-.17-37.27-.17-37.36c0-3.82-.21-10.05-3.43-10.05h0c-3.22,0-3.51,6.23-3.51,10.05,0,.08-1.19,43.44-1.19,43.44"/>
+          </g>
+          <path id="Housing-2" data-name="Housing" class="cls-2" d="m178.27,421.39s1.76-12.18,1.76-21c0-19.22-3.01-26.97-4.15-27.47-3.69-1.19-29.97-1.08-34.17,0-1.32.43-4.15,8.25-4.15,27.47s3.39,32.89,4.06,32.89c.08.08,12.46.04,12.46.04"/>
+        </g>
+        <g id="Slats_Droop" data-name="Slats &amp;amp; Droop">
+          <g id="Droop_Flaps" data-name="Droop Flaps">
+            <polyline id="Droop_Box" data-name="Droop Box" class="cls-6" points="353.77 285.62 353.96 296.71 284.25 353.33 279.43 346.52"/>
+            <line id="Line" class="cls-6" x1="317.08" y1="315.58" x2="322.07" y2="322.61"/>
+          </g>
+          <g id="L_Slats_Right" data-name="L Slats Right">
+            <polyline id="Right_Slats_Box" data-name="Right Slats Box" class="cls-6" points="265.38 357.44 265.38 370.22 169.83 440.42 163.83 432"/>
+            <line id="Left_Line" data-name="Left Line" class="cls-6" x1="196.67" y1="408.08" x2="202.53" y2="416.4"/>
+            <line id="Right_Line" data-name="Right Line" class="cls-6" x1="229.42" y1="383.83" x2="235.76" y2="391.99"/>
+          </g>
+          <g id="L_Slats_Left" data-name="L Slats Left">
+            <polyline id="Left_Slats_Box" data-name="Left Slats Box" class="cls-6" points="147.81 443.76 147.81 456.25 26.56 542.94 21.89 536.11"/>
+            <line id="Left_Line-2" data-name="Left Line" class="cls-6" x1="66.22" y1="503.94" x2="71.16" y2="511.05"/>
+            <line id="Right_Line-2" data-name="Right Line" class="cls-6" x1="104.72" y1="475.56" x2="110.65" y2="482.82"/>
+          </g>
+        </g>
+        <g id="Ailerons">
+          <polyline id="Box" class="cls-4" points="60.25 566.78 60.25 556.5 147.81 511.05 150.76 515.08 150.76 527.15"/>
+          <polyline id="Left_Line-3" data-name="Left Line" class="cls-6" points="100.44 549.18 100.44 538.92 99.15 536.31"/>
+          <polyline id="Right_Line-3" data-name="Right Line" class="cls-6" points="129.06 536.65 128.96 525.67 126.88 521.92"/>
+        </g>
+        <g id="Flap_Fairings" data-name="Flap Fairings">
+          <path id="Left_Flap_Fairing_5" data-name="Left Flap Fairing 5" class="cls-4" d="m328.22,457.77c.51,6.22,2.29,9.62,3.06,10.83.16.25.54.24.67-.03.62-1.21,1.98-4.65,2.7-12.53"/>
+          <path id="Left_Flap_Fairing_4" data-name="Left Flap Fairing 4" class="cls-4" d="m285.33,472.71c.43,6.81,1.92,9.99,2.56,11.07.15.25.5.28.68.05.88-1.07,2.94-4.55,2.48-13.42"/>
+          <path id="Left_Flap_Fairing_3" data-name="Left Flap Fairing 3" class="cls-4" d="m241.3,490.37c.29,15.36,2.22,23.87,2.96,26.6.09.34.57.37.7.04,1.15-2.83,4.29-12.18,4.29-29.83"/>
+          <path id="Left_Flap_Fairing_2" data-name="Left Flap Fairing 2" class="cls-4" d="m196.69,508.46c-.3,15.88,1.6,22.51,2.24,24.88.11.42.68.47.88.08,1.3-2.67,3.47-8.69,3.8-27.93"/>
+          <path id="Left_Flap_Fairing_1" data-name="Left Flap Fairing 1" class="cls-4" d="m150.76,527.15c.74,11.93,2.2,14.39,2.81,15.27.13.19.42.21.57.04.73-.84,2.31-6.08,2.69-17.97"/>
+        </g>
+        <g id="Flaps_Spoilers" data-name="Flaps &amp;amp; Spoilers">
+          <polyline id="Spoilers_Box" data-name="Spoilers Box" class="cls-4" points="385.42 442.37 385.42 409.67 309.67 430.42 160.5 503.75 159.37 523.38"/>
+          <polyline id="Flaps_Box" data-name="Flaps Box" class="cls-4" points="160.02 512.1 309.53 444.65 385.42 425.22"/>
+          <line id="Left_Spoiler_Line_1" data-name="Left Spoiler Line 1" class="cls-6" x1="193.76" y1="487.4" x2="196.57" y2="495.61"/>
+          <polyline id="Left_Spoiler_and_Flap_Line" data-name="Left Spoiler and Flap Line" class="cls-6" points="219.64 474.67 223.9 483.28 223.9 497.34"/>
+          <line id="Left_Spoiler_Line_2" data-name="Left Spoiler Line 2" class="cls-6" x1="245.28" y1="462.07" x2="249.46" y2="471.75"/>
+          <line id="Left_Spoiler_Line_3" data-name="Left Spoiler Line 3" class="cls-6" x1="265.6" y1="452.08" x2="270.4" y2="462.3"/>
+          <line id="Left_Spoiler_Line_4" data-name="Left Spoiler Line 4" class="cls-6" x1="289.83" y1="440.17" x2="295.65" y2="450.91"/>
+          <polyline id="Right_Spoiler_and_Flap_Line" data-name="Right Spoiler and Flap Line" class="cls-6" points="309.67 430.42 309.53 444.65 309.53 462.95"/>
+          <line id="Left_Spoiler_Line_5" data-name="Left Spoiler Line 5" class="cls-6" x1="332.33" y1="424.21" x2="335.97" y2="437.95"/>
+          <line id="Left_Spoiler_Line_6" data-name="Left Spoiler Line 6" class="cls-6" x1="358.67" y1="416.99" x2="362.86" y2="431.03"/>
+        </g>
+        <path id="Walk_Zone" data-name="Walk Zone" class="cls-6" d="m393.89,268.25l-28.31,22.08v29.25l-79.42,39.67L19.25,550.17l8.33,15.17,276.33-141.32,63.83-17.85c-3.17-11.42-.64-18.81,21.1-26.86"/>
+        <path id="Left_Wing-2" data-name="Left Wing" class="cls-2" d="m387.83,441.72l-76.75,20.67-147.41,59.11L9.11,589.17c-1.53,7.08-2.78,20.56-3,20.56-.47,0,.15-18.57,1.64-46.72.39-6.33,4.08-19.17,11.25-24.67l253.33-186,104.17-85.33,15.11-15.72,2.28-9.61"/>
+      </g>
+      <g id="Right_Wing" data-name="Right Wing">
+        <g id="ENG_3" data-name="ENG 3">
+          <path id="Exhaust_Nozzle-3" data-name="Exhaust Nozzle" class="cls-4" d="m602.86,350.22c-.28,3.12-.67,5.52-1.36,7.22"/>
+          <path id="Inlet_Leading_Edge-3" data-name="Inlet Leading Edge" class="cls-4" d="m609.88,293.94c0-.95-38.11-.95-38.11,0"/>
+          <g id="Cowling-3" data-name="Cowling">
+            <path id="Cowling_R_Rear_Edge-3" data-name="Cowling R Rear Edge" class="cls-6" d="m611.53,330.38c-5.22.2-8.93.29-16.03.29"/>
+            <path id="Cowling_L_Rear_Edge-3" data-name="Cowling L Rear Edge" class="cls-6" d="m570.38,330.34c5.67.22,10.86.34,17.54.33"/>
+            <path id="Cowling_R_Froward_Edge" data-name="Cowling R Froward Edge" class="cls-6" d="m611.8,307.94c-5.1-.26-10.73-.42-17.15-.42"/>
+            <path id="Cowling_L_Foward_Edge" data-name="Cowling L Foward Edge" class="cls-6" d="m569.84,307.97c5.1-.26,12.05-.45,18.48-.46"/>
+          </g>
+          <path id="Strake-3" data-name="Strake" class="cls-6" d="m576.94,312.93c.31,2.6,1.15,12.29,1.56,13.85-.1.1-3.64.21-3.64.21-.1-2.29.83-12.08,2.08-14.06Z"/>
+          <g id="Pylon-5" data-name="Pylon">
+            <line id="Pylon_Beam_Rear-3" data-name="Pylon Beam Rear" class="cls-6" x1="588.08" y1="326.42" x2="595.38" y2="326.42"/>
+            <line id="Pylon_Beam_Front-3" data-name="Pylon Beam Front" class="cls-6" x1="588.08" y1="313.74" x2="595.03" y2="313.74"/>
+            <path id="Pylon-6" data-name="Pylon" class="cls-2" d="m587.91,346.89s.17-33.71.17-33.8c0-3.82.21-10.05,3.43-10.05h0c3.22,0,3.51,6.23,3.51,10.05,0,.08,1.11,40.73,1.11,40.73"/>
+          </g>
+          <path id="Housing-3" data-name="Housing" class="cls-2" d="m570.75,332.83c-.46-4.24-1.17-10.9-1.17-15.55,0-19.22,3.01-26.97,4.15-27.47,3.69-1.19,29.97-1.08,34.17,0,1.32.43,4.15,8.25,4.15,27.47s-3.39,32.89-4.06,32.89c-.08.08-12.46.04-12.46.04"/>
+        </g>
+        <g id="ENG_4" data-name="ENG 4">
+          <path id="Exhaust_Nozzle-4" data-name="Exhaust Nozzle" class="cls-4" d="m720.14,433.33c-.28,3.12-1.43,7.96-2.12,9.66"/>
+          <path id="Inlet_Leading_Edge-4" data-name="Inlet Leading Edge" class="cls-4" d="m727.16,377.05c0-.95-38.11-.95-38.11,0"/>
+          <g id="Cowling-4" data-name="Cowling">
+            <path id="Cowling_R_Rear_Edge-4" data-name="Cowling R Rear Edge" class="cls-6" d="m728.8,413.49c-5.22.2-8.93.29-16.03.29"/>
+            <path id="Cowling_L_Rear_Edge-4" data-name="Cowling L Rear Edge" class="cls-6" d="m687.66,413.45c5.67.22,10.86.34,17.54.33"/>
+            <path id="Cowling_R_Froward_Edge-2" data-name="Cowling R Froward Edge" class="cls-6" d="m729.08,391.05c-5.1-.26-10.73-.42-17.15-.42"/>
+            <path id="Cowling_L_Foward_Edge-2" data-name="Cowling L Foward Edge" class="cls-6" d="m687.12,391.08c5.1-.26,12.05-.45,18.48-.46"/>
+          </g>
+          <path id="Strake-4" data-name="Strake" class="cls-6" d="m694.22,396.04c.31,2.6,1.15,12.29,1.56,13.85-.1.1-3.64.21-3.64.21-.1-2.29.83-12.08,2.08-14.06Z"/>
+          <g id="Pylon-7" data-name="Pylon">
+            <line id="Pylon_Beam_Rear-4" data-name="Pylon Beam Rear" class="cls-6" x1="705.36" y1="409.53" x2="712.66" y2="409.53"/>
+            <line id="Pylon_Beam_Front-4" data-name="Pylon Beam Front" class="cls-6" x1="705.36" y1="396.85" x2="712.31" y2="396.85"/>
+            <path id="Pylon-8" data-name="Pylon" class="cls-4" d="m705.19,433.56s.17-37.27.17-37.36c0-3.82.21-10.05,3.43-10.05h0c3.22,0,3.51,6.23,3.51,10.05,0,.08,1.19,43.44,1.19,43.44"/>
+          </g>
+          <path id="Housing-4" data-name="Housing" class="cls-2" d="m688.61,421.39s-1.76-12.18-1.76-21c0-19.22,3.01-26.97,4.15-27.47,3.69-1.19,29.97-1.08,34.17,0,1.32.43,4.15,8.25,4.15,27.47s-3.39,32.89-4.06,32.89c-.08.08-12.46.04-12.46.04"/>
+        </g>
+        <g id="Slats_Droop-2" data-name="Slats &amp;amp; Droop">
+          <g id="Droop_Flaps-2" data-name="Droop Flaps">
+            <polyline id="Droop_Box-2" data-name="Droop Box" class="cls-6" points="513.12 285.62 512.93 296.71 582.64 353.33 587.46 346.52"/>
+            <line id="Line-2" data-name="Line" class="cls-6" x1="549.81" y1="315.58" x2="544.82" y2="322.61"/>
+          </g>
+          <g id="R_Slats_Left" data-name="R Slats Left">
+            <polyline id="Left_Slats_Box-2" data-name="Left Slats Box" class="cls-6" points="601.51 357.44 601.51 370.22 697.06 440.42 703.06 432"/>
+            <line id="Right_Line-4" data-name="Right Line" class="cls-6" x1="670.22" y1="408.08" x2="664.36" y2="416.4"/>
+            <line id="Left_Line-4" data-name="Left Line" class="cls-6" x1="637.47" y1="383.83" x2="631.13" y2="391.99"/>
+          </g>
+          <g id="R_Slats_Right" data-name="R Slats Right">
+            <polyline id="Right_Slats_Box-2" data-name="Right Slats Box" class="cls-6" points="719.08 443.76 719.08 456.25 840.33 542.94 845 536.11"/>
+            <line id="Right_Line-5" data-name="Right Line" class="cls-6" x1="800.67" y1="503.94" x2="795.73" y2="511.05"/>
+            <line id="Left_Line-5" data-name="Left Line" class="cls-6" x1="762.17" y1="475.56" x2="756.24" y2="482.82"/>
+          </g>
+        </g>
+        <g id="Ailerons-2" data-name="Ailerons">
+          <polyline id="Box-2" data-name="Box" class="cls-4" points="806.64 566.78 806.64 556.5 719.08 511.05 716.13 515.08 716.13 527.15"/>
+          <polyline id="Right_Line-6" data-name="Right Line" class="cls-6" points="766.44 549.18 766.44 538.92 767.74 536.31"/>
+          <polyline id="Left_Line-6" data-name="Left Line" class="cls-6" points="737.82 536.65 737.93 525.67 740.01 521.92"/>
+        </g>
+        <g id="Flap_Fairings-2" data-name="Flap Fairings">
+          <path id="Right_Flap_Fairing_5" data-name="Right Flap Fairing 5" class="cls-4" d="m538.66,457.77c-.51,6.22-2.29,9.62-3.06,10.83-.16.25-.54.24-.67-.03-.62-1.21-1.98-4.65-2.7-12.53"/>
+          <path id="Right_Flap_Fairing_4" data-name="Right Flap Fairing 4" class="cls-4" d="m581.56,472.71c-.43,6.81-1.92,9.99-2.56,11.07-.15.25-.5.28-.68.05-.88-1.07-2.94-4.55-2.48-13.42"/>
+          <path id="Right_Flap_Fairing_3" data-name="Right Flap Fairing 3" class="cls-4" d="m625.59,490.37c-.29,15.36-2.22,23.87-2.96,26.6-.09.34-.57.37-.7.04-1.15-2.83-4.29-12.18-4.29-29.83"/>
+          <path id="Right_Flap_Fairing_2" data-name="Right Flap Fairing 2" class="cls-4" d="m670.2,508.46c.3,15.88-1.6,22.51-2.24,24.88-.11.42-.68.47-.88.08-1.3-2.67-3.47-8.69-3.8-27.93"/>
+          <path id="Right_Flap_Fairing_1" data-name="Right Flap Fairing 1" class="cls-4" d="m716.13,527.15c-.74,11.93-2.2,14.39-2.81,15.27-.13.19-.42.21-.57.04-.73-.84-2.31-6.08-2.69-17.97"/>
+        </g>
+        <g id="Flaps_Spoilers-2" data-name="Flaps &amp;amp; Spoilers">
+          <polyline id="Spoilers_Box-2" data-name="Spoilers Box" class="cls-4" points="481.47 442.37 481.47 409.67 557.22 430.42 706.39 503.75 707.52 523.38"/>
+          <polyline id="Flaps_Box-2" data-name="Flaps Box" class="cls-4" points="706.87 512.1 557.36 444.65 481.47 425.22"/>
+          <line id="Right_Spoiler_Line_1" data-name="Right Spoiler Line 1" class="cls-6" x1="673.13" y1="487.4" x2="670.32" y2="495.61"/>
+          <polyline id="Right_Spoiler_and_Flap_Line-2" data-name="Right Spoiler and Flap Line" class="cls-6" points="647.25 474.67 642.98 483.28 642.98 497.34"/>
+          <line id="Right_Spoiler_Line_2" data-name="Right Spoiler Line 2" class="cls-6" x1="621.61" y1="462.07" x2="617.43" y2="471.75"/>
+          <line id="Right_Spoiler_Line_3" data-name="Right Spoiler Line 3" class="cls-6" x1="601.29" y1="452.08" x2="596.48" y2="462.3"/>
+          <line id="Right_Spoiler_Line_4" data-name="Right Spoiler Line 4" class="cls-6" x1="577.06" y1="440.17" x2="571.24" y2="450.91"/>
+          <polyline id="Left_Spoiler_and_Flap_Line-2" data-name="Left Spoiler and Flap Line" class="cls-6" points="557.22 430.42 557.36 444.65 557.36 462.95"/>
+          <line id="Right_Spoiler_Line_5" data-name="Right Spoiler Line 5" class="cls-6" x1="534.56" y1="424.21" x2="530.92" y2="437.95"/>
+          <line id="Right_Spoiler_Line_6" data-name="Right Spoiler Line 6" class="cls-6" x1="508.22" y1="416.99" x2="504.03" y2="431.03"/>
+        </g>
+        <path id="Walk_Zone-2" data-name="Walk Zone" class="cls-6" d="m473,268.25l28.31,22.08v29.25s79.42,39.67,79.42,39.67l266.92,190.92-8.33,15.17-276.33-141.32-63.83-17.85c3.17-11.42.64-18.81-21.1-26.86"/>
+        <path id="Right_Wing-2" data-name="Right Wing" class="cls-2" d="m479.06,441.72l76.75,20.67,147.41,59.11,154.56,67.67c1.53,7.08,2.78,20.56,3,20.56.47,0-.15-18.57-1.64-46.72-.39-6.33-4.08-19.17-11.25-24.67l-253.33-186-104.17-85.33-15.11-15.72-2.28-9.61"/>
+      </g>
+    </g>
+    <g id="Cockpit_Windows" data-name="Cockpit Windows">
+      <path class="cls-6" d="m417.25,76.04l4.2.2c.07,0,.13-.03.17-.08l1.23-1.78s.02-.02.03-.04l1.34-1.19c.08-.07.09-.19.02-.27l-1.69-2.04c-.05-.06-.13-.08-.2-.06l-1.54.4s-.08.03-.1.07l-3.61,4.48c-.1.13-.02.31.14.32Z"/>
+      <path class="cls-6" d="m425.48,71.79l7-3.72c.06-.03.1-.1.1-.17v-2.86c0-.13-.12-.22-.24-.19l-3.33.77s-.05.02-.07.03l-4.76,3.46c-.06.04-.09.12-.08.19l.25,1.64s.03.09.07.12l.84.7c.06.05.15.06.22.02Z"/>
+      <path class="cls-6" d="m415.75,77.88l3.43-.46c.51-.07.84.54.49.92l-1.69,1.89s-.05.05-.08.07l-3.97,3.06c-.33.25-.81.07-.89-.33l-.2-1c-.03-.15,0-.3.09-.43l2.42-3.49c.09-.13.23-.21.38-.24Z"/>
+      <path class="cls-6" d="m449.64,76.04l-4.2.2c-.07,0-.13-.03-.17-.08l-1.23-1.78s-.02-.02-.03-.04l-1.34-1.19c-.08-.07-.09-.19-.02-.27l1.69-2.04c.05-.06.13-.08.2-.06l1.54.4s.08.03.1.07l3.61,4.48c.1.13.02.31-.14.32Z"/>
+      <path class="cls-6" d="m441.41,71.79l-7-3.72c-.06-.03-.1-.1-.1-.17v-2.86c0-.13.12-.22.24-.19l3.33.77s.05.02.07.03l4.76,3.46c.06.04.09.12.08.19l-.25,1.64s-.03.09-.07.12l-.84.7c-.06.05-.15.06-.22.02Z"/>
+      <path class="cls-6" d="m451.14,77.88l-3.43-.46c-.51-.07-.84.54-.49.92l1.69,1.89s.05.05.08.07l3.97,3.06c.33.25.81.07.89-.33l.2-1c.03-.15,0-.3-.09-.43l-2.42-3.49c-.09-.13-.23-.21-.38-.24Z"/>
+    </g>
+  </g>
+</svg>
