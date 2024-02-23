@@ -21,21 +21,21 @@ use uom::si::{
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum A380AutobrakeKnobPosition {
     DISARM = 0,
-    LOW = 1,
-    L2 = 2,
-    L3 = 3,
-    HIGH = 4,
-    BTV = 5,
+    BTV = 1,
+    LOW = 2,
+    L2 = 3,
+    L3 = 4,
+    HIGH = 5,
 }
 impl From<f64> for A380AutobrakeKnobPosition {
     fn from(value: f64) -> Self {
         match value as u8 {
             0 => A380AutobrakeKnobPosition::DISARM,
-            1 => A380AutobrakeKnobPosition::LOW,
-            2 => A380AutobrakeKnobPosition::L2,
-            3 => A380AutobrakeKnobPosition::L3,
-            4 => A380AutobrakeKnobPosition::HIGH,
-            5 => A380AutobrakeKnobPosition::BTV,
+            1 => A380AutobrakeKnobPosition::BTV,
+            2 => A380AutobrakeKnobPosition::LOW,
+            3 => A380AutobrakeKnobPosition::L2,
+            4 => A380AutobrakeKnobPosition::L3,
+            5 => A380AutobrakeKnobPosition::HIGH,
             _ => A380AutobrakeKnobPosition::DISARM,
         }
     }
@@ -44,22 +44,24 @@ impl From<f64> for A380AutobrakeKnobPosition {
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum A380AutobrakeMode {
     DISARM = 0,
-    LOW = 1,
-    L2 = 2,
-    L3 = 3,
-    HIGH = 4,
-    BTV = 5,
+    BTV = 1,
+    LOW = 2,
+    L2 = 3,
+    L3 = 4,
+    HIGH = 5,
+
     RTO = 6,
 }
 impl From<f64> for A380AutobrakeMode {
     fn from(value: f64) -> Self {
         match value as u8 {
             0 => A380AutobrakeMode::DISARM,
-            1 => A380AutobrakeMode::LOW,
-            2 => A380AutobrakeMode::L2,
-            3 => A380AutobrakeMode::L3,
-            4 => A380AutobrakeMode::HIGH,
-            5 => A380AutobrakeMode::BTV,
+            1 => A380AutobrakeMode::BTV,
+            2 => A380AutobrakeMode::LOW,
+            3 => A380AutobrakeMode::L2,
+            4 => A380AutobrakeMode::L3,
+            5 => A380AutobrakeMode::HIGH,
+
             6 => A380AutobrakeMode::RTO,
             _ => A380AutobrakeMode::DISARM,
         }

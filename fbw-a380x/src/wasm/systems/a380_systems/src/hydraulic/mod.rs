@@ -7629,18 +7629,28 @@ mod tests {
                 self
             }
 
-            fn set_autobrake_low(mut self) -> Self {
+            fn set_autobrake_btv(mut self) -> Self {
                 self.write_by_name("AUTOBRAKES_SELECTED_MODE", 1.);
                 self
             }
 
-            fn set_autobrake_l3(mut self) -> Self {
+            fn set_autobrake_low(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 2.);
+                self
+            }
+
+            fn set_autobrake_l2(mut self) -> Self {
                 self.write_by_name("AUTOBRAKES_SELECTED_MODE", 3.);
                 self
             }
 
-            fn _set_autobrake_high(mut self) -> Self {
+            fn set_autobrake_l3(mut self) -> Self {
                 self.write_by_name("AUTOBRAKES_SELECTED_MODE", 4.);
+                self
+            }
+
+            fn set_autobrake_high(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 5.);
                 self
             }
 
@@ -9299,7 +9309,7 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_arms_in_flight_lo_or_l3() {
+        fn autobrakes_arms_in_flight_btv_to_hi() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -9309,16 +9319,33 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
+                .set_autobrake_btv()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::BTV);
+
+            test_bed = test_bed
                 .set_autobrake_low()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::LOW);
 
             test_bed = test_bed
+                .set_autobrake_l2()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+
+            test_bed = test_bed
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+
+            test_bed = test_bed
+                .set_autobrake_high()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::HIGH);
         }
 
         #[test]
