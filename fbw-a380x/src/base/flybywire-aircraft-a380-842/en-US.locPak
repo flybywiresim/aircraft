@@ -25,6 +25,13 @@
       "COCKPIT.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
       "COCKPIT.TOOLTIPS.AUTOBRAKE_3": "Set auto brake to 3",
       "COCKPIT.TOOLTIPS.AUTOBRAKE_HI": "Set auto brake to HI",
+      "A380X.TOOLTIPS.STATE_ESS": "ESS",
+      "A380X.TOOLTIPS.STATE_APU": "APU",
+      "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Battery Voltage Selector",
+      "A380X.TOOLTIPS.BAT_SELECTOR_ACTION":  "Select the battery voltage to display",
+
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
     }
   }
 }
