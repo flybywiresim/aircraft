@@ -39,7 +39,7 @@ import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSub
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
-import { OansControlEvents } from '../OANC';
+import { OansControlEvents, OansRunwayInfo } from '../OANC';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -122,7 +122,11 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     private showOans = Subject.create<boolean>(true);
 
-    private hasOansRunwayInfo = Subject.create<boolean>(false);
+    private showOansRunwayInfo = Subject.create<boolean>(false);
+
+    private oansRunwayInfo = Subject.create<OansRunwayInfo | null>(null);
+
+    private fmgcFlightPhase = Subject.create<number>(0);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -168,8 +172,16 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
         });
 
+        sub.on('fmgcFlightPhase').whenChanged().handle((it) => {
+            this.fmgcFlightPhase.set(it);
+            this.shouldShowOansRunwayInfo();
+        });
+
         sub.on('ndShowOans').whenChanged().handle((show) => this.showOans.set(show));
-        sub.on('oansRunwayInfo').whenChanged().handle((it) => this.hasOansRunwayInfo.set(it !== null));
+        sub.on('oansRunwayInfo').whenChanged().handle((it) => {
+            this.oansRunwayInfo.set(it);
+            this.shouldShowOansRunwayInfo();
+        });
     }
 
     // eslint-disable-next-line arrow-body-style
@@ -259,17 +271,21 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         }
     }
 
+    private shouldShowOansRunwayInfo() {
+        this.showOansRunwayInfo.set(this.oansRunwayInfo.get() !== null && this.fmgcFlightPhase.get() > 1);
+    }
+
     render(): VNode | null {
         return (
             <>
                 <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
-                    <div style={{ display: this.hasOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
+                    <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
                         <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                             <WindIndicator bus={this.props.bus} />
                             <SpeedIndicator bus={this.props.bus} />
                         </svg>
                     </div>
-                    <div style={{ display: this.hasOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
+                    <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
                         <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                             <BtvRunwayInfo bus={this.props.bus} />
                             <SpeedIndicator bus={this.props.bus} />

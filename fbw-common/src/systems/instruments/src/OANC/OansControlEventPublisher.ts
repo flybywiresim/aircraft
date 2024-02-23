@@ -5,13 +5,18 @@
 import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
 import { EfisSide, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
+export interface OansRunwayInfo {
+    ident: string,
+    length: number,
+}
+
 export interface OansControlEvents {
     ndShowOans: boolean,
     ndSetContextMenu: { x: number, y: number },
     oansDisplayAirport: string,
     oansZoomIn: number,
     oansZoomOut: number,
-    oansRunwayInfo: { ident: string, length: number } | null,
+    oansRunwayInfo: OansRunwayInfo | null,
 }
 
 export class OansControlEventPublisher extends BasePublisher<OansControlEvents> {
