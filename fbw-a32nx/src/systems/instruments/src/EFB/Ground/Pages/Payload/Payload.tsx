@@ -4,14 +4,14 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { getAirframeType } from '../../../Efb';
+import { AircraftType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { A320Payload } from './A320_251N/A320Payload';
 import { A380Payload } from './A380_842/A380Payload';
 import { useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 
 export const Payload = () => {
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
@@ -27,8 +27,8 @@ export const Payload = () => {
 
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
 
-    switch (getAirframeType()) {
-    case 'A380_842':
+    switch (airframe) {
+    case AircraftType.A380_842:
         return (
             <A380Payload
                 simbriefUnits={simbriefUnits}
@@ -46,7 +46,7 @@ export const Payload = () => {
                 setBoardingRate={setBoardingRate}
             />
         );
-    case 'A320_251N':
+    case AircraftType.A320_251N:
     default:
         return (
             <A320Payload

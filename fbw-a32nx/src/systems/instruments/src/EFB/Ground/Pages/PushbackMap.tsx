@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { useSimVar, MathUtils } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, AircraftType } from '@flybywiresim/fbw-sdk';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
@@ -21,7 +21,6 @@ import {
     setMapRange,
     TScreenCoordinates,
 } from '../../Store/features/pushback';
-import { getAirframeType } from '../../Efb';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -68,7 +67,7 @@ const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) 
 
 export const PushbackMap = () => {
     const dispatch = useAppDispatch();
-
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
     const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
     const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
@@ -83,7 +82,7 @@ export const PushbackMap = () => {
         'number',
         250,
     );
-    const turnIndicatorTuningDefault = getAirframeType() === 'A320_251N' ? 1.35 : 1.35; // determined by testing
+    const turnIndicatorTuningDefault = airframe === AircraftType.A320_251N ? 1.35 : 1.35; // determined by testing
 
     // Reducer state for pushback
     const {
@@ -100,8 +99,8 @@ export const PushbackMap = () => {
     // Aircraft wheelbase in meters
     // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2021-11/Airbus-Commercial-Aircraft-AC-A320.pdf
     // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2022-02/Airbus-A380-Facts-and-Figures-February-2022.pdf
-    const aircraftWheelBase = getAirframeType() === 'A380_842' ? 31.9 : 12.64;
-    const aircraftLengthMeter = getAirframeType() === 'A380_842' ? 72.72 : 37.57;
+    const aircraftWheelBase = airframe === AircraftType.A380_842 ? 31.9 : 12.64;
+    const aircraftLengthMeter = airframe === AircraftType.A380_842 ? 72.72 : 37.57;
 
     // Map
     const [mouseDown, setMouseDown] = useState(false);

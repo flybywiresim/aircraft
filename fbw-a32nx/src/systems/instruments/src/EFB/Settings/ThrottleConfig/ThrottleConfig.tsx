@@ -3,9 +3,8 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AircraftType, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
-import { getAirframeType } from 'instruments/src/EFB/Efb';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
@@ -36,11 +35,11 @@ interface ThrottleConfigProps {
  * @constructor
  */
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [airframe] = useState(getAirframeType());
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
-    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === 'A380_842' ? 4 : 2);
+    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === AircraftType.A380_842 ? 4 : 2);
     // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== 'A380_842' && axisNum === 4) {
+    if (airframe !== AircraftType.A380_842 && axisNum === 4) {
         setAxisNum(2);
     }
 
@@ -64,10 +63,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const { showModal } = useModals();
 
     // the number of throttles that are used in the aircraft (2 or 4)
-    const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
+    const numberOfThrottles = airframe === AircraftType.A380_842 ? 4 : 2;
 
     // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== 'A380_842' && axisNum === 4) {
+    if (airframe !== AircraftType.A380_842 && axisNum === 4) {
         setAxisNum(2);
     }
 

@@ -31,7 +31,6 @@ import {
     setGpuButtonState,
     setJetWayButtonState,
 } from '../../../../Store/features/groundServicePage';
-// import { getAirframeType } from '../../../../Efb';
 
 interface ServiceButtonWrapperProps {
     className?: string,

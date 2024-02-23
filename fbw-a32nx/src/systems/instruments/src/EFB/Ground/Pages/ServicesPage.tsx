@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
-import React, { useState } from 'react';
+import React from 'react';
+import { AircraftType, useSimVar } from '@flybywiresim/fbw-sdk';
 import { A380Services } from './Services/A380_842/A380Services';
 import { A320Services } from './Services/A320_251N/A320Services';
-import { getAirframeType } from '../../Efb';
 
 export const ServicesPage = () => {
-    const [airframe] = useState(getAirframeType());
+    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
     switch (airframe) {
-    case 'A380_842':
+    case AircraftType.A380_842:
         return (
             <A380Services />
         );
-    case 'A320_251N':
+    case AircraftType.A320_251N:
     default:
         return (
             <A320Services />

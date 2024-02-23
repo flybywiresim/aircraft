@@ -72,11 +72,6 @@ interface BatteryStatus {
 
 export const usePower = () => React.useContext(PowerContext);
 
-// this returns either `A380_842` or `A320_251N` depending on the aircraft
-export const getAirframeType = () => new URL(
-    document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'),
-).searchParams.get('Airframe');
-
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
