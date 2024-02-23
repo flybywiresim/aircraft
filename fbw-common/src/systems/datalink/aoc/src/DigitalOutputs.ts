@@ -1,6 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { AtcAocRouterMessages } from '../../router/src';
 import {
     AtisType,
     AtsuMessage,
@@ -9,9 +11,7 @@ import {
     FreetextMessage,
     SimVarSources,
     WeatherMessage,
-} from '@datalink/common';
-import { AtcAocRouterMessages } from '@datalink/router';
-import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { AocFmsMessages } from './databus/FmsBus';
 
 export class DigitalOutputs {
