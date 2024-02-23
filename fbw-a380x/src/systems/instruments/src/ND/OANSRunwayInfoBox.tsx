@@ -5,8 +5,8 @@ import { EntityTypes } from 'instruments/src/ND/OansControlPanel';
 interface OansRunwayInfoBoxProps {
     rwyOrStand: Subscribable<EntityTypes | null>;
     selectedEntity: Subscribable<string | null>;
-    tora: Subscribable<number>;
-    lda: Subscribable<number>;
+    tora: Subscribable<string | null>;
+    lda: Subscribable<string | null>;
     ldaIsReduced: Subscribable<boolean>;
     coordinate: Subscribable<string>;
 }
@@ -48,12 +48,12 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
                     </div>
                     <span class="mfd-label" style="text-align: right; margin-right: 15px;">TORA: </span>
                     <span class="mfd-value smaller">
-                        {`${this.props.tora.get().toString()} `}
+                        {this.props.tora}
                         <span style="color: rgb(33, 33, 255)">M</span>
                     </span>
                     <span class="mfd-label" style="grid-column: span 2; text-align: right; margin-right: 15px;">{`${this.props.ldaIsReduced.get() ? 'REDUCED ' : ''}LDA: `}</span>
                     <span class="mfd-value smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
-                        {`${this.props.lda.get().toString()} `}
+                        {this.props.lda}
                         <span style="color: rgb(33, 33, 255)">M</span>
                     </span>
                 </div>

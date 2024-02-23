@@ -14,7 +14,6 @@ import { MouseCursor } from './UI/MouseCursor';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -27,6 +26,7 @@ import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/Fcu
 
 import './style.scss';
 import './oans-styles.scss';
+import { FmsOansPublisher } from 'instruments/src/ND/FmsOansPublisher';
 
 declare type MousePosition = {
     x: number;
@@ -52,7 +52,7 @@ class NDInstrument implements FsInstrument {
 
     private readonly fmBusPublisher: FMBusPublisher;
 
-    private readonly fmsSymbolsPublisher: FmsSymbolsPublisher;
+    private readonly fmsOansPublisher: FmsOansPublisher;
 
     private readonly vorBusPublisher: VorBusPublisher;
 
@@ -159,7 +159,7 @@ class NDInstrument implements FsInstrument {
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
-        this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
+        this.fmsOansPublisher = new FmsOansPublisher(this.bus, side);
         this.vorBusPublisher = new VorBusPublisher(this.bus);
         this.tcasBusPublisher = new TcasBusPublisher(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
@@ -175,7 +175,7 @@ class NDInstrument implements FsInstrument {
         this.backplane.addPublisher('fms', this.fmsDataPublisher);
         this.backplane.addPublisher('fg', this.fgDataPublisher);
         this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
-        this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+        this.backplane.addPublisher('fms-symbols', this.fmsOansPublisher);
         this.backplane.addPublisher('vor', this.vorBusPublisher);
         this.backplane.addPublisher('tcas', this.tcasBusPublisher);
         this.backplane.addPublisher('dmc', this.dmcPublisher);

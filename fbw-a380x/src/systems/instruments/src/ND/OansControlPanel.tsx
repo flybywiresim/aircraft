@@ -9,13 +9,13 @@ import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
 
 import { Button } from 'instruments/src/ND/UI/Button';
 import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { DropdownMenu } from './UI/DropdownMenu';
 import { RadioButtonGroup } from './UI/RadioButtonGroup';
 import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
+import { FmsOansData } from 'instruments/src/ND/FmsOansPublisher';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
@@ -73,6 +73,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private altnAirport = Subject.create<string | null>(null);
 
+    private landingRunway = Subject.create<string | null>(null);
+
+    private runwayTora = Subject.create<string | null>(null);
+
+    private runwayLda = Subject.create<string | null>(null);
+
     private airportDatabase = Subject.create('SXT59027250AA04');
 
     private activeDatabase = Subject.create('30DEC-27JAN');
@@ -127,11 +133,28 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.store.sortedAirports.sub(() => this.updateAirportSearchData(), true),
         );
 
-        const sub = this.props.bus.getSubscriber<FmsSymbolsData>();
+        const sub = this.props.bus.getSubscriber<FmsOansData>();
 
-        sub.on('oansOrigin').whenChanged().handle((it) => this.originAirport.set(it));
-        sub.on('oansDestination').whenChanged().handle((it) => this.destAirport.set(it));
-        sub.on('oansAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
+        sub.on('fmsOrigin').whenChanged().handle((it) => this.originAirport.set(it));
+        sub.on('fmsDestination').whenChanged().handle((it) => this.destAirport.set(it));
+        sub.on('fmsAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
+        sub.on('fmsLandingRunway').whenChanged().handle((it) => {
+            // Set control panel display
+            this.landingRunway.set(it);
+            this.availableEntityList.set([it]);
+            this.selectedEntityType.set(EntityTypes.RWY);
+            this.selectedEntityIndex.set(0);
+            this.selectedEntityString.set(it);
+        });
+
+        // Load runway data from nav data
+        // TODO FIXME fms-v2 check when merged
+        // Once fms-v2 is merged this will be loaded here (via Msfs backend)
+        // TODO unclear whether that's LDA, TORA, ...
+        sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => {
+            this.runwayLda.set(it.toFixed(0));
+            this.runwayTora.set(it.toFixed(0));
+        })
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
@@ -368,10 +391,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                         <OansRunwayInfoBox
                                             rwyOrStand={this.selectedEntityType}
                                             selectedEntity={this.selectedEntityString}
-                                            tora={Subject.create(4000)}
-                                            lda={Subject.create(4000)}
+                                            tora={this.runwayTora}
+                                            lda={this.runwayLda}
                                             ldaIsReduced={Subject.create(false)}
-                                            coordinate={Subject.create('48°21.5N/011°47.0E')}
+                                            coordinate={Subject.create('----')}
                                         />
                                     </div>
                                 </div>
