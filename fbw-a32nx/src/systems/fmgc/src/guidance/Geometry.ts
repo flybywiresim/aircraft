@@ -548,6 +548,12 @@ export class Geometry {
     }
 
     private computeLegDistances(leg: Leg, inboundTransition: Transition, outboundTransition: Transition): [NauticalMiles, NauticalMiles] {
+        // If a leg is null, it usually means that it's some computed intercept that the FMS has deemed non-sensical.
+        // Ignore it in the distance calculation in this case
+        if (leg.isNull) {
+            return [0, 0];
+        }
+
         const [inboundDistance, distance, outboundDistance] = Geometry.completeLegPathLengths(leg, inboundTransition, outboundTransition);
 
         return [distance, distance + inboundDistance + outboundDistance];
