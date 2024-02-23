@@ -4,11 +4,13 @@ use systems_wasm::aspects::{EventToVariableMapping, EventToVariableOptions, Msfs
 use systems_wasm::Variable;
 
 pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    let options = |options: EventToVariableOptions| {
+    let option_button_press = |options: EventToVariableOptions| {
         options
             .leading_debounce(Duration::from_millis(1500))
             .afterwards_reset_to(0.)
     };
+    let option_knob_event =
+        |options: EventToVariableOptions| options.leading_debounce(Duration::from_millis(1500));
 
     // Mapping msfs 320 bindings to some 380 modes
     // LO -> LO  / MED -> BRK 3 / HI -> RTO
@@ -16,32 +18,29 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         "AUTOBRAKE_LO_SET",
         EventToVariableMapping::Value(2.),
         Variable::named("AUTOBRAKES_SELECTED_MODE"),
-        options,
+        option_knob_event,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_MED_SET",
         EventToVariableMapping::Value(4.),
         Variable::named("AUTOBRAKES_SELECTED_MODE"),
-        options,
+        option_knob_event,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_HI_SET",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_RTO_ARM_IS_PRESSED"),
-        options,
+        option_button_press,
     )?;
     builder.event_to_variable(
         "A32NX.AUTO_THROTTLE_DISCONNECT",
         EventToVariableMapping::Value(1.),
         Variable::named("AUTOBRAKE_DISARM"),
-        |options| options.afterwards_reset_to(0.),
+        option_button_press,
     )?;
 
-    let options_set = |options: EventToVariableOptions| {
-        options
-            .leading_debounce(Duration::from_millis(125))
-            .afterwards_reset_to(-1.)
-    };
+    let options_set =
+        |options: EventToVariableOptions| options.leading_debounce(Duration::from_millis(125));
 
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET",
