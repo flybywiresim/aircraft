@@ -88,8 +88,45 @@
                 (L:A380X_EFIS_L_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_1_FILTER_ACTIVE)
                 (L:A380X_EFIS_R_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_2_FILTER_ACTIVE)
 
-                (L:A380X_EFIS_L_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_L_OPTION)
-                (L:A380X_EFIS_R_ACTIVE_FILTER) (&gt;L:A32NX_EFIS_R_OPTION)
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 0 == if{
+                    3 (&gt;L:A32NX_EFIS_L_OPTION)
+                }
+
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
+                    2 (&gt;L:A32NX_EFIS_L_OPTION)
+                }
+
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 2 == if{
+                    4 (&gt;L:A32NX_EFIS_L_OPTION)
+                }
+
+                (L:A380X_EFIS_L_ARPT_BUTTON_IS_ON) 1 == if{
+                    5 (&gt;L:A32NX_EFIS_L_OPTION)
+                }
+
+                (L:A380X_EFIS_L_CSTR_BUTTON_IS_ON) 1 == if{
+                    1 (&gt;L:A32NX_EFIS_L_OPTION)
+                }
+
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 0 == if{
+                    3 (&gt;L:A32NX_EFIS_R_OPTION)
+                }
+
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 1 == if{
+                    2 (&gt;L:A32NX_EFIS_R_OPTION)
+                }
+
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 2 == if{
+                    4 (&gt;L:A32NX_EFIS_R_OPTION)
+                }
+
+                (L:A380X_EFIS_R_ARPT_BUTTON_IS_ON) 1 == if{
+                    5 (&gt;L:A32NX_EFIS_R_OPTION)
+                }
+
+                (L:A380X_EFIS_R_CSTR_BUTTON_IS_ON) 1 == if{
+                    1 (&gt;L:A32NX_EFIS_R_OPTION)
+                }
 
                 (L:A32NX_AUTOBRAKES_ARMED_MODE) (&gt;L:A380X_KNOB_SWITCHING_BRK_Position)
 
