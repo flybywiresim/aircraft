@@ -37,10 +37,10 @@ export class FmsOansPublisher extends BasePublisher<FmsOansData> {
 
         this.events.push(new GenericDataListenerSync((ev, data: string) => {
             this.publish('fmsLandingRunway', data);
-        }, `A380X_OANS_${side}_FMS_SELECTED_LANDING_RUNWAY`));
+        }, `A380X_OANS_${side}_FMS_SELECTED_LANDING_RWY`));
 
         this.events.push(new GenericDataListenerSync((ev, data: number) => {
             this.publish('fmsLandingRunwayLength', data);
-        }, `A380X_OANS_${side}_FMS_SELECTED_LANDING_RUNWAY_LENGTH`));
+        }, `A380X_OANS_${side}_FMS_SELECTED_LANDING_RWY_LENGTH`));
     }
 }

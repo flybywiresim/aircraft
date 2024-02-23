@@ -5,6 +5,7 @@
 import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import { clampAngle } from 'msfs-geo';
+import { BtvRunwayInfo } from 'instruments/src/ND/shared/BtvRunwayInfo';
 import { CrossTrackError } from './shared/CrossTrackError';
 import { RadioNeedle } from './shared/RadioNeedle';
 import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
@@ -121,6 +122,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     private showOans = Subject.create<boolean>(true);
 
+    private hasOansRunwayInfo = Subject.create<boolean>(false);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -166,6 +169,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         });
 
         sub.on('ndShowOans').whenChanged().handle((show) => this.showOans.set(show));
+        sub.on('oansRunwayInfo').whenChanged().handle((it) => this.hasOansRunwayInfo.set(it !== null));
     }
 
     // eslint-disable-next-line arrow-body-style
@@ -259,10 +263,18 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         return (
             <>
                 <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
-                    <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-                        <WindIndicator bus={this.props.bus} />
-                        <SpeedIndicator bus={this.props.bus} />
-                    </svg>
+                    <div style={{ display: this.hasOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
+                        <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                            <WindIndicator bus={this.props.bus} />
+                            <SpeedIndicator bus={this.props.bus} />
+                        </svg>
+                    </div>
+                    <div style={{ display: this.hasOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
+                        <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                            <BtvRunwayInfo bus={this.props.bus} />
+                            <SpeedIndicator bus={this.props.bus} />
+                        </svg>
+                    </div>
                     <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                         <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
                         <FmMessages bus={this.props.bus} mode={this.currentPageMode} />

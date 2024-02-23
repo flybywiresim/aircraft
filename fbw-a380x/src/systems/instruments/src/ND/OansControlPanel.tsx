@@ -154,6 +154,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => {
             this.runwayLda.set(it.toFixed(0));
             this.runwayTora.set(it.toFixed(0));
+
+            this.props.bus.getPublisher<OansControlEvents>().pub('oansRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it});
         })
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));

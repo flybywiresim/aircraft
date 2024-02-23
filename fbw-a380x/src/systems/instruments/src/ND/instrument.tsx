@@ -14,6 +14,7 @@ import { MouseCursor } from './UI/MouseCursor';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsOansPublisher } from 'instruments/src/ND/FmsOansPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -26,7 +27,7 @@ import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/Fcu
 
 import './style.scss';
 import './oans-styles.scss';
-import { FmsOansPublisher } from 'instruments/src/ND/FmsOansPublisher';
+
 
 declare type MousePosition = {
     x: number;

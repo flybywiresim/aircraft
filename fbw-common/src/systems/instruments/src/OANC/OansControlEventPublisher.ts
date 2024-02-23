@@ -7,13 +7,11 @@ import { EfisSide, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface OansControlEvents {
     ndShowOans: boolean,
-    ndSetOrigin: string;
-    ndSetDestination: string;
-    ndSetAlternate: string;
     ndSetContextMenu: { x: number, y: number },
     oansDisplayAirport: string,
     oansZoomIn: number,
     oansZoomOut: number,
+    oansRunwayInfo: { ident: string, length: number } | null,
 }
 
 export class OansControlEventPublisher extends BasePublisher<OansControlEvents> {
