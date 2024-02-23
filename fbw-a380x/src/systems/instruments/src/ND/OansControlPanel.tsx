@@ -3,7 +3,7 @@
 import './UI/style.scss';
 import './OansControlPanel.scss';
 
-import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, MapSubject, MappedSubscribable, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, MapSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
 
@@ -145,11 +145,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         sub.on('fmsAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
         sub.on('fmsLandingRunway').whenChanged().handle((it) => {
             // Set control panel display
-            this.landingRunway.set(it);
-            this.availableEntityList.set([it]);
+            this.landingRunway.set(it.substring(2));
+            this.availableEntityList.set([it.substring(2)]);
             this.selectedEntityType.set(EntityTypes.RWY);
             this.selectedEntityIndex.set(0);
-            this.selectedEntityString.set(it);
+            this.selectedEntityString.set(it.substring(2));
         });
 
         // Load runway data from nav data
@@ -161,6 +161,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.runwayTora.set(it.toFixed(0));
 
             this.props.bus.getPublisher<OansControlEvents>().pub('oansRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it});
+
+            // Transmit via LVar to autobrake system
+            SimVar.SetSimVarValue('L:A32NX_OANS_LANDING_RWY_LENGTH', SimVarValueType.Number, it);
         })
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));

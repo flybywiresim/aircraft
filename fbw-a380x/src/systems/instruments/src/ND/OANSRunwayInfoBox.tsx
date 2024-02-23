@@ -15,11 +15,11 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
 
     private standDivRef = FSComponent.createRef<HTMLDivElement>();
 
-    private setDivs(rwyOrStand: EntityTypes | null) {
-        if (rwyOrStand === EntityTypes.RWY && this.props.selectedEntity.get()) {
+    private setDivs() {
+        if (this.props.rwyOrStand.get() === EntityTypes.RWY && this.props.selectedEntity.get()) {
             this.rwyDivRef.instance.style.display = 'grid';
             this.standDivRef.instance.style.display = 'none';
-        } else if (rwyOrStand === EntityTypes.STAND && this.props.selectedEntity.get()) {
+        } else if (this.props.rwyOrStand.get() === EntityTypes.STAND && this.props.selectedEntity.get()) {
             this.rwyDivRef.instance.style.display = 'none';
             this.standDivRef.instance.style.display = 'flex';
         } else {
@@ -31,11 +31,10 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.setDivs(this.props.rwyOrStand.get());
+        this.setDivs();
 
-        this.props.rwyOrStand.sub((val) => {
-            this.setDivs(val);
-        });
+        this.props.rwyOrStand.sub(() => this.setDivs());
+        this.props.selectedEntity.sub(() => this.setDivs());
     }
 
     render(): VNode {
