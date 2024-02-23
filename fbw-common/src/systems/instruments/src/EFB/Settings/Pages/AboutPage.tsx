@@ -9,6 +9,7 @@ import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { t } from '../../Localization/translation';
+import { useViewListenerEvent } from '../../Utils/listener';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -50,24 +51,18 @@ export const AboutPage = () => {
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-    const [listener] = useState(RegisterViewListener('JS_LISTENER_COMMUNITY', undefined, false));
 
     const onSetPlayerData = (data: CommunityPanelPlayerData) => {
         setVersion(data.sBuildVersion);
     };
 
+    useViewListenerEvent('JS_LISTENER_COMMUNITY', 'SetGamercardInfo', onSetPlayerData);
+
     useEffect(() => {
-        listener.on('SetGamercardInfo', onSetPlayerData, null);
         AircraftVersionChecker.getBuildInfo(
             getAirframeType() === 'A320_251N' ? 'a32nx' : 'a380x',
         ).then((info) => setBuildInfo(info));
     }, []);
-
-    useEffect(() => {
-        if (version) {
-            listener.unregister();
-        }
-    }, [version]);
 
     return (
         <SettingsPage name={t('Settings.About.Title')}>

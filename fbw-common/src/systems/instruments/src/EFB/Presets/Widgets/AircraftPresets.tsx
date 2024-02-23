@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
+
+import { useViewListenerEvent } from '../../Utils/listener';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
@@ -23,18 +25,16 @@ export const AircraftPresets = () => {
 
     const { showModal } = useModals();
 
-    // Listener for the callback from the WASM module for the progress updates of loading a preset
-    const [listener] = useState(RegisterViewListener('JS_LISTENER_COMM_BUS', undefined, false));
     const [loadPresetProgress, setLoadPresetProgress] = useState(0);
     const [currentStepDescription, setCurrentStepDescription] = useState('');
+
     const onProgressUpdateFromWasm = (data: string) => {
         const [progressPercentage, currentStep] = data.split(';');
         setLoadPresetProgress(parseFloat(progressPercentage));
         setCurrentStepDescription(currentStep);
     };
-    useEffect(() => {
-        listener.on('AIRCRAFT_PRESET_WASM_CALLBACK', onProgressUpdateFromWasm, null);
-    }, []);
+
+    useViewListenerEvent('JS_LISTENER_COMM_BUS', 'AIRCRAFT_PRESET_WASM_CALLBACK', onProgressUpdateFromWasm);
 
     // These need to align with the IDs in the Presets C++ WASM.
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h
