@@ -133,6 +133,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.store.sortedAirports.sub(() => this.updateAirportSearchData(), true),
         );
 
+        // unfocus input fields on tab change
+        this.subs.push(
+            this.activeTabIndex.sub((index) => Coherent.trigger('UNFOCUS_INPUT_FIELD'))
+        );
+
         const sub = this.props.bus.getSubscriber<FmsOansData>();
 
         sub.on('fmsOrigin').whenChanged().handle((it) => this.originAirport.set(it));
