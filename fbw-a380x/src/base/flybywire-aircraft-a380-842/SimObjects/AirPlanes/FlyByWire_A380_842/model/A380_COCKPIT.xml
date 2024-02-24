@@ -29,8 +29,10 @@
         <Include RelativeFile="behaviour\generic\gear.xml" />
 
         <!-- A380X Includes - External Components -->
-        <Include RelativeFile="behaviour\overhead\flight-control.xml" />
+        <Include RelativeFile="behaviour\overhead\ovhd-inputs.xml" />
+        <Include RelativeFile="behaviour\overhead\electrical.xml" />
         <Include RelativeFile="behaviour\overhead\cargo-air-cond.xml" />
+        <Include RelativeFile="behaviour\overhead\flight-control.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
         <Include RelativeFile="behaviour\ecam-cp.xml" />
         <Include RelativeFile="behaviour\fcu.xml" />
@@ -41,7 +43,26 @@
         <Include RelativeFile="behaviour\rmp.xml" />
         <Include RelativeFile="behaviour\kccu.xml" />
 
+        <!-- TEMPLATES -->
+        <!-- TODO: Should probably not be in this file -->
+
+        <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
+            <DefaultTemplateParameters>
+                <ID>1</ID>
+            </DefaultTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+                <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Heading_SubTemplate</TEMPLATE_TO_CALL>
+            </UseTemplate>
+        </Template>
+
+        <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
+            <DefaultTemplateParameters>
+                <ID>1</ID>
+            </DefaultTemplateParameters>
+        </Template>
+
         <!-- External Components -->
+
         <Component ID="OVHD">
             <Component ID="CARGO_AIR_COND">
                 <UseTemplate Name="FBW_A380X_Components_OVHD_CARGO_AIR_COND" />
@@ -75,8 +96,9 @@
             <UseTemplate Name="FBW_A380X_Components_KCCU" />
         </Component>
 
+        <!-- TEMPORARY A32NX VARIABLE MAPPING -->
+
         <Component ID="VARIABLE_MAPPING">
-            <!-- TEMPORARY A32NX VARIABLE MAPPING -->
             <Update Frequency="18">
                 (L:A32NX_OVHD_INTLT_ANN, number) (&gt;L:A380X_OVHD_INTLT_ANN, number)
                 (L:A32NX_EFIS_L_ND_RANGE) (&gt;L:A380X_EFIS_L_ND_RANGE)
@@ -143,6 +165,8 @@
             </Update>
         </Component>
 
+        <!-- WIPERS -->
+
         <Component ID="WipersLeft">
             <UseTemplate Name="FBW_Airbus_Wiper">
                 <ANIM_NAME>HANDLING_Wiper_left</ANIM_NAME>
@@ -177,10 +201,8 @@
         <!-- COMPASS -->
 
         <Component ID="INSTRUMENTS">
-
             <UseTemplate Name="ASOBO_INSTRUMENT_Dial_Compass_Template">
             </UseTemplate>
-
         </Component>
 
         <Component ID="Screens">
@@ -396,6 +418,7 @@
         </Component>
 
         <!-- EFB -->
+
         <Component ID="EFB">
             <Component ID="SCREEN_EFB" Node="SCREEN_EFB">
                 <DefaultTemplateParameters>
@@ -429,9 +452,8 @@
             </UseTemplate>
         </Component>
 
-        <!-- Integrated lighting -->
-
         <!-- TODO holland all of this probably needs to move to dedicated .xml fields -->
+
         <Component ID="LIGHTING">
             <!-- FLOOD LT PED -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
@@ -1690,7 +1712,8 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template"></UseTemplate>
+                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template">
+                </UseTemplate>
 
                 <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown.
                 Ensure it is always >0.9 -->
@@ -2406,6 +2429,11 @@
                 <DefaultTemplateParameters>
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
+
+                <!-- Overhead Battery Voltage Display Selector -->
+                <UseTemplate Name="FBW_A380X_OVHD_BAT_Knob_Template">
+                    <NODE_ID>KNOB_OVHD_BAT</NODE_ID>
+                </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
@@ -3738,12 +3766,8 @@
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ADIRS</NODE_ID>
                             <!--
-                                Various buses may power the ON BAT
-                            indication. When revisiting the ADIRS
-                                implementation
-                            the necessary logic should be implemented and the appropriate
-                                power
-                            sources used.
+                                Various buses may power the ON BAT indication, when revisiting the ADIRS implementation,
+                                the necessary logic should be implemented and the appropriate power sources used.
                             -->
                             <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_ON_BAT_IS_ILLUMINATED, Bool)</SEQ1_CODE>
                             <NO_SEQ2 />
@@ -3774,8 +3798,9 @@
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
+                    </Component>
 
-                        <Component ID="EVAC">
+                    <Component ID="EVAC">
                             <!-- COMMAND -->
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
@@ -3817,63 +3842,61 @@
                             </UseTemplate>
                         </Component>
 
+                    <Component ID="EMER_ELEC_PWR">
+                        <!-- EMER GEN TEST -->
+                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_EMERTEST</LOCK_NODE_ID>
+                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
+                            <TOOLTIPID>Test emergency generator (Inop.)</TOOLTIPID>
+                            <MOMENTARY />
+                            <NO_SEQ1 />
+                            <NO_SEQ2 />
+                        </UseTemplate>
 
-                        <Component ID="EMER_ELEC_PWR">
-                            <!-- EMER GEN TEST -->
-                            <UseTemplate Name="FBW_Covered_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
-                                <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_EMERTEST</LOCK_NODE_ID>
-                                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
-                                <TOOLTIPID>Test emergency generator (Inop.)</TOOLTIPID>
-                                <MOMENTARY />
-                                <NO_SEQ1 />
-                                <NO_SEQ2 />
-                            </UseTemplate>
+                        <!-- GEN 1 LINE -->
+                        <UseTemplate Name="FBW_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
+                            <TOGGLE_SIMVAR>L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON</TOGGLE_SIMVAR>
+                            <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                            <SEQ2_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool) !</SEQ2_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                            <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON,
+                                Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
+                        </UseTemplate>
 
-                            <!-- GEN 1 LINE -->
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON</TOGGLE_SIMVAR>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_HAS_FAULT, Bool)</SEQ1_CODE>
-                                <SEQ2_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool) !</SEQ2_CODE>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON,
-                                    Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
-                            </UseTemplate>
+                        <!-- RAT & EMER GEN -->
+                        <UseTemplate Name="FBW_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
+                            <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT, Bool)</SEQ1_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                            <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT,
+                                Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen
+                                NORMAL%{end}</TOOLTIPID>
+                            <DUMMY_BUTTON />
+                        </UseTemplate>
 
-                            <!-- RAT & EMER GEN -->
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-                                <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT, Bool)</SEQ1_CODE>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT,
-                                    Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen
-                                    NORMAL%{end}</TOOLTIPID>
-                                <DUMMY_BUTTON />
-                            </UseTemplate>
-
-                            <!-- MAN ON -->
-                            <UseTemplate Name="FBW_Covered_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
-                                <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
-                                <LEFT_SINGLE_CODE>1
-                                    (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_SINGLE_CODE>
-                                <LEFT_LEAVE_CODE>0
-                                    (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_LEAVE_CODE>
-                                <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED,
-                                    Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air
-                                    turbine (Inop.)%{end}</TOOLTIPID>
-                                <MOMENTARY />
-                                <NO_SEQ1 />
-                                <NO_SEQ2 />
-                            </UseTemplate>
-                        </Component>
+                        <!-- MAN ON -->
+                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
+                            <LEFT_SINGLE_CODE>1
+                                (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_SINGLE_CODE>
+                            <LEFT_LEAVE_CODE>0
+                                (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_LEAVE_CODE>
+                            <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED,
+                                Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air
+                                turbine (Inop.)%{end}</TOOLTIPID>
+                            <MOMENTARY />
+                            <NO_SEQ1 />
+                            <NO_SEQ2 />
+                        </UseTemplate>
                     </Component>
 
                     <Component ID="FUEL">
@@ -3907,7 +3930,7 @@
                             <LOCK_NODE_ID>LOCK_OVHD_JETTISON_ACTIVE</LOCK_NODE_ID>
                             <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ1_CODE>(L:A380X_OVHD_FUEL_JETTISON_IS_OPEN, Bool)</SEQ2_CODE>
+                            <SEQ1_CODE>(L:A380X_OVHD_FUEL_JETTISON_IS_OPEN, Bool)</SEQ1_CODE>
                             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE>(L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON, Bool)</SEQ2_CODE>
@@ -4341,7 +4364,8 @@
                         <Component ID="Data_Loading_Selector">
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
-                                <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+                                <LEFT_SINGLE_CODE>
+                                </LEFT_SINGLE_CODE>
                                 <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
                                 <MOMENTARY />
                                 <NO_SEQ1 />
@@ -6153,22 +6177,6 @@
             </Component>
         </Component>
 
-        <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
-            <DefaultTemplateParameters>
-                <ID>1</ID>
-            </DefaultTemplateParameters>
-
-            <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-                <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Heading_SubTemplate</TEMPLATE_TO_CALL>
-            </UseTemplate>
-        </Template>
-
-        <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
-            <DefaultTemplateParameters>
-                <ID>1</ID>
-            </DefaultTemplateParameters>
-        </Template>
-
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
                 <TYPE>AIRLINER</TYPE>
@@ -6745,6 +6753,7 @@
                 <VISIBILITY_CODE>(L:XMLVar_HOSE0815:VISIBILITY , bool) 0 ==</VISIBILITY_CODE>
             </UseTemplate>
         </Component>
+
         <Component ID="HAT04" Node="HAT04">
             <UseTemplate Name="ASOBO_GT_MouseRect">
                 <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:XMLVar_HOSE0815:VISIBILITY , bool) ! (&gt;L:XMLVar_HOSE0815:VISIBILITY , bool) }</CALLBACKCODE_DEFAULT_IM>

@@ -4,22 +4,23 @@
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
-      "../typings"
+      "../typings",
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "skipLibCheck": true,
     "paths": {
-      "@datalink/aoc": ["datalink/aoc/src/index.ts"],
-      "@datalink/atc": ["datalink/atc/src/index.ts"],
-      "@datalink/common": ["datalink/common/src/index.ts"],
-      "@datalink/router": ["datalink/router/src/index.ts"],
+//      "@datalink/aoc": ["datalink/aoc/src/index.ts"],
+//      "@datalink/atc": ["datalink/atc/src/index.ts"],
+//      "@datalink/common": ["datalink/common/src/index.ts"],
+//      "@datalink/router": ["datalink/router/src/index.ts"],
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
       "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
       "@typings/*": ["../typings/*"],
-      "@flybywiresim/fbw-sdk": ["./index.ts"]
+      "@flybywiresim/fbw-sdk": ["./index.ts"],
+      "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"]
     }
   }
 }

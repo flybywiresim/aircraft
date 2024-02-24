@@ -1,20 +1,18 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcAocMessages } from '@datalink/atc';
-import {
-    AtisType,
-    AtsuMessage,
-    AtsuStatusCodes,
-    Clock,
-    ClockDataBusTypes,
-    FreetextMessage,
-    FwcDataBusTypes,
-    WeatherMessage,
-} from '@datalink/common';
-import { RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AocFmsMessages, FmsAocMessages } from './databus/FmsBus';
+import { FreetextMessage } from '../../common/src/messages/FreetextMessage';
+import { AtsuStatusCodes } from '../../common/src/AtsuStatusCodes';
+import { AtisType } from '../../common/src/messages/AtisMessage';
+import { WeatherMessage } from '../../common/src/messages/WeatherMessage';
+import { AtsuMessage } from '../../common/src/messages/AtsuMessage';
+import { AtcAocMessages } from '../../atc/src/databus/AtcAocBus';
+import { FwcDataBusTypes } from '../../common/src/databus/FwcBus';
+import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
+import { RouterAtcAocMessages } from '../../router/src';
+import { Clock } from '../../common/src/types/Clock';
 
 export type AocDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
