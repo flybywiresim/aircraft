@@ -1,6 +1,5 @@
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -46,7 +45,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         tcasRedZoneH: 0,
         tcasGreenZoneL: 0,
         tcasGreenZoneH: 0,
-    };
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -356,11 +355,11 @@ interface VSpeedTcasZoneProps extends ComponentProps {
     extended: Subscribable<boolean>;
 }
 class VSpeedTcasZone extends DisplayComponent<VSpeedTcasZoneProps> {
-    private zoneUpper = 0;
+    private zoneUpper =0;
 
     private zoneLower = 0;
 
-    private extended = false;
+    private extended =false;
 
     private isCorrective = false;
 

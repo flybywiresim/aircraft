@@ -24,8 +24,7 @@
 #include "AircraftPresets/AircraftPresetProcedures_A380X.h"
 #include "AircraftPresets/AircraftPresets.h"
 #include "LightingPresets/LightingPresets_A380X.h"
-#include "Pushback/Pushback.h"
-
+#include "Pushback/Pushback_A380X.h"
 
 // FIXME: Using the A32NX_ prefix is a workaround until the A380X_ prefix is used
 //  in the A380X EFB
@@ -37,7 +36,7 @@ ExampleModule exampleModule(msfsHandler);
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A380X lightingPresets(msfsHandler);
-Pushback pushback(msfsHandler);
+Pushback_A380X pushback(msfsHandler);
 AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A380X::aircraftProcedureDefinition);
 
 /**

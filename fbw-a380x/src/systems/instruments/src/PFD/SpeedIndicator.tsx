@@ -1,7 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { LagFilter, RateLimiter, SmoothSin } from './PFDUtils';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { LagFilter, RateLimiter } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -562,14 +561,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
-                    <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
 
                 </g>
 
                 <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements}>
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     {/* Outline */}
-                    <path id="SpeedTapeOutlineRight" class="NormalStroke White" d={this.pathSub} />
                     <VerticalTape
                         tapeValue={this.speedSub}
                         lowerLimit={30}
@@ -869,7 +866,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         holdValue: 100,
         isSpeedManaged: false,
         isMach: false,
-    };
+    }
 
     private handleManagedSpeed() {
         if (this.speedState.isSpeedManaged) {

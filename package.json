@@ -18,7 +18,7 @@
     "build-a32nx:copy-base-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/)",
     "build-a32nx:copy-base-lock-highlight-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo-lock-highlight && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/)",
     "build-a32nx:copy-base-files": "npm run build-a32nx:copy-base-package && npm run build-a32nx:copy-base-lock-highlight-package",
-    "build-a32nx:efb-translation": "cd fbw-a32nx/src/localization && node build-flypad-translation.js",
+    "build-a32nx:efb-translation": "cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js",
     "build-a32nx:locPak-translation": "cd fbw-a32nx/src/localization && node build-locPak-translation.js",
 
     "build-a32nx:model": "node fbw-a32nx/src/model/buildv2.js && node fbw-a32nx/src/model/build.js",
@@ -57,6 +57,8 @@
     "====== A380 =================": "==========================================",
 
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
+    "build-a380x:efb-translation": "cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js",
+    "build-a380x:locPak-translation": "cd fbw-a380x/src/localization && node build-locPak-translation.js",
 
     "build-a380x:extras-host": "node fbw-a380x/src/systems/extras-host/build.js",
     "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",

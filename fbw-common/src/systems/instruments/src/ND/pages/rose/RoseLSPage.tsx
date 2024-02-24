@@ -14,11 +14,11 @@ import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 
-export interface RoseLsProps extends RoseModeProps {
+export interface RoseLsProps<T extends number> extends RoseModeProps<T> {
     index: 1 | 2,
 }
 
-export class RoseLSPage extends RoseMode<RoseLsProps> {
+export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
     isVisible = Subject.create(false);
 
     //  private readonly headingWord = Arinc429ConsumerSubject.create(null);
@@ -66,6 +66,7 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
                     bus={this.props.bus}
                     heading={this.props.headingWord}
                     visible={this.isVisible}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <IlsCaptureOverlay

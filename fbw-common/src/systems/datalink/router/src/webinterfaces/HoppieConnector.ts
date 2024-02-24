@@ -17,7 +17,7 @@ import {
     AtsuMessageDirection,
     AtsuMessageComStatus,
     AtsuMessageSerializationFormat,
-} from '@datalink/common';
+} from '../../../common/src';
 
 /**
  * Defines the connector to the hoppies network

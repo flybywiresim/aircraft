@@ -3,17 +3,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher, KeyEventManager, Wait, GameStateProvider } from '@microsoft/msfs-sdk';
-import { AtsuSystem } from './systems/atsu';
-import { PowerSupplyBusses } from './systems/powersupply';
+import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
+import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 
 class SystemsHost extends BaseInstrument {
     private readonly bus: EventBus;
 
     private readonly hEventPublisher: HEventPublisher;
 
-    // Uncomment once migrated from the A32NX to the A380X
-    // private readonly powerSupply: PowerSupplyBusses;
-    // private readonly atsu: AtsuSystem;
+    // TODO: Migrate PowerSupplyBusses and AtsuSystem, if needed
+
+    private fwc: LegacyFwc;
+
+    private gpws: LegacyGpws;
+
+    private soundManager: LegacySoundManager;
 
     private keyInterceptManager: KeyEventManager;
 
@@ -30,8 +35,23 @@ class SystemsHost extends BaseInstrument {
 
         this.bus = new EventBus();
         this.hEventPublisher = new HEventPublisher(this.bus);
-        // this.powerSupply = new PowerSupplyBusses(this.bus);
-        // this.atsu = new AtsuSystem(this.bus);
+        this.fwc = new LegacyFwc();
+        this.soundManager = new LegacySoundManager();
+        this.gpws = new LegacyGpws(this.soundManager);
+        this.gpws.init();
+
+        let lastUpdateTime = Date.now();
+        setInterval(() => {
+            const now = Date.now();
+            const dt = now - lastUpdateTime;
+
+            this.fwc.update(dt);
+            this.soundManager.update(dt);
+            this.gpws.update(dt);
+
+            lastUpdateTime = now;
+        }, 75);
+
         Promise.all([
             KeyEventManager.getManager(this.bus),
             Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
@@ -56,9 +76,6 @@ class SystemsHost extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
-        // this.powerSupply.connectedCallback();
-        // this.atsu.connectedCallback();
-
         // Needed to fetch METARs from the sim
         RegisterViewListener('JS_LISTENER_FACILITY', () => {
             console.log('JS_LISTENER_FACILITY registered.');
@@ -72,14 +89,9 @@ class SystemsHost extends BaseInstrument {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.hEventPublisher.startPublish();
-                // this.powerSupply.startPublish();
-                // this.atsu.startPublish();
             }
             this.gameState = gamestate;
         }
-
-        // this.powerSupply.update();
-        // this.atsu.update();
     }
 
     private initLighting() {

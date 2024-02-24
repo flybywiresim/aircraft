@@ -58,7 +58,18 @@
 1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
 1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
-1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality)
+1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
+1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+1. [MCDU] Make dest fuel amber instead of alternate if below min fuel in FUEL PRED page - @BravoMike99 (bruno_pt99)
+1. [AP] Add NAV on GA capability - @lukecologne (luke)
+1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
+1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
+1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
 
 ## 0.11.0
 

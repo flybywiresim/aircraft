@@ -1,6 +1,8 @@
+/// <reference path="../../../types.d.ts" />
 /// <reference path="./Types.d.ts" />
 /// <reference path="./Simplane.d.ts" />
-/// <reference path="../../../types.d.ts" />
+
+type SingleArgumentCallback = (arg: unknown) => void;
 
 declare namespace SimVar {
     var g_bUseWatcher: boolean;
