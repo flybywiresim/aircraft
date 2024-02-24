@@ -372,17 +372,17 @@ export class FmcAircraftInterface {
 
     updateOansAirports() {
         if (this.flightPlanService.hasActive) {
-            if (this.flightPlanService.active?.originAirport.ident) {
+            if (this.flightPlanService.active?.originAirport?.ident) {
                 this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
                 this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
             }
 
-            if (this.flightPlanService.active?.destinationAirport.ident) {
+            if (this.flightPlanService.active?.destinationAirport?.ident) {
                 this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
                 this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
             }
 
-            if (this.flightPlanService.active?.alternateDestinationAirport.ident) {
+            if (this.flightPlanService.active?.alternateDestinationAirport?.ident) {
                 this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
                 this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
             }
@@ -390,7 +390,7 @@ export class FmcAircraftInterface {
     }
 
     updateLandingRunway() {
-        if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway) {
+        if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident) {
             this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
             this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
 
