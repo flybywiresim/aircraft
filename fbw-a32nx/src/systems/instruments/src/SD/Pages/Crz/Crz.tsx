@@ -125,28 +125,47 @@ export const PressureComponent = () => {
     const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
 
     const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
-    const landingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 1000);
+    const cpcLandingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 500);
+    const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
+
+    let landingElevation;
+    if (cpcLandingElevation.isNormalOperation()) {
+        landingElevation = cpcLandingElevation.value;
+    } else if (fmLandingElevation.isNormalOperation()) {
+        landingElevation = fmLandingElevation.value;
+    } else {
+        landingElevation = -6000;
+    }
 
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const cabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
-    const cabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
-    const deltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 1000);
+
+    const arincCabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
+    const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'foot', 500);
+    const cabinAlt = arincCabinAlt.isNormalOperation() ? arincCabinAlt.value : manCabinAlt;
+
+    const arincDeltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 500);
+    const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'psi', 500);
+    const deltaPsi = arincDeltaPsi.isNormalOperation() ? arincDeltaPsi.value : manDeltaPsi;
+
+    const arincCabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
+    const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
+    const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 
     const vsx = 440;
     const y = 385;
     const radius = 50;
 
-    const deltaPress = splitDecimals(deltaPsi.value);
+    const deltaPress = splitDecimals(deltaPsi);
 
     useEffect(() => {
         setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
-        const nearestfifty = Math.round(landingElevation.value / 50) * 50;
+        const nearestfifty = Math.round(landingElevation / 50) * 50;
 
-        setLdgElevValue(nearestfifty.toString());
-        setCssLdgElevName(landingElevation.value > -5000 ? 'Green' : 'Amber');
+        setLdgElevValue(landingElevation > -5000 ? nearestfifty.toString() : 'XX');
+        setCssLdgElevName(landingElevation > -5000 ? 'Green' : 'Amber');
     }, [landingElevationIsMan, landingElevation]);
 
     return (
@@ -168,7 +187,7 @@ export const PressureComponent = () => {
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
-                        value={Math.abs((cabinVs.value / 50 * 50) / 1000) <= 2.25 ? (cabinVs.value / 50 * 50) / 1000 : 2.250}
+                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
                         x={vsx}
                         y={y}
                         min={-2}
@@ -198,18 +217,18 @@ export const PressureComponent = () => {
                 y="405"
                 textAnchor="end"
             >
-                {!autoMode ? Math.round(cabinVs.value / 50) * 50 : Math.abs(Math.round(cabinVs.value / 50) * 50)}
+                {!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}
             </text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>
-            <text id="CabinAltitude" className="Large Green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt.value / 50) * 50 > 0 ? Math.round(cabinAlt.value / 50) * 50 : 0}</text>
+            <text id="CabinAltitude" className="Large Green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}</text>
             <text className="Medium Cyan" x="525" y="475">FT</text>
 
             <g
                 id="vsArrow"
-                className={(cabinVs.value * 60 <= -50 || cabinVs.value * 60 >= 50) && autoMode ? '' : 'Hide'}
-                transform={cabinVs.value * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
+                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && autoMode ? '' : 'Hide'}
+                transform={cabinVs * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
             >
                 <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />
                 <polygon points="452,388 447,396 457,396" transform="rotate(38,452,388)" className="VsIndicator" />

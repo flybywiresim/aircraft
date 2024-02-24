@@ -3,7 +3,7 @@ use systems::{
     air_conditioning::{
         acs_controller::{AcscId, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
-        cabin_pressure_controller::CabinPressureController,
+        cabin_pressure_controller::{CabinPressureController, CpcId},
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
@@ -709,8 +709,8 @@ impl A320PressurizationSystem {
 
         Self {
             cpc: [
-                CabinPressureController::new(context, 1),
-                CabinPressureController::new(context, 2),
+                CabinPressureController::new(context, CpcId::Cpc1),
+                CabinPressureController::new(context, CpcId::Cpc2),
             ],
             cpc_interface: [
                 PressurizationSystemInterfaceUnit::new(context, 1),

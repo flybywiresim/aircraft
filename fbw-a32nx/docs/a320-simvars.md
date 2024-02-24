@@ -2786,18 +2786,34 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 28  | Spare                                                |
       | 29  | Spare                                                |
 
+- A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE
+    - Bool
+    - Analog signal sent by the manual partition of CPC1. True when FWC condition for "EXCESS CAB ALT" is met.
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Arinc429Word<Feet>
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
+
+- A32NX_PRESS_MAN_CABIN_ALTITUDE
+    - Feet
+    - As above, but analog system transmitted by the manual partition of CPC1
 
 - A32NX_PRESS_CABIN_DELTA_PRESSURE
     - Arinc429Word<PSI>
     - The difference in pressure between the cabin interior and the exterior air.
       Positive when cabin pressure is higher than external pressure.
 
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_CABIN_VS
     - Arinc429Word<FPM>
     - Rate of pressurization or depressurization of the cabin expressed as altitude change
+
+- A32NX_PRESS_MAN_CABIN_VS
+    - FPM
+    - As above, but analog system transmitted by the manual partition of CPC1
 
 - A32NX_PRESS_ACTIVE_CPC_SYS
     - Number [0, 1, 2]
@@ -2806,6 +2822,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE
     - Arinc429Word<Percent>
     - Percent open of the cabin pressure outflow valve
+
+- A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE
+    - Percent
+    - As above, but analog system transmitted by the manual partition of CPC1
 
 - A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
     - Percent

@@ -1225,7 +1225,8 @@ export class PseudoFWC {
         this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
         this.bothCpcFaultOutput.set(this.bothCpcFault.write(this.cpc1Fault.get() && this.cpc2Fault.get(), deltaTime));
 
-        this.excessPressure.set(activeCpc.bitValueOr(14, false));
+        const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
+        this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
         this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
         this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
 
@@ -1243,7 +1244,8 @@ export class PseudoFWC {
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
-        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(0));
+        const manOutflowValueOpenPercentage = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent');
+        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(manOutflowValueOpenPercentage));
         this.outflowValveNotOpenOutput.set(
             this.outflowValveNotOpenSetReset.write(this.outflowValveNotOpen.write((this.outflowValveOpenAmount.get() < 85) && [8, 9, 10].includes(this.fwcFlightPhase.get()), deltaTime),
                 this.outflowValveOpenAmount.get() > 95 || this.outflowValveResetCondition.write(this.fwcFlightPhase.get() === 1, deltaTime)),
@@ -1254,7 +1256,8 @@ export class PseudoFWC {
         this.safetyValveNotClosedOutput.set((safetyValveNotClosed && [1, 2, 3].includes(this.fwcFlightPhase.get()))
             || (this.safetyValveNotClosedAir.read() && this.fwcFlightPhase.get() === 6));
 
-        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE').valueOr(0));
+        const manCabinDeltaPressure = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'percent');
+        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE').valueOr(manCabinDeltaPressure));
 
         /* OTHER STUFF */
 

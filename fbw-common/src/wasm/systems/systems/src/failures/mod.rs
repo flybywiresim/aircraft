@@ -1,4 +1,4 @@
-use crate::air_conditioning::{acs_controller::AcscId, ZoneType};
+use crate::air_conditioning::{acs_controller::AcscId, cabin_pressure_controller::CpcId, ZoneType};
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
     HydraulicColor, LgciuId, ProximityDetectorId,
@@ -13,7 +13,7 @@ pub enum FailureType {
     TrimAirOverheat(ZoneType),
     TrimAirFault(ZoneType),
     TrimAirHighPressure,
-    CpcFault(usize),
+    CpcFault(CpcId),
     OutflowValveFault,
     SafetyValveFault,
     GalleyFans,
