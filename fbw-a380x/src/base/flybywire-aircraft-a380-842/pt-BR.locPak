@@ -6,8 +6,8 @@
       "AIRCRAFT.UI_MANUFACTURER": "Airbus",
       "AIRCRAFT.UI_MODEL": "A320neo",
       "AIRCRAFT.UI_VARIATION": "Airbus",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar a proa selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar a proa selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)"
+      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar a proa selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
+      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar a proa selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)"
     }
   }
 }

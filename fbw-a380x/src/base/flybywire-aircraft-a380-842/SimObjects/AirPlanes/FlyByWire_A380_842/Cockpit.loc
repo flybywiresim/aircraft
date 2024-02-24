@@ -14,7 +14,7 @@
       "zh-CN"
     ],
     "Strings": {
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": {
+      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": {
         "UUID": "c3803db3-2bbd-4a83-abef-74b926de0852",
         "LastModifiedBy": "ajimeno",
         "LastModifiedDate": "2020-04-26 09:25:28",
@@ -54,7 +54,7 @@
           }
         }
       },
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": {
+      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": {
         "UUID": "8464ffeb-508a-4318-95d0-53a50e29b00d",
         "LastModifiedBy": "ajimeno",
         "LastModifiedDate": "2020-04-26 09:25:46",
