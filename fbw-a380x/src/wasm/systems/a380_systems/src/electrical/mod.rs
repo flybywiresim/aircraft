@@ -55,6 +55,7 @@ pub(super) struct A380Electrical {
     ram_air_turbine: RamAirTurbine,
     rat_controller: A380RamAirTurbineController,
     tefo_condition: LatchedTrueLogicGate,
+    emer_config: LatchedTrueLogicGate,
 }
 impl A380Electrical {
     const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
@@ -90,6 +91,7 @@ impl A380Electrical {
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
             tefo_condition: LatchedTrueLogicGate::default(),
+            emer_config: LatchedTrueLogicGate::default(),
         }
     }
 
@@ -182,11 +184,12 @@ impl A380Electrical {
         let flt_condition = (!context.is_on_ground() && dc_ess_powered)
             && (adirs.low_speed_warning_1_104kts(1) || adirs.low_speed_warning_1_104kts(3));
 
-        // TEFO(total engine failure) = all engines not running and in flight. Discrete signal from EEC
-        // Represents the value of relay 16XR1 and 16XR2
         if emer_evac {
             self.tefo_condition.reset();
+            self.emer_config.reset();
         }
+        // TEFO(total engine failure) = all engines not running and in flight. Discrete signal from EEC
+        // Represents the value of relay 16XR1 and 16XR2
         self.tefo_condition.update(
             (!engines
                 .iter()
@@ -194,6 +197,21 @@ impl A380Electrical {
                 || !dc_ess_powered
                     && !electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(2)]))
                 && flt_condition,
+        );
+
+        let dc_ess_hot_is_powered =
+            electricity.any_is_powered(&[ElectricalBusType::DirectCurrentHot(3)]);
+
+        // Relays 24XR1 and 24XR2 - EMER/NORM CTL, 1/2
+        self.emer_config
+            .update(dc_ess_hot_is_powered && self.rat_controller.should_deploy());
+
+        self.direct_current.update_subbuses(
+            context,
+            electricity,
+            &self.alternating_current,
+            flt_condition,
+            self.emer_config.output(),
         );
     }
 
@@ -2984,6 +3002,27 @@ mod a380_electrical_circuit_tests {
             .run();
 
         assert!(test_bed.gen_has_fault(number));
+    }
+
+    #[test]
+    fn normal_all_of_dc_ess_powered() {
+        let test_bed = test_bed_with()
+            .all_bats_auto()
+            .and()
+            .running_engines()
+            .run();
+        assert!(test_bed
+            .dc_named_bus_output("108PH")
+            .is_powered_by_same_single_source(test_bed.dc_ess_bus_output()));
+    }
+
+    #[test]
+    fn when_only_batteries_powered_dc_ess_108ph_not_powered() {
+        let test_bed = test_bed_with()
+            .on_the_ground()
+            .airspeed(Velocity::default())
+            .run();
+        assert!(test_bed.dc_named_bus_output("108PH").is_unpowered());
     }
 
     fn test_bed_with() -> A380ElectricalTestBed {
