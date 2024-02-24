@@ -1,6 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { Arinc429Word } from '../../../shared/src/arinc429';
 import {
     AtisType,
     AtsuStatusCodes,
@@ -12,11 +14,9 @@ import {
     WeatherMessage,
     RmpDataBusTypes,
     Conversion,
-} from '@datalink/common';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
+import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
 
 export type RouterDigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
@@ -49,14 +49,14 @@ export class DigitalInputs {
         stationAvailable: null,
     };
 
-    public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
+    public FlightPhase: AtsuFlightPhase = AtsuFlightPhase.Preflight;
 
     public Vhf3Powered: boolean = false;
 
     public Vhf3DataMode: boolean = false;
 
     private resetData(): void {
-        this.FlightPhase = FmgcFlightPhase.Preflight;
+        this.FlightPhase = AtsuFlightPhase.Preflight;
         this.Vhf3Powered = false;
         this.Vhf3DataMode = false;
     }
@@ -167,9 +167,9 @@ export class DigitalInputs {
         this.subscriber.on('flightPhase').handle((phase: Arinc429Word) => {
             if (this.poweredUp) {
                 if (phase.isNormalOperation()) {
-                    this.FlightPhase = phase.value as FmgcFlightPhase;
+                    this.FlightPhase = phase.value as AtsuFlightPhase;
                 } else {
-                    this.FlightPhase = FmgcFlightPhase.Preflight;
+                    this.FlightPhase = AtsuFlightPhase.Preflight;
                 }
             }
         });
