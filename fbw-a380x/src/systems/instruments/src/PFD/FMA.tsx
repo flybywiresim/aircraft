@@ -556,7 +556,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     }
 
     private handleAutobrakeMode() {
-        if (this.autobrakeMode === 3 && !this.AB3Message) {
+        if (this.autobrakeMode === 6 && !this.AB3Message) {
             this.textSub.set('BRK RTO');
             this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
         } else {
