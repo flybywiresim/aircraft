@@ -38,7 +38,7 @@ export class FlightPlanLeg {
         this.type = definition.type;
     }
 
-    isDiscontinuity: false = false;
+    isDiscontinuity: false = false
 
     get waypointDescriptor() {
         return this.definition.waypointDescriptor;

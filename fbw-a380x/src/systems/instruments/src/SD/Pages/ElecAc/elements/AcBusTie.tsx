@@ -22,19 +22,19 @@ export const AcBusTie: FC = () => {
     const showBtc3ToAgc2 = (btc3Closed || btc4Closed) && (apuLcBClosed || sicClosed);
 
     return (
-        <g id="ac-tie" transform="translate(0 0)">
-            <path id="ac1-to-btc1" className={`Green SW2 ${showBtc1 ? '' : 'Hide'}`} d="M 140,258l 0,-60" />
-            <path id="ac2-to-btc2" className={`Green SW2 ${showBtc2 ? '' : 'Hide'}`} d="M 234,258l 0,-60" />
-            <path id="ac3-to-btc3" className={`Green SW2 ${showBtc3 ? '' : 'Hide'}`} d="M 535,258l 0,-60" />
-            <path id="ac4-to-btc4" className={`Green SW2 ${showBtc4 ? '' : 'Hide'}`} d="M 629,258l 0,-60" />
+        <g id='ac-tie' transform='translate(0 0)'>
+            <path id='ac1-to-btc1' className={`Green SW2 ${showBtc1 ? '' : 'Hide'}`} d='M 140,258l 0,-60' />
+            <path id='ac2-to-btc2' className={`Green SW2 ${showBtc2 ? '' : 'Hide'}`} d='M 234,258l 0,-60' />
+            <path id='ac3-to-btc3' className={`Green SW2 ${showBtc3 ? '' : 'Hide'}`} d='M 535,258l 0,-60' />
+            <path id='ac4-to-btc4' className={`Green SW2 ${showBtc4 ? '' : 'Hide'}`} d='M 629,258l 0,-60' />
 
-            <path id="btc1-to-btc2" className={`Green SW2 ${showBtc1ToBtc2 ? '' : 'Hide'}`} d="M 140,198 l 94,0" />
-            <path id="btc3-to-btc4" className={`Green SW2 ${showBtc3ToBtc4 ? '' : 'Hide'}`} d="M 535,198 l 94,0" />
+            <path id='btc1-to-btc2' className={`Green SW2 ${showBtc1ToBtc2 ? '' : 'Hide'}`} d='M 140,198 l 94,0' />
+            <path id='btc3-to-btc4' className={`Green SW2 ${showBtc3ToBtc4 ? '' : 'Hide'}`} d='M 535,198 l 94,0' />
 
-            <path id="btc2-to-agc1" className={`Green SW2 ${showBtc2ToAgc1 ? '' : 'Hide'}`} d="M 234,198 l 103,0" />
-            <path id="btc3-to-agc2" className={`Green SW2 ${showBtc3ToAgc2 ? '' : 'Hide'}`} d="M 432,198 l 103,0" />
+            <path id='btc2-to-agc1' className={`Green SW2 ${showBtc2ToAgc1 ? '' : 'Hide'}`} d='M 234,198 l 103,0' />
+            <path id='btc3-to-agc2' className={`Green SW2 ${showBtc3ToAgc2 ? '' : 'Hide'}`} d='M 432,198 l 103,0' />
 
-            <path id="sic" className={`Green SW2 ${sicClosed ? '' : 'Hide'}`} d="M 337,198 l 95,0" />
+            <path id='sic' className={`Green SW2 ${sicClosed ? '' : 'Hide'}`} d='M 337,198 l 95,0' />
         </g>
     );
 };

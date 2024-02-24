@@ -12,9 +12,9 @@ import { FlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class DestinationSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival;
+    class = SegmentClass.Arrival
 
-    allLegs: FlightPlanElement[] = [];
+    allLegs: FlightPlanElement[] = []
 
     private airport: Airport;
 

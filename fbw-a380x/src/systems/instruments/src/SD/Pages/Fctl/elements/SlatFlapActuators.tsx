@@ -14,9 +14,9 @@ export const SlatFlapActuatorIndication: FC<SlatFlapActuatorIndicationProps> = (
 
     return (
         <g id={`${type}-actuators`} transform={`translate(${x} ${y})`}>
-            <path className="White SW1 LineRound" d="m10,0 h -10 v 52 h98 v-52 h-10" />
+            <path className='White SW1 LineRound' d='m10,0 h -10 v 52 h98 v-52 h-10' />
 
-            <text x={13} y={10} className="F23 White">{type}</text>
+            <text x={13} y={10} className='F23 White'>{type}</text>
 
             <ActuatorIndication
                 x={19}

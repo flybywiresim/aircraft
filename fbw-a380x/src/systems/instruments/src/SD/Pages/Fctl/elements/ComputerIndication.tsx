@@ -46,8 +46,8 @@ export const Prims: FC<PrimSecProps> = ({ x, y }) => {
     const computerFailed = false;
 
     return (
-        <g id="prim-computers" transform={`translate(${x} ${y})`}>
-            <text className="F22 White MiddleAlign LS1" x={45} y={85}>PRIM</text>
+        <g id='prim-computers' transform={`translate(${x} ${y})`}>
+            <text className='F22 White MiddleAlign LS1' x={45} y={85}>PRIM</text>
             <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={computerFailed} />
@@ -60,8 +60,8 @@ export const Secs: FC<PrimSecProps> = ({ x, y }) => {
     const computerFailed = false;
 
     return (
-        <g id="sec-computers" transform={`translate(${x} ${y})`}>
-            <text className="F22 White MiddleAlign LS1" x={48} y={84}>SEC</text>
+        <g id='sec-computers' transform={`translate(${x} ${y})`}>
+            <text className='F22 White MiddleAlign LS1' x={48} y={84}>SEC</text>
             <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={computerFailed} />
@@ -74,8 +74,8 @@ export const Slats: FC<PrimSecProps> = ({ x, y }) => {
     const computerFailed = false;
 
     return (
-        <g id="slat-computers" transform={`translate(${x} ${y})`}>
-            <text className="F22 White MiddleAlign LS1" x={46} y={85}>SLATS</text>
+        <g id='slat-computers' transform={`translate(${x} ${y})`}>
+            <text className='F22 White MiddleAlign LS1' x={46} y={85}>SLATS</text>
             <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
         </g>
@@ -87,8 +87,8 @@ export const Flaps: FC<PrimSecProps> = ({ x, y }) => {
     const computerFailed = false;
 
     return (
-        <g id="flap-computers" transform={`translate(${x} ${y})`}>
-            <text className="F22 White MiddleAlign LS1" x={46} y={84}>FLAPS</text>
+        <g id='flap-computers' transform={`translate(${x} ${y})`}>
+            <text className='F22 White MiddleAlign LS1' x={46} y={84}>FLAPS</text>
             <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
             <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
         </g>

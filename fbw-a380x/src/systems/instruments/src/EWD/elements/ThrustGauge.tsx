@@ -42,8 +42,8 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                 {(!active || n1Degraded)
                     && (
                         <>
-                            <GaugeComponent x={x} y={y + 20} radius={radius} startAngle={320} endAngle={40} visible largeArc={0} sweep={0} className="GaugeComponent SW2 AmberLine" />
-                            <text className="F26 End Amber Spread" x={x + 55} y={y - 48}>THR XX</text>
+                            <GaugeComponent x={x} y={y + 20} radius={radius} startAngle={320} endAngle={40} visible largeArc={0} sweep={0} className='GaugeComponent SW2 AmberLine' />
+                            <text className='F26 End Amber Spread' x={x + 55} y={y - 48}>THR XX</text>
                         </>
                     )}
                 {active && !n1Degraded
@@ -52,9 +52,9 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                         {(!revVisible || [1, 4].includes(engine))
                     && (
                         <>
-                            <text className="F26 End Green" x={x + 48} y={y + 47}>{ThrustPercentSplit[0]}</text>
-                            <text className="F26 End Green" x={x + 62} y={y + 47}>.</text>
-                            <text className="F20 End Green" x={x + 78} y={y + 47}>{ThrustPercentSplit[1]}</text>
+                            <text className='F26 End Green' x={x + 48} y={y + 47}>{ThrustPercentSplit[0]}</text>
+                            <text className='F26 End Green' x={x + 62} y={y + 47}>.</text>
+                            <text className='F20 End Green' x={x + 78} y={y + 47}>{ThrustPercentSplit[1]}</text>
                             <GaugeThrustComponent
                                 x={x}
                                 y={y}
@@ -68,7 +68,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 min={min}
                                 max={max}
                                 visible={availVisible || engineState === 1}
-                                className="GaugeComponent GaugeThrustFill"
+                                className='GaugeComponent GaugeThrustFill'
                             />
                             <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
                             <ThrottlePositionDonutComponent
@@ -80,11 +80,11 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="DonutThrottleIndicator"
+                                className='DonutThrottleIndicator'
                             />
                         </>
                     )}
-                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
                             <GaugeMarkerComponent
                                 value={0}
                                 x={x}
@@ -94,7 +94,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeY={-5}
                                 textNudgeX={13}
@@ -109,7 +109,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 textNudgeY={6}
                                 textNudgeX={13}
                                 multiplierInner={0.9}
@@ -123,7 +123,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeX={7}
                                 textNudgeY={11}
@@ -138,7 +138,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 multiplierInner={0.9}
                             />
                             <GaugeMarkerComponent
@@ -150,7 +150,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeY={0}
                                 textNudgeX={-13}
@@ -159,7 +159,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                             {(!revVisible || [1, 4].includes(engine))
                     && (
                         <>
-                            <rect x={x - 11} y={y + 21} width={96} height={30} className="DarkGreyBox" />
+                            <rect x={x - 11} y={y + 21} width={96} height={30} className='DarkGreyBox' />
                             <GaugeMarkerComponent
                                 value={ThrustPercent / 10}
                                 x={x}
@@ -169,7 +169,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeIndicator Gauge"
+                                className='GaugeIndicator Gauge'
                                 multiplierOuter={1.10}
                                 indicator
                             />
@@ -193,11 +193,11 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                             min={revMin}
                             max={revMax}
                             visible={revVisible || engineState === 1}
-                            className="GaugeComponent GaugeThrustFill"
+                            className='GaugeComponent GaugeThrustFill'
                             reverse
                         />
                         {/* reverse */}
-                        <GaugeComponent x={x} y={y} radius={revRadius} startAngle={revStartAngle} endAngle={revEndAngle} visible className="GaugeComponent Gauge">
+                        <GaugeComponent x={x} y={y} radius={revRadius} startAngle={revStartAngle} endAngle={revEndAngle} visible className='GaugeComponent Gauge'>
                             <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
                             <GaugeMarkerComponent
                                 value={0}
@@ -208,7 +208,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={revRadius}
                                 startAngle={revStartAngle}
                                 endAngle={revEndAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 textNudgeY={0}
                                 textNudgeX={-13}
                                 multiplierInner={1.1}
@@ -222,7 +222,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 radius={revRadius}
                                 startAngle={revStartAngle}
                                 endAngle={revEndAngle}
-                                className="GaugeIndicator Gauge"
+                                className='GaugeIndicator Gauge'
                                 multiplierOuter={1.10}
                                 indicator
                                 reverse
@@ -237,7 +237,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                             radius={revRadius}
                             startAngle={revStartAngle}
                             endAngle={revEndAngle}
-                            className="DonutThrottleIndicator"
+                            className='DonutThrottleIndicator'
                         />
 
                     </>
@@ -260,11 +260,11 @@ type AvailRevProps = {
 const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, revDoorOpen }) => (
     <>
         <g className={visible ? 'Show' : 'Hide'}>
-            <rect x={x - 28} y={y - 13} width={90} height={24} className="DarkGreyBox BackgroundFill" />
+            <rect x={x - 28} y={y - 13} width={90} height={24} className='DarkGreyBox BackgroundFill' />
             {mesg === 'REV'
             && <text className={`F26 Spread Centre ${Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={x - 8} y={y + 9}>REV</text>}
             {mesg === 'AVAIL'
-            && <text className="F26 Spread Centre Green" x={x - 26} y={y + 9}>AVAIL</text>}
+            && <text className='F26 Spread Centre Green' x={x - 26} y={y + 9}>AVAIL</text>}
         </g>
     </>
 );

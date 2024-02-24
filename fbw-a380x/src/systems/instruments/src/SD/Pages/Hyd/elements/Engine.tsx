@@ -10,7 +10,7 @@ type EngineProps = {
 export const Engine = ({ x, y, engineNumber }: EngineProps) => {
     const isInnerEngine = (engineNumber === 2 || engineNumber === 3);
     const hydSystem = engineNumber <= 2 ? 'GREEN' : 'YELLOW';
-    const pumpIndex = (engineNumber - 1) * 2 + 1 - (engineNumber <= 2 ? 0 : 4);
+    const pumpIndex = (engineNumber - 1) * 2 + 1 - (engineNumber <= 2 ? 0 : 4)
 
     const [engineState] = useSimVar(`L:A32NX_ENGINE_N3:${engineNumber}`, 'percent', 500);
     const isRunning = engineState > 50;
@@ -31,18 +31,18 @@ export const Engine = ({ x, y, engineNumber }: EngineProps) => {
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <image xlinkHref="/Images/HYD_8-7_TRIMMED.png" x={0} y={0} width={146} height={211} />
+            <image xlinkHref='/Images/HYD_8-7_TRIMMED.png' x={0} y={0} width={146} height={211} />
 
             <text x={10} y={47} className={`${!isRunning ? 'Amber' : 'White'} F35`}>
                 {engineNumber}
             </text>
 
-            <EnginePump x={28} y={67} label="A" lowPressure={!pumpAPressureSwitch} pbAuto={pumpAPbIsAuto} disconnected={pumpDisconnect} />
-            <EnginePump x={80} y={67} label="B" lowPressure={!pumpBPressureSwitch} pbAuto={pumpBPbIsAuto} disconnected={pumpDisconnect} />
+            <EnginePump x={28} y={67} label='A' lowPressure={!pumpAPressureSwitch} pbAuto={pumpAPbIsAuto} disconnected={pumpDisconnect} />
+            <EnginePump x={80} y={67} label='B' lowPressure={!pumpBPressureSwitch} pbAuto={pumpBPbIsAuto} disconnected={pumpDisconnect} />
 
             <FireShutoffValve x={56} y={164} isOpen={fireValveOpen} reservoirLowLevel={reservoirLowLevel} />
 
-            <path d={`m 73 65 v ${isInnerEngine ? -123 : -165}`} className={`${pumpToLabelColor} SW4 LineRound`} />
+            <path d={`m 73 65 v ${isInnerEngine ? -123 : -165}`} className={`${pumpToLabelColor} SW4 LineRound`}/>
         </g>
     );
 };
@@ -76,10 +76,10 @@ const EnginePump = ({ x, y, label, lowPressure, pbAuto, disconnected }: EnginePu
         <g transform={`translate(${x} ${y})`}>
             <rect x={0} y={0} width={size} height={size} className={`${color} NoFill SW4`} />
             {(pbAuto && !disconnected && !lowPressure) && <line className={`${color} SW4`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
-            {(!pbAuto || disconnected) && <line className="Amber SW4 LineRound" x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
-            {(pbAuto && !disconnected && lowPressure) && <text x={5} y={30} className="Amber F25 TextOutline2">LO</text>}
-            <text x={isMirrored ? size + 5 : -20} y={31} className="White F28 TextOutline2">{label}</text>
-            {disconnected && <text x={isMirrored ? 0 : -19} y={size + 25} className="Amber F24">DISC</text>}
+            {(!pbAuto || disconnected) && <line className='Amber SW4 LineRound' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
+            {(pbAuto && !disconnected && lowPressure) && <text x={5} y={30} className='Amber F25 TextOutline2'>LO</text>}
+            <text x={isMirrored ? size + 5 : -20} y={31} className='White F28 TextOutline2'>{label}</text>
+            {disconnected && <text x={isMirrored ? 0 : -19} y={size + 25} className='Amber F24'>DISC</text>}
         </g>
     );
 };
@@ -109,7 +109,7 @@ const FireShutoffValve = ({ x, y, isOpen, reservoirLowLevel }: FireShutoffValveP
             ) : (
                 <line x1={0} y1={radius} x2={2 * radius} y2={radius} className={`${color} SW4`} />
             )}
-            <path d="m 17 -55 v 54" className={`${color} SW4 LineRound`} />
+            <path d='m 17 -55 v 54' className={`${color} SW4 LineRound`}/>
         </g>
     );
 };

@@ -24,9 +24,9 @@ export class TFLeg extends XFLeg {
 
     private computedPath: PathVector[] = [];
 
-    altitudeConstraint: AltitudeConstraint | undefined;
+    altitudeConstraint: AltitudeConstraint | undefined
 
-    speedConstraint: SpeedConstraint | undefined;
+    speedConstraint: SpeedConstraint | undefined
 
     constructor(
         public from: Waypoint,

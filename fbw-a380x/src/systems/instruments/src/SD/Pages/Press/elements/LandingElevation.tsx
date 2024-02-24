@@ -3,6 +3,7 @@ import { Position } from '@instruments/common/types';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 
+
 const LandingElevation: React.FC<Position> = ({ x, y }) => {
     // TODO: Handle landing elevation invalid SSM
     const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);

@@ -31,7 +31,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: EventBus, isAttEx
         fdActive: true,
         activeLateralMode: 0,
         activeVerticalMode: 0,
-    };
+    }
 
     private isTrkFpaActive = false;
 

@@ -39,9 +39,9 @@ describe('an enroute segment', () => {
         const e2 = segment.allLegs[2];
         expect(e2.isDiscontinuity).toBeFalsy();
 
-        expect((e0 as FlightPlanLeg).ident).toBe('NOSUS');
-        expect((e1 as FlightPlanLeg).ident).toBe('NAPEE');
-        expect((e2 as FlightPlanLeg).ident).toBe('PBERG');
+        expect((e0 as FlightPlanLeg).ident).toEqual('NOSUS');
+        expect((e1 as FlightPlanLeg).ident).toEqual('NAPEE');
+        expect((e2 as FlightPlanLeg).ident).toEqual('PBERG');
     });
 
     it('should insert airway', async () => {
@@ -59,7 +59,7 @@ describe('an enroute segment', () => {
 
         const endLeg = airwayLegs[airwayLegs.length - 1];
 
-        expect(endLeg.ident).toBe('PONCT');
+        expect(endLeg.ident).toEqual('PONCT');
 
         segment.insertLegs(...airwayLegs);
 

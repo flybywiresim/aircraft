@@ -9,9 +9,9 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
 export class MissedApproachSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival;
+    class = SegmentClass.Arrival
 
-    allLegs: FlightPlanElement[] = [];
+    allLegs: FlightPlanElement[] = []
 
     setMissedApproachLegs(legs: FlightPlanElement[]) {
         this.allLegs.length = 0;

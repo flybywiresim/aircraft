@@ -22,7 +22,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
         <g id={`BleedGauge-${engine}`}>
 
             {/* Pack inlet flow */}
-            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
                 <GaugeMarkerComponent
                     value={0}
                     x={x}
@@ -32,7 +32,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className="White SW2"
+                    className='White SW2'
                     showValue={false}
                 />
                 <GaugeMarkerComponent
@@ -44,7 +44,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className="White SW2"
+                    className='White SW2'
                     showValue={false}
                 />
                 <GaugeMarkerComponent
@@ -56,7 +56,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className="White SW2"
+                    className='White SW2'
                     showValue={false}
                 />
                 {sdacDatum
@@ -71,7 +71,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className="GaugeIndicator Gauge LineRound"
+                            className='GaugeIndicator Gauge LineRound'
                             indicator
                             multiplierOuter={1.1}
                         />
@@ -79,7 +79,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
             </GaugeComponent>
 
             {/* Flow control valve */}
-            <Valve x={x} y={y} radius={19} css="BackgroundFill Background" position="H" sdacDatum={sdacDatum} />
+            <Valve x={x} y={y} radius={19} css='BackgroundFill Background' position='H' sdacDatum={sdacDatum} />
             <Valve x={x} y={y} radius={19} css={`${packValveOpen ? 'Green' : 'Amber'} Line`} position={packValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />
 
             <path className={`${packValveOpen ? 'Green' : 'Amber'} Line`} d={`M${x},${y - 49} l 0,-12 l ${engine % 2 === 0 ? '-' : ''}67, 0`} />

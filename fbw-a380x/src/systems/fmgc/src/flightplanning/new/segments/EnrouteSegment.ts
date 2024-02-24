@@ -10,9 +10,9 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightPlanSegment } from './FlightPlanSegment';
 
 export class EnrouteSegment extends FlightPlanSegment {
-    class = SegmentClass.Enroute;
+    class = SegmentClass.Enroute
 
-    allLegs: FlightPlanElement[] = [];
+    allLegs: FlightPlanElement[] = []
 
     insertLeg(leg: FlightPlanLeg) {
         this.allLegs.push(leg);

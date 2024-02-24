@@ -10,6 +10,7 @@ import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
  * calculating the autopilot inputs to follow the predicted flight path.
  */
 export class GuidanceManager {
+
     constructor() {
 
     }

@@ -11,11 +11,11 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class ApproachSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival;
+    class = SegmentClass.Arrival
 
-    allLegs: FlightPlanElement[] = [];
+    allLegs: FlightPlanElement[] = []
 
-    private approach: Approach | undefined;
+    private approach: Approach | undefined
 
     get approachProcedure() {
         return this.approach;

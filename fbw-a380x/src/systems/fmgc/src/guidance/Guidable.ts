@@ -17,7 +17,7 @@ export abstract class Guidable {
      * For a transition, this indicates that the transition between the legs is selected but has no geometry.
      * For a leg, this indicates that geometry conditions cause the leg to be skipped.
      */
-    isNull = false;
+    isNull = false
 
     /**
      * The first valid guidable that precedes this one. This takes into account the `isNull` property, meaning other

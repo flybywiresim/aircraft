@@ -17,10 +17,10 @@ const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, sdacDatum }) => {
     const ramInletOpen = false;
 
     return (
-        <g id="MixerUnit">
-            <path className="Grey SW2" d={`M ${x},${y} l -228,0 l 0,16 l 102,0`} />
-            <path className="Grey SW2" d={`M ${x},${y} l 210,0 l 0,16 l -100,0`} />
-            <path className="Grey SW2" d={`M ${x - 74},${y + 16} l 133,0`} />
+        <g id='MixerUnit'>
+            <path className='Grey SW2' d={`M ${x},${y} l -228,0 l 0,16 l 102,0`} />
+            <path className='Grey SW2' d={`M ${x},${y} l 210,0 l 0,16 l -100,0`} />
+            <path className='Grey SW2' d={`M ${x - 74},${y + 16} l 133,0`} />
 
             <GaugeMarkerComponent
                 value={ramInletOpen ? 1 : 2}
@@ -31,11 +31,11 @@ const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, sdacDatum }) => {
                 radius={44}
                 startAngle={180}
                 endAngle={270}
-                className="Green Line"
+                className='Green Line'
                 indicator
                 multiplierOuter={1}
             />
-            <circle className="Green SW2 BackgroundFill" cx={x - 80} cy={y + 16} r={3} />
+            <circle className='Green SW2 BackgroundFill' cx={x - 80} cy={y + 16} r={3} />
 
             <GaugeMarkerComponent
                 value={ramInletOpen ? 1 : 2}
@@ -46,11 +46,11 @@ const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, sdacDatum }) => {
                 radius={44}
                 startAngle={180}
                 endAngle={270}
-                className="Green Line"
+                className='Green Line'
                 indicator
                 multiplierOuter={1}
             />
-            <circle className="Green SW2 BackgroundFill" cx={x + 104} cy={y + 16} r={3} />
+            <circle className='Green SW2 BackgroundFill' cx={x + 104} cy={y + 16} r={3} />
 
             <Triangle x={x - 116} y={y - 22} colour={airSuppliedToCabinAndCockpit ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.2} />
             <Triangle x={x + 98} y={y - 22} colour={airSuppliedToCabinAndCockpit ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.2} />

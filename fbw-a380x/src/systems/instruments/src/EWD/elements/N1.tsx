@@ -23,26 +23,26 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                 {!active
                     && (
                         <>
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent SW2 WhiteLine" />
-                            <text className="F26 End Amber Spread" x={x + 48} y={y + 45}>XX</text>
+                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent SW2 WhiteLine' />
+                            <text className='F26 End Amber Spread' x={x + 48} y={y + 45}>XX</text>
                         </>
                     )}
                 {active && !n1Degraded
                 && (
                     <>
-                        <text className="F26 End Green" x={x + 6} y={y + 45}>{N1PercentSplit[0]}</text>
-                        <text className="F26 End Green" x={x + 20} y={y + 45}>.</text>
-                        <text className="F20 End Green" x={x + 36} y={y + 45}>{N1PercentSplit[1]}</text>
+                        <text className='F26 End Green' x={x + 6} y={y + 45}>{N1PercentSplit[0]}</text>
+                        <text className='F26 End Green' x={x + 20} y={y + 45}>.</text>
+                        <text className='F20 End Green' x={x + 36} y={y + 45}>{N1PercentSplit[1]}</text>
                     </>
                 )}
                 {active && n1Degraded
                 && (
                     <>
-                        <text className="F26 End Green" x={xDegraded + 46} y={y + 45}>{N1PercentSplit[0]}</text>
-                        <text className="F26 End Green" x={xDegraded + 60} y={y + 45}>.</text>
-                        <text className="F20 End Green" x={xDegraded + 76} y={y + 45}>{N1PercentSplit[1]}</text>
-                        <GaugeComponent x={xDegraded} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
-                            <GaugeComponent x={xDegraded} y={y} radius={radius - 2} startAngle={endAngle - 24} endAngle={endAngle} visible className="GaugeComponent Gauge ThickRedLine" />
+                        <text className='F26 End Green' x={xDegraded + 46} y={y + 45}>{N1PercentSplit[0]}</text>
+                        <text className='F26 End Green' x={xDegraded + 60} y={y + 45}>.</text>
+                        <text className='F20 End Green' x={xDegraded + 76} y={y + 45}>{N1PercentSplit[1]}</text>
+                        <GaugeComponent x={xDegraded} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
+                            <GaugeComponent x={xDegraded} y={y} radius={radius - 2} startAngle={endAngle - 24} endAngle={endAngle} visible className='GaugeComponent Gauge ThickRedLine' />
                             <GaugeMarkerComponent
                                 value={2}
                                 x={xDegraded}
@@ -52,7 +52,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeY={-5}
                                 textNudgeX={13}
@@ -67,7 +67,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 textNudgeY={6}
                                 textNudgeX={13}
                                 multiplierInner={0.9}
@@ -81,7 +81,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeX={7}
                                 textNudgeY={11}
@@ -96,7 +96,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 multiplierInner={0.9}
                             />
                             <GaugeMarkerComponent
@@ -108,13 +108,13 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge"
+                                className='GaugeText Gauge'
                                 showValue
                                 textNudgeY={0}
                                 textNudgeX={-13}
                                 multiplierInner={0.9}
                             />
-                            <rect x={xDegraded - 13} y={y + 19} width={96} height={30} className="DarkGreyBox" />
+                            <rect x={xDegraded - 13} y={y + 19} width={96} height={30} className='DarkGreyBox' />
                             <GaugeMarkerComponent
                                 value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
                                 x={xDegraded}
@@ -124,7 +124,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeIndicator Gauge"
+                                className='GaugeIndicator Gauge'
                                 multiplierOuter={1.10}
                                 indicator
                             />
@@ -149,7 +149,7 @@ const N1: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y
                             radius={radius}
                             startAngle={startAngle}
                             endAngle={endAngle}
-                            className="DonutThrottleIndicator"
+                            className='DonutThrottleIndicator'
                         />
 
                     </>
@@ -211,7 +211,7 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
         startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
         endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
         visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
-        className="GreenLine"
+        className='GreenLine'
     />));
 
     return (

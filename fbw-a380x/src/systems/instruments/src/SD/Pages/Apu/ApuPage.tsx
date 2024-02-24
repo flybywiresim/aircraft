@@ -4,8 +4,8 @@ import { ComponentPositionProps } from '@instruments/common/ComponentPosition';
 import { Layer } from '@instruments/common/utils';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
-import { ApuGenerator } from 'instruments/src/SD/Pages/Apu/elements/ApuGenerator';
 import { PageTitle } from '../Generic/PageTitle';
+import { ApuGenerator } from 'instruments/src/SD/Pages/Apu/elements/ApuGenerator';
 import Valve from '../../../Common/Valve';
 
 export const ApuPage = () => {
@@ -98,7 +98,7 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
                             <polygon className="SW2 Green NoFill" points="50,-71 60,-86 70,-71" />
                         </>
                     )}
-                <Valve x={61} y={-37} radius={19.5} position={apuBleedOpen ? 'V' : 'H'} css={`SW2 ${color} NoFill`} sdacDatum />
+                <Valve x={61} y={-37} radius={19.5} position={apuBleedOpen ? 'V' : 'H'} css={`SW2 ${color} NoFill`} sdacDatum={true}  />
 
                 <path className={`SW2 ${color}`} d="m 60 0 v -17" />
 
@@ -491,7 +491,7 @@ const ApuMemos = ({ x, y }: ComponentPositionProps) => {
                     >
                         {apuFlapOpenPercentage <= 90 ? 'FLAP MOVING' : 'FLAP OPEN'}
                     </text>
-                )}
+                    )}
                 {/* FBW-31-07 */}
             </Layer>
         </>

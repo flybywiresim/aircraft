@@ -10,49 +10,49 @@
  * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
  */
 export class NXLogicTriggeredMonostableNode {
-    t: number;
+        t: number;
 
-    risingEdge: boolean;
+        risingEdge: boolean;
 
-    timer: number;
+        timer: number;
 
-    previousValue: any;
+        previousValue: any;
 
-    constructor(t, risingEdge = true) {
-        this.t = t;
-        this.risingEdge = risingEdge;
-        this.timer = 0;
-        this.previousValue = null;
-    }
+        constructor(t, risingEdge = true) {
+            this.t = t;
+            this.risingEdge = risingEdge;
+            this.timer = 0;
+            this.previousValue = null;
+        }
 
-    write(value, _deltaTime) {
-        if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+        write(value, _deltaTime) {
+            if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+                this.previousValue = value;
+            }
+            if (this.risingEdge) {
+                if (this.timer > 0) {
+                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+                    this.previousValue = value;
+                    return true;
+                } if (!this.previousValue && value) {
+                    this.timer = this.t;
+                    this.previousValue = value;
+                    return true;
+                }
+            } else {
+                if (this.timer > 0) {
+                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+                    this.previousValue = value;
+                    return true;
+                } if (this.previousValue && !value) {
+                    this.timer = this.t;
+                    this.previousValue = value;
+                    return true;
+                }
+            }
             this.previousValue = value;
+            return false;
         }
-        if (this.risingEdge) {
-            if (this.timer > 0) {
-                this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                this.previousValue = value;
-                return true;
-            } if (!this.previousValue && value) {
-                this.timer = this.t;
-                this.previousValue = value;
-                return true;
-            }
-        } else {
-            if (this.timer > 0) {
-                this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                this.previousValue = value;
-                return true;
-            } if (this.previousValue && !value) {
-                this.timer = this.t;
-                this.previousValue = value;
-                return true;
-            }
-        }
-        this.previousValue = value;
-        return false;
-    }
 }
 
 /**

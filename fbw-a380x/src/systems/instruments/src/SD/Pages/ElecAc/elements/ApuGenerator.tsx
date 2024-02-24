@@ -77,7 +77,7 @@ export const ApuGenerator: FC<ApuGeneratorProps> = ({ x, y, position }) => {
 
             {/* GEN line contactor indication */}
             <Triangle x={42} y={-29} colour={lineContactorClosed ? 'Green' : 'White'} fill={0} orientation={0} scale={1} />
-            <path className={`SW2 Green ${lineContactorClosed ? '' : 'Hide'}`} d="M 42,-29 l 0,-193" />
+            <path className={`SW2 Green ${lineContactorClosed ? '' : 'Hide'}`} d='M 42,-29 l 0,-193' />
         </g>
     );
 };

@@ -59,7 +59,7 @@ function BacklightBleed(props) {
     if (props.homeCockpit) {
         return null;
     }
-    return <div className="BacklightBleed" />;
+    return <div className='BacklightBleed' />;
 }
 
 export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<DisplayUnitProps>>(({ displayUnitId, failed, children }, ref) => {
@@ -127,7 +127,7 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
     if (window.ACE_ENGINE_HANDLE) {
         return (
             <>
-                <svg ref={ref} viewBox="0 0 768 1024">{children}</svg>
+                <svg ref={ref} viewBox='0 0 768 1024'>{children}</svg>
             </>
         );
     }
@@ -136,11 +136,11 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
         return (
             <>
                 <BacklightBleed homeCockpit={homeCockpit} />
-                <svg className="SelfTest" viewBox="0 0 768 1024">
-                    <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
+                <svg className='SelfTest' viewBox='0 0 768 1024'>
+                    <rect className='SelfTestBackground' x='0' y='0' width='100%' height='100%' />
 
-                    <rect x={84} y={880} width={600} height={70} fill="#ffffff" />
-                    <rect x={89} y={885} width={35} height={60} fill="#4d4dff" />
+                    <rect x={84} y={880} width={600} height={70} fill='#ffffff' />
+                    <rect x={89} y={885} width={35} height={60} fill='#4d4dff' />
                 </svg>
             </>
         );
@@ -150,20 +150,20 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
         return (
             <>
                 <BacklightBleed homeCockpit={homeCockpit} />
-                <svg className="SelfTest" viewBox="0 0 768 1024">
-                    <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
+                <svg className='SelfTest' viewBox='0 0 768 1024'>
+                    <rect className='SelfTestBackground' x='0' y='0' width='100%' height='100%' />
 
                     <text
-                        className="SelfTestText"
-                        x="50%"
-                        y="50%"
+                        className='SelfTestText'
+                        x='50%'
+                        y='50%'
                     >
                         SAFETY TEST IN PROGRESS
                     </text>
                     <text
-                        className="SelfTestText"
-                        x="50%"
-                        y="54%"
+                        className='SelfTestText'
+                        x='50%'
+                        y='54%'
                     >
                         (MAX 30 SECONDS)
                     </text>

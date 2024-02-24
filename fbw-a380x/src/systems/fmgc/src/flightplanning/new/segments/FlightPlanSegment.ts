@@ -23,7 +23,7 @@ export abstract class FlightPlanSegment {
     /**
      * Whether the segment has already been strung
      */
-    strung = false;
+    strung = false
 
     constructor(
         protected readonly flightPlan: BaseFlightPlan,

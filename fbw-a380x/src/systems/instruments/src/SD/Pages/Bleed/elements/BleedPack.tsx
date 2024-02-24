@@ -20,12 +20,12 @@ const BleedPack: FC<BleedPackProps> = ({ x, y, pack }) => {
             <path className={`${isPackOperative ? 'Green' : 'Amber'} Line`} d={`M${x + 56},${y - 21} l 0,-22`} />
             <path className={`${isPackOperative ? 'Green' : 'Amber'} Line`} d={`M${x + 56},${y + 90} l 0,22`} />
 
-            <path className="Grey SW2" d={`M ${x},${y} l -20,0 l 0,90 l 153,0 l 0,-90 l -20,0`} />
+            <path className='Grey SW2' d={`M ${x},${y} l -20,0 l 0,90 l 153,0 l 0,-90 l -20,0`} />
             <text x={x + 20} y={y} className={`F22 ${isPackOperative ? 'White' : 'Amber'}`}>PACK</text>
             <text x={x + 85} y={y} className={`F29 ${isPackOperative ? 'Green' : 'Amber'}`}>{pack}</text>
 
-            <text x={x + 61} y={y + 57} className="F29 EndAlign Green">{Math.round(packOutletTemperature)}</text>
-            <text x={x + 62} y={y + 57} className="Cyan F23">°C</text>
+            <text x={x + 61} y={y + 57} className='F29 EndAlign Green'>{Math.round(packOutletTemperature)}</text>
+            <text x={x + 62} y={y + 57} className='Cyan F23'>°C</text>
 
         </g>
     );

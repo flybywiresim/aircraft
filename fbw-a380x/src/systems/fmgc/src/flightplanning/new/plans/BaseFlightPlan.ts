@@ -99,7 +99,7 @@ export abstract class BaseFlightPlan {
 
     departureSegment = new DepartureSegment(this);
 
-    departureEnrouteTransitionSegment = new DepartureEnrouteTransitionSegment(this);
+    departureEnrouteTransitionSegment = new DepartureEnrouteTransitionSegment(this)
 
     enrouteSegment = new EnrouteSegment(this);
 

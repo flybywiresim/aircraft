@@ -14,8 +14,8 @@ const IgnitionBorder: React.FC<Position & EngineNumber & IgnitionActive> = ({ x,
                 {ignition && showBorder
                     && (
                         <>
-                            <path className="White SW2" d={`m ${x - 63} ${y + 97} l 0,-127 l 120,0 l 0,127`} />
-                            <path className="White SW2" d={`m ${x - 63} ${y + 458} l 0,127 l 120,0 l 0,-127`} />
+                            <path className='White SW2' d={`m ${x - 63} ${y + 97} l 0,-127 l 120,0 l 0,127`} />
+                            <path className='White SW2' d={`m ${x - 63} ${y + 458} l 0,127 l 120,0 l 0,-127`} />
                         </>
                     )}
             </g>

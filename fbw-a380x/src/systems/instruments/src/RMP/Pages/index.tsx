@@ -13,7 +13,7 @@ export const Pages = {
     Sqwk: SqwkPage,
     Menu: {
         index: MenuPage,
-        DatalinkRouter: DatalinkRouterPage,
+        DatalinkRouter: DatalinkRouterPage
     },
     Nav: NavPage,
 };

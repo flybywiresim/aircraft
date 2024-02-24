@@ -53,12 +53,12 @@ export const FuelPage = () => {
 
             <MoreLabel x={137} y={28} moreActive={showMore} />
 
-            <text textAnchor="middle" x={384} y={56} className="White T2">FU</text>
-            <text textAnchor="middle" x={384} y={79} className="White T2">TOTAL</text>
-            <text textAnchor="middle" x={384} y={103} className="Green T3">{totalFuelUsedDisplayed}</text>
+            <text textAnchor='middle' x={384} y={56} className='White T2'>FU</text>
+            <text textAnchor='middle' x={384} y={79} className='White T2'>TOTAL</text>
+            <text textAnchor='middle' x={384} y={103} className='Green T3'>{totalFuelUsedDisplayed}</text>
 
             {/* TODO unit switching? */}
-            <text textAnchor="middle" x={384} y={126} className="Cyan T2">KG</text>
+            <text textAnchor='middle' x={384} y={126} className='Cyan T2'>KG</text>
 
             <Engine x={74} y={105} index={1} />
             <Valve x={111} y={150} open={engine1Valve >= 0.5} />
@@ -72,7 +72,7 @@ export const FuelPage = () => {
             <Engine x={618} y={105} index={4} />
             <Valve x={655} y={144} open={engine4Valve >= 0.5} />
 
-            <image x={7} y={168} width={751} height={310} xlinkHref="/Images/SD_FUEL_BG.png" preserveAspectRatio="none" />
+            <image x={7} y={168} width={751} height={310} xlinkHref='/Images/SD_FUEL_BG.png' preserveAspectRatio='none' />
 
             {/* FEED TANK 1 */}
             <TankQuantity x={154} y={300} quantity={feed1TankWeight} />
@@ -127,13 +127,13 @@ export const FuelPage = () => {
                 <TankQuantity x={690} y={268} smallFont quantity={1200} />
             )}
 
-            <text x={10} y={620} className="White T2">ALL ENG FF</text>
+            <text x={10} y={620} className='White T2'>ALL ENG FF</text>
 
-            <text x={24} y={644} className="Green T2">{allEngFuelFlowDisplayed}</text>
+            <text x={24} y={644} className='Green T2'>{allEngFuelFlowDisplayed}</text>
             {/* TODO unit switching? */}
-            <text x={68} y={644} className="Cyan T2">KG/MIN</text>
+            <text x={68} y={644} className='Cyan T2'>KG/MIN</text>
 
-            <image x={269} y={571} width={227} height={80} xlinkHref="/Images/SD_FUEL_BG_TRIM.png" preserveAspectRatio="none" />
+            <image x={269} y={571} width={227} height={80} xlinkHref='/Images/SD_FUEL_BG_TRIM.png' preserveAspectRatio='none' />
 
             {/* TRIM TANK */}
             <TankQuantity x={418} y={640} quantity={trimTankWeight} />
@@ -220,9 +220,9 @@ interface EngineProps extends Position {
 
 const Engine: FC<EngineProps> = ({ x, y, index }) => (
     <>
-        <image x={x} y={y} width={75} height={96} xlinkHref="/Images/SD_FUEL_ENG_L.png" preserveAspectRatio="none" />
+        <image x={x} y={y} width={75} height={96} xlinkHref='/Images/SD_FUEL_ENG_L.png' preserveAspectRatio='none' />
 
-        <text x={x + 8} y={y + 25} className="White T4">{index}</text>
+        <text x={x + 8} y={y + 25} className='White T4'>{index}</text>
     </>
 );
 
@@ -235,6 +235,6 @@ const TankQuantity: FC<TankQuantityProps> = ({ x, y, smallFont = false, quantity
     const displayQuantity = Math.floor(quantity / 20) * 20;
 
     return (
-        <text x={x} y={y} className={`Green ${smallFont ? 'T3' : 'T4'}`} textAnchor="end">{displayQuantity}</text>
+        <text x={x} y={y} className={`Green ${smallFont ? 'T3' : 'T4'}`} textAnchor='end'>{displayQuantity}</text>
     );
 };

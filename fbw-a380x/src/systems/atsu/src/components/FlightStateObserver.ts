@@ -18,7 +18,7 @@ export class FlightStateObserver {
 
     public PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
 
-    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null };
+    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null }
 
     public ActiveWaypoint: Waypoint | undefined = undefined;
 

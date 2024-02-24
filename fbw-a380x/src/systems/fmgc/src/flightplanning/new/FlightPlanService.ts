@@ -16,9 +16,9 @@ export class FlightPlanService {
 
     private static flightPlanManager = new FlightPlanManager();
 
-    private static config: FpmConfig = A380FpmConfig;
+    private static config: FpmConfig = A380FpmConfig
 
-    static navigationDatabase: NavigationDatabase;
+    static navigationDatabase: NavigationDatabase
 
     static version = 0;
 
@@ -256,7 +256,7 @@ export class FlightPlanService {
     static startAirwayEntry(at: number, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
-        const plan = this.flightPlanManager.get(finalIndex);
+        const plan = this.flightPlanManager.get(finalIndex)
 
         plan.startAirwayEntry(at);
     }

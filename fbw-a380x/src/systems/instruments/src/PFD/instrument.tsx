@@ -1,5 +1,5 @@
 import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';

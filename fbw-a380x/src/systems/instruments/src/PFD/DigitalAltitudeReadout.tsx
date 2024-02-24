@@ -54,9 +54,9 @@ interface DigitalAltitudeReadoutProps {
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
     private mda = 0;
 
-    private isNegativeSub = Subject.create('hidden');
+    private isNegativeSub = Subject.create('hidden')
 
-    private colorSub = Subject.create('');
+    private colorSub = Subject.create('')
 
     private showThousandsZeroSub = Subject.create(false);
 
@@ -289,7 +289,7 @@ class Drum extends DisplayComponent<DrumProperties> {
 
     private value = 0;
 
-    private color = 'Green';
+    private color = 'Green'
 
     private showZero = true;
 

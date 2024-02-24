@@ -38,8 +38,8 @@ export class FlightPlanSegment {
         this.waypoints = waypoints;
     }
 
-    /** An empty flight plan segment. */
-    public static Empty: FlightPlanSegment = new FlightPlanSegment(-1, -1, []);
+  /** An empty flight plan segment. */
+  public static Empty: FlightPlanSegment = new FlightPlanSegment(-1, -1, []);
 }
 
 /** Types of flight plan segments. */

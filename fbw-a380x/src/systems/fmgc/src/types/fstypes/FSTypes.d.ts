@@ -74,7 +74,7 @@ declare global {
 
         constraintType: WaypointConstraintType;
 
-        additionalData: { [key: string]: any };
+        additionalData: { [key: string]: any }
 
         turnDirection: TurnDirection;
 

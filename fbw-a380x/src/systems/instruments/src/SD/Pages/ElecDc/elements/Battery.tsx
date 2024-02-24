@@ -43,7 +43,7 @@ export const Battery: FC<BatteryProps> = ({ x, y, bus }) => {
 
     return (
         <g id={`bat-${bus}-indication-box`} transform={`translate(${x} ${y})`}>
-            <path className="LightGrey SW3 NoFill" d="M 0,0 l 0,107 l 127,0 l 0,-107 z" />
+            <path className='LightGrey SW3 NoFill' d='M 0,0 l 0,107 l 127,0 l 0,-107 z' />
             <text
                 x={65}
                 y={22}
@@ -53,8 +53,8 @@ export const Battery: FC<BatteryProps> = ({ x, y, bus }) => {
             </text>
             <g className={batPbAuto ? 'Show' : 'Hide'}>
                 <g>
-                    <text className="Cyan F22" x={77} y={63}>V</text>
-                    <text className="Cyan F22" x={77} y={97}>A</text>
+                    <text className='Cyan F22' x={77} y={63}>V</text>
+                    <text className='Cyan F22' x={77} y={97}>A</text>
                 </g>
                 {/* Voltage */}
                 <text

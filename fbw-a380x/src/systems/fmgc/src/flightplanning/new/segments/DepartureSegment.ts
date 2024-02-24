@@ -11,11 +11,11 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class DepartureSegment extends FlightPlanSegment {
-    class = SegmentClass.Departure;
+    class = SegmentClass.Departure
 
-    originDeparture: Departure;
+    originDeparture: Departure
 
-    allLegs: FlightPlanLeg[] = [];
+    allLegs: FlightPlanLeg[] = []
 
     async setDepartureProcedure(procedureIdent: string | undefined) {
         if (procedureIdent === undefined) {

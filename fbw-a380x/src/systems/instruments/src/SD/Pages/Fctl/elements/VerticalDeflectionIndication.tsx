@@ -30,17 +30,17 @@ export const VerticalDeflectionIndication: FC<VerticalDeflectionIndicationProps>
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <path className="Grey Fill" d="m0,0 v 116 h15 v-116 z" />
+            <path className='Grey Fill' d='m0,0 v 116 h15 v-116 z' />
 
             { showAileronDroopSymbol && deflectionInfoValid && (
-                <circle className="SW2 White" cx={7.5} cy={deflectionToYOffset(5) + SCALE_HEIGHT / 2} r={3.75} />
+                <circle className='SW2 White' cx={7.5} cy={deflectionToYOffset(5) + SCALE_HEIGHT / 2} r={3.75} />
             )}
 
-            <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d="m0,-1 h 15 M0,117 h15" />
+            <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d='m0,-1 h 15 M0,117 h15' />
 
             <path className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`} d={`m0,58 h15 v${deflectionXValue} h-15 z`} />
             {/* This is the small line in the middle of the scale, when the surface is neutral. */}
-            <path className={`${powerAvailableClass} SW2 ${deflectionInfoValid ? '' : 'Hide'}`} d="m0,58 h15" />
+            <path className={`${powerAvailableClass} SW2 ${deflectionInfoValid ? '' : 'Hide'}`} d='m0,58 h15' />
 
             <text
                 x={-1}

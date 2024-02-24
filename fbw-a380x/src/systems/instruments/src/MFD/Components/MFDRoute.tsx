@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Redirect, Route, useRouteMatch } from 'react-router-dom';
+import {Redirect, Route, useRouteMatch} from 'react-router-dom';
 
 type MFDRouteProps = {
     path: string;
