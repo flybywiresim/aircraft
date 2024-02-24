@@ -15,7 +15,9 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     f64::*,
+    length::meter,
     ratio::{percent, ratio},
+    velocity::{knot, meter_per_second},
 };
 
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -184,6 +186,8 @@ pub struct A380AutobrakeController {
     external_disarm_event: bool,
 
     placeholder_ground_spoilers_out: bool,
+
+    btv_scheduler: BtvDecelScheduler,
 }
 impl A380AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: Duration = Duration::from_secs(10);
@@ -249,6 +253,8 @@ impl A380AutobrakeController {
             external_disarm_event: false,
 
             placeholder_ground_spoilers_out: false,
+
+            btv_scheduler: BtvDecelScheduler::new(context),
         }
     }
 
@@ -292,7 +298,10 @@ impl A380AutobrakeController {
                     A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
                     A380AutobrakeKnobPosition::L3 => A380AutobrakeMode::L3,
                     A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
-                    A380AutobrakeKnobPosition::BTV => A380AutobrakeMode::BTV,
+                    A380AutobrakeKnobPosition::BTV => {
+                        self.btv_scheduler.enable();
+                        A380AutobrakeMode::BTV
+                    }
                 }
             } else {
                 self.mode
@@ -412,6 +421,7 @@ impl A380AutobrakeController {
 
     fn disarm_actions(&mut self) {
         self.autobrake_knob.disarm(true);
+        self.btv_scheduler.disarm();
         self.nose_gear_was_compressed_once = false;
     }
 
@@ -514,11 +524,15 @@ impl A380AutobrakeController {
         self.update_decelerating_light_info();
 
         self.placeholder_ground_spoilers_out = placeholder_ground_spoilers_out;
+
+        self.btv_scheduler
+            .update(context, self.ground_spoilers_are_deployed);
     }
 }
 impl SimulationElement for A380AutobrakeController {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.autobrake_knob.accept(visitor);
+        self.btv_scheduler.accept(visitor);
 
         visitor.visit(self);
     }
@@ -541,5 +555,171 @@ impl SimulationElement for A380AutobrakeController {
         if readed_mode >= 0.0 {
             self.mode = readed_mode.into();
         }
+    }
+}
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+enum BTVState {
+    Disabled,
+    Armed,
+    RotOptimization,
+    Decel,
+    OutOfDecelRange,
+}
+
+struct BtvDecelScheduler {
+    dev_exit_distance_to_touchdown_id: VariableIdentifier,
+    runway_length_id: VariableIdentifier,
+    ground_speed_id: VariableIdentifier,
+
+    runway_length: Length,
+
+    rolling_distance: Length,
+    dev_distance_to_exit_from_touchdown: Length,
+
+    spoilers_active: bool,
+
+    ground_speed: Velocity,
+
+    mode: BTVState,
+}
+impl BtvDecelScheduler {
+    const MAX_DECEL_DRY_MS2: f64 = -3.5;
+    const MAX_DECEL_WET_MS2: f64 = -1.5;
+
+    const MIN_RUNWAY_LENGTH_M: f64 = 1000.;
+
+    // ARRAYS PER TYPE OF EXIT : 90° / FAST ...
+    const DISTANCE_OFFSET_TO_RELEASE_BTV: [f64; 2] = [50., 20.];
+    const TARGET_SPEED_TO_RELEASE_BTV: [f64; 2] = [5., 10.];
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            dev_exit_distance_to_touchdown_id: context
+                .get_identifier("BTV_DEV_DISTANCE_TO_EXIT_METERS".to_owned()),
+            runway_length_id: context.get_identifier("OANS_LANDING_RWY_LENGTH".to_owned()),
+            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
+
+            runway_length: Length::default(),
+            rolling_distance: Length::default(),
+            dev_distance_to_exit_from_touchdown: Length::default(),
+
+            spoilers_active: false,
+            ground_speed: Velocity::default(),
+
+            mode: BTVState::Disabled,
+        }
+    }
+
+    fn enable(&mut self) {
+        if self.mode == BTVState::Disabled && self.arming_authorized() {
+            self.mode = BTVState::Armed;
+        }
+    }
+
+    fn disarm(&mut self) {
+        self.mode = BTVState::Disabled;
+    }
+
+    fn update(&mut self, context: &UpdateContext, spoilers_active: bool) {
+        self.spoilers_active = spoilers_active;
+        self.integrate_distance(context);
+
+        println!(
+            "BTV MODE {:?}, roll distance {:.0}m, speed {:.1} ms, speed {:.1} knot",
+            self.mode,
+            self.rolling_distance.get::<meter>(),
+            self.ground_speed.get::<meter_per_second>(),
+            self.ground_speed.get::<knot>()
+        );
+
+        self.compute_decel();
+
+        self.mode = self.update_state(context);
+    }
+
+    fn compute_decel(&mut self) {
+        match self.mode {
+            BTVState::RotOptimization | BTVState::Decel | BTVState::OutOfDecelRange => {
+                let distance_remaining_raw =
+                    self.dev_distance_to_exit_from_touchdown - self.rolling_distance;
+
+                let exit_index = 0;
+
+                let speed_at_btv_release = Velocity::new::<meter_per_second>(
+                    Self::TARGET_SPEED_TO_RELEASE_BTV[exit_index],
+                );
+                let distance_from_btv_exit =
+                    Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV[exit_index]);
+
+                let final_distance_remaining =
+                    (distance_remaining_raw - distance_from_btv_exit).max(Length::default());
+
+                let delta_speed_to_achieve = self.ground_speed - speed_at_btv_release;
+
+                let target_deceleration_raw =
+                    delta_speed_to_achieve.get::<meter_per_second>().powi(2) / 2.
+                        * final_distance_remaining.get::<meter>();
+
+                println!(
+                    "deltaV ms ==> {:.2}  Remaining meters {:.0}",
+                    delta_speed_to_achieve.get::<meter_per_second>(),
+                    final_distance_remaining.get::<meter>()
+                );
+                println!("A ==> {:.2}", target_deceleration_raw);
+            }
+            _ => {}
+        }
+    }
+
+    fn arming_authorized(&self) -> bool {
+        self.runway_length.get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
+    }
+
+    fn update_state(&mut self, _context: &UpdateContext) -> BTVState {
+        match self.mode {
+            BTVState::Armed => {
+                if self.spoilers_active {
+                    BTVState::RotOptimization
+                } else {
+                    if !self.arming_authorized() {
+                        BTVState::Disabled
+                    } else {
+                        self.mode
+                    }
+                }
+            }
+            _ => self.mode,
+        }
+    }
+
+    fn integrate_distance(&mut self, context: &UpdateContext) {
+        match self.mode {
+            BTVState::RotOptimization | BTVState::Decel | BTVState::OutOfDecelRange => {
+                let distance_this_tick = self.ground_speed * context.delta_as_time();
+                self.rolling_distance = self.rolling_distance + distance_this_tick;
+            }
+
+            BTVState::Disabled | BTVState::Armed => self.rolling_distance = Length::default(),
+        }
+    }
+}
+impl SimulationElement for BtvDecelScheduler {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.dev_exit_distance_to_touchdown_id,
+            self.dev_distance_to_exit_from_touchdown.get::<meter>(),
+        );
+        writer.write(&self.runway_length_id, self.runway_length.get::<meter>());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let raw_exit_distance_meters = reader.read_f64(&self.dev_exit_distance_to_touchdown_id);
+        self.dev_distance_to_exit_from_touchdown = Length::new::<meter>(raw_exit_distance_meters);
+
+        let runway_length_meters = reader.read_f64(&self.runway_length_id);
+        self.runway_length = Length::new::<meter>(runway_length_meters);
+
+        self.ground_speed = reader.read(&self.ground_speed_id);
     }
 }
