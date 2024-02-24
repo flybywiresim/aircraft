@@ -16,7 +16,7 @@
       "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
       "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_RTO": "Arm rejected take-off autobrake (RTO)",
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_TOOLTIP": "Auto brake selector",
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_DISARM": "Set auto brake to DISARM",
