@@ -799,8 +799,8 @@ impl A320PressurizationSystem {
 
         self.switch_active_system();
 
-        for (id, cpc_i) in self.cpc_interface.iter_mut().enumerate() {
-            cpc_i.update(&self.cpc[id])
+        for (cpc, cpc_i) in self.cpc.iter().zip(self.cpc_interface.iter_mut()) {
+            cpc_i.update(cpc);
         }
 
         self.pressurization_overhead.set_mode_sel_fault(
@@ -2037,9 +2037,8 @@ mod tests {
     }
 
     mod a320_pressurization_tests {
-        use systems::failures::FailureType;
-
         use super::*;
+        use systems::failures::FailureType;
 
         #[test]
         fn conversion_from_pressure_to_altitude_works() {
