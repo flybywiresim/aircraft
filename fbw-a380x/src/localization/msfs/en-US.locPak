@@ -3,6 +3,7 @@
     "Language": "en-US",
     "Strings": {
       "AIRCRAFT.DESCRIPTION": "The world's largest passenger airliner, the Airbus A380, is a double deck wide-body aircraft manufactured by Airbus, with the first production model delivered to Singapore Airlines on 15 October 2007.<\/br><\/br>Considered to be an engineering milestone, the A3XX, later designated the A380, drew inspiration from earlier large aircraft studies, with the aim of surpassing the venerable Boeing 747 series of wide-body aircraft in fuel economy, operational efficiency and customer satisfaction. .<\/br><\/br>Assembled at the Final Assembly Line in Toulouse, France, each A380 is made up of over four million individual parts sourced from over 1500 companies in 30 countries. Certified to carry up to 853 passengers in an all-economy class configuration, or 525 passengers in a typical three-class configuration, the A380 is powered by four Engine Alliance GP7200 or Rolls-Royce Trent 900 turbofan engines.<\/br><\/br>A total of 254 airframes were delivered before the end of production in 2021.",
+
       "AIRCRAFT.UI_MANUFACTURER": "Airbus",
       "AIRCRAFT.UI_MODEL": "A380",
       "AIRCRAFT.UI_VARIATION": "Airbus",

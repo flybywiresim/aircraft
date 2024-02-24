@@ -70,6 +70,7 @@
 !/fbw-a380x/src/
 /fbw-a380x/out
 /fbw-a380x/src/systems/instruments/aceBundles
+/fbw-a380x/src/localization/msfs/downloaded/*.locPak
 
 !/fbw-common/**
 /fbw-common/src/systems/instruments/src/EFB/Localization/data/downloaded/*.json

@@ -1,0 +1,10 @@
+{
+  "readKey": "a7473510735159984625-0749e7729b81889a4e4ec2c0226408cc6b5b27f1839a96d1e1a32c19f3d2733d",
+  "download": {
+    "folder": "downloaded",
+    "includeSourceLang": false,
+    "files": {
+      "output": "${lang}.locPak"
+    }
+  }
+}
