@@ -1,14 +1,10 @@
 import React, { useContext } from 'react';
+import { ChartFileType } from 'instruments/src/EFB/Store/features/navigationPage';
 import { sampleData } from './Samples';
 
 export const ChartFoxContext = React.createContext<ChartFoxClient>(undefined!);
 
 export const useChartFox = () => useContext(ChartFoxContext);
-
-export enum SourceUrlType {
-    Pdf = 0,
-    Image = 1
-}
 
 export type ChartFoxChart = {
     id: string,
@@ -18,7 +14,7 @@ export type ChartFoxChart = {
     typeKey: string,
     url: string,
     sourceUrl: string,
-    sourceUrlType: SourceUrlType,
+    sourceUrlType: ChartFileType,
     georefs: ChartFoxGeoRef[],
     hasGeoreferences: boolean,
     updatedAt: string,
@@ -50,17 +46,45 @@ export type ChartFoxAirportCharts = {
     reference: ChartFoxGroupedChart[],
 }
 
+export type ChartFoxAirportIndex = {
+    id: number,
+    ident: string,
+    icaoCode: string,
+    iataCode: string,
+    name: string,
+    type: string,
+    latitude: number,
+    longitude: number,
+    elevationFt: number,
+    isoA2Country: string,
+    hasCharts: boolean,
+    hasSources: boolean,
+    groupedCharts: ChartFoxAirportCharts,
+}
+
 export const emptyChartFoxCharts = {
-    arrival: [],
-    approach: [],
-    airport: [],
-    departure: [],
-    reference: [],
+    arrival: [] as ChartFoxGroupedChart[],
+    approach: [] as ChartFoxGroupedChart[],
+    airport: [] as ChartFoxGroupedChart[],
+    departure: [] as ChartFoxGroupedChart[],
+    reference: [] as ChartFoxGroupedChart[],
 };
 
-export type AirportInfo = {
-    name: string,
-}
+const emptyAirportIndex: ChartFoxAirportIndex = {
+    id: 0,
+    ident: '',
+    icaoCode: '',
+    iataCode: '',
+    name: '',
+    type: '',
+    latitude: 0,
+    longitude: 0,
+    elevationFt: 0,
+    isoA2Country: '',
+    hasCharts: false,
+    hasSources: false,
+    groupedCharts: emptyChartFoxCharts,
+};
 
 export const UseChartFoxSamples = true;
 
@@ -70,20 +94,6 @@ export class ChartFoxClient {
     public static sufficientEnv() {
         // return !!ChartFoxClient.token;
         return true;
-    }
-
-    public async getChartUrl(id: string): Promise<string> {
-        console.log(`get chart with id ${id}`);
-        const chart = await this.getChart(id);
-        console.log(chart);
-
-        // let url = chart.url;
-        const url = chart.url;
-        if (chart.sourceUrlType === SourceUrlType.Pdf) {
-            // turn the pdf into an image and use createObjectURL()
-        }
-
-        return url;
     }
 
     public async getChart(id: string): Promise<ChartFoxChart> {
@@ -137,9 +147,9 @@ export class ChartFoxClient {
         return null;
     }
 
-    public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
+    public async getChartIndex(icao: string): Promise<ChartFoxAirportIndex> {
         if (!ChartFoxClient.sufficientEnv() || icao.length !== 4) {
-            return null;
+            return emptyAirportIndex;
         }
 
         try {
@@ -156,41 +166,7 @@ export class ChartFoxClient {
                 });
 
                 if (!chartJsonResp.ok) {
-                    return null;
-                }
-
-                chartJson = await chartJsonResp.json();
-            }
-
-            return { name: chartJson.airport.name };
-        } catch (e) {
-            // console.log('Token Authentication Failed. #CF101');
-            console.log(e);
-        }
-
-        return null;
-    }
-
-    public async getChartList(icao: string): Promise<ChartFoxAirportCharts> {
-        if (!ChartFoxClient.sufficientEnv() || icao.length !== 4) {
-            return emptyChartFoxCharts;
-        }
-
-        try {
-            let chartJson;
-            if (UseChartFoxSamples) {
-                chartJson = sampleData[icao];
-            } else {
-                const chartJsonResp = await fetch(`https://chartfox.org/${icao}`, {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json',
-                        'authorization': `Bearer ${ChartFoxClient.token}`,
-                    },
-                });
-
-                if (!chartJsonResp.ok) {
-                    return emptyChartFoxCharts;
+                    return emptyAirportIndex;
                 }
 
                 chartJson = await chartJsonResp.json();
@@ -236,17 +212,31 @@ export class ChartFoxClient {
             }));
 
             return {
-                arrival: starArray,
-                approach: approachArray,
-                airport: groundLayoutArray,
-                departure: sidArray,
-                reference: unknownArray,
+                id: chartJson.props.airport.id,
+                ident: chartJson.props.airport.ident,
+                icaoCode: chartJson.props.airport.icao_code,
+                iataCode: chartJson.props.airport.iata_code,
+                name: chartJson.props.airport.name,
+                type: chartJson.props.airport.type,
+                latitude: chartJson.props.airport.latitude,
+                longitude: chartJson.props.airport.longitude,
+                elevationFt: chartJson.props.airport.elevation_ft,
+                isoA2Country: chartJson.props.airport.iso_a2_country,
+                hasCharts: chartJson.props.airport.has_charts,
+                hasSources: chartJson.props.airport.has_sources,
+                groupedCharts: {
+                    arrival: starArray,
+                    approach: approachArray,
+                    airport: groundLayoutArray,
+                    departure: sidArray,
+                    reference: unknownArray,
+                },
             };
         } catch (e) {
             // console.log('Token Authentication Failed. #CF101');
             console.log(e);
         }
 
-        return emptyChartFoxCharts;
+        return emptyAirportIndex;
     }
 }

@@ -197,7 +197,6 @@
     "sass": "^1.45.1",
     "semver": "^7.3.8",
     "simple-keyboard-layouts": "^3.1.32",
-    "skia-canvas": "^0.9.29",
     "use-events": "^1.4.2",
     "use-long-press": "^1.1.2",
     "uuid": "^9.0.0",

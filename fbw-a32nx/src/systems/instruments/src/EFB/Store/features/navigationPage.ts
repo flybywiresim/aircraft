@@ -8,9 +8,15 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
 
+export enum ChartFileType {
+    Pdf = 0,
+    Image = 1
+}
+
 type ThemedChart = {
     light: string;
     dark: string;
+    fileType?: ChartFileType;
 }
 
 export enum ChartProvider {

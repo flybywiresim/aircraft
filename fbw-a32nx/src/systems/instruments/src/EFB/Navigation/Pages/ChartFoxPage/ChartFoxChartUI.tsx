@@ -35,60 +35,52 @@ export const ChartFoxChartUI = () => {
     });
 
     const [organizedCharts, setOrganizedCharts] = useState<OrganizedChart[]>([
-        { name: 'STAR', charts: charts.arrival },
-        { name: 'APP', charts: charts.approach, bundleRunways: true },
-        { name: 'TAXI', charts: charts.airport },
+        { name: 'GEN', charts: charts.reference },
+        { name: 'GND', charts: charts.airport },
         { name: 'SID', charts: charts.departure },
-        { name: 'REF', charts: charts.reference },
+        { name: 'STAR', charts: charts.arrival },
+        { name: 'APP', charts: charts.approach },
     ]);
 
     const { isFullScreen, searchQuery, chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.CHARTFOX]);
 
-    const assignAirportInfo = async () => {
-        setIcaoAndNameDisagree(true);
-        const airportInfo = await chartFox.getAirportInfo(searchQuery);
-        setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.ChartFox.AirportDoesNotExist'));
-        setIcaoAndNameDisagree(false);
-    };
-
-    useEffect(() => {
-        if (searchQuery.length === 4) {
-            assignAirportInfo();
-        } else {
-            setStatusBarInfo('');
-            setCharts(emptyChartFoxCharts);
-        }
-    }, [searchQuery]);
-
     useEffect(() => {
         setOrganizedCharts([
-            { name: 'STAR', charts: charts.arrival },
-            { name: 'APP', charts: charts.approach, bundleRunways: true },
-            { name: 'TAXI', charts: charts.airport },
-            { name: 'SID', charts: charts.departure },
-            { name: 'REF', charts: charts.reference },
+            { name: 'GEN', charts: charts.reference },
+            { name: 'GND', charts: charts.airport, bundleRunways: charts.airport.some((chart) => chart.runways.length > 0) },
+            { name: 'SID', charts: charts.departure, bundleRunways: charts.departure.some((chart) => chart.runways.length > 0) },
+            { name: 'STAR', charts: charts.arrival, bundleRunways: charts.arrival.some((chart) => chart.runways.length > 0) },
+            { name: 'APP', charts: charts.approach, bundleRunways: charts.approach.some((chart) => chart.runways.length > 0) },
         ]);
     }, [charts]);
 
     useEffect(() => {
         if (chartId) {
             const fetchCharts = async () => {
-                const url = await chartFox.getChartUrl(chartId);
-                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: url, dark: url } }));
+                const { sourceUrl, sourceUrlType } = await chartFox.getChart(chartId);
+                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
             };
             fetchCharts();
         }
     }, [chartId]);
 
     const handleIcaoChange = async (value: string) => {
-        if (value.length !== 4) return;
+        if (value.length !== 4) {
+            setStatusBarInfo('');
+            setCharts(emptyChartFoxCharts);
+            return;
+        }
         const newValue = value.toUpperCase();
         dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, searchQuery: newValue }));
+
+        setIcaoAndNameDisagree(true);
         setChartListDisagrees(true);
-        const chartList = await chartFox.getChartList(newValue);
-        if (chartList) {
-            setCharts(chartList);
+        const chartIndex = await chartFox.getChartIndex(newValue);
+        setStatusBarInfo(chartIndex?.name || t('NavigationAndCharts.ChartFox.AirportDoesNotExist'));
+        if (chartIndex?.groupedCharts) {
+            setCharts(chartIndex.groupedCharts);
         }
+        setIcaoAndNameDisagree(false);
         setChartListDisagrees(false);
     };
 

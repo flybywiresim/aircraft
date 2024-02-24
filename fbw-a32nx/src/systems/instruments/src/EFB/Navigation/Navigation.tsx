@@ -26,6 +26,7 @@ import { useNavigraph } from '../Apis/Navigraph/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
+    ChartFileType,
     ChartProvider,
     editTabProperty,
     NavigationTab,
@@ -510,19 +511,26 @@ export const ChartViewer = () => {
                                     )}
 
                                     <div ref={chartRef}>
-                                        <img
-                                            className="absolute left-0 w-full transition duration-100 select-none"
-                                            draggable={false}
-                                            src={chartLinks.dark}
-                                            alt="chart"
-
-                                        />
-                                        <img
-                                            className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
-                                            draggable={false}
-                                            src={chartLinks.light}
-                                            alt="chart"
-                                        />
+                                        {chartLinks?.fileType === ChartFileType.Pdf ? (
+                                            <div className="h-content-section-reduced mr-4 flex w-full items-center justify-center overflow-x-hidden">
+                                                <p className="mb-6 pt-6 text-3xl">{t('NavigationAndCharts.PdfUnsupported')}</p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <img
+                                                    className="absolute left-0 w-full select-none transition duration-100"
+                                                    draggable={false}
+                                                    src={chartLinks.dark}
+                                                    alt="chart"
+                                                />
+                                                <img
+                                                    className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
+                                                    draggable={false}
+                                                    src={chartLinks.light}
+                                                    alt="chart"
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </TransformComponent>

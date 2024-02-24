@@ -254,6 +254,7 @@
       "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
       "Title": "ChartFox"
     },
+    "PdfUnsupported": "PDF charts are currently not supported",
     "PinnedCharts": {
       "Delete": "Delete",
       "Edit": "Edit",
