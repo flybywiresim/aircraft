@@ -174,11 +174,8 @@ impl A380DirectCurrentElectrical {
 
         // TODO: Figure out the exact behavior how the APU BUS is powered
         // TODO: Move contactor logic into TR APU
-        self.tr_apu_contactor.close_when(
-            electricity.is_powered(ac_state.tr_apu())
-                && (matches!(apu.signal(), Some(ContactorSignal::Close))
-                    || self.battery_apu.needs_charging()),
-        );
+        self.tr_apu_contactor
+            .close_when(electricity.is_powered(ac_state.tr_apu()));
         electricity.flow(ac_state.tr_apu(), &self.tr_apu_contactor);
         electricity.flow(&self.tr_apu_contactor, &self.apu_bat_bus);
 
@@ -243,10 +240,7 @@ impl A380DirectCurrentElectrical {
         // TODO: Move contactor logic into TR APU
         self.battery_apu_contactor.close_when(
             overhead.bat_is_auto(4)
-                && ((matches!(apu.signal(), Some(ContactorSignal::Close))
-                    && self.tr_apu_contactor.is_open())
-                    || (!matches!(apu.signal(), Some(ContactorSignal::Close))
-                        && self.battery_apu.needs_charging())),
+                && (self.tr_apu_contactor.is_open() || self.battery_apu.needs_charging()),
         );
         electricity.flow(&self.battery_apu_contactor, &self.battery_apu);
         electricity.flow(&self.hot_bus_apu, &self.battery_apu);
