@@ -3,15 +3,15 @@ import { General } from './General';
 import { Navlog } from './Navlog';
 
 export interface CoRouteDto {
-    name: String;
+  name: String;
 
-    origin: Airport;
+  origin: Airport;
 
-    alternate: Airport;
+  alternate: Airport;
 
-    destination: Airport;
+  destination: Airport;
 
-    general: General;
+  general: General;
 
-    navlog: Navlog
+  navlog: Navlog;
 }

@@ -5,8 +5,14 @@
 import { FMMessage, FMMessageTriggers } from '@flybywiresim/fbw-sdk';
 
 import { RwyLsMismatchLeft, RwyLsMismatchRight } from '@fmgc/components/fms-messages/RwyLsMismatch';
-import { SpecifiedNdbUnavailableLeft, SpecifiedNdbUnavailableRight } from '@fmgc/components/fms-messages/SpecifiedNdbUnavailable';
-import { SpecifiedVorUnavailableLeft, SpecifiedVorUnavailableRight } from '@fmgc/components/fms-messages/SpecifiedVorUnavailable';
+import {
+  SpecifiedNdbUnavailableLeft,
+  SpecifiedNdbUnavailableRight,
+} from '@fmgc/components/fms-messages/SpecifiedNdbUnavailable';
+import {
+  SpecifiedVorUnavailableLeft,
+  SpecifiedVorUnavailableRight,
+} from '@fmgc/components/fms-messages/SpecifiedVorUnavailable';
 import { TuneNavaidLeft, TuneNavaidRight } from '@fmgc/components/fms-messages/TuneNavaid';
 import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
 import { FlightPlanManager } from '@shared/flightplan';
@@ -31,147 +37,147 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+  private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    private baseInstrument: BaseInstrument;
+  private baseInstrument: BaseInstrument;
 
-    private ndMessageFlags: Record<'L' | 'R', number> = {
-        L: 0,
-        R: 0,
-    };
+  private ndMessageFlags: Record<'L' | 'R', number> = {
+    L: 0,
+    R: 0,
+  };
 
-    private messageSelectors: FMMessageSelector[] = [
-        new GpsPrimary(),
-        new GpsPrimaryLost(),
-        new MapPartlyDisplayedLeft(),
-        new MapPartlyDisplayedRight(),
-        new TurnAreaExceedanceLeft(),
-        new TurnAreaExceedanceRight(),
-        new TuneNavaidLeft(),
-        new TuneNavaidRight(),
-        new SpecifiedVorUnavailableLeft(),
-        new SpecifiedVorUnavailableRight(),
-        new SpecifiedNdbUnavailableLeft(),
-        new SpecifiedNdbUnavailableRight(),
-        new RwyLsMismatchLeft(),
-        new RwyLsMismatchRight(),
-        new TdReached(),
-        new StepAhead(),
-        new StepDeleted(),
-    ];
+  private messageSelectors: FMMessageSelector[] = [
+    new GpsPrimary(),
+    new GpsPrimaryLost(),
+    new MapPartlyDisplayedLeft(),
+    new MapPartlyDisplayedRight(),
+    new TurnAreaExceedanceLeft(),
+    new TurnAreaExceedanceRight(),
+    new TuneNavaidLeft(),
+    new TuneNavaidRight(),
+    new SpecifiedVorUnavailableLeft(),
+    new SpecifiedVorUnavailableRight(),
+    new SpecifiedNdbUnavailableLeft(),
+    new SpecifiedNdbUnavailableRight(),
+    new RwyLsMismatchLeft(),
+    new RwyLsMismatchRight(),
+    new TdReached(),
+    new StepAhead(),
+    new StepDeleted(),
+  ];
 
-    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
-        this.baseInstrument = baseInstrument;
+  init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+    this.baseInstrument = baseInstrument;
 
-        for (const selector of this.messageSelectors) {
-            if (selector.init) {
-                selector.init(this.baseInstrument);
-            }
-        }
+    for (const selector of this.messageSelectors) {
+      if (selector.init) {
+        selector.init(this.baseInstrument);
+      }
     }
+  }
 
-    update(deltaTime: number): void {
-        let didMutateNd = false;
-        for (const selector of this.messageSelectors) {
-            const newState = selector.process(deltaTime);
-            const message = selector.message;
+  update(deltaTime: number): void {
+    let didMutateNd = false;
+    for (const selector of this.messageSelectors) {
+      const newState = selector.process(deltaTime);
+      const message = selector.message;
 
-            switch (newState) {
-            case FMMessageUpdate.SEND:
-                if (message.text) {
-                    this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
-                }
+      switch (newState) {
+        case FMMessageUpdate.SEND:
+          if (message.text) {
+            this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
+          }
 
-                if (message.ndFlag > 0) {
-                    if (selector.efisSide) {
-                        this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
-                    } else {
-                        for (const side in this.ndMessageFlags) {
-                            if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                                this.ndMessageFlags[side] |= message.ndFlag;
-                            }
-                        }
-                    }
-                    didMutateNd = true;
-                }
-                break;
-            case FMMessageUpdate.RECALL:
-                if (message.text) {
-                    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
-                }
-
-                if (message.ndFlag > 0) {
-                    if (selector.efisSide) {
-                        this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
-                    } else {
-                        for (const side in this.ndMessageFlags) {
-                            if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                                this.ndMessageFlags[side] &= ~message.ndFlag;
-                            }
-                        }
-                    }
-                    didMutateNd = true;
-                }
-                break;
-            case FMMessageUpdate.NO_ACTION:
-                break;
-            default:
-                throw new Error('Invalid FM message update state');
-            }
-        }
-        if (didMutateNd) {
-            for (const side in this.ndMessageFlags) {
+          if (message.ndFlag > 0) {
+            if (selector.efisSide) {
+              this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
+            } else {
+              for (const side in this.ndMessageFlags) {
                 if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                  this.ndMessageFlags[side] |= message.ndFlag;
                 }
+              }
             }
-        }
-    }
+            didMutateNd = true;
+          }
+          break;
+        case FMMessageUpdate.RECALL:
+          if (message.text) {
+            this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+          }
 
-    send(messageClass: { new(): FMMessageSelector }): void {
-        const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
-
-        this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
-
-        if (message.ndFlag) {
-            for (const side in this.ndMessageFlags) {
+          if (message.ndFlag > 0) {
+            if (selector.efisSide) {
+              this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
+            } else {
+              for (const side in this.ndMessageFlags) {
                 if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                    this.ndMessageFlags[side] |= message.ndFlag;
-                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                  this.ndMessageFlags[side] &= ~message.ndFlag;
                 }
+              }
             }
-        }
+            didMutateNd = true;
+          }
+          break;
+        case FMMessageUpdate.NO_ACTION:
+          break;
+        default:
+          throw new Error('Invalid FM message update state');
+      }
     }
-
-    recall(messageClass: { new(): FMMessageSelector }): void {
-        const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
-
-        this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
-
-        if (message.ndFlag) {
-            for (const side in this.ndMessageFlags) {
-                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                    this.ndMessageFlags[side] &= ~message.ndFlag;
-                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
-                }
-            }
+    if (didMutateNd) {
+      for (const side in this.ndMessageFlags) {
+        if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
+      }
     }
+  }
 
-    recallId(id: number) {
-        const message = this.messageSelectors.find((it) => it.message.id === id).message;
+  send(messageClass: { new (): FMMessageSelector }): void {
+    const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
-        this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+    this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
 
-        if (message.ndFlag) {
-            for (const side in this.ndMessageFlags) {
-                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
-                    this.ndMessageFlags[side] &= ~message.ndFlag;
-                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
-                }
-            }
+    if (message.ndFlag) {
+      for (const side in this.ndMessageFlags) {
+        if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          this.ndMessageFlags[side] |= message.ndFlag;
+          SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
+      }
     }
+  }
+
+  recall(messageClass: { new (): FMMessageSelector }): void {
+    const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
+
+    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+
+    if (message.ndFlag) {
+      for (const side in this.ndMessageFlags) {
+        if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          this.ndMessageFlags[side] &= ~message.ndFlag;
+          SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+        }
+      }
+    }
+  }
+
+  recallId(id: number) {
+    const message = this.messageSelectors.find((it) => it.message.id === id).message;
+
+    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+
+    if (message.ndFlag) {
+      for (const side in this.ndMessageFlags) {
+        if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          this.ndMessageFlags[side] &= ~message.ndFlag;
+          SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -180,34 +186,34 @@ export class FmsMessages implements FmgcComponent {
  * Used when a message selector implements the {@link FMMessageSelector.process `process`} method.
  */
 export enum FMMessageUpdate {
-    /**
-     * Self-explanatory
-     */
-    NO_ACTION,
+  /**
+   * Self-explanatory
+   */
+  NO_ACTION,
 
-    /**
-     * Send the message to the MCDU, and EFIS target if applicable
-     */
-    SEND,
+  /**
+   * Send the message to the MCDU, and EFIS target if applicable
+   */
+  SEND,
 
-    /**
-     * Recall the message from the MCDU, and EFIS target if applicable
-     */
-    RECALL,
+  /**
+   * Recall the message from the MCDU, and EFIS target if applicable
+   */
+  RECALL,
 }
 
 /**
  * Defines a selector for a Type II message.
  */
 export interface FMMessageSelector {
-    message: FMMessage;
+  message: FMMessage;
 
-    efisSide?: 'L' | 'R';
+  efisSide?: 'L' | 'R';
 
-    init?(baseInstrument: BaseInstrument): void;
+  init?(baseInstrument: BaseInstrument): void;
 
-    /**
-     * Optionally triggers a message when there isn't any other system or Redux update triggering it.
-     */
-    process(deltaTime: number): FMMessageUpdate;
+  /**
+   * Optionally triggers a message when there isn't any other system or Redux update triggering it.
+   */
+  process(deltaTime: number): FMMessageUpdate;
 }

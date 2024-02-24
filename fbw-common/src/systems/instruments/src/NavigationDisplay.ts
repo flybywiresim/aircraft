@@ -3,7 +3,7 @@
 
 import { Coordinates } from 'msfs-geo';
 
-export type EfisSide = 'L' | 'R'
+export type EfisSide = 'L' | 'R';
 
 export type A320EfisNdRangeValue = 10 | 20 | 40 | 80 | 160 | 320;
 
@@ -18,65 +18,65 @@ export const a320EfisOansRangeSettings: A320EfisOansNdRangeValue[] = [-1, 10, 20
 export const a380EfisRangeSettings: A380EfisNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320, 640];
 
 export enum EfisNdMode {
-    ROSE_ILS,
-    ROSE_VOR,
-    ROSE_NAV,
-    ARC,
-    PLAN,
+  ROSE_ILS,
+  ROSE_VOR,
+  ROSE_NAV,
+  ARC,
+  PLAN,
 }
 
 export enum EfisOption {
-    None = 0,
-    Constraints = 1,
-    VorDmes = 2,
-    Waypoints = 3,
-    Ndbs = 4,
-    Airports = 5,
+  None = 0,
+  Constraints = 1,
+  VorDmes = 2,
+  Waypoints = 3,
+  Ndbs = 4,
+  Airports = 5,
 }
 
 export enum NdSymbolTypeFlags {
-    None = 0,
-    Vor = 1 << 0,
-    VorDme = 1 << 1,
-    Ndb = 1 << 2,
-    Waypoint = 1 << 3,
-    Airport = 1 << 4,
-    Runway = 1 << 5,
-    Tuned = 1 << 6,
-    ActiveLegTermination = 1 << 7,
-    EfisOption = 1 << 8,
-    Dme = 1 << 9,
-    Constraint = 1 << 10,
-    FixInfo = 1 << 11,
-    FlightPlan = 1 << 12,
-    CourseReversalLeft = 1 << 17,
-    CourseReversalRight = 1 << 18,
-    PwpDecel = 1 << 19,
-    PwpTopOfDescent = 1 << 20,
-    PwpSpeedChange = 1 << 21,
-    PwpClimbLevelOff = 1 << 22,
-    PwpDescentLevelOff = 1 << 23,
-    PwpStartOfClimb = 1 << 24,
-    PwpInterceptProfile = 1 << 25,
-    PwpTimeMarker = 1 << 26,
-    PwpCdaFlap1 = 1 << 27,
-    PwpCdaFlap2 = 1 << 28,
-    CyanColor = 1 << 29,
-    AmberColor = 1 << 30,
-    MagentaColor = 1 << 31,
+  None = 0,
+  Vor = 1 << 0,
+  VorDme = 1 << 1,
+  Ndb = 1 << 2,
+  Waypoint = 1 << 3,
+  Airport = 1 << 4,
+  Runway = 1 << 5,
+  Tuned = 1 << 6,
+  ActiveLegTermination = 1 << 7,
+  EfisOption = 1 << 8,
+  Dme = 1 << 9,
+  Constraint = 1 << 10,
+  FixInfo = 1 << 11,
+  FlightPlan = 1 << 12,
+  CourseReversalLeft = 1 << 17,
+  CourseReversalRight = 1 << 18,
+  PwpDecel = 1 << 19,
+  PwpTopOfDescent = 1 << 20,
+  PwpSpeedChange = 1 << 21,
+  PwpClimbLevelOff = 1 << 22,
+  PwpDescentLevelOff = 1 << 23,
+  PwpStartOfClimb = 1 << 24,
+  PwpInterceptProfile = 1 << 25,
+  PwpTimeMarker = 1 << 26,
+  PwpCdaFlap1 = 1 << 27,
+  PwpCdaFlap2 = 1 << 28,
+  CyanColor = 1 << 29,
+  AmberColor = 1 << 30,
+  MagentaColor = 1 << 31,
 }
 
 export interface NdSymbol {
-    databaseId: string,
-    ident: string,
-    location: Coordinates,
-    direction?: number, // true
-    length?: number, // nautical miles
-    type: NdSymbolTypeFlags,
-    constraints?: string[],
-    radials?: number[],
-    radii?: number[],
-    distanceFromAirplane?: number;
+  databaseId: string;
+  ident: string;
+  location: Coordinates;
+  direction?: number; // true
+  length?: number; // nautical miles
+  type: NdSymbolTypeFlags;
+  constraints?: string[];
+  radials?: number[];
+  radii?: number[];
+  distanceFromAirplane?: number;
 }
 
 /**
@@ -86,79 +86,79 @@ export interface NdSymbol {
  * refers to, for example the DASHED flight plan being used to transmit the non-offset path of an active flight plan with an offset applied.
  */
 export enum EfisVectorsGroup {
-    /**
-     * Solid green line
-     */
-    ACTIVE,
+  /**
+   * Solid green line
+   */
+  ACTIVE,
 
-    /**
-     * Dashed green line
-     */
-    DASHED,
+  /**
+   * Dashed green line
+   */
+  DASHED,
 
-    /**
-     * Dashed green line
-     */
-    OFFSET,
+  /**
+   * Dashed green line
+   */
+  OFFSET,
 
-    /**
-     * Dashed yellow line
-     */
-    TEMPORARY,
+  /**
+   * Dashed yellow line
+   */
+  TEMPORARY,
 
-    /**
-     * Dimmed white line
-     */
-    SECONDARY,
+  /**
+   * Dimmed white line
+   */
+  SECONDARY,
 
-    /**
-     * Dashed dimmed white line
-     */
-    SECONDARY_DASHED,
+  /**
+   * Dashed dimmed white line
+   */
+  SECONDARY_DASHED,
 
-    /**
-     * Solid cyan line
-     */
-    MISSED,
+  /**
+   * Solid cyan line
+   */
+  MISSED,
 
-    /**
-     * Dashed cyan line
-     */
-    ALTERNATE,
+  /**
+   * Dashed cyan line
+   */
+  ALTERNATE,
 
-    /**
-     * Continuous yellow line
-     */
-    ACTIVE_EOSID,
+  /**
+   * Continuous yellow line
+   */
+  ACTIVE_EOSID,
 }
 
 export interface NdTraffic {
-    alive?: boolean;
-    ID: string;
-    lat: number;
-    lon: number;
-    relativeAlt: number;
-    vertSpeed: number;
-    intrusionLevel: number;
-    posX?: number;
-    posY?: number;
-    // debug
-    seen?: number;
-    hidden?: boolean;
-    raTau?: number;
-    taTau?: number;
-    vTau?: number;
-    closureRate?: number;
-    closureAccel?: number;
+  alive?: boolean;
+  ID: string;
+  lat: number;
+  lon: number;
+  relativeAlt: number;
+  vertSpeed: number;
+  intrusionLevel: number;
+  posX?: number;
+  posY?: number;
+  // debug
+  seen?: number;
+  hidden?: boolean;
+  raTau?: number;
+  taTau?: number;
+  vTau?: number;
+  closureRate?: number;
+  closureAccel?: number;
 }
 
 export const enum NavAidMode {
-    Off = 0,
-    ADF,
-    VOR,
+  Off = 0,
+  ADF,
+  VOR,
 }
 
 export interface TcasWxrMessage {
-    text: string;
-    color: 'White' | 'Amber';
+  text: string;
+  color: 'White' | 'Amber';
 }

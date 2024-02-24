@@ -7,25 +7,30 @@ import { Link } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 
 interface RemindersSectionProps {
-    title: string,
-    pageLinkPath?: string,
-    noLink?: boolean
+  title: string;
+  pageLinkPath?: string;
+  noLink?: boolean;
 }
 
 export const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLinkPath, noLink }) => (
-    <div className="flex flex-col border-b-2 border-gray-700 pb-6">
-        <div className="mb-2 flex flex-row items-center justify-between">
-            <h2 className="font-medium">{title}</h2>
+  <div className="flex flex-col border-b-2 border-gray-700 pb-6">
+    <div className="mb-2 flex flex-row items-center justify-between">
+      <h2 className="font-medium">{title}</h2>
 
-            {!noLink && (
-                <Link to={pageLinkPath} className="flex items-center border-b-2 border-theme-highlight text-theme-highlight opacity-80 transition duration-100 hover:opacity-100">
-                    <span className="font-manrope font-bold text-theme-highlight">{t('Dashboard.ImportantInformation.GoToPage')}</span>
+      {!noLink && (
+        <Link
+          to={pageLinkPath}
+          className="border-theme-highlight text-theme-highlight flex items-center border-b-2 opacity-80 transition duration-100 hover:opacity-100"
+        >
+          <span className="font-manrope text-theme-highlight font-bold">
+            {t('Dashboard.ImportantInformation.GoToPage')}
+          </span>
 
-                    <ArrowRight className="fill-current" />
-                </Link>
-            )}
-        </div>
-
-        {children}
+          <ArrowRight className="fill-current" />
+        </Link>
+      )}
     </div>
+
+    {children}
+  </div>
 );

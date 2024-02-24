@@ -5,79 +5,82 @@ import React, { PropsWithChildren, useState } from 'react';
 import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@flybywiresim/fbw-sdk';
 
 interface FailuresOrchestratorContext {
-    allFailures: Readonly<Readonly<Failure>[]>,
-    activeFailures: Set<number>,
-    changingFailures: Set<number>,
-    activate(identifier: number): Promise<void>;
-    deactivate(identifier: number): Promise<void>;
+  allFailures: Readonly<Readonly<Failure>[]>;
+  activeFailures: Set<number>;
+  changingFailures: Set<number>;
+  activate(identifier: number): Promise<void>;
+  deactivate(identifier: number): Promise<void>;
 }
 
 const createOrchestrator = (failures: FailureDefinition[]) => new FailuresOrchestrator('A32NX', failures);
 
 const Context = React.createContext<FailuresOrchestratorContext>({
-    allFailures: [],
-    activeFailures: new Set<number>(),
-    changingFailures: new Set<number>(),
-    activate: () => Promise.resolve(),
-    deactivate: () => Promise.resolve(),
+  allFailures: [],
+  activeFailures: new Set<number>(),
+  changingFailures: new Set<number>(),
+  activate: () => Promise.resolve(),
+  deactivate: () => Promise.resolve(),
 });
 
 export interface FailuresOrchestratorProviderProps {
-    failures: FailureDefinition[],
+  failures: FailureDefinition[];
 }
 
-export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOrchestratorProviderProps>> = ({ failures, children }) => {
-    const [orchestrator] = useState(() => createOrchestrator(failures));
+export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOrchestratorProviderProps>> = ({
+  failures,
+  children,
+}) => {
+  const [orchestrator] = useState(() => createOrchestrator(failures));
 
-    const [allFailures] = useState(() => orchestrator.getAllFailures());
-    const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());
-    const [changingFailures, setChangingFailures] = useState<Set<number>>(() => new Set<number>());
+  const [allFailures] = useState(() => orchestrator.getAllFailures());
+  const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());
+  const [changingFailures, setChangingFailures] = useState<Set<number>>(() => new Set<number>());
 
-    useUpdate(() => {
-        orchestrator.update();
+  useUpdate(() => {
+    orchestrator.update();
 
-        const af = orchestrator.getActiveFailures();
-        if (!areEqual(activeFailures, af)) {
-            setActiveFailures(af);
-        }
+    const af = orchestrator.getActiveFailures();
+    if (!areEqual(activeFailures, af)) {
+      setActiveFailures(af);
+    }
 
-        const cf = orchestrator.getChangingFailures();
-        if (!areEqual(changingFailures, cf)) {
-            setChangingFailures(cf);
-        }
-    });
+    const cf = orchestrator.getChangingFailures();
+    if (!areEqual(changingFailures, cf)) {
+      setChangingFailures(cf);
+    }
+  });
 
-    return (
-        <Context.Provider
-            value={{
-                allFailures,
-                activeFailures,
-                changingFailures,
-                activate: (identifier) => orchestrator.activate(identifier),
-                deactivate: (identifier) => orchestrator.deactivate(identifier),
-            }}
-        >
-            {children}
-        </Context.Provider>
-    );
+  return (
+    <Context.Provider
+      value={{
+        allFailures,
+        activeFailures,
+        changingFailures,
+        activate: (identifier) => orchestrator.activate(identifier),
+        deactivate: (identifier) => orchestrator.deactivate(identifier),
+      }}
+    >
+      {children}
+    </Context.Provider>
+  );
 };
 
 export function useFailuresOrchestrator() {
-    const context = React.useContext(Context);
-    if (context === undefined) {
-        throw new Error('useFailuresOrchestrator must be used within a FailuresOrchestratorProvider');
-    }
+  const context = React.useContext(Context);
+  if (context === undefined) {
+    throw new Error('useFailuresOrchestrator must be used within a FailuresOrchestratorProvider');
+  }
 
-    return context;
+  return context;
 }
 
 function areEqual<T>(as: Set<T>, bs: Set<T>) {
-    if (as.size !== bs.size) return false;
-    for (const a of as) {
-        if (!bs.has(a)) {
-            return false;
-        }
+  if (as.size !== bs.size) return false;
+  for (const a of as) {
+    if (!bs.has(a)) {
+      return false;
     }
+  }
 
-    return true;
+  return true;
 }

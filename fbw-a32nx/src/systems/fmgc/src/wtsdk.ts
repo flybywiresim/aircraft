@@ -33,4 +33,16 @@ import { ProcedureDetails } from './flightplanning/ProcedureDetails';
 import { RawDataMapper } from './flightplanning/RawDataMapper';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
 
-export { DirectTo, FlightPlanAsoboSync, FlightPlanManager, FlightPlanSegment, SegmentType, getSegmentedFlightPlan, GPS, LegsProcedure, ManagedFlightPlan, ProcedureDetails, RawDataMapper };
+export {
+  DirectTo,
+  FlightPlanAsoboSync,
+  FlightPlanManager,
+  FlightPlanSegment,
+  SegmentType,
+  getSegmentedFlightPlan,
+  GPS,
+  LegsProcedure,
+  ManagedFlightPlan,
+  ProcedureDetails,
+  RawDataMapper,
+};

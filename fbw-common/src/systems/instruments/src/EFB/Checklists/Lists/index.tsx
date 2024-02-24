@@ -14,14 +14,14 @@ import { securingAircraftChecklist } from './SecuringAircraft';
 import { ChecklistDefinition } from '../Checklists';
 
 export const CHECKLISTS: ChecklistDefinition[] = [
-    cockpitPreparationChecklist,
-    beforeStartChecklist,
-    afterStartChecklist,
-    taxiChecklist,
-    lineUpChecklist,
-    approachChecklist,
-    landingChecklist,
-    afterLandingChecklist,
-    parkingChecklist,
-    securingAircraftChecklist,
+  cockpitPreparationChecklist,
+  beforeStartChecklist,
+  afterStartChecklist,
+  taxiChecklist,
+  lineUpChecklist,
+  approachChecklist,
+  landingChecklist,
+  afterLandingChecklist,
+  parkingChecklist,
+  securingAircraftChecklist,
 ];

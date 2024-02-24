@@ -1,3 +1,3 @@
 export interface Reader {
-    read(): number;
+  read(): number;
 }

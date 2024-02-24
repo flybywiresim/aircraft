@@ -4,87 +4,87 @@
 import { FlightPlanManager } from '@fmgc/wtsdk';
 
 export interface FixInfoRadial {
-    // true degrees
-    trueBearing: number,
-    magneticBearing: number,
-    time?: number,
-    dtg?: number,
-    alt?: number,
+  // true degrees
+  trueBearing: number;
+  magneticBearing: number;
+  time?: number;
+  dtg?: number;
+  alt?: number;
 }
 
 export interface FixInfoRadius {
-    // nautical miles
-    radius: number,
-    time?: number,
-    dtg?: number,
-    alt?: number,
+  // nautical miles
+  radius: number;
+  time?: number;
+  dtg?: number;
+  alt?: number;
 }
 
 export class FixInfo {
-    private flightPlanManager: FlightPlanManager;
+  private flightPlanManager: FlightPlanManager;
 
-    private refFix: WayPoint;
+  private refFix: WayPoint;
 
-    private radials: FixInfoRadial[] = [];
+  private radials: FixInfoRadial[] = [];
 
-    private radius: FixInfoRadius;
+  private radius: FixInfoRadius;
 
-    private abeam: boolean = false;
+  private abeam: boolean = false;
 
-    constructor(flightPlanManager: FlightPlanManager) {
-        this.flightPlanManager = flightPlanManager;
+  constructor(flightPlanManager: FlightPlanManager) {
+    this.flightPlanManager = flightPlanManager;
+  }
+
+  setRefFix(fix?: WayPoint): void {
+    this.radials.length = 0;
+    this.radius = undefined;
+    this.abeam = false;
+    this.refFix = fix;
+    this.flightPlanManager.updateFlightPlanVersion();
+  }
+
+  getRefFix(): WayPoint | undefined {
+    return this.refFix;
+  }
+
+  getRefFixIdent(): string | undefined {
+    return this.refFix?.ident;
+  }
+
+  setRadial(index: 0 | 1, magneticBearing?: number): void {
+    if (magneticBearing !== undefined) {
+      const trueBearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(this.refFix));
+      this.radials[index] = { magneticBearing, trueBearing };
+    } else {
+      this.radials.splice(index, 1);
     }
+    // TODO calculate flight plan intercepts
+    this.flightPlanManager.updateFlightPlanVersion();
+  }
 
-    setRefFix(fix?: WayPoint): void {
-        this.radials.length = 0;
-        this.radius = undefined;
-        this.abeam = false;
-        this.refFix = fix;
-        this.flightPlanManager.updateFlightPlanVersion();
-    }
+  getRadial(index: 0 | 1): FixInfoRadial | undefined {
+    return this.radials[index];
+  }
 
-    getRefFix(): WayPoint | undefined {
-        return this.refFix;
-    }
+  getRadialTrueBearings(): number[] {
+    return this.radials.map((r) => r.trueBearing);
+  }
 
-    getRefFixIdent(): string | undefined {
-        return this.refFix?.ident;
+  setRadius(radius?: number): void {
+    if (radius !== undefined) {
+      this.radius = { radius };
+    } else {
+      this.radius = undefined;
     }
+    // TODO calculate flight plan intercepts
+    this.flightPlanManager.updateFlightPlanVersion();
+  }
 
-    setRadial(index: 0 | 1, magneticBearing?: number): void {
-        if (magneticBearing !== undefined) {
-            const trueBearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(this.refFix));
-            this.radials[index] = { magneticBearing, trueBearing };
-        } else {
-            this.radials.splice(index, 1);
-        }
-        // TODO calculate flight plan intercepts
-        this.flightPlanManager.updateFlightPlanVersion();
-    }
+  getRadius(): FixInfoRadius | undefined {
+    return this.radius;
+  }
 
-    getRadial(index: 0 | 1): FixInfoRadial | undefined {
-        return this.radials[index];
-    }
-
-    getRadialTrueBearings(): number[] {
-        return this.radials.map((r) => r.trueBearing);
-    }
-
-    setRadius(radius?: number): void {
-        if (radius !== undefined) {
-            this.radius = { radius };
-        } else {
-            this.radius = undefined;
-        }
-        // TODO calculate flight plan intercepts
-        this.flightPlanManager.updateFlightPlanVersion();
-    }
-
-    getRadius(): FixInfoRadius | undefined {
-        return this.radius;
-    }
-
-    getRadiusValue(): number | undefined {
-        return this.radius?.radius;
-    }
+  getRadiusValue(): number | undefined {
+    return this.radius?.radius;
+  }
 }

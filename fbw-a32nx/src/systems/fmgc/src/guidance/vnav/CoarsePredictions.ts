@@ -12,35 +12,35 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
  * LNAV turn prediction while we await the full VNAV experience
  */
 export class CoarsePredictions {
-    static updatePredictions(guidanceController: GuidanceController, atmosphere: AtmosphericConditions) {
-        const flightPlanManager = guidanceController.flightPlanManager;
+  static updatePredictions(guidanceController: GuidanceController, atmosphere: AtmosphericConditions) {
+    const flightPlanManager = guidanceController.flightPlanManager;
 
-        for (let i = 0; i < flightPlanManager.getWaypointsCount(FlightPlans.Active); i++) {
-            const wp = flightPlanManager.getWaypoint(i, FlightPlans.Active, true);
-            const leg = guidanceController.activeGeometry.legs.get(i);
-            if (!wp || !leg) {
-                continue;
-            }
+    for (let i = 0; i < flightPlanManager.getWaypointsCount(FlightPlans.Active); i++) {
+      const wp = flightPlanManager.getWaypoint(i, FlightPlans.Active, true);
+      const leg = guidanceController.activeGeometry.legs.get(i);
+      if (!wp || !leg) {
+        continue;
+      }
 
-            if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
-                leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
-                leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
-                continue;
-            }
+      if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
+        leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
+        leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
+        continue;
+      }
 
-            const alt = wp.additionalData.predictedAltitude;
-            const cas = wp.additionalData.predictedSpeed;
-            let tas = atmosphere.computeTasFromCas(alt, cas);
-            let gs = tas;
+      const alt = wp.additionalData.predictedAltitude;
+      const cas = wp.additionalData.predictedSpeed;
+      let tas = atmosphere.computeTasFromCas(alt, cas);
+      let gs = tas;
 
-            // predicted with live data for active and next two legs
-            if (i >= guidanceController.activeLegIndex && i < (guidanceController.activeLegIndex + 3)) {
-                tas = atmosphere.currentTrueAirspeed;
-                gs = tas + atmosphere.currentWindSpeed;
-            }
+      // predicted with live data for active and next two legs
+      if (i >= guidanceController.activeLegIndex && i < guidanceController.activeLegIndex + 3) {
+        tas = atmosphere.currentTrueAirspeed;
+        gs = tas + atmosphere.currentWindSpeed;
+      }
 
-            leg.predictedTas = Number.isFinite(tas) ? tas : undefined;
-            leg.predictedGs = Number.isFinite(gs) ? gs : tas;
-        }
+      leg.predictedTas = Number.isFinite(tas) ? tas : undefined;
+      leg.predictedGs = Number.isFinite(gs) ? gs : tas;
     }
+  }
 }

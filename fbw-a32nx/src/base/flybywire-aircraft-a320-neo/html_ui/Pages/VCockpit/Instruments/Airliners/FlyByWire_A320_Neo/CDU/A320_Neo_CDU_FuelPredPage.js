@@ -172,7 +172,7 @@ class CDUFuelPredPage {
                 if (dest) {
                     destIdentCell = dest.ident;
                 }
-                let efob = mcdu.getDestEFOB(true);
+                const efob = mcdu.getDestEFOB(true);
                 destEFOBCell = (NXUnits.kgToUser(efob)).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))

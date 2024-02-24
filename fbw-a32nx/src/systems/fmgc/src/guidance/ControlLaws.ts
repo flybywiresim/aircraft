@@ -7,61 +7,61 @@
  * This enum represents a Control Law selected by the guidance system.
  */
 export enum ControlLaw {
-    /**
-     * The only parameter for the Heading law is the desired heading.
-     */
-    HEADING = 1,
-    /**
-     * The only parameter for the Track law is the desired course.
-     */
-    TRACK = 2,
-    /**
-     * The lateral path law allows for complex lateral path traversal. It requires three parameters:
-     * - Crosstrack Error (XTE)
-     * - Track Angle Error (TAE)
-     * - Roll Angle (Phi)
-     */
-    LATERAL_PATH = 3,
+  /**
+   * The only parameter for the Heading law is the desired heading.
+   */
+  HEADING = 1,
+  /**
+   * The only parameter for the Track law is the desired course.
+   */
+  TRACK = 2,
+  /**
+   * The lateral path law allows for complex lateral path traversal. It requires three parameters:
+   * - Crosstrack Error (XTE)
+   * - Track Angle Error (TAE)
+   * - Roll Angle (Phi)
+   */
+  LATERAL_PATH = 3,
 }
 
 export type HeadingGuidance = {
-    law: ControlLaw.HEADING,
-    heading: Degrees;
+  law: ControlLaw.HEADING;
+  heading: Degrees;
 
-    /** Only for RAD */
-    phiCommand?: Degrees;
-}
+  /** Only for RAD */
+  phiCommand?: Degrees;
+};
 
 export type TrackGuidance = {
-    law: ControlLaw.TRACK,
-    course: Degrees;
+  law: ControlLaw.TRACK;
+  course: Degrees;
 
-    /** Only for RAD */
-    phiCommand?: Degrees;
-}
+  /** Only for RAD */
+  phiCommand?: Degrees;
+};
 
 export type LateralPathGuidance = {
-    law: ControlLaw.LATERAL_PATH,
-    crossTrackError: NauticalMiles;
-    trackAngleError: Degrees;
-    phiCommand: Degrees;
-}
+  law: ControlLaw.LATERAL_PATH;
+  crossTrackError: NauticalMiles;
+  trackAngleError: Degrees;
+  phiCommand: Degrees;
+};
 
 export type GuidanceParameters = HeadingGuidance | TrackGuidance | LateralPathGuidance;
 
 export type CompletedGuidanceParameters = GuidanceParameters & {
-    phiLimit: Degrees;
+  phiLimit: Degrees;
 };
 
 export enum RequestedVerticalMode {
-    None = 0,
-    SpeedThrust = 1,
-    VpathThrust = 2,
-    VpathSpeed = 3,
-    FpaSpeed = 4,
-    VsSpeed = 5,
+  None = 0,
+  SpeedThrust = 1,
+  VpathThrust = 2,
+  VpathSpeed = 3,
+  FpaSpeed = 4,
+  VsSpeed = 5,
 }
 
 export type TargetAltitude = Feet;
 
-export type TargetVerticalSpeed = FeetPerMinute | Degrees
+export type TargetVerticalSpeed = FeetPerMinute | Degrees;

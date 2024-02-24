@@ -25,259 +25,267 @@ export type DmeArcTransitionNextLeg = AFLeg | CALeg | CFLeg /* | FALeg | FMLeg *
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
 
 export class DmeArcTransition extends Transition {
-    predictedPath: PathVector[] = [];
+  predictedPath: PathVector[] = [];
 
-    constructor(
-        public previousLeg: DmeArcTransitionPreviousLeg,
-        public nextLeg: DmeArcTransitionNextLeg,
-    ) {
-        super(previousLeg, nextLeg);
+  constructor(
+    public previousLeg: DmeArcTransitionPreviousLeg,
+    public nextLeg: DmeArcTransitionNextLeg,
+  ) {
+    super(previousLeg, nextLeg);
+  }
+
+  getPathStartPoint(): Coordinates | undefined {
+    return this.itp;
+  }
+
+  getPathEndPoint(): Coordinates | undefined {
+    return this.ftp;
+  }
+
+  private radius: NauticalMiles | undefined;
+
+  private itp: Coordinates | undefined;
+
+  private centre: Coordinates | undefined;
+
+  private ftp: Coordinates | undefined;
+
+  private sweepAngle: Degrees | undefined;
+
+  private clockwise: boolean | undefined;
+
+  recomputeWithParameters(
+    _isActive: boolean,
+    tas: Knots,
+    gs: MetresPerSecond,
+    _ppos: Coordinates,
+    _trueTrack: DegreesTrue,
+  ) {
+    if (this.isFrozen) {
+      return;
     }
 
-    getPathStartPoint(): Coordinates | undefined {
-        return this.itp;
-    }
+    this.radius = gs ** 2 / (9.81 * tan(maxBank(tas, true))) / 6080.2;
 
-    getPathEndPoint(): Coordinates | undefined {
-        return this.ftp;
-    }
+    if (this.previousLeg instanceof AFLeg) {
+      const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
+      const nextLegReference = this.nextLeg.getPathStartPoint(); // FIXME FX legs
+      const reference = placeBearingDistance(
+        nextLegReference,
+        this.nextLeg.inboundCourse + 90 * turnDirection,
+        this.radius,
+      );
+      const dme = this.previousLeg.centre;
 
-    private radius: NauticalMiles | undefined;
+      const turnCentre = closestSmallCircleIntersection(
+        dme,
+        this.previousLeg.radius + this.radius * turnDirection * -this.previousLeg.turnDirectionSign,
+        reference,
+        this.nextLeg.inboundCourse - 180,
+      );
 
-    private itp: Coordinates | undefined;
+      if (!turnCentre) {
+        throw new Error('AFLeg did not intersect with previous leg offset reference');
+      }
 
-    private centre: Coordinates | undefined;
+      this.centre = turnCentre;
 
-    private ftp: Coordinates | undefined;
+      this.itp = placeBearingDistance(
+        turnCentre,
+        turnDirection * -this.previousLeg.turnDirectionSign === 1
+          ? bearingTo(turnCentre, dme)
+          : bearingTo(dme, turnCentre),
+        this.radius,
+      );
+      this.ftp = placeBearingDistance(turnCentre, this.nextLeg.inboundCourse - 90 * turnDirection, this.radius);
 
-    private sweepAngle: Degrees | undefined;
+      this.sweepAngle = MathUtils.diffAngle(bearingTo(turnCentre, this.itp), bearingTo(turnCentre, this.ftp));
+      this.clockwise = this.sweepAngle > 0;
 
-    private clockwise: boolean | undefined;
+      this.predictedPath.length = 0;
+      this.predictedPath.push({
+        type: PathVectorType.Arc,
+        startPoint: this.itp,
+        centrePoint: turnCentre,
+        endPoint: this.ftp,
+        sweepAngle: this.sweepAngle,
+      });
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: MetresPerSecond, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        if (this.isFrozen) {
-            return;
+      this.isComputed = true;
+
+      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+        this.addDebugPoints();
+      }
+    } else if (this.nextLeg instanceof AFLeg) {
+      const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
+      const reference = placeBearingDistance(
+        this.previousLeg.getPathEndPoint(),
+        this.previousLeg.outboundCourse + 90 * turnDirection,
+        this.radius,
+      );
+      const dme = this.nextLeg.centre;
+
+      let turnCentre;
+      if (this.previousLeg instanceof XFLeg && !(this.previousLeg instanceof AFLeg)) {
+        const intersection = closestSmallCircleIntersection(
+          dme,
+          this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
+          reference,
+          this.previousLeg.outboundCourse,
+        );
+
+        if (intersection) {
+          turnCentre = intersection;
+
+          this.itp = placeBearingDistance(
+            turnCentre,
+            this.previousLeg.outboundCourse - 90 * turnDirection,
+            this.radius,
+          );
+
+          this.ftp = placeBearingDistance(
+            turnCentre,
+            turnDirection * -this.nextLeg.turnDirectionSign === 1
+              ? bearingTo(turnCentre, dme)
+              : bearingTo(dme, turnCentre),
+            this.radius,
+          );
+        } else {
+          this.ftp = placeBearingDistance(dme, this.nextLeg.boundaryRadial, this.nextLeg.radius);
+
+          const turnSign = turnDirection > 0 ? 1 : -1;
+
+          turnCentre = placeBearingDistance(
+            this.ftp,
+            Avionics.Utils.clampAngle(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
+            this.radius,
+          );
+
+          this.itp = placeBearingDistance(
+            turnCentre,
+            Avionics.Utils.clampAngle(this.previousLeg.outboundCourse - turnSign * 90),
+            this.radius,
+          );
+        }
+      } else {
+        turnCentre = closestSmallCircleIntersection(
+          dme,
+          this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
+          reference,
+          this.previousLeg.outboundCourse,
+        );
+
+        if (!turnCentre) {
+          throw new Error('AFLeg did not intersect with previous leg offset reference');
         }
 
-        this.radius = (gs ** 2 / (9.81 * tan(maxBank(tas, true))) / 6080.2);
+        this.itp = placeBearingDistance(turnCentre, this.previousLeg.outboundCourse - 90 * turnDirection, this.radius);
 
-        if (this.previousLeg instanceof AFLeg) {
-            const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
-            const nextLegReference = this.nextLeg.getPathStartPoint(); // FIXME FX legs
-            const reference = placeBearingDistance(nextLegReference, this.nextLeg.inboundCourse + 90 * turnDirection, this.radius);
-            const dme = this.previousLeg.centre;
+        this.ftp = placeBearingDistance(
+          turnCentre,
+          turnDirection * -this.nextLeg.turnDirectionSign === 1
+            ? bearingTo(turnCentre, dme)
+            : bearingTo(dme, turnCentre),
+          this.radius,
+        );
+      }
 
-            const turnCentre = closestSmallCircleIntersection(
-                dme,
-                this.previousLeg.radius + this.radius * turnDirection * -this.previousLeg.turnDirectionSign,
-                reference,
-                this.nextLeg.inboundCourse - 180,
-            );
+      this.centre = turnCentre;
 
-            if (!turnCentre) {
-                throw new Error('AFLeg did not intersect with previous leg offset reference');
-            }
+      this.sweepAngle = MathUtils.diffAngle(bearingTo(turnCentre, this.itp), bearingTo(turnCentre, this.ftp));
+      this.clockwise = this.sweepAngle > 0;
 
-            this.centre = turnCentre;
+      this.predictedPath.length = 0;
+      this.predictedPath.push({
+        type: PathVectorType.Arc,
+        startPoint: this.itp,
+        centrePoint: turnCentre,
+        endPoint: this.ftp,
+        sweepAngle: this.sweepAngle,
+      });
 
-            this.itp = placeBearingDistance(
-                turnCentre,
-                turnDirection * -this.previousLeg.turnDirectionSign === 1 ? bearingTo(turnCentre, dme) : bearingTo(dme, turnCentre),
-                this.radius,
-            );
-            this.ftp = placeBearingDistance(
-                turnCentre,
-                this.nextLeg.inboundCourse - 90 * turnDirection,
-                this.radius,
-            );
+      this.isComputed = true;
 
-            this.sweepAngle = MathUtils.diffAngle(bearingTo(turnCentre, this.itp), bearingTo(turnCentre, this.ftp));
-            this.clockwise = this.sweepAngle > 0;
+      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+        this.predictedPath.push({
+          type: PathVectorType.DebugPoint,
+          startPoint: reference,
+          annotation: 'DME TRANS REF',
+        });
+        this.addDebugPoints();
+      }
+    }
+  }
 
-            this.predictedPath.length = 0;
-            this.predictedPath.push({
-                type: PathVectorType.Arc,
-                startPoint: this.itp,
-                centrePoint: turnCentre,
-                endPoint: this.ftp,
-                sweepAngle: this.sweepAngle,
-            });
+  private addDebugPoints() {
+    if (this.itp && this.centre && this.ftp) {
+      this.predictedPath.push(
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.itp,
+          annotation: 'DME TRANS ITP',
+        },
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.centre,
+          annotation: 'DME TRANS C',
+        },
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.ftp,
+          annotation: 'DME TRANS FTP',
+        },
+      );
+    }
+  }
 
-            this.isComputed = true;
+  getTurningPoints(): [Coordinates, Coordinates] {
+    return [this.itp, this.ftp];
+  }
 
-            if (LnavConfig.DEBUG_PREDICTED_PATH) {
-                this.addDebugPoints();
-            }
-        } else if (this.nextLeg instanceof AFLeg) {
-            const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
-            const reference = placeBearingDistance(this.previousLeg.getPathEndPoint(), this.previousLeg.outboundCourse + 90 * turnDirection, this.radius);
-            const dme = this.nextLeg.centre;
+  get distance(): NauticalMiles {
+    return pathVectorLength(this.predictedPath[0]); // FIXME HAX
+  }
 
-            let turnCentre;
-            if (this.previousLeg instanceof XFLeg && !(this.previousLeg instanceof AFLeg)) {
-                const intersection = closestSmallCircleIntersection(
-                    dme,
-                    this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
-                    reference,
-                    this.previousLeg.outboundCourse,
-                );
+  get startsInCircularArc(): boolean {
+    return true;
+  }
 
-                if (intersection) {
-                    turnCentre = intersection;
+  get endsInCircularArc(): boolean {
+    return true;
+  }
 
-                    this.itp = placeBearingDistance(
-                        turnCentre,
-                        this.previousLeg.outboundCourse - 90 * turnDirection,
-                        this.radius,
-                    );
+  getNominalRollAngle(gs: MetresPerSecond): Degrees | undefined {
+    const gsMs = gs * (463 / 900);
+    return (this.clockwise ? 1 : -1) * Math.atan(gsMs ** 2 / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
+  }
 
-                    this.ftp = placeBearingDistance(
-                        turnCentre,
-                        turnDirection * -this.nextLeg.turnDirectionSign === 1 ? bearingTo(turnCentre, dme) : bearingTo(dme, turnCentre),
-                        this.radius,
-                    );
-                } else {
-                    this.ftp = placeBearingDistance(
-                        dme,
-                        this.nextLeg.boundaryRadial,
-                        this.nextLeg.radius,
-                    );
+  getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | undefined {
+    return arcGuidance(ppos, trueTrack, this.getPathStartPoint(), this.centre, this.sweepAngle);
+  }
 
-                    const turnSign = turnDirection > 0 ? 1 : -1;
+  getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
+    return arcDistanceToGo(ppos, this.getPathStartPoint(), this.centre, this.sweepAngle);
+  }
 
-                    turnCentre = placeBearingDistance(
-                        this.ftp,
-                        Avionics.Utils.clampAngle(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
-                        this.radius,
-                    );
-
-                    this.itp = placeBearingDistance(
-                        turnCentre,
-                        Avionics.Utils.clampAngle(this.previousLeg.outboundCourse - turnSign * 90),
-                        this.radius,
-                    );
-                }
-            } else {
-                turnCentre = closestSmallCircleIntersection(
-                    dme,
-                    this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
-                    reference,
-                    this.previousLeg.outboundCourse,
-                );
-
-                if (!turnCentre) {
-                    throw new Error('AFLeg did not intersect with previous leg offset reference');
-                }
-
-                this.itp = placeBearingDistance(
-                    turnCentre,
-                    this.previousLeg.outboundCourse - 90 * turnDirection,
-                    this.radius,
-                );
-
-                this.ftp = placeBearingDistance(
-                    turnCentre,
-                    turnDirection * -this.nextLeg.turnDirectionSign === 1 ? bearingTo(turnCentre, dme) : bearingTo(dme, turnCentre),
-                    this.radius,
-                );
-            }
-
-            this.centre = turnCentre;
-
-            this.sweepAngle = MathUtils.diffAngle(bearingTo(turnCentre, this.itp), bearingTo(turnCentre, this.ftp));
-            this.clockwise = this.sweepAngle > 0;
-
-            this.predictedPath.length = 0;
-            this.predictedPath.push({
-                type: PathVectorType.Arc,
-                startPoint: this.itp,
-                centrePoint: turnCentre,
-                endPoint: this.ftp,
-                sweepAngle: this.sweepAngle,
-            });
-
-            this.isComputed = true;
-
-            if (LnavConfig.DEBUG_PREDICTED_PATH) {
-                this.predictedPath.push({
-                    type: PathVectorType.DebugPoint,
-                    startPoint: reference,
-                    annotation: 'DME TRANS REF',
-                });
-                this.addDebugPoints();
-            }
-        }
+  isAbeam(ppos: Coordinates): boolean {
+    const turningPoints = this.getTurningPoints();
+    if (!turningPoints) {
+      return false;
     }
 
-    private addDebugPoints() {
-        if (this.itp && this.centre && this.ftp) {
-            this.predictedPath.push(
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.itp,
-                    annotation: 'DME TRANS ITP',
-                },
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.centre,
-                    annotation: 'DME TRANS C',
-                },
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.ftp,
-                    annotation: 'DME TRANS FTP',
-                },
-            );
-        }
-    }
+    const [inbound, outbound] = turningPoints;
 
-    getTurningPoints(): [Coordinates, Coordinates] {
-        return [this.itp, this.ftp];
-    }
+    const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
+    const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, inBearingAc));
 
-    get distance(): NauticalMiles {
-        return pathVectorLength(this.predictedPath[0]); // FIXME HAX
-    }
+    const outBearingAc = Avionics.Utils.computeGreatCircleHeading(outbound, ppos);
+    const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.inboundCourse, outBearingAc));
 
-    get startsInCircularArc(): boolean {
-        return true;
-    }
+    return inHeadingAc <= 90 && outHeadingAc >= 90;
+  }
 
-    get endsInCircularArc(): boolean {
-        return true;
-    }
-
-    getNominalRollAngle(gs: MetresPerSecond): Degrees | undefined {
-        const gsMs = gs * (463 / 900);
-        return (this.clockwise ? 1 : -1) * Math.atan((gsMs ** 2) / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
-    }
-
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | undefined {
-        return arcGuidance(ppos, trueTrack, this.getPathStartPoint(), this.centre, this.sweepAngle);
-    }
-
-    getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
-        return arcDistanceToGo(ppos, this.getPathStartPoint(), this.centre, this.sweepAngle);
-    }
-
-    isAbeam(ppos: Coordinates): boolean {
-        const turningPoints = this.getTurningPoints();
-        if (!turningPoints) {
-            return false;
-        }
-
-        const [inbound, outbound] = turningPoints;
-
-        const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
-        const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, inBearingAc));
-
-        const outBearingAc = Avionics.Utils.computeGreatCircleHeading(outbound, ppos);
-        const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.inboundCourse, outBearingAc));
-
-        return inHeadingAc <= 90 && outHeadingAc >= 90;
-    }
-
-    get repr(): string {
-        return `DME(${this.previousLeg.repr}, ${this.nextLeg.repr})`;
-    }
+  get repr(): string {
+    return `DME(${this.previousLeg.repr}, ${this.nextLeg.repr})`;
+  }
 }

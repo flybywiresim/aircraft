@@ -11,58 +11,58 @@ import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 export abstract class Leg extends Guidable {
-    segment: SegmentType;
+  segment: SegmentType;
 
-    abstract metadata: Readonly<LegMetadata>
+  abstract metadata: Readonly<LegMetadata>;
 
-    constrainedTurnDirection: TurnDirection;
+  constrainedTurnDirection: TurnDirection;
 
-    abstract get inboundCourse(): Degrees | undefined;
+  abstract get inboundCourse(): Degrees | undefined;
 
-    abstract get outboundCourse(): Degrees | undefined;
+  abstract get outboundCourse(): Degrees | undefined;
 
-    abstract get terminationWaypoint(): WayPoint | Coordinates | undefined;
+  abstract get terminationWaypoint(): WayPoint | Coordinates | undefined;
 
-    abstract get ident(): string
+  abstract get ident(): string;
 
-    isNull = false;
+  isNull = false;
 
-    displayedOnMap = true;
+  displayedOnMap = true;
 
-    predictedTas: Knots;
+  predictedTas: Knots;
 
-    predictedGs: Knots;
+  predictedGs: Knots;
 
-    get disableAutomaticSequencing(): boolean {
-        return false;
+  get disableAutomaticSequencing(): boolean {
+    return false;
+  }
+
+  /** @inheritDoc */
+  recomputeWithParameters(
+    _isActive: boolean,
+    _tas: Knots,
+    _gs: Knots,
+    _ppos: Coordinates,
+    _trueTrack: DegreesTrue,
+  ): void {
+    // Default impl.
+  }
+
+  get distance(): NauticalMiles {
+    try {
+      return distanceTo(this.getPathStartPoint(), this.getPathEndPoint());
+    } catch {
+      return 0;
     }
+  }
 
-    /** @inheritDoc */
-    recomputeWithParameters(
-        _isActive: boolean,
-        _tas: Knots,
-        _gs: Knots,
-        _ppos: Coordinates,
-        _trueTrack: DegreesTrue,
-    ): void {
-        // Default impl.
-    }
+  abstract get distanceToTermination(): NauticalMiles;
 
-    get distance(): NauticalMiles {
-        try {
-            return distanceTo(this.getPathStartPoint(), this.getPathEndPoint());
-        } catch {
-            return 0;
-        }
-    }
+  get overflyTermFix(): boolean {
+    return false;
+  }
 
-    abstract get distanceToTermination(): NauticalMiles
-
-    get overflyTermFix(): boolean {
-        return false;
-    }
-
-    get initialLegTermPoint(): Coordinates {
-        return this.getPathEndPoint();
-    }
+  get initialLegTermPoint(): Coordinates {
+    return this.getPathEndPoint();
+  }
 }

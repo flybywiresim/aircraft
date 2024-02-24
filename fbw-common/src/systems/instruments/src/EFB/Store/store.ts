@@ -26,34 +26,34 @@ export type AppDispatch = typeof store.dispatch;
 export const EFB_CLEAR_STATE = 'EFB_CLEAR_STATE';
 
 const combinedReducer = combineReducers({
-    todCalculator: todCalculatorReducer,
-    groundServicePage: groundServicePageReducer,
-    simbrief: simbriefReducer,
-    performance: performanceReducer,
-    flightProgress: flightProgressReducer,
-    navigationTab: navigationTabReducer,
-    dashboard: dashboardReducer,
-    trackingChecklists: checklistsReducer,
-    keyboard: keyboardReducer,
-    dispatchPage: dispatchPageReducer,
-    failuresPage: failuresPageReducer,
-    tooltip: tooltipReducer,
-    pushback: pushbackReducer,
+  todCalculator: todCalculatorReducer,
+  groundServicePage: groundServicePageReducer,
+  simbrief: simbriefReducer,
+  performance: performanceReducer,
+  flightProgress: flightProgressReducer,
+  navigationTab: navigationTabReducer,
+  dashboard: dashboardReducer,
+  trackingChecklists: checklistsReducer,
+  keyboard: keyboardReducer,
+  dispatchPage: dispatchPageReducer,
+  failuresPage: failuresPageReducer,
+  tooltip: tooltipReducer,
+  pushback: pushbackReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
-    if (action.type === EFB_CLEAR_STATE) {
-        state = {} as RootState;
-    }
+  if (action.type === EFB_CLEAR_STATE) {
+    state = {} as RootState;
+  }
 
-    return combinedReducer(state, action);
+  return combinedReducer(state, action);
 };
 
 export const clearEfbState = createAction(EFB_CLEAR_STATE);
 
 export const store = configureStore({
-    reducer: rootReducer,
-    middleware: [thunk],
+  reducer: rootReducer,
+  middleware: [thunk],
 });
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();

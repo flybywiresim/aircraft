@@ -7,8 +7,8 @@ import { FbwAircraftSentryClient } from '@flybywiresim/fbw-sdk';
 declare const process: any;
 
 new FbwAircraftSentryClient().onInstrumentLoaded({
-    dsn: process.env.SENTRY_DSN,
-    buildInfoFilePrefix: 'a32nx',
-    root: false,
-    enableTracing: false,
+  dsn: process.env.SENTRY_DSN,
+  buildInfoFilePrefix: 'a32nx',
+  root: false,
+  enableTracing: false,
 });

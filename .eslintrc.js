@@ -10,10 +10,10 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:prettier/recommended',
-    // 'plugin:@typescript-eslint/recommended',
+    // 'plugin:@typescript-eslint/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit
     'plugin:@typescript-eslint/eslint-recommended',
-    // 'plugin:react-hooks/recommended',
-    // 'plugin:react/recommended',
+    // 'plugin:react-hooks/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit, and we are moving away from react
+    // 'plugin:react/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit, and we are moving away from react
   ],
   plugins: ['@typescript-eslint', 'prettier', 'react-hooks', 'react', 'tailwindcss'],
   parser: '@typescript-eslint/parser',

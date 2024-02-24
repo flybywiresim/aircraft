@@ -12,33 +12,33 @@ import { A320FailureDefinitions } from '@failures';
 // TODO move all of this to fbw-common somehow
 
 const setSessionId = () => {
-    const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const SESSION_ID_LENGTH = 14;
-    const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
-    const generatedSessionID = nanoid();
+  const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const SESSION_ID_LENGTH = 14;
+  const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
+  const generatedSessionID = nanoid();
 
-    NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
+  NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
 };
 
 const setup = () => {
-    readSettingsFromPersistentStorage();
-    migrateSettings();
-    setSessionId();
+  readSettingsFromPersistentStorage();
+  migrateSettings();
+  setSessionId();
 
-    // Needed to fetch METARs from the sim
-    RegisterViewListener('JS_LISTENER_FACILITY', () => {
-        console.log('JS_LISTENER_FACILITY registered.');
-    }, true);
+  // Needed to fetch METARs from the sim
+  RegisterViewListener(
+    'JS_LISTENER_FACILITY',
+    () => {
+      console.log('JS_LISTENER_FACILITY registered.');
+    },
+    true,
+  );
 };
 
 if (process.env.VITE_BUILD) {
-    window.addEventListener('AceInitialized', setup);
+  window.addEventListener('AceInitialized', setup);
 } else {
-    setup();
+  setup();
 }
 
-render(
-    <EfbInstrument failures={A320FailureDefinitions} />,
-    true,
-    true,
-);
+render(<EfbInstrument failures={A320FailureDefinitions} />, true, true);

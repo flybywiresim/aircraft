@@ -8,17 +8,13 @@ import { A380Services } from './A380_842/A380Services';
 import { A320Services } from './A320_251N/A320Services';
 
 export const ServicesPage = () => {
-    const [airframe] = useState(getAirframeType());
+  const [airframe] = useState(getAirframeType());
 
-    switch (airframe) {
+  switch (airframe) {
     case 'A380_842':
-        return (
-            <A380Services />
-        );
+      return <A380Services />;
     case 'A320_251N':
     default:
-        return (
-            <A320Services />
-        );
-    }
+      return <A320Services />;
+  }
 };

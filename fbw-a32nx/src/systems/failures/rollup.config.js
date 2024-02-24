@@ -20,30 +20,28 @@ console.log('Root: ', root);
 process.chdir(src);
 
 module.exports = {
-    input: join(__dirname, 'index.ts'),
-    plugins: [
-        nodeResolve({ extensions }),
-        commonjs(),
-        babel({
-            babelHelpers: 'bundled',
-            presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
-            plugins: [
-                '@babel/plugin-proposal-class-properties',
-            ],
-            extensions,
-        }),
-        typescriptPaths({
-            tsConfigPath: join(src, 'tsconfig.json'),
-            preserveExtensions: true,
-        }),
-        replace({
-            'process.env.NODE_ENV': '"production"',
-            'preventAssignment': true,
-        }),
-    ],
-    output: {
-        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js'),
-        format: 'umd',
-        name: 'Failures',
-    },
+  input: join(__dirname, 'index.ts'),
+  plugins: [
+    nodeResolve({ extensions }),
+    commonjs(),
+    babel({
+      babelHelpers: 'bundled',
+      presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
+      plugins: ['@babel/plugin-proposal-class-properties'],
+      extensions,
+    }),
+    typescriptPaths({
+      tsConfigPath: join(src, 'tsconfig.json'),
+      preserveExtensions: true,
+    }),
+    replace({
+      'process.env.NODE_ENV': '"production"',
+      preventAssignment: true,
+    }),
+  ],
+  output: {
+    file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js'),
+    format: 'umd',
+    name: 'Failures',
+  },
 };
