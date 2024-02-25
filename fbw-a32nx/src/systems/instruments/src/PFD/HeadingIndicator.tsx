@@ -423,7 +423,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
   private readonly trueFlagRef = FSComponent.createRef<SVGGElement>();
 
   /** @inheritdoc */
-  onAfterRender(node: VNode): void {
+  onAfterRender(_node: VNode): void {
     this.props.bus
       .getSubscriber<DmcLogicEvents>()
       .on('trueRefActive')

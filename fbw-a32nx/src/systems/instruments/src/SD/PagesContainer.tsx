@@ -154,7 +154,7 @@ export const PagesContainer = () => {
           checkApuPage(deltaTime);
           checkEnginePage(deltaTime);
           break;
-        case 2:
+        case 2: {
           const sidestickPosX = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_X', 'Number');
           const sidestickPosY = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_Y', 'Number');
           const rudderPos = SimVar.GetSimVarValue('RUDDER PEDAL POSITION', 'Position');
@@ -173,6 +173,7 @@ export const PagesContainer = () => {
           checkApuPage(deltaTime);
           checkEnginePage(deltaTime);
           break;
+        }
         case 3:
         case 4:
         case 5:
@@ -181,7 +182,7 @@ export const PagesContainer = () => {
         case 6:
         case 7:
         case 8:
-        case 9:
+        case 9: {
           const isGearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
           const ToPowerSet =
             Math.max(
@@ -216,6 +217,7 @@ export const PagesContainer = () => {
             checkEnginePage(deltaTime);
           }
           break;
+        }
         default:
           // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
           setPageWhenUnselected(SdPages.Door);

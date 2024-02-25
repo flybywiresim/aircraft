@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+/* eslint-disable no-constant-condition, no-dupe-else-if -- they are placeholders */
+
 import {
   ComponentProps,
   ConsumerSubject,
@@ -462,7 +464,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
         break;
-      case 3:
+      case 3: {
         this.displayModeChangedPath(true);
         const FlexTemp = Math.round(this.flexTemp);
         const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
@@ -476,6 +478,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                             </g>`;
 
         break;
+      }
       case 4:
         this.displayModeChangedPath(true);
         text = `<g>

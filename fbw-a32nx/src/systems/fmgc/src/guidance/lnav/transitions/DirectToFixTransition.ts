@@ -376,7 +376,7 @@ export class DirectToFixTransition extends Transition {
     // Guidance
 
     switch (this.state) {
-      case DirectToFixTransitionGuidanceState.Straight:
+      case DirectToFixTransitionGuidanceState.Straight: {
         params = courseToFixGuidance(ppos, trueTrack, this.straightCourse, this.lineEndPoint);
 
         let bankNext: DegreesTrue = 0;
@@ -391,6 +391,7 @@ export class DirectToFixTransition extends Transition {
           params.phiCommand = bankNext;
         }
         break;
+      }
       case DirectToFixTransitionGuidanceState.Turn:
         params = arcGuidance(ppos, trueTrack, this.arcStartPoint, this.arcCentrePoint, this.arcSweepAngle);
         // TODO next leg RAD

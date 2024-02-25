@@ -454,11 +454,12 @@ export class HMLeg extends HXLeg {
           // let's do a circle
           this.immExitLength = 0;
           break;
-        case HxLegGuidanceState.Outbound:
+        case HxLegGuidanceState.Outbound: {
           const nextPhi = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
           const rad = Geometry.getRollAnticipationDistance(tas, 0, nextPhi);
           this.immExitLength = Math.min(legLength, rad + courseToFixDistanceToGo(ppos, this.inboundLegCourse, fixA));
           break;
+        }
         case HxLegGuidanceState.Arc2:
         case HxLegGuidanceState.Inbound:
           // keep the normal leg distance as we can't shorten

@@ -351,7 +351,7 @@ export class HoppieConnector {
         const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
 
         switch (type) {
-          case 'telex':
+          case 'telex': {
             const freetext = new FreetextMessage();
             freetext.Network = AtsuMessageNetwork.Hoppie;
             freetext.Station = sender;
@@ -360,7 +360,8 @@ export class HoppieConnector {
             freetext.Message = content;
             retval.push(freetext);
             break;
-          case 'cpdlc':
+          }
+          case 'cpdlc': {
             const cpdlc = new CpdlcMessage();
             cpdlc.Station = sender;
             cpdlc.Direction = AtsuMessageDirection.Uplink;
@@ -380,6 +381,7 @@ export class HoppieConnector {
 
             retval.push(cpdlc);
             break;
+          }
           default:
             break;
         }

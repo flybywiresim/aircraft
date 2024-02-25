@@ -22,6 +22,7 @@ import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -225,7 +226,7 @@ export class PseudoWaypoints implements GuidanceComponent {
    * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
    */
   sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
-    if (true) {
+    if (LnavConfig.DEBUG_GUIDANCE) {
       console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
     }
 
@@ -233,7 +234,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       case PseudoWaypointSequencingAction.TOD_REACHED:
         // TODO EFIS message;
         break;
-      case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE:
+      case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE: {
         const apLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
         const agl = Simplane.getAltitudeAboveGround();
 
@@ -251,6 +252,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           ]);
         }
         break;
+      }
       default:
     }
   }

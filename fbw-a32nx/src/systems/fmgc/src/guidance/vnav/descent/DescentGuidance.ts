@@ -261,7 +261,7 @@ export class DescentGuidance {
         }
 
         break;
-      case PathCaptureState.InPathCapture:
+      case PathCaptureState.InPathCapture: {
         const shouldDisengageFromActiveCapture = !this.isPathCaptureConditionMet(
           linearDeviation,
           targetVerticalSpeed,
@@ -275,6 +275,7 @@ export class DescentGuidance {
         }
 
         break;
+      }
       default:
         break;
     }

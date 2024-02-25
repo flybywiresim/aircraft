@@ -60,11 +60,12 @@ export class RFLeg extends XFLeg {
         break;
       case 0: // unknown
       case 3: // either
-      default:
+      default: {
         const angle = Avionics.Utils.diffAngle(bearingTo, bearingFrom);
         this.clockwise = angle > 0;
         this.angle = Math.abs(angle);
         break;
+      }
     }
 
     this.mDistance = ((2 * Math.PI * this.radius) / 360) * this.angle;
