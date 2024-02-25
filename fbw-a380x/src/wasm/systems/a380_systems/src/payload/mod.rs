@@ -88,20 +88,20 @@ impl A380Payload {
     pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
     const A380_PAX: [PaxInfo<'_>; 14] = [
         PaxInfo {
-            max_pax: 44,
+            max_pax: 28,
             position: (70.7, 0., 7.1),
             pax_id: "PAX_MAIN_FWD_A",
             payload_id: "PAYLOAD_STATION_1_REQ",
         },
         PaxInfo {
-            max_pax: 44,
+            max_pax: 28,
             position: (70.7, 0., 7.1),
             pax_id: "PAX_MAIN_FWD_B",
             payload_id: "PAYLOAD_STATION_2_REQ",
         },
-        // PAX MAIN FWD: 88
+        // PAX MAIN FWD: 56
         PaxInfo {
-            max_pax: 42,
+            max_pax: 39,
             position: (25.6, 0., 7.1),
             pax_id: "PAX_MAIN_MID_1A",
             payload_id: "PAYLOAD_STATION_3_REQ",
@@ -118,7 +118,7 @@ impl A380Payload {
             pax_id: "PAX_MAIN_MID_1C",
             payload_id: "PAYLOAD_STATION_5_REQ",
         },
-        // PAX MAIN MID 1: 135
+        // PAX MAIN MID 1: 132
         PaxInfo {
             max_pax: 48,
             position: (-16.1, 0., 7.1),

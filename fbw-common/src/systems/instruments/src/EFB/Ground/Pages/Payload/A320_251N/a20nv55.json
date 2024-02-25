@@ -110,7 +110,6 @@
             ],
             "stationIndex": 1,
             "position": 20.5,
-            "fill": 0.19,
             "simVar": "A32NX_PAX_A"
         },
         {
@@ -219,7 +218,6 @@
             ],
             "stationIndex": 2,
             "position": 1.5,
-            "fill": 0.25,
             "simVar": "A32NX_PAX_B"
         },
         {
@@ -342,7 +340,6 @@
             ],
             "stationIndex": 3,
             "position": -16.6,
-            "fill": 0.28,
             "simVar": "A32NX_PAX_C"
         },
         {
@@ -463,7 +460,6 @@
                     "yOffset": 0
                 }
             ],
-            "fill": 0.28,
             "stationIndex": 4,
             "position": -35.6,
             "simVar": "A32NX_PAX_D"
