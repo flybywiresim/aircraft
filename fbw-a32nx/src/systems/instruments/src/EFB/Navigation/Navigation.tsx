@@ -26,7 +26,6 @@ import { useNavigraph } from '../Apis/Navigraph/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
-    ChartFileType,
     ChartProvider,
     editTabProperty,
     NavigationTab,
@@ -39,7 +38,7 @@ import {
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
+import { LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
@@ -85,6 +84,7 @@ export const Navigation = () => {
 };
 
 export const ChartViewer = () => {
+    console.log('chartviewer init');
     const dispatch = useAppDispatch();
     const {
         selectedNavigationTabIndex,
@@ -95,17 +95,19 @@ export const ChartViewer = () => {
     } = useAppSelector((state) => state.navigationTab);
 
     const currentTab = navigationTabs[selectedNavigationTabIndex].associatedTab as ProviderTab;
+    console.log('before useAppSelector');
     const {
         isFullScreen,
         chartDimensions,
         chartLinks,
-        chartId,
+        chartName,
         pagesViewable,
         currentPage,
         chartPosition,
         chartRotation,
+        getPdfImageUrl,
     } = useAppSelector((state) => state.navigationTab[currentTab]);
-
+    console.log('after useAppSelector');
     // const [drawMode] = useState(false);
     // const [brushSize] = useState(10);
 
@@ -196,16 +198,16 @@ export const ChartViewer = () => {
     }, [chartRef, chartDimensions]);
 
     useEffect(() => {
-        if (pagesViewable > 1) {
-            getPdfUrl(chartId, currentPage)
+        if (pagesViewable > 1 && getPdfImageUrl) {
+            getPdfImageUrl(chartName.light, currentPage)
                 .then((url) => {
-                    dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
+                    dispatch(editTabProperty({ tab: currentTab, chartLinks: { light: url, dark: url } }));
                 })
                 .catch((error) => {
                     console.error(`Error: ${error}`);
                 });
         }
-    }, [currentPage]);
+    }, [currentPage, chartName]);
 
     const transformRef = useRef<ReactZoomPanPinchRef>(null);
     const planeRef = useRef(null);
@@ -511,26 +513,18 @@ export const ChartViewer = () => {
                                     )}
 
                                     <div ref={chartRef}>
-                                        {chartLinks?.fileType === ChartFileType.Pdf ? (
-                                            <div className="h-content-section-reduced mr-4 flex w-full items-center justify-center overflow-x-hidden">
-                                                <p className="mb-6 pt-6 text-3xl">{t('NavigationAndCharts.PdfUnsupported')}</p>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <img
-                                                    className="absolute left-0 w-full select-none transition duration-100"
-                                                    draggable={false}
-                                                    src={chartLinks.dark}
-                                                    alt="chart"
-                                                />
-                                                <img
-                                                    className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
-                                                    draggable={false}
-                                                    src={chartLinks.light}
-                                                    alt="chart"
-                                                />
-                                            </>
-                                        )}
+                                        <img
+                                            className="absolute left-0 w-full select-none transition duration-100"
+                                            draggable={false}
+                                            src={chartLinks.dark}
+                                            alt="chart"
+                                        />
+                                        <img
+                                            className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
+                                            draggable={false}
+                                            src={chartLinks.light}
+                                            alt="chart"
+                                        />
                                     </div>
                                 </div>
                             </TransformComponent>

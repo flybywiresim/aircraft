@@ -4,17 +4,34 @@
 
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
+import { Viewer } from '@simbridge/components/Viewer';
 import { emptyChartFoxCharts, ChartFoxAirportCharts, useChartFox } from '../../../Apis/ChartFox/ChartFox';
 
 import { t } from '../../../translation';
 import { ChartFoxChartSelector, OrganizedChart } from './ChartFoxChartSelector';
-import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
+import { ChartFileType, NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
+
+export const getPdfImageUrl = async (url: string, pageNumber: number): Promise<string> => {
+    const id = 'loading-file';
+    try {
+        toast.loading(t('NavigationAndCharts.LoadingPdf'), { toastId: id, pauseOnFocusLoss: false });
+        const objectURL = await Viewer.getImageUrlFromPdfUrl(url, pageNumber);
+        toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
+        toast.dismiss(id);
+        return objectURL;
+    } catch (err) {
+        toast.dismiss(id);
+        toast.error(t('NavigationAndCharts.LoadingPdfFailed'), { autoClose: 1000 });
+        return Promise.reject();
+    }
+};
 
 export const ChartFoxChartUI = () => {
     const dispatch = useAppDispatch();
@@ -58,7 +75,17 @@ export const ChartFoxChartUI = () => {
         if (chartId) {
             const fetchCharts = async () => {
                 const { sourceUrl, sourceUrlType } = await chartFox.getChart(chartId);
-                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
+                let url = sourceUrl;
+                let numPages = 1;
+                if (sourceUrlType === ChartFileType.Pdf) {
+                    url = await getPdfImageUrl(sourceUrl, 1);
+                    numPages = await Viewer.getPDFPageCountFromUrl(sourceUrl);
+                }
+                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: numPages }));
+                // For PDFs, chartName will be the original PDF link. This will be needed for pagination later.
+                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartName: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
+                // For PDFs, chartLinks will be URIs to the converted image data for the current page.
+                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: url, dark: url, fileType: sourceUrlType } }));
             };
             fetchCharts();
         }

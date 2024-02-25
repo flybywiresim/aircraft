@@ -5,6 +5,8 @@
 import { NavigraphBoundingBox } from '@flybywiresim/fbw-sdk';
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getPdfImageUrl as getLocalPdfUrl } from 'instruments/src/EFB/Navigation/Pages/LocalFilesPage/LocalFilesPage';
+import { getPdfImageUrl as getChartFoxPdfUrl } from 'instruments/src/EFB/Navigation/Pages/ChartFoxPage/ChartFoxChartUI';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
 
@@ -63,6 +65,7 @@ type ProviderTabInfo = {
     pagesViewable: number;
     currentPage: number;
     chartPosition: {positionX: number, positionY: number, scale: number};
+    getPdfImageUrl?: (filename: string, pageNumber: number) => Promise<string>,
 };
 
 interface InitialChartState {
@@ -139,6 +142,7 @@ const initialState: InitialChartState = {
             positionY: 0,
             scale: 1,
         },
+        getPdfImageUrl: getLocalPdfUrl,
     },
     [NavigationTab.CHARTFOX]: {
         chartRotation: 0,
@@ -165,6 +169,7 @@ const initialState: InitialChartState = {
             positionY: 0,
             scale: 1,
         },
+        getPdfImageUrl: getChartFoxPdfUrl,
     },
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: '',
@@ -185,6 +190,7 @@ export const navigationTabSlice = createSlice({
     initialState,
     reducers: {
         setSelectedNavigationTabIndex: (state, action: PayloadAction<number>) => {
+            console.log('setSelectedNavigationTabIndex');
             state.selectedNavigationTabIndex = action.payload;
         },
         setUsingDarkTheme: (state, action: PayloadAction<boolean>) => {
@@ -197,7 +203,9 @@ export const navigationTabSlice = createSlice({
             state.boundingBox = action.payload;
         },
         setProvider: (state, action: PayloadAction<ChartProvider>) => {
+            console.log('setProvider');
             state.provider = action.payload;
+            console.log('after setting provider');
         },
         addPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
             state.pinnedCharts.push(action.payload);
@@ -207,6 +215,7 @@ export const navigationTabSlice = createSlice({
         },
         // This is the best quasi-type-safe path I could think of
         editTabProperty: (state, action: PayloadAction<{tab: NavigationTab} & Partial<typeof initialState[NavigationTab]>>) => {
+            console.log('editTabProperty');
             const editedProperties = {};
 
             Object.entries(action.payload)

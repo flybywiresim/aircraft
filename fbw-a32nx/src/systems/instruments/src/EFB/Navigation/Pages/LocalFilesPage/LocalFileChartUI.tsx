@@ -30,7 +30,7 @@ export const LocalFileChartUI = () => {
         { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
         { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.images, ...charts.pdfs] },
     ]);
-    const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+    const { searchQuery, isFullScreen, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     const updateSearchStatus = async () => {
         setIcaoAndNameDisagree(true);
@@ -75,10 +75,6 @@ export const LocalFileChartUI = () => {
             { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.pdfs, ...charts.images] },
         ]);
     }, [charts]);
-
-    useEffect(() => {
-        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: chartName.light, dark: chartName.dark } }));
-    }, [chartName]);
 
     const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
         const pdfs: LocalFileChart[] = [];

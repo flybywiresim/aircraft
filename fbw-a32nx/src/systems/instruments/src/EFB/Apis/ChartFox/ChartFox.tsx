@@ -98,6 +98,7 @@ export class ChartFoxClient {
 
     public async getChart(id: string): Promise<ChartFoxChart> {
         if (!ChartFoxClient.sufficientEnv() || id === '') {
+            console.log('no chart id');
             return null;
         }
 
@@ -114,6 +115,7 @@ export class ChartFoxClient {
                 });
 
                 if (!jsonResp.ok) {
+                    console.log('network error');
                     return null;
                 }
 

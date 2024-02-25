@@ -85,15 +85,10 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
         }
     }, [runwaySet]);
 
-    const handleChartClick = (chart: ChartFoxGroupedChart) => {
-        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: 1 }));
-
+    const handleChartClick = async (groupedChart: ChartFoxGroupedChart) => {
+        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartId: groupedChart.id }));
         dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, currentPage: 1 }));
-
-        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartId: chart.id }));
-
         dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartDimensions: { width: undefined, height: undefined } }));
-        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartName: { light: chart.name, dark: chart.name } }));
 
         // TODO: convert translation matrix into bounding box
         // dispatch(setBoundingBox(chart.boundingBox));
@@ -134,7 +129,7 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
                                 {item.charts.map((chart) => (
                                     <div
                                         className="bg-theme-accent flex flex-row"
-                                        onClick={() => handleChartClick(chart)}
+                                        onClick={async () => handleChartClick(chart)}
                                         key={chart.id}
                                     >
                                         <div className="flex flex-row items-center">
@@ -154,7 +149,7 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
                                                             chartId: chart.id,
                                                             chartName: { light: chart.name, dark: chart.name },
                                                             title: searchQuery,
-                                                            subTitle: chart.typeKey,
+                                                            subTitle: chart.name,
                                                             tabIndex: selectedTabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
@@ -212,7 +207,7 @@ export const ChartFoxChartSelector = ({ selectedTab, loading }: ChartFoxChartSel
                                                     chartId: chart.id,
                                                     chartName: { light: chart.name, dark: chart.name },
                                                     title: searchQuery,
-                                                    subTitle: chart.typeKey,
+                                                    subTitle: chart.name,
                                                     tabIndex: selectedTabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
