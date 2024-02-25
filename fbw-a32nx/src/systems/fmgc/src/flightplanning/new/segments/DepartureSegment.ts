@@ -31,11 +31,15 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
                 this.allLegs.length = 0;
             }
 
-            await this.flightPlan.departureRunwayTransitionSegment.setProcedure(undefined);
-            await this.flightPlan.setDepartureEnrouteTransition(undefined);
-            await this.flightPlan.originSegment.refreshOriginLegs();
+            await this.flightPlan.departureRunwayTransitionSegment.setProcedure(undefined, skipUpdateLegs);
+            await this.flightPlan.departureEnrouteTransitionSegment.setProcedure(undefined, skipUpdateLegs);
 
-            this.flightPlan.syncSegmentLegsChange(this);
+            if (!skipUpdateLegs) {
+                await this.flightPlan.originSegment.refreshOriginLegs();
+
+                this.flightPlan.syncSegmentLegsChange(this);
+            }
+
             return;
         }
 
@@ -83,6 +87,7 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
+        await this.flightPlan.flushOperationQueue();
     }
 
     clone(forPlan: BaseFlightPlan): DepartureSegment {

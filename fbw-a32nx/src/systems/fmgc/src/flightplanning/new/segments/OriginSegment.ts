@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Airport, Runway, MathUtils } from '@flybywiresim/fbw-sdk';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
+import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -165,5 +165,16 @@ export class OriginSegment extends FlightPlanSegment {
         newSegment.runway = this.runway;
 
         return newSegment;
+    }
+
+    /**
+     * Sets the contents of this segment using a serialized flight plan segment.
+     *
+     * @param serialized the serialized flight plan segment
+     */
+    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+        // TODO sync the airport
+        // TODO sync the runway
+        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
     }
 }
