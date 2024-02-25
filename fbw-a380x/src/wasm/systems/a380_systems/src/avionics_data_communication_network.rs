@@ -103,19 +103,19 @@ impl A380AvionicsDataCommunicationNetwork {
         ]);
 
         let afdx_switches = [
-            (1, (ElectricalBusType::DirectCurrentEssential, None)),
+            (1, (ElectricalBusType::DirectCurrentEssential, None)), // powered by 425PP
             (2, (ElectricalBusType::DirectCurrent(2), None)),
-            (3, (ElectricalBusType::DirectCurrentEssential, None)),
+            (3, (ElectricalBusType::DirectCurrentEssential, None)), // powered by 433PP
             (4, (ElectricalBusType::DirectCurrent(2), None)),
-            (5, (ElectricalBusType::DirectCurrentEssential, None)),
+            (5, (ElectricalBusType::DirectCurrentNamed("108PH"), None)), // powered by 415PP
             (6, (ElectricalBusType::DirectCurrent(2), None)),
             (7, (ElectricalBusType::DirectCurrent(2), None)),
-            (9, (ElectricalBusType::DirectCurrentEssential, None)),
+            (9, (ElectricalBusType::DirectCurrentEssential, None)), // powered by 433PP
             (
                 11,
                 (
                     ElectricalBusType::DirectCurrent(1),
-                    Some(ElectricalBusType::DirectCurrentEssential),
+                    Some(ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 417PP
                 ),
             ),
             (12, (ElectricalBusType::DirectCurrent(1), None)),
@@ -123,7 +123,7 @@ impl A380AvionicsDataCommunicationNetwork {
                 13,
                 (
                     ElectricalBusType::DirectCurrent(1),
-                    Some(ElectricalBusType::DirectCurrentEssential),
+                    Some(ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 417PP
                 ),
             ),
             (14, (ElectricalBusType::DirectCurrent(1), None)),
@@ -131,7 +131,7 @@ impl A380AvionicsDataCommunicationNetwork {
                 15,
                 (
                     ElectricalBusType::DirectCurrent(1),
-                    Some(ElectricalBusType::DirectCurrentEssential),
+                    Some(ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 417PP
                 ),
             ),
             (16, (ElectricalBusType::DirectCurrent(1), None)),
@@ -140,7 +140,7 @@ impl A380AvionicsDataCommunicationNetwork {
                 19,
                 (
                     ElectricalBusType::DirectCurrent(1),
-                    Some(ElectricalBusType::DirectCurrentEssential),
+                    Some(ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 417PP
                 ),
             ),
         ]
@@ -165,13 +165,13 @@ impl A380AvionicsDataCommunicationNetwork {
 
         let io_modules = FxHashMap::from_iter(
             [
-                ("A1", 1, ElectricalBusType::DirectCurrentEssential),
+                ("A1", 1, ElectricalBusType::DirectCurrentEssential), // powered by 425PP
                 ("A2", 2, ElectricalBusType::DirectCurrent(2)),
-                ("A3", 1, ElectricalBusType::DirectCurrentEssential),
+                ("A3", 1, ElectricalBusType::DirectCurrentEssential), // powered by 425PP
                 ("A4", 2, ElectricalBusType::DirectCurrent(2)),
-                ("A5", 3, ElectricalBusType::DirectCurrentEssential),
+                ("A5", 3, ElectricalBusType::DirectCurrentEssential), // powered by 433PP
                 ("A6", 4, ElectricalBusType::DirectCurrent(2)),
-                ("A7", 3, ElectricalBusType::DirectCurrentEssential),
+                ("A7", 3, ElectricalBusType::DirectCurrentEssential), // powered by 433PP
                 ("A8", 4, ElectricalBusType::DirectCurrent(2)),
             ]
             .map(|(name, connected_switch, power_supply)| {
@@ -192,22 +192,22 @@ impl A380AvionicsDataCommunicationNetwork {
         let cpio_modules = FxHashMap::from_iter(
             [
                 ("A1", 7, ElectricalBusType::DirectCurrent(1)),
-                ("A2", 5, ElectricalBusType::DirectCurrentEssential),
-                ("A3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("A2", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
+                ("A3", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 415PP
                 ("A4", 6, ElectricalBusType::DirectCurrent(2)),
                 ("B1", 7, ElectricalBusType::DirectCurrent(1)),
-                ("B2", 5, ElectricalBusType::DirectCurrentEssential),
-                ("B3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("B2", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
+                ("B3", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 417PP
                 ("B4", 6, ElectricalBusType::DirectCurrent(2)),
-                ("C1", 3, ElectricalBusType::DirectCurrentEssential),
+                ("C1", 3, ElectricalBusType::DirectCurrentEssential), // powered by 433PP
                 ("C2", 4, ElectricalBusType::DirectCurrent(2)),
                 ("D1", 3, ElectricalBusType::DirectCurrent(1)),
                 ("D3", 3, ElectricalBusType::DirectCurrent(1)),
                 ("E1", 5, ElectricalBusType::DirectCurrent(1)),
                 ("E2", 6, ElectricalBusType::DirectCurrent(2)),
-                ("F1", 5, ElectricalBusType::DirectCurrentEssential),
+                ("F1", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
                 ("F2", 6, ElectricalBusType::DirectCurrentGndFltService),
-                ("F3", 5, ElectricalBusType::DirectCurrentEssential),
+                ("F3", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
                 ("F4", 6, ElectricalBusType::DirectCurrentGndFltService),
                 ("G1", 7, ElectricalBusType::DirectCurrent(1)),
                 ("G2", 6, ElectricalBusType::DirectCurrent(2)),

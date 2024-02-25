@@ -440,6 +440,9 @@ impl SimulationElement for A380DirectCurrentElectrical {
         self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
             .accept(visitor);
 
+        self.ess_in_flight_contactor.accept(visitor);
+        self.dc_ess_subbus.accept(visitor);
+
         visitor.visit(self);
     }
 }
