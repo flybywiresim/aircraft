@@ -576,6 +576,7 @@ mod tests {
         dc_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
+        dc_ess_in_flight_bus: ElectricalBus,
         is_elec_powered: bool,
     }
     impl AdcnTestAircraft {
@@ -589,6 +590,10 @@ mod tests {
                 dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                 dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                dc_ess_in_flight_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::DirectCurrentNamed("108PH"),
+                ),
                 is_elec_powered: false,
             }
         }
@@ -639,6 +644,7 @@ mod tests {
                 electricity.flow(&self.powered_source_dc, &self.dc_1_bus);
                 electricity.flow(&self.powered_source_dc, &self.dc_2_bus);
                 electricity.flow(&self.powered_source_dc, &self.dc_ess_bus);
+                electricity.flow(&self.powered_source_dc, &self.dc_ess_in_flight_bus);
             }
         }
 
