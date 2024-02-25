@@ -38,8 +38,8 @@ export enum DisplayUnitID {
 }
 
 const DisplayUnitToDCBus: { [k in DisplayUnitID]: DcElectricalBus[] } = {
-    [DisplayUnitID.CaptPfd]: [DcElectricalBus.DcEssSched],                      // powered by 409PP
-    [DisplayUnitID.CaptNd]: [DcElectricalBus.DcEssSched, DcElectricalBus.Dc1],  // powered by 415PP or 105PP
+    [DisplayUnitID.CaptPfd]: [DcElectricalBus.DcEssInFlight],                      // powered by 409PP
+    [DisplayUnitID.CaptNd]: [DcElectricalBus.DcEssInFlight, DcElectricalBus.Dc1],  // powered by 415PP or 105PP
     [DisplayUnitID.CaptMfd]: [DcElectricalBus.DcEss, DcElectricalBus.Dc1],      // powered by 423PP or 111PP
     [DisplayUnitID.FoPfd]: [DcElectricalBus.Dc2],
     [DisplayUnitID.FoNd]: [DcElectricalBus.Dc1, DcElectricalBus.Dc2],
