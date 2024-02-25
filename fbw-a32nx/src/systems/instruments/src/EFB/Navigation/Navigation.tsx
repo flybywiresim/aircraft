@@ -84,7 +84,6 @@ export const Navigation = () => {
 };
 
 export const ChartViewer = () => {
-    console.log('chartviewer init');
     const dispatch = useAppDispatch();
     const {
         selectedNavigationTabIndex,
@@ -95,19 +94,15 @@ export const ChartViewer = () => {
     } = useAppSelector((state) => state.navigationTab);
 
     const currentTab = navigationTabs[selectedNavigationTabIndex].associatedTab as ProviderTab;
-    console.log('before useAppSelector');
     const {
         isFullScreen,
         chartDimensions,
         chartLinks,
-        chartName,
         pagesViewable,
         currentPage,
         chartPosition,
         chartRotation,
-        getPdfImageUrl,
     } = useAppSelector((state) => state.navigationTab[currentTab]);
-    console.log('after useAppSelector');
     // const [drawMode] = useState(false);
     // const [brushSize] = useState(10);
 
@@ -196,18 +191,6 @@ export const ChartViewer = () => {
             }
         }
     }, [chartRef, chartDimensions]);
-
-    useEffect(() => {
-        if (pagesViewable > 1 && getPdfImageUrl) {
-            getPdfImageUrl(chartName.light, currentPage)
-                .then((url) => {
-                    dispatch(editTabProperty({ tab: currentTab, chartLinks: { light: url, dark: url } }));
-                })
-                .catch((error) => {
-                    console.error(`Error: ${error}`);
-                });
-        }
-    }, [currentPage, chartName]);
 
     const transformRef = useRef<ReactZoomPanPinchRef>(null);
     const planeRef = useRef(null);

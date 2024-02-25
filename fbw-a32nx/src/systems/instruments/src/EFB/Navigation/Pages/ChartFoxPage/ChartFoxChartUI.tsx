@@ -59,7 +59,7 @@ export const ChartFoxChartUI = () => {
         { name: 'APP', charts: charts.approach },
     ]);
 
-    const { isFullScreen, searchQuery, chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.CHARTFOX]);
+    const { isFullScreen, searchQuery, chartId, selectedTabIndex, currentPage, pagesViewable } = useAppSelector((state) => state.navigationTab[NavigationTab.CHARTFOX]);
 
     useEffect(() => {
         setOrganizedCharts([
@@ -78,7 +78,7 @@ export const ChartFoxChartUI = () => {
                 let url = sourceUrl;
                 let numPages = 1;
                 if (sourceUrlType === ChartFileType.Pdf) {
-                    url = await getPdfImageUrl(sourceUrl, 1);
+                    url = await getPdfImageUrl(sourceUrl, pagesViewable > 1 ? currentPage : 1);
                     numPages = await Viewer.getPDFPageCountFromUrl(sourceUrl);
                 }
                 dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: numPages }));
@@ -89,7 +89,7 @@ export const ChartFoxChartUI = () => {
             };
             fetchCharts();
         }
-    }, [chartId]);
+    }, [chartId, currentPage]);
 
     const handleIcaoChange = async (value: string) => {
         if (value.length !== 4) {
