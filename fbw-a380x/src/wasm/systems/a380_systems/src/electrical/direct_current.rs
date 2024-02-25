@@ -322,7 +322,7 @@ impl A380DirectCurrentElectrical {
             .update(context, ess_in_flight_sply1);
         self.ess_in_flight_contactor.close_when(
             electricity.is_powered(&self.dc_ess_bus)
-                && (self.ess_in_flight_contactor.is_closed() && bus_ctrl
+                && (self.ess_in_flight_contactor.is_closed() && !bus_ctrl
                     || self.ess_in_flight_sply2.output()
                     || emer_config
                     || ac_state.ac_ess_bus_powered(electricity)),
