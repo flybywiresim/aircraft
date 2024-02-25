@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-evaluate = (cmd) =>
+const evaluate = (cmd) =>
   execSync(cmd, { shell: 'bash', stdio: ['ignore', 'pipe', 'ignore'] })
     .toString()
     .trim();
