@@ -37,7 +37,6 @@ export interface PaxStationInfo {
     capacity: number,
     rows: RowInfo[],
     simVar: string,
-    fill: number,
     stationIndex: number,
     position: number,
     deck: number
