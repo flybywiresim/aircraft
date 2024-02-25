@@ -39,6 +39,14 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
       },
     },
+    {
+      files: ['fbw-common/src/jest/**/*.js'],
+      env: {
+        node: true,
+      },
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended'],
+    },
   ],
   settings: {
     tailwindcss: { groupByResponsive: true },
