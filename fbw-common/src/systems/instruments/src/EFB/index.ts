@@ -7,6 +7,7 @@ export * from './Assets/GroundServiceOutline';
 export * from './Assets/NoseOutline';
 export * from './Assets/FuelOutline';
 export * from './Assets/OverWingOutline';
+export * from './Assets/A380SeatOutlineBg';
 export * from './Localization/translation';
 export * from './Settings/Migration';
 export * from './Settings/Settings';
