@@ -62,7 +62,6 @@ type ProviderTabInfo = {
     pagesViewable: number;
     currentPage: number;
     chartPosition: {positionX: number, positionY: number, scale: number};
-    getPdfImageUrl?: (filename: string, pageNumber: number) => Promise<string>,
 };
 
 interface InitialChartState {

@@ -52,13 +52,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -386,7 +386,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
+        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
             <div className="max-w-4xl">
                 <ErrorIcon />
                 <div className="mt-6 space-y-12">
@@ -406,7 +406,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                     )}
 
                     <div
-                        className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100"
+                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                         onClick={resetErrorBoundary}
                     >
                         <h2 className="text-center font-bold text-current">Reset Display</h2>
