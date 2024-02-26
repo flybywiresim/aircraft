@@ -38,13 +38,13 @@ export enum DisplayUnitID {
 }
 
 const DisplayUnitToDCBus: { [k in DisplayUnitID]: DcElectricalBus[] } = {
-    [DisplayUnitID.CaptPfd]: [DcElectricalBus.DcEss],
-    [DisplayUnitID.CaptNd]: [DcElectricalBus.DcEss, DcElectricalBus.Dc1],
-    [DisplayUnitID.CaptMfd]: [DcElectricalBus.DcEss, DcElectricalBus.Dc1],
+    [DisplayUnitID.CaptPfd]: [DcElectricalBus.DcEssInFlight],                      // powered by 409PP
+    [DisplayUnitID.CaptNd]: [DcElectricalBus.DcEssInFlight, DcElectricalBus.Dc1],  // powered by 415PP or 105PP
+    [DisplayUnitID.CaptMfd]: [DcElectricalBus.DcEss, DcElectricalBus.Dc1],      // powered by 423PP or 111PP
     [DisplayUnitID.FoPfd]: [DcElectricalBus.Dc2],
     [DisplayUnitID.FoNd]: [DcElectricalBus.Dc1, DcElectricalBus.Dc2],
     [DisplayUnitID.FoMfd]: [DcElectricalBus.Dc1, DcElectricalBus.Dc2],
-    [DisplayUnitID.Ewd]: [DcElectricalBus.DcEss],
+    [DisplayUnitID.Ewd]: [DcElectricalBus.DcEss],                               // powered by 423PP
     [DisplayUnitID.Sd]: [DcElectricalBus.Dc2],
 };
 
