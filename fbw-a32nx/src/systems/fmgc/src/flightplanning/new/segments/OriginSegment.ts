@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Airport, Runway, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
@@ -104,7 +104,8 @@ export class OriginSegment extends FlightPlanSegment {
             }
 
             if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.isXF()) {
-                if (firstDepartureLeg.terminationWaypoint().ident === this.runway.ident) {
+                // TODO do we need to check whether the fix actually corresponds to the *correct* runway?
+                if (firstDepartureLeg.waypointDescriptor === WaypointDescriptor.Runway) {
                     firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
                     addOriginLeg = false;
                     addRunwayLeg = false;
