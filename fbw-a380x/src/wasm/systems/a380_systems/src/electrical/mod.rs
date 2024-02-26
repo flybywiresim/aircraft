@@ -1827,9 +1827,8 @@ mod a380_electrical_circuit_tests {
     }
 
     /// # Source
-    /// A380 FCOM
-    /*
-    TODO: check what actually happens in this configuration. The FCOM is contradicting itself.
+    /// A380 FCOM. The configuration shown in the FCOM for this case is wrong.
+    /// The test is checking for the correct behavior.
     #[test]
     fn distribution_one_gen_off_on_each_side_with_apu() {
         let test_bed = test_bed_with()
@@ -1848,7 +1847,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(2)));
         assert!(test_bed
             .ac_bus_output(3)
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .ac_bus_output(4)
             .is_single(PotentialOrigin::EngineGenerator(4)));
@@ -1860,7 +1859,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .ac_eha_bus_output()
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
@@ -1868,7 +1867,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(2)));
         assert!(test_bed
             .tr_2_input()
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .tr_ess_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1887,7 +1886,8 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output()
+        assert!(test_bed
+            .dc_apu_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
@@ -1904,7 +1904,7 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-    }*/
+    }
 
     /// # Source
     /// A380 FCOM
