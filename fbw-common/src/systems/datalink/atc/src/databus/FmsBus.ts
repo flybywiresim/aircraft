@@ -12,7 +12,7 @@ import {
     OclMessage,
     PositionReportData,
     Waypoint,
-} from '@datalink/common';
+} from '../../../common/src';
 
 export interface FmsRouteData {
     lastWaypoint: Waypoint;

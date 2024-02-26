@@ -1,3 +1,6 @@
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { RouterAtcAocMessages } from '../../router/src';
 import {
     AtisType,
     AtsuMessage,
@@ -10,14 +13,11 @@ import {
     PositionReportData,
     RmpDataBusTypes,
     SimVarSources,
-} from '@datalink/common';
-import { RouterAtcAocMessages } from '@datalink/router';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { AtcMessageButtonBusMessages } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
 import { AtcFmsMessages, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
+import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
 
 export type AtcDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -115,7 +115,7 @@ export class DigitalInputs {
 
     public TransponderCode: number;
 
-    public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
+    public FlightPhase: AtsuFlightPhase = AtsuFlightPhase.Preflight;
 
     public FlightRoute: FmsRouteData;
 
@@ -154,7 +154,7 @@ export class DigitalInputs {
 
         this.TransponderCode = 2000;
 
-        this.FlightPhase = FmgcFlightPhase.Preflight;
+        this.FlightPhase = AtsuFlightPhase.Preflight;
 
         this.FlightRoute = {
             lastWaypoint: null,
@@ -302,9 +302,9 @@ export class DigitalInputs {
         this.subscriber.on('flightPhase').handle((phase: Arinc429Word) => {
             if (this.poweredUp) {
                 if (phase.isNormalOperation()) {
-                    this.FlightPhase = phase.value as FmgcFlightPhase;
+                    this.FlightPhase = phase.value as AtsuFlightPhase;
                 } else {
-                    this.FlightPhase = FmgcFlightPhase.Preflight;
+                    this.FlightPhase = AtsuFlightPhase.Preflight;
                 }
             }
         });
