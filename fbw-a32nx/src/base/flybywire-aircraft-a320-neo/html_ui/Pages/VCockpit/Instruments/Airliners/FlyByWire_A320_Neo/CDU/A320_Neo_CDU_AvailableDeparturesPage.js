@@ -168,7 +168,7 @@ class CDUAvailableDeparturesPage {
                             } else {
                                 /*const transitionRunway = targetPlan.availableOriginRunways.find((it) => it.ident === runwayTransitionIdent);
                                 await mcdu.flightPlanService.setOriginRunway(transitionRunway.ident);*/
-                                await mcdu.flightPlanService.setDepartureProcedure(sid.ident, forPlan, inAlternate);
+                                await mcdu.flightPlanService.setDepartureProcedure(sid.databaseId, forPlan, inAlternate);
                             }
                         } catch (e) {
                             console.error(e);
@@ -191,7 +191,7 @@ class CDUAvailableDeparturesPage {
                         rows[2 * i][1] = `${selected ? "{green}" : "{cyan}"}${typeof trans === 'string' ? trans : trans.ident}${selected ? " " : "}"}{end}`;
                         mcdu.onRightInput[i + 1] = async () => {
                             try {
-                                await mcdu.flightPlanService.setDepartureEnrouteTransition(trans.ident, forPlan, inAlternate);
+                                await mcdu.flightPlanService.setDepartureEnrouteTransition(trans.databaseId, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);

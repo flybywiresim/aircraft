@@ -8,10 +8,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import {
-    A320FlightPlanPerformanceData,
-    FlightPlanPerformanceData, FlightPlanPerformanceDataProperties
-} from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanSyncResponsePacket {
     plans: Record<number, SerializedFlightPlan>,
@@ -69,7 +66,10 @@ export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceD
     [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
 }
 
-export interface FlightPlanSyncEvents {
+/**
+ * Flight plan change events. Those are for local use only, and are not synced across instruments.
+ */
+export interface FlightPlanEvents {
     'flightPlanManager.syncRequest': undefined,
     'flightPlanManager.syncResponse': FlightPlanSyncResponsePacket,
 
@@ -85,4 +85,11 @@ export interface FlightPlanSyncEvents {
     'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent,
     'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent
     'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent,
+}
+
+/**
+ * Flight plan change sync events. Those are for cross-instrument use only
+ */
+export type SyncFlightPlanEvents = {
+    [k in keyof FlightPlanEvents & string as `SYNC_${k}`]: FlightPlanEvents[k]
 }

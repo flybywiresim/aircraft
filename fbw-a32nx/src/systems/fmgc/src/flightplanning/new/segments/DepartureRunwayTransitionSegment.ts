@@ -22,11 +22,11 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
 
     private departureRunwayTransition: ProcedureTransition | undefined = undefined
 
-    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+    async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
         const existingDeparture = this.flightPlan.originDeparture;
 
         if (existingDeparture) {
-            const matchingTransition = ident !== undefined ? existingDeparture.runwayTransitions.find((it) => it.ident === ident) : undefined;
+            const matchingTransition = runwayIdent !== undefined ? existingDeparture.runwayTransitions.find((it) => it.ident === runwayIdent) : undefined;
 
             this.departureRunwayTransition = matchingTransition;
         } else {

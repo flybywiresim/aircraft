@@ -23,19 +23,23 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
     allLegs: FlightPlanLeg[] = []
 
-    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (ident === undefined) {
+    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined) {
             this.originDeparture = undefined;
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;
             }
 
-            await this.flightPlan.departureRunwayTransitionSegment.setProcedure(undefined);
-            await this.flightPlan.setDepartureEnrouteTransition(undefined);
-            await this.flightPlan.originSegment.refreshOriginLegs();
+            await this.flightPlan.departureRunwayTransitionSegment.setProcedure(undefined, skipUpdateLegs);
+            await this.flightPlan.departureEnrouteTransitionSegment.setProcedure(undefined, skipUpdateLegs);
 
-            this.flightPlan.syncSegmentLegsChange(this);
+            if (!skipUpdateLegs) {
+                await this.flightPlan.originSegment.refreshOriginLegs();
+
+                this.flightPlan.syncSegmentLegsChange(this);
+            }
+
             return;
         }
 
@@ -51,10 +55,10 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
             throw new Error(`[FMS/FPM] Cannot find procedures at ${this.flightPlan.originAirport.ident}`);
         }
 
-        const matchingProcedure = proceduresAtAirport.find((proc) => proc.ident === ident);
+        const matchingProcedure = proceduresAtAirport.find((proc) => proc.databaseId === databaseId);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find procedure '${ident}' for ${this.flightPlan.originAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find procedure '${databaseId}' for ${this.flightPlan.originAirport.ident}`);
         }
 
         this.originDeparture = matchingProcedure;
@@ -83,6 +87,7 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
+        await this.flightPlan.flushOperationQueue();
     }
 
     clone(forPlan: BaseFlightPlan): DepartureSegment {

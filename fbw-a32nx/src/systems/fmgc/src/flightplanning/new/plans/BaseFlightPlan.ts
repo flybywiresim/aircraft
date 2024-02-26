@@ -34,7 +34,11 @@ import { ApproachViaSegment } from '@fmgc/flightplanning/new/segments/ApproachVi
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
-import { FlightPlanSyncEvents, PerformanceDataFlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import {
+    FlightPlanEvents,
+    PerformanceDataFlightPlanSyncEvents,
+    SyncFlightPlanEvents,
+} from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
@@ -45,6 +49,7 @@ import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {
@@ -54,8 +59,6 @@ export enum FlightPlanQueuedOperation {
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> implements ReadonlyFlightPlan {
-    private readonly syncPub: Publisher<FlightPlanSyncEvents>;
-
     private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
     public pendingAirways: PendingAirways | undefined;
@@ -63,17 +66,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     private subscriptions: Subscription[] = [];
 
     protected constructor(public readonly index: number, public readonly bus: EventBus) {
-        this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
         this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
 
-        const subs = this.bus.getSubscriber<FlightPlanSyncEvents>();
+        const subs = this.bus.getSubscriber<SyncFlightPlanEvents>();
 
         const isAlternatePlan = this instanceof AlternateFlightPlan;
 
-        // FIXME we need to destroy those subscriptions, this is a memory leak
-        // FIXME we should not be doing this here anyway...
+        const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
 
-        this.subscriptions.push(subs.on('flightPlan.setActiveLegIndex').handle((event) => {
+        this.subscriptions.push(subs.on('SYNC_flightPlan.setActiveLegIndex').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -82,10 +83,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 this.activeLegIndex = event.activeLegIndex;
 
                 this.incrementVersion();
+
+                flightPlanEventsPub.pub('flightPlan.setActiveLegIndex', event);
             }
         }));
 
-        this.subscriptions.push(subs.on('flightPlan.setSegmentLegs').handle((event) => {
+        this.subscriptions.push(subs.on('SYNC_flightPlan.setSegmentLegs').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -103,10 +106,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 segment.allLegs = elements;
 
                 this.incrementVersion();
+
+                flightPlanEventsPub.pub('flightPlan.setSegmentLegs', event);
             }
         }));
 
-        this.subscriptions.push(subs.on('flightPlan.legDefinitionEdit').handle((event) => {
+        this.subscriptions.push(subs.on('SYNC_flightPlan.legDefinitionEdit').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -117,10 +122,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 Object.assign(element.definition, event.newDefinition);
 
                 this.incrementVersion();
+
+                flightPlanEventsPub.pub('flightPlan.legDefinitionEdit', event);
             }
         }));
 
-        this.subscriptions.push(subs.on('flightPlan.setLegCruiseStep').handle((event) => {
+        this.subscriptions.push(subs.on('SYNC_flightPlan.setLegCruiseStep').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -131,10 +138,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 element.cruiseStep = event.cruiseStep;
 
                 this.incrementVersion();
+
+                flightPlanEventsPub.pub('flightPlan.setLegCruiseStep', event);
             }
         }));
 
-        this.subscriptions.push(subs.on('flightPlan.setFixInfoEntry').handle((event) => {
+        this.subscriptions.push(subs.on('SYNC_flightPlan.setFixInfoEntry').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -144,6 +153,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                     this.setFixInfoEntry(event.index, event.fixInfo, false);
 
                     this.incrementVersion();
+
+                    flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
                 }
             }
         }));
@@ -177,7 +188,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.allLegs[this.activeLegIndex];
     }
 
-    private setActiveLegIndex(index: number) {
+    protected setActiveLegIndex(index: number) {
         this.activeLegIndex = index;
         this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: index });
     }
@@ -293,6 +304,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     queuedOperations: [op: FlightPlanQueuedOperation, param: any][] = [];
 
     enqueueOperation(op: FlightPlanQueuedOperation, param?: any): void {
+        if (LnavConfig.VERBOSE_FPM_LOG) {
+            console.trace('[fpm] enqueueOperation', op, param);
+        }
+
         const existing = this.queuedOperations.find((it) => it[0] === op && it[1] === param);
 
         if (existing) {
@@ -308,7 +323,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     async flushOperationQueue() {
-        for (const [operation, param] of this.queuedOperations) {
+        if (LnavConfig.VERBOSE_FPM_LOG) {
+            console.trace('[fpm] flushOperationQueue');
+        }
+
+        // This needs to be an indexed for loop, as Coherent does not respect the ECMAScript spec and doesn't include items
+        // added iteration in for...of loops. This is an issue, as in `restring` calls, we can queue SyncSegmentLegs operations.
+        for (let i = 0; i < this.queuedOperations.length; i++) {
+            const [operation, param] = this.queuedOperations[i];
+
             switch (operation) {
             case FlightPlanQueuedOperation.Restring:
                 const options = param as RestringOptions;
@@ -334,9 +357,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     protected ignoreSync = false;
 
-    sendEvent<K extends keyof FlightPlanSyncEvents>(topic: K, data: FlightPlanSyncEvents[K]) {
+    sendEvent<K extends keyof FlightPlanEvents>(topic: K, data: FlightPlanEvents[K]) {
         this.ignoreSync = true;
-        this.syncPub.pub(topic, data, true, false);
+        this.bus.getPublisher<FlightPlanEvents>().pub(topic, data, true, false);
+        this.bus.getPublisher<SyncFlightPlanEvents>().pub(`SYNC_${topic}`, data as SyncFlightPlanEvents[`SYNC_${typeof topic}`], true, false);
         this.ignoreSync = false;
     }
 
@@ -347,11 +371,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     syncSegmentLegsChange(segment: FlightPlanSegment) {
+        if (LnavConfig.VERBOSE_FPM_LOG) {
+            console.log(`[fpm] syncSegmentLegsChange - ${segment.constructor.name}`);
+        }
+
         const segmentIndex = this.orderedSegments.indexOf(segment);
 
         const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
-
-        console.log(`[FpSync] SyncSegmentLegs(${segment.constructor.name})`);
 
         this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
     }
@@ -679,8 +705,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.departureSegment.originDeparture;
     }
 
-    async setDeparture(procedureIdent: string | undefined) {
-        await this.departureSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    async setDeparture(databaseId: string | undefined) {
+        await this.departureSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -693,10 +719,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the departure enroute transition
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setDepartureEnrouteTransition(transitionIdent: string | undefined) {
-        await this.departureEnrouteTransitionSegment.setProcedure(transitionIdent);
+    async setDepartureEnrouteTransition(databaseId: string | undefined) {
+        await this.departureEnrouteTransitionSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -709,10 +735,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the arrival enroute transition
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setArrivalEnrouteTransition(transitionIdent: string | undefined) {
-        await this.arrivalEnrouteTransitionSegment.setProcedure(transitionIdent);
+    async setArrivalEnrouteTransition(databaseId: string | undefined) {
+        await this.arrivalEnrouteTransitionSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -722,8 +748,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.arrivalSegment.procedure;
     }
 
-    async setArrival(procedureIdent: string | undefined) {
-        await this.arrivalSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    async setArrival(databaseId: string | undefined) {
+        await this.arrivalSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -740,10 +766,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the approach via
      *
-     * @param transitionIdent the transition ident or `undefined` for NONE
+     * @param databaseId the transition databaseId or `undefined` for NONE
      */
-    async setApproachVia(transitionIdent: string | undefined) {
-        await this.approachViaSegment.setProcedure(transitionIdent);
+    async setApproachVia(databaseId: string | undefined) {
+        await this.approachViaSegment.setProcedure(databaseId);
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -753,8 +779,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         return this.approachSegment.procedure;
     }
 
-    async setApproach(procedureIdent: string | undefined) {
-        await this.approachSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
+    /**
+     * Sets the approach
+     *
+     * @param databaseId the approach databaseId or `undefined` for NONE
+     */
+    async setApproach(databaseId: string | undefined) {
+        await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -1001,6 +1032,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
         this.enrouteSegment.strung = true;
+
+        this.syncSegmentLegsChange(this.enrouteSegment);
 
         await this.flushOperationQueue();
     }
@@ -1645,7 +1678,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
+        if (LnavConfig.VERBOSE_FPM_LOG) {
+            console.log(`[fpm] stringSegmentsForwards (${first.constructor.name}, ${second.constructor.name})`);
+        }
+
         if (!first || !second || first.strung || first.allLegs.length === 0 || second.allLegs.length === 0 || (second instanceof EnrouteSegment && second.isSequencedMissedApproach)) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - RETURN');
+            }
             return;
         }
 
@@ -1658,11 +1698,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         const lastLegInFirst = first.allLegs[lastElementInFirstIndex];
         if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - RETURN - no lastLegInFirst or lastLegInFirst is discontinuity');
+            }
             return;
         }
 
         if (first instanceof OriginSegment && first.lastLeg?.waypointDescriptor === WaypointDescriptor.Runway) {
             // Always string origin with only a runway to next segment
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - RETURN - last leg of OriginSegment as first segment is a runway');
+            }
             first.strung = true;
             return;
         }
@@ -1672,18 +1718,29 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // Arrival and approach will be strung backwards
         if (firstIsArrival && secondIsApproach) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - RETURN - first is arrival + second is approach');
+            }
             return;
         }
 
         if (first instanceof ApproachSegment && second instanceof DestinationSegment) {
             // Always string approach to destination
             first.strung = true;
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - first.strung = true');
+                console.trace('[fpm] stringSegmentsForwards - RETURN - first is approach + second is destination');
+            }
             return;
         }
 
         if ((first instanceof DestinationSegment || first instanceof ApproachSegment) && second instanceof MissedApproachSegment) {
             // Always string approach to missed
             first.strung = true;
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - first.strung = true');
+                console.trace('[fpm] stringSegmentsForwards - RETURN - first is destination or approach + second is missed');
+            }
             return;
         }
 
@@ -1710,8 +1767,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
                         [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, lastLegInFirst.annotation);
 
+                        if (LnavConfig.VERBOSE_FPM_LOG) {
+                            console.trace('[fpm] stringSegmentsForwards - popping legs of first');
+                        }
+
                         first.allLegs.pop();
-                        first.flightPlan.syncSegmentLegsChange(first);
+                        this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
                         cutBefore = i;
                         break;
                     }
@@ -1720,6 +1781,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 const xfToFx = lastLegInFirst.isXF() && element.isFX();
 
                 if (xfToFx && lastLegInFirst.terminatesWithWaypoint(element.terminationWaypoint())) {
+                    if (LnavConfig.VERBOSE_FPM_LOG) {
+                        console.log(`[fpm] stringSegmentsForwards - cutBefore (xfToFx) = ${i}`);
+                    }
                     cutBefore = i;
                     break;
                 }
@@ -1728,6 +1792,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
                 // TODO geometry shits the bed for CI -> IF -> XF, but stringing them is correct
                 if (xiToXf) {
+                    if (LnavConfig.VERBOSE_FPM_LOG) {
+                        console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
+                    }
                     cutBefore = i;
                     break;
                 }
@@ -1737,6 +1804,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // If no matching leg is found, insert a discontinuity (if there isn't one already) at the end of the first segment
         if (cutBefore === -1 || originAndDestination) {
             if (lastElementInFirst.isDiscontinuity === false && second.allLegs[0]?.isDiscontinuity === false) {
+                if (LnavConfig.VERBOSE_FPM_LOG) {
+                    console.trace('[fpm] stringSegmentsForwards - add discontinuity to first');
+                }
                 first.allLegs.push({ isDiscontinuity: true });
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
             }
@@ -1747,11 +1817,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         // Otherwise, clear a possible discontinuity and remove all elements before the matching leg and the last leg of the first segment
         if (lastElementInFirst.isDiscontinuity === true) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - popping legs of first');
+            }
             first.allLegs.pop();
             this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
         }
 
         for (let i = 0; i < cutBefore; i++) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsForwards - popping legs of second');
+            }
             second.allLegs.shift();
         }
 
@@ -1761,7 +1837,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     private stringSegmentsBackwards(first: FlightPlanSegment, second: FlightPlanSegment) {
+        if (LnavConfig.VERBOSE_FPM_LOG) {
+            console.log(`[fpm] stringSegmentsBackwards (${first.constructor.name}, ${second.constructor.name})`);
+        }
+
         if (!first || !second || first.allLegs.length === 0 || second.allLegs.length === 0) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+                console.trace('[fpm] stringSegmentsBackwards cancelled');
+            }
             return;
         }
 
@@ -2086,19 +2169,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // the methods on BaseFlightPlan flush the op queue
 
         if (this.approach) {
-            await this.approachSegment.setProcedure(this.approach.ident);
+            await this.approachSegment.setProcedure(this.approach.databaseId);
         }
 
         if (this.approachVia) {
-            await this.approachViaSegment.setProcedure(this.approachVia.ident);
+            await this.approachViaSegment.setProcedure(this.approachVia.databaseId);
         }
 
         if (this.arrival) {
-            await this.arrivalSegment.setProcedure(this.arrival.ident);
+            await this.arrivalSegment.setProcedure(this.arrival.databaseId);
         }
 
         if (this.arrivalEnrouteTransition) {
-            await this.arrivalEnrouteTransitionSegment.setProcedure(this.arrivalEnrouteTransition.ident);
+            await this.arrivalEnrouteTransitionSegment.setProcedure(this.arrivalEnrouteTransition.databaseId);
         }
 
         await this.destinationSegment.refresh(false);

@@ -6,9 +6,9 @@
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import {
-    FlightPlanSyncEvents,
+    FlightPlanEvents,
     FlightPlanSyncResponsePacket, PerformanceDataFlightPlanSyncEvents,
-} from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+} from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
@@ -31,7 +31,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
         private readonly syncClientID: number,
         private readonly master: boolean,
     ) {
-        const subs = bus.getSubscriber<FlightPlanSyncEvents>();
+        const subs = bus.getSubscriber<FlightPlanEvents>();
 
         subs.on('flightPlanManager.syncRequest').handle(() => {
             if (!this.ignoreSync) {
@@ -62,8 +62,6 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
 
                     this.set(intIndex, newPlan);
                 }
-
-                console.log(event);
             }
         });
 
@@ -106,11 +104,11 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
             setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);
         }
 
-        this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
+        this.syncPub = this.bus.getPublisher<FlightPlanEvents>();
         this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
     }
 
-    private readonly syncPub: Publisher<FlightPlanSyncEvents>;
+    private readonly syncPub: Publisher<FlightPlanEvents>;
 
     private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
@@ -196,7 +194,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
         }
     }
 
-    private sendEvent<k extends keyof FlightPlanSyncEvents>(topic: k, data: FlightPlanSyncEvents[k]): void {
+    private sendEvent<k extends keyof FlightPlanEvents>(topic: k, data: FlightPlanEvents[k]): void {
         this.ignoreSync = true;
         this.syncPub.pub(topic, data, true, false);
         this.ignoreSync = false;
