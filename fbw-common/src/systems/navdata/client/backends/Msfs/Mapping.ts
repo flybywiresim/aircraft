@@ -1,7 +1,8 @@
 // Copyright (c) 2021, 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable camelcase */
+// This rule just informs about a possible optimization
+/* eslint-disable no-await-in-loop */
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { AirportClassMask } from '@microsoft/msfs-sdk';

@@ -1,7 +1,7 @@
 // Copyright (c) 2021, 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable camelcase */
+/* eslint-disable no-await-in-loop */
 
 import { Coordinates, NauticalMiles } from 'msfs-geo';
 import {
@@ -211,7 +211,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNdbsAtAirport(airportIdentifier: string): Promise<NdbNavaid[]> {
+    public async getNdbsAtAirport(_airportIdentifier: string): Promise<NdbNavaid[]> {
         return [];
     }
 
@@ -238,12 +238,12 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** not supported */
-    public async getLsMarkers(airportIdentifier: string, runwayIdentifier: string, lsIdentifier: string): Promise<Marker[]> {
+    public async getLsMarkers(_airportIdentifier: string, _runwayIdentifier: string, _lsIdentifier: string): Promise<Marker[]> {
         return [];
     }
 
     /** @inheritdoc */
-    public async getWaypoints(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<Waypoint[]> {
+    public async getWaypoints(idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<Waypoint[]> {
         const results = new Map<string, Waypoint>();
 
         for (const ident of idents) {
@@ -256,7 +256,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNdbNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<NdbNavaid[]> {
+    public async getNdbNavaids(idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<NdbNavaid[]> {
         const results = new Map<string, NdbNavaid>();
 
         for (const ident of idents) {
@@ -269,7 +269,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getVhfNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<VhfNavaid[]> {
+    public async getVhfNavaids(idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<VhfNavaid[]> {
         const results = new Map<string, VhfNavaid>();
 
         for (const ident of idents) {
@@ -282,7 +282,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getIlsNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<IlsNavaid[]> {
+    public async getIlsNavaids(idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<IlsNavaid[]> {
         const results = new Map<string, IlsNavaid>();
 
         for (const ident of idents) {
@@ -312,7 +312,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** not supported... maybe */
-    public async getAirways(idents: string[]): Promise<Airway[]> {
+    public async getAirways(_idents: string[]): Promise<Airway[]> {
         return [];
     }
 
@@ -384,12 +384,12 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNearbyAirways(center: Coordinates, range: NauticalMiles, limit?: number, levels?: AirwayLevel): Promise<readonly Airway[]> {
+    public async getNearbyAirways(_center: Coordinates, _range: NauticalMiles, _limit?: number, _levels?: AirwayLevel): Promise<readonly Airway[]> {
         return [];
     }
 
     /** @inheritdoc */
-    public async getNearbyVhfNavaids(center: Coordinates, range: number, limit?: number, classes?: VorClass, types?: VhfNavaidType): Promise<readonly VhfNavaid[]> {
+    public async getNearbyVhfNavaids(center: Coordinates, range: number, limit?: number, _classes?: VorClass, _types?: VhfNavaidType): Promise<readonly VhfNavaid[]> {
         await Wait.awaitCondition(() => this.vorSearchSession !== undefined);
 
         // TODO take care of classes, types
@@ -398,7 +398,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNearbyNdbNavaids(center: Coordinates, range: NauticalMiles, limit?: number, classes?: NdbClass): Promise<readonly NdbNavaid[]> {
+    public async getNearbyNdbNavaids(center: Coordinates, range: NauticalMiles, limit?: number, _classes?: NdbClass): Promise<readonly NdbNavaid[]> {
         await Wait.awaitCondition(() => this.ndbSearchSession !== undefined);
 
         // TODO take care of classes
@@ -414,7 +414,7 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]> {
+    public async getNearbyFixes(center: Coordinates, range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
         const [waypoints, vors, ndbs] = await Promise.all([
             this.getNearbyWaypoints(center, range),
             this.getNearbyVhfNavaids(center, range),
@@ -427,12 +427,12 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getControlledAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly ControlledAirspace[]> {
+    public async getControlledAirspaceInRange(_center: Coordinates, _range: NauticalMiles): Promise<readonly ControlledAirspace[]> {
         return [];
     }
 
     /** @inheritdoc */
-    public async getRestrictiveAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly RestrictiveAirspace[]> {
+    public async getRestrictiveAirspaceInRange(_center: Coordinates, _range: NauticalMiles): Promise<readonly RestrictiveAirspace[]> {
         return [];
     }
 
