@@ -177,9 +177,13 @@ class A320_Neo_FCU_Component {
     getTextElement(_name, byClass = false) {
         return this.getElement("text", _name, byClass);
     }
-    setTextElementActive(_text, _active, classPrefix = "") {
+    setTextElementActive(_text, _active) {
         if (_text != null) {
-            _text.setAttribute("class", classPrefix + "Common " + (_active ? "Active" : "Inactive"));
+            if (_active === true) {
+                _text.classList.replace("Inactive", "Active");
+            } else {
+                _text.classList.replace("Active", "Inactive");
+            }
         }
     }
     setElementVisibility(_element, _show) {
@@ -1382,8 +1386,8 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
             if (this.lightsTest) {
                 this.setElementVisibility(this.standardElem, false)
                 this.setElementVisibility(this.selectedElem, true)
-                this.setTextElementActive(this.textQFE, true, "qfe ");
-                this.setTextElementActive(this.textQNH, true, "qnh ");
+                this.setTextElementActive(this.textQFE, true);
+                this.setTextElementActive(this.textQNH, true);
                 this.textValueContent = "88.88";
                 return;
             }
@@ -1396,8 +1400,8 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
                 this.setElementVisibility(this.selectedElem, true)
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 0);
                 const isQFE = (this.currentMode == "QFE") ? true : false;
-                this.setTextElementActive(this.textQFE, isQFE, "qfe ");
-                this.setTextElementActive(this.textQNH, !isQFE, "qnh ");
+                this.setTextElementActive(this.textQFE, isQFE);
+                this.setTextElementActive(this.textQNH, !isQFE);
                 let value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
                 if (!wasStd) {
                     value = value.toString().padStart(4, "0");
