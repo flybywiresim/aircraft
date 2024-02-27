@@ -101,7 +101,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
     const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
 
     useEffect(() => {
-        if (simbriefDataLoaded === true && fuelImported === false && !refuelStartedByUser) {
+        if (simbriefDataLoaded === true && fuelImported === false) {
             handleFuelAutoFill();
             dispatch(setFuelImported(true));
         }
@@ -423,16 +423,21 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             </div>
                             <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${calculateEta()}`}</p>
                         </div>
-                        <div className="flex flex-row items-center space-x-6">
+                        <div className={`flex flex-row items-center space-x-6 ${refuelStartedByUser && 'opacity-50'}`}>
                             <Slider
+                                disabled={refuelStartedByUser}
                                 style={{ width: '28rem' }}
+                                trackStyle={{ backgroundColor: 'var(--color-highlight)' }}
+                                railStyle={{ backgroundColor: 'var(--color-accent)' }}
+                                handleStyle={{ backgroundColor: 'var(--color-highlight)' }}
                                 value={sliderValue}
                                 onChange={updateSlider}
                             />
                             <div className="flex flex-row">
                                 <div className="relative">
                                     <SimpleInput
-                                        className={`w-32 ${simbriefDataLoaded && 'rounded-r-none'}`}
+                                        disabled={refuelStartedByUser}
+                                        className={`w-32 ${simbriefDataLoaded && !refuelStartedByUser && 'rounded-r-none'}`}
                                         placeholder={round(totalFuel()).toString()}
                                         number
                                         min={0}
@@ -445,8 +450,8 @@ export const A320Fuel: React.FC<FuelProps> = ({
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                                         <div
-                                            className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex h-auto items-center justify-center rounded-md rounded-l-none border-2 px-2 transition duration-100"
-                                            onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
+                                            className={`${refuelStartedByUser && 'invisible'} border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex h-auto items-center justify-center rounded-md rounded-l-none border-2 px-2 transition duration-100`}
+                                            onClick={handleFuelAutoFill}
                                         >
                                             <CloudArrowDown size={26} />
                                         </div>

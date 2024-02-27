@@ -48,7 +48,8 @@ interface PayloadValueInputProps {
 export const PayloadValueInput: React.FC<PayloadValueInputProps> = ({ min, max, value, onBlur, unit, disabled }) => (
     <div className="relative w-44">
         <SimpleInput
-            className={`my-2 w-full font-mono ${(disabled ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : '')}`}
+            disabled={disabled}
+            className="my-2 w-full font-mono"
             fontSizeClassName="text-2xl"
             number
             min={min}
@@ -117,10 +118,11 @@ export const MiscParamsInput: React.FC<MiscParamsProps> = ({
 }) => (
     <>
         <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
-            <div className={`text-medium relative flex flex-row items-center font-light ${(disable) ? 'pointer-events-none' : ''}`}>
+            <div className="text-medium relative flex flex-row items-center font-light">
                 <PersonFill size={25} className="mx-3" />
                 <SimpleInput
-                    className={`w-24 ${(disable) ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : ''}`}
+                    disabled={disable}
+                    className="w-24"
                     number
                     min={minPaxWeight}
                     max={maxPaxWeight}
@@ -135,10 +137,11 @@ export const MiscParamsInput: React.FC<MiscParamsProps> = ({
         </TooltipWrapper>
 
         <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
-            <div className={`text-medium relative flex flex-row items-center font-light ${(disable) ? 'pointer-events-none' : ''}`}>
+            <div className="text-medium relative flex flex-row items-center font-light">
                 <BriefcaseFill size={25} className="mx-3" />
                 <SimpleInput
-                    className={`w-24 ${(disable) ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : ''}`}
+                    disabled={disable}
+                    className="w-24"
                     number
                     min={minBagWeight}
                     max={maxBagWeight}
@@ -181,12 +184,12 @@ export const BoardingInput: React.FC<BoardingInputProps> = ({ boardingStatusClas
         <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
             <button
                 type="button"
-                className={`ml-1 flex h-12 w-16 items-center justify-center rounded-lg bg-current text-theme-highlight ${totalPax === 0 && totalCargo === 0 && 'pointer-events-none opacity-20'}`}
+                className={`text-theme-highlight ml-1 flex h-12 w-16 items-center justify-center rounded-lg bg-current ${(totalPax === 0 && totalCargo === 0 || boardingStarted) && 'pointer-events-none opacity-20'}`}
                 onClick={() => handleDeboarding()}
             >
                 <div className="text-theme-body">
                     {' '}
-                    <BoxArrowRight size={32} className={`${boardingStarted && 'pointer-events-none opacity-20'} : ''}`} />
+                    <BoxArrowRight size={32} />
                 </div>
             </button>
         </TooltipWrapper>
@@ -244,9 +247,8 @@ interface PayloadInputTableProps {
     loadsheet: Loadsheet,
     emptyWeight: number,
     massUnitForDisplay: string,
-    gsxPayloadSyncEnabled: boolean,
     displayZfw: boolean,
-    boardingStarted: boolean,
+    generalBoardingInProgress: boolean,
     totalPax: number,
     totalPaxDesired: number,
     maxPax: number,
@@ -272,8 +274,8 @@ interface PayloadInputTableProps {
 export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
     {
         loadsheet, emptyWeight, massUnitForDisplay,
-        gsxPayloadSyncEnabled,
-        displayZfw, boardingStarted,
+        generalBoardingInProgress,
+        displayZfw,
         totalPax, totalPaxDesired, maxPax,
         totalCargo, totalCargoDesired, maxCargo,
         zfw, zfwDesired, zfwCgMac, desiredZfwCgMac,
@@ -306,7 +308,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                 </td>
                 <td className="mx-8">
                     <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                        <div className={`text-md whitespace-nowrap px-4 font-light ${(gsxPayloadSyncEnabled && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                        <div className="text-md whitespace-nowrap px-4 font-light">
                             <PayloadValueInput
                                 min={0}
                                 max={maxPax > 0 ? maxPax : 999}
@@ -318,7 +320,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                     }
                                 }}
                                 unit="PAX"
-                                disabled={gsxPayloadSyncEnabled && boardingStarted}
+                                disabled={generalBoardingInProgress}
                             />
                         </div>
                     </TooltipWrapper>
@@ -334,7 +336,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                 </td>
                 <td>
                     <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${Units.kilogramToUser(maxCargo).toFixed(0)} ${massUnitForDisplay}`}>
-                        <div className={`text-md whitespace-nowrap px-4 font-light ${(gsxPayloadSyncEnabled && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                        <div className="text-md whitespace-nowrap px-4 font-light">
                             <PayloadValueInput
                                 min={0}
                                 max={maxCargo > 0 ? Math.round(Units.kilogramToUser(maxCargo)) : 99999}
@@ -345,7 +347,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                     }
                                 }}
                                 unit={massUnitForDisplay}
-                                disabled={gsxPayloadSyncEnabled && boardingStarted}
+                                disabled={generalBoardingInProgress}
                             />
                         </div>
                     </TooltipWrapper>
@@ -363,7 +365,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                     {(displayZfw
                         ? (
                             <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(loadsheet.specs.weights.maxZfw).toFixed(0)} ${massUnitForDisplay}`}>
-                                <div className={`text-md whitespace-nowrap px-4 font-light ${(gsxPayloadSyncEnabled && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                                <div className="text-md whitespace-nowrap px-4 font-light">
                                     <PayloadValueInput
                                         min={Math.round(Units.kilogramToUser(emptyWeight))}
                                         max={Math.round(Units.kilogramToUser(loadsheet.specs.weights.maxZfw))}
@@ -372,14 +374,14 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                             if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
                                         }}
                                         unit={massUnitForDisplay}
-                                        disabled={gsxPayloadSyncEnabled && boardingStarted}
+                                        disabled={generalBoardingInProgress}
                                     />
                                 </div>
                             </TooltipWrapper>
                         )
                         : (
                             <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${Units.kilogramToUser(loadsheet.specs.weights.maxGw).toFixed(0)} ${massUnitForDisplay}`}>
-                                <div className={`text-md whitespace-nowrap px-4 font-light ${(gsxPayloadSyncEnabled && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                                <div className="text-md whitespace-nowrap px-4 font-light">
                                     <PayloadValueInput
                                         min={Math.round(Units.kilogramToUser(emptyWeight))}
                                         max={Math.round(Units.kilogramToUser(loadsheet.specs.weights.maxGw))}
@@ -388,7 +390,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                             if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
                                         }}
                                         unit={massUnitForDisplay}
-                                        disabled={gsxPayloadSyncEnabled && boardingStarted}
+                                        disabled={generalBoardingInProgress}
                                     />
                                 </div>
                             </TooltipWrapper>
@@ -412,8 +414,8 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                         <div className="ml-auto">
                             <button
                                 type="button"
-                                className={`ml-auto flex h-8 w-12 items-center justify-center rounded-lg
-                                                    bg-current text-theme-highlight`}
+                                className={`text-theme-highlight ml-auto flex h-8 w-12 items-center justify-center
+                                                    rounded-lg bg-current`}
                                 onClick={() => setDisplayZfw(!displayZfw)}
                             >
                                 <div className="text-theme-body">
