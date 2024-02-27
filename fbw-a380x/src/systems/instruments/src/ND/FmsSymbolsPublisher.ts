@@ -16,9 +16,6 @@ export interface FmsSymbolsData {
     vectorsAlternate: PathVector[],
     vectorsSecondary: PathVector[],
     traffic: NdTraffic[],
-    oansOrigin: string,
-    oansDestination: string,
-    oansAlternate: string,
 }
 
 export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
@@ -58,17 +55,5 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
         this.events.push(new GenericDataListenerSync((ev, data: NdTraffic[]) => {
             this.publish('traffic', data);
         }, 'A32NX_TCAS_TRAFFIC'));
-
-        this.events.push(new GenericDataListenerSync((ev, data: string) => {
-            this.publish('oansOrigin', data);
-        }, `A380X_OANS_${side}_FMS_ACTIVE_ORIGIN`));
-
-        this.events.push(new GenericDataListenerSync((ev, data: string) => {
-            this.publish('oansDestination', data);
-        }, `A380X_OANS_${side}_FMS_ACTIVE_DESTINATION`));
-
-        this.events.push(new GenericDataListenerSync((ev, data: string) => {
-            this.publish('oansAlternate', data);
-        }, `A380X_OANS_${side}_FMS_ACTIVE_ALTERNATE`));
     }
 }

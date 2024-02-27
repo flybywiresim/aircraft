@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
-import { EfisSide, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 export interface OansRunwayInfo {
     ident: string,
@@ -19,15 +19,15 @@ export interface OansControlEvents {
     oansRunwayInfo: OansRunwayInfo | null,
 }
 
-export class OansControlEventPublisher extends BasePublisher<OansControlEvents> {
-    private readonly events: GenericDataListenerSync[] = [];
-
-    constructor(bus: EventBus, side: EfisSide) {
-        super(bus);
-
-        // Doesn't work atm, not possible to send between instruments of the same VCockpit
-        this.events.push(new GenericDataListenerSync((ev, data: string) => {
-            this.publish('oansDisplayAirport', data);
-        }, `A380X_OANS_${side}_DISPLAY_AIRPORT`));
+export class FmsOansPublisher extends SimVarPublisher<OansControlEvents> {
+    constructor(bus: EventBus, efisSide: EfisSide) {
+        super(new Map([
+            ['ndShowOans', { name: `A380X_OANS_${efisSide}_SHOW_OANS`, type: SimVarValueType.Bool }],
+            ['ndSetContextMenu', { name: `A380X_OANS_${efisSide}_SET_CONTEXT_MENU`, type: SimVarValueType.String }], // would this work?
+            ['oansDisplayAirport', { name: `A380X_OANS_${efisSide}_DISPLAY_AIRPORT`, type: SimVarValueType.String }],
+            ['oansZoomIn', { name: `A380X_OANS_${efisSide}_ZOOM_IN`, type: SimVarValueType.Number }],
+            ['oansZoomOut', { name: `A380X_OANS_${efisSide}_ZOOM_OUT`, type: SimVarValueType.Number }],
+            ['oansRunwayInfo', { name: `A380X_OANS_${efisSide}_RUNWAY_INFO`, type: SimVarValueType.String }],
+        ]), bus);
     }
 }

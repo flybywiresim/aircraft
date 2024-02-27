@@ -10,12 +10,11 @@ import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OANC_RENDER_HE
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
 import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
-import { MouseCursor } from './UI/MouseCursor';
+import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { FmsOansPublisher } from 'instruments/src/ND/FmsOansPublisher';
+import { FmsOansPublisher } from '../MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -25,10 +24,10 @@ import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPubli
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { MouseCursor } from './UI/MouseCursor';
 
 import './style.scss';
 import './oans-styles.scss';
-
 
 declare type MousePosition = {
     x: number;
@@ -164,7 +163,7 @@ class NDInstrument implements FsInstrument {
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
-        this.fmsOansPublisher = new FmsOansPublisher(this.bus, side);
+        this.fmsOansPublisher = new FmsOansPublisher(this.bus, stateSubject);
         this.vorBusPublisher = new VorBusPublisher(this.bus);
         this.tcasBusPublisher = new TcasBusPublisher(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
@@ -290,11 +289,11 @@ class NDInstrument implements FsInstrument {
     private updateNdOansVisibility() {
         if (this.oansContainerRef.getOrDefault()) {
             if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
+                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true, true);
                 this.oansContainerRef.instance.style.display = 'block';
                 this.oansControlPanelContainerRef.instance.style.display = 'block';
             } else {
-                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
+                this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false, true);
                 this.oansContainerRef.instance.style.display = 'none';
                 this.oansControlPanelContainerRef.instance.style.display = 'none';
             }

@@ -3,10 +3,14 @@
 import './UI/style.scss';
 import './OansControlPanel.scss';
 
-import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, MapSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+    ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent,
+    MapSubject, MappedSubscribable, Subject, Subscribable, Subscription, VNode,
+} from '@microsoft/msfs-sdk';
 import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
 
+import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
 import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
 import { DropdownMenu } from './UI/DropdownMenu';
@@ -15,7 +19,6 @@ import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
-import { FmsOansData } from 'instruments/src/ND/FmsOansPublisher';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
@@ -135,7 +138,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
         // unfocus input fields on tab change
         this.subs.push(
-            this.activeTabIndex.sub((index) => Coherent.trigger('UNFOCUS_INPUT_FIELD'))
+            this.activeTabIndex.sub((_index) => Coherent.trigger('UNFOCUS_INPUT_FIELD')),
         );
 
         const sub = this.props.bus.getSubscriber<FmsOansData>();
@@ -160,11 +163,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.runwayLda.set(it.toFixed(0));
             this.runwayTora.set(it.toFixed(0));
 
-            this.props.bus.getPublisher<OansControlEvents>().pub('oansRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it});
-
-            // Transmit via LVar to autobrake system
-            SimVar.SetSimVarValue('L:A32NX_OANS_LANDING_RWY_LENGTH', SimVarValueType.Number, it);
-        })
+            this.props.bus.getPublisher<OansControlEvents>().pub('oansRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it });
+        });
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
@@ -240,7 +240,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             throw new Error('[OANS] Empty airport selected for display.');
         }
 
-        this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt, true);
         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
     }
 
