@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { Arinc429SignStatusMatrix, Arinc429Word, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -18,13 +20,12 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
  */
 export class FmcAircraftInterface {
     constructor(
+        private bus: EventBus,
         private fmc: FmcInterface,
         private fmgc: FmgcDataService,
         private flightPlanService: FlightPlanService,
     ) {
     }
-
-    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
     // ARINC words
     // arinc bus output words
@@ -372,30 +373,26 @@ export class FmcAircraftInterface {
 
     updateOansAirports() {
         if (this.flightPlanService.hasActive) {
+            const pub = this.bus.getPublisher<FmsOansData>();
             if (this.flightPlanService.active?.originAirport?.ident) {
-                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
-                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ORIGIN', this.flightPlanService.active.originAirport.ident);
+                pub.pub('fmsOrigin', this.flightPlanService.active.originAirport.ident, true);
             }
 
             if (this.flightPlanService.active?.destinationAirport?.ident) {
-                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
-                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_DESTINATION', this.flightPlanService.active.destinationAirport.ident);
+                pub.pub('fmsDestination', this.flightPlanService.active.destinationAirport.ident, true);
             }
 
             if (this.flightPlanService.active?.alternateDestinationAirport?.ident) {
-                this.syncer.sendEvent('A380X_OANS_L_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
-                this.syncer.sendEvent('A380X_OANS_R_FMS_ACTIVE_ALTERNATE', this.flightPlanService.active.alternateDestinationAirport.ident);
+                pub.pub('fmsAlternate', this.flightPlanService.active.alternateDestinationAirport.ident, true);
             }
         }
     }
 
     updateLandingRunway() {
         if (this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident) {
-            this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
-            this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY', this.flightPlanService.active.destinationRunway.ident);
-
-            this.syncer.sendEvent('A380X_OANS_L_FMS_SELECTED_LANDING_RWY_LENGTH', this.flightPlanService.active.destinationRunway.length);
-            this.syncer.sendEvent('A380X_OANS_R_FMS_SELECTED_LANDING_RWY_LENGTH', this.flightPlanService.active.destinationRunway.length);
+            const pub = this.bus.getPublisher<FmsOansData>();
+            pub.pub('fmsLandingRunway', this.flightPlanService.active.destinationRunway.ident, true);
+            pub.pub('fmsLandingRunwayLength', this.flightPlanService.active.destinationRunway.length, true);
         }
     }
 

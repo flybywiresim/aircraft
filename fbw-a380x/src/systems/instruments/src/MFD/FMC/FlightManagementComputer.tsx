@@ -134,7 +134,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.#operatingMode = operatingMode;
         this.#mfdReference = mfdReference;
 
-        this.acInterface = new FmcAircraftInterface(this, this.fmgc, this.flightPlanService);
+        this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
         this.flightPlanService.createFlightPlans();
         this.#guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface, a380EfisRangeSettings, A380AircraftConfig);
