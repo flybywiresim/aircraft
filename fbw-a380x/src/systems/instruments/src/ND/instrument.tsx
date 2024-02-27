@@ -148,6 +148,8 @@ class NDInstrument implements FsInstrument {
 
     private oansControlPanelContainerRef = FSComponent.createRef<HTMLDivElement>();
 
+    private cursorVisible = Subject.create<boolean>(true);
+
     constructor() {
         const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
         const stateSubject = Subject.create<'L' | 'R'>(side);
@@ -236,7 +238,11 @@ class NDInstrument implements FsInstrument {
                             togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
                         />
                     </div>
-                    <MouseCursor side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')} ref={this.mouseCursorRef} />
+                    <MouseCursor
+                        ref={this.mouseCursorRef}
+                        side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')}
+                        visible={this.cursorVisible}
+                        />
                 </CdsDisplayUnit>
             </div>,
             document.getElementById('ND_CONTENT'),
@@ -246,7 +252,12 @@ class NDInstrument implements FsInstrument {
         document.getElementById('ND_CONTENT')?.querySelector(':scope > h1')?.remove();
 
         this.topRef.instance.addEventListener('mousemove', (ev) => {
-            this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
+            if (this.oansRef.getOrDefault() && this.oansRef.instance.isPanning) {
+                this.cursorVisible.set(false);
+            } else {
+                this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
+                this.cursorVisible.set(true);
+            }
         });
 
         this.ndContainerRef.instance.addEventListener('contextmenu', (e) => {

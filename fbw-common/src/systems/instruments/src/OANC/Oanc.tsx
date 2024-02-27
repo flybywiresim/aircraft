@@ -189,7 +189,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private isPanningArmed = false;
 
-    private isPanning = false;
+    public isPanning = false;
 
     private lastPanX = 0;
 
