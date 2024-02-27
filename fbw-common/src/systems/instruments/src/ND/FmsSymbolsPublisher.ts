@@ -5,9 +5,9 @@
 import { NdSymbol, NdTraffic, PathVector } from '@flybywiresim/fbw-sdk';
 
 export interface FmsSymbolsData {
-    symbols: NdSymbol[],
-    vectorsActive: PathVector[],
-    vectorsDashed: PathVector[],
-    vectorsTemporary: PathVector[],
-    traffic: NdTraffic[],
+  symbols: NdSymbol[];
+  vectorsActive: PathVector[];
+  vectorsDashed: PathVector[];
+  vectorsTemporary: PathVector[];
+  traffic: NdTraffic[];
 }

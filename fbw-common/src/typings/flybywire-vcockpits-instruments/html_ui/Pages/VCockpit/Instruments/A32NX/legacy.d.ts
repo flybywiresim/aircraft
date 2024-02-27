@@ -1,4 +1,4 @@
-import { Spherical } from "../../../../../../../../../fbw-a32nx/src/systems/fmgc/src/types/A32NX_Util";
+import { Spherical } from '../../../../../../../../../fbw-a32nx/src/systems/fmgc/src/types/A32NX_Util';
 
 declare global {
     interface StateMachineStateTransition {

@@ -7,10 +7,10 @@ import { render } from '@instruments/common/index';
 import { BatDisplay } from '@flybywiresim/bat';
 
 const BatRoot = () => (
-    <svg className="bat-svg" viewBox="0 0 200 100">
-        <BatDisplay batteryNumber={1} x="184" y="45" />
-        <BatDisplay batteryNumber={2} x="184" y="95" />
-    </svg>
+  <svg className="bat-svg" viewBox="0 0 200 100">
+    <BatDisplay batteryNumber={1} x="184" y="45" />
+    <BatDisplay batteryNumber={2} x="184" y="95" />
+  </svg>
 );
 
 render(<BatRoot />);

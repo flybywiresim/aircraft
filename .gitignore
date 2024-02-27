@@ -11,12 +11,12 @@
 !/.vscode/**
 
 !.editorconfig
-!.eslintrc
+!.eslintrc.js
 !.gitattributes
 !.gitignore
 !.npmrc
 !.prettierignore
-!.prettierrc.json
+!.prettierrc
 
 !igniter.config.mjs
 !jsconfig.json

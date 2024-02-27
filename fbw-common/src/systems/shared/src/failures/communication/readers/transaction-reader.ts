@@ -6,24 +6,24 @@ import { CallbackReader, Updatable, Writer } from '..';
  * Requires that the variable is written by a transactional writer.
  */
 export class TransactionReader implements CallbackReader {
-    private valueSimVar: CallbackReader;
+  private valueSimVar: CallbackReader;
 
-    private transactionSimVar: Writer & Updatable;
+  private transactionSimVar: Writer & Updatable;
 
-    constructor(valueSimVar: CallbackReader, transactionSimVar: Writer & Updatable) {
-        this.valueSimVar = valueSimVar;
-        this.transactionSimVar = transactionSimVar;
-    }
+  constructor(valueSimVar: CallbackReader, transactionSimVar: Writer & Updatable) {
+    this.valueSimVar = valueSimVar;
+    this.transactionSimVar = transactionSimVar;
+  }
 
-    register(identifier: number, callback: () => void): void {
-        this.valueSimVar.register(identifier, () => {
-            callback();
-            this.transactionSimVar.write(identifier);
-        });
-    }
+  register(identifier: number, callback: () => void): void {
+    this.valueSimVar.register(identifier, () => {
+      callback();
+      this.transactionSimVar.write(identifier);
+    });
+  }
 
-    update(): void {
-        this.valueSimVar.update();
-        this.transactionSimVar.update();
-    }
+  update(): void {
+    this.valueSimVar.update();
+    this.transactionSimVar.update();
+  }
 }

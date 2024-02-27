@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 export interface RmpDataBusTypes {
-    transponderCode: number,
-    vhf3Powered: boolean,
-    vhf3DataMode: boolean,
+  transponderCode: number;
+  vhf3Powered: boolean;
+  vhf3DataMode: boolean;
 }

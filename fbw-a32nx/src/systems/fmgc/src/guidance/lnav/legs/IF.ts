@@ -13,73 +13,73 @@ import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class IFLeg extends XFLeg {
-    constructor(
-        fix: WayPoint,
-        public readonly metadata: Readonly<LegMetadata>,
-        segment: SegmentType,
-    ) {
-        super(fix);
+  constructor(
+    fix: WayPoint,
+    public readonly metadata: Readonly<LegMetadata>,
+    segment: SegmentType,
+  ) {
+    super(fix);
 
-        this.segment = segment;
-    }
+    this.segment = segment;
+  }
 
-    get predictedPath(): PathVector[] | undefined {
-        return [];
-    }
+  get predictedPath(): PathVector[] | undefined {
+    return [];
+  }
 
-    getPathStartPoint(): Coordinates | undefined {
-        return this.fix.infos.coordinates;
-    }
+  getPathStartPoint(): Coordinates | undefined {
+    return this.fix.infos.coordinates;
+  }
 
-    getPathEndPoint(): Coordinates | undefined {
-        return this.fix.infos.coordinates;
-    }
+  getPathEndPoint(): Coordinates | undefined {
+    return this.fix.infos.coordinates;
+  }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        this.isComputed = true;
-    }
+  recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    this.isComputed = true;
+  }
 
-    /** @inheritdoc */
-    setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
-        if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
-            console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
-        }
-        super.setNeighboringGuidables(inbound, outbound);
+  /** @inheritdoc */
+  setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
+    if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
+      console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
     }
+    super.setNeighboringGuidables(inbound, outbound);
+  }
 
-    get inboundCourse(): Degrees | undefined {
-        return undefined;
-    }
+  get inboundCourse(): Degrees | undefined {
+    return undefined;
+  }
 
-    get outboundCourse(): Degrees | undefined {
-        return undefined;
-    }
+  get outboundCourse(): Degrees | undefined {
+    return undefined;
+  }
 
-    get distance(): NauticalMiles {
-        return 0;
-    }
+  get distance(): NauticalMiles {
+    return 0;
+  }
 
-    getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
-        return undefined;
-    }
+  getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
+    return undefined;
+  }
 
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
-        return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
-    }
+  getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
+    return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
+  }
 
-    getNominalRollAngle(_gs): Degrees | undefined {
-        return undefined;
-    }
+  getNominalRollAngle(_gs): Degrees | undefined {
+    return undefined;
+  }
 
-    getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return undefined;
-    }
+  getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
+    return undefined;
+  }
 
-    isAbeam(_ppos: Coordinates): boolean {
-        return false;
-    }
+  isAbeam(_ppos: Coordinates): boolean {
+    return false;
+  }
 
-    get repr(): string {
-        return `IF AT ${this.fix.ident}`;
-    }
+  get repr(): string {
+    return `IF AT ${this.fix.ident}`;
+  }
 }

@@ -6,18 +6,12 @@ import { A320Overview } from './Overview/A320_251N/A320Overview';
 import { A380Overview } from './Overview/A380_842/A380Overview';
 
 export const OverviewPage = () => {
-    switch (getAirframeType()) {
+  switch (getAirframeType()) {
     case 'A320_251N':
-        return (
-            <A320Overview />
-        );
+      return <A320Overview />;
     case 'A380_842':
-        return (
-            <A380Overview />
-        );
+      return <A380Overview />;
     default:
-        return (
-            <A320Overview />
-        );
-    }
+      return <A320Overview />;
+  }
 };

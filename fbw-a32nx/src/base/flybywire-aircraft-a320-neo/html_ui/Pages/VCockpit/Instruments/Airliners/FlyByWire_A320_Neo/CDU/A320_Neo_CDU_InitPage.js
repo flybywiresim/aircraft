@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
@@ -587,14 +591,14 @@ class CDUInitPage {
                         mcdu.tryUpdateRouteAlternate();
                     }
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                        altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, altFuelEntered? Column.big : Column.small);
+                        altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, altFuelEntered ? Column.big : Column.small);
                         const time = mcdu.getRouteAltFuelTime();
                         if (time) {
                             altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
                             altnCellDivider.updateAttributes(Column.green, Column.small);
                         } else {
                             altnTimeCell.update('----',Column.white);
-                            altnCellDivider.updateAttributes(Column.white, altFuelEntered? Column.big : Column.small);
+                            altnCellDivider.updateAttributes(Column.white, altFuelEntered ? Column.big : Column.small);
                         }
                     }
                 } else {

@@ -15,120 +15,120 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 type ReminderKey = 'Weather' | 'Pinned Charts' | 'Maintenance' | 'Checklists';
 
 const REMINDERS = new Map<ReminderKey, JSX.Element>([
-    ['Weather', <WeatherReminder key="weather" />],
-    ['Pinned Charts', <PinnedChartsReminder key="pinnedCharts" />],
-    ['Maintenance', <MaintenanceReminder key="maintenance" />],
-    ['Checklists', <ChecklistsReminder key="checklists" />],
+  ['Weather', <WeatherReminder key="weather" />],
+  ['Pinned Charts', <PinnedChartsReminder key="pinnedCharts" />],
+  ['Maintenance', <MaintenanceReminder key="maintenance" />],
+  ['Checklists', <ChecklistsReminder key="checklists" />],
 ]);
 
 const TRANSLATIONS = new Map<ReminderKey, string>([
-    ['Weather', 'Dashboard.ImportantInformation.Weather.Title'],
-    ['Pinned Charts', 'Dashboard.ImportantInformation.PinnedCharts.Title'],
-    ['Maintenance', 'Dashboard.ImportantInformation.Maintenance.Title'],
-    ['Checklists', 'Dashboard.ImportantInformation.Checklists.Title'],
+  ['Weather', 'Dashboard.ImportantInformation.Weather.Title'],
+  ['Pinned Charts', 'Dashboard.ImportantInformation.PinnedCharts.Title'],
+  ['Maintenance', 'Dashboard.ImportantInformation.Maintenance.Title'],
+  ['Checklists', 'Dashboard.ImportantInformation.Checklists.Title'],
 ]);
 
 interface ReminderKeyEditCardProps {
-    reminderText: string;
-    index: number;
-    setter: (destIndex: number) => void;
-    keyArrLen: number;
+  reminderText: string;
+  index: number;
+  setter: (destIndex: number) => void;
+  keyArrLen: number;
 }
 
 const ReminderKeyEditCard = ({ reminderText, setter, index, keyArrLen }: ReminderKeyEditCardProps) => (
-    <div className="flex w-full flex-row items-center justify-between rounded-md bg-theme-accent p-4">
-        <h1>{reminderText}</h1>
-        <div className="flex flex-row">
-            <div className="w-10">
-                <ArrowUp
-                    size={25}
-                    onClick={() => {
-                        if (index === 0) {
-                            setter(keyArrLen - 1);
-                        } else {
-                            setter(index - 1);
-                        }
-                    }}
-                />
-            </div>
-            <div className="w-10">
-                <ArrowDown
-                    size={25}
-                    onClick={() => {
-                        if (index === keyArrLen - 1) {
-                            setter(0);
-                        } else {
-                            setter(index + 1);
-                        }
-                    }}
-                />
-            </div>
-        </div>
+  <div className="bg-theme-accent flex w-full flex-row items-center justify-between rounded-md p-4">
+    <h1>{reminderText}</h1>
+    <div className="flex flex-row">
+      <div className="w-10">
+        <ArrowUp
+          size={25}
+          onClick={() => {
+            if (index === 0) {
+              setter(keyArrLen - 1);
+            } else {
+              setter(index - 1);
+            }
+          }}
+        />
+      </div>
+      <div className="w-10">
+        <ArrowDown
+          size={25}
+          onClick={() => {
+            if (index === keyArrLen - 1) {
+              setter(0);
+            } else {
+              setter(index + 1);
+            }
+          }}
+        />
+      </div>
     </div>
+  </div>
 );
 
 export const RemindersWidget = () => {
-    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty(
-        'REMINDER_WIDGET_ORDERED_KEYS',
-        [...REMINDERS.keys()].toString(),
-    );
-    const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
+  const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty(
+    'REMINDER_WIDGET_ORDERED_KEYS',
+    [...REMINDERS.keys()].toString(),
+  );
+  const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
 
-    /**
-     * Let's check for any missing keys in the saved list in case more widgets get added in the future.
-     */
-    useEffect(() => {
-        [...REMINDERS.keys()].forEach((key) => {
-            if (!reminderKeyArr.includes(key)) {
-                setOrderedReminderKeys(`${orderedReminderKeys},${key}`);
-            }
-        });
-    }, []);
+  /**
+   * Let's check for any missing keys in the saved list in case more widgets get added in the future.
+   */
+  useEffect(() => {
+    [...REMINDERS.keys()].forEach((key) => {
+      if (!reminderKeyArr.includes(key)) {
+        setOrderedReminderKeys(`${orderedReminderKeys},${key}`);
+      }
+    });
+  }, []);
 
-    const [reorderMode, setReorderMode] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
 
-    const arrayMove = (element: ReminderKey, toIndex: number) => {
-        reminderKeyArr.splice(reminderKeyArr.indexOf(element), 1);
-        reminderKeyArr.splice(toIndex, 0, element);
+  const arrayMove = (element: ReminderKey, toIndex: number) => {
+    reminderKeyArr.splice(reminderKeyArr.indexOf(element), 1);
+    reminderKeyArr.splice(toIndex, 0, element);
 
-        return reminderKeyArr.toString();
-    };
+    return reminderKeyArr.toString();
+  };
 
-    return (
-        <div className="w-1/2">
-            <div className="flex flex-row items-center justify-between space-x-3">
-                <h1 className="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
-                <TooltipWrapper text={t('Dashboard.ImportantInformation.TT.RearrangeWidgets')}>
-                    <PencilFill
-                        className={`transition duration-100 ${reorderMode && 'text-theme-highlight'}`}
-                        size={25}
-                        onClick={() => setReorderMode((old) => !old)}
-                    />
-                </TooltipWrapper>
-            </div>
-            <div className="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
-                <ScrollableContainer height={51}>
-                    <div className="flex flex-col space-y-4">
-                        {reminderKeyArr.map((key) => REMINDERS.get(key))}
-                    </div>
-                </ScrollableContainer>
-                <div className={`absolute inset-0 z-30 transition duration-100 ${reorderMode ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
-                    <div className="absolute inset-0 bg-theme-body opacity-80" />
-                    <div className="absolute inset-0">
-                        <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
-                            {reminderKeyArr.map((key, index) => (
-                                <ReminderKeyEditCard
-                                    reminderText={t(TRANSLATIONS.get(key)!)}
-                                    keyArrLen={reminderKeyArr.length}
-                                    setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
-                                    index={index}
-                                    key={key}
-                                />
-                            ))}
-                        </ScrollableContainer>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="w-1/2">
+      <div className="flex flex-row items-center justify-between space-x-3">
+        <h1 className="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
+        <TooltipWrapper text={t('Dashboard.ImportantInformation.TT.RearrangeWidgets')}>
+          <PencilFill
+            className={`transition duration-100 ${reorderMode && 'text-theme-highlight'}`}
+            size={25}
+            onClick={() => setReorderMode((old) => !old)}
+          />
+        </TooltipWrapper>
+      </div>
+      <div className="h-content-section-reduced border-theme-accent relative mt-4 w-full rounded-lg border-2 p-6">
+        <ScrollableContainer height={51}>
+          <div className="flex flex-col space-y-4">{reminderKeyArr.map((key) => REMINDERS.get(key))}</div>
+        </ScrollableContainer>
+        <div
+          className={`absolute inset-0 z-30 transition duration-100 ${reorderMode ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        >
+          <div className="bg-theme-body absolute inset-0 opacity-80" />
+          <div className="absolute inset-0">
+            <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
+              {reminderKeyArr.map((key, index) => (
+                <ReminderKeyEditCard
+                  reminderText={t(TRANSLATIONS.get(key)!)}
+                  keyArrLen={reminderKeyArr.length}
+                  setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
+                  index={index}
+                  key={key}
+                />
+              ))}
+            </ScrollableContainer>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };

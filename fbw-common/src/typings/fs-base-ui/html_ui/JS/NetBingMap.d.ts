@@ -1,28 +1,28 @@
 declare global {
     interface Document {
-        createElement(tagName: "bing-map"): BingMapElement;
+        createElement(tagName: 'bing-map'): BingMapElement;
     }
 
     class BingMapsConfig {
     }
 
     enum EBingMode {
-        CURSOR = "Cursor",
-        PLANE = "Plane",
-        VFR = "Vfr",
-        HORIZON = "Horizon"
+        CURSOR = 'Cursor',
+        PLANE = 'Plane',
+        VFR = 'Vfr',
+        HORIZON = 'Horizon'
     }
 
     enum EBingReference {
-        SEA = "Sea",
-        PLANE = "Plane"
+        SEA = 'Sea',
+        PLANE = 'Plane'
     }
 
     enum EWeatherRadar {
-        OFF = "Off",
-        TOPVIEW = "Topview",
-        HORIZONTAL = "Horizontal",
-        VERTICAL = "Vertical"
+        OFF = 'Off',
+        TOPVIEW = 'Topview',
+        HORIZONTAL = 'Horizontal',
+        VERTICAL = 'Vertical'
     }
 
     class BingMapsBinder {}
@@ -31,11 +31,17 @@ declare global {
 
     class BingMapElement extends HTMLElement {
         m_configs: BingMapConfig[];
+
         m_configId: number;
+
         m_params: Record<string, unknown>;
+
         onListenerRegistered: () => void;
+
         onListenerBinded: (binder: { friendlyName: any; is3D: boolean }, uid: any) => void;
+
         updateMapImage: (uid: any, img: string) => void;
+
         OnDestroy: () => void;
         connectedCallback(): void;
         disconnectedCallback(): void;
@@ -68,6 +74,7 @@ declare global {
 
     class LatLongAlt {
         lat: number;
+
         long: number;
         constructor(lat: number, long: number);
     }

@@ -10,37 +10,37 @@ import { A380Fuel } from './A380_842/A380Fuel';
 import { useAppSelector } from '../../../Store/store';
 
 export const Fuel = () => {
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_059);
-    const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
-    const simbriefPlanRamp = useAppSelector((state) => state.simbrief.data.fuels.planRamp);
+  const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_059);
+  const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
+  const simbriefPlanRamp = useAppSelector((state) => state.simbrief.data.fuels.planRamp);
 
-    const simbriefDataLoaded = isSimbriefDataLoaded();
+  const simbriefDataLoaded = isSimbriefDataLoaded();
 
-    const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
-    const [convertUnit] = useState(Units.usingMetric ? 1 : (1 / 0.4535934));
+  const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
+  const [convertUnit] = useState(Units.usingMetric ? 1 : 1 / 0.4535934);
 
-    switch (getAirframeType()) {
+  switch (getAirframeType()) {
     case 'A380_842':
-        return (
-            <A380Fuel
-                simbriefDataLoaded={simbriefDataLoaded}
-                simbriefUnits={simbriefUnits}
-                simbriefPlanRamp={simbriefPlanRamp}
-                massUnitForDisplay={massUnitForDisplay}
-                isOnGround={isOnGround}
-            />
-        );
+      return (
+        <A380Fuel
+          simbriefDataLoaded={simbriefDataLoaded}
+          simbriefUnits={simbriefUnits}
+          simbriefPlanRamp={simbriefPlanRamp}
+          massUnitForDisplay={massUnitForDisplay}
+          isOnGround={isOnGround}
+        />
+      );
     case 'A320_251N':
     default:
-        return (
-            <A320Fuel
-                simbriefDataLoaded={simbriefDataLoaded}
-                simbriefUnits={simbriefUnits}
-                simbriefPlanRamp={simbriefPlanRamp}
-                massUnitForDisplay={massUnitForDisplay}
-                convertUnit={convertUnit}
-                isOnGround={isOnGround}
-            />
-        );
-    }
+      return (
+        <A320Fuel
+          simbriefDataLoaded={simbriefDataLoaded}
+          simbriefUnits={simbriefUnits}
+          simbriefPlanRamp={simbriefPlanRamp}
+          massUnitForDisplay={massUnitForDisplay}
+          convertUnit={convertUnit}
+          isOnGround={isOnGround}
+        />
+      );
+  }
 };

@@ -5,82 +5,80 @@ import { FlightArea } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanManager } from '@fmgc/index';
 
 const rnpDefaults: Record<FlightArea, number> = {
-    [FlightArea.Takeoff]: 1,
-    [FlightArea.Terminal]: 1,
-    [FlightArea.Enroute]: 2,
-    [FlightArea.Oceanic]: 2,
-    [FlightArea.VorApproach]: 0.5,
-    [FlightArea.GpsApproach]: 0.3,
-    [FlightArea.PrecisionApproach]: 0.5,
-    [FlightArea.NonPrecisionApproach]: 0.5,
+  [FlightArea.Takeoff]: 1,
+  [FlightArea.Terminal]: 1,
+  [FlightArea.Enroute]: 2,
+  [FlightArea.Oceanic]: 2,
+  [FlightArea.VorApproach]: 0.5,
+  [FlightArea.GpsApproach]: 0.3,
+  [FlightArea.PrecisionApproach]: 0.5,
+  [FlightArea.NonPrecisionApproach]: 0.5,
 };
 
 // FIXME RNP-related scratchpad messages
 
 export class RequiredPerformance {
-    activeRnp: number | undefined;
+  activeRnp: number | undefined;
 
-    requestLDev = false;
+  requestLDev = false;
 
-    manualRnp = false;
+  manualRnp = false;
 
-    constructor(private flightPlanManager: FlightPlanManager) {}
+  constructor(private flightPlanManager: FlightPlanManager) {}
 
-    update(_deltaTime: number): void {
-        this.updateAutoRnp();
+  update(_deltaTime: number): void {
+    this.updateAutoRnp();
 
-        this.updateLDev();
+    this.updateLDev();
+  }
+
+  setPilotRnp(rnp): void {
+    this.manualRnp = true;
+    this.setActiveRnp(rnp);
+  }
+
+  clearPilotRnp(): void {
+    this.manualRnp = false;
+    this.updateAutoRnp();
+  }
+
+  private updateAutoRnp(): void {
+    if (this.manualRnp) {
+      return;
     }
 
-    setPilotRnp(rnp): void {
-        this.manualRnp = true;
-        this.setActiveRnp(rnp);
-    }
-
-    clearPilotRnp(): void {
-        this.manualRnp = false;
-        this.updateAutoRnp();
-    }
-
-    private updateAutoRnp(): void {
-        if (this.manualRnp) {
-            return;
+    const plan = this.flightPlanManager.activeFlightPlan;
+    if (plan && plan.activeWaypoint) {
+      const legRnp = plan.activeWaypoint.additionalData.rnp;
+      if (legRnp !== undefined) {
+        if (legRnp !== this.activeRnp) {
+          this.setActiveRnp(legRnp);
         }
-
-        const plan = this.flightPlanManager.activeFlightPlan;
-        if (plan && plan.activeWaypoint) {
-            const legRnp = plan.activeWaypoint.additionalData.rnp;
-            if (legRnp !== undefined) {
-                if (legRnp !== this.activeRnp) {
-                    this.setActiveRnp(legRnp);
-                }
-                return;
-            }
-        }
-
-        const area = this.flightPlanManager.activeArea;
-        const rnp = rnpDefaults[area];
-
-        if (rnp !== this.activeRnp) {
-            this.setActiveRnp(rnp);
-        }
+        return;
+      }
     }
 
-    private setActiveRnp(rnp: number): void {
-        this.activeRnp = rnp;
-        SimVar.SetSimVarValue('L:A32NX_FMGC_L_RNP', 'number', rnp ?? 0);
-        SimVar.SetSimVarValue('L:A32NX_FMGC_R_RNP', 'number', rnp ?? 0);
-    }
+    const area = this.flightPlanManager.activeArea;
+    const rnp = rnpDefaults[area];
 
-    private updateLDev(): void {
-        const area = this.flightPlanManager.activeArea;
-        const ldev = area !== FlightArea.Enroute
-            && area !== FlightArea.Oceanic
-            && this.activeRnp < 0.305;
-        if (ldev !== this.requestLDev) {
-            this.requestLDev = ldev;
-            SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);
-            SimVar.SetSimVarValue('L:A32NX_FMGC_R_LDEV_REQUEST', 'bool', this.requestLDev);
-        }
+    if (rnp !== this.activeRnp) {
+      this.setActiveRnp(rnp);
     }
+  }
+
+  private setActiveRnp(rnp: number): void {
+    this.activeRnp = rnp;
+    SimVar.SetSimVarValue('L:A32NX_FMGC_L_RNP', 'number', rnp ?? 0);
+    SimVar.SetSimVarValue('L:A32NX_FMGC_R_RNP', 'number', rnp ?? 0);
+  }
+
+  private updateLDev(): void {
+    const area = this.flightPlanManager.activeArea;
+    const ldev = area !== FlightArea.Enroute && area !== FlightArea.Oceanic && this.activeRnp < 0.305;
+    if (ldev !== this.requestLDev) {
+      this.requestLDev = ldev;
+      SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);
+      SimVar.SetSimVarValue('L:A32NX_FMGC_R_LDEV_REQUEST', 'bool', this.requestLDev);
+    }
+  }
 }

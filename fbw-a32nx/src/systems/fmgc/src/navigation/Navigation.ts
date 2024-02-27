@@ -13,283 +13,300 @@ import { Coordinates } from 'msfs-geo';
 import { VorType } from '@microsoft/msfs-sdk';
 
 export enum SelectedNavaidType {
-    None,
-    Dme,
-    Vor,
-    VorDme,
-    VorTac,
-    Tacan,
-    Ils,
-    Gls,
-    Mls,
+  None,
+  Dme,
+  Vor,
+  VorDme,
+  VorTac,
+  Tacan,
+  Ils,
+  Gls,
+  Mls,
 }
 
 export enum SelectedNavaidMode {
-    Auto,
-    Manual,
-    Rmp,
+  Auto,
+  Manual,
+  Rmp,
 }
 
 export interface SelectedNavaid {
-    type: SelectedNavaidType,
-    mode: SelectedNavaidMode,
-    ident: string | null,
-    frequency: number | null,
-    facility: RawVor | null,
+  type: SelectedNavaidType;
+  mode: SelectedNavaidMode;
+  ident: string | null;
+  frequency: number | null;
+  facility: RawVor | null;
 }
 
 export class Navigation implements NavigationProvider {
-    private static readonly adiruOrder = [1, 3, 2];
+  private static readonly adiruOrder = [1, 3, 2];
 
-    private static readonly arincWordCache = Arinc429Register.empty();
+  private static readonly arincWordCache = Arinc429Register.empty();
 
-    requiredPerformance: RequiredPerformance;
+  requiredPerformance: RequiredPerformance;
 
-    currentPerformance: number | undefined;
+  currentPerformance: number | undefined;
 
-    accuracyHigh: boolean = false;
+  accuracyHigh: boolean = false;
 
-    ppos: Coordinates = { lat: 0, long: 0 };
+  ppos: Coordinates = { lat: 0, long: 0 };
 
-    groundSpeed: Knots = 0;
+  groundSpeed: Knots = 0;
 
-    private radioHeight: number | null = null;
+  private radioHeight: number | null = null;
 
-    private static readonly radioAltimeterVars = Array.from({ length: 2 }, (_, i) => `L:A32NX_RA_${i + 1}_RADIO_ALTITUDE`);
+  private static readonly radioAltimeterVars = Array.from(
+    { length: 2 },
+    (_, i) => `L:A32NX_RA_${i + 1}_RADIO_ALTITUDE`,
+  );
 
-    private baroAltitude: number | null = null;
+  private baroAltitude: number | null = null;
 
-    private static readonly baroAltitudeVars = Array.from({ length: 3 }, (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_1`);
+  private static readonly baroAltitudeVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_1`,
+  );
 
-    private pressureAltitude: number | null = null;
+  private pressureAltitude: number | null = null;
 
-    private static readonly pressureAltitudeVars = Array.from({ length: 3 }, (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`);
+  private static readonly pressureAltitudeVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`,
+  );
 
-    private readonly navaidSelectionManager: NavaidSelectionManager;
+  private readonly navaidSelectionManager: NavaidSelectionManager;
 
-    private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
+  private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
 
-    private readonly navaidTuner: NavaidTuner;
+  private readonly navaidTuner: NavaidTuner;
 
-    private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 4 }, () => ({
-        type: SelectedNavaidType.None,
-        mode: SelectedNavaidMode.Auto,
-        ident: '',
-        frequency: 0,
-        facility: null,
-    }));
+  private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 4 }, () => ({
+    type: SelectedNavaidType.None,
+    mode: SelectedNavaidMode.Auto,
+    ident: '',
+    frequency: 0,
+    facility: null,
+  }));
 
-    constructor(private flightPlanManager: FlightPlanManager, private readonly facLoader: FacilityLoader) {
-        this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
-        this.navaidSelectionManager = new NavaidSelectionManager(this, this.flightPlanManager);
-        this.landingSystemSelectionManager = new LandingSystemSelectionManager(this, this.flightPlanManager, this.facLoader);
-        this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
+  constructor(
+    private flightPlanManager: FlightPlanManager,
+    private readonly facLoader: FacilityLoader,
+  ) {
+    this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
+    this.navaidSelectionManager = new NavaidSelectionManager(this, this.flightPlanManager);
+    this.landingSystemSelectionManager = new LandingSystemSelectionManager(
+      this,
+      this.flightPlanManager,
+      this.facLoader,
+    );
+    this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
+  }
+
+  init(): void {
+    this.navaidTuner.init();
+  }
+
+  update(deltaTime: number): void {
+    this.requiredPerformance.update(deltaTime);
+
+    this.updateCurrentPerformance();
+
+    this.updatePosition();
+    this.updateRadioHeight();
+    this.updateBaroAltitude();
+    this.updatePressureAltitude();
+
+    NearbyFacilities.getInstance().update(deltaTime);
+
+    this.navaidSelectionManager.update(deltaTime);
+    this.landingSystemSelectionManager.update(deltaTime);
+
+    this.navaidTuner.update(deltaTime);
+  }
+
+  /** Reset all state e.g. when the nav database is switched */
+  resetState(): void {
+    this.navaidSelectionManager.resetState();
+    this.landingSystemSelectionManager.resetState();
+    this.navaidTuner.resetState();
+
+    // FIXME reset FMS position
+  }
+
+  private getAdiruValue(simVars: string[]): number | null {
+    for (const adiru of Navigation.adiruOrder) {
+      const simVar = simVars[adiru - 1];
+      Navigation.arincWordCache.setFromSimVar(simVar);
+      if (Navigation.arincWordCache.isNormalOperation()) {
+        return Navigation.arincWordCache.value;
+      }
     }
+    return null;
+  }
 
-    init(): void {
-        this.navaidTuner.init();
+  private updateCurrentPerformance(): void {
+    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+
+    // FIXME fake it until we make it :D
+    const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
+    // basic IIR filter
+    this.currentPerformance =
+      this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;
+
+    const accuracyHigh = this.currentPerformance <= this.requiredPerformance.activeRnp;
+    if (accuracyHigh !== this.accuracyHigh) {
+      this.accuracyHigh = accuracyHigh;
+      SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
+      SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
     }
+  }
 
-    update(deltaTime: number): void {
-        this.requiredPerformance.update(deltaTime);
-
-        this.updateCurrentPerformance();
-
-        this.updatePosition();
-        this.updateRadioHeight();
-        this.updateBaroAltitude();
-        this.updatePressureAltitude();
-
-        NearbyFacilities.getInstance().update(deltaTime);
-
-        this.navaidSelectionManager.update(deltaTime);
-        this.landingSystemSelectionManager.update(deltaTime);
-
-        this.navaidTuner.update(deltaTime);
+  private updateRadioHeight(): void {
+    for (const simVar of Navigation.radioAltimeterVars) {
+      Navigation.arincWordCache.setFromSimVar(simVar);
+      if (Navigation.arincWordCache.isNormalOperation()) {
+        this.radioHeight = Navigation.arincWordCache.value;
+        return;
+      }
     }
+    this.radioHeight = null;
+  }
 
-    /** Reset all state e.g. when the nav database is switched */
-    resetState(): void {
-        this.navaidSelectionManager.resetState();
-        this.landingSystemSelectionManager.resetState();
-        this.navaidTuner.resetState();
+  private updateBaroAltitude(): void {
+    this.baroAltitude = this.getAdiruValue(Navigation.baroAltitudeVars);
+  }
 
-        // FIXME reset FMS position
-    }
+  private updatePressureAltitude(): void {
+    this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
+  }
 
-    private getAdiruValue(simVars: string[]): number | null {
-        for (const adiru of Navigation.adiruOrder) {
-            const simVar = simVars[adiru - 1];
-            Navigation.arincWordCache.setFromSimVar(simVar);
-            if (Navigation.arincWordCache.isNormalOperation()) {
-                return Navigation.arincWordCache.value;
-            }
+  private updatePosition(): void {
+    this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+    this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+
+    // pass to submodules
+    NearbyFacilities.getInstance().setPpos(this.ppos);
+  }
+
+  public getBaroCorrectedAltitude(): number | null {
+    return this.baroAltitude;
+  }
+
+  public getEpe(): number {
+    return this.currentPerformance ?? Infinity;
+  }
+
+  public getPpos(): Coordinates | null {
+    // TODO return null when fms pos invalid
+    return this.ppos;
+  }
+
+  public getPressureAltitude(): number | null {
+    return this.pressureAltitude;
+  }
+
+  public getRadioHeight(): number | null {
+    return this.radioHeight;
+  }
+
+  public getNavaidTuner(): NavaidTuner {
+    return this.navaidTuner;
+  }
+
+  private resetSelectedNavaid(i: number): void {
+    const selected = this.selectedNavaids[i];
+    selected.type = SelectedNavaidType.None;
+    selected.mode = SelectedNavaidMode.Auto;
+    selected.ident = '';
+    selected.frequency = 0;
+    selected.facility = null;
+  }
+
+  public getSelectedNavaids(cdu: 1 | 2 = 1): SelectedNavaid[] {
+    if (this.navaidTuner.isFmTuningActive()) {
+      const vorStatus = this.navaidTuner.getVorRadioTuningStatus(cdu);
+      if (vorStatus.frequency !== null) {
+        const selected = this.selectedNavaids[0];
+        selected.type = this.getSelectedNavaidType(vorStatus.facility);
+        selected.mode = vorStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
+        selected.ident = vorStatus.ident;
+        selected.frequency = vorStatus.frequency;
+        selected.facility = vorStatus.facility ?? null;
+      } else {
+        this.resetSelectedNavaid(0);
+      }
+      const dmePair = this.navaidSelectionManager.dmePair;
+      if (dmePair !== null) {
+        for (const [i, dme] of dmePair.entries()) {
+          const selected = this.selectedNavaids[i + 1];
+          selected.type = this.getSelectedNavaidType(dme);
+          selected.mode = SelectedNavaidMode.Auto;
+          selected.ident = WayPoint.formatIdentFromIcao(dme.icao);
+          selected.frequency = dme.freqMHz;
+          selected.facility = dme;
         }
-        return null;
-    }
-
-    private updateCurrentPerformance(): void {
-        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
-
-        // FIXME fake it until we make it :D
-        const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
-        // basic IIR filter
-        this.currentPerformance = this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;
-
-        const accuracyHigh = this.currentPerformance <= this.requiredPerformance.activeRnp;
-        if (accuracyHigh !== this.accuracyHigh) {
-            this.accuracyHigh = accuracyHigh;
-            SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
-            SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
-        }
-    }
-
-    private updateRadioHeight(): void {
-        for (const simVar of Navigation.radioAltimeterVars) {
-            Navigation.arincWordCache.setFromSimVar(simVar);
-            if (Navigation.arincWordCache.isNormalOperation()) {
-                this.radioHeight = Navigation.arincWordCache.value;
-                return;
-            }
-        }
-        this.radioHeight = null;
-    }
-
-    private updateBaroAltitude(): void {
-        this.baroAltitude = this.getAdiruValue(Navigation.baroAltitudeVars);
-    }
-
-    private updatePressureAltitude(): void {
-        this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
-    }
-
-    private updatePosition(): void {
-        this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-        this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-        this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
-
-        // pass to submodules
-        NearbyFacilities.getInstance().setPpos(this.ppos);
-    }
-
-    public getBaroCorrectedAltitude(): number | null {
-        return this.baroAltitude;
-    }
-
-    public getEpe(): number {
-        return this.currentPerformance ?? Infinity;
-    }
-
-    public getPpos(): Coordinates | null {
-        // TODO return null when fms pos invalid
-        return this.ppos;
-    }
-
-    public getPressureAltitude(): number | null {
-        return this.pressureAltitude;
-    }
-
-    public getRadioHeight(): number | null {
-        return this.radioHeight;
-    }
-
-    public getNavaidTuner(): NavaidTuner {
-        return this.navaidTuner;
-    }
-
-    private resetSelectedNavaid(i: number): void {
-        const selected = this.selectedNavaids[i];
-        selected.type = SelectedNavaidType.None;
+      } else if (this.navaidSelectionManager.displayVorReason === VorSelectionReason.Navigation) {
+        const navaid = this.navaidSelectionManager.displayVor;
+        const selected = this.selectedNavaids[1];
+        selected.type = this.getSelectedNavaidType(navaid);
         selected.mode = SelectedNavaidMode.Auto;
-        selected.ident = '';
-        selected.frequency = 0;
-        selected.facility = null;
+        selected.ident = WayPoint.formatIdentFromIcao(navaid.icao);
+        selected.frequency = navaid.freqMHz;
+        selected.facility = navaid;
+        this.resetSelectedNavaid(2);
+      } else {
+        this.resetSelectedNavaid(1);
+        this.resetSelectedNavaid(2);
+      }
+      const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
+      if (mmrStatus.frequency !== null) {
+        const selected = this.selectedNavaids[3];
+        selected.type = this.getSelectedNavaidType(mmrStatus.facility);
+        selected.mode = mmrStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
+        selected.ident = mmrStatus.ident;
+        selected.frequency = mmrStatus.frequency;
+        selected.facility = mmrStatus.facility ?? null;
+      } else {
+        this.resetSelectedNavaid(3);
+      }
+    } else {
+      // RMP
+      for (let i = 0; i < 4; i++) {
+        this.resetSelectedNavaid(i);
+        // No DME pair with RMP active
+        if (i === 1 || i === 2) {
+          continue;
+        }
+        const selected = this.selectedNavaids[i];
+        selected.type = i === 3 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
+        selected.mode = SelectedNavaidMode.Rmp;
+        selected.frequency = SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${i === 0 ? cdu : cdu + 2}`, 'mhz');
+      }
     }
 
-    public getSelectedNavaids(cdu: 1 | 2 = 1): SelectedNavaid[] {
-        if (this.navaidTuner.isFmTuningActive()) {
-            const vorStatus = this.navaidTuner.getVorRadioTuningStatus(cdu);
-            if (vorStatus.frequency !== null) {
-                const selected = this.selectedNavaids[0];
-                selected.type = this.getSelectedNavaidType(vorStatus.facility);
-                selected.mode = vorStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
-                selected.ident = vorStatus.ident;
-                selected.frequency = vorStatus.frequency;
-                selected.facility = vorStatus.facility ?? null;
-            } else {
-                this.resetSelectedNavaid(0);
-            }
-            const dmePair = this.navaidSelectionManager.dmePair;
-            if (dmePair !== null) {
-                for (const [i, dme] of dmePair.entries()) {
-                    const selected = this.selectedNavaids[i + 1];
-                    selected.type = this.getSelectedNavaidType(dme);
-                    selected.mode = SelectedNavaidMode.Auto;
-                    selected.ident = WayPoint.formatIdentFromIcao(dme.icao);
-                    selected.frequency = dme.freqMHz;
-                    selected.facility = dme;
-                }
-            } else if (this.navaidSelectionManager.displayVorReason === VorSelectionReason.Navigation) {
-                const navaid = this.navaidSelectionManager.displayVor;
-                const selected = this.selectedNavaids[1];
-                selected.type = this.getSelectedNavaidType(navaid);
-                selected.mode = SelectedNavaidMode.Auto;
-                selected.ident = WayPoint.formatIdentFromIcao(navaid.icao);
-                selected.frequency = navaid.freqMHz;
-                selected.facility = navaid;
-                this.resetSelectedNavaid(2);
-            } else {
-                this.resetSelectedNavaid(1);
-                this.resetSelectedNavaid(2);
-            }
-            const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
-            if (mmrStatus.frequency !== null) {
-                const selected = this.selectedNavaids[3];
-                selected.type = this.getSelectedNavaidType(mmrStatus.facility);
-                selected.mode = mmrStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
-                selected.ident = mmrStatus.ident;
-                selected.frequency = mmrStatus.frequency;
-                selected.facility = mmrStatus.facility ?? null;
-            } else {
-                this.resetSelectedNavaid(3);
-            }
-        } else {
-            // RMP
-            for (let i = 0; i < 4; i++) {
-                this.resetSelectedNavaid(i);
-                // No DME pair with RMP active
-                if (i === 1 || i === 2) {
-                    continue;
-                }
-                const selected = this.selectedNavaids[i];
-                selected.type = i === 3 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
-                selected.mode = SelectedNavaidMode.Rmp;
-                selected.frequency = SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${i === 0 ? cdu : cdu + 2}`, 'mhz');
-            }
-        }
+    return this.selectedNavaids;
+  }
 
-        return this.selectedNavaids;
+  private getSelectedNavaidType(facility?: RawVor): SelectedNavaidType {
+    if (!facility) {
+      return SelectedNavaidType.None;
     }
-
-    private getSelectedNavaidType(facility?: RawVor): SelectedNavaidType {
-        if (!facility) {
-            return SelectedNavaidType.None;
-        }
-        switch (facility.type) {
-        case VorType.DME:
-            return SelectedNavaidType.Dme;
-        case VorType.VOR:
-            return SelectedNavaidType.Vor;
-        case VorType.VORDME:
-            return SelectedNavaidType.VorDme;
-        case VorType.VORTAC:
-            return SelectedNavaidType.VorTac;
-        case VorType.TACAN:
-            return SelectedNavaidType.Tacan;
-        case VorType.ILS:
-            return SelectedNavaidType.Ils;
-        default:
-            return SelectedNavaidType.None;
-        }
+    switch (facility.type) {
+      case VorType.DME:
+        return SelectedNavaidType.Dme;
+      case VorType.VOR:
+        return SelectedNavaidType.Vor;
+      case VorType.VORDME:
+        return SelectedNavaidType.VorDme;
+      case VorType.VORTAC:
+        return SelectedNavaidType.VorTac;
+      case VorType.TACAN:
+        return SelectedNavaidType.Tacan;
+      case VorType.ILS:
+        return SelectedNavaidType.Ils;
+      default:
+        return SelectedNavaidType.None;
     }
+  }
 }

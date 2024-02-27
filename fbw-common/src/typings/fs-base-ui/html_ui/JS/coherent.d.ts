@@ -71,7 +71,7 @@ declare global {
 
         const events: {
             [key: string]: { code: () => void; context: any };
-        }
+        };
         /**
          * Add a handler for an event.
          * @param name The event name.

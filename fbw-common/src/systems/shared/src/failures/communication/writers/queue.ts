@@ -1,15 +1,15 @@
 export class Queue<T> {
-    private store: T[] = [];
+  private store: T[] = [];
 
-    enqueue(val: T) {
-        this.store.push(val);
-    }
+  enqueue(val: T) {
+    this.store.push(val);
+  }
 
-    dequeue(): T | undefined {
-        return this.store.shift();
-    }
+  dequeue(): T | undefined {
+    return this.store.shift();
+  }
 
-    size(): number {
-        return this.store.length;
-    }
+  size(): number {
+    return this.store.length;
+  }
 }

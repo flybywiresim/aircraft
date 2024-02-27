@@ -1,21 +1,20 @@
-/* global jest */
 let values;
 
 global.beforeEach(() => {
-    values = {};
+  values = {};
 });
 
 global.SimVar = {};
 global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
-    if (values.hasOwnProperty(name)) {
-        return values[name];
-    } else {
-        return 0;
-    }
+  if (Object.prototype.hasOwnProperty.call(values, name)) {
+    return values[name];
+  }
+  return 0;
 });
-global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
-    return new Promise((resolve, _) => {
-        values[name] = value;
-        resolve();
-    });
-});
+global.SimVar.SetSimVarValue = jest.fn(
+  (name, _, value, __) =>
+    new Promise((resolve, _) => {
+      values[name] = value;
+      resolve();
+    }),
+);

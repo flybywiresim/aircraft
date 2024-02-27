@@ -1,6 +1,6 @@
 declare global {
     interface Document {
-        createElement(tagName: "wasm-sim-canvas"): WasmSimCanvas;
+        createElement(tagName: 'wasm-sim-canvas'): WasmSimCanvas;
     }
 
     class WasmSimCanvas extends HTMLElement {

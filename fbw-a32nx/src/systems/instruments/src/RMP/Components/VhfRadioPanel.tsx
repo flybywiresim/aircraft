@@ -8,15 +8,15 @@ import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
 interface Props {
-    /**
-     * The RMP side (e.g. 'L' or 'R').
-     */
-    side: string,
+  /**
+   * The RMP side (e.g. 'L' or 'R').
+   */
+  side: string;
 
-    /**
-     * The VHF transceiver mode (VHF 1, 2, or 3).
-     */
-    vhf: number,
+  /**
+   * The VHF transceiver mode (VHF 1, 2, or 3).
+   */
+  vhf: number;
 }
 
 /**
@@ -24,9 +24,9 @@ interface Props {
  * @param transceiver The VHF transceiver to use (VHF 1, 2, or 3).
  */
 const useActiveVhfFrequency = (transceiver: number) => {
-    const variableReadName = `COM ACTIVE FREQUENCY:${transceiver}`;
-    const variableWriteName = `K:COM${transceiver === 1 ? '' : transceiver}_RADIO_SET_HZ`;
-    return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
+  const variableReadName = `COM ACTIVE FREQUENCY:${transceiver}`;
+  const variableWriteName = `K:COM${transceiver === 1 ? '' : transceiver}_RADIO_SET_HZ`;
+  return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
 };
 
 /**
@@ -36,21 +36,18 @@ const useActiveVhfFrequency = (transceiver: number) => {
  * @param transceiver The VHF transceiver to use (VHF 1, 2, or 3).
  */
 const useStandbyVhfFrequency = (side: string, transceiver: number) => {
-    let variableReadName = `COM STANDBY FREQUENCY:${transceiver}`;
-    let variableWriteName = `K:COM${transceiver === 1 ? '' : transceiver}_STBY_RADIO_SET_HZ`;
+  let variableReadName = `COM STANDBY FREQUENCY:${transceiver}`;
+  let variableWriteName = `K:COM${transceiver === 1 ? '' : transceiver}_STBY_RADIO_SET_HZ`;
 
-    // Use custom SimVars for abnormal standby frequency.
-    // Allows true-to-life independent standby frequencies per RMP.
-    // Be sure to update this if if we ever add a third "C"-side RMP.
-    if (
-        (side === 'L' && transceiver !== 1)
-        || (side === 'R' && transceiver !== 2)
-    ) {
-        variableReadName = `L:A32NX_RMP_${side}_VHF${transceiver}_STANDBY_FREQUENCY`;
-        variableWriteName = variableReadName;
-    }
+  // Use custom SimVars for abnormal standby frequency.
+  // Allows true-to-life independent standby frequencies per RMP.
+  // Be sure to update this if if we ever add a third "C"-side RMP.
+  if ((side === 'L' && transceiver !== 1) || (side === 'R' && transceiver !== 2)) {
+    variableReadName = `L:A32NX_RMP_${side}_VHF${transceiver}_STANDBY_FREQUENCY`;
+    variableWriteName = variableReadName;
+  }
 
-    return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
+  return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
 };
 
 /**
@@ -59,25 +56,31 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
  * Renders active frequency RadioPanelDisplay and appropriate StandbyFrequency sub-components.
  */
 export const VhfRadioPanel = (props: Props) => {
-    const [active, setActive] = useActiveVhfFrequency(props.vhf);
-    const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
-    const [, setValueOppositePanelStandby] = props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
+  const [active, setActive] = useActiveVhfFrequency(props.vhf);
+  const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
+  const [, setValueOppositePanelStandby] =
+    props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
 
-    // Handle Transfer Button Pressed.
-    useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
-        // Force the standby opposite side otherwise we would lose the frequency/data format
-        // Otherwise it would become frequency/frequency
-        if (props.vhf === 3) {
-            setValueOppositePanelStandby(active);
-        }
-        setActive(standby);
-        setStandby(active);
-    });
+  // Handle Transfer Button Pressed.
+  useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
+    // Force the standby opposite side otherwise we would lose the frequency/data format
+    // Otherwise it would become frequency/frequency
+    if (props.vhf === 3) {
+      setValueOppositePanelStandby(active);
+    }
+    setActive(standby);
+    setStandby(active);
+  });
 
-    return (
-        <span>
-            <RadioPanelDisplay value={active} />
-            <StandbyFrequency side={props.side} value={standby} setValue={setStandby} transceiver={TransceiverType.RADIO_VHF} />
-        </span>
-    );
+  return (
+    <span>
+      <RadioPanelDisplay value={active} />
+      <StandbyFrequency
+        side={props.side}
+        value={standby}
+        setValue={setStandby}
+        transceiver={TransceiverType.RADIO_VHF}
+      />
+    </span>
+  );
 };

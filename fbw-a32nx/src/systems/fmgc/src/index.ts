@@ -17,30 +17,30 @@ import { RawDataMapper } from './flightplanning/RawDataMapper';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
 
 function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
-    initComponents(baseInstrument, flightPlanManager);
+  initComponents(baseInstrument, flightPlanManager);
 }
 
 function updateFmgcLoop(deltaTime: number): void {
-    updateComponents(deltaTime);
+  updateComponents(deltaTime);
 }
 
 export {
-    getFlightPhaseManager,
-    FlightPlanManager,
-    ManagedFlightPlan,
-    FlightPlanAsoboSync,
-    GuidanceManager,
-    GuidanceController,
-    initFmgcLoop,
-    updateFmgcLoop,
-    recallMessageById,
-    EfisSymbols,
-    DescentPathBuilder,
-    WaypointBuilder,
-    RawDataMapper,
-    ApproachUtils,
-    Navigation,
-    SelectedNavaidMode,
-    SelectedNavaidType,
-    a320EfisRangeSettings,
+  getFlightPhaseManager,
+  FlightPlanManager,
+  ManagedFlightPlan,
+  FlightPlanAsoboSync,
+  GuidanceManager,
+  GuidanceController,
+  initFmgcLoop,
+  updateFmgcLoop,
+  recallMessageById,
+  EfisSymbols,
+  DescentPathBuilder,
+  WaypointBuilder,
+  RawDataMapper,
+  ApproachUtils,
+  Navigation,
+  SelectedNavaidMode,
+  SelectedNavaidType,
+  a320EfisRangeSettings,
 };

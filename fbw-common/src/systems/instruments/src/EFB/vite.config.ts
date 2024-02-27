@@ -14,40 +14,37 @@ dotenv.config({ path: '../../../../../../.env' });
 const envVarsToReplace = ['CLIENT_ID', 'CLIENT_SECRET', 'SENTRY_DSN'];
 
 export default defineConfig({
-    css: {
-        postcss: {
-            plugins: [
-                tailwindcss({ config: 'tailwind.config.js' }),
-                autoprefixer(),
-            ],
-        },
+  css: {
+    postcss: {
+      plugins: [tailwindcss({ config: 'tailwind.config.js' }), autoprefixer()],
     },
-    plugins: [
-        react({ jsxRuntime: 'classic' }),
-        tsconfigPaths({ root: '../../../' }),
-        replaceCodePlugin([
-            {
-                filter: /\.tsx?$/,
-                replace: {
-                    from: 'process.env.VITE_BUILD',
-                    to: 'true',
-                },
-            },
-            ...envVarsToReplace.map((it) => {
-                const value = process.env[it];
+  },
+  plugins: [
+    react({ jsxRuntime: 'classic' }),
+    tsconfigPaths({ root: '../../../' }),
+    replaceCodePlugin([
+      {
+        filter: /\.tsx?$/,
+        replace: {
+          from: 'process.env.VITE_BUILD',
+          to: 'true',
+        },
+      },
+      ...envVarsToReplace.map((it) => {
+        const value = process.env[it];
 
-                if (!value) {
-                    throw new Error(`Not env value for ${it}.`);
-                }
+        if (!value) {
+          throw new Error(`Not env value for ${it}.`);
+        }
 
-                return ({
-                    filter: /\.tsx?$/,
-                    replace: {
-                        from: `process.env.${it}`,
-                        to: `'${value}'`,
-                    },
-                });
-            }),
-        ]),
-    ],
+        return {
+          filter: /\.tsx?$/,
+          replace: {
+            from: `process.env.${it}`,
+            to: `'${value}'`,
+          },
+        };
+      }),
+    ]),
+  ],
 });

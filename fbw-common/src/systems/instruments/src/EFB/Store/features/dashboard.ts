@@ -10,42 +10,38 @@ import { MetarParserType } from '@flybywiresim/fbw-sdk';
  * This makes sure that switching EFB pages retains user selections or input.
  */
 interface DashboardState {
-    userDepartureIcao?: string;
-    userDestinationIcao?: string;
-    departureMetar?: MetarParserType;
-    destinationMetar?: MetarParserType;
+  userDepartureIcao?: string;
+  userDestinationIcao?: string;
+  departureMetar?: MetarParserType;
+  destinationMetar?: MetarParserType;
 }
 
 const initialState: DashboardState = {
-    userDepartureIcao: undefined,
-    userDestinationIcao: undefined,
-    departureMetar: undefined,
-    destinationMetar: undefined,
+  userDepartureIcao: undefined,
+  userDestinationIcao: undefined,
+  departureMetar: undefined,
+  destinationMetar: undefined,
 };
 
 export const dashboardSlice = createSlice({
-    name: 'dashboard',
-    initialState,
-    reducers: {
-        setUserDepartureIcao: (state, action: PayloadAction<string>) => {
-            state.userDepartureIcao = action.payload;
-        },
-        setUserDestinationIcao: (state, action: PayloadAction<string>) => {
-            state.userDestinationIcao = action.payload;
-        },
-        setDepartureMetar: (state, action: PayloadAction<MetarParserType | undefined>) => {
-            state.departureMetar = action.payload;
-        },
-        setDestinationMetar: (state, action: PayloadAction<MetarParserType | undefined>) => {
-            state.destinationMetar = action.payload;
-        },
+  name: 'dashboard',
+  initialState,
+  reducers: {
+    setUserDepartureIcao: (state, action: PayloadAction<string>) => {
+      state.userDepartureIcao = action.payload;
     },
+    setUserDestinationIcao: (state, action: PayloadAction<string>) => {
+      state.userDestinationIcao = action.payload;
+    },
+    setDepartureMetar: (state, action: PayloadAction<MetarParserType | undefined>) => {
+      state.departureMetar = action.payload;
+    },
+    setDestinationMetar: (state, action: PayloadAction<MetarParserType | undefined>) => {
+      state.destinationMetar = action.payload;
+    },
+  },
 });
 
-export const {
-    setUserDepartureIcao,
-    setUserDestinationIcao,
-    setDepartureMetar,
-    setDestinationMetar,
-} = dashboardSlice.actions;
+export const { setUserDepartureIcao, setUserDestinationIcao, setDepartureMetar, setDestinationMetar } =
+  dashboardSlice.actions;
 export default dashboardSlice.reducer;
