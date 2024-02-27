@@ -35,27 +35,21 @@
             </UseTemplate>
 
             <!-- LH Body Gear -->
-            <UseTemplate Name="ASOBO_GT_Anim">
+            <UseTemplate Name="ASOBO_GEAR_Back_Template">
                 <ANIM_NAME>l_b_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:1, Percent) 0.5 * +</ANIM_CODE>
+                <ID>1</ID>
             </UseTemplate>
 
             <!-- RH Body Gear -->
-            <UseTemplate Name="ASOBO_GT_Anim">
+            <UseTemplate Name="ASOBO_GEAR_Back_Template">
                 <ANIM_NAME>r_b_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:2, Percent) 0.5 * +</ANIM_CODE>
+                <ID>1</ID>
             </UseTemplate>
 
             <!-- LH Wing Gear-->
-            <UseTemplate Name="ASOBO_GT_Anim">
+            <UseTemplate Name="ASOBO_GEAR_Left_Template">
                 <ANIM_NAME>l_w_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:3, Percent) 0.5 * + </ANIM_CODE>
-            </UseTemplate>
-
-            <!-- RH Wing Gear-->
-            <UseTemplate Name="ASOBO_GT_Anim">
-                <ANIM_NAME>r_w_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:4, Percent) 0.5 * +</ANIM_CODE>
+                <ID>1</ID>
             </UseTemplate>
 
             <!-- LH Body Gear Door-->
@@ -70,6 +64,11 @@
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
+            <!-- RH Wing Gear-->
+            <UseTemplate Name="ASOBO_GEAR_Right_Template">
+                <ANIM_NAME>r_w_gear</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
 
             <!-- RH Body Gear Door-->
             <UseTemplate Name="ASOBO_GT_Anim">
@@ -115,7 +114,7 @@
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
-            <!-- Body Gear Rotation-->
+            <!-- Body Gear Roation-->
             <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
                 <ANIM_NAME>b_tire_key</ANIM_NAME>
                 <NODE_ID_STILL>LANDINGGEAR_Back_Wheel1_Still_Right</NODE_ID_STILL>
@@ -144,7 +143,14 @@
             <!-- Compression -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>c_gear_comp</ANIM_NAME>
-                <ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent)</ANIM_CODE>
+                <ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent over 100) 100 *</ANIM_CODE>
+            </UseTemplate>
+
+            <!-- EXTENSION AND COMPRESSION -->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>c_gear_comp</ANIM_NAME>
+                <ANIM_CODE>(A:CONTACT POINT POSITION:0, Percent) (A:CONTACT POINT COMPRESSION:0,
+                    Percent over 100) 100 *</ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -165,11 +171,6 @@
             <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
                 <ID>0</ID>
                 <ANIM_NAME>door_passenger</ANIM_NAME>
-            </UseTemplate>
-            <!-- PAX DOOR REAR -->
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>3</ID>
-                <ANIM_NAME>door_rear</ANIM_NAME>
             </UseTemplate>
         </Component>
 
@@ -414,8 +415,22 @@
                 <DIRECTION_5>Both</DIRECTION_5>
             </UseTemplate>
         </Component>
+		
+        <!-- PAX DOOR M4L -->
 
-        <Component ID="Wingflex_Inboard_Left">
+        <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>ANIM_DOOR_M4L</ANIM_NAME>
+                <ANIM_LAG>20</ANIM_LAG>
+                <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>9</ID>
+                <ANIM_NAME>door_rear</ANIM_NAME>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="Wingflex_Inboard_Left2">
             <!-- Wingflex InboardLeft -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_inboard_flex</ANIM_NAME>
