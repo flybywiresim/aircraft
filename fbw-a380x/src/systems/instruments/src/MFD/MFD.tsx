@@ -309,7 +309,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                         fmcService={this.props.fmcService}
                     />
                     <div ref={this.activePageRef} class="mfd-navigator-container" />
-                    <MouseCursor side={Subject.create(this.props.captOrFo)} ref={this.mouseCursorRef} />
+                    <MouseCursor isDoubleScreenMfd={true} side={Subject.create(this.props.captOrFo)} ref={this.mouseCursorRef} />
                 </div>
             </CdsDisplayUnit>
         );
