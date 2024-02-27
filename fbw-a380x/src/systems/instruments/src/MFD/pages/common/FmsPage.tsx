@@ -1,12 +1,12 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayComponent<T> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -46,7 +46,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         }, true));
 
         // Check if flight plan changed using flight plan sync bus events
-        const flightPlanSyncSub = this.props.bus.getSubscriber<FlightPlanSyncEvents>();
+        const flightPlanSyncSub = this.props.bus.getSubscriber<FlightPlanEvents>();
 
         this.subs.push(flightPlanSyncSub.on('flightPlanManager.create').handle(() => {
             this.onFlightPlanChanged();
