@@ -20,6 +20,11 @@ export const A320Failure = Object.freeze({
     CabinFan1Failure: 21012,
     CabinFan2Failure: 21013,
     LabGalleyFan: 21014,
+    Cpc1: 21015,
+    Cpc2: 21016,
+    OutflowValve: 21017,
+    SafetyValve: 21018,
+    RapidDecompression: 21019,
 
     Fac1Failure: 22000,
     Fac2Failure: 22001,
@@ -121,6 +126,11 @@ export const A320FailureDefinitions: FailureDefinition[] = [
     [21, A320Failure.CabinFan1Failure, 'Cabin Fan 1'],
     [21, A320Failure.CabinFan2Failure, 'Cabin Fan 2'],
     [21, A320Failure.LabGalleyFan, 'Extraction Fan of lavatory and galley'],
+    [21, A320Failure.Cpc1, 'Cabin Pressure Controller 1'],
+    [21, A320Failure.Cpc2, 'Cabin Pressure Controller 2'],
+    [21, A320Failure.OutflowValve, 'Outflow Valve'],
+    [21, A320Failure.SafetyValve, 'Safety Valve'],
+    [21, A320Failure.RapidDecompression, 'Rapid Decompression'],
 
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],

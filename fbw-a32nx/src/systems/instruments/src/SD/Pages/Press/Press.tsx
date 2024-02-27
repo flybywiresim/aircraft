@@ -4,7 +4,7 @@
 
 import React, { FC, useState, useEffect, memo } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -13,10 +13,26 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import './Press.scss';
 
 export const PressPage: FC = () => {
-    const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
+    const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+    const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+    const cpc1SysFault = cpc1DiscreteWord.isFailureWarning();
+    const cpc2SysFault = cpc2DiscreteWord.isFailureWarning();
+
+    // SYS is visible if the system is active or if it is failed
+    const cpc1SysVisible = (autoMode && cpc1DiscreteWord.getBitValueOr(11, false)) || cpc1SysFault;
+    const cpc2SysVisible = (autoMode && cpc2DiscreteWord.getBitValueOr(11, false)) || cpc2SysFault;
+
+    const arincCabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
+    const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
+    const cabinAlt = arincCabinAlt.isNormalOperation() ? arincCabinAlt.value : manCabinAlt;
+
+    const arincDeltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 500);
+    const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'psi', 500);
+    const deltaPsi = arincDeltaPsi.isNormalOperation() ? arincDeltaPsi.value : manDeltaPsi;
+
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
-    const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
     const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
     const [cabinAltTextCss, setCabinAltTextCss] = useState('');
@@ -48,8 +64,8 @@ export const PressPage: FC = () => {
             <PressureComponent />
 
             {/* System */}
-            <SystemComponent id={1} x={180} y={290} visible={systemNumber === 1} />
-            <SystemComponent id={2} x={350} y={290} visible={systemNumber === 2} />
+            <SystemComponent id={1} x={180} y={290} visible={cpc1SysVisible} fault={cpc1SysFault} />
+            <SystemComponent id={2} x={350} y={290} visible={cpc2SysVisible} fault={cpc2SysFault} />
 
             {/* Delta pressure gauge */}
             <g id="DeltaPressure">
@@ -248,7 +264,9 @@ type CabinVerticalSpeedComponentType = {
 }
 
 const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius }) => {
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
+    const arincCabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
+    const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
+    const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 
     return (
         <>
@@ -283,33 +301,40 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
 };
 
 const PressureComponent = () => {
-    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
-    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
-    const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
+    const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+    const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+    const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
+    const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
+
+    const cpcLandingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 500);
+    const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
+
+    let landingElevation;
+    if (cpcLandingElevation.isNormalOperation()) {
+        landingElevation = cpcLandingElevation.value;
+    } else if (fmLandingElevation.isNormalOperation()) {
+        landingElevation = fmLandingElevation.value;
+    } else {
+        landingElevation = -6000;
+    }
+
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
 
     useEffect(() => {
-        setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
-        if (landingElevDialPosition === 0) {
-            // On Auto
-            const nearestfifty = Math.round(landingRunwayElevation / 50) * 50;
-            setLdgElevValue(landingRunwayElevation > -5000 ? nearestfifty.toString() : 'XX');
-            setCssLdgElevName(landingRunwayElevation > -5000 ? 'Green' : 'Amber');
-        } else {
-            // On manual
-            const nearestfifty = Math.round(landingElev / 50) * 50;
-            setLdgElevValue(nearestfifty.toString());
-            setCssLdgElevName('Green');
-        }
-    }, [landingElevDialPosition, landingRunwayElevation, landingElev]);
+        setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
+        const nearestfifty = Math.round(landingElevation / 50) * 50;
+
+        setLdgElevValue(landingElevation > -5000 ? nearestfifty.toString() : 'XX');
+        setCssLdgElevName(landingElevation > -5000 ? 'Green' : 'Amber');
+    }, [landingElevationIsMan, landingElevation]);
 
     return (
         <>
-            <g id="LandingElevation">
+            <g id="LandingElevation" className={autoMode ? 'show' : 'hide'}>
                 <text className="Large Center" x="280" y="25">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Large Green" x="350" y="25">{ldgElevMode}</text>
 
@@ -324,14 +349,13 @@ const PressureComponent = () => {
 type SystemComponentType = {
     id: number,
     visible: boolean,
+    fault: boolean,
     x: number,
     y: number
 }
 
-const SystemComponent: FC<SystemComponentType> = memo(({ id, visible, x, y }) => {
-    // When failures are introduced can override visible variable
-    const systemFault = false;
-    const systemColour = systemFault ? 'Amber' : 'Green';
+const SystemComponent: FC<SystemComponentType> = memo(({ id, visible, fault, x, y }) => {
+    const systemColour = fault ? 'Amber' : 'Green';
 
     return (
         <>
@@ -379,7 +403,9 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
     const ofy = 425;
     const ofradius = 72;
 
-    const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+    const arincOutflowValueOpenPercentage = useArinc429Var('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 500);
+    const [manOutflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+    const outflowValueOpenPercentage = arincOutflowValueOpenPercentage.isNormalOperation() ? arincOutflowValueOpenPercentage.value : manOutflowValueOpenPercentage;
 
     return (
         <>
