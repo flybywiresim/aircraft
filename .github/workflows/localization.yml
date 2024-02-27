@@ -17,7 +17,7 @@ jobs:
       - name: Install Localazy CLI
         run: npm install -g @localazy/cli
       - name: Download flyPad Translations
-        run: cd fbw-a32nx/src/localization && node build-flypad-translation.js
+        run: cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js
       - name: Download locPak Translations
         run: cd fbw-a32nx/src/localization && node build-locPak-translation.js
       - name: Print git status
