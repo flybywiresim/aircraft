@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './Efb';
+export * from './Enum/Airframe';
 export * from './Assets/Error';
 export * from './Assets/GroundServiceOutline';
 export * from './Assets/NoseOutline';

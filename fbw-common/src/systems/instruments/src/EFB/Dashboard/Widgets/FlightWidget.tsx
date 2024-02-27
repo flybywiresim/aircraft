@@ -8,13 +8,10 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported, setToastPresented } from '../../Store/features/simBrief';
-import { useAppSelector, useAppDispatch } from '../../Store/store';
-
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { t } from '../../Localization/translation';
-import { getAirframeType } from '../../Efb';
-import { AC_TYPE } from '../../Enum/Airframe';
+import {
+    AC_TYPE, ScrollableContainer, getAirframeType, t, useAppSelector,
+    useAppDispatch, fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported, setToastPresented,
+} from '@flybywiresim/flypad';
 
 interface InformationEntryProps {
     title: string;
@@ -139,7 +136,7 @@ export const FlightWidget = () => {
     };
 
     useEffect(() => {
-        if (!simbriefDataPending && autoSimbriefImport === 'ENABLED' && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
+        if (!simbriefDataPending && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
             toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
             dispatch(setToastPresented(true));
         }

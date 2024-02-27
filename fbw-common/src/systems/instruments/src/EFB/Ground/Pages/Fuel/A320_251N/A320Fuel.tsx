@@ -101,7 +101,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
     const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
 
     useEffect(() => {
-        if (simbriefDataLoaded === true && fuelImported === false) {
+        if (simbriefDataLoaded === true && fuelImported === false && !refuelStartedByUser) {
             handleFuelAutoFill();
             dispatch(setFuelImported(true));
         }
