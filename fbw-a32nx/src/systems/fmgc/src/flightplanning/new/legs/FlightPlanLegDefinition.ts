@@ -3,13 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-    AltitudeDescriptor, ApproachWaypointDescriptor,
-    LegType,
-    SpeedDescriptor,
-    TurnDirection, WaypointDescriptor,
-    Waypoint, VhfNavaid, NdbNavaid, Fix,
-} from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, ApproachWaypointDescriptor, LegType, SpeedDescriptor, TurnDirection, WaypointDescriptor, Fix } from '@flybywiresim/fbw-sdk';
 
 import { Minutes } from 'msfs-geo';
 

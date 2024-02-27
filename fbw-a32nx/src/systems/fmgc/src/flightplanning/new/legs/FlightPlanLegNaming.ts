@@ -3,11 +3,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { LegType, Runway, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Airport, LegType, Runway, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 
 export function runwayIdent(runway: Runway) {
     return runway.ident.substring(2);
+}
+
+export function airportRunwayIdent(airport: Airport, runway: Runway) {
+    return `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`;
 }
 
 export function procedureLegIdentAndAnnotation(procedureLeg: FlightPlanLegDefinition, procedureIdent?: string): [ident: string, annotation: string] {

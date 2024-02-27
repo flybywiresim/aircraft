@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, EnrouteSubsectionCode, Runway, SectionCode, Waypoint, WaypointArea, Icao } from '@flybywiresim/fbw-sdk';
+import { Airport, EnrouteSubsectionCode, Runway, SectionCode, Waypoint, WaypointArea, Icao, AirportSubsectionCode } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
-import { runwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
+import { airportRunwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 
 export namespace WaypointFactory {
     export function fromLocation(
@@ -52,9 +52,9 @@ export namespace WaypointFactory {
     export function fromAirportAndRunway(airport: Airport, runway: Runway): Waypoint {
         return {
             ...runway,
-            sectionCode: SectionCode.Enroute,
-            subSectionCode: EnrouteSubsectionCode.Waypoints,
-            ident: `${airport.ident + runwayIdent(runway)}`,
+            sectionCode: SectionCode.Airport,
+            subSectionCode: AirportSubsectionCode.TerminalWaypoints,
+            ident: airportRunwayIdent(airport, runway),
             location: runway.thresholdLocation,
             area: WaypointArea.Terminal,
         };
@@ -63,8 +63,8 @@ export namespace WaypointFactory {
     export function fromAirport(airport: Airport): Waypoint {
         return {
             ...airport,
-            sectionCode: SectionCode.Enroute,
-            subSectionCode: EnrouteSubsectionCode.Waypoints,
+            sectionCode: SectionCode.Airport,
+            subSectionCode: AirportSubsectionCode.TerminalWaypoints,
             area: WaypointArea.Terminal,
         };
     }

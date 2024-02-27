@@ -26,6 +26,7 @@ import {
     ProcedureLeg,
     ProcedureTransition,
     SpeedDescriptor,
+    TerminalWaypoint,
     TurnDirection,
     VhfNavaid,
     VhfNavaidType,
@@ -805,21 +806,18 @@ export class MsfsMapping {
         };
     }
 
-    private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): Waypoint | undefined {
-        const runwayIdent = `${icao.substring(7).trim()}`;
+    private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): TerminalWaypoint | undefined {
+        const runwayIdent = FacilityCache.ident(icao);
         const runways = this.mapAirportRunwaysPartial(airport);
-        const airportIdent = this.mapAirportIdent(airport);
 
         for (const runway of runways) {
             if (runway.ident === runwayIdent) {
                 return {
-                    sectionCode: SectionCode.Enroute,
-                    subSectionCode: EnrouteSubsectionCode.Waypoints,
+                    sectionCode: SectionCode.Airport,
+                    subSectionCode: AirportSubsectionCode.Runways,
                     databaseId: icao,
                     icaoCode: icao.substring(1, 3),
-                    // TODO: Should we just use the runway ident here?
-                    // i.e 'RW24L' vs 'KLAX24L'
-                    ident: `${airportIdent}${runway.ident.substring(2)}`,
+                    ident: runwayIdent,
                     location: runway.thresholdLocation,
                     area: WaypointArea.Terminal,
                 };
@@ -883,13 +881,16 @@ export class MsfsMapping {
     }
 
     public mapFacilityToWaypoint<T extends JS_Facility>(facility: T): FacilityType<T> {
+        // TODO this is a hack
+        const isTerminalVsEnroute = facility.icao.substring(3, 7).trim().length > 0;
+
         const databaseItem = {
             databaseId: facility.icao,
             icaoCode: facility.icao.substring(1, 3),
             ident: FacilityCache.ident(facility.icao),
             name: Utils.Translate(facility.name),
             location: { lat: facility.lat, long: facility.lon },
-            area: facility.icao.substring(3, 7).trim().length > 0 ? WaypointArea.Terminal : WaypointArea.Enroute,
+            area: isTerminalVsEnroute ? WaypointArea.Terminal : WaypointArea.Enroute,
         };
 
         // TODO: VORs are also stored as intersections in the database. In this case, their ICAO starts with "V" but they are of type
@@ -922,7 +923,11 @@ export class MsfsMapping {
             } as unknown as FacilityType<T>;
         case 'W':
         default:
-            return databaseItem as FacilityType<T>;
+            return {
+                ...databaseItem,
+                sectionCode: isTerminalVsEnroute ? SectionCode.Airport : SectionCode.Enroute,
+                subSectionCode: isTerminalVsEnroute ? AirportSubsectionCode.TerminalWaypoints : EnrouteSubsectionCode.Waypoints,
+            }as FacilityType<T>;
         }
     }
 

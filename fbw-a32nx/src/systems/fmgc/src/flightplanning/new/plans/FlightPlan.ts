@@ -148,6 +148,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
         turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+        // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
+        turnEnd.ident = targetLeg.ident;
 
         this.redistributeLegsAt(0);
         this.redistributeLegsAt(targetLegIndex);
