@@ -28,6 +28,7 @@ class AircraftPresets : public Module {
   NamedVariablePtr loadAircraftPresetRequest{};
   NamedVariablePtr progressAircraftPreset{};
   NamedVariablePtr progressAircraftPresetId{};
+  NamedVariablePtr aircraftPresetExpedite{};
 
   // Sim-vars
   AircraftVariablePtr simOnGround{};

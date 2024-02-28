@@ -43,6 +43,7 @@ bool AircraftPresets::initialize() {
   progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
+  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ);
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -170,6 +171,10 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
         currentDelay = 0;
         currentStep++;
         return true;
+      }
+      // allow execution of the procedure without a delay if expedite is set
+      if (aircraftPresetExpedite->getAsBool()) {
+        currentDelay = 0;
       }
     }
 
