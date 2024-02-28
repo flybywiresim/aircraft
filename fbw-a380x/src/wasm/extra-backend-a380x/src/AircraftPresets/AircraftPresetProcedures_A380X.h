@@ -13,6 +13,7 @@
  * @see AircraftProceduresDefinition
  *
  * FIXME: This is not yet adapted to the A380X - not all necessary systems and APIs are available yet.
+ *       Remember to also update flyPad procedure ID to Name table
  */
 class AircraftPresetProcedures_A380X {
  public:
@@ -23,106 +24,164 @@ class AircraftPresetProcedures_A380X {
       .POWERED_CONFIG_ON {
         // SOP: PRELIMINARY COCKPIT PREPARATION
         ProcedureStep{"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"BAT2 On",                  1020, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
-        ProcedureStep{"BAT ESS On",               1020, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
-        ProcedureStep{"BAT APU On",               1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
+        ProcedureStep{"BAT ESS On",               1012, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
+        ProcedureStep{"BAT2 On",                  1014, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"BAT APU On",               1016, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
 
-        ProcedureStep{"EXT PWR On",               1030, false, 3000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) "
-                                                                     "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
+        ProcedureStep{"EXT PWR 2 On",             1020, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
                                                                      "(L:A32NX_ENGINE_STATE:1) 1 == || "
                                                                      "(L:A32NX_ENGINE_STATE:2) 1 == || "
-                                                                     "(A:EXTERNAL POWER ON:1, BOOL) ||",                     "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
+                                                                     "(L:A32NX_ENGINE_STATE:3) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:4) 1 == || "
+                                                                     "(A:EXTERNAL POWER ON:2, BOOL) ||",                     "(A:EXTERNAL POWER ON:2, BOOL) ! if{ 2 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 3 On",             1022, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
+                                                                     "(L:A32NX_ENGINE_STATE:1) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:3) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:4) 1 == || "
+                                                                     "(A:EXTERNAL POWER ON:3, BOOL) ||",                     "(A:EXTERNAL POWER ON:3, BOOL) ! if{ 3 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 1 On",             1024, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
+                                                                     "(L:A32NX_ENGINE_STATE:1) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:3) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:4) 1 == || "
+                                                                     "(A:EXTERNAL POWER ON:1, BOOL) ||",                     "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 4 On",             1026, false, 3000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
+                                                                     "(L:A32NX_ENGINE_STATE:1) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:3) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:4) 1 == || "
+                                                                     "(A:EXTERNAL POWER ON:4, BOOL) ||",                     "(A:EXTERNAL POWER ON:4, BOOL) ! if{ 4 (>K:TOGGLE_EXTERNAL_POWER) }"},
 
         // ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test)
-        ProcedureStep{"ENG 1 Fire Test On",       2002, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "1 (>L:A32NX_FIRE_TEST_ENG1)"},
-        ProcedureStep{"ENG 1 Fire Test Off",      2003, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
+        ProcedureStep{"ENG Fire Test On",         1030, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "1 (>L:A32NX_FIRE_TEST_ENG1)"},
+        ProcedureStep{"ENG Fire Test Off",        1032, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
 
         // After fire test we start the APU
-        ProcedureStep{"APU Master On",            1041, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
+        ProcedureStep{"APU Master On",            1040, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                      "(L:A32NX_ENGINE_STATE:2) 1 == && "
-                                                                     "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",      "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-        ProcedureStep{"APU Start On",             1051, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                     "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",        "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
+                                                                     "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",        "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
+        ProcedureStep{"APU Start On",             1042, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
+                                                                     "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",          "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
 
-        ProcedureStep{"Waiting on AC BUS Availability", 1060, true,  2000, "",                                               "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
+        ProcedureStep{"Waiting on AC BUS Availability", 1044, true,  2000, "",                                               "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
 
         // SOP: COCKPIT PREPARATION
-        ProcedureStep{"Crew Oxy On",              1120, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                       "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
-        ProcedureStep{"GND CTL On",               1110, false, 1000, "(L:A32NX_ENGINE_STATE:1) 1 == "
+        ProcedureStep{"Crew Oxy On",              1050, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                       "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
+        ProcedureStep{"GND CTL On",               1052, false, 1000, "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                      "(L:A32NX_ENGINE_STATE:2) 1 == || "
                                                                      "(L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||",             "1 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
 
-        ProcedureStep{"ADIRS 1 Nav",              1080, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
-        ProcedureStep{"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
-        ProcedureStep{"ADIRS 3 Nav",              1100, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"ADIRS 1 Nav",              1060, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"ADIRS 2 Nav",              1062, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"ADIRS 3 Nav",              1064, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
 
-        ProcedureStep{"Strobe Auto",              2120, false, 1000, "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
-        ProcedureStep{"Nav & Logo Lt On",         1070, false, 1000, "(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &&",          "1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)"},
+        ProcedureStep{"Strobe Auto",              1070, false, 1000, "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
+        ProcedureStep{"Nav & Logo Lt On",         1072, false, 1000, "(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &&",          "1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)"},
 
-        ProcedureStep{"SEAT BELTS On",            2140, false, 1000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
-        ProcedureStep{"NO SMOKING Auto",          1130, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==", "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
-        ProcedureStep{"EMER EXT Lt Arm",          1140, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",  "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
+        ProcedureStep{"SEAT BELTS On",            1080, false, 1000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
+        ProcedureStep{"NO SMOKING Auto",          1082, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==", "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
+        ProcedureStep{"EMER EXT Lt Arm",          1084, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",  "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
 
-        // For the fire tests the FWC needs to be initialized
-        // The correct variables to wait for are: A32NX_FWS_FWC_1_NORMAL and A32NX_FWS_FWC_2_NORMAL. But
-        // as these are only on Exp this first iteration uses A32NX_FWC_FLIGHT_PHASE which also work on>
-        // master and is equivalent for this specific purpose. Will be changed when the FWC is on master.
-        // ProcedureStep{"Waiting on FWC Initialization", 1065, true,  5000, "",                                                "(L:A32NX_FWC_FLIGHT_PHASE)"},
-        // ProcedureStep{"Waiting...",                    9999, false, 5000, "(L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)",         "1 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"},
-
-        ProcedureStep{"Waiting on APU Availability", 1150, true,  2000, "",                                                "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
-        ProcedureStep{"APU Bleed On",                1160, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                        "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",       "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
+        // TODO: find a way to expedite this
+        ProcedureStep{"Waiting on APU Availability", 1090, true,  2000, "",                                                  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
+        ProcedureStep{"APU Bleed On",                1092, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
+                                                                        "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",         "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
       },
 
       .POWERED_CONFIG_OFF = {
-        ProcedureStep{"NO SMOKING Off",        1170, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==", "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
-        ProcedureStep{"EMER EXT Lt Off",       1180, false, 1500, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==",  "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
-        ProcedureStep{"GND CTL Off",           1200, false, 1000, "(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==",                "0 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
-        ProcedureStep{"SEAT BELTS Off",        2200, false, 2000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !",           "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
-        ProcedureStep{"Strobe Off",            2180, false, 1000, "(A:LIGHT STROBE, Bool) !",                             "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
-        ProcedureStep{"Nav & Logo Lt Off",     1240, false, 500,  "(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &&",      "0 (>K:2:LOGO_LIGHTS_SET) 0 (>K:2:NAV_LIGHTS_SET)"},
-        ProcedureStep{"Crew Oxy Off",          1190, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 1 ==",                       "1 (>L:PUSH_OVHD_OXYGEN_CREW)"},
-        ProcedureStep{"ADIRS 3 Off",           1210, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
-        ProcedureStep{"ADIRS 2 Off",           1220, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
-        ProcedureStep{"ADIRS 1 Off",           1230, false, 1000, "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
-        ProcedureStep{"APU Bleed Off",         1250, false, 1500, "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",          "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
-        ProcedureStep{"APU Master Off",        1260, false, 2000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",           "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-        ProcedureStep{"EXT PWR Off",           1270, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
-        ProcedureStep{"BAT APU Off",           1280, false, 1000,  "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
-        ProcedureStep{"BAT ESS Off",           1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
-        ProcedureStep{"BAT2 Off",              1280, false, 1000,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
-        ProcedureStep{"BAT1 Off",              1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"AC BUS Off Check",      1300, true,  5000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
-        ProcedureStep{"ENG 1 Fire Test Reset", 2006, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
-        // ProcedureStep{"FWC Init Reset",        1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
+        ProcedureStep{"APU Bleed Off",         1093, false, 1500, "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",          "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
+        ProcedureStep{"EMER EXT Lt Off",       1085, false, 1500, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==",  "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
+        ProcedureStep{"NO SMOKING Off",        1083, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==", "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
+        ProcedureStep{"SEAT BELTS Off",        1081, false, 2000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !",           "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
+        ProcedureStep{"Nav & Logo Lt Off",     1073, false, 500,  "(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &&",      "0 (>K:2:LOGO_LIGHTS_SET) 0 (>K:2:NAV_LIGHTS_SET)"},
+        ProcedureStep{"Strobe Off",            1071, false, 1000, "(A:LIGHT STROBE, Bool) !",                             "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
+        ProcedureStep{"ADIRS 3 Off",           1065, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"ADIRS 2 Off",           1063, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"ADIRS 1 Off",           1061, false, 1000, "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
+        ProcedureStep{"GND CTL Off",           1053, false, 1000, "(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==",                "0 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
+        ProcedureStep{"Crew Oxy Off",          1051, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 1 ==",                       "1 (>L:PUSH_OVHD_OXYGEN_CREW)"},
+        ProcedureStep{"APU Master Off",        1041, false, 2000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",           "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
+        ProcedureStep{"EXT PWR 4 Off",         1027, false, 3000, "(A:EXTERNAL POWER ON:4, BOOL) !",                      "(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 1 Off",         1025, false, 1000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 3 Off",         1023, false, 1000, "(A:EXTERNAL POWER ON:3, BOOL) !",                      "(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 2 Off",         1021, false, 3000, "(A:EXTERNAL POWER ON:2, BOOL) !",                      "(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"BAT APU Off",           1017, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
+        ProcedureStep{"BAT2 Off",              1015, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"BAT ESS Off",           1013, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
+        ProcedureStep{"BAT1 Off",              1011, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
+        ProcedureStep{"AC BUS Off Check",      1009, true,  5000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+        ProcedureStep{"ENG 1 Fire Test Reset", 1033, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
+        // ProcedureStep{"FWC Init Reset",     1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
       },
 
       .PUSHBACK_CONFIG_ON = {
         // SOP: BEFORE PUSHBACK OR START
-        ProcedureStep{"EXT PWR Off",             2000, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",               "(A:EXTERNAL POWER ON:1, BOOL) if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
-        ProcedureStep{"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
-        ProcedureStep{"FUEL PUMP 2 On",          2010, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",            "2 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"FUEL PUMP 5 On",          2020, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",            "5 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"FUEL PUMP 1 On",          2030, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool)",            "1 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"FUEL PUMP 4 On",          2040, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool)",            "4 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"FUEL PUMP 3 On",          2050, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",            "3 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"FUEL PUMP 6 On",          2060, false, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",            "6 (>K:FUELSYSTEM_PUMP_ON)"},
-        ProcedureStep{"COCKPIT DOOR LCK",        2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-        ProcedureStep{"Await ADIRS 1 Alignment", 2150, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 2 Alignment", 2160, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 3 Alignment", 2170, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"EXT PWR 4 Off",               1027, false, 1000, "(A:EXTERNAL POWER ON:4, BOOL) !",              "(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 1 Off",               1025, false, 1000, "(A:EXTERNAL POWER ON:1, BOOL) !",              "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 3 Off",               1023, false, 1000, "(A:EXTERNAL POWER ON:3, BOOL) !",              "(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR 2 Off",               1021, false, 3000, "(A:EXTERNAL POWER ON:2, BOOL) !",              "(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (>K:TOGGLE_EXTERNAL_POWER) }"},
+
+        ProcedureStep{"Beacon On",                   2010, false, 1000, "(A:LIGHT BEACON, Bool)",                       "0 (>K:BEACON_LIGHTS_ON)"},
+
+        ProcedureStep{"FUEL PUMP FEED TK1 MAIN On",  2020, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool)",            "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK1 STBY On",  2022, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool)",            "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK2 MAIN On",  2024, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool)",           "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK2 STBY On",  2026, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool)",           "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK3 MAIN On",  2028, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool)",           "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK3 STBY On",  2030, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool)",           "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK4 MAIN On",  2032, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool)",           "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK4 STBY On",  2034, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool)",           "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"FUEL PUMP L OUTR TK On",      2036, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool)",           "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L MID FWD TK On",   2038, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool)",           "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L MID AFT TK On",   2040, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool)",           "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L INR FWD TK On",   2042, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool)",           "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L INR AFT TK On",   2044, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool)",           "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R INR AFT TK On",   2046, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool)",           "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R INR FWD TK On",   2048, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool)",           "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R MID AFT TK On",   2050, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool)",           "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R MID FWD TK On",   2052, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool)",           "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R OUTR TK On",      2054, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool)",           "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"FUEL TRIM TK L On",           2056, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool)",           "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL TRIM TK R On",           2058, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool)",           "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"COCKPIT DOOR LCK",            2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+
+        // TODO: find a way to expedite this
+        ProcedureStep{"Await ADIRS 1 Alignment",     2062, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
+        ProcedureStep{"Await ADIRS 2 Alignment",     2064, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
+        ProcedureStep{"Await ADIRS 3 Alignment",     2066, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
       },
 
       .PUSHBACK_CONFIG_OFF = {
-        ProcedureStep{"COCKPIT DOOR OP", 2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-        ProcedureStep{"FUEL PUMP 2 Off", 2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 5 Off", 2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 1 Off", 2280, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool) !",        "1 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 4 Off", 2290, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool) !",        "4 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 3 Off", 2300, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",        "3 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 6 Off", 2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",        "6 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
+        ProcedureStep{"COCKPIT DOOR OP",             2061, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",           "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+
+        ProcedureStep{"FUEL TRIM TK R Off",          2059, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool) !",           "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL TRIM TK L Off",          2057, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool) !",           "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"FUEL PUMP R OUTR TK Off",     2055, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool) !",           "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R MID FWD TK Off",  2053, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool) !",           "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R MID AFT TK Off",  2051, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool) !",           "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R INR FWD TK Off",  2049, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool) !",           "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP R INR AFT TK Off",  2047, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool) !",           "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L INR AFT TK Off",  2045, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool) !",           "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L INR FWD TK Off",  2043, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool) !",           "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L MID AFT TK Off",  2041, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool) !",           "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L MID FWD TK Off",  2039, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool) !",           "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP L OUTR TK Off",     2037, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool) !",           "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"FUEL PUMP FEED TK4 STBY Off", 2035, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool) !",           "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK4 MAIN Off", 2033, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool) !",           "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK3 STBY Off", 2031, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool) !",           "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK3 MAIN Off", 2029, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool) !",           "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK2 STBY Off", 2027, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool) !",           "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK2 MAIN Off", 2025, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool) !",           "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK1 STBY Off", 2023, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool) !",            "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"FUEL PUMP FEED TK1 MAIN Off", 2021, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool) !",            "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+
+        ProcedureStep{"Beacon Off",                  2011, false, 1000, "(A:LIGHT BEACON, Bool) !",                     "0 (>K:BEACON_LIGHTS_OFF)"},
       },
 
       .TAXI_CONFIG_ON = {
