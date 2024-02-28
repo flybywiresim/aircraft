@@ -65,7 +65,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         {
             name: '(N/A) OFFSET',
             disabled: true,
-            onPressed: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`),
+            onPressed: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-offset`),
         },
         {
             name: 'HOLD',

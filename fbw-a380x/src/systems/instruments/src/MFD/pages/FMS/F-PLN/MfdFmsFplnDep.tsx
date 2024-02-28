@@ -83,7 +83,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         sids.push({
                             label: dep.ident,
                             action: async () => {
-                                await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get(), isAltn ?? false);
+                                await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(dep.databaseId, this.loadedFlightPlanIndex.get(), isAltn ?? false);
                                 await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn ?? false);
                             },
                         });
@@ -112,7 +112,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     flightPlan.originDeparture.enrouteTransitions.forEach((el) => {
                         trans.push({
                             label: el.ident,
-                            action: () => this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn ?? false),
+                            action: () => this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(el.databaseId, this.loadedFlightPlanIndex.get(), isAltn ?? false),
                         });
                     });
                     this.transOptions.set(trans);
