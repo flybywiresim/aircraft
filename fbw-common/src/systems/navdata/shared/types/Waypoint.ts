@@ -1,5 +1,5 @@
 import { NauticalMiles } from 'msfs-geo';
-import { EnrouteSubsectionCode, SectionCode } from './SectionCode';
+import { SectionCode } from './SectionCode';
 import { BaseFix } from './BaseFix';
 
 /**
@@ -13,14 +13,22 @@ export enum WaypointArea {
 /**
  * Waypoint fix
  */
-export interface Waypoint extends BaseFix<SectionCode.Enroute> {
-    subSectionCode: EnrouteSubsectionCode.Waypoints,
+export type Waypoint = EnrouteWaypoint | TerminalWaypoint;
 
+export interface EnrouteWaypoint extends BaseWaypoint<SectionCode.Enroute> {
+    area: WaypointArea.Enroute,
+}
+
+export interface TerminalWaypoint extends BaseWaypoint<SectionCode.Airport> {
+    area: WaypointArea.Terminal,
+}
+
+interface BaseWaypoint<T extends SectionCode> extends BaseFix<T> {
     name?: string,
     // TODO more...
 
     /**
      * Distance from centre location for nearby airport query
-     */
-    distance?: NauticalMiles,
+    */
+   distance?: NauticalMiles,
 }

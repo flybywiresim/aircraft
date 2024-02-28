@@ -8,7 +8,7 @@ describe('iso8601CalendarDate', () => {
                 1,
                 1,
             ),
-        ).toEqual('2022-01-01');
+        ).toBe('2022-01-01');
 
         expect(
             iso8601CalendarDate(
@@ -16,7 +16,7 @@ describe('iso8601CalendarDate', () => {
                 12,
                 31,
             ),
-        ).toEqual('2022-12-31');
+        ).toBe('2022-12-31');
     });
 
     it('should use the given seperator', () => {
@@ -27,7 +27,7 @@ describe('iso8601CalendarDate', () => {
                 1,
                 '',
             ),
-        ).toEqual('20220101');
+        ).toBe('20220101');
 
         expect(
             iso8601CalendarDate(
@@ -36,6 +36,6 @@ describe('iso8601CalendarDate', () => {
                 1,
                 '@',
             ),
-        ).toEqual('2022@01@01');
+        ).toBe('2022@01@01');
     });
 });

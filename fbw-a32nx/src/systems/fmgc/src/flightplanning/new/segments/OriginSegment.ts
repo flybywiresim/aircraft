@@ -3,12 +3,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { Airport, Runway, MathUtils, areDatabaseItemsEqual } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
+import { airportRunwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
@@ -104,9 +105,11 @@ export class OriginSegment extends FlightPlanSegment {
             }
 
             if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.isXF()) {
-                // TODO do we need to check whether the fix actually corresponds to the *correct* runway?
-                if (firstDepartureLeg.waypointDescriptor === WaypointDescriptor.Runway) {
+                if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
+                    // TODO should this stuff go into DepartureRunwayTransitionSegment?
                     firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
+                    firstDepartureLeg.ident = airportRunwayIdent(this.originAirport, this.runway);
+
                     addOriginLeg = false;
                     addRunwayLeg = false;
                 } else {
