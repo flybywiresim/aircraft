@@ -4,6 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { Toggle } from '@flybywiresim/flypad';
 import { t } from '../../Localization/translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
@@ -26,6 +27,7 @@ export const AircraftPresets = () => {
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
     const [loadPresetProgress] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS', 'number', 100);
     const [loadPresetCurrentId] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID', 'number', 100);
+    const [loadPresetsExpedite, setLoadPresetsExpedite] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE', 'number', 250);
     const { showModal } = useModals();
 
     // These need to align with the IDs in the Presets C++ WASM.
@@ -88,7 +90,7 @@ export const AircraftPresets = () => {
                 )}
             </div>
 
-            <ScrollableContainer innerClassName="space-y-4" height={52}>
+            <ScrollableContainer innerClassName="space-y-4" height={42}>
                 {AircraftPresetsList.map(({ index, name }) => (
                     <div
                         key={index}
@@ -99,6 +101,14 @@ export const AircraftPresets = () => {
                     </div>
                 ))}
             </ScrollableContainer>
+            <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
+                <div className="flex h-10 flex-row items-center">
+                    <div className="pr-3">
+                        {t('Presets.AircraftStates.ExpediteLoading')}
+                    </div>
+                    <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
+                </div>
+            </div>
         </div>
     );
 };
