@@ -172,10 +172,11 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
         currentStep++;
         return true;
       }
-      // allow execution of the procedure without a delay if expedite is set
-      if (aircraftPresetExpedite->getAsBool()) {
-        currentDelay = 0;
-      }
+    }
+
+    // allow execution of the procedure without a delay if expedite is set
+    if (aircraftPresetExpedite->getAsBool()) {
+      currentDelay = 0;
     }
 
     // update progress var
@@ -184,7 +185,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // execute code to set expected state
     LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
-             " (delay after: " + std::to_string(currentStepPtr->delayAfter) + ")");
+             " (delay after: " + (aircraftPresetExpedite->getAsBool() ? "0" : std::to_string(currentStepPtr->delayAfter)) + ")");
     execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
     currentStep++;
 
