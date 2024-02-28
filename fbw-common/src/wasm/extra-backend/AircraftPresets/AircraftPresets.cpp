@@ -104,7 +104,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
-    // reset the LVAR to the currently running procedure in case it has been changed
+    // Reset the LVAR to the current running procedure in case it has been changed
     // during a running procedure. We only allow "0" as a signal to interrupt the
     // current procedure
     loadAircraftPresetRequest->setAsInt64(currentProcedureID);
@@ -153,7 +153,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     }
 
     // test if the next step is required or if the state is already set in
-    // which case the action can be skipped and delay can be ignored.
+    // which case the action can be skipped, and delay can be ignored.
     fvalue = 0;
     ivalue = 0;
     svalue = nullptr;

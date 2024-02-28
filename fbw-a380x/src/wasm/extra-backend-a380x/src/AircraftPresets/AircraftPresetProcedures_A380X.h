@@ -12,8 +12,7 @@
  *
  * @see AircraftProceduresDefinition
  *
- * FIXME: This is not yet adapted to the A380X - not all necessary systems and APIs are available yet.
- *       Remember to also update flyPad procedure ID to Name table
+ * TODO: As A380X development progresses, this file will be updated to reflect the latest procedures.
  */
 class AircraftPresetProcedures_A380X {
  public:
