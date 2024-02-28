@@ -140,8 +140,6 @@ export const A320Payload: React.FC<A320Props> = ({
         COMPLETED: 6,
     };
 
-    const generalBoardingInProgress = () => (gsxPayloadSyncEnabled ? gsxInProgress() : boardingStarted);
-
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -254,7 +252,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, gw, zfw]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
-        if (generalBoardingInProgress()) {
+        if (gsxInProgress() || boardingStarted) {
             return;
         }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
@@ -265,7 +263,7 @@ export const A320Payload: React.FC<A320Props> = ({
         gsxPayloadSyncEnabled]);
 
     const onClickSeat = useCallback((stationIndex: number, seatId: number) => {
-        if (generalBoardingInProgress()) {
+        if (gsxInProgress() || boardingStarted) {
             return;
         }
 
@@ -426,7 +424,7 @@ export const A320Payload: React.FC<A320Props> = ({
             );
         }
 
-        if (generalBoardingInProgress()) {
+        if (gsxInProgress() || boardingStarted) {
             setShowSimbriefButton(false);
         } else {
             setShowSimbriefButton(simbriefStatus);
@@ -492,7 +490,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
                                     displayZfw={displayZfw}
-                                    generalBoardingInProgress={generalBoardingInProgress()}
+                                    BoardingInProgress={gsxInProgress() || boardingStarted}
                                     totalPax={totalPax}
                                     totalPaxDesired={totalPaxDesired}
                                     maxPax={maxPax}
@@ -516,7 +514,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                 <hr className="mb-4 border-gray-700" />
                                 <div className="flex flex-row items-center justify-start">
                                     <MiscParamsInput
-                                        disable={generalBoardingInProgress()}
+                                        disable={gsxInProgress() || boardingStarted}
                                         minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
                                         maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
                                         defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}

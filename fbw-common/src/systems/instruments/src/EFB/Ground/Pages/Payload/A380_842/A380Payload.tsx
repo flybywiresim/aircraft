@@ -158,6 +158,7 @@ export const A380Payload: React.FC<A380Props> = ({
     const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
+    const gsxInProgress = () => gsxDeBoardingState >= 4 && gsxDeBoardingState < 6 || gsxBoardingState >= 4 && gsxBoardingState < 6;
     const gsxStates = {
         AVAILABLE: 1,
         NOT_AVAILABLE: 2,
@@ -558,9 +559,8 @@ export const A380Payload: React.FC<A380Props> = ({
                                     loadsheet={Loadsheet}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
-                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
                                     displayZfw={displayZfw}
-                                    boardingStarted={boardingStarted}
+                                    BoardingInProgress={gsxInProgress() || boardingStarted}
                                     totalPax={totalPax}
                                     totalPaxDesired={totalPaxDesired}
                                     maxPax={maxPax}

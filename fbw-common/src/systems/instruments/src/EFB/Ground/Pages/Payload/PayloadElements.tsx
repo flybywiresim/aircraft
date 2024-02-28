@@ -248,7 +248,7 @@ interface PayloadInputTableProps {
     emptyWeight: number,
     massUnitForDisplay: string,
     displayZfw: boolean,
-    generalBoardingInProgress: boolean,
+    BoardingInProgress: boolean,
     totalPax: number,
     totalPaxDesired: number,
     maxPax: number,
@@ -274,7 +274,7 @@ interface PayloadInputTableProps {
 export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
     {
         loadsheet, emptyWeight, massUnitForDisplay,
-        generalBoardingInProgress,
+        BoardingInProgress,
         displayZfw,
         totalPax, totalPaxDesired, maxPax,
         totalCargo, totalCargoDesired, maxCargo,
@@ -320,7 +320,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                     }
                                 }}
                                 unit="PAX"
-                                disabled={generalBoardingInProgress}
+                                disabled={BoardingInProgress}
                             />
                         </div>
                     </TooltipWrapper>
@@ -347,7 +347,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                     }
                                 }}
                                 unit={massUnitForDisplay}
-                                disabled={generalBoardingInProgress}
+                                disabled={BoardingInProgress}
                             />
                         </div>
                     </TooltipWrapper>
@@ -374,7 +374,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                             if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
                                         }}
                                         unit={massUnitForDisplay}
-                                        disabled={generalBoardingInProgress}
+                                        disabled={BoardingInProgress}
                                     />
                                 </div>
                             </TooltipWrapper>
@@ -390,7 +390,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
                                             if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
                                         }}
                                         unit={massUnitForDisplay}
-                                        disabled={generalBoardingInProgress}
+                                        disabled={BoardingInProgress}
                                     />
                                 </div>
                             </TooltipWrapper>
