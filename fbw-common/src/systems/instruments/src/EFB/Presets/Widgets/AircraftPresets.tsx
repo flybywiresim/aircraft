@@ -66,7 +66,7 @@ export const AircraftPresets = () => {
                                 {t('Presets.AircraftStates.CurrentProcedureStep')}
                                 :
                                 {' '}
-                                {StepDescription.get(loadPresetCurrentId)}
+                                {StepDescription().get(loadPresetCurrentId)}
                             </span>
                             <div
                                 className="h-1/2 bg-theme-highlight"
