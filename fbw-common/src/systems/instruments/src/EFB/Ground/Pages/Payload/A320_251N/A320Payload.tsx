@@ -140,7 +140,7 @@ export const A320Payload: React.FC<A320Props> = ({
         COMPLETED: 6,
     };
 
-    const generalBoardingInProgress = () => (gsxPayloadSyncEnabled ? gsxInProgress() : boardingStarted); // TODO this should be a Lvar and written in rust
+    const generalBoardingInProgress = () => (gsxPayloadSyncEnabled ? gsxInProgress() : boardingStarted);
 
     const dispatch = useAppDispatch();
 
@@ -391,7 +391,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [coldAndDark, boardingRate]);
 
     useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) { // TODO should be in rust
+        if (gsxPayloadSyncEnabled === 1) {
             switch (gsxDeBoardingState) {
             case gsxStates.REQUESTED:
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
