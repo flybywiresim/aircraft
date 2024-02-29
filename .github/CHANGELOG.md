@@ -70,7 +70,9 @@
 1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
 1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
 1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
-1. [Fuel] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter (\_Chaoz_)
+1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
+1. [FCU] Disabled QFE mode - @tracernz (Mike)
+1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
 
 ## 0.11.0
 
