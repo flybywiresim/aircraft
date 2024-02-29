@@ -4,7 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { getAirframeType, Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
+import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
 import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
@@ -12,13 +12,15 @@ export const AircraftPresets = () => {
     // use the LVAR A32NX_AIRCRAFT_PRESET_LOAD to signal the backend that the user
     // requests a preset to be loaded.
     // The backend will reset the LVAR to 0 when done.
-    // As long as the LVAR is 1 the backend is still applying the preset.
+    // As long as the LVAR is >0, the backend is still applying the preset.
     // If the LVAR is set to 0 before the backend is finished, applying, the preset
     // will be stopped by the backend.
     // The progress while loading an aircraft preset can be read from
     // the LVAR A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS.
     // The current step ID can be read via A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID
     // and then use the StepDescription from './Procedures' to get the string.
+    // A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE is a LVAR to expedite the loading of the preset
+    // by skipping the delay between steps.
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
@@ -52,9 +54,6 @@ export const AircraftPresets = () => {
     const handleCancel = () => {
         setLoadPresetVar(0);
     };
-
-    // Unfortunately, the expedited loading is only available for the A380X / the A32NX has trouble starting engines
-    const a380xOnly = getAirframeType() === 'A380_842';
 
     return (
         <div className="mt-4 h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
@@ -101,16 +100,14 @@ export const AircraftPresets = () => {
                     </div>
                 ))}
             </ScrollableContainer>
-            {a380xOnly && (
-                <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
-                    <div className="flex h-10 flex-row items-center">
-                        <div className="pr-3">
-                            {t('Presets.AircraftStates.ExpediteLoading')}
-                        </div>
-                        <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
+            <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
+                <div className="flex h-10 flex-row items-center">
+                    <div className="pr-3">
+                        {t('Presets.AircraftStates.ExpediteLoading')}
                     </div>
+                    <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
                 </div>
-            )}
+            </div>
         </div>
     );
 };
