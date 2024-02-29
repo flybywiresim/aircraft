@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { EventBus } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
@@ -13,6 +13,7 @@ import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -894,6 +895,38 @@ export class FmcAircraftInterface {
         if (constraintAlt !== this.constraintAlt) {
             this.constraintAlt = constraintAlt;
             SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
+        }
+    }
+
+    /**
+     * FIXME: Placeholder for BTV data, as long as we don't have the OANS UI
+     * Uses chosen landing runway from FMS, and transmits overall length, desired stopping distance,
+     * and remaining distance until desired stop.
+     */
+    updateBtvData() {
+        const rwy = this.flightPlanService.active.destinationRunway;
+        const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum); // >= 7s
+
+        // Only compute if FMS runway is set and aircraft in approach mode
+        if (rwy && fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
+            const reqDistance = SimVar.GetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters);
+            // If no stopping distance requested, stop within 75% of runway length
+            const desiredStoppingDistance = (reqDistance > 0 && reqDistance <= rwy.length) ? reqDistance : (0.75 * rwy.length);
+            const stopPoint = placeBearingDistance(rwy.startLocation, rwy.bearing, desiredStoppingDistance / MathUtils.METRES_TO_NAUTICAL_MILES);
+            const rwyEndPoint = placeBearingDistance(rwy.startLocation, rwy.bearing, rwy.length / MathUtils.METRES_TO_NAUTICAL_MILES);
+            SimVar.SetSimVarValue('L:A32NX_OANS_BTV_RWY_LENGTH', SimVarValueType.Meters, rwy.length);
+
+            const ppos = this.fmc.navigation.getPpos();
+
+            if (ppos) {
+                const distanceToRwyEnd = distanceTo(ppos, rwyEndPoint) * MathUtils.METRES_TO_NAUTICAL_MILES;
+                const isBehindRwyEnd = Math.abs(bearingTo(ppos, rwyEndPoint) - rwy.bearing) > 135;
+                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, Math.min(rwy.length, isBehindRwyEnd ? -distanceToRwyEnd : distanceToRwyEnd));
+
+                const distanceToExit = distanceTo(ppos, stopPoint) * MathUtils.METRES_TO_NAUTICAL_MILES;
+                const isBehindExit = Math.abs(bearingTo(ppos, stopPoint) - rwy.bearing) > 135;
+                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, Math.min(rwy.length, isBehindExit ? -distanceToExit : distanceToExit));
+            }
         }
     }
 

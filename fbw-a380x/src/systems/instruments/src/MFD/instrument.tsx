@@ -91,7 +91,6 @@ class A380X_MFD extends BaseInstrument {
     }
 
     public onInteractionEvent(args: string[]): void {
-        console.warn(args[0]);
         this.hEventPublisher.dispatchHEvent(args[0]);
     }
 

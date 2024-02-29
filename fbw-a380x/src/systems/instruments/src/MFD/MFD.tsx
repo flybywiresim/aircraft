@@ -12,6 +12,7 @@ import {
     Subject,
     VNode,
 } from '@microsoft/msfs-sdk';
+import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
@@ -26,7 +27,6 @@ import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 
 // Import for pages
 
@@ -171,7 +171,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         const hEventSub = this.props.bus.getSubscriber<HEvent>();
         hEventSub.on('hEvent').handle((eventName) => {
-            console.log(`H event: ${eventName}`);
             this.props.fmcService.master?.acInterface.onEvent(eventName);
         });
         // const isCaptainSide = getDisplayIndex() === 2;
@@ -309,7 +308,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                         fmcService={this.props.fmcService}
                     />
                     <div ref={this.activePageRef} class="mfd-navigator-container" />
-                    <MouseCursor isDoubleScreenMfd={true} side={Subject.create(this.props.captOrFo)} ref={this.mouseCursorRef} />
+                    <MouseCursor isDoubleScreenMfd side={Subject.create(this.props.captOrFo)} ref={this.mouseCursorRef} />
                 </div>
             </CdsDisplayUnit>
         );
