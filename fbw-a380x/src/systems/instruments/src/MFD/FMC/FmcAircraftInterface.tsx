@@ -905,9 +905,7 @@ export class FmcAircraftInterface {
         // Only compute if FMS runway is set and aircraft in approach mode
         if (rwy) {
             const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
-            const pub = this.bus.getPublisher<FmsOansData>();
-            pub.pub('fmsLandingRunway', rwy.ident, true);
-            pub.pub('fmsLandingRunwayLength', rwy.length);
+            SimVar.SetSimVarValue('L:A32NX_OANS_BTV_RWY_LENGTH', SimVarValueType.Meters, rwy.length);
 
             if (fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
                 const reqDistance = SimVar.GetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters);
@@ -920,11 +918,11 @@ export class FmcAircraftInterface {
                 if (ppos) {
                     const distanceToRwyEnd = distanceTo(ppos, rwyEndPoint) * MathUtils.METRES_TO_NAUTICAL_MILES;
                     const isBehindRwyEnd = Math.abs(bearingTo(ppos, rwyEndPoint) - rwy.bearing) > 135;
-                    pub.pub('fmsRemainingDistToRwyEnd', Math.min(rwy.length, isBehindRwyEnd ? -distanceToRwyEnd : distanceToRwyEnd));
+                    SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, Math.min(rwy.length, isBehindRwyEnd ? -distanceToRwyEnd : distanceToRwyEnd));
 
                     const distanceToExit = distanceTo(ppos, stopPoint) * MathUtils.METRES_TO_NAUTICAL_MILES;
                     const isBehindExit = Math.abs(bearingTo(ppos, stopPoint) - rwy.bearing) > 135;
-                    pub.pub('fmsRemainingDistToExit', Math.min(rwy.length, isBehindExit ? -distanceToExit : distanceToExit));
+                    SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, Math.min(rwy.length, isBehindExit ? -distanceToExit : distanceToExit));
                 }
             }
         }
