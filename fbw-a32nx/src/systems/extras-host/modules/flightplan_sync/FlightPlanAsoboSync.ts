@@ -36,9 +36,11 @@ export class FlightPlanAsoboSync {
     private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
-        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
+        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus);
         NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-        this.mapping = new MsfsMapping(new FacilityCache());
+
+        // FIXME either find a way to get mapping without cache or map it manually
+        this.mapping = new MsfsMapping(null);
     }
 
     static extractRunwayNumber(ident: string) {
@@ -158,11 +160,10 @@ export class FlightPlanAsoboSync {
                     // eslint-disable-next-line no-await-in-loop
 
                     console.log('adding wp loaded', i, wpt);
-
                     const wptMapped = this.mapping.mapFacilityToWaypoint(wpt);
-                    console.log('adding wp egg', i, wptMapped);
+                    console.log('adding wp mapped', i, wptMapped);
 
-                    this.rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
+                    await this.rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
                 }
             }
 
@@ -172,6 +173,7 @@ export class FlightPlanAsoboSync {
     }
 
     private async syncFlightPlanToGame(): Promise<void> {
+        // TODO make better
         if (NXDataStore.get('FP_SYNC', 'LOAD') !== 'SAVE') {
             return;
         }
@@ -230,11 +232,7 @@ export class FlightPlanAsoboSync {
                                 await Coherent.call('SET_DEPARTURE_PROC_INDEX', departureIndex);
                                 await Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', departureTransitionIndex > -1 ? departureTransitionIndex : 0);
                                 break;
-                            } /* else {
-                                await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', -1);
-                                await Coherent.call('SET_DEPARTURE_PROC_INDEX', -1);
-                                await Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', -1);
-                            } */
+                            }
                             departureRw++;
                         }
                         originRw++;
@@ -267,6 +265,7 @@ export class FlightPlanAsoboSync {
                                     console.log('available appr', arg.approaches);
                                     let approachName = this.procedureDetails.approachIdent;
 
+                                    // FIXME how to map that properly
                                     if (approachName.startsWith('D')) {
                                         approachName = `VOR ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
                                         console.log('NEW APPR NAME', approachName);
@@ -302,13 +301,12 @@ export class FlightPlanAsoboSync {
                             }
                         }
                     }
-
                     await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
                 }
             }
             await Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX', 0);
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 }
