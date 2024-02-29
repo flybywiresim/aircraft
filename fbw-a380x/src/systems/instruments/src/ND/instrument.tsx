@@ -11,10 +11,10 @@ import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
 import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
+import { FmsOansPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { FmsOansData, FmsOansPublisher } from '../MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -48,6 +48,8 @@ class NDInstrument implements FsInstrument {
     private readonly fcuBusPublisher: FcuBusPublisher;
 
     private readonly fmsDataPublisher: FmsDataPublisher;
+
+    private readonly fmsOansPublisher: FmsOansPublisher;
 
     private readonly fgDataPublisher: FGDataPublisher;
 
@@ -160,6 +162,7 @@ class NDInstrument implements FsInstrument {
         this.simVarPublisher = new NDSimvarPublisher(this.bus);
         this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
+        this.fmsOansPublisher = new FmsOansPublisher(this.bus);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
@@ -176,6 +179,7 @@ class NDInstrument implements FsInstrument {
         this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
         this.backplane.addPublisher('fcu', this.fcuBusPublisher);
         this.backplane.addPublisher('fms', this.fmsDataPublisher);
+        this.backplane.addPublisher('fms-oans', this.fmsOansPublisher);
         this.backplane.addPublisher('fg', this.fgDataPublisher);
         this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
         this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
@@ -242,7 +246,7 @@ class NDInstrument implements FsInstrument {
                         ref={this.mouseCursorRef}
                         side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')}
                         visible={this.cursorVisible}
-                        />
+                    />
                 </CdsDisplayUnit>
             </div>,
             document.getElementById('ND_CONTENT'),

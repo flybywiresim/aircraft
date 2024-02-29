@@ -7,11 +7,16 @@ export interface OansRunwayInfo {
     length: number,
 }
 
+export interface BtvExitInfo {
+    exit: string,
+    stoppingDistance: number,
+}
+
 export interface OansControlEvents {
     ndShowOans: boolean,
     ndSetContextMenu: { x: number, y: number },
     oansDisplayAirport: string,
     oansZoomIn: number,
     oansZoomOut: number,
-    oansRunwayInfo: OansRunwayInfo | null,
+    btvRunwayInfo: OansRunwayInfo | null,
 }

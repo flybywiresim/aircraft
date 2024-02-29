@@ -5,7 +5,7 @@ import './OansControlPanel.scss';
 
 import {
     ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent,
-    MapSubject, MappedSubscribable, Subject, Subscribable, Subscription, VNode,
+    MapSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
 import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
@@ -54,7 +54,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private readonly style = MapSubject.create<string, string>();
 
-    private readonly activeTabIndex = Subject.create<number>(2);
+    private readonly activeTabIndex = Subject.create<number>(0);
 
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
@@ -81,6 +81,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     private runwayTora = Subject.create<string | null>(null);
 
     private runwayLda = Subject.create<string | null>(null);
+
+    private reqStoppingDistance = Subject.create<number | null>(null);
 
     private airportDatabase = Subject.create('SXT59027250AA04');
 
@@ -163,8 +165,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.runwayLda.set(it.toFixed(0));
             this.runwayTora.set(it.toFixed(0));
 
-            this.props.bus.getPublisher<OansControlEvents>().pub('oansRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it });
+            this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it });
         });
+
+        sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
@@ -391,12 +395,23 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             />
                                             <Button label="LDG SHIFT" onClick={() => this.showLdgShiftPanel()} buttonStyle="flex: 1" disabled={Subject.create(true)} />
                                         </div>
-                                        <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
+                                        <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px;">
                                             <Button
                                                 label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`}
                                                 onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`)}
                                                 disabled={Subject.create(true)}
                                             />
+                                        </div>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                                            <div class="mfd-label">BTV STOP DISTANCE:</div>
+                                            <div>
+                                                <InputField<number>
+                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    dataHandlerDuringValidation={async (val) => SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val)}
+                                                    value={this.reqStoppingDistance}
+                                                    mandatory={Subject.create(false)}
+                                                />
+                                            </div>
                                         </div>
                                         <OansRunwayInfoBox
                                             rwyOrStand={this.selectedEntityType}

@@ -2,30 +2,61 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, EventBus, Subject, VNode, SimVarValueType } from '@microsoft/msfs-sdk';
 
-import { OansControlEvents } from 'instruments/src/OANC';
+import { FmsOansData, OansControlEvents } from 'instruments/src/OANC';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
     private readonly runwayInfoString = Subject.create('');
 
+    private readonly exitInfoString = Subject.create<string | null>('');
+
+    private readonly rot = Subject.create<string | null>(null);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<OansControlEvents>();
+        const sub = this.props.bus.getSubscriber<OansControlEvents & FmsOansData>();
 
-        sub.on('oansRunwayInfo').whenChanged().handle((it) => {
-            this.runwayInfoString.set(`${it.ident.padStart(5, '\xa0')}${it.length.toFixed(0).padStart(6, '\xa0')}M`);
+        sub.on('btvRunwayInfo').whenChanged().handle((it) => {
+            this.runwayInfoString.set(`${it.ident.padStart(5, '\xa0')}${it.length.toFixed(0).padStart(6, '\xa0')}`);
+        });
+
+        sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => {
+            this.exitInfoString.set(it ? `${'N/A'.padStart(4, '\xa0')}${it.toFixed(0).padStart(6, '\xa0')}` : null);
+        });
+
+        sub.on('btvRot').whenChanged().handle((it) => {
+            this.rot.set(it ? it.toFixed(0).padStart(4, '\xa0') : null);
         });
     }
 
     render(): VNode | null {
         return (
-            <Layer x={2} y={58}>
-                <text x={0} y={0} class="White FontSmallest">RWY</text>
-                <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
-            </Layer>
+            <>
+                <Layer x={2} y={54}>
+                    <text x={0} y={0} class="White FontSmallest">RWY</text>
+                    <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
+                    <text x={205} y={0} class="Cyan FontSmallest">M</text>
+                </Layer>
+                <g visibility={this.exitInfoString.map((it) => it ? 'visible' : 'hidden')}>
+                    <Layer x={2} y={82}>
+                        <rect x={64} y={-20} width={154} height={21} />
+                        <text x={0} y={0} class="White FontSmallest">EXIT</text>
+                        <text x={64} y={0} class="Green FontSmallest">{this.exitInfoString}</text>
+                        <text x={205} y={0} class="Cyan FontSmallest">M</text>
+                    </Layer>
+                </g>
+                <g visibility={this.rot.map((it) => it ? 'visible' : 'hidden')}>
+                    <Layer x={2} y={111}>
+                        <rect x={50} y={-20} width={70} height={21} />
+                        <text x={0} y={0} class="White FontSmallest">ROT</text>
+                        <text x={50} y={0} class="Green FontSmallest">{this.rot}</text>
+                        <text x={107} y={0} class="Cyan FontSmallest">s</text>
+                    </Layer>
+                </g>
+            </>
         );
     }
 }

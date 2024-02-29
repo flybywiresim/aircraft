@@ -178,7 +178,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         });
 
         sub.on('ndShowOans').whenChanged().handle((show) => this.showOans.set(show));
-        sub.on('oansRunwayInfo').whenChanged().handle((it) => {
+        sub.on('btvRunwayInfo').whenChanged().handle((it) => {
             this.oansRunwayInfo.set(it);
             this.shouldShowOansRunwayInfo();
         });
