@@ -128,29 +128,28 @@ class AircraftPresetProcedures_A32NX {
       },
 
       .PUSHBACK_CONFIG_OFF = {
-        ProcedureStep{"COCKPIT DOOR OP", 2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-        ProcedureStep{"FUEL PUMP 2 Off", 2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 5 Off", 2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL VALVE 9 Off", 2280, false, 100, "(A:FUELSYSTEM VALVE SWITCH:9, Bool) !",       "9 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-        ProcedureStep{"FUEL VALVE 10 Off",2290, false, 500, "(A:FUELSYSTEM VALVE SWITCH:10, Bool) !",      "10 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-        ProcedureStep{"FUEL PUMP 3 Off", 2300, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",        "3 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"FUEL PUMP 6 Off", 2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",        "6 (>K:FUELSYSTEM_PUMP_OFF)"},
-        ProcedureStep{"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
+        ProcedureStep{"COCKPIT DOOR OP",      2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",                "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+        ProcedureStep{"FUEL PUMP 2 Off",      2260, false,  100, "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",              "2 (>K:FUELSYSTEM_PUMP_OFF)"},
+        ProcedureStep{"FUEL PUMP 5 Off",      2270, false,  500, "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",              "5 (>K:FUELSYSTEM_PUMP_OFF)"},
+        ProcedureStep{"FUEL VALVE 9 Off",     2280, false,  100, "(A:FUELSYSTEM VALVE SWITCH:9, Bool) !",             "9 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+        ProcedureStep{"FUEL VALVE 10 Off",    2290, false,  500, "(A:FUELSYSTEM VALVE SWITCH:10, Bool) !",            "10 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+        ProcedureStep{"FUEL PUMP 3 Off",      2300, false,  100, "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",              "3 (>K:FUELSYSTEM_PUMP_OFF)"},
+        ProcedureStep{"FUEL PUMP 6 Off",      2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",              "6 (>K:FUELSYSTEM_PUMP_OFF)"},
+        ProcedureStep{"Beacon Off",           2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                          "0 (>K:BEACON_LIGHTS_OFF)"},
       },
 
       .TAXI_CONFIG_ON = {
         // SOP: ENGINE START
         ProcedureStep{"ENG MODE SEL START",   3000, false, 3000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
-                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == && "
-                                                                  "(K:TURBINE_IGNITION_SWITCH_SET1) 2 == "
-                                                                  "(K:TURBINE_IGNITION_SWITCH_SET2) 2 == && ||",      "2 (>K:TURBINE_IGNITION_SWITCH_SET1) 2 (>K:TURBINE_IGNITION_SWITCH_SET2)"},
+                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == && ",                "2 (>K:TURBINE_IGNITION_SWITCH_SET2) "
+                                                                                                                      "2 (>K:TURBINE_IGNITION_SWITCH_SET1)"},
         ProcedureStep{"ENG 2 ON",             3010, false, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"Await ENG 2 AVAIL",    3020, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:2) 1 =="},
         ProcedureStep{"ENG 1 ON",             3030, false, 60000, "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"Await ENG 1 AVAIL",    3040, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:1) 1 =="},
         // SOP: AFTER START
-        ProcedureStep{"ENG MODE SEL NORM",    3050, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1, Bool) 1 == "
-                                                                  "(A:TURB ENG IGNITION SWITCH EX1:2, Bool) 1 == &&", "1 (>K:TURBINE_IGNITION_SWITCH_SET1) 1 (>K:TURBINE_IGNITION_SWITCH_SET2)"},
+        ProcedureStep{"ENG MODE SEL NORM",    3050, false, 3000,  "",                                                 "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
+                                                                                                                      "1 (>K:TURBINE_IGNITION_SWITCH_SET2) "},
         ProcedureStep{"APU Bleed Off",        3060, false, 2000,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",      "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",       3070, false, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",       "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
         ProcedureStep{"Spoiler Arm",          3090, false, 2000,  "(L:A32NX_SPOILERS_ARMED) 1 ==",                    "1 (>K:SPOILERS_ARM_SET)"},
@@ -171,7 +170,7 @@ class AircraftPresetProcedures_A32NX {
       },
 
       .TAXI_CONFIG_OFF = {
-        ProcedureStep{"TERR ON ND Capt. Off",  3080, false, 2000, "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",          "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
+        ProcedureStep{"TERR ON ND Capt. Off",  3080, false, 2000, "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",           "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
         ProcedureStep{"Autobrake Off",         3180, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",        "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
         ProcedureStep{"TCAS TRAFFIC ABV",      2240, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==", "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"ATC ALT RPTG Off",      2230, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",               "1 (>L:A32NX_SWITCH_ATC_ALT)"},

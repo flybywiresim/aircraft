@@ -20,6 +20,7 @@ class MsfsHandler;
  */
 class AircraftPresets : public Module {
  private:
+
   // Convenience pointer to the data manager
   DataManager* dataManager = nullptr;
 
@@ -29,6 +30,7 @@ class AircraftPresets : public Module {
   NamedVariablePtr progressAircraftPreset{};
   NamedVariablePtr progressAircraftPresetId{};
   NamedVariablePtr aircraftPresetExpedite{};
+  NamedVariablePtr aircraftPresetExpediteDelay{};
 
   // Sim-vars
   AircraftVariablePtr simOnGround{};

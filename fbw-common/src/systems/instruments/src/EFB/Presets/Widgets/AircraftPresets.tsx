@@ -4,10 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { Toggle } from '@flybywiresim/flypad';
-import { t } from '../../Localization/translation';
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
+import { getAirframeType, Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
 import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
@@ -56,6 +53,9 @@ export const AircraftPresets = () => {
         setLoadPresetVar(0);
     };
 
+    // Unfortunately, the expedited loading is only available for the A380X / the A32NX has trouble starting engines
+    const a380xOnly = getAirframeType() === 'A380_842';
+
     return (
         <div className="mt-4 h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
             <div className="flex h-20 flex-row items-center justify-center space-x-2 rounded-md border-2 border-theme-accent p-2">
@@ -101,14 +101,16 @@ export const AircraftPresets = () => {
                     </div>
                 ))}
             </ScrollableContainer>
-            <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
-                <div className="flex h-10 flex-row items-center">
-                    <div className="pr-3">
-                        {t('Presets.AircraftStates.ExpediteLoading')}
+            {a380xOnly && (
+                <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
+                    <div className="flex h-10 flex-row items-center">
+                        <div className="pr-3">
+                            {t('Presets.AircraftStates.ExpediteLoading')}
+                        </div>
+                        <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
                     </div>
-                    <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
                 </div>
-            </div>
+            )}
         </div>
     );
 };

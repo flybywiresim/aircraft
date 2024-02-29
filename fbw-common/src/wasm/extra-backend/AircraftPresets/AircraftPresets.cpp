@@ -38,12 +38,14 @@ bool AircraftPresets::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // LVARs
-  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ);
   loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
-  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ);
+
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
+  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
+  aircraftPresetExpediteDelay = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250, 30);
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -176,7 +178,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // allow execution of the procedure without a delay if expedite is set
     if (aircraftPresetExpedite->getAsBool()) {
-      currentDelay = 0;
+      currentDelay = aircraftPresetExpediteDelay->get();
     }
 
     // update progress var
@@ -185,7 +187,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // execute code to set expected state
     LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
-             " (delay after: " + (aircraftPresetExpedite->getAsBool() ? "0" : std::to_string(currentStepPtr->delayAfter)) + ")");
+             " (delay after: " + std::to_string(aircraftPresetExpedite->getAsBool() ? aircraftPresetExpediteDelay->get() : currentStepPtr->delayAfter) + ")");
     execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
     currentStep++;
 
