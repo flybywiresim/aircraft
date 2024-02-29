@@ -6,9 +6,13 @@
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { FlightPlanSyncEvents, PerformanceDataFlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
-import { A320FlightPlanPerformanceData, FlightPlanIndex } from '@fmgc/index';
-import { EventBus, FacilityType, FacilityLoader, FacilityRepository } from '@microsoft/msfs-sdk';
+import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
+
+import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
+import { A320FlightPlanPerformanceData, FlightPlanIndex, NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
+import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO } from '@microsoft/msfs-sdk';
+import { MsfsMapping } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/Mapping';
+import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 
 export class FlightPlanAsoboSync {
     private isReady = false;
@@ -23,14 +27,26 @@ export class FlightPlanAsoboSync {
 
     private destinationAirport = undefined;
 
-    private procedureDetails: ProcedureDetails = undefined;
+    private procedureDetails = undefined;
 
     private enrouteLegs: (SerializedFlightPlanLeg | Discontinuity)[] = undefined;
 
-    constructor(private readonly bus: EventBus) {}
+    private rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
+
+    private mapping: MsfsMapping;
+
+    constructor(private readonly bus: EventBus) {
+        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
+        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+        this.mapping = new MsfsMapping(new FacilityCache());
+    }
+
+    static extractRunwayNumber(ident: string) {
+        return ident.substring(2, 4).startsWith('0') ? ident.substring(3, 4) : ident.substring(2, 4);
+    }
 
     connectedCallback(): void {
-        const sub = this.bus.getSubscriber<FlightPlanSyncEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
+        const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
         this.facilityLoaderCustom = new FacilityLoader(FacilityRepository.getRepository(this.bus));
 
@@ -39,8 +55,13 @@ export class FlightPlanAsoboSync {
         });
 
         // initial sync
+        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'LOAD') {
+            this.loadFlightPlanFromGame();
+        }
+
+        // initial sync
         if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
-            const pub = this.bus.getPublisher<FlightPlanSyncEvents>();
+            const pub = this.bus.getPublisher<FlightPlanEvents>();
             pub.pub('flightPlanManager.syncRequest', undefined, true);
         }
 
@@ -50,6 +71,7 @@ export class FlightPlanAsoboSync {
             this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
             this.originAirport = plan.originAirport;
             this.destinationAirport = plan.destinationAirport;
+            this.cruiseFlightLevel = plan.performanceData.cruiseFlightLevel;
 
             // TODO not really needed anymore
             this.procedureDetails = {
@@ -69,13 +91,13 @@ export class FlightPlanAsoboSync {
         });
 
         sub.on('flightPlan.setPerformanceData.cruiseFlightLevel').handle(async (event) => {
-            if (event.planIndex === FlightPlanIndex.Active || event.planIndex === FlightPlanIndex.Uplink) {
+            if (event.planIndex === FlightPlanIndex.Active) {
                 this.cruiseFlightLevel = event.value;
                 console.log('SET CRUISE FLIGHT LEVEL', this.cruiseFlightLevel);
                 await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
             }
         });
-        sub.on('flightPlan.setSegmentLegs').handle(async (event) => {
+        sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
             console.log('SEGMENT LEGS', event);
             if ((event.planIndex === FlightPlanIndex.Active) && event.segmentIndex === 4) {
                 this.enrouteLegs = event.legs;
@@ -83,49 +105,76 @@ export class FlightPlanAsoboSync {
             }
         });
 
-        /* sub.on('flightPlanManager.swap').handle(async (event) => {
-            if (event.targetPlanIndex === FlightPlanIndex.Active) {
-                pub.
-            } */
-        /*
-
-        sub.on('flightPlan.setProcedureDetails').handle(async (event) => {
-            if ((event.planIndex === FlightPlanIndex.Temporary)) {
-                this.procedureDetails = event.details;
-                console.log('PROCEDURE DETAILS', this.procedureDetails);
-                await this.syncFlightPlanToGame();
-            }
-        }); */
-
-        /*      sub.on('flightPlan.setOriginAirport').handle(async (event) => {
-            this.originAirport = event.originAirport;
-            console.log('ORIGIN', event);
-            await this.syncFlightPlanToGame();
-        });
-
-        sub.on('flightPlan.setDestinationAirport').handle(async (event) => {
-            if (event.planIndex === FlightPlanIndex.Active) {
-                this.destinationAirport = event.originAirport;
-                console.log('DESTINATION', this.destinationAirport);
-                await this.syncFlightPlanToGame();
-            }
-        }); */
-
         sub.on('flightPlanManager.copy').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.targetPlanIndex === FlightPlanIndex.Active) {
-                const pub = this.bus.getPublisher<FlightPlanSyncEvents>();
+                const pub = this.bus.getPublisher<FlightPlanEvents>();
                 pub.pub('flightPlanManager.syncRequest', undefined, true);
             }
         });
         sub.on('flightPlanManager.create').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.planIndex === FlightPlanIndex.Active) {
-                const pub = this.bus.getPublisher<FlightPlanSyncEvents>();
+                const pub = this.bus.getPublisher<FlightPlanEvents>();
                 pub.pub('flightPlanManager.syncRequest', undefined, true);
             }
         });
     }
 
+    private async loadFlightPlanFromGame(): Promise<void> {
+        Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
+
+        // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
+        // currently the rpc client waits 5 seconds before it sends the sync request
+        await Wait.awaitDelay(6000);
+
+        const data = await Coherent.call('GET_FLIGHTPLAN') as any;
+        console.log('LOADED FP', data);
+
+        const isDirectTo = data.isDirectTo;
+
+        if (!isDirectTo) {
+            if (data.waypoints.length === 0) {
+                return;
+            }
+            const destIndex = data.waypoints.length - 1;
+            if (!ICAO.isFacility(data.waypoints[0].icao) || !ICAO.isFacility(data.waypoints[destIndex].icao)) {
+                return;
+            }
+            console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
+            await this.rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
+
+            this.rpcClient.setPerformanceData('cruiseFlightLevel', 300, FlightPlanIndex.Uplink);
+
+            // set route
+            const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
+            // Find out first approach waypoint, - 1 to skip destination
+            const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
+            const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
+
+            for (let i = 0; i < enroute.length; i++) {
+                const wpt = enroute[i];
+                if (wpt.icao.trim() !== '') {
+                    // Without the 'await' the order of import is undefined and the flight plan waypoints
+                    // are not in the correct order
+                    // eslint-disable-next-line no-await-in-loop
+
+                    console.log('adding wp loaded', i, wpt);
+
+                    const wptMapped = this.mapping.mapFacilityToWaypoint(wpt);
+                    console.log('adding wp egg', i, wptMapped);
+
+                    this.rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
+                }
+            }
+
+            console.log('finishing upling');
+            this.rpcClient.uplinkInsert();
+        }
+    }
+
     private async syncFlightPlanToGame(): Promise<void> {
+        if (NXDataStore.get('FP_SYNC', 'LOAD') !== 'SAVE') {
+            return;
+        }
         try {
             if (this.isReady) {
                 await Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0, true);
@@ -165,10 +214,7 @@ export class FlightPlanAsoboSync {
                         for (const designation of runway.designation.split('-')) {
                             console.log('ORIGIN RUNWAY', this.procedureDetails.originRunway);
                             console.log(designation);
-                            if (designation
-                                === (this.procedureDetails.originRunway.substring(2, 4).startsWith('0')
-                                    ? this.procedureDetails.originRunway.substring(3, 4)
-                                    : this.procedureDetails.originRunway.substring(2, 4))) {
+                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(this.procedureDetails.originRunway)) {
                                 console.log(`Runway parent ${originRw} is matching with actual index ${departureRw}. Is ${JSON.stringify(runway)}`);
                                 await Coherent.call('SET_ORIGIN_RUNWAY_INDEX', originRw);
                                 await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', departureRw);
@@ -184,11 +230,11 @@ export class FlightPlanAsoboSync {
                                 await Coherent.call('SET_DEPARTURE_PROC_INDEX', departureIndex);
                                 await Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', departureTransitionIndex > -1 ? departureTransitionIndex : 0);
                                 break;
-                            } else {
+                            } /* else {
                                 await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', -1);
                                 await Coherent.call('SET_DEPARTURE_PROC_INDEX', -1);
                                 await Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', -1);
-                            }
+                            } */
                             departureRw++;
                         }
                         originRw++;
@@ -210,10 +256,7 @@ export class FlightPlanAsoboSync {
                             for (const designation of runway.designation.split('-')) {
                                 console.log(destinationRunwayIdent);
                                 console.log(designation);
-                                if (designation
-                                     === (destinationRunwayIdent.substring(2, 4).startsWith('0')
-                                         ? destinationRunwayIdent.substring(3, 4)
-                                         : destinationRunwayIdent.substring(2, 4))) {
+                                if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)) {
                                     console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is ${JSON.stringify(runway)}`);
                                     const arrivalIndex = arg.arrivals
                                         .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
@@ -225,10 +268,13 @@ export class FlightPlanAsoboSync {
                                     let approachName = this.procedureDetails.approachIdent;
 
                                     if (approachName.startsWith('D')) {
-                                        approachName = `VOR ${destinationRunwayIdent.substring(2, 4).startsWith('0')
-                                            ? destinationRunwayIdent.substring(3, 4)
-                                            : destinationRunwayIdent.substring(2, 4)} ${approachName
-                                            .charAt(approachName.length - 1)}`;
+                                        approachName = `VOR ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
+                                        console.log('NEW APPR NAME', approachName);
+                                    } else if (approachName.startsWith('I')) {
+                                        approachName = `ILS ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
+                                        console.log('NEW APPR NAME', approachName);
+                                    } else if (approachName.startsWith('R')) {
+                                        approachName = `RNAV ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
                                         console.log('NEW APPR NAME', approachName);
                                     }
                                     const apoprachIndex = arg.approaches
@@ -265,50 +311,4 @@ export class FlightPlanAsoboSync {
             console.log(e);
         }
     }
-}
-export class ProcedureDetails {
-    /** The origin runway object, consisting of the index of the origin runway
-     * in the origin runway information and the direction. */
-    public originRunway: string | undefined = undefined;
-
-    /** The ICAO for the facility associated with the departure procedure. */
-    // public departureFacilityIcao: string | undefined = undefined;
-
-    /** The index of the departure in the origin airport information. */
-    public departureIdent: string | undefined = undefined;
-
-    /** The index of the departure transition in the origin airport departure information. */
-    public departureTransitionIdent: string | undefined = undefined;
-
-    /** The index of the selected runway in the original airport departure information. */
-    // public departureRunwayIdent: string | undefined = undefined;
-
-    /** The ICAO for the facility associated with the arrival procedure. */
-    //  public arrivalFacilityIcao: string | undefined = undefined;
-
-    /** The index of the arrival in the destination airport information. */
-    public arrivalIdent: string | undefined = undefined;
-
-    /** The index of the arrival transition in the destination airport arrival information. */
-    public arrivalTransitionIdent: string | undefined = undefined;
-
-    /** The index of the selected runway transition at the destination airport arrival information. */
-    public arrivalRunwayTransitionIdent : string | undefined = undefined;
-
-    /** The arrival runway object, consisting of the index of the destination runway
-     * in the destination runway information and the direction. */
-    // public arrivalRunway: OneWayRunway | undefined = undefined;
-
-    /** The ICAO for the facility associated with the approach procedure. */
-    // public approachFacilityIcao: string | undefined = undefined;
-
-    /** The index of the apporach in the destination airport information. */
-    public approachIdent: string | undefined = undefined;
-
-    /** The index of the approach transition in the destination airport approach information. */
-    public approachTransitionIdent: string | undefined = undefined;
-
-    /** The destination runway object, consisting of the index of the destination runway
-     * in the destination runway information and the direction. */
-    public destinationRunway: string | undefined = undefined;
 }

@@ -100,7 +100,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
             }
         });
 
-        if (!master) {
+        if (!this.master) {
             setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);
         }
 

@@ -30,6 +30,6 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
     }
 
     private async respondToRpcCommand(id: string, response: any): Promise<void> {
-        this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response]);
+        this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response], true);
     }
 }
