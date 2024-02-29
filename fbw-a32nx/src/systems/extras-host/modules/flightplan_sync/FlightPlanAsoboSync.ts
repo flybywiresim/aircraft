@@ -4,12 +4,12 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Fix, NXDataStore, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
 
 import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
-import { A320FlightPlanPerformanceData, FlightPlanIndex, NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
+import { A320FlightPlanPerformanceData, FlightPlanIndex } from '@fmgc/index';
 import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO } from '@microsoft/msfs-sdk';
 import { MsfsMapping } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/Mapping';
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
@@ -37,10 +37,7 @@ export class FlightPlanAsoboSync {
 
     constructor(private readonly bus: EventBus) {
         this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus);
-        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-
-        // FIXME either find a way to get mapping without cache or map it manually
-        this.mapping = new MsfsMapping(null);
+        // NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     }
 
     static extractRunwayNumber(ident: string) {
@@ -160,7 +157,7 @@ export class FlightPlanAsoboSync {
                     // eslint-disable-next-line no-await-in-loop
 
                     console.log('adding wp loaded', i, wpt);
-                    const wptMapped = this.mapping.mapFacilityToWaypoint(wpt);
+                    const wptMapped = this.mapFacilityToWaypoint(wpt);
                     console.log('adding wp mapped', i, wptMapped);
 
                     await this.rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
@@ -170,6 +167,18 @@ export class FlightPlanAsoboSync {
             console.log('finishing upling');
             this.rpcClient.uplinkInsert();
         }
+    }
+
+    // TODO JS_WAYPOINT missing in types
+    private mapFacilityToWaypoint(facility: any): Waypoint {
+        return {
+            databaseId: facility.icao,
+            icaoCode: facility.icao.substring(1, 3),
+            ident: FacilityCache.ident(facility.icao),
+            name: Utils.Translate(facility.name),
+            location: { lat: facility.lla.lat, long: facility.lla.long },
+            area: facility.icao.substring(3, 7).trim().length > 0 ? WaypointArea.Terminal : WaypointArea.Enroute,
+        } as Waypoint;
     }
 
     private async syncFlightPlanToGame(): Promise<void> {
