@@ -9,7 +9,7 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/new/plans/RestringOptions';
-import { FlightPlanSegment } from './FlightPlanSegment';
+import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class DestinationSegment extends FlightPlanSegment {
@@ -118,5 +118,16 @@ export class DestinationSegment extends FlightPlanSegment {
         newSegment.runway = this.runway;
 
         return newSegment;
+    }
+
+    /**
+     * Sets the contents of this segment using a serialized flight plan segment.
+     *
+     * @param serialized the serialized flight plan segment
+     */
+    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+        // TODO sync the airport
+        // TODO sync the runway
+        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
     }
 }

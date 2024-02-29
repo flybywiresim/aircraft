@@ -1,5 +1,5 @@
 import { NauticalMiles } from 'msfs-geo';
-import { BaseFix, WaypointArea } from '..';
+import { BaseFix } from '..';
 import { KiloHertz } from './Common';
 import { NavaidSubsectionCode, SectionCode } from './SectionCode';
 

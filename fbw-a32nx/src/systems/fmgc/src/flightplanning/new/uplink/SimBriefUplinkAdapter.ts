@@ -12,7 +12,7 @@ import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
-import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
+import { ISimbriefData, simbriefDataParser } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -221,11 +221,25 @@ export class SimBriefUplinkAdapter {
                 const isDeparture = i === 0;
 
                 if (isDeparture) {
-                    await flightPlanService.setDepartureProcedure(chunk.ident, FlightPlanIndex.Uplink);
+                    const departures = await NavigationDatabaseService.activeDatabase.backendDatabase.getDepartures(route.from.ident, route.from.rwy);
+                    const departureCandidates = departures.filter((it) => it.ident === chunk.ident);
 
-                    setInsertHeadToEndOfEnroute();
+                    // Don't set departure if more than one with the same ident is found
+                    if (departureCandidates.length === 1) {
+                        await flightPlanService.setDepartureProcedure(departureCandidates[0].databaseId, FlightPlanIndex.Uplink);
+
+                        setInsertHeadToEndOfEnroute();
+                    }
                 } else {
-                    await flightPlanService.setArrival(chunk.ident, FlightPlanIndex.Uplink);
+                    const arrivals = await NavigationDatabaseService.activeDatabase.backendDatabase.getArrivals(route.to.ident);
+                    const arrivalCandidates = arrivals.filter((it) => it.ident === chunk.ident);
+
+                    // Don't set arrival if more than one with the same ident is found
+                    if (arrivalCandidates.length === 1) {
+                        await flightPlanService.setArrival(arrivalCandidates[0].databaseId, FlightPlanIndex.Uplink);
+
+                        setInsertHeadToEndOfEnroute();
+                    }
                 }
 
                 break;
@@ -244,9 +258,12 @@ export class SimBriefUplinkAdapter {
                     continue;
                 }
 
-                await flightPlanService.setDepartureEnrouteTransition(chunk.ident, FlightPlanIndex.Uplink);
+                const candidateTransitions = plan.originDeparture.enrouteTransitions.filter((it) => it.ident === chunk.ident);
+                if (candidateTransitions.length === 1) {
+                    await flightPlanService.setDepartureEnrouteTransition(candidateTransitions[0].databaseId, FlightPlanIndex.Uplink);
 
-                setInsertHeadToEndOfEnroute();
+                    setInsertHeadToEndOfEnroute();
+                }
 
                 break;
             }

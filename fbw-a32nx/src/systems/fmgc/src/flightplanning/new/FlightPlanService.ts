@@ -214,52 +214,52 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         return plan.setOriginRunway(runwayIdent);
     }
 
-    setDepartureProcedure(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setDepartureProcedure(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setDeparture(procedureIdent);
+        return plan.setDeparture(databaseId);
     }
 
-    setDepartureEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setDepartureEnrouteTransition(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setDepartureEnrouteTransition(transitionIdent);
+        return plan.setDepartureEnrouteTransition(databaseId);
     }
 
-    setArrivalEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setArrivalEnrouteTransition(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setArrivalEnrouteTransition(transitionIdent);
+        return plan.setArrivalEnrouteTransition(databaseId);
     }
 
-    setArrival(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setArrival(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setArrival(procedureIdent);
+        return plan.setArrival(databaseId);
     }
 
-    setApproachVia(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setApproachVia(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setApproachVia(procedureIdent);
+        return plan.setApproachVia(databaseId);
     }
 
-    setApproach(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setApproach(databaseId: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.setApproach(procedureIdent);
+        return plan.setApproach(databaseId);
     }
 
     setDestinationRunway(runwayIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {

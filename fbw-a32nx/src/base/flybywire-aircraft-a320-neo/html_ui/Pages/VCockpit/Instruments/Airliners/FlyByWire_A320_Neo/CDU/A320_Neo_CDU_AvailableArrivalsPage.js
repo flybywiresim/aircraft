@@ -51,8 +51,8 @@ class CDUAvailableArrivalsPage {
 
         const isTemporary = targetPlan.index === Fmgc.FlightPlanIndex.Temporary;
 
-        const selectedStarIdent = targetPlan.arrival ? targetPlan.arrival.ident : undefined;
-        const selectedTransitionIdent = targetPlan.arrivalEnrouteTransition ? targetPlan.arrivalEnrouteTransition.ident : undefined;
+        const selectedStarId = targetPlan.arrival ? targetPlan.arrival.databaseId : undefined;
+        const selectedTransitionId = targetPlan.arrivalEnrouteTransition ? targetPlan.arrivalEnrouteTransition.databaseId : undefined;
 
         const flightPlanAccentColor = isTemporary ? "yellow" : "green";
 
@@ -175,7 +175,7 @@ class CDUAvailableArrivalsPage {
                     }
 
                     mcdu.onLeftInput[i + 2] = async () => {
-                        await mcdu.flightPlanService.setApproach(approach.ident, forPlan, inAlternate);
+                        await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                     };
@@ -242,10 +242,10 @@ class CDUAvailableArrivalsPage {
                     index--;
                     if (matchingArrivals[index]) {
                         const star = matchingArrivals[index].arrival;
-                        const starIdent = matchingArrivals[index].arrival.ident;
+                        const starDatabaseId = matchingArrivals[index].arrival.databaseId;
 
                         let color = "cyan";
-                        if (selectedStarIdent === starIdent) {
+                        if (selectedStarId === starDatabaseId) {
                             color = "green";
                         }
                         rows[2 * i] = ["{" + star.ident + "[color]" + color];
@@ -260,7 +260,7 @@ class CDUAvailableArrivalsPage {
                                 await mcdu.flightPlanService.setDestinationRunway(arrivalRunway.ident, forPlan, inAlternate);
                             }
 
-                            await mcdu.flightPlanService.setArrival(starIdent, forPlan, inAlternate);
+                            await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
 
                             const approach = targetPlan.approach;
 
@@ -289,10 +289,10 @@ class CDUAvailableArrivalsPage {
                 if (selectedArrival) {
                     const transition = selectedArrival.enrouteTransitions[index];
                     if (transition) {
-                        rows[2 * (i + 1)][1] = `${transition.ident}${selectedTransitionIdent === transition.ident ? " " : "}"}[color]cyan`;
+                        rows[2 * (i + 1)][1] = `${transition.ident}${selectedTransitionId === transition.databaseId ? " " : "}"}[color]cyan`;
 
                         mcdu.onRightInput[i + 3] = async () => {
-                            await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.ident, forPlan, inAlternate);
+                            await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
 
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
                         };
@@ -424,10 +424,10 @@ class CDUAvailableArrivalsPage {
             const via = availableApproachVias[index];
 
             if (selectedApproach && via) {
-                rows[2 * i + 1][0] = `${via.ident === (selectedApproachVia ? selectedApproachVia.ident : undefined) ? "{green} " : "{cyan}{"}${via.ident}{end}`;
+                rows[2 * i + 1][0] = `${via.databaseId === (selectedApproachVia ? selectedApproachVia.databaseId : undefined) ? "{green} " : "{cyan}{"}${via.ident}{end}`;
 
                 mcdu.onLeftInput[i + 2] = async () => {
-                    await mcdu.flightPlanService.setApproachVia(via.ident, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
 
                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                 };

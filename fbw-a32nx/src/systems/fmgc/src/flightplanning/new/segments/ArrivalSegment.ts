@@ -22,10 +22,10 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
     private arrival: Arrival | undefined
 
-    async setProcedure(procedureIdent: string | undefined, skipUpdateLegs?: boolean) {
+    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean) {
         const oldArrivalName = this.arrival?.ident;
 
-        if (procedureIdent === undefined) {
+        if (databaseId === undefined) {
             this.arrival = undefined;
 
             if (!skipUpdateLegs) {
@@ -52,10 +52,10 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
         const arrivals = await db.getArrivals(destinationAirport.ident);
 
-        const matchingArrival = arrivals.find((arrival) => arrival.ident === procedureIdent);
+        const matchingArrival = arrivals.find((arrival) => arrival.databaseId === databaseId);
 
         if (!matchingArrival) {
-            throw new Error(`[FMS/FPM] Can't find arrival procedure '${procedureIdent}' for ${destinationAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find arrival procedure '${databaseId}' for ${destinationAirport.ident}`);
         }
 
         if (skipUpdateLegs) {

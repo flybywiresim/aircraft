@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FpmConfig } from '@fmgc/flightplanning/new/FpmConfig';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -92,56 +91,56 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the departure procedure in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param procedureIdent the procedure identifier (e.g., BAVE6P)
+     * @param databaseId     the unique database identifier of this procedure, not the ident
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    setDepartureProcedure(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setDepartureProcedure(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the departure enroute transition procedure in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param transitionIdent the enroute transition identifier (e.g., KABIN)
+     * @param databaseId      the unique databse identifier of this procedure, not the ident
      * @param planIndex       which flight plan to make the change on
      * @param alternate       whether to edit the plan's alternate flight plan
      */
-    setDepartureEnrouteTransition(transitionIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setDepartureEnrouteTransition(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the arrival enroute transition procedure in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param transitionIdent the enroute transition identifier (e.g., PLYMM)
+     * @param databaseId      the unique databse identifier of this procedure, not the ident
      * @param planIndex       which flight plan to make the change on
      * @param alternate       whether to edit the plan's alternate flight plan
      */
-    setArrivalEnrouteTransition(transitionIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setArrivalEnrouteTransition(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the arrival procedure in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param procedureIdent the procedure identifier (e.g., BOXUM5)
+     * @param databaseId     the unique database identifier of this procedure, not the ident
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    setArrival(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setArrival(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the approach via in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param procedureIdent the procedure identifier (e.g., DIREX)
+     * @param databaseId     the unique database identifier of this procedure, not the ident
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    setApproachVia(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setApproachVia(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the approach procedure in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param procedureIdent the procedure identifier (e.g., R05-X)
+     * @param databaseId     the unique database identifier of this procedure, not the ident
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    setApproach(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
+    setApproach(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
      * Sets the origin runway in the flight plan. Creates a temporary flight plan if target is active.

@@ -22,8 +22,8 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
     private approachVia: ProcedureTransition | undefined = undefined
 
-    setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (ident === undefined) {
+    setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined) {
             this.approachVia = undefined;
 
             if (!skipUpdateLegs) {
@@ -45,10 +45,10 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
         const approachVias = approach.transitions;
 
-        const matchingApproachVia = approachVias.find((transition) => transition.ident === ident);
+        const matchingApproachVia = approachVias.find((transition) => transition.databaseId === databaseId);
 
         if (!matchingApproachVia) {
-            throw new Error(`[FMS/FPM] Can't find arrival approach via '${ident}' for ${approach.ident}`);
+            throw new Error(`[FMS/FPM] Can't find arrival approach via '${databaseId}' for ${approach.ident}`);
         }
 
         this.approachVia = matchingApproachVia;

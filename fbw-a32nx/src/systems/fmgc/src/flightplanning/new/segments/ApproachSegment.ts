@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway, ApproachUtils, LegType } from '@flybywiresim/fbw-sdk';
+import { Approach, Runway, ApproachUtils, LegType, areDatabaseItemsEqual } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
@@ -23,12 +23,12 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     private approach: Approach | undefined
 
-    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
         const oldApproachName = this.flightPlan.approach?.ident;
 
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-        if (ident === undefined) {
+        if (databaseId === undefined) {
             this.approach = undefined;
 
             if (!skipUpdateLegs) {
@@ -52,10 +52,10 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
         const approaches = await db.getApproaches(destinationAirport.ident);
 
-        const matchingProcedure = approaches.find((approach) => approach.ident === ident);
+        const matchingProcedure = approaches.find((approach) => approach.databaseId === databaseId);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find approach procedure '${ident}' for ${destinationAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find approach procedure '${databaseId}' for ${destinationAirport.ident}`);
         }
 
         this.approach = matchingProcedure;
@@ -120,8 +120,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             }
 
             const lastLeg = approachLegs[approachLegs.length - 1];
-            // let lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway;
-            const lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && this.findRunwayFromRunwayLeg(lastLeg); // TODO user workaround until msfs-navdata fix (fms-v2)
+            const lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && areDatabaseItemsEqual(lastLeg.terminationWaypoint(), runway);
 
             if (lastLegIsRunway) {
                 legs.push(...approachLegs.slice(0, approachLegs.length - 1));
@@ -144,21 +143,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
     }
 
     private findRunwayFromRunwayLeg(leg: FlightPlanLeg): Runway | undefined {
-        return this.flightPlan.availableDestinationRunways.find((it) => it.ident === leg.ident);
-    }
-
-    private findRunwayFromApproachIdent(ident: string, runwaySet: Runway[]): Runway | undefined {
-        const runwaySpecificApproachPrefixes = /[ILDRV]/;
-
-        const ident0 = ident.substring(0, 1);
-        const ident1 = ident.substring(1, 2);
-        if (ident0.match(runwaySpecificApproachPrefixes) && ident1.match(/\d/)) {
-            const rwyNumber = ident.substring(1, 3);
-
-            return runwaySet.find((it) => it.ident === `RW${rwyNumber}`);
-        }
-
-        return undefined;
+        return this.flightPlan.availableDestinationRunways.find((it) => areDatabaseItemsEqual(leg.terminationWaypoint(), it));
     }
 
     clone(forPlan: BaseFlightPlan): ApproachSegment {

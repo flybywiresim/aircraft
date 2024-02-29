@@ -86,7 +86,7 @@ class CDUAocRequestsWeather {
                     if (!/^[A-Z0-9]{4}$/.test(value)) {
                         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
-                        mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                        mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
                             if (airport) {
                                 data.airports[i] = value;
                                 data.managed[i] = false;

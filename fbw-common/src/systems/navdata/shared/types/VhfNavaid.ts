@@ -1,5 +1,4 @@
 import { Coordinates, Degrees, Feet, NauticalMiles } from 'msfs-geo';
-import { WaypointArea } from '..';
 import { MegaHertz } from './Common';
 import { NavaidSubsectionCode, SectionCode } from './SectionCode';
 import { BaseFix } from './BaseFix';

@@ -3,12 +3,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, MathUtils } from '@flybywiresim/fbw-sdk';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
+import { Airport, Runway, MathUtils, areDatabaseItemsEqual } from '@flybywiresim/fbw-sdk';
+import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
+import { airportRunwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
@@ -104,8 +105,11 @@ export class OriginSegment extends FlightPlanSegment {
             }
 
             if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.isXF()) {
-                if (firstDepartureLeg.terminationWaypoint().ident === this.runway.ident) {
+                if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
+                    // TODO should this stuff go into DepartureRunwayTransitionSegment?
                     firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
+                    firstDepartureLeg.ident = airportRunwayIdent(this.originAirport, this.runway);
+
                     addOriginLeg = false;
                     addRunwayLeg = false;
                 } else {
@@ -129,7 +133,7 @@ export class OriginSegment extends FlightPlanSegment {
         if (this.runway) {
             const newRunwayCompatibleSids = await db.getDepartures(this.runway.airportIdent, this.runway.ident);
 
-            const currentSidCompatibleWithNewRunway = newRunwayCompatibleSids.some((departure) => departure.ident === this.flightPlan.originDeparture?.ident);
+            const currentSidCompatibleWithNewRunway = newRunwayCompatibleSids.some((departure) => departure.databaseId === this.flightPlan.originDeparture?.databaseId);
 
             if (currentSidCompatibleWithNewRunway) {
                 const currentSidNewRunwayTransition = this.flightPlan.originDeparture.runwayTransitions.find((transition) => transition.ident === this.runway.ident);
@@ -165,5 +169,16 @@ export class OriginSegment extends FlightPlanSegment {
         newSegment.runway = this.runway;
 
         return newSegment;
+    }
+
+    /**
+     * Sets the contents of this segment using a serialized flight plan segment.
+     *
+     * @param serialized the serialized flight plan segment
+     */
+    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+        // TODO sync the airport
+        // TODO sync the runway
+        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
     }
 }

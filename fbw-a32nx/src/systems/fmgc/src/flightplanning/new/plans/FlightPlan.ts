@@ -6,7 +6,7 @@
 import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
@@ -148,6 +148,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
         turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+        // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
+        turnEnd.ident = targetLeg.ident;
 
         this.redistributeLegsAt(0);
         this.redistributeLegsAt(targetLegIndex);
@@ -162,8 +164,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
 
-        this.activeLegIndex = turnEndLegIndexInPlan;
-        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+        this.setActiveLegIndex(turnEndLegIndexInPlan);
     }
 
     directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false) {
@@ -198,6 +199,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
         if (this.maybeElementAt(turnEndLegIndexInPlan + 1)?.isDiscontinuity === false) {
             this.enrouteSegment.allLegs.splice(2, 0, { isDiscontinuity: true });
+            this.syncSegmentLegsChange(this.enrouteSegment);
             this.incrementVersion();
 
             // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
@@ -205,8 +207,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 1);
         }
 
-        this.activeLegIndex = turnEndLegIndexInPlan;
-        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+        this.setActiveLegIndex(turnEndLegIndexInPlan);
     }
 
     /**
@@ -233,6 +234,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
                     .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
 
                 segment.allLegs.splice(xfLegIndexInSegment, 1, iFLegAfterDiscontinuity);
+                this.syncSegmentLegsChange(segment);
                 this.incrementVersion();
             }
         }
@@ -258,10 +260,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         await this.setDestinationAirport(this.alternateDestinationAirport.ident);
         await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
         // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
-        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.ident ?? undefined);
-        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.ident ?? undefined);
-        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.ident ?? undefined);
-        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
+        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
+        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
+        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.databaseId ?? undefined);
 
         const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
@@ -454,6 +456,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         newPlan.activeLegIndex = serialized.activeLegIndex;
         newPlan.fixInfos = serialized.fixInfo;
 
+        newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
         newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
         newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.departureRunwayTransitionSegment);
         newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.departureEnrouteTransitionSegment);
@@ -463,7 +466,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
         newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
         newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
-        // newPlan.performanceData.cruiseFlightLevel.set(serialized.performanceData.cruiseFlightLevel);
+        newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
 
         return newPlan;
     }
