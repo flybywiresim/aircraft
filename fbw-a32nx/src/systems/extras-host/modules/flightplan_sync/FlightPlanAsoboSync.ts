@@ -36,7 +36,7 @@ export class FlightPlanAsoboSync {
     private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
-        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus);
+        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
         // NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     }
 
@@ -45,13 +45,15 @@ export class FlightPlanAsoboSync {
     }
 
     connectedCallback(): void {
-        const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
-
         this.facilityLoaderCustom = new FacilityLoader(FacilityRepository.getRepository(this.bus));
 
         RegisterViewListener('JS_LISTENER_FLIGHTPLAN', () => {
             this.isReady = true;
         });
+    }
+
+    init(): void {
+        const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
         // initial sync
         if (NXDataStore.get('FP_SYNC', 'LOAD') === 'LOAD') {
@@ -65,28 +67,30 @@ export class FlightPlanAsoboSync {
         }
 
         sub.on('flightPlanManager.syncResponse').handle(async (event) => {
-            console.log('SYNC RESPONSE', event);
-            const plan = event.plans[FlightPlanIndex.Active];
-            this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
-            this.originAirport = plan.originAirport;
-            this.destinationAirport = plan.destinationAirport;
-            this.cruiseFlightLevel = plan.performanceData.cruiseFlightLevel;
+            if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
+                console.log('SYNC RESPONSE', event);
+                const plan = event.plans[FlightPlanIndex.Active];
+                this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
+                this.originAirport = plan.originAirport;
+                this.destinationAirport = plan.destinationAirport;
+                this.cruiseFlightLevel = plan.performanceData.cruiseFlightLevel;
 
-            // TODO not really needed anymore
-            this.procedureDetails = {
-                originRunway: plan.originRunway,
-                departureIdent: plan.segments.departureSegment?.procedureIdent,
-                departureTransitionIdent: plan.segments.departureRunwayTransitionSegment?.procedureIdent,
+                // TODO not really needed anymore
+                this.procedureDetails = {
+                    originRunway: plan.originRunway,
+                    departureIdent: plan.segments.departureSegment?.procedureIdent,
+                    departureTransitionIdent: plan.segments.departureRunwayTransitionSegment?.procedureIdent,
 
-                arrivalIdent: plan.segments.arrivalSegment?.procedureIdent,
-                arrivalTransitionIdent: plan.segments.arrivalEnrouteTransitionSegment?.procedureIdent,
-                arrivalRunwayTransitionIdent: plan.segments?.arrivalRunwayTransitionSegment.procedureIdent,
-                destinationRunway: plan.destinationRunway,
-                approachIdent: plan.segments.approachSegment?.procedureIdent,
-                approachTransitionIdent: plan.segments.approachViaSegment?.procedureIdent,
-            };
+                    arrivalIdent: plan.segments.arrivalSegment?.procedureIdent,
+                    arrivalTransitionIdent: plan.segments.arrivalEnrouteTransitionSegment?.procedureIdent,
+                    arrivalRunwayTransitionIdent: plan.segments?.arrivalRunwayTransitionSegment.procedureIdent,
+                    destinationRunway: plan.destinationRunway,
+                    approachIdent: plan.segments.approachSegment?.procedureIdent,
+                    approachTransitionIdent: plan.segments.approachViaSegment?.procedureIdent,
+                };
 
-            await this.syncFlightPlanToGame();
+                await this.syncFlightPlanToGame();
+            }
         });
 
         sub.on('flightPlan.setPerformanceData.cruiseFlightLevel').handle(async (event) => {
@@ -119,6 +123,8 @@ export class FlightPlanAsoboSync {
     }
 
     private async loadFlightPlanFromGame(): Promise<void> {
+        await Wait.awaitDelay(6000);
+
         Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
 
         // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance

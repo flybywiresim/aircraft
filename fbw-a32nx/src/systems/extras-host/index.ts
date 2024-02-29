@@ -103,6 +103,7 @@ class ExtrasHost extends BaseInstrument {
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
                 this.simVarPublisher.startPublish();
+                this.flightPlanAsoboSync.init();
             }
             this.gameState = gs;
         } else {
