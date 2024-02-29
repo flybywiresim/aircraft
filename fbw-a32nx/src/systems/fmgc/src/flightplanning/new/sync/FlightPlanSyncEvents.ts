@@ -8,10 +8,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import {
-    A320FlightPlanPerformanceData,
-    FlightPlanPerformanceData, FlightPlanPerformanceDataProperties
-} from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanSyncResponsePacket {
     plans: Record<number, SerializedFlightPlan>,
