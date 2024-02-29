@@ -54,7 +54,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private readonly style = MapSubject.create<string, string>();
 
-    private readonly activeTabIndex = Subject.create<number>(0);
+    private readonly activeTabIndex = Subject.create<number>(2);
 
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
