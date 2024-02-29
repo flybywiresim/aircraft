@@ -5,8 +5,8 @@ import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { Coordinates, NauticalMiles, distanceTo } from 'msfs-geo';
-import { DatabaseItem, MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { DatabaseItem, MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnDuplicateNamesProps extends ComponentProps {
     visible: Subject<boolean>;

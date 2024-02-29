@@ -10,7 +10,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { Fix, Waypoint } from 'msfs-navdata';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 export enum FmcOperatingModes {
     Master,

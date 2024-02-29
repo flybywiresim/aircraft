@@ -12,8 +12,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { Fix, Waypoint } from 'msfs-navdata';
-import { DatabaseItem, NXDataStore, UpdateThrottler, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, Fix, NXDataStore, UpdateThrottler, Waypoint, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';

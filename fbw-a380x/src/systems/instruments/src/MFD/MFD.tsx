@@ -20,13 +20,13 @@ import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/co
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
-import { DatabaseItem, Waypoint } from 'msfs-navdata';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
+import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 
 // Import for pages
 

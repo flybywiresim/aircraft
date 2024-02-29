@@ -8,12 +8,12 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Fix } from 'msfs-navdata';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {
 }
