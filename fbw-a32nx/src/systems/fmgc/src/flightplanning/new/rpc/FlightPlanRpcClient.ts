@@ -141,32 +141,32 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('setOriginRunway', runwayIdent, planIndex, alternate);
     }
 
-    setDepartureProcedure(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setDepartureProcedure', procedureIdent, planIndex, alternate);
+    setDepartureProcedure(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setDepartureProcedure', databaseId, planIndex, alternate);
     }
 
     setDepartureEnrouteTransition(transitionIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
         return this.callFunctionViaRpc('setDepartureEnrouteTransition', transitionIdent, planIndex, alternate);
     }
 
-    setArrivalEnrouteTransition(transitionIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setArrivalEnrouteTransition', transitionIdent, planIndex, alternate);
+    setArrivalEnrouteTransition(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setArrivalEnrouteTransition', databaseId, planIndex, alternate);
     }
 
-    setArrival(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setArrival', procedureIdent, planIndex, alternate);
+    setArrival(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setArrival', databaseId, planIndex, alternate);
     }
 
-    setApproachVia(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setApproachVia', procedureIdent, planIndex, alternate);
+    setApproachVia(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setApproachVia', databaseId, planIndex, alternate);
     }
 
-    setApproach(procedureIdent: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setApproach', procedureIdent, planIndex, alternate);
+    setApproach(databaseId: string | undefined, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setApproach', databaseId, planIndex, alternate);
     }
 
-    setDestinationRunway(runwayIdent: string, planIndex?: number, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setDestinationRunway', runwayIdent, planIndex, alternate);
+    setDestinationRunway(databaseId: string, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setDestinationRunway', databaseId, planIndex, alternate);
     }
 
     deleteElementAt(index: number, insertDiscontinuity?: boolean, planIndex?: number, alternate?: boolean): Promise<boolean> {
