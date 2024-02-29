@@ -24,6 +24,7 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
     private readonly pub = this.bus.getPublisher<FlightPlanServerRpcEvents>();
 
     private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
+        console.log('Handling RPC command', command, id, args);
         const returnValue = await this.localFlightPlanService[command](...args as any[]);
 
         await this.respondToRpcCommand(id, returnValue);
