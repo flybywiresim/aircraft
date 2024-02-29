@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import {
     AtsuStatusCodes,
     AtsuMailboxMessages,
@@ -11,8 +12,7 @@ import {
     CpdlcMessage,
     DclMessage,
     OclMessage,
-} from '@datalink/common';
-import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+} from '../../../common/src';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';
 
