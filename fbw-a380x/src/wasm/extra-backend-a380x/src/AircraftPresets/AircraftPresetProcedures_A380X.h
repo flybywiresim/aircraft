@@ -173,7 +173,6 @@ class AircraftPresetProcedures_A380X {
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET3) "
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET4)"},
 
-
         ProcedureStep{"ENG 1 ON",             3020, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                  "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 2 ON",             3022, false, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                  "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"Await ENG 1 AVAIL",    3024, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
