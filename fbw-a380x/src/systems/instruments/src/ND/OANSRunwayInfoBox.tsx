@@ -16,6 +16,10 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
     private standDivRef = FSComponent.createRef<HTMLDivElement>();
 
     private setDivs() {
+        this.rwyDivRef.instance.style.display = 'none';
+        this.standDivRef.instance.style.display = 'none';
+
+        /* Temporarily disable
         if (this.props.rwyOrStand.get() === EntityTypes.RWY && this.props.selectedEntity.get()) {
             this.rwyDivRef.instance.style.display = 'grid';
             this.standDivRef.instance.style.display = 'none';
@@ -25,7 +29,7 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
         } else {
             this.rwyDivRef.instance.style.display = 'none';
             this.standDivRef.instance.style.display = 'none';
-        }
+        } */
     }
 
     onAfterRender(node: VNode): void {

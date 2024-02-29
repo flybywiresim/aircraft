@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode, SimVarValueType } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { FmsOansData, OansControlEvents } from 'instruments/src/OANC';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
@@ -40,7 +40,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
                     <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
                     <text x={205} y={0} class="Cyan FontSmallest">M</text>
                 </Layer>
-                <g visibility={this.exitInfoString.map((it) => it ? 'visible' : 'hidden')}>
+                <g visibility={this.exitInfoString.map((it) => (it ? 'visible' : 'hidden'))}>
                     <Layer x={2} y={82}>
                         <rect x={64} y={-20} width={154} height={21} />
                         <text x={0} y={0} class="White FontSmallest">EXIT</text>
@@ -48,7 +48,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
                         <text x={205} y={0} class="Cyan FontSmallest">M</text>
                     </Layer>
                 </g>
-                <g visibility={this.rot.map((it) => it ? 'visible' : 'hidden')}>
+                <g visibility={this.rot.map((it) => (it ? 'visible' : 'hidden'))}>
                     <Layer x={2} y={111}>
                         <rect x={50} y={-20} width={70} height={21} />
                         <text x={0} y={0} class="White FontSmallest">ROT</text>

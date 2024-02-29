@@ -403,13 +403,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             />
                                         </div>
                                         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
-                                            <div class="mfd-label">BTV STOP DISTANCE:</div>
+                                            <div class="mfd-label" style="margin-right: 10px;">BTV STOP DISTANCE</div>
                                             <div>
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     dataHandlerDuringValidation={async (val) => SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val)}
                                                     value={this.reqStoppingDistance}
                                                     mandatory={Subject.create(false)}
+                                                    inactive={this.selectedEntityString.map((it) => !it)}
                                                 />
                                             </div>
                                         </div>
