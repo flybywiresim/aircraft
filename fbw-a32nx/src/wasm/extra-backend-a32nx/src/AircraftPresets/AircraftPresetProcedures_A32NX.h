@@ -121,6 +121,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"FUEL VALVE 10 On",        2040, false, 500,  "(A:FUELSYSTEM VALVE SWITCH:10, Bool)",          "10 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"FUEL PUMP 3 On",          2050, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",            "3 (>K:FUELSYSTEM_PUMP_ON)"},
         ProcedureStep{"FUEL PUMP 6 On",          2060, false, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",            "6 (>K:FUELSYSTEM_PUMP_ON)"},
+        // next step will keep a slgitht delay as the A32NX otherwise often did not start up the ENG2 in step 3010
         ProcedureStep{"COCKPIT DOOR LCK",        2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)", true},
         ProcedureStep{"Await ADIRS 1 Alignment", 2150, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 2 Alignment", 2160, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
