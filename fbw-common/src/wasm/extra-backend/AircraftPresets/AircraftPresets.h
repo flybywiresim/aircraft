@@ -25,11 +25,27 @@ class AircraftPresets : public Module {
   DataManager* dataManager = nullptr;
 
   // LVARs
-  NamedVariablePtr aircraftPresetVerbose{};
+
+  // "<prefix>AIRCRAFT_PRESET_LOAD" is the LVAR that is used to request a preset load.
+  // It is a number between 1 and 5 and is set to 0 to reset the request.
   NamedVariablePtr loadAircraftPresetRequest{};
-  NamedVariablePtr progressAircraftPreset{};
+
+  // "<prefix>AIRCRAFT_PRESET_LOAD_CURRENT_ID" is the LVAR that is used to track the progress of the preset load.
   NamedVariablePtr progressAircraftPresetId{};
+
+  // "<prefix>AIRCRAFT_PRESET_LOAD_PROGRESS" is the LVAR that is used to track the progress of the preset load.
+  NamedVariablePtr progressAircraftPreset{};
+
+  // "<prefix>AIRCRAFT_PRESET_VERBOSE" is the LVAR that is used to set the verbose mode of the preset load
+  // to print additional information while loading to the console.
+  NamedVariablePtr aircraftPresetVerbose{};
+
+  // "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE" is the LVAR that is used to set the expedited mode of the preset load
+  // to skip waiting times and expedite the loading process.
   NamedVariablePtr aircraftPresetExpedite{};
+
+  // "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY" is the LVAR that is used to set a delay in ms for
+  // the expedited mode of the preset load. If the default value of 0 causes issues, it can be increased.
   NamedVariablePtr aircraftPresetExpediteDelay{};
 
   // Sim-vars
