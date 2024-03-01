@@ -34,7 +34,8 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
         const subs = bus.getSubscriber<FlightPlanEvents>();
 
         subs.on('flightPlanManager.syncRequest').handle(() => {
-            if (!this.ignoreSync) {
+            // TODO clarify, I guess only one instance should reply to this
+            if (!this.ignoreSync && this.master) {
                 console.log('[FpmSync] SyncRequest()');
 
                 const plansRecord: Record<number, SerializedFlightPlan> = {};
