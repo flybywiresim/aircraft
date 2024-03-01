@@ -47,10 +47,10 @@ bool AircraftPresets::initialize() {
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
 
-  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
-  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpediteDelay =
-      dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250, 30);
+      dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250);
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -206,6 +206,10 @@ bool AircraftPresets::shutdown() {
   std::cout << "AircraftPresets::shutdown()" << std::endl;
   return true;
 }
+
+// ==============================================================================
+// Private methods
+// ==============================================================================
 
 void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {
   const FLOAT64 loadPercentage = static_cast<double>(currentStep) / currentProcedure->size();
