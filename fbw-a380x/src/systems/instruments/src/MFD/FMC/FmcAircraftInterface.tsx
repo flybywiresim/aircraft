@@ -905,6 +905,7 @@ export class FmcAircraftInterface {
         // Only compute if FMS runway is set and aircraft in approach mode
         if (rwy) {
             const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
+            this.bus.getPublisher<FmsOansData>().pub('fmsLandingRunway', rwy.ident, true);
             SimVar.SetSimVarValue('L:A32NX_OANS_BTV_RWY_LENGTH', SimVarValueType.Meters, rwy.length);
 
             if (fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
