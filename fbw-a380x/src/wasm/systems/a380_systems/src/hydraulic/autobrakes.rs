@@ -456,11 +456,13 @@ impl A380AutobrakeController {
     fn compute_btv_decel_target_ms2(&self) -> f64 {
         // Placeholder BTV deceleration
 
-        interpolation(
-            &Self::BTV_MODE_DECEL_PROFILE_TIME_S,
-            &Self::BTV_MODE_DECEL_PROFILE_ACCEL_MS2,
-            self.deceleration_governor.time_engaged().as_secs_f64(),
-        )
+        // interpolation(
+        //     &Self::BTV_MODE_DECEL_PROFILE_TIME_S,
+        //     &Self::BTV_MODE_DECEL_PROFILE_ACCEL_MS2,
+        //     self.deceleration_governor.time_engaged().as_secs_f64(),
+        // )
+
+        self.btv_scheduler.decel().get::<meter_per_second_squared>()
     }
 
     fn update_input_conditions(
@@ -564,6 +566,7 @@ enum BTVState {
     Armed,
     RotOptimization,
     Decel,
+    EndOfBraking,
     OutOfDecelRange,
 }
 
@@ -581,17 +584,24 @@ struct BtvDecelScheduler {
 
     ground_speed: Velocity,
 
-    mode: BTVState,
+    state: BTVState,
+
+    deceleration_request: Acceleration,
+    end_of_decel_acceleration: Acceleration,
+
+    final_distance_remaining: Length,
+
+    distance_remaining_at_decel_activation: Length,
 }
 impl BtvDecelScheduler {
-    const MAX_DECEL_DRY_MS2: f64 = -3.5;
-    const MAX_DECEL_WET_MS2: f64 = -1.5;
+    const MAX_DECEL_DRY_MS2: f64 = -3.;
+    const MAX_DECEL_WET_MS2: f64 = -2.;
 
-    const MIN_RUNWAY_LENGTH_M: f64 = 1000.;
+    const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
 
     // ARRAYS PER TYPE OF EXIT : 90° / FAST ...
-    const DISTANCE_OFFSET_TO_RELEASE_BTV: [f64; 2] = [50., 20.];
-    const TARGET_SPEED_TO_RELEASE_BTV: [f64; 2] = [5., 10.];
+    const DISTANCE_OFFSET_TO_RELEASE_BTV: [f64; 2] = [50., 100.];
+    const TARGET_SPEED_TO_RELEASE_BTV: [f64; 2] = [5.15, 25.7];
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -607,18 +617,38 @@ impl BtvDecelScheduler {
             spoilers_active: false,
             ground_speed: Velocity::default(),
 
-            mode: BTVState::Disabled,
+            state: BTVState::Disabled,
+
+            deceleration_request: Acceleration::default(),
+            end_of_decel_acceleration: Acceleration::default(),
+
+            final_distance_remaining: Length::default(),
+
+            distance_remaining_at_decel_activation: Length::default(),
         }
     }
 
     fn enable(&mut self) {
-        if self.mode == BTVState::Disabled && self.arming_authorized() {
-            self.mode = BTVState::Armed;
+        if self.state == BTVState::Disabled && self.arming_authorized() {
+            self.state = BTVState::Armed;
         }
     }
 
     fn disarm(&mut self) {
-        self.mode = BTVState::Disabled;
+        self.state = BTVState::Disabled;
+        self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
+        self.end_of_decel_acceleration = Acceleration::new::<meter_per_second_squared>(5.);
+        self.final_distance_remaining = Length::default();
+        self.distance_remaining_at_decel_activation = Length::default();
+    }
+
+    fn decel(&self) -> Acceleration {
+        match self.state {
+            BTVState::Decel | BTVState::OutOfDecelRange => self.deceleration_request,
+            BTVState::EndOfBraking => self.end_of_decel_acceleration,
+            BTVState::RotOptimization => self.accel_during_rot_opti(),
+            _ => Acceleration::new::<meter_per_second_squared>(5.),
+        }
     }
 
     fn update(&mut self, context: &UpdateContext, spoilers_active: bool) {
@@ -626,49 +656,77 @@ impl BtvDecelScheduler {
         self.integrate_distance(context);
 
         println!(
-            "BTV MODE {:?}, roll distance {:.0}m, speed {:.1} ms, speed {:.1} knot",
-            self.mode,
+            "BTV MODE {:?}, roll distance {:.0}m, remaining_dist {:.1} m, speed {:.1} knot",
+            self.state,
             self.rolling_distance.get::<meter>(),
-            self.ground_speed.get::<meter_per_second>(),
+            (self.dev_distance_to_exit_from_touchdown - self.rolling_distance)
+                .get::<meter>()
+                .max(0.),
             self.ground_speed.get::<knot>()
         );
 
-        self.compute_decel();
+        self.compute_decel(context);
 
-        self.mode = self.update_state(context);
+        self.state = self.update_state(context);
     }
 
-    fn compute_decel(&mut self) {
-        match self.mode {
-            BTVState::RotOptimization | BTVState::Decel | BTVState::OutOfDecelRange => {
-                let distance_remaining_raw =
-                    self.dev_distance_to_exit_from_touchdown - self.rolling_distance;
+    fn braking_distance_remaining(&self) -> Length {
+        let distance_remaining_raw =
+            self.dev_distance_to_exit_from_touchdown - self.rolling_distance;
 
+        let exit_index = 0;
+
+        let distance_from_btv_exit =
+            Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV[exit_index]);
+
+        (distance_remaining_raw - distance_from_btv_exit).max(Length::default())
+    }
+
+    fn compute_decel(&mut self, context: &UpdateContext) {
+        match self.state {
+            BTVState::RotOptimization
+            | BTVState::Decel
+            | BTVState::EndOfBraking
+            | BTVState::OutOfDecelRange => {
                 let exit_index = 0;
-
                 let speed_at_btv_release = Velocity::new::<meter_per_second>(
                     Self::TARGET_SPEED_TO_RELEASE_BTV[exit_index],
-                );
-                let distance_from_btv_exit =
-                    Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV[exit_index]);
+                ) * 0.9; // 10% safety margin on release speed
 
-                let final_distance_remaining =
-                    (distance_remaining_raw - distance_from_btv_exit).max(Length::default());
+                self.final_distance_remaining = self.braking_distance_remaining();
 
                 let delta_speed_to_achieve = self.ground_speed - speed_at_btv_release;
 
                 let target_deceleration_raw =
-                    delta_speed_to_achieve.get::<meter_per_second>().powi(2) / 2.
-                        * final_distance_remaining.get::<meter>();
+                    -delta_speed_to_achieve.get::<meter_per_second>().powi(2)
+                        / (2. * self.final_distance_remaining.get::<meter>());
+
+                let target_deceleration_safety_corrected =
+                    target_deceleration_raw * self.safety_margin();
+
+                let decel_governor_error = target_deceleration_safety_corrected
+                    - context.long_accel().get::<meter_per_second_squared>();
 
                 println!(
-                    "deltaV ms ==> {:.2}  Remaining meters {:.0}",
+                    "deltaV ms ==> {:.2}  Remaining meters {:.0}  ==> Target Decel {:.2} Final target {:.2} true decel {:.2}",
                     delta_speed_to_achieve.get::<meter_per_second>(),
-                    final_distance_remaining.get::<meter>()
+                    self.final_distance_remaining.get::<meter>(),
+
+                    target_deceleration_raw,
+                    target_deceleration_safety_corrected,
+                    context.long_accel().get::<meter_per_second_squared>()
                 );
-                println!("A ==> {:.2}", target_deceleration_raw);
+                println!("GOVERNOR ERROR {:.2}", decel_governor_error);
+
+                self.deceleration_request = Acceleration::new::<meter_per_second_squared>(
+                    target_deceleration_safety_corrected
+                        .max(Self::MAX_DECEL_DRY_MS2)
+                        .min(5.),
+                );
             }
-            _ => {}
+            _ => {
+                self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
+            }
         }
     }
 
@@ -676,8 +734,44 @@ impl BtvDecelScheduler {
         self.runway_length.get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
     }
 
-    fn update_state(&mut self, _context: &UpdateContext) -> BTVState {
-        match self.mode {
+    fn accel_to_reach_to_decelerate(&self) -> Acceleration {
+        let percent_of_max = 0.6;
+        Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2 * percent_of_max)
+    }
+
+    fn accel_during_rot_opti(&self) -> Acceleration {
+        let percent_of_max = 0.1;
+        Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2 * percent_of_max)
+    }
+
+    fn safety_margin(&self) -> f64 {
+        match self.state {
+            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => {
+                let ratio_of_decel_distance =
+                    self.braking_distance_remaining() / self.distance_remaining_at_decel_activation;
+
+                println!(
+                    "BRAKING ==> Distance Ratio {:.2} safety margin {:.2}",
+                    ratio_of_decel_distance.get::<ratio>(),
+                    (1. + (ratio_of_decel_distance.get::<ratio>().sqrt() * 0.4))
+                        .max(1.15)
+                        .min(1.4)
+                );
+
+                (1. + (ratio_of_decel_distance.get::<ratio>().sqrt() * 0.4))
+                    .max(1.15)
+                    .min(1.4)
+            }
+
+            BTVState::Disabled | BTVState::Armed | BTVState::RotOptimization => {
+                println!("OPTIM ==> safety margin {:.2}", 1.4);
+                1.4
+            }
+        }
+    }
+
+    fn update_state(&mut self, context: &UpdateContext) -> BTVState {
+        match self.state {
             BTVState::Armed => {
                 if self.spoilers_active {
                     BTVState::RotOptimization
@@ -685,17 +779,67 @@ impl BtvDecelScheduler {
                     if !self.arming_authorized() {
                         BTVState::Disabled
                     } else {
-                        self.mode
+                        self.state
                     }
                 }
             }
-            _ => self.mode,
+            BTVState::RotOptimization => {
+                let accel_min = self.accel_to_reach_to_decelerate();
+                println!(
+                    "ROT => waiting for accel {:.2}  current target:{:.2} current true {:.2}",
+                    accel_min.get::<meter_per_second_squared>(),
+                    self.deceleration_request.get::<meter_per_second_squared>(),
+                    context.long_accel().get::<meter_per_second_squared>()
+                );
+
+                if self.deceleration_request < accel_min {
+                    self.distance_remaining_at_decel_activation = self.braking_distance_remaining();
+                    self.end_of_decel_acceleration = self.deceleration_request;
+                    BTVState::Decel
+                } else {
+                    self.state
+                }
+            }
+            BTVState::Decel => {
+                if self.final_distance_remaining.get::<meter>() < 50.
+                    || self.ground_speed.get::<meter_per_second>()
+                        <= Self::TARGET_SPEED_TO_RELEASE_BTV[0]
+                {
+                    BTVState::EndOfBraking
+                } else {
+                    BTVState::Decel
+                }
+            }
+            BTVState::EndOfBraking => {
+                if self.ground_speed.get::<meter_per_second>()
+                    <= Self::TARGET_SPEED_TO_RELEASE_BTV[0]
+                {
+                    self.disarm();
+                    BTVState::Disabled
+                } else {
+                    println!(
+                        "END OF DECEL TARGET: real time {:.2} / final {:.2}",
+                        self.deceleration_request.get::<meter_per_second_squared>(),
+                        self.end_of_decel_acceleration
+                            .get::<meter_per_second_squared>(),
+                    );
+                    self.end_of_decel_acceleration = self
+                        .end_of_decel_acceleration
+                        .max(self.deceleration_request);
+                    BTVState::EndOfBraking
+                }
+            }
+
+            _ => self.state,
         }
     }
 
     fn integrate_distance(&mut self, context: &UpdateContext) {
-        match self.mode {
-            BTVState::RotOptimization | BTVState::Decel | BTVState::OutOfDecelRange => {
+        match self.state {
+            BTVState::RotOptimization
+            | BTVState::Decel
+            | BTVState::EndOfBraking
+            | BTVState::OutOfDecelRange => {
                 let distance_this_tick = self.ground_speed * context.delta_as_time();
                 self.rolling_distance = self.rolling_distance + distance_this_tick;
             }
