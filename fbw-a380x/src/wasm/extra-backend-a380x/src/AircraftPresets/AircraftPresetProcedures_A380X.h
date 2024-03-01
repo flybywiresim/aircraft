@@ -103,28 +103,28 @@ class AircraftPresetProcedures_A380X {
 
         ProcedureStep{"Beacon On",                   2010, false, 1000, "(A:LIGHT BEACON, Bool)",                       "0 (>K:BEACON_LIGHTS_ON)"},
 
-        ProcedureStep{"FUEL PUMP FEED TK1 MAIN On",  2020, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool)",            "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK1 STBY On",  2022, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool)",            "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK2 MAIN On",  2024, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool)",           "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK2 STBY On",  2026, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool)",           "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK3 MAIN On",  2028, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool)",           "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK3 STBY On",  2030, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool)",           "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK4 MAIN On",  2032, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool)",           "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK4 STBY On",  2034, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool)",           "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK1 Main On",  2020, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool)",            "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK1 Stby On",  2022, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool)",            "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK2 Main On",  2024, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool)",           "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK2 Stby On",  2026, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool)",           "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK3 Main On",  2028, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool)",           "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK3 Stby On",  2030, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool)",           "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK4 Main On",  2032, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool)",           "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK4 Stby On",  2034, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool)",           "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
-        ProcedureStep{"FUEL PUMP L OUTR TK On",      2036, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool)",           "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L MID FWD TK On",   2038, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool)",           "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L MID AFT TK On",   2040, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool)",           "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L INR FWD TK On",   2042, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool)",           "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L INR AFT TK On",   2044, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool)",           "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R INR AFT TK On",   2046, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool)",           "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R INR FWD TK On",   2048, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool)",           "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R MID AFT TK On",   2050, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool)",           "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R MID FWD TK On",   2052, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool)",           "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R OUTR TK On",      2054, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool)",           "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L OUTR TK On",      2036, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool)",           "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L MID FWD TK On",   2038, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool)",           "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L MID AFT TK On",   2040, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool)",           "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L INR FWD TK On",   2042, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool)",           "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L INR AFT TK On",   2044, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool)",           "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R INR AFT TK On",   2046, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool)",           "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R INR FWD TK On",   2048, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool)",           "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R MID AFT TK On",   2050, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool)",           "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R MID FWD TK On",   2052, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool)",           "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R OUTR TK On",      2054, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool)",           "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
-        ProcedureStep{"FUEL TRIM TK L On",           2056, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool)",           "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL TRIM TK R On",           2058, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool)",           "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Trim TK L On",           2056, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool)",           "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Trim TK R On",           2058, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool)",           "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
         ProcedureStep{"COCKPIT DOOR LCK",            2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
@@ -135,37 +135,37 @@ class AircraftPresetProcedures_A380X {
       },
 
       .PUSHBACK_CONFIG_OFF = {
-        ProcedureStep{"COCKPIT DOOR OP",             2061, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",           "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+        ProcedureStep{"Cockpit Door Open",           2061, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",           "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
-        ProcedureStep{"FUEL TRIM TK R Off",          2059, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool) !",         "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL TRIM TK L Off",          2057, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool) !",         "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Trim TK R Off",          2059, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool) !",         "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Trim TK L Off",          2057, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool) !",         "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
-        ProcedureStep{"FUEL PUMP R OUTR TK Off",     2055, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool) !",         "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R MID FWD TK Off",  2053, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool) !",         "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R MID AFT TK Off",  2051, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool) !",         "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R INR FWD TK Off",  2049, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool) !",         "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP R INR AFT TK Off",  2047, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool) !",         "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L INR AFT TK Off",  2045, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool) !",         "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L INR FWD TK Off",  2043, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool) !",         "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L MID AFT TK Off",  2041, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool) !",         "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L MID FWD TK Off",  2039, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool) !",         "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP L OUTR TK Off",     2037, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool) !",         "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R OUTR TK Off",     2055, false, 500,  "(A:CIRCUIT CONNECTION ON:75, Bool) !",         "75 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R MID FWD TK Off",  2053, false, 500,  "(A:CIRCUIT CONNECTION ON:77, Bool) !",         "77 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R MID AFT TK Off",  2051, false, 100,  "(A:CIRCUIT CONNECTION ON:76, Bool) !",         "76 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R INR FWD TK Off",  2049, false, 500,  "(A:CIRCUIT CONNECTION ON:79, Bool) !",         "79 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump R INR AFT TK Off",  2047, false, 100,  "(A:CIRCUIT CONNECTION ON:78, Bool) !",         "78 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L INR AFT TK Off",  2045, false, 500,  "(A:CIRCUIT CONNECTION ON:74, Bool) !",         "74 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L INR FWD TK Off",  2043, false, 100,  "(A:CIRCUIT CONNECTION ON:73, Bool) !",         "73 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L MID AFT TK Off",  2041, false, 500,  "(A:CIRCUIT CONNECTION ON:72, Bool) !",         "72 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L MID FWD TK Off",  2039, false, 100,  "(A:CIRCUIT CONNECTION ON:71, Bool) !",         "71 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump L OUTR TK Off",     2037, false, 500,  "(A:CIRCUIT CONNECTION ON:70, Bool) !",         "70 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
-        ProcedureStep{"FUEL PUMP FEED TK4 STBY Off", 2035, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool) !",         "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK4 MAIN Off", 2033, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool) !",         "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK3 STBY Off", 2031, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool) !",         "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK3 MAIN Off", 2029, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool) !",         "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK2 STBY Off", 2027, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool) !",         "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK2 MAIN Off", 2025, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool) !",         "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK1 STBY Off", 2023, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool) !",          "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
-        ProcedureStep{"FUEL PUMP FEED TK1 MAIN Off", 2021, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool) !",          "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK4 Stby Off", 2035, false, 500,  "(A:CIRCUIT CONNECTION ON:69, Bool) !",         "69 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK4 Main Off", 2033, false, 100,  "(A:CIRCUIT CONNECTION ON:68, Bool) !",         "68 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK3 Stby Off", 2031, false, 500,  "(A:CIRCUIT CONNECTION ON:67, Bool) !",         "67 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK3 Main Off", 2029, false, 100,  "(A:CIRCUIT CONNECTION ON:66, Bool) !",         "66 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK2 Stby Off", 2027, false, 500,  "(A:CIRCUIT CONNECTION ON:65, Bool) !",         "65 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK2 Main Off", 2025, false, 100,  "(A:CIRCUIT CONNECTION ON:64, Bool) !",         "64 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK1 Stby Off", 2023, false, 500,  "(A:CIRCUIT CONNECTION ON:3,  Bool) !",          "3 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
+        ProcedureStep{"Fuel Pump Feed TK1 Main Off", 2021, false, 100,  "(A:CIRCUIT CONNECTION ON:2,  Bool) !",          "2 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
         ProcedureStep{"Beacon Off",                  2011, false, 1000, "(A:LIGHT BEACON, Bool) !",                     "0 (>K:BEACON_LIGHTS_OFF)"},
       },
 
       .TAXI_CONFIG_ON = {
         // SOP: ENGINE START
-        ProcedureStep{"ENG MODE SEL START",   3010, false, 3000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
+        ProcedureStep{"ENG MODE SEL Start",   3010, false, 3000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                   "(L:A32NX_ENGINE_STATE:2) 1 == "
                                                                   "(L:A32NX_ENGINE_STATE:3) 1 == "
                                                                   "(L:A32NX_ENGINE_STATE:4) 1 == 1 && && && && ",       "2 (>K:TURBINE_IGNITION_SWITCH_SET1) "
@@ -173,17 +173,17 @@ class AircraftPresetProcedures_A380X {
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET3) "
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET4)"},
 
-        ProcedureStep{"ENG 1 ON",             3020, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                  "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"ENG 2 ON",             3022, false, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                  "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 1 AVAIL",    3024, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
-        ProcedureStep{"Await ENG 2 AVAIL",    3025, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:2) 1 =="},
-        ProcedureStep{"ENG 3 ON",             3026, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                  "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"ENG 4 ON",             3028, false, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                  "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 3 AVAIL",    3030, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:3) 1 =="},
-        ProcedureStep{"Await ENG 4 AVAIL",    3031, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:4) 1 =="},
+        ProcedureStep{"ENG 1 On",             3020, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                  "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"ENG 2 On",             3022, false, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                  "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"Await ENG 1 Avail",    3024, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
+        ProcedureStep{"Await ENG 2 Avail",    3025, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        ProcedureStep{"ENG 3 On",             3026, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                  "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"ENG 4 On",             3028, false, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                  "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"Await ENG 3 Avail",    3030, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:3) 1 =="},
+        ProcedureStep{"Await ENG 4 Avail",    3031, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:4) 1 =="},
 
 //        // SOP: AFTER START
-        ProcedureStep{"ENG MODE SEL NORM",    3011, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1) 1 == "
+        ProcedureStep{"ENG MODE SEL Norm",    3011, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1) 1 == "
                                                                   "(A:TURB ENG IGNITION SWITCH EX1:2) 1 == "
                                                                   "(A:TURB ENG IGNITION SWITCH EX1:3) 1 == "
                                                                   "(A:TURB ENG IGNITION SWITCH EX1:4) 1 == "
@@ -206,7 +206,7 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"PWS Auto",             3060, false, 1000,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",           "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
         ProcedureStep{"Transponder On",       3062, false, 1000,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                    "1 (>L:A32NX_TRANSPONDER_MODE)"},
         ProcedureStep{"ATC ALT RPTG On",      3064, false, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                      "1 (>L:A32NX_SWITCH_ATC_ALT)"},
-        ProcedureStep{"TCAS TRAFFIC ABV",     3066, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
+        ProcedureStep{"TCAS TRAFFIC Abv",     3066, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"Autobrake Max",        3068, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",               "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
         ProcedureStep{"TERR ON ND Capt. On",  3070, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                  "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
 
@@ -216,7 +216,7 @@ class AircraftPresetProcedures_A380X {
       .TAXI_CONFIG_OFF = {
         ProcedureStep{"TERR ON ND Capt. Off",  3071, false, 2000, "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",                  "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
         ProcedureStep{"Autobrake Off",         3069, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",               "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
-        ProcedureStep{"TCAS TRAFFIC ABV",      3067, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
+        ProcedureStep{"TCAS TRAFFIC Abv",      3067, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"ATC ALT RPTG Off",      3065, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                      "1 (>L:A32NX_SWITCH_ATC_ALT)"},
         ProcedureStep{"Transponder Off",       3063, false, 1000, "(L:A32NX_TRANSPONDER_MODE) 0 ==",                    "0 (>L:A32NX_TRANSPONDER_MODE)"},
         ProcedureStep{"PWS Off",               3061, false, 1000, "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==",           "0 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},

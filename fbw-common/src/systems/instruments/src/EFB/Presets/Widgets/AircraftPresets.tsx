@@ -107,6 +107,7 @@ export const AircraftPresets = () => {
                     </div>
                 ))}
             </ScrollableContainer>
+
             <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
                 <div className="flex h-10 flex-row items-center">
                     <div className="pr-3">
