@@ -207,7 +207,8 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Transponder On",       3062, false, 1000,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                    "1 (>L:A32NX_TRANSPONDER_MODE)"},
         ProcedureStep{"ATC ALT RPTG On",      3064, false, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                      "1 (>L:A32NX_SWITCH_ATC_ALT)"},
         ProcedureStep{"TCAS TRAFFIC Abv",     3066, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
-        ProcedureStep{"Autobrake Max",        3068, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",               "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
+        ProcedureStep{"Autobrake RTO",        3068, false,  200,  "(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==",                "1 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
+        ProcedureStep{"Autobrake RTO",        3068, false, 2000,  "(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==",     "0 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
         ProcedureStep{"TERR ON ND Capt. On",  3070, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                  "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
 
         ProcedureStep{"T.O. Config",          3080, false, 2000,  "",                                                   "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
@@ -215,7 +216,9 @@ class AircraftPresetProcedures_A380X {
 
       .TAXI_CONFIG_OFF = {
         ProcedureStep{"TERR ON ND Capt. Off",  3071, false, 2000, "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",                  "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
-        ProcedureStep{"Autobrake Off",         3069, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",               "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
+        ProcedureStep{"Autobrake RTO Off",     3069, false,  200, "(L:A32NX_AUTOBRAKES_RTO_ARMED) 0 ==",                "1 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
+        ProcedureStep{"Autobrake RTO Off",     3069, false, 2000, "(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==",     "0 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
+
         ProcedureStep{"TCAS TRAFFIC Abv",      3067, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",        "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"ATC ALT RPTG Off",      3065, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                      "1 (>L:A32NX_SWITCH_ATC_ALT)"},
         ProcedureStep{"Transponder Off",       3063, false, 1000, "(L:A32NX_TRANSPONDER_MODE) 0 ==",                    "0 (>L:A32NX_TRANSPONDER_MODE)"},
