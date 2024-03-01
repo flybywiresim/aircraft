@@ -29,6 +29,7 @@ export const SimOptionsPage = () => {
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -168,28 +169,38 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
-                        <Toggle
-                            value={wheelChocksEnabled === 1}
-                            onToggle={(value) => {
-                                setWheelChocksEnabled(value ? 1 : 0);
-                            }}
-                        />
+                        {gsxPayloadSyncEnabled === 0 && (
+                            <Toggle
+                                value={wheelChocksEnabled === 1}
+                                onToggle={(value) => {
+                                    setWheelChocksEnabled(value ? 1 : 0);
+                                }}
+                            />
+                        )}
+                        {gsxPayloadSyncEnabled === 1 && (
+                            t('Ground.Payload.GSXPayloadSyncEnabled')
+                        )}
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
-                        <Toggle
-                            value={conesEnabled === 1}
-                            onToggle={(value) => {
-                                setConesEnabled(value ? 1 : 0);
-                            }}
-                        />
+                        {gsxPayloadSyncEnabled === 0 && (
+                            <Toggle
+                                value={conesEnabled === 1}
+                                onToggle={(value) => {
+                                    setConesEnabled(value ? 1 : 0);
+                                }}
+                            />
+                        )}
+                        {gsxPayloadSyncEnabled === 1 && (
+                            t('Ground.Payload.GSXPayloadSyncEnabled')
+                        )}
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
-                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                            className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight
+                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}
