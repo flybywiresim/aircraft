@@ -125,9 +125,9 @@ export class DestinationSegment extends FlightPlanSegment {
      *
      * @param serialized the serialized flight plan segment
      */
-    setFromSerializedSegment(serialized: SerializedFlightPlanSegment, airport: string, runway: string): void {
-        this.setDestinationIcao(airport);
-        this.setDestinationRunway(runway);
+    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+        // TODO sync the airport
+        // TODO sync the runway
         this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
     }
 }
