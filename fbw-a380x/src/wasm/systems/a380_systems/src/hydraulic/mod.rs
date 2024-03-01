@@ -2201,6 +2201,9 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
+        self.gear_system_gravity_extension_controller
+            .update(context);
+
         self.aileron_system_controller.update();
 
         self.elevator_system_controller.update();
@@ -6615,19 +6618,59 @@ impl ElectroHydrostaticPowered for SpoilerController {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum A380GravityExtensionSwitchPosition {
+    Reset = 0,
+    Off = 1,
+    Extension = 2,
+}
+impl From<f64> for A380GravityExtensionSwitchPosition {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => A380GravityExtensionSwitchPosition::Reset,
+            1 => A380GravityExtensionSwitchPosition::Off,
+            2 => A380GravityExtensionSwitchPosition::Extension,
+            _ => A380GravityExtensionSwitchPosition::Off,
+        }
+    }
+}
+
 struct A380GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
+
+    switch_position: A380GravityExtensionSwitchPosition,
 
     handle_angle: Angle,
 }
 impl A380GravityExtension {
+    const PLACEHOLDER_SPEED_TO_ROTATE_HANDLE_DEG_S: f64 = 50.;
+    const PLACEHOLDER_SPEED_TO_RESET_HANDLE_DEG_S: f64 = 200.;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_gravity_extension_handle_position_id: context
-                .get_identifier("GRAVITYGEAR_ROTATE_PCT".to_owned()),
+                .get_identifier("LG_GRVTY_SWITCH_POS".to_owned()),
+
+            switch_position: A380GravityExtensionSwitchPosition::Off,
 
             handle_angle: Angle::default(),
         }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        let angle_change: Angle = match self.switch_position {
+            A380GravityExtensionSwitchPosition::Reset => Angle::new::<degree>(
+                -Self::PLACEHOLDER_SPEED_TO_RESET_HANDLE_DEG_S * context.delta_as_secs_f64(),
+            ),
+            A380GravityExtensionSwitchPosition::Extension => Angle::new::<degree>(
+                Self::PLACEHOLDER_SPEED_TO_ROTATE_HANDLE_DEG_S * context.delta_as_secs_f64(),
+            ),
+            A380GravityExtensionSwitchPosition::Off => Angle::default(),
+        };
+
+        self.handle_angle = (self.handle_angle + angle_change)
+            .min(Angle::new::<degree>(360. * 3.))
+            .max(Angle::default());
     }
 }
 impl GearGravityExtension for A380GravityExtension {
@@ -6637,11 +6680,8 @@ impl GearGravityExtension for A380GravityExtension {
 }
 impl SimulationElement for A380GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let handle_percent: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
-
-        self.handle_angle = Angle::new::<degree>(handle_percent * 3.6)
-            .max(Angle::new::<degree>(0.))
-            .min(Angle::new::<degree>(360. * 3.));
+        let switch_position: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
+        self.switch_position = switch_position.into();
     }
 }
 
@@ -8220,13 +8260,13 @@ mod tests {
                 self
             }
 
-            fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
-                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", number_of_turns as f64 * 100.);
+            fn activate_emergency_gear_extension(mut self) -> Self {
+                self.write_by_name("LG_GRVTY_SWITCH_POS", 2.);
                 self
             }
 
             fn stow_emergency_gear_extension(mut self) -> Self {
-                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", 0.);
+                self.write_by_name("LG_GRVTY_SWITCH_POS", 0.);
                 self
             }
         }
@@ -10400,24 +10440,7 @@ mod tests {
         }
 
         #[test]
-        fn emergency_gear_extension_at_2_turns_open_doors() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .turn_emergency_gear_extension_n_turns(1)
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.is_all_doors_really_up());
-
-            test_bed = test_bed
-                .turn_emergency_gear_extension_n_turns(2)
-                .run_waiting_for(Duration::from_secs_f64(25.));
-
-            assert!(test_bed.is_all_doors_really_down());
-        }
-
-        #[test]
-        fn emergency_gear_extension_at_3_turns_release_gear() {
+        fn emergency_gear_extension_release_gear() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -10429,8 +10452,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_green_ed_pump(false)
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(35.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
 
             assert!(test_bed.is_all_doors_really_down());
             assert!(test_bed.is_all_gears_really_down());
@@ -10492,8 +10515,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_gear_lever_down()
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
@@ -10533,8 +10556,8 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
 
             test_bed = test_bed
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
