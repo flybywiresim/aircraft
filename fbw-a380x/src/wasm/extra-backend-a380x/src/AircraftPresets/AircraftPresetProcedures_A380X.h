@@ -126,7 +126,7 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Fuel Trim TK L On",           2056, false, 500,  "(A:CIRCUIT CONNECTION ON:80, Bool)",           "80 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
         ProcedureStep{"Fuel Trim TK R On",           2058, false, 500,  "(A:CIRCUIT CONNECTION ON:81, Bool)",           "81 1 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)"},
 
-        ProcedureStep{"COCKPIT DOOR LCK",            2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+        ProcedureStep{"Cockpit Door Locked",         2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
         // TODO: find a way to expedite this
         ProcedureStep{"Await ADIRS 1 Alignment",     2062, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
