@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include <MSFS\MSFS_CommBus.h>
 
@@ -47,7 +49,8 @@ bool AircraftPresets::initialize() {
 
   aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
   aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250, 30);
-  aircraftPresetExpediteDelay = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250, 30);
+  aircraftPresetExpediteDelay =
+      dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250, 30);
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -204,11 +207,17 @@ bool AircraftPresets::shutdown() {
   return true;
 }
 
-void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {  // update progress var
-  progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
+void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {
+  const FLOAT64 loadPercentage = static_cast<double>(currentStep) / currentProcedure->size();
+
+  // update the progress LVARs
+  progressAircraftPreset->setAndWriteToSim(loadPercentage);
   progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
 
-  char buffer[256];
-  unsigned int bufferSize = snprintf(buffer, 256, "%f;%s", (static_cast<double>(currentStep) / currentProcedure->size()), currentStepPtr->description.c_str()) + 1;
-  fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer, bufferSize, FsCommBusBroadcast_JS);
+  // send this progress to the flyPad using Comm Bus
+  std::ostringstream oss;
+  oss << loadPercentage << ";" << currentStepPtr->description;
+  std::string buffer = oss.str();
+  fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer.c_str(), buffer.size() + 1, FsCommBusBroadcast_JS);
 }
+
