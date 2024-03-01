@@ -179,7 +179,11 @@ class A320_Neo_FCU_Component {
     }
     setTextElementActive(_text, _active) {
         if (_text != null) {
-            _text.setAttribute("class", "Common " + (_active ? "Active" : "Inactive"));
+            if (_active === true) {
+                _text.classList.replace("Inactive", "Active");
+            } else {
+                _text.classList.replace("Active", "Inactive");
+            }
         }
     }
     setElementVisibility(_element, _show) {
@@ -1380,20 +1384,20 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
             this.currentValue = _value;
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
-                this.standardElem.style.display = "none";
-                this.selectedElem.style.display = "block";
+                this.setElementVisibility(this.standardElem, false)
+                this.setElementVisibility(this.selectedElem, true)
                 this.setTextElementActive(this.textQFE, true);
                 this.setTextElementActive(this.textQNH, true);
                 this.textValueContent = "88.88";
                 return;
             }
             if (this.currentMode == "STD") {
-                this.standardElem.style.display = "block";
-                this.selectedElem.style.display = "none";
+                this.setElementVisibility(this.standardElem, true)
+                this.setElementVisibility(this.selectedElem, false)
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 1);
             } else {
-                this.standardElem.style.display = "none";
-                this.selectedElem.style.display = "block";
+                this.setElementVisibility(this.standardElem, false)
+                this.setElementVisibility(this.selectedElem, true)
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 0);
                 const isQFE = (this.currentMode == "QFE") ? true : false;
                 this.setTextElementActive(this.textQFE, isQFE);
