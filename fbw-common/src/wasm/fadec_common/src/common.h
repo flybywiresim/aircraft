@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MSFS\MSFS.h>
+
 class SimVars;
 
 HANDLE hSimConnect;

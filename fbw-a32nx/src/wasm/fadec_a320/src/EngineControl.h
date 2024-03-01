@@ -1,7 +1,12 @@
 #pragma once
 
+#include <iostream>
+#include <algorithm>
+
+#include <MSFS\Legacy\gauges.h>
+#include <SimConnect.h>
+
 #include <string>
-#include "Arinc429Utils.h"
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -453,6 +458,7 @@ class EngineControl {
   /// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
   /// </summary>
   void updatePrimaryParameters(int engine, double imbalance, double simN1, double simN2) {
+
     // Engine imbalance
     engineImbalanced = imbalanceExtractor(imbalance, 1);
     paramImbalance = imbalanceExtractor(imbalance, 4) / 100;
@@ -464,10 +470,10 @@ class EngineControl {
 
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
-      simVars->setEngine1N2(max(0, simN2 - paramImbalance));
+      simVars->setEngine1N2((std::max)(0.0, simN2 - paramImbalance));
     } else {
       simVars->setEngine2N1(simN1);
-      simVars->setEngine2N2(max(0, simN2 - paramImbalance));
+      simVars->setEngine2N2((std::max)(0.0, simN2 - paramImbalance));
     }
   }
 
@@ -978,6 +984,7 @@ class EngineControl {
                           double packs,
                           double nai,
                           double wai) {
+
     double idle = simVars->getEngineIdleN1();
     double flexTemp = simVars->getFlexTemp();
     double thrustLimitType = simVars->getThrustLimitType();
@@ -991,17 +998,17 @@ class EngineControl {
     double flex = 0;
 
     // Write all N1 Limits
-    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
-    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    to = limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    ga = limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
     if (flexTemp > 0) {
-      flex_to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
-      flex_ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_to = limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_ga = limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
     }
     clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
     mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
 
     // transition between TO and GA limit -----------------------------------------------------------------------------
-    double machFactorLow = max(0.0, min(1.0, (mach - 0.04) / 0.04));
+    double machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
     toga = to + (ga - to) * machFactorLow;
     flex = flex_to + (flex_ga - flex_to) * machFactorLow;
 
@@ -1027,10 +1034,10 @@ class EngineControl {
     double deltaThrust = 0;
 
     if (isTransitionActive) {
-      double timeDifference = max(0, (simulationTime - transitionStartTime) - waitTime);
+      double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - waitTime);
 
       if (timeDifference > 0 && clb > flex) {
-        deltaThrust = min(clb - flex, timeDifference * transitionFactor);
+        deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
       }
 
       if (flex + deltaThrust >= clb) {
@@ -1040,7 +1047,7 @@ class EngineControl {
     }
 
     if (isFlexActive) {
-      clb = min(clb, flex) + deltaThrust;
+      clb = (std::min)(clb, flex) + deltaThrust;
     }
 
     prevThrustLimitType = thrustLimitType;
@@ -1049,20 +1056,20 @@ class EngineControl {
     // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 
     // get factors
-    double machFactor = max(0.0, min(1.0, ((mach - 0.37) / 0.05)));
-    double altitudeFactorLow = max(0.0, min(1.0, ((altitude - 16600) / 500)));
-    double altitudeFactorHigh = max(0.0, min(1.0, ((altitude - 25000) / 500)));
+    double machFactor = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
+    double altitudeFactorLow = (std::max)(0.0, (std::min)(1.0, ((altitude - 16600) / 500)));
+    double altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((altitude - 25000) / 500)));
 
     // adapt thrust limits
     if (altitude >= 25000) {
-      mct = max(clb, mct + (clb - mct) * altitudeFactorHigh);
+      mct = (std::max)(clb, mct + (clb - mct) * altitudeFactorHigh);
       toga = mct;
     } else {
       if (mct > toga) {
-        mct = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+        mct = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
         toga = mct;
       } else {
-        toga = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+        toga = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
       }
     }
 
@@ -1297,7 +1304,7 @@ class EngineControl {
       }
 
       // set highest N1 from either engine
-      simN1highest = max(simN1highest, simN1);
+      simN1highest = (std::max)(simN1highest, simN1);
       prevEngineMasterPos[engine - 1] = engineFuelValveOpen;
       prevEngineStarterState[engine - 1] = engineStarter;
     }
