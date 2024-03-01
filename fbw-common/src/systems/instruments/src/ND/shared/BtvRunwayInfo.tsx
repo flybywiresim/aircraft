@@ -2,13 +2,21 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, EventBus, Subject, VNode, MappedSubject } from '@microsoft/msfs-sdk';
 
-import { FmsOansData, OansControlEvents } from 'instruments/src/OANC';
+import { FmsOansData } from 'instruments/src/OANC';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
-    private readonly runwayInfoString = Subject.create('');
+    private runwayIdent = Subject.create<string>('');
+
+    private runwayLength = Subject.create<number>(0);
+
+    private readonly runwayInfoString = MappedSubject.create(
+        ([ident, length]) => `${ident.padStart(5, '\xa0')}${length.toFixed(0).padStart(6, '\xa0')}`,
+        this.runwayIdent,
+        this.runwayLength,
+    );
 
     private readonly exitInfoString = Subject.create<string | null>('');
 
@@ -17,11 +25,10 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<OansControlEvents & FmsOansData>();
+        const sub = this.props.bus.getSubscriber<FmsOansData>();
 
-        sub.on('btvRunwayInfo').whenChanged().handle((it) => {
-            this.runwayInfoString.set(`${it.ident.padStart(5, '\xa0')}${it.length.toFixed(0).padStart(6, '\xa0')}`);
-        });
+        sub.on('fmsLandingRunway').whenChanged().handle((it) => this.runwayIdent.set(it.substring(2)));
+        sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => this.runwayLength.set(it));
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => {
             this.exitInfoString.set(it ? `${'N/A'.padStart(4, '\xa0')}${it.toFixed(0).padStart(6, '\xa0')}` : null);

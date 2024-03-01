@@ -76,7 +76,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private altnAirport = Subject.create<string | null>(null);
 
-    private landingRunway = Subject.create<string | null>(null);
+    private landingRunwayIdent = Subject.create<string | null>(null);
+
+    private landingRunwayLength = Subject.create<number | null>(null);
 
     private runwayTora = Subject.create<string | null>(null);
 
@@ -150,11 +152,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         sub.on('fmsAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
         sub.on('fmsLandingRunway').whenChanged().handle((it) => {
             // Set control panel display
-            this.landingRunway.set(it.substring(2));
+            this.landingRunwayIdent.set(it.substring(2));
             this.availableEntityList.set([it.substring(2)]);
             this.selectedEntityType.set(EntityTypes.RWY);
             this.selectedEntityIndex.set(0);
             this.selectedEntityString.set(it.substring(2));
+            this.updateLandingRunwayData();
         });
 
         // Load runway data from nav data
@@ -164,13 +167,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => {
             this.runwayLda.set(it.toFixed(0));
             this.runwayTora.set(it.toFixed(0));
-
-            this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.landingRunway.get() ?? '', length: it });
+            this.landingRunwayLength.set(it);
+            this.updateLandingRunwayData();
         });
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
+    }
+
+    private updateLandingRunwayData() {
+        this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.landingRunwayIdent.get() ?? '', length: this.landingRunwayLength.get() ?? 0 });
     }
 
     public updateAirportSearchData() {
