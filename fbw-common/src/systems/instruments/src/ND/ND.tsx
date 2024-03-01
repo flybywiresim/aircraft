@@ -272,7 +272,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     }
 
     private shouldShowOansRunwayInfo() {
-        this.showOansRunwayInfo.set(this.oansRunwayInfo.get() !== null && this.fmgcFlightPhase.get() > 1);
+        this.showOansRunwayInfo.set(this.oansRunwayInfo.get() !== null && this.fmgcFlightPhase.get() > 1 && this.currentPageMode.get() === EfisNdMode.PLAN);
     }
 
     render(): VNode | null {
