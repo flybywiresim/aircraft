@@ -27,14 +27,13 @@ export const AircraftPresets = () => {
     const [listener] = useState(RegisterViewListener('JS_LISTENER_COMM_BUS', undefined, false));
     const [loadPresetProgress, setLoadPresetProgress] = useState(0);
     const [currentStepDescription, setCurrentStepDescription] = useState('');
-    const onSetPlayerData = (data: string) => {
+    const onProgressUpdateFromWasm = (data: string) => {
         const [progressPercentage, currentStep] = data.split(';');
         setLoadPresetProgress(parseFloat(progressPercentage));
         setCurrentStepDescription(currentStep);
-        console.log('AIRCRAFT_PRESET_WASM_CALLBACK', data);
     };
     useEffect(() => {
-        listener.on('AIRCRAFT_PRESET_WASM_CALLBACK', onSetPlayerData, null);
+        listener.on('AIRCRAFT_PRESET_WASM_CALLBACK', onProgressUpdateFromWasm, null);
     }, []);
 
     // These need to align with the IDs in the Presets C++ WASM.
