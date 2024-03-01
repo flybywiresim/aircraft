@@ -252,9 +252,12 @@
       "NoAirportSelected": "No Airport Selected",
       "ResetChartFoxAuthentication": "Reset ChartFox Authentication",
       "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
-      "Title": "ChartFox"
+      "Title": "ChartFox",
+      "EstablishingConnection": "Establishing Connection",
+      "FailedToEstablishConnection": "Failed to Establish Connection.",
+      "ConnectionRequiredForPdf": "Connection is required for PDF charts.",
+      "Retry": "Retry"
     },
-    "PdfUnsupported": "PDF charts are currently not supported",
     "PinnedCharts": {
       "Delete": "Delete",
       "Edit": "Edit",

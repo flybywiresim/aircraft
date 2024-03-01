@@ -195,7 +195,7 @@ export const ChartViewer = () => {
     const transformRef = useRef<ReactZoomPanPinchRef>(null);
     const planeRef = useRef(null);
 
-    if (!chartLinks.light || !chartLinks.dark) {
+    if (provider !== ChartProvider.CHARTFOX && (!chartLinks.light || !chartLinks.dark)) {
         return (
             <div
                 className={`relative flex items-center justify-center rounded-lg bg-theme-accent ${!isFullScreen && 'ml-6 rounded-l-none'}`}

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@flybywiresim/fbw-sdk';
+import { ClientState, Viewer } from '@flybywiresim/fbw-sdk';
 import { emptyChartFoxCharts, ChartFoxAirportCharts, useChartFox } from '../../../Apis/ChartFox/ChartFox';
 
 import { t } from '../../../Localization/translation';
@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
-import { ChartViewer } from '../../Navigation';
+import { ChartFoxChartViewer } from './ChartFoxChartViewer';
 
 export const getPdfImageUrl = async (url: string, pageNumber: number): Promise<string> => {
     const id = 'loading-file';
@@ -68,25 +68,33 @@ export const ChartFoxChartUI = () => {
             { name: 'SID', charts: charts.departure, bundleRunways: charts.departure.some((chart) => chart.runways.length > 0) },
             { name: 'STAR', charts: charts.arrival, bundleRunways: charts.arrival.some((chart) => chart.runways.length > 0) },
             { name: 'APP', charts: charts.approach, bundleRunways: charts.approach.some((chart) => chart.runways.length > 0) },
+            // { name: 'ALL', charts: charts.reference.concat(charts.airport, charts.departure, charts.arrival, charts.approach) },
         ]);
     }, [charts]);
 
+    const fetchCharts = async () => {
+        const { sourceUrl, sourceUrlType } = await chartFox.getChart(chartId);
+        let url = sourceUrl;
+        let numPages = 1;
+        // For PDFs, chartName will be the original PDF link. This will be needed for pagination later.
+        // We also want to make sure chartName.fileType is set so we know if it's a PDF even if there
+        // is no client connection.
+        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartName: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
+        // TODO: should chartLinks be unset here? If not, and getting the PDF fails, the prev chart fill stay up.
+        if (sourceUrlType === ChartFileType.Pdf) {
+            if (!ClientState.getInstance().isConnected()) {
+                return;
+            }
+            url = await getPdfImageUrl(sourceUrl, pagesViewable > 1 ? currentPage : 1);
+            numPages = await Viewer.getPDFPageCountFromUrl(sourceUrl);
+        }
+        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: numPages }));
+        // For PDFs, chartLinks will be URIs to the converted image data for the current page.
+        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: url, dark: url, fileType: sourceUrlType } }));
+    };
+
     useEffect(() => {
         if (chartId) {
-            const fetchCharts = async () => {
-                const { sourceUrl, sourceUrlType } = await chartFox.getChart(chartId);
-                let url = sourceUrl;
-                let numPages = 1;
-                if (sourceUrlType === ChartFileType.Pdf) {
-                    url = await getPdfImageUrl(sourceUrl, pagesViewable > 1 ? currentPage : 1);
-                    numPages = await Viewer.getPDFPageCountFromUrl(sourceUrl);
-                }
-                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: numPages }));
-                // For PDFs, chartName will be the original PDF link. This will be needed for pagination later.
-                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartName: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
-                // For PDFs, chartLinks will be URIs to the converted image data for the current page.
-                dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: url, dark: url, fileType: sourceUrlType } }));
-            };
             fetchCharts();
         }
     }, [chartId, currentPage]);
@@ -203,7 +211,7 @@ export const ChartFoxChartUI = () => {
                     </div>
                 )}
 
-                <ChartViewer />
+                <ChartFoxChartViewer onConnectionRetry={() => fetchCharts()} />
             </>
         </div>
     );
