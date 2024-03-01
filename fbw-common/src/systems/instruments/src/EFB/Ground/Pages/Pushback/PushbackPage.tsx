@@ -152,7 +152,7 @@ export const PushbackPage = () => {
         });
     }, []);
 
-    // Update commanded heading and speed from input
+    // Update commanded heading from input
     useEffect(() => {
         if (!pushbackActive || !useControllerInput) {
             return;
@@ -163,13 +163,20 @@ export const PushbackPage = () => {
         } else {
             setCmdHdgFactor(rudderPosition / 100);
         }
+    }, [rudderPosition]);
+
+    // Update commanded speed from input
+    useEffect(() => {
+        if (!pushbackActive || !useControllerInput) {
+            return;
+        }
         // create deadzone
         if (elevatorPosition > -0.05 && elevatorPosition < 0.05) {
             setCmdSpdFactor(0);
         } else {
             setCmdSpdFactor(-elevatorPosition);
         }
-    }, [rudderPosition, elevatorPosition]);
+    }, [elevatorPosition]);
 
     // Make sure to deactivate the pushback system completely when leaving ground
     useEffect(() => {
