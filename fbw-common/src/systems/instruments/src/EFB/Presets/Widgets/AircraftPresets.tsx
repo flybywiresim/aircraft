@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
-import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
@@ -15,19 +14,28 @@ export const AircraftPresets = () => {
     // As long as the LVAR is >0, the backend is still applying the preset.
     // If the LVAR is set to 0 before the backend is finished, applying, the preset
     // will be stopped by the backend.
-    // The progress while loading an aircraft preset can be read from
-    // the LVAR A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS.
-    // The current step ID can be read via A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID
-    // and then use the StepDescription from './Procedures' to get the string.
     // A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE is a LVAR to expedite the loading of the preset
     // by skipping the delay between steps.
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
-    const [loadPresetProgress] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS', 'number', 100);
-    const [loadPresetCurrentId] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID', 'number', 100);
     const [loadPresetsExpedite, setLoadPresetsExpedite] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE', 'number', 250);
+
     const { showModal } = useModals();
+
+    // Listener for the callback from the WASM module for the progress updates of loading a preset
+    const [listener] = useState(RegisterViewListener('JS_LISTENER_COMM_BUS', undefined, false));
+    const [loadPresetProgress, setLoadPresetProgress] = useState(0);
+    const [currentStepDescription, setCurrentStepDescription] = useState('');
+    const onSetPlayerData = (data: string) => {
+        const [progressPercentage, currentStep] = data.split(';');
+        setLoadPresetProgress(parseFloat(progressPercentage));
+        setCurrentStepDescription(currentStep);
+        console.log('AIRCRAFT_PRESET_WASM_CALLBACK', data);
+    };
+    useEffect(() => {
+        listener.on('AIRCRAFT_PRESET_WASM_CALLBACK', onSetPlayerData, null);
+    }, []);
 
     // These need to align with the IDs in the Presets C++ WASM.
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h
@@ -65,7 +73,7 @@ export const AircraftPresets = () => {
                                 {t('Presets.AircraftStates.CurrentProcedureStep')}
                                 :
                                 {' '}
-                                {StepDescription().get(loadPresetCurrentId)}
+                                {currentStepDescription}
                             </span>
                             <div
                                 className="h-1/2 bg-theme-highlight"

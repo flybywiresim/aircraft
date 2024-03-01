@@ -83,6 +83,13 @@ class AircraftPresets : public Module {
   bool update(sGaugeDrawData* pData) override;
   bool postUpdate(sGaugeDrawData*) override { return true; }; // not required for this module
   bool shutdown() override;
+
+ private:
+  /**
+   * Updates the progress of the preset load and send it to the Lvars and the flyPad via COMM_BUS
+   * @param currentStepPtr The current step of the procedure.
+   */
+  void updateProgress(const ProcedureStep* currentStepPtr) const;
 };
 
 #endif  // FLYBYWIRE_AIRCRAFTPRESETS_H

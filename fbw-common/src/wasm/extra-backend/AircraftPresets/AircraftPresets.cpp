@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <MSFS\MSFS_CommBus.h>
+
 #include "AircraftPresets.h"
 #include "SimUnits.h"
 #include "UpdateMode.h"
@@ -141,9 +143,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
-      // update progress var
-      progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
-      progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+      updateProgress(currentStepPtr);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
                " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
@@ -181,9 +181,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       }
     }
 
-    // update progress var
-    progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
-    progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+    updateProgress(currentStepPtr);
 
     // execute code to set expected state
     LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
@@ -204,4 +202,13 @@ bool AircraftPresets::shutdown() {
   _isInitialized = false;
   std::cout << "AircraftPresets::shutdown()" << std::endl;
   return true;
+}
+
+void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {  // update progress var
+  progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
+  progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+
+  char buffer[256];
+  unsigned int bufferSize = snprintf(buffer, 256, "%f;%s", (static_cast<double>(currentStep) / currentProcedure->size()), currentStepPtr->description.c_str()) + 1;
+  fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer, bufferSize, FsCommBusBroadcast_JS);
 }
