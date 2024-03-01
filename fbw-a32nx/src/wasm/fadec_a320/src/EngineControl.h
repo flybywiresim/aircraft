@@ -1,12 +1,12 @@
 #pragma once
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <string>
 
 #include <MSFS\Legacy\gauges.h>
 #include <SimConnect.h>
 
-#include <string>
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -309,8 +309,6 @@ class EngineControl {
                             double simN2,
                             double pressAltitude,
                             double ambientTemp) {
-    double startCN2Left;
-    double startCN2Right;
     double preN2Fbw;
     double newN2Fbw;
     double preEgtFbw;
@@ -458,7 +456,6 @@ class EngineControl {
   /// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
   /// </summary>
   void updatePrimaryParameters(int engine, double imbalance, double simN1, double simN2) {
-
     // Engine imbalance
     engineImbalanced = imbalanceExtractor(imbalance, 1);
     paramImbalance = imbalanceExtractor(imbalance, 4) / 100;
@@ -984,7 +981,6 @@ class EngineControl {
                           double packs,
                           double nai,
                           double wai) {
-
     double idle = simVars->getEngineIdleN1();
     double flexTemp = simVars->getFlexTemp();
     double thrustLimitType = simVars->getThrustLimitType();
@@ -1208,9 +1204,7 @@ class EngineControl {
     double simN1highest = 0;
 
     double engineStarterPressurized;
-    double engineStarterToggled;
     double engineFuelValveOpen;
-    double fbwN2;
 
     // animationDeltaTimes being used to detect a Paused situation
     prevAnimationDeltaTime = animationDeltaTime;
@@ -1248,29 +1242,23 @@ class EngineControl {
       engineFuelValveOpen = simVars->getValve(engine);
       engineStarterPressurized = simVars->getStarterPressurized(engine);
 
-      // simulates delay to start valve open through fuel valve travel time
-      bool engineMasterTurnedOn = prevEngineMasterPos[engine - 1] < 1 && engineFuelValveOpen >= 1;
-      bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
-
       if (engine == 1) {
         deltaN2 = simN2 - simN2LeftPre;
         simN2LeftPre = simN2;
         timer = simVars->getEngine1Timer();
-        fbwN2 = simVars->getEngine1N2();
       } else {
         deltaN2 = simN2 - simN2RightPre;
         simN2RightPre = simN2;
         timer = simVars->getEngine2Timer();
-        fbwN2 = simVars->getEngine2N2();
       }
 
       // starts engines if Engine Master is turned on and Starter is pressurized or engine is still spinning fast enough
       if (!engineStarter && engineFuelValveOpen == 1 && (engineStarterPressurized || simN2 >= 20)) {
         std::string command = engine == 1 ? "1 (>K:SET_STARTER1_HELD)" : "1 (>K:SET_STARTER2_HELD)";
-
         execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
         engineStarter = 1;
-      }  // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
+      }
+      // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
       else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && !engineStarterPressurized && simN2 < 20))) {
         std::string command1 = engine == 1 ? "0 (>K:SET_STARTER1_HELD)" : "0 (>K:SET_STARTER2_HELD)";
         execute_calculator_code(command1.c_str(), nullptr, nullptr, nullptr);
@@ -1279,6 +1267,9 @@ class EngineControl {
         engineStarter = 0;
       }
 
+      // simulates delay to start valve open through fuel valve travel time
+      bool engineMasterTurnedOn = prevEngineMasterPos[engine - 1] < 1 && engineFuelValveOpen >= 1;
+      bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
       bool engineStarterTurnedOff = prevEngineStarterState[engine - 1] == 1 && engineStarter == 0;
 
       // Set & Check Engine Status for this Cycle

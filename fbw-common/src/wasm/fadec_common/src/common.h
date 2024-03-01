@@ -1,6 +1,12 @@
 #pragma once
 
+#include <cmath>
+#include <string>
+#include <chrono>
+
 #include <MSFS\MSFS.h>
+#include <MSFS\Legacy\gauges.h>
+
 
 class SimVars;
 
