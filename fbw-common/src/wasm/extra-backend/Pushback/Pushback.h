@@ -49,7 +49,6 @@ class Pushback : public Module {
   struct PushbackBaseInfo {
     FLOAT64 pushbackSystemEnabled;
     FLOAT64 parkingBrakeEngaged;
-    FLOAT64 simOnGround;
     FLOAT64 pushbackAttached;
     FLOAT64 aircraftHeading;
     FLOAT64 windVelBodyZ;
