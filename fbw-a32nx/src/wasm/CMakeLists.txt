@@ -5,6 +5,7 @@ set(OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../out/flybywire-aircraft-a3
 add_definitions(-DA32NX)
 
 add_subdirectory(extra-backend-a32nx)
+add_subdirectory(fadec_a32nx)
 
 # FIXME: remove the if-clause as soon as all components are using CMake
 if (WIN32)
