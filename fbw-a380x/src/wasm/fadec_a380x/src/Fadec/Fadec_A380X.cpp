@@ -7,52 +7,9 @@
 bool Fadec_A380X::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
-  initializeSimData();
-
-  _isInitialized = true;
-  LOG_INFO("Fadec_A380X initialized");
-  return true;
-}
-
-bool Fadec_A380X::preUpdate([[maybe_unused]] sGaugeDrawData* _pData) {
-  // empty
-  return true;
-}
-
-bool Fadec_A380X::update(sGaugeDrawData* pData) {
-  if (!_isInitialized) {
-    std::cerr << "Fadec_A380X::update() - not initialized" << std::endl;
-    return false;
-  }
-
-  // calculate delta time
-  double calculatedSampleTime = (std::max)(0.002, msfsHandler.getSimulationTime() - previousSimulationTime);
-  // store previous simulation time
-  previousSimulationTime = msfsHandler.getSimulationTime();
-
-  // update engines
-  engineControlInstance.update(context, calculatedSampleTime, msfsHandler.getSimulationTime());
-
-  return true;
-}
-
-bool Fadec_A380X::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  //  empty
-  return true;
-}
-
-bool Fadec_A380X::shutdown() {
-  _isInitialized = false;
-  LOG_INFO("Fadec_A380X::shutdown()");
-  return true;
-}
-
-// ============================================================================
-// private
-// ============================================================================
-
-void Fadec_A380X::initializeSimData() {
   // clang-format off
+
+  // TODO: Check if these are really used in the code
 
   DataDefVector payloadDataDef = {
     {"PAYLOAD STATION WEIGHT", 1, UNITS.Pounds},
@@ -111,7 +68,7 @@ void Fadec_A380X::initializeSimData() {
   simDataPtr = dataManager->make_datadefinition_var<SimData>("SIM DATA", simDataDef);
   simDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
-  context = std::make_shared<Context>(Context{
+  context = std::__2::make_shared<Context>(Context{
     &msfsHandler,
     payloadDataPtr,
     fuelTankDataPtr,
@@ -121,4 +78,40 @@ void Fadec_A380X::initializeSimData() {
   });
 
   // clang-format on
+
+  _isInitialized = true;
+  LOG_INFO("Fadec_A380X initialized");
+  return true;
 }
+
+bool Fadec_A380X::preUpdate([[maybe_unused]] sGaugeDrawData* _pData) {
+  // empty
+  return true;
+}
+
+bool Fadec_A380X::update(sGaugeDrawData* pData) {
+  if (!_isInitialized) {
+    std::cerr << "Fadec_A380X::update() - not initialized" << std::endl;
+    return false;
+  }
+
+  // update engines
+  engineControlInstance.update(context);
+
+  return true;
+}
+
+bool Fadec_A380X::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
+  //  empty
+  return true;
+}
+
+bool Fadec_A380X::shutdown() {
+  _isInitialized = false;
+  LOG_INFO("Fadec_A380X::shutdown()");
+  return true;
+}
+
+// ============================================================================
+// private
+// ============================================================================

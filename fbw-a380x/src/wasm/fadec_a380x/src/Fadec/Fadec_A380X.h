@@ -31,9 +31,6 @@ class Fadec_A380X : public Fadec {
   bool update(sGaugeDrawData* pData) override;
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
-
-  void initializeSimData();
-
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FADEC_H
