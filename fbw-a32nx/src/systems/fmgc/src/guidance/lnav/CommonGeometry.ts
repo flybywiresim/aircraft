@@ -233,7 +233,7 @@ export function sideOfPointOnCourseToFix(fix: Coordinates, course: DegreesTrue, 
     return PointSide.Before;
 }
 
-function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
+export function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
     const R = Constants.EARTH_RADIUS_NM;
 
     const d13 = distanceTo(start, ppos) / R;
