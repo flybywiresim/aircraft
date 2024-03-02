@@ -1,7 +1,7 @@
 # flybywire-a380x-fadec-v2 CMakeLists.txt
 
 # add additional compiler definitions for the a380x fadec-v2 build
-add_definitions()
+#add_definitions( )
 
 # add the local include directories
 include_directories(
@@ -21,8 +21,10 @@ set(SOURCE_FILES
 )
 
 set(INCLUDE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/SimVars_A380X.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A380X.h
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
 )
 

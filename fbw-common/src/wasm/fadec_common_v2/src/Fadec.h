@@ -4,6 +4,8 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FADEC_H
 #define FLYBYWIRE_AIRCRAFT_FADEC_H
 
+#include <cmath>
+
 #include "DataManager.h"
 #include "Module.h"
 
@@ -27,7 +29,8 @@ class Fadec : public Module {
   virtual bool postUpdate(sGaugeDrawData* pData) override = 0;
   virtual bool shutdown() override = 0;
 
- protected:
+ public:
+
   /**
    * @brief Interpolates a value using linear interpolation.
    *
@@ -45,12 +48,9 @@ class Fadec : public Module {
    * @return The interpolated 'y' value at 'x'.
    */
   static double interpolate(double x, double x0, double x1, double y0, double y1) {
-    if (x0 == x1)
-      return y0;
-    if (x < x0)
-      return y0;
-    if (x > x1)
-      return y1;
+    if (x0 == x1) return y0;
+    if (x < x0) return y0;
+    if (x > x1) return y1;
     return ((y0 * (x1 - x)) + (y1 * (x - x0))) / (x1 - x0);
   }
 
@@ -64,7 +64,7 @@ class Fadec : public Module {
  * @param ambientTemp The ambient temperature in degrees Celsius.
  * @return The ratio of the ambient temperature to the standard temperature at sea level.
  */
-FLOAT64 theta(double ambientTemp) {
+static FLOAT64 theta(double ambientTemp) {
   return (273.15 + ambientTemp) / 288.15;
 }
 
@@ -78,7 +78,7 @@ FLOAT64 theta(double ambientTemp) {
  * @param ambientPressure The ambient pressure in hPa.
  * @return The ratio of the ambient pressure to the standard pressure at sea level.
  */
-FLOAT64 delta(double ambientPressure) {
+static FLOAT64 delta(double ambientPressure) {
   return ambientPressure / 1013;
 }
 
@@ -96,8 +96,8 @@ FLOAT64 delta(double ambientPressure) {
  * @return The ratio of the total temperature to the standard temperature at sea level, accounting
  * for the effects of Mach number.
  */
-FLOAT64 theta2(double mach, double ambientTemp) {
-  return theta(ambientTemp) * (1 + 0.2 * std::pow(mach, 2));
+static FLOAT64 theta2(double mach, double ambientTemp) {
+  return theta(ambientTemp) * (1 + 0.2 * pow(mach, 2));
 }
 
 /**
@@ -112,8 +112,8 @@ FLOAT64 theta2(double mach, double ambientTemp) {
  * @param ambientPressure The ambient pressure in hPa.
  * @return The ratio of the total pressure to the standard pressure at sea level, accounting for the effects of Mach number.
  */
-FLOAT64 delta2(double mach, double ambientPressure) {
-  return delta(ambientPressure) * std::pow((1 + 0.2 * std::pow(mach, 2)), 3.5);
+static FLOAT64 delta2(double mach, double ambientPressure) {
+  return delta(ambientPressure) * pow((1 + 0.2 * pow(mach, 2)), 3.5);
 }
 
 /**
@@ -130,7 +130,7 @@ FLOAT64 delta2(double mach, double ambientPressure) {
 *                   are indexed in reverse order, with the last parameter being 1 and the first being 9.
  * @return The imbalance of the specified engine parameter.
  */
-int imbalanceExtractor(double imbalanceCode, int parameter) {
+static int imbalanceExtractor(double imbalanceCode, int parameter) {
   parameter = 9 - parameter;
   while (parameter > 0) {
     imbalanceCode = fmod(imbalanceCode, 100);
@@ -138,6 +138,22 @@ int imbalanceExtractor(double imbalanceCode, int parameter) {
     parameter--;
   }
   return static_cast<int>(imbalanceCode);
+}
+
+/**
+ * @brief Converts calibrated airspeed (CAS) to Mach number.
+ *
+ * This function converts the calibrated airspeed (CAS) to the Mach number. The conversion is based on the ambient pressure and a constant `k`.
+ * The Mach number is calculated using the formula: sqrt((5 * pow(((pow(((pow(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5), where delta is the ratio of the ambient pressure to the standard pressure at sea level.
+ *
+ * @param cas The calibrated airspeed in knots.
+ * @param ambientPressure The ambient pressure in hPa.
+ * @return The Mach number.
+ */
+static double cas2mach(double cas, double ambientPressure) {
+  double k = 2188648.141;
+  double delta = ambientPressure / 1013;
+  return sqrt((5 * pow(((pow(((pow(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5);
 }
 
 };
