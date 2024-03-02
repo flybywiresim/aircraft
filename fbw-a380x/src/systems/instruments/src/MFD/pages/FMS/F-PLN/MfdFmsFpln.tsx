@@ -37,6 +37,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private displayEfobAndWind = Subject.create<boolean>(false);
 
+    private trueTrackEnabled = Subject.create<boolean>(false);
+
     private efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
 
     private efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => { } }]);
@@ -429,6 +431,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             }}
                             flags={Subject.create(flags)}
                             displayEfobAndWind={this.displayEfobAndWind}
+                            trueTrack={this.trueTrackEnabled}
                             globalLineColor={MappedSubject.create(([tmpy, sec]) => {
                                 if (sec === true) {
                                     return FplnLineColor.Secondary;
@@ -959,6 +962,7 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
     data: Subscribable<FplnLineDisplayData | null>;
     flags: Subscribable<FplnLineFlags>;
     displayEfobAndWind: Subscribable<boolean>;
+    trueTrack: Subscribable<boolean>;
     globalLineColor: Subscribable<FplnLineColor>;
     revisionsMenuIsOpened: Subject<boolean>;
     callbacks: lineConstraintsCallbacks;
@@ -1099,14 +1103,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 FSComponent.render(this.lineConnector(data), this.connectorRef.instance);
             }
 
-            // TODO: True / magnetic track
             if (this.trackRef.getOrDefault() && this.distRef.getOrDefault() && this.fpaRef.getOrDefault()) {
                 if (FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial)) {
                     this.trackRef.instance.innerText = '';
                     this.distRef.instance.innerText = '';
                     this.fpaRef.instance.innerText = '';
                 } else {
-                    this.trackRef.instance.innerText = data.trackFromLastWpt ? `${data.trackFromLastWpt.toFixed(0)}°` : '';
+                    this.trackRef.instance.innerText = data.trackFromLastWpt ? `${data.trackFromLastWpt.toFixed(0)}°${this.props.trueTrack.get() ? 'T' : ''}` : '';
                     this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
                     this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
                 }
@@ -1141,7 +1144,6 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 FSComponent.render(FplnLineConnectorHold(this.lineColor.get()), this.connectorRef.instance);
             }
 
-            // TODO: True / magnetic track
             if (this.trackRef.getOrDefault() && this.distRef.getOrDefault() && this.fpaRef.getOrDefault()) {
                 this.trackRef.instance.innerText = '';
                 this.distRef.instance.innerText = '';
