@@ -28,12 +28,14 @@ export const AircraftPresets = () => {
     const [loadPresetProgress, setLoadPresetProgress] = useState(0);
     const [currentStepDescription, setCurrentStepDescription] = useState('');
 
+    // Callback function to update the loading progress from the WASM module
     const onProgressUpdateFromWasm = (data: string) => {
         const [progressPercentage, currentStep] = data.split(';');
         setLoadPresetProgress(parseFloat(progressPercentage));
         setCurrentStepDescription(currentStep);
     };
 
+    // Register the callback function to receive the loading progress from the WASM module
     useViewListenerEvent('JS_LISTENER_COMM_BUS', 'AIRCRAFT_PRESET_WASM_CALLBACK', onProgressUpdateFromWasm);
 
     // These need to align with the IDs in the Presets C++ WASM.

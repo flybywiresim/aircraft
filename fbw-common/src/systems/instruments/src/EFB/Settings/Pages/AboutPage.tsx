@@ -3,12 +3,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY } from '@flybywiresim/fbw-sdk';
+import { t } from '@flybywiresim/flypad';
 import { getAirframeType } from '../../Efb';
 import { SettingsPage } from '../Settings';
-
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
-import { t } from '../../Localization/translation';
 import { useViewListenerEvent } from '../../Utils/listener';
 
 interface BuildInfoEntryProps {
@@ -52,10 +51,12 @@ export const AboutPage = () => {
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
+    // Callback function to set sBuildVersion from the community panel
     const onSetPlayerData = (data: CommunityPanelPlayerData) => {
         setVersion(data.sBuildVersion);
     };
 
+    // Register the callback function to receive the build version from the community panel
     useViewListenerEvent('JS_LISTENER_COMMUNITY', 'SetGamercardInfo', onSetPlayerData);
 
     useEffect(() => {
