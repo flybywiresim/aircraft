@@ -15,7 +15,7 @@ class EngineControl_A380X {
   bool simOnGround;
 
  public:
-  void update(ContextPtr context, double deltaTime, double simulationTime);
+  void update(ContextPtr context);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
