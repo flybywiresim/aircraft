@@ -5,7 +5,8 @@
 #include "MsfsHandler.h"
 #include "SimVars.h"
 
-void EngineControl_A380X::update(ContextPtr context, double deltaTime, double simulationTime) {
+void EngineControl_A380X::update(ContextPtr context) {
+
   mach = context->simDataPtr->data().mach;
   pressAltitude = context->simDataPtr->data().pressureAltitude;
   ambientTemp = context->simDataPtr->data().ambientTemperature;
