@@ -7,12 +7,22 @@
 #include "Fadec.h"
 
 class Fadec_A32NX : public Fadec {
+ private:
+  // Convenience pointer to the data manager
+  DataManager* dataManager = nullptr;
+
  public:
   /**
    * Creates a new Fadec_A32NX instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
   explicit Fadec_A32NX(MsfsHandler& msfsHandler) : Fadec(msfsHandler) {}
+
+  bool initialize() override;
+  bool preUpdate(sGaugeDrawData* pData) override;
+  bool update(sGaugeDrawData* pData) override;
+  bool postUpdate(sGaugeDrawData* pData) override;
+  bool shutdown() override;
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FADEC_H
