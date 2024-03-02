@@ -30,7 +30,7 @@ Discord username (if different from GitHub):
 <!-- DO NOT DELETE THIS -->
 ## How to download the PR for QA
 
-Every new commit to this PR will cause a new A32NX & A380X artifact to be created, built, and uploaded.
+Every new commit to this PR will cause new A32NX and A380X artifacts to be created, built, and uploaded.
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
