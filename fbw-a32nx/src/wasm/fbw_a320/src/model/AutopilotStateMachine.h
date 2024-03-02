@@ -296,6 +296,7 @@ class AutopilotStateMachine final
   void AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_ON(const ap_sm_output *BusAssignment);
+  void AutopilotStateMachine_GA_TRK_during(void);
   boolean_T AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment);

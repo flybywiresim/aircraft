@@ -35,6 +35,10 @@ class ADIRS {
         return ADIRS.getFromAnyAdiru('IR', 'LONGITUDE');
     }
 
+    static getTrueTrack() {
+        return ADIRS.getFromAnyAdiru('IR', 'TRUE_TRACK');
+    }
+
     static getTrueAirspeed() {
         return ADIRS.getFromAnyAdiru('ADR', 'TRUE_AIRSPEED');
     }

@@ -1,3 +1,18 @@
+import {
+    FlightPlanService as FlightPlanService_,
+    NavigationDatabaseService as NavigationDatabaseService_,
+    SelectedNavaidType as SelectedNavaidType_,
+    SelectedNavaidMode as SelectedNavaidMode_,
+    A320FlightPlanPerformanceData as A320FlightPlanPerformanceData_,
+} from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
+import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
+import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { ApproachUtils as ApproachUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+
 declare global {
     type NauticalMiles = number;
     type Heading = number;
@@ -55,6 +70,30 @@ declare global {
         ACE_REMOTE_IS_CONNECTED: boolean | undefined
     }
 
-}
+    namespace Fmgc {
+        const SelectedNavaidType: typeof SelectedNavaidType_
+        const SelectedNavaidMode: typeof SelectedNavaidMode_
 
-export {};
+        const FlightPlanService: typeof FlightPlanService_
+
+        const A320FlightPlanPerformanceData: typeof A320FlightPlanPerformanceData_
+
+        const NavigationDatabase: typeof Database
+
+        const NavigationDatabaseBackend: typeof DatabaseBackend
+
+        const NavigationDatabaseService: typeof NavigationDatabaseService_
+
+        const FlightPlanIndex: typeof Index
+
+        const FlightPhaseManager: typeof FlightPhaseManager_
+
+        const WaypointFactory: typeof WaypointFactory_
+
+        const WaypointEntryUtils: typeof WaypointEntryUtils_
+
+        const SimBriefUplinkAdapter: typeof SimBriefUplinkAdapter_
+
+        function getFlightPhaseManager(): FlightPhaseManager_
+    }
+}

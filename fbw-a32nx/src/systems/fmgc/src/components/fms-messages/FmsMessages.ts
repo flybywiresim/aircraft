@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FMMessage, FMMessageTriggers } from '@flybywiresim/fbw-sdk';
@@ -9,10 +8,10 @@ import { SpecifiedNdbUnavailableLeft, SpecifiedNdbUnavailableRight } from '@fmgc
 import { SpecifiedVorUnavailableLeft, SpecifiedVorUnavailableRight } from '@fmgc/components/fms-messages/SpecifiedVorUnavailable';
 import { TuneNavaidLeft, TuneNavaidRight } from '@fmgc/components/fms-messages/TuneNavaid';
 import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
-import { FlightPlanManager } from '@shared/flightplan';
 import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { StepAhead } from '@fmgc/components/fms-messages/StepAhead';
 import { StepDeleted } from '@fmgc/components/fms-messages/StepDeleted';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
@@ -60,12 +59,12 @@ export class FmsMessages implements FmgcComponent {
         new StepDeleted(),
     ];
 
-    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
         this.baseInstrument = baseInstrument;
 
         for (const selector of this.messageSelectors) {
             if (selector.init) {
-                selector.init(this.baseInstrument);
+                selector.init(this.baseInstrument, flightPlanService);
             }
         }
     }
@@ -204,7 +203,7 @@ export interface FMMessageSelector {
 
     efisSide?: 'L' | 'R';
 
-    init?(baseInstrument: BaseInstrument): void;
+    init?(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
 
     /**
      * Optionally triggers a message when there isn't any other system or Redux update triggering it.

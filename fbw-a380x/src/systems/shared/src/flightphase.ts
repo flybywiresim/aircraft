@@ -33,11 +33,11 @@ function isEngineOnTakeOffThrust(index: number): boolean {
 }
 
 export function isAnEngineOn(): boolean {
-    return isEngineOn(1) || isEngineOn(2);
+    return isEngineOn(2) || isEngineOn(3);
 }
 
 export function isAllEngineOn(): boolean {
-    return isEngineOn(1) && isEngineOn(2);
+    return isEngineOn(2) && isEngineOn(3);
 }
 
 export function getAutopilotVerticalMode(): VerticalMode {

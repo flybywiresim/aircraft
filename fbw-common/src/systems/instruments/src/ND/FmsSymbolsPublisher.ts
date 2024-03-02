@@ -9,5 +9,8 @@ export interface FmsSymbolsData {
     vectorsActive: PathVector[],
     vectorsDashed: PathVector[],
     vectorsTemporary: PathVector[],
+    vectorsMissed: PathVector[],
+    vectorsAlternate: PathVector[],
+    vectorsSecondary: PathVector[],
     traffic: NdTraffic[],
 }

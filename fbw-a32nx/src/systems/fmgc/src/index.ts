@@ -2,22 +2,30 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
-import { FlightPlanManager } from './flightplanning/FlightPlanManager';
-import { getFlightPhaseManager } from './flightphase';
-import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
-import { GuidanceManager } from './guidance/GuidanceManager';
-import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
+import { ApproachType, ApproachUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { DataManager } from '@fmgc/flightplanning/new/DataManager';
+import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { A320AircraftConfig } from '@fmgc/flightplanning/new/A320AircraftConfig';
+import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
+import { FlightPlanService } from './flightplanning/new/FlightPlanService';
+import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
+import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
 import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
-import { WaypointBuilder } from './flightplanning/WaypointBuilder';
-import { RawDataMapper } from './flightplanning/RawDataMapper';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
+import { WaypointFactory } from './flightplanning/new/waypoints/WaypointFactory';
+import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
+import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
+import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
+import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
-    initComponents(baseInstrument, flightPlanManager);
+function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>): void {
+    initComponents(baseInstrument, flightPlanService);
 }
 
 function updateFmgcLoop(deltaTime: number): void {
@@ -25,22 +33,34 @@ function updateFmgcLoop(deltaTime: number): void {
 }
 
 export {
+    ApproachUtils,
+    RunwayUtils,
+    ApproachType,
+    FlightPlanService,
+    A320FlightPlanPerformanceData,
+    NavigationDatabase,
+    NavigationDatabaseBackend,
+    NavigationDatabaseService,
+    FlightPlanIndex,
+    FlightPhaseManager,
     getFlightPhaseManager,
-    FlightPlanManager,
-    ManagedFlightPlan,
-    FlightPlanAsoboSync,
-    GuidanceManager,
     GuidanceController,
     initFmgcLoop,
     updateFmgcLoop,
     recallMessageById,
+    EfisInterface,
     EfisSymbols,
     DescentPathBuilder,
-    WaypointBuilder,
-    RawDataMapper,
-    ApproachUtils,
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,
     a320EfisRangeSettings,
+    WaypointFactory,
+    WaypointEntryUtils,
+    SimBriefUplinkAdapter,
+    CoRouteUplinkAdapter,
+    DataManager,
+    EventBus,
+    A320AircraftConfig,
+    A380AircraftConfig,
 };

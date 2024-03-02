@@ -1,4 +1,4 @@
-import { AltitudeConstraint, SpeedConstraint } from '../lnav/legs';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export enum FlapConf {
     CLEAN = 0,

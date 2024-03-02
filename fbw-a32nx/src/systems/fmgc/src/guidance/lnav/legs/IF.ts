@@ -11,16 +11,25 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { Fix, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { distanceTo } from 'msfs-geo';
 
 export class IFLeg extends XFLeg {
     constructor(
-        fix: WayPoint,
+        fix: Fix,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
         super(fix);
 
         this.segment = segment;
+
+        // Do not display on map if this is an airport or runway leg
+        const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
+
+        this.displayedOnMap = waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
+        // Always compute IF legs that are the runway. If we don't, IF legs at the origin might never be computed because they are before the active leg
+        this.isComputed = waypointDescriptor === WaypointDescriptor.Airport || waypointDescriptor === WaypointDescriptor.Runway;
     }
 
     get predictedPath(): PathVector[] | undefined {
@@ -28,11 +37,11 @@ export class IFLeg extends XFLeg {
     }
 
     getPathStartPoint(): Coordinates | undefined {
-        return this.fix.infos.coordinates;
+        return this.fix.location;
     }
 
     getPathEndPoint(): Coordinates | undefined {
-        return this.fix.infos.coordinates;
+        return this.fix.location;
     }
 
     recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
@@ -63,6 +72,10 @@ export class IFLeg extends XFLeg {
         return undefined;
     }
 
+    getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): number {
+        return distanceTo(ppos, this.fix.location);
+    }
+
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
         return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
     }
@@ -72,7 +85,8 @@ export class IFLeg extends XFLeg {
     }
 
     getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return undefined;
+        // If a PWP lies in a discontinuity before an IF leg, the PWP should lie on the fix of the IF.
+        return this.fix.location;
     }
 
     isAbeam(_ppos: Coordinates): boolean {

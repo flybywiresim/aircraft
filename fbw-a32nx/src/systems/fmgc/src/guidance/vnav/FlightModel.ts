@@ -3,30 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { FlightModelParameters } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { Common, FlapConf } from './common';
 
 export class FlightModel {
-    static Cd0 = 0.01873;
-
-    static wingSpan = 117.454;
-
-    static wingArea = 1317.47;
-
-    static wingEffcyFactor = 0.70;
-
-    static requiredAccelRateKNS = 1.33; // in knots/second
-
-    static requiredAccelRateMS2 = 0.684; // in m/s^2
-
-    static gravityConstKNS = 19.0626 // in knots/second
-
-    static gravityConstMS2 = 9.806665; // in m/s^2
-
-    // From https://github.com/flybywiresim/a32nx/pull/6903#issuecomment-1073168320
-    static machValues: Mach[] = [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85]
-
-    static dragCoefficientCorrections: number[] = [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01]
-
     /**
      * Get lift coefficient at given conditions
      * @param weight in pounds
@@ -35,12 +15,12 @@ export class FlightModel {
      * @param loadFactor g-Force
      * @returns lift coefficient (Cl)
      */
-    static getLiftCoefficient(weight: number, mach: number, delta: number, loadFactor = 1): number {
-        return (weight * loadFactor) / (1481.4 * (mach ** 2) * delta * this.wingArea);
+    static getLiftCoefficient(config: FlightModelParameters, weight: number, mach: number, delta: number, loadFactor = 1): number {
+        return (weight * loadFactor) / (1481.4 * (mach ** 2) * delta * config.wingArea);
     }
 
-    static getLiftCoefficientFromEAS(lift: number, eas: number): number {
-        return (295.369 * lift) / ((eas ** 2) * this.wingArea);
+    static getLiftCoefficientFromEAS(config: FlightModelParameters, lift: number, eas: number): number {
+        return (295.369 * lift) / ((eas ** 2) * config.wingArea);
     }
 
     /**
@@ -51,9 +31,9 @@ export class FlightModel {
      * @param flapConf flap configuration
      * @returns drag coefficient (Cd)
      */
-    static getDragCoefficient(Cl: number, spdBrkDeflected = false, gearExtended = false, flapConf = FlapConf.CLEAN) : number {
+    static getDragCoefficient(config: FlightModelParameters, Cl: number, spdBrkDeflected = false, gearExtended = false, flapConf = FlapConf.CLEAN) : number {
         // Values taken at mach 0
-        let baseDrag;
+        let baseDrag: number;
         switch (flapConf) {
         case FlapConf.CLEAN:
             baseDrag = (0.0211 * Cl ** 3) + (0.0412 * Cl ** 2) - (0.015 * Cl) + 0.0215;
@@ -74,9 +54,9 @@ export class FlightModel {
             break;
         }
 
-        const spdBrkIncrement = spdBrkDeflected ? 0.01008 : 0;
-        const gearIncrement = gearExtended ? 0.0372 : 0;
-        return baseDrag + spdBrkIncrement + gearIncrement;
+        const spdBrkIncrement = spdBrkDeflected ? config.speedBrakeDrag : 0;
+        const gearIncrement = gearExtended ? config.gearDrag : 0;
+        return config.dragCoeffFactor * (baseDrag + spdBrkIncrement + gearIncrement);
     }
 
     /**
@@ -89,20 +69,20 @@ export class FlightModel {
      * @param flapConf flap configuration
      * @returns drag
      */
-    static getDrag(weight: number, mach: number, delta: number, spdBrkDeflected: boolean, gearExtended: boolean, flapConf: FlapConf): number {
-        const Cl = this.getLiftCoefficient(weight, mach, delta);
-        const Cd = this.getDragCoefficient(Cl, spdBrkDeflected, gearExtended, flapConf);
-        const deltaCd = this.getMachCorrection(mach, flapConf);
+    static getDrag(config: FlightModelParameters, weight: number, mach: number, delta: number, spdBrkDeflected: boolean, gearExtended: boolean, flapConf: FlapConf): number {
+        const Cl = this.getLiftCoefficient(config, weight, mach, delta);
+        const Cd = this.getDragCoefficient(config, Cl, spdBrkDeflected, gearExtended, flapConf);
+        const deltaCd = this.getMachCorrection(config, mach, flapConf);
 
-        return 1481.4 * (mach ** 2) * delta * this.wingArea * (Cd + deltaCd);
+        return 1481.4 * (mach ** 2) * delta * config.wingArea * (Cd + deltaCd);
     }
 
-    static getMachCorrection(mach: Mach, flapConf: FlapConf): number {
+    static getMachCorrection(config: FlightModelParameters, mach: Mach, flapConf: FlapConf): number {
         if (flapConf !== FlapConf.CLEAN) {
             return 0;
         }
 
-        return this.interpolate(mach, this.machValues, this.dragCoefficientCorrections);
+        return this.interpolate(mach, config.machValues, config.dragCoefficientCorrections);
     }
 
     /**
@@ -221,23 +201,26 @@ export class FlightModel {
     }
 
     static getSpeedChangePathAngle(
+        config: FlightModelParameters,
         thrust: number,
         weight: number,
         drag: number,
     ): number {
-        return Math.asin(((thrust - drag) / weight) - (1 / FlightModel.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
+        return Math.asin(((thrust - drag) / weight) - (1 / config.gravityConstMS2) * config.requiredAccelRateMS2);
     }
 
     static getSpeedChangePathAngleFromCoefficients(
+        config: FlightModelParameters,
         thrust: number,
         weight: number,
         Cl: number,
         Cd: number,
     ): number {
-        return Math.asin(((thrust / weight) - (Cd / Cl)) - (1 / FlightModel.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
+        return Math.asin(((thrust / weight) - (Cd / Cl)) - (1 / config.gravityConstMS2) * config.requiredAccelRateMS2);
     }
 
     static getAccelRateFromIdleGeoPath(
+        config: FlightModelParameters,
         thrust: number,
         weight: number,
         drag: number,
@@ -245,10 +228,11 @@ export class FlightModel {
     ): number {
         // fpa is in degrees
         const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
-        return FlightModel.gravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
+        return config.gravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
     }
 
     static getAccelRateFromIdleGeoPathCoefficients(
+        config: FlightModelParameters,
         thrust: number,
         weight: number,
         Cl: number,
@@ -257,7 +241,7 @@ export class FlightModel {
     ): number {
         // fpa is in degrees
         const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
-        return FlightModel.gravityConstKNS * (((thrust / weight) - (Cd / Cl)) - Math.sin(fpaRad));
+        return config.gravityConstKNS * (((thrust / weight) - (Cd / Cl)) - Math.sin(fpaRad));
     }
 
     /**

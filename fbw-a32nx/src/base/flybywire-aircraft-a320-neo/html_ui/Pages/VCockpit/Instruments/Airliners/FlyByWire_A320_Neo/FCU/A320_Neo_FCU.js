@@ -224,6 +224,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = false;
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
+        this.isVerticalModeSRSGA = false;
         this.isTargetManaged = false;
 
         this._rotaryEncoderCurrentSpeed = 1;
@@ -238,6 +239,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     init() {
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
+        this.isVerticalModeSRSGA = false;
         this.selectedValue = this.MIN_SPEED;
         this.currentValue = this.MIN_SPEED;
         this.targetSpeed = this.MIN_SPEED;
@@ -320,12 +322,14 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     shouldEngageManagedSpeed() {
         const managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots");
         const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") >= 90;
-        const isVerticalModeSRS = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum") === 40;
+        const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum");
+        const isVerticalModeSRS = verticalMode === 40;
+        const isVerticalModeSRSGA = verticalMode === 41;
 
         // V2 is entered into MCDU (was not set -> set)
-        // SRS mode engages (SRS no engaged -> engaged)
+        // SRS or SRS_GA mode engages (SRS no engaged -> engaged)
         let shouldEngage = false;
-        if ((!this.isValidV2 && isValidV2) || (!this.isVerticalModeSRS && isVerticalModeSRS)) {
+        if ((!this.isValidV2 && isValidV2) || (!this.isVerticalModeSRS && isVerticalModeSRS) || (!this.isVerticalModeSRSGA && isVerticalModeSRSGA)) {
             shouldEngage = true;
         }
 
@@ -335,6 +339,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isValidV2 = isValidV2;
         }
         this.isVerticalModeSRS = isVerticalModeSRS;
+        this.isVerticalModeSRSGA = isVerticalModeSRSGA;
 
         return shouldEngage;
     }
@@ -403,11 +408,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     }
                     this.textValueContent = value;
                 } else {
-                    if (_machActive) {
-                        this.textValueContent = "-.--";
-                    } else {
-                        this.textValueContent = "---";
-                    }
+                    this.textValueContent = "---";
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);

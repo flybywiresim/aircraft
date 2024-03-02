@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { AccelFactorMode, Common, FlapConf } from './common';
 import { EngineModel } from './EngineModel';
 import { FlightModel } from './FlightModel';
@@ -35,6 +36,7 @@ export interface StepResults {
 
 export class Predictions {
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param stepSize the size of the altitude step, in feet
      * @param econCAS airspeed during climb (taking SPD LIM & restrictions into account)
@@ -51,6 +53,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static altitudeStep(
+        config: AircraftConfig,
         initialAltitude: number,
         stepSize: number,
         econCAS: number,
@@ -87,8 +90,10 @@ export class Predictions {
         const theta2 = Common.getTheta2(theta, mach);
         const delta2 = Common.getDelta2(delta, mach);
         const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach) * 2 * EngineModel.maxThrust;
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * 2;
+        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach)
+        * config.engineModelParameters.numberOfEngines
+        * config.engineModelParameters.maxThrust;
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, mach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
         const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
         const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
@@ -103,7 +108,7 @@ export class Predictions {
         let previousMidStepWeight = midStepWeight;
         let iterations = 0;
         do {
-            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const accelerationFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
             pathAngle = FlightModel.getConstantThrustPathAngle(thrust, midStepWeight, drag, accelerationFactor);
@@ -133,6 +138,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircract specific config
      * @param initialAltitude altitude at beginning of step, in feet
      * @param distance distance to travel during step, in nautical miles
      * @param econCAS corrected airspeed at the start of the step, in knots
@@ -149,6 +155,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static distanceStep(
+        config: AircraftConfig,
         initialAltitude: number,
         distance: number,
         econCAS: number,
@@ -199,12 +206,14 @@ export class Predictions {
             const theta2 = Common.getTheta2(theta, mach);
             const delta2 = Common.getDelta2(delta, mach);
             const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach) * 2 * EngineModel.maxThrust;
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, initialAltitude) * 2;
+            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach)
+            * config.engineModelParameters.numberOfEngines
+            * config.engineModelParameters.maxThrust;
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, mach, initialAltitude) * config.engineModelParameters.numberOfEngines;
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const accelerationFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
             pathAngle = FlightModel.getConstantThrustPathAngle(thrust, midStepWeight, drag, accelerationFactor);
@@ -234,6 +243,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param altitude altitude of this level segment
      * @param stepSize the distance of the step, in NM
      * @param econCAS airspeed during level segment
@@ -249,6 +259,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static levelFlightStep(
+        config: AircraftConfig,
         altitude: number,
         stepSize: number,
         econCAS: number,
@@ -277,7 +288,7 @@ export class Predictions {
         }
 
         const initialWeight = zeroFuelWeight + initialFuelWeight;
-        const thrust = FlightModel.getDrag(initialWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+        const thrust = FlightModel.getDrag(config.flightModelParameters, initialWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
         // Engine model calculations
         const theta2 = Common.getTheta2(theta, mach);
@@ -285,8 +296,8 @@ export class Predictions {
         // Divide by 2 to get thrust per engine
         const correctedThrust = (thrust / delta2) / 2;
         // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
-        const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, altitude) * 2;
+        const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / config.engineModelParameters.maxThrust));
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, mach, altitude) * config.engineModelParameters.numberOfEngines;
         const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
         const stepTime = (stepSize / (tas - headwind)) * 3600; // in seconds
@@ -305,6 +316,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param flightPathAngle flight path angle (in degrees) to fly the speed change step at
      * @param initialAltitude altitude at beginning of step, in feet
      * @param initialCAS airspeed at beginning of step
@@ -324,6 +336,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static speedChangeStep(
+        config: AircraftConfig,
         flightPathAngle: number,
         initialAltitude: number,
         initialCAS: number,
@@ -372,8 +385,10 @@ export class Predictions {
         const theta2 = Common.getTheta2(theta, averageMach);
         const delta2 = Common.getDelta2(delta, averageMach);
         const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, averageMach) * 2 * EngineModel.maxThrust;
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, averageMach, initialAltitude) * 2;
+        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, averageMach)
+        * config.engineModelParameters.numberOfEngines
+        * config.engineModelParameters.maxThrust;
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, averageMach, initialAltitude) * config.engineModelParameters.numberOfEngines;
         const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
         const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
@@ -392,7 +407,7 @@ export class Predictions {
         let iterations = 0;
         do {
             // Calculate the available gradient
-            const drag = FlightModel.getDrag(lift, averageMach, delta, speedbrakesExtended, gearExtended, flapConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, lift, averageMach, delta, speedbrakesExtended, gearExtended, flapConfig);
             const availableGradient = FlightModel.getAvailableGradient(thrust, drag, weightEstimate);
 
             pathAngleRadians = flightPathAngle * MathUtils.DEGREES_TO_RADIANS;
@@ -404,7 +419,7 @@ export class Predictions {
                 break;
             }
 
-            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngleRadians, FlightModel.gravityConstKNS); // in kts/s
+            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngleRadians, config.flightModelParameters.gravityConstKNS); // in kts/s
 
             if (Math.abs(acceleration) < minimumAbsoluteAcceleration) {
                 error = VnavStepError.TOO_LOW_DECELERATION;
@@ -439,6 +454,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param finalAltitude altitude at end of step, in feet
      * @param distance distance of step, in NM
@@ -455,6 +471,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent)
      */
     static geometricStep(
+        config: AircraftConfig,
         initialAltitude: number,
         finalAltitude: number,
         distance: number,
@@ -506,8 +523,8 @@ export class Predictions {
         let previousMidStepWeight = midStepWeight;
         let iterations = 0;
         do {
-            const liftCoefficient = FlightModel.getLiftCoefficientFromEAS(lift, eas);
-            const dragCoefficient = FlightModel.getDragCoefficient(liftCoefficient, speedbrakesExtended, gearExtended, flapConfig);
+            const liftCoefficient = FlightModel.getLiftCoefficientFromEAS(config.flightModelParameters, lift, eas);
+            const dragCoefficient = FlightModel.getDragCoefficient(config.flightModelParameters, liftCoefficient, speedbrakesExtended, gearExtended, flapConfig);
             const accelFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
 
             thrust = FlightModel.getThrustFromConstantPathAngleCoefficients(
@@ -521,11 +538,11 @@ export class Predictions {
             verticalSpeed = 101.268 * (tas - headwind) * Math.sin(fpaRadians); // in feet per minute
             stepTime = verticalSpeed !== 0 ? 60 * (finalAltitude - initialAltitude) / verticalSpeed : 0; // in seconds
 
-            // Divide by 2 to get thrust per engine
-            const correctedThrust = (thrust / delta2) / 2;
+            // Divide by numberOfEngines to get thrust per engine
+            const correctedThrust = (thrust / delta2) / config.engineModelParameters.numberOfEngines;
             // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
-            const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * 2;
+            const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / config.engineModelParameters.maxThrust));
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, mach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             fuelBurned = (fuelFlow / 3600) * stepTime;
@@ -550,6 +567,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param finalAltitude altitude at end of step, in feet
      * @param verticalSpeed vertical speed during step, in feet per minute
@@ -566,6 +584,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent)
      */
     static verticalSpeedStep(
+        config: AircraftConfig,
         initialAltitude: number,
         finalAltitude: number,
         verticalSpeed: number,
@@ -611,14 +630,14 @@ export class Predictions {
         let previousMidstepWeight = midstepWeight;
         let predictedN1 = 0;
         do {
-            const drag = FlightModel.getDrag(midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
             const thrust = FlightModel.getThrustFromConstantPathAngle(pathAngle * MathUtils.RADIANS_TO_DEGREES, midstepWeight, drag, accelFactorMode);
 
-            const correctedThrust = (thrust / delta2) / 2;
+            const correctedThrust = (thrust / delta2) / config.engineModelParameters.numberOfEngines;
             // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
-            predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
+            predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / config.engineModelParameters.maxThrust));
 
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(predictedN1, mach, midStepAltitude) * 2;
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, predictedN1, mach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             fuelBurned = fuelFlow / 3600 * stepTime;
@@ -639,6 +658,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param distance distance traveled during step, in nautical miles
      * @param verticalSpeed vertical speed during step, in feet per minute
@@ -655,6 +675,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent)
      */
     static verticalSpeedDistanceStep(
+        config: AircraftConfig,
         initialAltitude: number,
         distance: NauticalMiles,
         verticalSpeed: number,
@@ -704,14 +725,14 @@ export class Predictions {
             pathAngle = Math.atan2(verticalSpeed, tas * 101.269); // radians
             stepTime = (tas - headwind) !== 0 ? 3600 * distance / (tas - headwind) : 0;
 
-            const drag = FlightModel.getDrag(midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
             const thrust = FlightModel.getThrustFromConstantPathAngle(pathAngle * MathUtils.RADIANS_TO_DEGREES, midstepWeight, drag, accelFactorMode);
 
-            const correctedThrust = (thrust / delta2) / 2;
+            const correctedThrust = (thrust / delta2) / config.engineModelParameters.numberOfEngines;
             // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
-            predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
+            predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / config.engineModelParameters.maxThrust));
 
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(predictedN1, mach, midStepAltitude) * 2;
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, predictedN1, mach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             previousFinalAltitude = finalAltitude;
@@ -734,6 +755,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param initialCAS airspeed at beginning of step
      * @param finalCAS airspeed at end of step
@@ -751,6 +773,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent)
      */
     static verticalSpeedStepWithSpeedChange(
+        config: AircraftConfig,
         initialAltitude: number,
         initialCAS: number,
         finalCAS: number,
@@ -812,17 +835,19 @@ export class Predictions {
             const theta2 = Common.getTheta2(theta, midwayMach);
             const delta2 = Common.getDelta2(delta, midwayMach);
             const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, midwayMach) * 2 * EngineModel.maxThrust;
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, midwayMach, midStepAltitude) * 2;
+            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, midwayMach)
+            * config.engineModelParameters.numberOfEngines
+            * config.engineModelParameters.maxThrust;
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, midwayMach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const availableGradient = FlightModel.getAvailableGradient(thrust, drag, midStepWeight);
             pathAngle = Math.atan2(verticalSpeed, midwayTas * 101.269); // radians
 
-            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngle, FlightModel.gravityConstKNS); // kts/s
+            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngle, config.flightModelParameters.gravityConstKNS); // kts/s
 
             stepTime = (finalCAS - initialCAS) / acceleration; // in seconds
             distanceTraveled = (midwayTas - headwindAtMidStepAlt) * (stepTime / 3600); // in nautical miles
@@ -849,6 +874,7 @@ export class Predictions {
     }
 
     /**
+     * @param config aircraft specific configuration
      * @param initialAltitude altitude at beginning of step, in feet
      * @param initialCAS airspeed at beginning of step
      * @param finalCAS airspeed at end of step
@@ -865,6 +891,7 @@ export class Predictions {
      * @param perfFactorPercent performance factor (in percent)
      */
     static altitudeStepWithSpeedChange(
+        config: AircraftConfig,
         initialAltitude: number,
         initialCAS: number,
         finalCAS: number,
@@ -927,16 +954,18 @@ export class Predictions {
             const theta2 = Common.getTheta2(theta, midwayMach);
             const delta2 = Common.getDelta2(delta, midwayMach);
             const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, midwayMach) * 2 * EngineModel.maxThrust;
-            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, midwayMach, midStepAltitude) * 2;
+            const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, midwayMach)
+                * config.engineModelParameters.numberOfEngines
+                * config.engineModelParameters.maxThrust;
+            const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(config.engineModelParameters, correctedN1, midwayMach, midStepAltitude) * config.engineModelParameters.numberOfEngines;
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
+            const drag = FlightModel.getDrag(config.flightModelParameters, midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const availableGradient = FlightModel.getAvailableGradient(thrust, drag, midStepWeight);
-            pathAngle = FlightModel.getSpeedChangePathAngle(thrust, midStepWeight, drag); // radians
-            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngle, FlightModel.gravityConstKNS); // kts/s
+            pathAngle = FlightModel.getSpeedChangePathAngle(config.flightModelParameters, thrust, midStepWeight, drag); // radians
+            const acceleration = FlightModel.accelerationForGradient(availableGradient, pathAngle, config.flightModelParameters.gravityConstKNS); // kts/s
 
             verticalSpeed = 101.268 * midwayTas * Math.sin(pathAngle); // in feet per minute
             stepTime = (finalCAS - initialCAS) / acceleration; // in seconds

@@ -1,0 +1,52 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-position-irs-irs-button-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.mfd-position-irs-table-col1 {
+  width: 12%;
+  border-right: 2px solid $display-dark-grey;
+  border-bottom: 2px solid $display-dark-grey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 7px;
+}
+
+.mfd-position-irs-table-col2 {
+  width: 20%;
+  border-right: 2px solid $display-dark-grey;
+  border-bottom: 2px solid $display-dark-grey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 7px;
+}
+
+.mfd-position-irs-table-col3 {
+  width: 38%;
+  border-right: 2px solid $display-dark-grey;
+  border-bottom: 2px solid $display-dark-grey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 7px;
+}
+
+.mfd-position-irs-table-col4 {
+  width: 30%;
+  border-bottom: 2px solid $display-dark-grey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 7px;
+}
+
+.mfd-position-irs-table-last-row {
+  border-bottom: none;
+}

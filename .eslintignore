@@ -25,6 +25,5 @@ fbw-a32nx/src/systems/fmgc/src/flightplanning/ManagedFlightPlan.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/ProcedureDetails.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/RawDataMapper.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/SegmentedFlightPlan.ts
-fbw-a32nx/src/systems/fmgc/src/flightplanning/WaypointBuilder.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/WorldMagneticModel.ts
 fbw-a32nx/src/systems/fmgc/src/utils/LzUtf8.js

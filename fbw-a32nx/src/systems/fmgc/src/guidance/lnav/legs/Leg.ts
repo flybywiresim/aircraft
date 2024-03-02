@@ -7,21 +7,24 @@ import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 export abstract class Leg extends Guidable {
     segment: SegmentType;
 
     abstract metadata: Readonly<LegMetadata>
 
-    constrainedTurnDirection: TurnDirection
+    get constrainedTurnDirection() {
+        return this.metadata.turnDirection;
+    }
 
     abstract get inboundCourse(): Degrees | undefined;
 
     abstract get outboundCourse(): Degrees | undefined;
 
-    abstract get terminationWaypoint(): WayPoint | Coordinates | undefined;
+    abstract get terminationWaypoint(): Fix | Coordinates | undefined;
 
     abstract get ident(): string
 
@@ -32,6 +35,8 @@ export abstract class Leg extends Guidable {
     predictedTas: Knots
 
     predictedGs: Knots
+
+    calculated?: LegCalculations
 
     get disableAutomaticSequencing(): boolean {
         return false;

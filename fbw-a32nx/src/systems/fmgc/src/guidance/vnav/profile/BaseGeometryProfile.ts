@@ -442,6 +442,18 @@ export abstract class BaseGeometryProfile {
 
     abstract resetSpeedConstraints(): void;
 
+    getDistanceFromAircraftToDestination(): NauticalMiles | null {
+        if (this.checkpoints.length < 1) {
+            return null;
+        }
+
+        if (this.lastCheckpoint.reason !== VerticalCheckpointReason.Landing) {
+            return null;
+        }
+
+        return this.lastCheckpoint.distanceFromStart - this.distanceToPresentPosition;
+    }
+
     getRemainingFuelAtDestination(): Pounds | null {
         if (this.checkpoints.length < 1) {
             return null;

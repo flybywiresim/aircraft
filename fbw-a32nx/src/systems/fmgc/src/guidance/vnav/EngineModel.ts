@@ -1,9 +1,7 @@
+import { EngineModelParameters } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { Common } from './common';
 
 export class EngineModel {
-    // In pounds of force. Used as a multiplier for results of table 1506
-    static maxThrust = 27120;
-
     /**
      * Maximum N1 in CLB thrust
      * @param i row index (tat) in steps of 4°C
@@ -225,7 +223,7 @@ export class EngineModel {
      * @param alt altitude in feet
      * @returns fuel flow, in pounds per hour (per engine)
      */
-    static getCorrectedFuelFlow(cn1: number, mach: number, alt: number): number {
+    static getCorrectedFuelFlow(config: EngineModelParameters, cn1: number, mach: number, alt: number): number {
         const coefficients = [-639.6602981, 0.00000e+00, 1.03705e+02, -2.23264e+03, 5.70316e-03, -2.29404e+00, 1.08230e+02,
             2.77667e-04, -6.17180e+02, -7.20713e-02, 2.19013e-07, 2.49418e-02, -7.31662e-01, -1.00003e-05,
             -3.79466e+01, 1.34552e-03, 5.72612e-09, -2.71950e+02, 8.58469e-02, -2.72912e-06, 2.02928e-11];
@@ -238,7 +236,7 @@ export class EngineModel {
                     + (coefficients[17] * mach ** 3) + (coefficients[18] * mach ** 2 * alt) + (coefficients[19] * mach * alt ** 2)
                     + (coefficients[20] * alt ** 3);
 
-        return flow;
+        return config.fuelBurnFactor * flow;
     }
 
     // static getCN1fromUncorrectedThrust(thrust: number)

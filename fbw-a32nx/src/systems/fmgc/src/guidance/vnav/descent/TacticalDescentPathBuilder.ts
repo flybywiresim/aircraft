@@ -1,4 +1,5 @@
-import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/guidance/lnav/legs';
+import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -51,8 +52,8 @@ export type DecelerationSchedule = {
 export class TacticalDescentPathBuilder {
     private levelFlightStrategy: VerticalSpeedStrategy;
 
-    constructor(private observer: VerticalProfileComputationParametersObserver, atmosphericConditions: AtmosphericConditions) {
-        this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0);
+    constructor(private observer: VerticalProfileComputationParametersObserver, atmosphericConditions: AtmosphericConditions, private readonly acConfig: AircraftConfig) {
+        this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0, this.acConfig);
     }
 
     /**
@@ -75,7 +76,7 @@ export class TacticalDescentPathBuilder {
 
         let minAlt = Infinity;
         const altConstraintsToUse = profile.descentAltitudeConstraints.map((constraint) => {
-            minAlt = Math.min(minAlt, minimumAltitude(constraint.constraint));
+            minAlt = Math.min(minAlt, ConstraintUtils.minimumAltitude(constraint.constraint));
             return {
                 distanceFromStart: constraint.distanceFromStart,
                 minimumAltitude: minAlt,
@@ -128,7 +129,7 @@ export class TacticalDescentPathBuilder {
 
         let minAlt = Infinity;
         const altConstraintsToUse = profile.descentAltitudeConstraints.map((constraint) => {
-            minAlt = Math.min(minAlt, minimumAltitude(constraint.constraint));
+            minAlt = Math.min(minAlt, ConstraintUtils.minimumAltitude(constraint.constraint));
             return {
                 distanceFromStart: constraint.distanceFromStart,
                 minimumAltitude: minAlt,
@@ -480,21 +481,6 @@ export class TacticalDescentPathBuilder {
         const speedAtSpeedLimitAlt = phase.lastResult.speed + speedChangePerAltitude * (speedLimit.underAltitude - phase.lastResult.altitude);
 
         return speedAtSpeedLimitAlt - speedLimit.speed > 1;
-    }
-}
-
-function minimumAltitude(constraint: AltitudeConstraint): Feet {
-    switch (constraint.type) {
-    case AltitudeConstraintType.at:
-    case AltitudeConstraintType.atOrAbove:
-        return constraint.altitude1;
-    case AltitudeConstraintType.atOrBelow:
-        return -Infinity;
-    case AltitudeConstraintType.range:
-        return constraint.altitude2;
-    default:
-        console.error(`[FMS/VNAV] Unexpected constraint type: ${constraint.type}`);
-        return -Infinity;
     }
 }
 
