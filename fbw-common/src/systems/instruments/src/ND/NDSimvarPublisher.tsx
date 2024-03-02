@@ -14,4 +14,5 @@ export type NDSimvars = GenericAdirsEvents & GenericSwitchingPanelEvents & {
     pposLat: Degrees;
     pposLong: Degrees;
     absoluteTime: Seconds;
+    fmgcFlightPhase: number;
   }

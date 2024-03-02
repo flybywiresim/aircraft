@@ -13,4 +13,7 @@ export interface FmsSymbolsData {
     vectorsAlternate: PathVector[],
     vectorsSecondary: PathVector[],
     traffic: NdTraffic[],
+    oansOrigin: string,
+    oansDestination: string,
+    oansAlternate: string,
 }

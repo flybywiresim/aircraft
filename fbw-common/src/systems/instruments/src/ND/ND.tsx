@@ -5,6 +5,7 @@
 import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import { clampAngle } from 'msfs-geo';
+import { BtvRunwayInfo } from 'instruments/src/ND/shared/BtvRunwayInfo';
 import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { VnavStatus } from './shared/VnavStatus';
 import { LnavStatus } from './shared/LnavStatus';
@@ -14,7 +15,7 @@ import { GenericFmsEvents } from './types/GenericFmsEvents';
 import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
 import { Flag, FlagProps } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';
@@ -40,6 +41,7 @@ import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSub
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
+import { OansControlEvents, OansRunwayInfo } from '../OANC';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -120,6 +122,14 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         return !headingWord.isNormalOperation();
     }, this.headingWord, this.currentPageMode);
 
+    private showOans = Subject.create<boolean>(true);
+
+    private showOansRunwayInfo = Subject.create<boolean>(false);
+
+    private oansRunwayInfo = Subject.create<OansRunwayInfo | null>(null);
+
+    private fmgcFlightPhase = Subject.create<number>(0);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -128,7 +138,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         this.currentPageInstance.isVisible.set(true);
         this.currentPageInstance.onShow();
 
-        const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericDisplayManagementEvents & GenericFmsEvents & NDControlEvents & NDSimvars>();
+        const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericDisplayManagementEvents & GenericFmsEvents & NDControlEvents & NDSimvars & OansControlEvents>();
 
         sub.on('trueHeadingRaw').whenChanged().handle((value) => {
             this.trueHeadingWord.setWord(value);
@@ -162,6 +172,17 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
         this.mapRecomputing.sub((recomputing) => {
             this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
+        });
+
+        sub.on('fmgcFlightPhase').whenChanged().handle((it) => {
+            this.fmgcFlightPhase.set(it);
+            this.shouldShowOansRunwayInfo();
+        });
+
+        sub.on('ndShowOans').whenChanged().handle((show) => this.showOans.set(show));
+        sub.on('btvRunwayInfo').whenChanged().handle((it) => {
+            this.oansRunwayInfo.set(it);
+            this.shouldShowOansRunwayInfo();
         });
     }
 
@@ -252,143 +273,167 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         }
     }
 
+    private shouldShowOansRunwayInfo() {
+        this.showOansRunwayInfo.set(this.oansRunwayInfo.get() !== null && this.fmgcFlightPhase.get() > 1 && this.currentPageMode.get() === EfisNdMode.PLAN);
+    }
+
     render(): VNode | null {
         return (
             <>
-                {/* ND Vector graphics - bottom layer */}
-                <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-                    <RoseLSPage
-                        bus={this.props.bus}
-                        ref={this.roseLSPage}
-                        headingWord={this.headingWord}
-                        trueHeadingWord={this.trueHeadingWord}
-                        trackWord={this.trackWord}
-                        trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.props.rangeValues}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        /* Capt ND shows ILS2  */
-                        index={this.props.side === 'L' ? 2 : 1}
-                    />
-                    <RoseVorPage
-                        bus={this.props.bus}
-                        ref={this.roseVorPage}
-                        headingWord={this.headingWord}
-                        trueHeadingWord={this.trueHeadingWord}
-                        trackWord={this.trackWord}
-                        trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.props.rangeValues}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        /* Capt ND shows VOR1  */
-                        index={this.props.side === 'L' ? 1 : 2}
-                    />
-                    <RoseNavPage
-                        bus={this.props.bus}
-                        ref={this.roseNavPage}
-                        headingWord={this.headingWord}
-                        trueHeadingWord={this.trueHeadingWord}
-                        trackWord={this.trackWord}
-                        trueTrackWord={this.trueTrackWord}
-                        rangeValues={this.props.rangeValues}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                    />
-                    <ArcModePage
-                        ref={this.arcPage}
-                        bus={this.props.bus}
-                        rangeValues={this.props.rangeValues}
-                        headingWord={this.headingWord}
-                        trueHeadingWord={this.trueHeadingWord}
-                        trackWord={this.trackWord}
-                        trueTrackWord={this.trueTrackWord}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                    />
-                    <PlanModePage
-                        ref={this.planPage}
-                        bus={this.props.bus}
-                        rangeValues={this.props.rangeValues}
-                        aircraftTrueHeading={this.trueHeadingWord}
-                    />
-
-                    <SelectedHeadingBug
-                        bus={this.props.bus}
-                        rotationOffset={this.planeRotation}
-                        mode={this.currentPageMode}
-                    />
-
-                    <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
-                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} ndMode={this.currentPageMode} />
-
-                    <WindIndicator bus={this.props.bus} />
-                    <SpeedIndicator bus={this.props.bus} />
-                    <ToWaypointIndicator bus={this.props.bus} isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())} />
-                    <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
-
-                    {false && <LnavStatus />}
-                    {true && <VnavStatus />}
-
-                    <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
-                        DISPLAY SYSTEM VERSION
-                        INCONSISTENCY
-                    </Flag>
-                    <Flag visible={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
-                    <Flag visible={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
-                    <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
-
-                    <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
-                        RANGE CHANGE
-                    </Flag>
-                    <Flag
-                        visible={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
-                        x={384}
-                        y={320}
-                        class="Green FontIntermediate"
-                    >
-                        MODE CHANGE
-                    </Flag>
-
-                    <TerrainMapThresholds bus={this.props.bus} />
-
-                    <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
-                    <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
-                </svg>
-
-                {/* ND Raster map - middle layer */}
-                <CanvasMap
-                    bus={this.props.bus}
-                    x={Subject.create(384)}
-                    y={Subject.create(384)}
-                />
-
-                {/* ND Vector graphics - top layer */}
-                <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-                    <Airplane bus={this.props.bus} ndMode={this.currentPageMode} />
-
-                    <Chrono bus={this.props.bus} />
-
-                    <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-                    <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
-                    <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
-
-                    <g id="radio_needles" clip-path={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
-
-                        <RadioNeedle
+                <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
+                    <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
+                        <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                            <WindIndicator bus={this.props.bus} />
+                            <SpeedIndicator bus={this.props.bus} />
+                        </svg>
+                    </div>
+                    <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
+                        <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                            <BtvRunwayInfo bus={this.props.bus} />
+                            <SpeedIndicator bus={this.props.bus} />
+                        </svg>
+                    </div>
+                    <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                        <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
+                        <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+                    </svg>
+                </div>
+                <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
+                    {/* ND Vector graphics - bottom layer */}
+                    <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                        <RoseLSPage
                             bus={this.props.bus}
+                            ref={this.roseLSPage}
                             headingWord={this.headingWord}
+                            trueHeadingWord={this.trueHeadingWord}
                             trackWord={this.trackWord}
+                            trueTrackWord={this.trueTrackWord}
+                            rangeValues={this.props.rangeValues}
                             isUsingTrackUpMode={this.isUsingTrackUpMode}
-                            index={1}
+                            /* Capt ND shows ILS2  */
+                            index={this.props.side === 'L' ? 2 : 1}
+                        />
+                        <RoseVorPage
+                            bus={this.props.bus}
+                            ref={this.roseVorPage}
+                            headingWord={this.headingWord}
+                            trueHeadingWord={this.trueHeadingWord}
+                            trackWord={this.trackWord}
+                            trueTrackWord={this.trueTrackWord}
+                            rangeValues={this.props.rangeValues}
+                            isUsingTrackUpMode={this.isUsingTrackUpMode}
+                            /* Capt ND shows VOR1  */
+                            index={this.props.side === 'L' ? 1 : 2}
+                        />
+                        <RoseNavPage
+                            bus={this.props.bus}
+                            ref={this.roseNavPage}
+                            headingWord={this.headingWord}
+                            trueHeadingWord={this.trueHeadingWord}
+                            trackWord={this.trackWord}
+                            trueTrackWord={this.trueTrackWord}
+                            rangeValues={this.props.rangeValues}
+                            isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        />
+                        <ArcModePage
+                            ref={this.arcPage}
+                            bus={this.props.bus}
+                            rangeValues={this.props.rangeValues}
+                            headingWord={this.headingWord}
+                            trueHeadingWord={this.trueHeadingWord}
+                            trackWord={this.trackWord}
+                            trueTrackWord={this.trueTrackWord}
+                            isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        />
+                        <PlanModePage
+                            ref={this.planPage}
+                            bus={this.props.bus}
+                            rangeValues={this.props.rangeValues}
+                            aircraftTrueHeading={this.trueHeadingWord}
+                        />
+
+                        <SelectedHeadingBug
+                            bus={this.props.bus}
+                            rotationOffset={this.planeRotation}
                             mode={this.currentPageMode}
                         />
-                        <RadioNeedle
-                            bus={this.props.bus}
-                            headingWord={this.headingWord}
-                            trackWord={this.trackWord}
-                            isUsingTrackUpMode={this.isUsingTrackUpMode}
-                            index={2}
-                            mode={this.currentPageMode}
-                        />
-                    </g>
 
-                </svg>
+                        <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+                        <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} ndMode={this.currentPageMode} />
+
+                        <WindIndicator bus={this.props.bus} />
+                        <SpeedIndicator bus={this.props.bus} />
+                        <ToWaypointIndicator bus={this.props.bus} isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())} />
+                        <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
+
+                        {false && <LnavStatus />}
+                        {true && <VnavStatus />}
+
+                        <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
+                            DISPLAY SYSTEM VERSION
+                            INCONSISTENCY
+                        </Flag>
+                        <Flag visible={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
+                        <Flag visible={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
+                        <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
+
+                        <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
+                            RANGE CHANGE
+                        </Flag>
+                        <Flag
+                            visible={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
+                            x={384}
+                            y={320}
+                            class="Green FontIntermediate"
+                        >
+                            MODE CHANGE
+                        </Flag>
+
+                        <TerrainMapThresholds bus={this.props.bus} />
+
+                        <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
+                        <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
+                    </svg>
+
+                    {/* ND Raster map - middle layer */}
+                    <CanvasMap
+                        bus={this.props.bus}
+                        x={Subject.create(384)}
+                        y={Subject.create(384)}
+                    />
+
+                    {/* ND Vector graphics - top layer */}
+                    <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+                        <Airplane bus={this.props.bus} ndMode={this.currentPageMode} />
+
+                        <Chrono bus={this.props.bus} />
+
+                        <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
+                        <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+                        <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
+
+                        <g id="radio_needles" clip-path={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : ''))}>
+
+                            <RadioNeedle
+                                bus={this.props.bus}
+                                headingWord={this.headingWord}
+                                trackWord={this.trackWord}
+                                isUsingTrackUpMode={this.isUsingTrackUpMode}
+                                index={1}
+                                mode={this.currentPageMode}
+                            />
+                            <RadioNeedle
+                                bus={this.props.bus}
+                                headingWord={this.headingWord}
+                                trackWord={this.trackWord}
+                                isUsingTrackUpMode={this.isUsingTrackUpMode}
+                                index={2}
+                                mode={this.currentPageMode}
+                            />
+                        </g>
+
+                    </svg>
+                </div>
             </>
         );
     }

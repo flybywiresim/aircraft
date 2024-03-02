@@ -1,4 +1,4 @@
-import { ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
+import { A380EfisNdRangeValue, ArincEventBus, EfisNdMode, EfisSide, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 
 export interface VerticalDisplayProps extends ComponentProps {
@@ -8,10 +8,25 @@ export interface VerticalDisplayProps extends ComponentProps {
 
 export interface GenericFcuEvents {
     ndMode: EfisNdMode,
+    ndRangeSetting: A380EfisNdRangeValue;
 }
 
 export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps> {
     private topRef = FSComponent.createRef<SVGElement>();
+
+    private ndMode: EfisNdMode = EfisNdMode.ARC;
+
+    private ndRangeSetting: A380EfisNdRangeValue = 10;
+
+    private updateVisibility() {
+        if (this.ndMode === EfisNdMode.PLAN) {
+            this.topRef.instance.style.display = 'none';
+        } else if (this.ndRangeSetting === -1) {
+            this.topRef.instance.style.display = 'none';
+        } else {
+            this.topRef.instance.style.display = 'block';
+        }
+    }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -19,11 +34,13 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
         const sub = this.props.bus.getSubscriber<GenericFcuEvents>();
 
         sub.on('ndMode').whenChanged().handle((mode) => {
-            if (mode !== EfisNdMode.PLAN) {
-                this.topRef.instance.style.display = 'block';
-            } else {
-                this.topRef.instance.style.display = 'none';
-            }
+            this.ndMode = mode;
+            this.updateVisibility();
+        });
+
+        sub.on('ndRangeSetting').whenChanged().handle((range) => {
+            this.ndRangeSetting = a380EfisRangeSettings[range];
+            this.updateVisibility();
         });
     }
 

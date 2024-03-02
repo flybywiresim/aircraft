@@ -1,3 +1,4 @@
+export * from './amdb';
 export * from './AircraftVersionChecker';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
@@ -23,6 +24,7 @@ export * from './config';
 export * from './failures';
 export * from './localization';
 export * from './logic';
+export * from './MapParameters';
 export * from './navdata';
 export * from './navigraph';
 export * from './navigraph';

@@ -9,7 +9,7 @@ import { NDControlEvents } from '../NDControlEvents';
 import { LubberLine } from '../pages/arc/LubberLine';
 import { GenericAdirsEvents } from '../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
-import { Layer } from '../Layer';
+import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 const PLANE_X_OFFSET = -41;
 const PLANE_Y_OFFSET = 0;
