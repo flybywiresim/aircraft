@@ -65,6 +65,7 @@ class MsfsHandler {
    */
   struct BaseSimData {
     FLOAT64 simulationTime;
+    FLOAT64 simulationRate;
     FLOAT64 aircraftIsReady;
     FLOAT64 aircraftDevelopmentState;
   };
@@ -153,15 +154,25 @@ class MsfsHandler {
   DataManager& getDataManager() { return dataManager; }
 
   /**
+   * @return current simulation time
+   */
+  [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
+
+  /**
+   * @return current simulation rate
+   */
+  [[nodiscard]] FLOAT64 getSimulationRate() const { return baseSimData->data().simulationRate; }
+
+  /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[nodiscard]] bool getAircraftIsReadyVar() const;
+  [[nodiscard]] bool getAircraftIsReadyVar() const { return baseSimData->data().aircraftIsReady != 0.0; }
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const;
+  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const { return baseSimData->data().aircraftDevelopmentState; }
 
   /**
    * @return the current simulation time
