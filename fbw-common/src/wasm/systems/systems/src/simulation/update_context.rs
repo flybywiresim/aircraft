@@ -106,7 +106,7 @@ impl From<f64> for SurfaceTypeMsfs {
             21 => SurfaceTypeMsfs::Sand,
             22 => SurfaceTypeMsfs::Shale,
             23 => SurfaceTypeMsfs::Tarmac,
-            i => panic!("Cannot convert from {} to SurfaceTypeMsfs.", i),
+            _ => SurfaceTypeMsfs::Macadam,
         }
     }
 }
