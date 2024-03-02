@@ -17,11 +17,13 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.cpp
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
+    ../../../../fbw-common/src/wasm/fadec_common_v2/src/EngineControl.cpp
 )
 
 set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
+    ../../../../fbw-common/src/wasm/fadec_common_v2/src/EngineControl.h
 )
 
 # create the targets

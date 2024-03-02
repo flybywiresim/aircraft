@@ -22,6 +22,7 @@ set(SOURCE_FILES
 set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.h
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
+    ../../../../fbw-common/src/wasm/fadec_common_v2/src/SimVars.h
 )
 
 # create the targets
