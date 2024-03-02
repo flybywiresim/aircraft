@@ -220,7 +220,7 @@ export const A380Payload: React.FC<A380Props> = ({
         };
 
         for (let i = seatMap.length - 1; i > 0; i--) {
-            fillStation(i, (seatMap[i].capacity / maxPax), numOfPax);
+            fillStation(i, parseFloat(Number((Math.ceil((seatMap[i].capacity / maxPax) * 1e2) / 1e2).toExponential(2)).toPrecision(3)), numOfPax);
         }
         fillStation(0, 1, paxRemaining);
     }, [maxPax, ...seatMap, totalPaxDesired]);
