@@ -1,11 +1,11 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+#include "EngineControl_A380X.h"
 #include "MsfsHandler.h"
-#include "EngineControl.h"
 #include "SimVars.h"
 
-void EngineControl::update(ContextPtr context, double deltaTime, double simulationTime) {
+void EngineControl_A380X::update(ContextPtr context, double deltaTime, double simulationTime) {
   mach = context->simDataPtr->data().mach;
   pressAltitude = context->simDataPtr->data().pressureAltitude;
   ambientTemp = context->simDataPtr->data().ambientTemperature;

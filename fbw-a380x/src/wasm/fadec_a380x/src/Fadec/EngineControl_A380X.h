@@ -6,7 +6,7 @@
 
 #include "SimVars.h"
 
-class EngineControl {
+class EngineControl_A380X {
  private:
   double mach;
   double pressAltitude;

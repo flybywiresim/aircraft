@@ -64,7 +64,8 @@ struct SimData {
 inline DataDefinitionVariablePtr<SimData> simDataPtr;
 
 
-// this collect all data instances and the data manager for easier access
+// this collect all data definition instances and the data manager for
+// central one time request and easier access via a context parameter
 struct Context {
   const MsfsHandler* msfsHandler;
   DataDefinitionVariablePtr<PayloadData> payloadDataPtr;
