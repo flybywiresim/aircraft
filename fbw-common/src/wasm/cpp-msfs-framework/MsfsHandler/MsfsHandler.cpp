@@ -53,6 +53,7 @@ bool MsfsHandler::initialize() {
 
   // base sim data mainly for pause detection
   std::vector<DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},
+                                             {"SIMULATION RATE", 0, UNITS.Number},
                                              {"L:" + NamedVariable::getAircraftPrefix() + "IS_READY", 0, UNITS.Number},
                                              {"L:" + NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}};
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
@@ -167,10 +168,3 @@ bool MsfsHandler::shutdown() {
   return result;
 }
 
-bool MsfsHandler::getAircraftIsReadyVar() const {
-  return static_cast<bool>(baseSimData->data().aircraftIsReady);
-}
-
-FLOAT64 MsfsHandler::getAircraftDevelopmentStateVar() const {
-  return baseSimData->data().aircraftDevelopmentState;
-}
