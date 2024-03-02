@@ -25,6 +25,7 @@ export const AircraftPresets = () => {
 
     const { showModal } = useModals();
 
+    // State to store the loading progress and the current step description
     const [loadPresetProgress, setLoadPresetProgress] = useState(0);
     const [currentStepDescription, setCurrentStepDescription] = useState('');
 

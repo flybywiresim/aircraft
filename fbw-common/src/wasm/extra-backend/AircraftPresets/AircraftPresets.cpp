@@ -69,7 +69,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
   if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
-  // has request to load a preset been received?
+  // has a request to load a preset been received?
   if (loadAircraftPresetRequest->getAsInt64() > 0) {
     // we do not allow loading of presets in the air to prevent users from
     // accidentally changing the aircraft configuration
@@ -84,7 +84,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     progressAircraftPreset->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
     progressAircraftPresetId->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
 
-    // check if we already have an active loading process or if this is a new request which
+    // check if we already have an active loading process or if this is a new request that
     // needs to be initialized
     if (!loadingIsActive) {
       // get the requested procedure
@@ -98,7 +98,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
         return true;
       }
 
-      // initialize new loading process
+      // initialize a new loading process
       currentProcedureID = loadAircraftPresetRequest->getAsInt64();
       currentProcedure = requestedProcedure.value();
       currentLoadingTime = 0;
