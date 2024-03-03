@@ -4,11 +4,11 @@
 #include "EngineControl_A380X.h"
 #include "MsfsHandler.h"
 
-void EngineControl_A380X::update(const ContextPtr& context) {
+void EngineControl_A380X::update(const ContextPtr& contextPtr) {
   std::cout << "EngineControl::update() -"
-            << " mach: " << context->simDataPtr->data().mach
-            << " pressAltitude: " << context->simDataPtr->data().pressureAltitude
-            << " ambientTemp: " << context->simDataPtr->data().ambientTemperature
-            << " ambientPressure: " << context->simDataPtr->data().ambientPressure
-            << " simOnGround: " << context->msfsHandler->getSimOnGround() << std::endl;
+            << " mach: " << contextPtr->simDataPtr->data().mach
+            << " pressAltitude: " << contextPtr->simDataPtr->data().pressureAltitude
+            << " ambientTemp: " << contextPtr->simDataPtr->data().ambientTemperature
+            << " ambientPressure: " << contextPtr->simDataPtr->data().ambientPressure
+            << " simOnGround: " << contextPtr->msfsHandler->getSimOnGround() << std::endl;
 }
