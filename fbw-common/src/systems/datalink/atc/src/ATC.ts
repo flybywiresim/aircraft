@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EventBus } from '@microsoft/msfs-sdk';
 import {
     InputValidation,
     AtsuStatusCodes,
@@ -20,8 +21,7 @@ import {
     coordinateToString,
     timestampToString,
     Conversion,
-} from '@datalink/common';
-import { EventBus } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { FmsRouteData } from './databus/FmsBus';
 import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';

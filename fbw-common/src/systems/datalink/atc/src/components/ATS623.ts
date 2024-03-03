@@ -10,7 +10,7 @@ import {
     DclMessage,
     OclMessage,
     AtsuMessageType,
-} from '@datalink/common';
+} from '../../../common/src';
 import { Atc } from '../ATC';
 
 // TODO reset internal states if flight state changes

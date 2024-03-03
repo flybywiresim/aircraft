@@ -1,5 +1,5 @@
-const WING_FUELRATE_GAL_SEC = 3.99;
-const CENTER_MODIFIER = 3.0198;
+const WING_FUELRATE_GAL_SEC = 4.01;
+const CENTER_MODIFIER = 0.4528;
 
 class A32NX_Refuel {
     constructor() {}
@@ -23,7 +23,6 @@ class A32NX_Refuel {
         SimVar.SetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number", LOutCurrentSimVar);
         SimVar.SetSimVarValue("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number", RInnCurrentSimVar);
         SimVar.SetSimVarValue("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number", ROutCurrentSimVar);
-        SimVar.SetSimVarValue("L:A32NX_EFB_REFUEL_RATE_SETTING", "Number", 0);
     }
 
     defuelTank(multiplier) {
@@ -50,7 +49,6 @@ class A32NX_Refuel {
         const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
         const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
         const refuelRate = NXDataStore.get("REFUEL_RATE_SETTING", "0"); // default = real
-        SimVar.SetSimVarValue("L:A32NX_EFB_REFUEL_RATE_SETTING", "Number", parseInt(refuelRate));
         if (refuelRate !== '2') {
             if (!onGround || eng1Running || eng2Running || gs > 0.1 || (!busDC2 && !busDCHot1)) {
                 return;
@@ -96,9 +94,6 @@ class A32NX_Refuel {
                     centerCurrent = centerTarget;
                 }
                 SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
-                if (centerCurrent != centerTarget) {
-                    return;
-                }
             }
             if (LInnCurrent > LInnTarget || RInnCurrent > RInnTarget) {
                 LInnCurrent += this.defuelTank(multiplier) / 2;
@@ -131,6 +126,13 @@ class A32NX_Refuel {
                 }
             }
             // REFUELING (aux first, then main, then center tank)
+            if (centerCurrent < centerTarget) {
+                centerCurrent += this.refuelTank(multiplier) * CENTER_MODIFIER;
+                if (centerCurrent > centerTarget) {
+                    centerCurrent = centerTarget;
+                }
+                SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
+            }
             if (LOutCurrent < LOutTarget || ROutCurrent < ROutTarget) {
                 LOutCurrent += this.refuelTank(multiplier) / 2;
                 ROutCurrent += this.refuelTank(multiplier) / 2;
@@ -161,16 +163,7 @@ class A32NX_Refuel {
                     return;
                 }
             }
-            if (centerCurrent < centerTarget) {
-                centerCurrent += this.refuelTank(multiplier) * CENTER_MODIFIER;
-                if (centerCurrent > centerTarget) {
-                    centerCurrent = centerTarget;
-                }
-                SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
-                if (centerCurrent != centerTarget) {
-                    return;
-                }
-            }
+
         }
 
         if (centerCurrent == centerTarget && LInnCurrent == LInnTarget && LOutCurrent == LOutTarget && RInnCurrent == RInnTarget && ROutCurrent == ROutTarget) {
