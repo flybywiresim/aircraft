@@ -9,7 +9,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
@@ -32,7 +32,6 @@ import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
@@ -50,13 +49,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -101,10 +100,6 @@ export const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
-    const simbriefData = useAppSelector((state) => state.simbrief.data);
-    const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
-    const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
-    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
@@ -212,14 +207,6 @@ export const Efb = () => {
                         checklistIndex: index,
                         itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
                     }));
-                });
-            }
-
-            if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
-                fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
-                    dispatch(action);
-                }).catch((e) => {
-                    toast.error(e.message);
                 });
             }
         }
@@ -381,7 +368,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
+        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
             <div className="max-w-4xl">
                 <ErrorIcon />
                 <div className="mt-6 space-y-12">
@@ -401,7 +388,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                     )}
 
                     <div
-                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
+                        className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100"
                         onClick={resetErrorBoundary}
                     >
                         <h2 className="text-center font-bold text-current">Reset Display</h2>
