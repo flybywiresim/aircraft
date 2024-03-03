@@ -72,7 +72,8 @@
 1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
 1. [FCU] Disabled QFE mode - @tracernz (Mike)
 1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
-1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
+1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
+1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
 
 ## 0.11.0
 
