@@ -6,6 +6,8 @@
 
 #include <MSFS/Legacy/gauges.h>
 
+#include "DataManager.h"
+
 /**
  * @struct PayloadData
  * @brief This struct represents the payload data for the aircraft.
@@ -13,14 +15,7 @@
  * Each member of this struct represents the payload at a different station of the aircraft.
  * The payload at each station is represented in Pounds as a 64-bit floating point number.
  *
- * @var FLOAT64 payloadStation1 Payload in Pounds at station 1 of the aircraft.
- * @var FLOAT64 payloadStation2 Payload in Pounds at station 2 of the aircraft.
- * @var FLOAT64 payloadStation3 Payload in Pounds at station 3 of the aircraft.
- * @var FLOAT64 payloadStation4 Payload in Pounds at station 4 of the aircraft.
- * @var FLOAT64 payloadStation5 Payload in Pounds at station 5 of the aircraft.
- * @var FLOAT64 payloadStation6 Payload in Pounds at station 6 of the aircraft.
- * @var FLOAT64 payloadStation7 Payload in Pounds at station 7 of the aircraft.
- * @var FLOAT64 payloadStation8 Payload in Pounds at station 8 of the aircraft.
+ * @var FLOAT64 payloadStation1-8 Payload in Pounds at station 1-8 of the aircraft.
  */
 struct PayloadData {
   FLOAT64 payloadStation1;
@@ -38,7 +33,7 @@ struct PayloadData {
  * @brief This struct represents the fuel tank data for the aircraft.
  *
  * Each member of this struct represents a different part of the aircraft's fuel system.
- * The fuel level at each part is represented as a 64-bit floating point number.
+ * The fuel level at each part is represented in Pounds as a 64-bit floating point number.
  *
  * @var FLOAT64 fuelSystemLeftOuter Fuel in Gallons at the left outer part of the aircraft's fuel system.
  * @var FLOAT64 fuelSystemFeedOne Fuel in Gallons at the feed one of the aircraft's fuel system.
@@ -73,14 +68,8 @@ struct FuelTankData {
  * Each member of this struct represents a different oil parameter for the aircraft's engines.
  * The oil temperature and pressure for each engine is represented as a 64-bit floating point number.
  *
- * @var FLOAT64 oilTempEngine1 Oil temperature in Cecilius for engine 1 of the aircraft.
- * @var FLOAT64 oilTempEngine2 Oil temperature in Cecilius for engine 2 of the aircraft.
- * @var FLOAT64 oilTempEngine3 Oil temperature in Cecilius for engine 3 of the aircraft.
- * @var FLOAT64 oilTempEngine4 Oil temperature in Cecilius for engine 4 of the aircraft.
- * @var FLOAT64 oilPsiEngine1 Oil pressure in Psi for engine 1 of the aircraft.
- * @var FLOAT64 oilPsiEngine2 Oil pressure in Psi for engine 2 of the aircraft.
- * @var FLOAT64 oilPsiEngine3 Oil pressure in Psi for engine 3 of the aircraft.
- * @var FLOAT64 oilPsiEngine4 Oil pressure in Psi for engine 4 of the aircraft.
+ * @var FLOAT64 oilTempEngine1-4 Oil temperature in Cecilius for engine 1-4 of the aircraft.
+ * @var FLOAT64 oilPsiEngine1-4 Oil pressure in Psi for engine 1-4 of the aircraft.
  */
 struct OilData {
   FLOAT64 oilTempEngine1;
