@@ -10,7 +10,7 @@ class EngineControl_A380X {
  private:
 
  public:
-  void update(const ContextPtr& context);
+  void update(const ContextPtr& contextPtr);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H

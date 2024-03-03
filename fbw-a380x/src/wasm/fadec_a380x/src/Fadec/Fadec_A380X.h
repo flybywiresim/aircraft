@@ -24,7 +24,7 @@ class Fadec_A380X : public Fadec {
   DataDefinitionVariablePtr<SimData> simDataPtr;
 
   // Convenience struct to hold all required sim data to pass to the subcomponents
-  ContextPtr context;
+  ContextPtr contextPtr;
 
   EngineControl_A380X engineControlInstance{};
 
