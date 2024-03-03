@@ -68,7 +68,7 @@ bool Fadec_A380X::initialize() {
   simDataPtr = dataManager->make_datadefinition_var<SimData>("SIM DATA", simDataDef);
   simDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
-  context = std::__2::make_shared<Context>(Context{
+  contextPtr = std::__2::make_shared<Context>(Context{
     &msfsHandler,
     payloadDataPtr,
     fuelTankDataPtr,
@@ -96,7 +96,7 @@ bool Fadec_A380X::update(sGaugeDrawData* pData) {
   }
 
   // update engines
-  engineControlInstance.update(context);
+  engineControlInstance.update(contextPtr);
 
   return true;
 }
