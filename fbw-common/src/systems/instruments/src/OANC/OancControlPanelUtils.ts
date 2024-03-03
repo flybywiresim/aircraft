@@ -51,5 +51,7 @@ export class ControlPanelStore {
 
     public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 
+    public readonly loadedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
+
     public readonly isAirportSelectionPending = Subject.create(false);
 }

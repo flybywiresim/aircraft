@@ -20,6 +20,7 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
+import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -42,6 +43,7 @@ const LABEL_FEATURE_TYPES = [
     FeatureType.VerticalPolygonObject,
     FeatureType.Centerline,
     FeatureType.ParkingStandLocation,
+    FeatureType.ExitLine,
 ];
 
 const LABEL_POLYGON_STRUCTURE_TYPES = [
@@ -70,8 +72,8 @@ export const LABEL_VISIBILITY_RULES = [
     true,
     true,
     true,
-    false,
-    false,
+    true,
+    true,
 ];
 
 export enum LabelStyle {
@@ -79,6 +81,8 @@ export enum LabelStyle {
     TerminalBuilding = 'terminal-building',
     RunwayAxis = 'runway-axis',
     RunwayEnd = 'runway-end',
+    FmsSelectedRunwayEnd = 'runway-end-fms-selected',
+    FmsSelectedRunwayAxis = 'runway-axis-fms-selected',
 }
 
 export interface Label {
@@ -252,6 +256,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
 
+    private readonly landingRunwayIdent = Subject.create<string | null>(null);
+
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
         return aircraftWithinAirport || overlayNDMode === EfisNdMode.ARC;
@@ -283,19 +289,24 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.cursorSurfaceRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
         this.cursorSurfaceRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-        const subs = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents>();
+        const sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
 
-        this.efisNDModeSub.setConsumer(subs.on('ndMode'));
+        this.efisNDModeSub.setConsumer(sub.on('ndMode'));
 
-        this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
+        this.efisNDModeSub.sub((mode) => {
+            this.handleNDModeChange(mode);
+            this.handleLabelFilter();
+        }, true);
 
-        this.efisOansRangeSub.setConsumer(subs.on('oansRange'));
+        this.efisOansRangeSub.setConsumer(sub.on('oansRange'));
 
-        this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range));
+        this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
 
-        subs.on('oansDisplayAirport').whenChanged().handle((airport) => {
+        sub.on('oansDisplayAirport').whenChanged().handle((airport) => {
             this.loadAirportMap(airport);
         });
+
+        sub.on('fmsLandingRunway').whenChanged().handle((rwy) => this.landingRunwayIdent.set(rwy));
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
@@ -319,18 +330,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             }
         });
 
-        this.zoomLevelIndex.sub((newZommLevel) => {
-            this.labelManager.showLabels = false;
-
-            switch (newZommLevel) {
-            case 2: this.labelManager.currentFilter = { type: 'major' }; break;
-            default: this.labelManager.currentFilter = { type: 'null' }; break;
-            }
-
-            this.handleLayerVisibilities();
-
-            setTimeout(() => this.labelManager.showLabels = true, ZOOM_TRANSITION_TIME_MS + 200);
-        }, true);
+        this.zoomLevelIndex.sub(() => this.handleLabelFilter(), true);
 
         MappedSubject.create(this.panOffsetX, this.panOffsetY).sub(([x, y]) => {
             this.panContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
@@ -345,6 +345,30 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         }, this.modeAnimationOffsetX, this.modeAnimationOffsetY);
 
         this.positionVisible.sub((visible) => this.positionTextRef.instance.style.visibility = visible ? 'inherit' : 'hidden');
+    }
+
+    private handleLabelFilter() {
+        this.labelManager.showLabels = false;
+
+        if (this.efisNDModeSub.get() === EfisNdMode.ARC) {
+            switch (this.zoomLevelIndex.get()) {
+            case 4:
+            case 3:
+                this.labelManager.currentFilter = { type: 'none' }; break;
+            case 2: this.labelManager.currentFilter = { type: 'major' }; break;
+            default: this.labelManager.currentFilter = { type: 'null' }; break;
+            }
+        } else {
+            switch (this.zoomLevelIndex.get()) {
+            case 0:
+                this.labelManager.currentFilter = { type: 'runwayBtvSelection', runwayIdent: null, showAdjacent: true }; break;
+            default: this.labelManager.currentFilter = { type: 'runwayBtvSelection', runwayIdent: null, showAdjacent: false }; break;
+            }
+        }
+
+        this.handleLayerVisibilities();
+
+        setTimeout(() => this.labelManager.showLabels = true, ZOOM_TRANSITION_TIME_MS + 200);
     }
 
     public async loadAirportMap(icao: string) {
@@ -523,10 +547,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 const runwayLine = feature.geometry as LineString;
                 const runwayLineStart = runwayLine.coordinates[0];
                 const runwayLineEnd = runwayLine.coordinates[runwayLine.coordinates.length - 1];
-                const runwayLineBearing = clampAngle(-Math.atan2(runwayLineStart[0] - runwayLineEnd[0], runwayLineStart[1] - runwayLineEnd[1]) * MathUtils.RADIANS_TO_DEGREES + 90);
+                const runwayLineBearing = clampAngle(-Math.atan2(runwayLineStart[1] - runwayLineEnd[1], runwayLineStart[0] - runwayLineEnd[0]) * MathUtils.RADIANS_TO_DEGREES + 90);
 
                 const label1: Label = {
-                    text: `${designators[1]}`,
+                    text: `${designators[0]}`,
                     style: LabelStyle.RunwayEnd,
                     position: runwayLineStart,
                     rotation: reciprocal(runwayLineBearing),
@@ -534,7 +558,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 };
 
                 const label2: Label = {
-                    text: `${designators[0]}`,
+                    text: `${designators[1]}`,
                     style: LabelStyle.RunwayEnd,
                     position: runwayLineEnd,
                     rotation: runwayLineBearing,
@@ -543,7 +567,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
                 const label3: Label = {
                     text: `${designators[0]}-${designators[1]}`,
-                    style: LabelStyle.RunwayAxis,
+                    style: designators.includes(this.landingRunwayIdent.get()?.substring(2)) ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis,
                     position: runwayLineEnd,
                     rotation: runwayLineBearing,
                     associatedFeature: feature,
@@ -553,6 +577,30 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 this.labelManager.visibleLabels.insert(label1);
                 this.labelManager.visibleLabels.insert(label2);
                 this.labelManager.visibleLabels.insert(label3);
+
+                // Selected FMS runway
+                let labelFms: Label;
+                if (designators[0] === this.landingRunwayIdent.get()?.substring(2)) {
+                    labelFms = {
+                        text: '',
+                        style: LabelStyle.FmsSelectedRunwayEnd,
+                        position: runwayLineStart,
+                        rotation: reciprocal(runwayLineBearing),
+                        associatedFeature: feature,
+                    };
+                    this.labelManager.labels.push(labelFms);
+                    this.labelManager.visibleLabels.insert(labelFms);
+                } else if (designators[1] === this.landingRunwayIdent.get()?.substring(2)) {
+                    labelFms = {
+                        text: '',
+                        style: LabelStyle.FmsSelectedRunwayEnd,
+                        position: runwayLineEnd,
+                        rotation: runwayLineBearing,
+                        associatedFeature: feature,
+                    };
+                    this.labelManager.labels.push(labelFms);
+                    this.labelManager.visibleLabels.insert(labelFms);
+                }
             } else {
                 const text = feature.properties.idlin ?? feature.properties.idstd ?? feature.properties.ident ?? undefined;
 
