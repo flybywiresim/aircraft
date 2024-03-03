@@ -23,7 +23,7 @@ set(SOURCE_FILES
 set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/SimVars_A380X.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/SimDataStructs.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A380X.h
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
 )
