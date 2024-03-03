@@ -10,7 +10,4 @@ export interface FmsSymbolsData {
     vectorsDashed: PathVector[],
     vectorsTemporary: PathVector[],
     traffic: NdTraffic[],
-    oansOrigin: string,
-    oansDestination: string,
-    oansAlternate: string,
 }

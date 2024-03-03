@@ -170,6 +170,7 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         }
 
         this.props.onSelectAirport(this.store.selectedAirport.get().idarpt);
+        this.store.loadedAirport.set(this.store.selectedAirport.get().idarpt);
         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
     }
 

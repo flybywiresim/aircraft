@@ -6713,7 +6713,7 @@
 
         <Component ID="HOSE0815" Node="HOSE0815">
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                <VISIBILITY_CODE>(L:XMLVar_HOSE0815:VISIBILITY , bool) 0 ==</VISIBILITY_CODE>
+                <VISIBILITY_CODE>(L:XMLVar_HOSE0815:VISIBILITY , bool) 1 ==</VISIBILITY_CODE>
             </UseTemplate>
         </Component>
 

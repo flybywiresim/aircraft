@@ -6,7 +6,7 @@ import { clampAngle } from 'msfs-geo';
 import { Feature, LineString } from '@turf/turf';
 import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { filterLabel, OancLabelFilter } from './OancLabelFIlter';
+import { filterLabel, OancLabelFilter } from './OancLabelFilter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';
 
@@ -65,7 +65,7 @@ export class OancLabelManager<T extends number> {
                 const scaledOffsetX = offsetX * this.oanc.getZoomLevelInverseScale();
                 const scaledOffsetY = offsetY * this.oanc.getZoomLevelInverseScale();
 
-                if (label.style !== LabelStyle.RunwayAxis) {
+                if (label.style !== LabelStyle.RunwayAxis && label.style !== LabelStyle.FmsSelectedRunwayAxis) {
                     let labelScreenX = (OANC_RENDER_WIDTH / 2) + rotationAdjustX + -scaledOffsetX + this.oanc.panOffsetX.get();
                     let labelScreenY = (OANC_RENDER_HEIGHT / 2) + -rotationAdjustY + scaledOffsetY + this.oanc.panOffsetY.get();
 
@@ -83,7 +83,9 @@ export class OancLabelManager<T extends number> {
                     element.style.top = `${labelScreenY}px`;
 
                     if (label.style === LabelStyle.RunwayEnd) {
-                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg)`;
+                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 50px)`;
+                    } else if (label.style === LabelStyle.FmsSelectedRunwayEnd) {
+                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 100px)`;
                     } else {
                         element.style.transform = 'translate(-50%, -50%)';
                     }
