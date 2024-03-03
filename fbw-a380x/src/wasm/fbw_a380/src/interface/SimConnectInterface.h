@@ -195,6 +195,7 @@ class SimConnectInterface {
     SIM_RATE_INCR,
     SIM_RATE_DECR,
     SIM_RATE_SET,
+    SYSTEM_EVENT_PAUSE
   };
 
   SimConnectInterface() = default;
@@ -322,6 +323,10 @@ class SimConnectInterface {
 
   void updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate);
 
+  bool isSimInAnyPause();
+  bool isSimInActivePause();
+  bool isSimInPause();
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
@@ -379,6 +384,8 @@ class SimConnectInterface {
   int primDisabled = -1;
   int secDisabled = -1;
   int facDisabled = -1;
+
+  long pauseState = 0;
 
   // change to non-static when aileron events can be processed via SimConnect
   static bool loggingFlightControlsEnabled;
@@ -447,7 +454,8 @@ class SimConnectInterface {
    * in the event->dwData field of the SIMCONNECT_RECV_EVENT struct.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
    */
   void simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event);
 
@@ -464,7 +472,8 @@ class SimConnectInterface {
    * all other parameters.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
    */
   void simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT_EX1* event);
 
@@ -491,12 +500,11 @@ class SimConnectInterface {
 
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 
-  private:
-
-   /**
+ private:
+  /**
    * @brief Process a SimConnect event with one parameter.
    * @param eventId Specifies the ID of the client event.
    * @param data0 Double word containing any additional number required by the event.
-    */
-   void processEventWithOneParam(const DWORD eventId, const DWORD data0);
+   */
+  void processEventWithOneParam(const DWORD eventId, const DWORD data0);
 };

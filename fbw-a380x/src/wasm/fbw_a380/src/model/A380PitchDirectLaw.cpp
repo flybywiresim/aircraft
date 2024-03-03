@@ -58,6 +58,4 @@ A380PitchDirectLaw::A380PitchDirectLaw():
 {
 }
 
-A380PitchDirectLaw::~A380PitchDirectLaw()
-{
-}
+A380PitchDirectLaw::~A380PitchDirectLaw() = default;

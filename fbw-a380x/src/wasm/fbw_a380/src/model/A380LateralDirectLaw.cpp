@@ -73,6 +73,4 @@ A380LateralDirectLaw::A380LateralDirectLaw():
 {
 }
 
-A380LateralDirectLaw::~A380LateralDirectLaw()
-{
-}
+A380LateralDirectLaw::~A380LateralDirectLaw() = default;

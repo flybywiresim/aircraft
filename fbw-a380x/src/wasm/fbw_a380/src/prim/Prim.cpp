@@ -148,7 +148,7 @@ base_prim_out_bus Prim::getBusOutputs() {
     output.rudder_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.misc_data_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.discrete_status_word_1.SSM = Arinc429SignStatus::FailureWarning;
 
     return output;
   }
