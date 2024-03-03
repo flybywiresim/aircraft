@@ -169,17 +169,12 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
-                        {gsxPayloadSyncEnabled === 0 && (
-                            <Toggle
-                                value={wheelChocksEnabled === 1}
-                                onToggle={(value) => {
-                                    setWheelChocksEnabled(value ? 1 : 0);
-                                }}
-                            />
-                        )}
-                        {gsxPayloadSyncEnabled === 1 && (
-                            t('Ground.Payload.GSXPayloadSyncEnabled')
-                        )}
+                        <Toggle
+                            value={wheelChocksEnabled === 1}
+                            onToggle={(value) => {
+                                setWheelChocksEnabled(value ? 1 : 0);
+                            }}
+                        />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
