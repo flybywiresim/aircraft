@@ -194,8 +194,8 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight
-                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
+                            className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}
