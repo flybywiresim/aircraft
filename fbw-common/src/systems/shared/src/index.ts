@@ -1,5 +1,6 @@
 export * from './amdb';
 export * from './AircraftVersionChecker';
+export * from './amdb';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
 export * from './Arinc429RegisterSubject';

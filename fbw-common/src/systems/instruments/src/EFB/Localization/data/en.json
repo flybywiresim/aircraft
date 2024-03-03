@@ -81,15 +81,16 @@
       "CostIndex": "Cost Index",
       "CruiseAlt": "Cruise Alt.",
       "ImportSimBriefData": "Import SimBrief Data",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
       "Title": "Your Flight",
-      "ZFW": "ZFW"
+      "ZFW": "ZFW",
+      "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
       "TT": {
         "IncreaseFontSize": "Increase Font Size",
         "ReduceFontSize": "Reduce Font Size"

@@ -86,6 +86,15 @@
   background-size: cover;
 }
 
+.oanc-label-style-runway-end-fms-selected {
+  width: 0px;
+  height: 0px;
+  border-style: solid;
+  border-width: 0 50px 30px 50px;
+  border-color: transparent transparent #00FF00 transparent;
+  transform: rotate(0deg);
+}
+
 .oanc-label-style-runway-axis {
   color: $display-white;
 }

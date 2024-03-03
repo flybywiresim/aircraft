@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { t, TooltipWrapper, SelectGroup, SelectItem, ProgressBar, SimpleInput, OverWingOutline } from '@flybywiresim/flypad';
+import { useAppDispatch, useAppSelector, t, TooltipWrapper, SelectGroup, SelectItem, ProgressBar, SimpleInput, OverWingOutline, setFuelImported } from '@flybywiresim/flypad';
 
 interface TankReadoutProps {
     title: string;
@@ -96,6 +96,16 @@ export const A320Fuel: React.FC<FuelProps> = ({
     const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
     const [gsxRefuelState] = useSimVar('L:FSDT_GSX_REFUELING_STATE', 'Number');
+
+    const dispatch = useAppDispatch();
+    const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && fuelImported === false) {
+            handleFuelAutoFill();
+            dispatch(setFuelImported(true));
+        }
+    }, []);
 
     const gsxRefuelActive = () => (gsxRefuelState === 4 || gsxRefuelState === 5);
 
@@ -414,16 +424,21 @@ export const A320Fuel: React.FC<FuelProps> = ({
                             </div>
                             <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${calculateEta()}`}</p>
                         </div>
-                        <div className="flex flex-row items-center space-x-6">
+                        <div className={`flex flex-row items-center space-x-6 ${refuelStartedByUser && 'opacity-50'}`}>
                             <Slider
+                                disabled={refuelStartedByUser}
                                 style={{ width: '28rem' }}
+                                trackStyle={{ backgroundColor: 'var(--color-highlight)' }}
+                                railStyle={{ backgroundColor: 'var(--color-accent)' }}
+                                handleStyle={{ backgroundColor: 'var(--color-highlight)' }}
                                 value={sliderValue}
                                 onChange={updateSlider}
                             />
                             <div className="flex flex-row">
                                 <div className="relative">
                                     <SimpleInput
-                                        className={`w-32 ${simbriefDataLoaded && 'rounded-r-none'}`}
+                                        disabled={refuelStartedByUser}
+                                        className={`w-32 ${simbriefDataLoaded && !refuelStartedByUser && 'rounded-r-none'}`}
                                         placeholder={round(totalFuel()).toString()}
                                         number
                                         min={0}
@@ -436,8 +451,8 @@ export const A320Fuel: React.FC<FuelProps> = ({
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                                         <div
-                                            className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex h-auto items-center justify-center rounded-md rounded-l-none border-2 px-2 transition duration-100"
-                                            onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
+                                            className={`${refuelStartedByUser && 'invisible'} border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex h-auto items-center justify-center rounded-md rounded-l-none border-2 px-2 transition duration-100`}
+                                            onClick={handleFuelAutoFill}
                                         >
                                             <CloudArrowDown size={26} />
                                         </div>

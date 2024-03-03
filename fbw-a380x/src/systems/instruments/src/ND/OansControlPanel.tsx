@@ -4,11 +4,11 @@ import './UI/style.scss';
 import './OansControlPanel.scss';
 
 import {
-    ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent,
-    MapSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
+    ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent,
+    MapSubject, MappedSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
 import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
-import { AmdbAirportSearchResult, EfisSide } from '@flybywiresim/fbw-sdk';
+import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide } from '@flybywiresim/fbw-sdk';
 
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
@@ -19,6 +19,8 @@ import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
+import { Coordinates, distanceTo } from 'msfs-geo';
+import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
@@ -42,7 +44,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private amdbClient = new NavigraphAmdbClient();
 
-    private oansMenuRef = FSComponent.createRef<HTMLDivElement>();
+    private readonly oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private readonly airportSearchAirportDropdownRef = FSComponent.createRef<DropdownMenu>();
 
@@ -56,41 +58,51 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private readonly activeTabIndex = Subject.create<number>(2);
 
-    private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
+    private readonly availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
-    private thresholdShift = Subject.create<number | null>(null);
+    private readonly thresholdShift = Subject.create<number | null>(null);
 
-    private endShift = Subject.create<number | null>(null);
+    private readonly endShift = Subject.create<number | null>(null);
 
-    private selectedEntityType = Subject.create<EntityTypes | null>(EntityTypes.RWY);
+    private readonly selectedEntityType = Subject.create<EntityTypes | null>(EntityTypes.RWY);
 
-    private availableEntityList = ArraySubject.create(['']);
+    private readonly availableEntityList = ArraySubject.create(['']);
 
-    private selectedEntityIndex = Subject.create<number | null>(0);
+    private readonly selectedEntityIndex = Subject.create<number | null>(0);
 
-    private selectedEntityString = Subject.create<string | null>(null);
+    private readonly selectedEntityString = Subject.create<string | null>(null);
 
-    private originAirport = Subject.create<string | null>(null);
+    private manualAirportSelection = false;
 
-    private destAirport = Subject.create<string | null>(null);
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-    private altnAirport = Subject.create<string | null>(null);
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
-    private landingRunwayIdent = Subject.create<string | null>(null);
+    private presentPos = MappedSubject.create(([lat, lon]) => {
+        return { lat: lat.value, long: lon.value } as Coordinates;
+    }, this.pposLatWord, this.pposLonWord);
 
-    private landingRunwayLength = Subject.create<number | null>(null);
+    private readonly originAirport = Subject.create<string | null>(null);
 
-    private runwayTora = Subject.create<string | null>(null);
+    private readonly destAirport = Subject.create<string | null>(null);
 
-    private runwayLda = Subject.create<string | null>(null);
+    private readonly altnAirport = Subject.create<string | null>(null);
 
-    private reqStoppingDistance = Subject.create<number | null>(null);
+    private readonly landingRunwayIdent = Subject.create<string | null>(null);
 
-    private airportDatabase = Subject.create('SXT59027250AA04');
+    private readonly landingRunwayLength = Subject.create<number | null>(null);
 
-    private activeDatabase = Subject.create('30DEC-27JAN');
+    private readonly runwayTora = Subject.create<string | null>(null);
 
-    private secondDatabase = Subject.create('27JAN-24FEB');
+    private readonly runwayLda = Subject.create<string | null>(null);
+
+    private readonly reqStoppingDistance = Subject.create<number | null>(null);
+
+    private readonly airportDatabase = Subject.create('SXT59027250AA04');
+
+    private readonly activeDatabase = Subject.create('30DEC-27JAN');
+
+    private readonly secondDatabase = Subject.create('27JAN-24FEB');
 
     private showLdgShiftPanel() {
         const shiftPanel = document.getElementById('MapDataLdgShiftPanel');
@@ -145,7 +157,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.activeTabIndex.sub((_index) => Coherent.trigger('UNFOCUS_INPUT_FIELD')),
         );
 
-        const sub = this.props.bus.getSubscriber<FmsOansData>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars>();
+
+        sub.on('latitude').whenChanged().handle((value) => {
+            this.pposLatWord.setWord(value);
+        });
+
+        sub.on('longitude').whenChanged().handle((value) => {
+            this.pposLonWord.setWord(value);
+        });
 
         sub.on('fmsOrigin').whenChanged().handle((it) => this.originAirport.set(it));
         sub.on('fmsDestination').whenChanged().handle((it) => this.destAirport.set(it));
@@ -159,6 +179,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.selectedEntityString.set(it.substring(2));
             this.updateLandingRunwayData();
         });
+
+        sub.on('realTime').atFrequency(0.2).handle((_) => this.autoLoadAirport());
 
         // Load runway data from nav data
         // TODO FIXME fms-v2 check when merged
@@ -251,8 +273,46 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             throw new Error('[OANS] Empty airport selected for display.');
         }
 
+        this.manualAirportSelection = true;
         this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt, true);
+        this.store.loadedAirport.set(this.store.selectedAirport.get().idarpt);
         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
+    }
+
+    private autoLoadAirport() {
+        // If airport has been manually selected, do not auto load.
+        if (this.manualAirportSelection === true || this.store.loadedAirport.get() !== this.store.selectedAirport.get() || this.store.airports.length === 0) {
+            return;
+        }
+        // If on ground, and no airport is loaded, find current airport.
+        const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
+        if (fwcFlightPhase < 7) {
+            // Go through all airports, load if distance <20NM
+            for(const ap of this.store.airports.getArray()) {
+                if (distanceTo(this.presentPos.get(), { lat: ap.coordinates.lat, long: ap.coordinates.lon }) < 20) {
+                    if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
+                        this.handleSelectAirport(ap.idarpt);
+                        this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', ap.idarpt, true);
+                        this.store.loadedAirport.set(ap.idarpt);
+                        this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
+                    }
+                    return;
+                }
+            }
+        }
+        // If in flight, load destination airport if distance is <50NM. This could cause stutters, consider deactivating.
+        else {
+            const destArpt = this.store.airports.getArray().find((it) => it.idarpt === this.destAirport.get());
+            if (destArpt && destArpt.idarpt !== this.store.loadedAirport.get()?.idarpt) {
+                if (distanceTo(this.presentPos.get(), { lat: destArpt.coordinates.lat, long: destArpt.coordinates.lon }) < 50) {
+                    this.handleSelectAirport(destArpt.idarpt);
+                    this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', destArpt.idarpt, true);
+                    this.store.loadedAirport.set(destArpt.idarpt);
+                    this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
+                    return;
+                }
+            }
+        }
     }
 
     private findNewMonthIndex(index: number) {

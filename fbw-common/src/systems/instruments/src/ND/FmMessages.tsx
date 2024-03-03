@@ -27,7 +27,7 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
     private readonly backgroundFillShown = this.props.mode.map((it) => it === EfisNdMode.ARC || it === EfisNdMode.ROSE_NAV);
 
     private readonly visible = this.props.mode.map((mode) => {
-        if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) {
+        if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR || this.activeMessages.length === 0) {
             return false;
         }
 

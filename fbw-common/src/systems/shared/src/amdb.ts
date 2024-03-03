@@ -168,6 +168,8 @@ export interface AmdbProperties {
 
     idrwy: string,
 
+    idthr: string,
+
     ident: string,
 
     name: string,
