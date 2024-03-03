@@ -4,18 +4,13 @@
 #ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
 #define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
 
-#include "SimVars.h"
+#include "Fadec_A380X.h"
 
 class EngineControl_A380X {
  private:
-  double mach;
-  double pressAltitude;
-  double ambientTemp;
-  double ambientPressure;
-  bool simOnGround;
 
  public:
-  void update(ContextPtr context);
+  void update(const ContextPtr& context);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
