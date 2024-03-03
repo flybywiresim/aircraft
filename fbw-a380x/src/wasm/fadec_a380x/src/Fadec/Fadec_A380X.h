@@ -6,6 +6,9 @@
 
 #include "EngineControl_A380X.h"
 #include "Fadec.h"
+#include "SimDataStructs.h"
+
+using ContextPtr = std::shared_ptr<Context>;
 
 class Fadec_A380X : public Fadec {
  private:
@@ -13,11 +16,18 @@ class Fadec_A380X : public Fadec {
   // Convenience pointer to the data manager
   DataManager* dataManager = nullptr;
 
-  EngineControl_A380X engineControlInstance;
+  // Data definition pointers for the sim data we need
+  DataDefinitionVariablePtr<PayloadData> payloadDataPtr;
+  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr;
+  DataDefinitionVariablePtr<OilData> oilDataPtr;
+  DataDefinitionVariablePtr<EngineData> engineDataPtr;
+  DataDefinitionVariablePtr<SimData> simDataPtr;
 
-  // used to calculate the time since the last update
-  // TODO: unclear why dt is not sufficient
-  double previousSimulationTime = 0;
+  // Convenience struct to hold all required sim data to pass to the subcomponents
+  ContextPtr context;
+
+  EngineControl_A380X engineControlInstance{};
+
 
  public:
   /**
@@ -33,4 +43,4 @@ class Fadec_A380X : public Fadec {
   bool shutdown() override;
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_FADEC_H
+#endif  // FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H

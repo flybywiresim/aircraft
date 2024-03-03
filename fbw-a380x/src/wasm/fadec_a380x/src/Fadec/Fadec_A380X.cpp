@@ -22,7 +22,7 @@ bool Fadec_A380X::initialize() {
     {"PAYLOAD STATION WEIGHT", 8, UNITS.Pounds}
   };
   payloadDataPtr = dataManager->make_datadefinition_var<PayloadData>("PAYLOAD DATA", payloadDataDef);
-  payloadDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+  // payloadDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   DataDefVector fuelTankDataDef = {
     {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},
@@ -35,7 +35,7 @@ bool Fadec_A380X::initialize() {
     {"FUELSYSTEM TANK QUANTITY", 8, UNITS.Gallons}
   };
   fuelTankDataPtr = dataManager->make_datadefinition_var<FuelTankData>("FUEL TANK DATA", fuelTankDataDef);
-  fuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+  // fuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   DataDefVector oilDataDef = {
     {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius},
@@ -48,7 +48,7 @@ bool Fadec_A380X::initialize() {
     {"GENERAL ENG OIL PRESSURE", 4, UNITS.Psi}
   };
   oilDataPtr = dataManager->make_datadefinition_var<OilData>("OIL DATA", oilDataDef);
-  oilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+  // oilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   DataDefVector engineDataDef = {
     {"TURB ENG CORRECTED N2", 1, UNITS.Percent},
@@ -57,7 +57,7 @@ bool Fadec_A380X::initialize() {
     {"TURB ENG CORRECTED N2", 4, UNITS.Percent},
   };
   engineDataPtr = dataManager->make_datadefinition_var<EngineData>("ENGINE DATA", engineDataDef);
-  engineDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+  // engineDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   DataDefVector simDataDef = {
     {"AIRSPEED MACH", 0, UNITS.Mach},
