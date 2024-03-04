@@ -7,6 +7,7 @@
 #include "SimDataStructs.h"
 #include "ThrustLimits_A380X.hpp"
 #include "Polynomials_A380X.hpp"
+#include "Table1502_A380X.hpp"
 
 class EngineControl_A380X {
  private:

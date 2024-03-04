@@ -26,7 +26,9 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/SimDataStructs.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A380X.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Polynomials_A380X.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Table1502_A380X.hpp
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
+    src/Fadec/Table1502_A380X.hpp
 )
 
 # create the targets
