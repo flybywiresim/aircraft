@@ -156,6 +156,7 @@ export interface PFDSimvars {
     fm1TransLvlRaw: number;
     fm2TransLvlRaw: number;
     lgciuDiscreteWord1Raw: number;
+    slatPosLeft: number;
 }
 
 export enum PFDVars {
@@ -312,6 +313,7 @@ export enum PFDVars {
     fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
     fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
     lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
+    slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -470,6 +472,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fm1TransLvlRaw', { name: PFDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
         ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
         ['lgciuDiscreteWord1Raw', { name: PFDVars.lgciuDiscreteWord1Raw, type: SimVarValueType.Number }],
+        ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {
