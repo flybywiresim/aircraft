@@ -9,9 +9,9 @@
 
 #include "logging.h"
 
-#include "FuelConfiguration.h"
+#include "FuelConfiguration_A380X.h"
 
-void FuelConfiguration::loadConfigurationFromIni() {
+void FuelConfiguration_A380X::loadConfigurationFromIni() {
   mINI::INIStructure ini;
   mINI::INIFile iniFile(configFilename);
 
@@ -34,7 +34,7 @@ void FuelConfiguration::loadConfigurationFromIni() {
   fuelTrim = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
 }
 
-void FuelConfiguration::saveConfigurationToIni() {
+void FuelConfiguration_A380X::saveConfigurationToIni() {
   mINI::INIStructure ini;
   mINI::INIFile iniFile(configFilename);
 
