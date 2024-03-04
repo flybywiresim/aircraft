@@ -17,7 +17,7 @@
  * The class also has two static methods `iCN3` and `iCN1` that calculate the corrected fan speed (CN3 and CN1) respectively.
  */
 class Table1502_A380X {
- private:
+ public:
   // Table containing values used in the calculation of the corrected fan speed (CN1 and CN3)
   // Each row represents a set of values. The columns represent different parameters used in the calculation.
   // Column 1: CN3 value
@@ -43,30 +43,17 @@ class Table1502_A380X {
   // clang-format on
 
   /**
-   * @brief Calculates the corrected fan speed (CN3).
+   * @brief Calculates the expected CN2 at idle.
    *
-   * This function calculates the corrected fan speed (CN3), which represents the fan speed corrected for various factors.
-   * The calculation is based on the pressure altitude and Mach number.
+   * This function calculates the expected CN2 at idle, which represents the corrected fan speed corrected for various factors.
+   * The calculation is based on the pressure altitude and the Mach number.
    *
    * @param pressAltitude The pressure altitude in feet.
    * @param mach The Mach number.
-   * @return The calculated corrected fan speed (CN3).
+   * @return The calculated expected CN2 at idle.
    */
-  static double iCN3(double pressAltitude, double mach) {
-    // Constants for the calculation
-    const double baseTemperature = 288.15;
-    const double altitudeFactor = 1.98;
-    const double machFactor = 0.2;
-    const double speedFactor = 60.0;
-
-    // Calculate the temperature at the given pressure altitude
-    double temperature = baseTemperature - (altitudeFactor * pressAltitude / 1000);
-
-    // Calculate the corrected fan speed (CN3)
-    double cn3 = speedFactor / (sqrt(temperature / baseTemperature) * sqrt(1 + (machFactor * pow(mach, 2))));
-
-    // Return the calculated CN3 value
-    return cn3;
+  static double iCN2(double pressAltitude, double mach) {
+    return 68.2 / (sqrt((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * sqrt(1 + (0.2 * pow(mach, 2))));
   }
 
   /**
@@ -83,7 +70,7 @@ class Table1502_A380X {
   static double iCN1(double pressAltitude, double mach, [[maybe_unused]] double ambientTemp) {
     // Initialize variables
     double cn1_lo, cn1_hi, cn1;
-    double cn3 = iCN3(pressAltitude, mach);
+    double cn3 = iCN2(pressAltitude, mach);
     double cell;
     double cn3lo, cn3hi;
     double cn1lolo, cn1hilo, cn1lohi, cn1hihi;
