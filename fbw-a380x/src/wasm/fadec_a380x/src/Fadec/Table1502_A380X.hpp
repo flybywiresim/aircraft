@@ -8,9 +8,22 @@
 
 #include "Fadec.h"
 
+/**
+ * @class Table1502_A380X
+ *
+ * This class contains methods and data used in the calculation of the corrected fan speed (CN1 and CN3).
+ * The class has a 2D array `table` that contains values used in the calculation of the corrected fan speed.
+ * Each row in the `table` represents a set of values. The columns represent different parameters used in the calculation.
+ * The class also has two static methods `iCN3` and `iCN1` that calculate the corrected fan speed (CN3 and CN1) respectively.
+ */
 class Table1502_A380X {
  private:
-
+  // Table containing values used in the calculation of the corrected fan speed (CN1 and CN3)
+  // Each row represents a set of values. The columns represent different parameters used in the calculation.
+  // Column 1: CN3 value
+  // Column 2: CN1 value for Mach number <= 0.2
+  // Column 3: CN1 value for Mach number <= 0.2
+  // Column 4: CN1 value for 0.2 < Mach number <= 0.9
   // clang-format off
   static constexpr double table[13][4] = {
       {16.012, 0.000, 0.000, 17.000},
