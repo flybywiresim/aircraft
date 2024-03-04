@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_H
-#define FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_H
+#ifndef FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H
+#define FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H
 
 #include <string>
 
@@ -23,7 +23,7 @@
  * @class FuelConfiguration
  * @brief This struct represents the fuel configuration for the aircraft.
  */
-class FuelConfiguration {
+class FuelConfiguration_A380X {
   static constexpr double fuelFeedOneDefault = 1082.0;
   static constexpr double fuelFeedTwoDefault = fuelFeedOneDefault;
   static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;
@@ -36,6 +36,7 @@ class FuelConfiguration {
   static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;
   static constexpr double fuelTrimDefault = 6259.0;
 
+ private:
   double fuelLeftOuter;
   double fuelFeedOne;
   double fuelLeftMid;
@@ -58,7 +59,7 @@ class FuelConfiguration {
    *
    * @param configFilename The name of the configuration file.
    */
-  FuelConfiguration(std::string configFilename) : configFilename{configFilename} {}
+  FuelConfiguration_A380X(std::string configFilename) : configFilename{configFilename} {}
 
   /**
    * @brief Loads the fuel configuration from an INI file.
@@ -75,6 +76,19 @@ class FuelConfiguration {
    * If the INI file cannot be written, an error message is logged.
    */
   void saveConfigurationToIni();
+
+ public:
+  double getFuelLeftOuter() const { return fuelLeftOuter; }
+  double getFuelFeedOne() const { return fuelFeedOne; }
+  double getFuelLeftMid() const { return fuelLeftMid; }
+  double getFuelLeftInner() const { return fuelLeftInner; }
+  double getFuelRightOuter() const { return fuelRightOuter; }
+  double getFuelFeedTwo() const { return fuelFeedTwo; }
+  double getFuelRightMid() const { return fuelRightMid; }
+  double getFuelRightInner() const { return fuelRightInner; }
+  double getFuelFeedThree() const { return fuelFeedThree; }
+  double getFuelFeedFour() const { return fuelFeedFour; }
+  double getFuelTrim() const { return fuelTrim; }
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_H
+#endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H

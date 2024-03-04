@@ -14,21 +14,22 @@ include_directories(
 
 # define the source files
 set(SOURCE_FILES
+    ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.cpp
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration.cpp
 )
 
 set(INCLUDE_FILES
+    ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/SimDataStructs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FadecSimData_A380X.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A380X.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Polynomials_A380X.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Table1502_A380X.hpp
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
-    src/Fadec/Table1502_A380X.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A380X.h
 )
 
 # create the targets

@@ -5,24 +5,17 @@
 #define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 
 #include "Fadec.h"
-#include "SimDataStructs.h"
 #include "EngineControl_A380X.h"
 
+/**
+ * @brief: The Fadec_A380X class is responsible for managing the FADEC system for the A380X aircraft.
+ *
+ * In this current implementation is only holding the EngineControl_A380X instance and is
+ * responsible for calling its initialize, update and shutdown methods.
+ * The actual fadec logic is implemented in the EngineControl_A380X class.
+ */
 class Fadec_A380X : public Fadec {
  private:
-
-  // Convenience pointer to the data manager
-  DataManager* dataManager = nullptr;
-
-  // Data definition pointers for the sim data we need
-  DataDefinitionVariablePtr<PayloadData> payloadDataPtr;
-  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr;
-  DataDefinitionVariablePtr<OilData> oilDataPtr;
-  DataDefinitionVariablePtr<EngineData> engineDataPtr;
-  DataDefinitionVariablePtr<SimData> simDataPtr;
-
-  // Convenience struct to hold all required sim data to pass to the subcomponents
-  ContextPtr contextPtr;
 
   // Engine control instance
   EngineControl_A380X engineControl{};
