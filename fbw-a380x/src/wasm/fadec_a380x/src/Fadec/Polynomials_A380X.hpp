@@ -12,7 +12,7 @@
  * Oil Temperature, Oil Gulping, and Oil Pressure.
  * Each method takes specific inputs related to the engine state and returns the calculated parameter value.
  */
-class Polynomial {
+class Polynomial_A380X {
  public:
   /**
    * @brief Calculates the N3 value during engine shutdown.
@@ -304,7 +304,7 @@ class Polynomial {
    * @param alt The altitude in feet.
    * @return The calculated Corrected Fuel Flow value in lbs/hr.
    */
-  double correctedFuelFlow(double cn1, double mach, double alt) {
+  static double correctedFuelFlow(double cn1, double mach, double alt) {
     double c_Flow[21] = {-1.7630e+02, -2.1542e-01, 4.7119e+01,  6.1519e+02,  1.8047e-03, -4.4554e-01, -4.3940e+01,
                          4.0459e-05,  -3.2912e+01, -6.2894e-03, -1.2544e-07, 1.0938e-02, 4.0936e-01,  -5.5841e-06,
                          -2.3829e+01, 9.3269e-04,  2.0273e-11,  -2.4100e+02, 1.4171e-02, -9.5581e-07, 1.2728e-11};
