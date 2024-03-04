@@ -73,9 +73,15 @@ class Polynomial {
                        -2.15034888e-06, 1.08288379e-07,  -2.48504632e-09, 2.52307089e-11,  -2.06869243e-14, 8.99045761e-16,
                        -9.94853959e-17, 1.85366499e-18,  -1.44869928e-20, 4.31033031e-23};
 
-    outN3 = c_N3[0] + (c_N3[1] * normalN3) + (c_N3[2] * powFBW(normalN3, 2)) + (c_N3[3] * powFBW(normalN3, 3)) +
-            (c_N3[4] * powFBW(normalN3, 4)) + (c_N3[5] * powFBW(normalN3, 5)) + (c_N3[6] * powFBW(normalN3, 6)) +
-            (c_N3[7] * powFBW(normalN3, 7)) + (c_N3[8] * powFBW(normalN3, 8)) + (c_N3[9] * powFBW(normalN3, 9)) +
+    outN3 = c_N3[0]
+            + (c_N3[1] * normalN3)
+            + (c_N3[2] * powFBW(normalN3, 2))
+            + (c_N3[3] * powFBW(normalN3, 3))
+            + (c_N3[4] * powFBW(normalN3, 4))
+            + (c_N3[5] * powFBW(normalN3, 5))
+            + (c_N3[6] * powFBW(normalN3, 6))
+            + (c_N3[7] * powFBW(normalN3, 7))
+            + (c_N3[8] * powFBW(normalN3, 8)) + (c_N3[9] * powFBW(normalN3, 9)) +
             (c_N3[10] * powFBW(normalN3, 10)) + (c_N3[11] * powFBW(normalN3, 11)) + (c_N3[12] * powFBW(normalN3, 12)) +
             (c_N3[13] * powFBW(normalN3, 13)) + (c_N3[14] * powFBW(normalN3, 14)) + (c_N3[15] * powFBW(normalN3, 15));
 
@@ -103,9 +109,15 @@ class Polynomial {
 
     normalN1pre = (-2.4698087 * powFBW(normalN3, 3)) + (0.9662026 * powFBW(normalN3, 2)) + (0.0701367 * normalN3);
 
-    normalN1post = c_N1[0] + (c_N1[1] * normalN3) + (c_N1[2] * powFBW(normalN3, 2)) + (c_N1[3] * powFBW(normalN3, 3)) +
-                   (c_N1[4] * powFBW(normalN3, 4)) + (c_N1[5] * powFBW(normalN3, 5)) + (c_N1[6] * powFBW(normalN3, 6)) +
-                   (c_N1[7] * powFBW(normalN3, 7)) + (c_N1[8] * powFBW(normalN3, 8));
+    normalN1post = c_N1[0]
+                   + (c_N1[1] * normalN3)
+                   + (c_N1[2] * powFBW(normalN3, 2))
+                   + (c_N1[3] * powFBW(normalN3, 3))
+                   + (c_N1[4] * powFBW(normalN3, 4))
+                   + (c_N1[5] * powFBW(normalN3, 5))
+                   + (c_N1[6] * powFBW(normalN3, 6))
+                   + (c_N1[7] * powFBW(normalN3, 7))
+                   + (c_N1[8] * powFBW(normalN3, 8));
 
     if (normalN1post >= normalN1pre)
       return normalN1post * idleN1;
@@ -127,9 +139,15 @@ class Polynomial {
       double c_FF[9] = {3.1110282e-12, 1.0804331e+02,  -1.3972629e+03, 7.4874131e+03, -2.1511983e+04,
                         3.5957757e+04, -3.5093994e+04, 1.8573033e+04,  -4.1220062e+03};
 
-      normalFF = c_FF[0] + (c_FF[1] * normalN3) + (c_FF[2] * powFBW(normalN3, 2)) + (c_FF[3] * powFBW(normalN3, 3)) +
-                 (c_FF[4] * powFBW(normalN3, 4)) + (c_FF[5] * powFBW(normalN3, 5)) + (c_FF[6] * powFBW(normalN3, 6)) +
-                 (c_FF[7] * powFBW(normalN3, 7)) + (c_FF[8] * powFBW(normalN3, 8));
+      normalFF = c_FF[0]
+                 + (c_FF[1] * normalN3)
+                 + (c_FF[2] * powFBW(normalN3, 2))
+                 + (c_FF[3] * powFBW(normalN3, 3))
+                 + (c_FF[4] * powFBW(normalN3, 4))
+                 + (c_FF[5] * powFBW(normalN3, 5))
+                 + (c_FF[6] * powFBW(normalN3, 6))
+                 + (c_FF[7] * powFBW(normalN3, 7))
+                 + (c_FF[8] * powFBW(normalN3, 8));
     }
 
     if (normalFF < 0) {
@@ -155,9 +173,15 @@ class Polynomial {
       double c_EGT[9] = {-6.8725167e+02, 7.7548864e+03,  -3.7507098e+04, 1.0147016e+05, -1.6779273e+05,
                          1.7357157e+05,  -1.0960924e+05, 3.8591956e+04,  -5.7912600e+03};
 
-      normalEGT = c_EGT[0] + (c_EGT[1] * normalN3) + (c_EGT[2] * powFBW(normalN3, 2)) + (c_EGT[3] * powFBW(normalN3, 3)) +
-                  (c_EGT[4] * powFBW(normalN3, 4)) + (c_EGT[5] * powFBW(normalN3, 5)) + (c_EGT[6] * powFBW(normalN3, 6)) +
-                  (c_EGT[7] * powFBW(normalN3, 7)) + (c_EGT[8] * powFBW(normalN3, 8));
+      normalEGT = c_EGT[0]
+                  + (c_EGT[1] * normalN3)
+                  + (c_EGT[2] * powFBW(normalN3, 2))
+                  + (c_EGT[3] * powFBW(normalN3, 3))
+                  + (c_EGT[4] * powFBW(normalN3, 4))
+                  + (c_EGT[5] * powFBW(normalN3, 5))
+                  + (c_EGT[6] * powFBW(normalN3, 6))
+                  + (c_EGT[7] * powFBW(normalN3, 7))
+                  + (c_EGT[8] * powFBW(normalN3, 8));
     }
 
     outEGT = (normalEGT * (idleEGT - (ambientTemp))) + (ambientTemp);
@@ -192,10 +216,22 @@ class Polynomial {
     double c_EGT[16] = {3.2636e+02,  0.0000e+00, 9.2893e-01, 3.9505e-02,  3.9070e+02, -4.7911e-04, 7.7679e-03,  5.8361e-05,
                         -2.5566e+00, 5.1227e-06, 1.0178e-07, -7.4602e-03, 1.2106e-07, -5.1639e+01, -2.7356e-03, 1.9312e-08};
 
-    outCEGT = c_EGT[0] + c_EGT[1] + (c_EGT[2] * cn1) + (c_EGT[3] * cff) + (c_EGT[4] * mach) + (c_EGT[5] * alt) +
-              (c_EGT[6] * powFBW(cn1, 2)) + (c_EGT[7] * cn1 * cff) + (c_EGT[8] * cn1 * mach) + (c_EGT[9] * cn1 * alt) +
-              (c_EGT[10] * powFBW(cff, 2)) + (c_EGT[11] * mach * cff) + (c_EGT[12] * cff * alt) + (c_EGT[13] * powFBW(mach, 2)) +
-              (c_EGT[14] * mach * alt) + (c_EGT[15] * powFBW(alt, 2));
+    outCEGT = c_EGT[0]
+              + c_EGT[1]
+              + (c_EGT[2] * cn1)
+              + (c_EGT[3] * cff)
+              + (c_EGT[4] * mach)
+              + (c_EGT[5] * alt)
+              + (c_EGT[6] * powFBW(cn1, 2))
+              + (c_EGT[7] * cn1 * cff)
+              + (c_EGT[8] * cn1 * mach)
+              + (c_EGT[9] * cn1 * alt)
+              + (c_EGT[10] * powFBW(cff, 2))
+              + (c_EGT[11] * mach * cff)
+              + (c_EGT[12] * cff * alt)
+              + (c_EGT[13] * powFBW(mach, 2))
+              + (c_EGT[14] * mach * alt)
+              + (c_EGT[15] * powFBW(alt, 2));
 
     return outCEGT;
   }

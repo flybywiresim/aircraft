@@ -1,8 +1,9 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "EngineControl_A380X.h"
 #include "MsfsHandler.h"
+
+#include "EngineControl_A380X.h"
 
 void EngineControl_A380X::update(const ContextPtr& contextPtr) {
   std::cout << "EngineControl::update() -"
