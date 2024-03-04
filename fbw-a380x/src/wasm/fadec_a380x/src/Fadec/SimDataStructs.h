@@ -141,4 +141,6 @@ struct Context {
   DataDefinitionVariablePtr<SimData> simDataPtr;
 };
 
+using ContextPtr = std::shared_ptr<Context>;
+
 #endif  // FLYBYWIRE_AIRCRAFT_SIMDATASTRUCTS_H

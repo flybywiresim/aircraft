@@ -3,6 +3,7 @@
 
 #include "Fadec_A380X.h"
 
+#include "EngineControl_A380X.h"
 
 bool Fadec_A380X::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -89,14 +90,14 @@ bool Fadec_A380X::preUpdate([[maybe_unused]] sGaugeDrawData* _pData) {
   return true;
 }
 
-bool Fadec_A380X::update(sGaugeDrawData* pData) {
+bool Fadec_A380X::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
     std::cerr << "Fadec_A380X::update() - not initialized" << std::endl;
     return false;
   }
 
   // update engines
-  engineControlInstance.update(contextPtr);
+  engineControl.update(contextPtr);
 
   return true;
 }
