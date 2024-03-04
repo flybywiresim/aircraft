@@ -4,11 +4,9 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 
-#include "EngineControl_A380X.h"
 #include "Fadec.h"
 #include "SimDataStructs.h"
-
-using ContextPtr = std::shared_ptr<Context>;
+#include "EngineControl_A380X.h"
 
 class Fadec_A380X : public Fadec {
  private:
@@ -26,8 +24,8 @@ class Fadec_A380X : public Fadec {
   // Convenience struct to hold all required sim data to pass to the subcomponents
   ContextPtr contextPtr;
 
-  EngineControl_A380X engineControlInstance{};
-
+  // Engine control instance
+  EngineControl_A380X engineControl{};
 
  public:
   /**

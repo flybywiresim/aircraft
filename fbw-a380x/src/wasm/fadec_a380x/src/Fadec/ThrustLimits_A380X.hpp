@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_H
-#define FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_H
+#ifndef FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_HPP
+#define FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_HPP
 
 #include <algorithm>
 #include <map>
@@ -309,9 +309,9 @@ class ThrustLimits_A380X {
 };
 
 // out of line initialization of static member
-std::map<int, ThrustLimits_A380X::BleedValues> ThrustLimits_A380X::bleedValuesLookup = {{0, {-0.4, -0.6, -0.7}},
-                                                                                        {1, {-0.4, -0.6, -0.6}},
-                                                                                        {2, {-0.2, -0.8, -0.4}},
-                                                                                        {3, {-0.6, -0.9, -1.2}}};
+inline std::map<int, ThrustLimits_A380X::BleedValues> ThrustLimits_A380X::bleedValuesLookup = {{0, {-0.4, -0.6, -0.7}},
+                                                                                               {1, {-0.4, -0.6, -0.6}},
+                                                                                               {2, {-0.2, -0.8, -0.4}},
+                                                                                               {3, {-0.6, -0.9, -1.2}}};
 
-#endif  // FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_H
+#endif  // FLYBYWIRE_AIRCRAFT_THRUSTLIMITS_A380X_HPP

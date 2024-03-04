@@ -4,7 +4,9 @@
 #ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
 #define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
 
-#include "Fadec_A380X.h"
+#include "SimDataStructs.h"
+#include "ThrustLimits_A380X.hpp"
+#include "Polynomials_A380X.hpp"
 
 class EngineControl_A380X {
  private:
