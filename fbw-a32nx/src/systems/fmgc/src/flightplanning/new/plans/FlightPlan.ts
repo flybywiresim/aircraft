@@ -130,7 +130,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateFlightPlan.incrementVersion();
     }
 
-    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false) {
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
         if (targetLegIndex >= this.firstMissedApproachLegIndex) {
             throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
         }

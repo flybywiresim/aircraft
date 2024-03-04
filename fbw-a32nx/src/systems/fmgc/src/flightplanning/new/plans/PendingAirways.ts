@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airway, AirwayDirection, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AirwayDirection, Fix } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
@@ -48,16 +48,16 @@ export class PendingAirways {
             airway.fixes.reverse();
         }
 
-        const taiLElement = this.tailElement;
+        const tailElement = this.tailElement;
 
         let startWaypointIndex: number;
-        done: if (!taiLElement || taiLElement.to) {
+        done: if (!tailElement || tailElement.to) {
             // No airways have been entered. We consider the revised waypoint to be the start of the new entry.
             // OR
             // An airway is entered and has a TO.
 
-            const startIdent = taiLElement ? taiLElement.to.ident : this.revisedWaypoint.ident;
-            const startIcaoCode = taiLElement ? taiLElement.to.icaoCode : this.revisedWaypoint.icaoCode;
+            const startIdent = tailElement ? tailElement.to.ident : this.revisedWaypoint.ident;
+            const startIcaoCode = tailElement ? tailElement.to.icaoCode : this.revisedWaypoint.icaoCode;
             for (let i = 0; i < airway.fixes.length; i++) {
                 const fix = airway.fixes[i];
 
@@ -71,31 +71,31 @@ export class PendingAirways {
         } else {
             // We do not have an end waypoint defined as part of the previous entry. We find an automatic or geographic intersection.
 
-            for (let i = 0; i < taiLElement.airway.fixes.length; i++) {
-                const fix = taiLElement.airway.fixes[i];
+            for (let i = 0; i < tailElement.airway.fixes.length; i++) {
+                const fix = tailElement.airway.fixes[i];
 
                 const matchInCurrentIndex = airway.fixes.findIndex((it) => it.ident === fix.ident && it.icaoCode === fix.icaoCode);
                 const matchInCurrent = airway.fixes[matchInCurrentIndex];
 
                 if (matchInCurrent && matchInCurrentIndex < airway.fixes.length) {
-                    taiLElement.to = matchInCurrent;
-                    taiLElement.isAutoConnected = true;
+                    tailElement.to = matchInCurrent;
+                    tailElement.isAutoConnected = true;
 
-                    const reversed = i + 1 <= taiLElement.fromIndex;
-                    const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
+                    const reversed = i + 1 <= tailElement.fromIndex;
+                    const fixesArray = reversed ? tailElement.airway.fixes.slice().reverse() : tailElement.airway.fixes;
 
                     let start;
                     let end;
                     if (reversed) {
-                        start = fixesArray.length - taiLElement.fromIndex;
+                        start = fixesArray.length - tailElement.fromIndex;
                         end = fixesArray.length - i;
                     } else {
-                        start = taiLElement.fromIndex + 1;
+                        start = tailElement.fromIndex + 1;
                         end = i + 1;
                     }
 
                     const splitLegs = fixesArray.slice(start, end);
-                    const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, taiLElement.airway.ident));
+                    const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, tailElement.airway.ident));
 
                     this.legs.push(...mappedSplitLegs);
 
@@ -108,7 +108,7 @@ export class PendingAirways {
 
             // TODO
 
-            console.error(`No automatic airway intersection found between last airway id=${taiLElement.airway.databaseId} and airway id=${airway.databaseId} - geographic intersections not yet implemented`);
+            console.error(`No automatic airway intersection found between last airway id=${tailElement.airway.databaseId} and airway id=${airway.databaseId} - geographic intersections not yet implemented`);
             return false;
         }
 

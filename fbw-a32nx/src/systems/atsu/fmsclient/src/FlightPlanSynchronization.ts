@@ -10,7 +10,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { ReadonlyFlightPlan } from "@fmgc/flightplanning/new/plans/ReadonlyFlightPlan";
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 
 export class FlightPlanSynchronization {
     private readonly publisher: Publisher<FmsAtcMessages>;

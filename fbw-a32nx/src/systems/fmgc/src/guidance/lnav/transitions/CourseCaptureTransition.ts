@@ -19,7 +19,6 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { ControlLaw } from '@shared/autopilot';
-import { bearingTo } from 'msfs-geo';
 import { arcDistanceToGo, arcLength, maxBank } from '../CommonGeometry';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';

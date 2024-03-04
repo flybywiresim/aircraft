@@ -134,6 +134,8 @@ export class TransitionPicker {
         if (to instanceof VMLeg) {
             return new CourseCaptureTransition(from, to);
         }
+
+        return null;
     }
 
     private static fromAF(from: AFLeg, to: Leg): Transition | null {
