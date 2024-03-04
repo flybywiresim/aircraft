@@ -16,6 +16,8 @@
 /**
  * @brief Virtual base class for sim variables like named variables, aircraft variables that support value caching.
  *
+ * These variable are always stored as FLOAT64 values.
+ *
  * Specialized classes must implement the rawReadFromSim and rawWriteToSim methods and can
  * overwrite any other method if the default implementation is not sufficient.
  */
