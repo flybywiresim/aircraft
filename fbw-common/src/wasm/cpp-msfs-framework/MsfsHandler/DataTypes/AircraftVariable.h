@@ -16,9 +16,9 @@ class DataManager;
 
 /**
  * @brief The AircraftVariable class is a specialized class for aircraft cacheable variables (aka simvars or A:VARS).
+ *        AircraftVariables are always FLOAT64.
  *
- * This class uses events or calculator code to write to a variable as
- * AircraftVariables are read-only.<p/>
+ * This class uses events or calculator code to write to a variable as AircraftVariables are read-only.<p/>
  *
  * If a setter event or event name is provided the variable will be writable.<p/>
  *
