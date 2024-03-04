@@ -3,13 +3,8 @@
 
 import { FmsAtcMessages } from '@datalink/atc';
 import { Waypoint } from '@datalink/common';
-import { FlightPhaseManager } from '@fmgc/flightphase';
-import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 
 export class FlightPlanSynchronization {
@@ -26,71 +21,69 @@ export class FlightPlanSynchronization {
     private destination: Waypoint = { ident: '', altitude: 0, utc: 0 };
 
     private static findLastWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
-        // TODO port over (fms-v2)
-        // const idx = flightPlan.activeLegIndex;
+        for (let idx = flightPlan.activeLegIndex; idx >= 0; idx--) {
+            const leg = flightPlan.maybeElementAt(idx);
 
-        // while (idx >= 0) {
-        //     const wp = flightPlan.getWaypoint(idx);
-        //     if (wp && wp.waypointReachedAt !== 0) {
-        //         return {
-        //             ident: wp.ident,
-        //             altitude: wp.legAltitude1,
-        //             utc: wp.waypointReachedAt,
-        //         };
-        //     }
-        //
-        //     idx -= 1;
-        // }
+            if (leg?.isDiscontinuity === false) {
+                // TODO port over (fms-v2)
+                return {
+                    ident: leg.ident ?? '',
+                    altitude: 0,
+                    utc: -1,
+                };
+            }
+        }
 
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findActiveWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
-        // TODO port over (fms-v2)
-        // if (flightPlan.activeWaypoint) {
-        //     return {
-        //         ident: flightPlan.activeWaypoint.ident,
-        //         altitude: flightPlan.activeWaypoint.legAltitude1,
-        //         utc: flightPlanStats !== null ? flightPlanStats.get(flightPlan.activeWaypointIndex).etaFromPpos : -1,
-        //     };
-        // }
+    private static findActiveWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
+        const activeLeg = flightPlan.activeLeg;
+
+        if (activeLeg?.isDiscontinuity === false) {
+            // TODO port over (fms-v2)
+            return {
+                ident: activeLeg?.ident ?? '',
+                altitude: 0,
+                utc: -1,
+            };
+        }
 
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findNextWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
-        // TODO port over (fms-v2)
-        // let idx = flightPlan.activeWaypointIndex + 1;
-        // while (idx < flightPlan.waypoints.length) {
-        //     const wp = flightPlan.getWaypoint(idx);
-        //     if (wp) {
-        //         return {
-        //             ident: wp.ident,
-        //             altitude: wp.legAltitude1,
-        //             utc: flightPlanStats !== null ? flightPlanStats.get(idx).etaFromPpos : -1,
-        //         };
-        //     }
-        //
-        //     idx += 1;
-        // }
+    private static findNextWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
+        for (let idx = flightPlan.activeLegIndex + 1; idx < flightPlan.firstMissedApproachLegIndex; idx++) {
+            const leg = flightPlan.maybeElementAt(idx);
+
+            if (leg?.isDiscontinuity === false) {
+                // TODO port over (fms-v2)
+                return {
+                    ident: leg.ident,
+                    altitude: 0,
+                    utc: -1,
+                };
+            }
+        }
 
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findDestinationWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
-        // TODO port over (fms-v2)
-        // let idx = flightPlan.activeWaypointIndex;
-        // while (idx < flightPlan.waypoints.length) {
-        //     const wp = flightPlan.getWaypoint(idx);
-        //     if (wp && wp.ident === flightPlan.destinationAirfield.ident) {
-        //         return {
-        //             ident: wp.ident,
-        //             altitude: wp.legAltitude1,
-        //             utc: flightPlanStats !== null ? flightPlanStats.get(idx).etaFromPpos : -1,
-        //         };
-        //     }
-        //     idx += 1;
-        // }
+    private static findDestinationWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
+        for (let idx = flightPlan.activeLegIndex; idx < flightPlan.firstMissedApproachLegIndex; idx++) {
+            const leg = flightPlan.maybeElementAt(idx);
+
+            // Note that the destination leg index must not necessarily be an airport or a runway, just the last leg of the flight plan (excluding missed approach legs)
+            if (leg?.isDiscontinuity === false && idx === flightPlan.destinationLegIndex) {
+                // TODO port over (fms-v2)
+                return {
+                    ident: leg.ident,
+                    altitude: 0,
+                    utc: -1,
+                };
+            }
+            idx += 1;
+        }
 
         return { ident: '', altitude: 0, utc: 0 };
     }
@@ -98,38 +91,19 @@ export class FlightPlanSynchronization {
     constructor(
         private readonly bus: EventBus,
         private readonly flightPlanService: FlightPlanInterface,
-        private readonly flightPhaseManager: FlightPhaseManager,
     ) {
         this.publisher = this.bus.getPublisher<FmsAtcMessages>();
 
         // FIXME use the non-guidance FMGC to get the flightplan data
         setInterval(() => {
             const activeFlightPlan = this.flightPlanService.active;
-            const phase = this.flightPhaseManager.phase;
-            const isFlying = phase >= FmgcFlightPhase.Takeoff && phase !== FmgcFlightPhase.Done;
 
             if (activeFlightPlan && activeFlightPlan.legCount !== 0) {
-                const flightPlanStats: Map<number, WaypointStats> = null;
-                if (isFlying) {
-                    const latitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LATITUDE', 'number'));
-                    const longitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LONGITUDE', 'number'));
-
-                    if (latitude.isNormalOperation() && longitude.isNormalOperation()) {
-                        // TODO port over (fms-v2)
-                        // const ppos = {
-                        //     lat: latitude.value,
-                        //     long: longitude.value,
-                        // };
-
-                        // flightPlanStats = activeFlightPlan.computeWaypointStatistics();
-                    }
-                }
-
                 const origin = activeFlightPlan.originAirport;
                 const lastWaypoint = FlightPlanSynchronization.findLastWaypoint(activeFlightPlan);
-                const activeWaypoint = FlightPlanSynchronization.findActiveWaypoint(activeFlightPlan, flightPlanStats);
-                const nextWaypoint = FlightPlanSynchronization.findNextWaypoint(activeFlightPlan, flightPlanStats);
-                const destination = FlightPlanSynchronization.findDestinationWaypoint(activeFlightPlan, flightPlanStats);
+                const activeWaypoint = FlightPlanSynchronization.findActiveWaypoint(activeFlightPlan);
+                const nextWaypoint = FlightPlanSynchronization.findNextWaypoint(activeFlightPlan);
+                const destination = FlightPlanSynchronization.findDestinationWaypoint(activeFlightPlan);
 
                 if (origin) {
                     if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {

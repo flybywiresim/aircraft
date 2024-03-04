@@ -24,7 +24,6 @@ import {
     PositionReportData,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
-import { FlightPhaseManager } from '@fmgc/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
@@ -83,13 +82,13 @@ export class FmsClient {
         hf: DatalinkModeCode.None,
     }
 
-    constructor(fms: any, flightPlanManager: FlightPlanInterface, flightPhaseManager: FlightPhaseManager) {
+    constructor(fms: any, flightPlanManager: FlightPlanInterface) {
         this.bus = new EventBus();
         this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
         this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>();
 
         this.fms = fms;
-        this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
+        this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager);
         this.messageStorage = new MessageStorage(this.subscriber);
 
         // register the system control handlers
