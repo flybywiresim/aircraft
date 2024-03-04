@@ -6,6 +6,7 @@ import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
+import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
 
@@ -24,6 +25,8 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly adirsValueProvider: AdirsValueProvider;
 
+    private readonly dmcPublisher: DmcPublisher;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -41,6 +44,7 @@ class A380X_PFD extends BaseInstrument {
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
+        this.dmcPublisher = new DmcPublisher(this.bus);
     }
 
     get templateID(): string {
@@ -60,6 +64,7 @@ class A380X_PFD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
+        this.dmcPublisher.init();
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
@@ -79,12 +84,14 @@ class A380X_PFD extends BaseInstrument {
                 this.simVarPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
+                this.dmcPublisher.onUpdate();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
             this.simplaneValueProvider.onUpdate();
             this.clock.onUpdate();
+            this.dmcPublisher.onUpdate();
         }
     }
 
