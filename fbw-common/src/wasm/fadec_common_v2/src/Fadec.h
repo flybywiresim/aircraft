@@ -31,6 +31,8 @@ class Fadec : public Module {
 
  public:
 
+  // TODO: should these functions below be in here?
+
   /**
    * @brief Interpolates a value using linear interpolation.
    *
