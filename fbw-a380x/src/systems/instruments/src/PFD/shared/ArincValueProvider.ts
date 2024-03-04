@@ -1,4 +1,4 @@
-import { ConsumerSubject, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
@@ -45,7 +45,7 @@ export interface Arinc429Values {
     fmTransLvlRaw: number;
     lgciuDiscreteWord1: Arinc429Word;
 }
-export class ArincValueProvider {
+export class ArincValueProvider implements Instrument {
     private roll = new Arinc429Word(0);
 
     private pitch = new Arinc429Word(0);
@@ -106,7 +106,8 @@ export class ArincValueProvider {
 
     }
 
-    public init() {
+    /** @inheritdoc */
+    public init(): void {
         const publisher = this.bus.getPublisher<Arinc429Values>();
         const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
@@ -422,6 +423,11 @@ export class ArincValueProvider {
         this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));
         this.fm1Healthy.sub(this.determineFmToUse.bind(this));
         this.fm2Healthy.sub(this.determineFmToUse.bind(this), true);
+    }
+
+    /** @inheritdoc */
+    public onUpdate(): void {
+        // noop
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {

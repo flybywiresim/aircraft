@@ -1,4 +1,4 @@
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, Instrument, Publisher } from '@microsoft/msfs-sdk';
 
 export interface SimplaneValues {
     units: string;
@@ -12,14 +12,20 @@ export interface SimplaneValues {
     baroMode: 'QNH' | 'QFE' | 'STD';
 
 }
-export class SimplaneValueProvider {
+export class SimplaneValueProvider implements Instrument {
     private publisher: Publisher<SimplaneValues>;
 
     constructor(private readonly bus: EventBus) {
         this.publisher = this.bus.getPublisher<SimplaneValues>();
     }
 
-    public onUpdate() {
+    /** @inheritdoc */
+    public init(): void {
+        // noop
+    }
+
+    /** @inheritdoc */
+    public onUpdate(): void {
         const units = Simplane.getPressureSelectedUnits();
         const pressure = Simplane.getPressureValue(units);
         const isSelected = Simplane.getAutoPilotAirspeedSelected();

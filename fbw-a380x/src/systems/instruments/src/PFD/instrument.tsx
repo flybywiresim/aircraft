@@ -1,4 +1,4 @@
-import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 import { PFDComponent } from './PFD';
@@ -6,45 +6,40 @@ import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
-import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
 
 class A380X_PFD extends BaseInstrument {
-    private bus: ArincEventBus;
+    private readonly bus = new ArincEventBus();
 
-    private simVarPublisher: PFDSimvarPublisher;
+    private readonly backplane = new InstrumentBackplane();
 
-    private readonly hEventPublisher;
+    private readonly clock = new Clock(this.bus);
 
-    private readonly arincProvider: ArincValueProvider;
+    private readonly hEventPublisher= new HEventPublisher(this.bus);
 
-    private readonly simplaneValueProvider: SimplaneValueProvider;
+    private readonly simVarPublisher = new PFDSimvarPublisher(this.bus);
 
-    private readonly clock: Clock;
+    private readonly arincProvider = new ArincValueProvider(this.bus);
 
-    private readonly adirsValueProvider: AdirsValueProvider;
+    private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
-    private readonly dmcPublisher: DmcPublisher;
+    private readonly adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
 
-    /**
-     * "mainmenu" = 0
-     * "loading" = 1
-     * "briefing" = 2
-     * "ingame" = 3
-     */
-    private gameState = 0;
+    private readonly dmcPublisher = new DmcPublisher(this.bus);
 
     constructor() {
         super();
-        this.bus = new ArincEventBus();
-        this.simVarPublisher = new PFDSimvarPublisher(this.bus);
-        this.hEventPublisher = new HEventPublisher(this.bus);
-        this.arincProvider = new ArincValueProvider(this.bus);
-        this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
-        this.clock = new Clock(this.bus);
-        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
-        this.dmcPublisher = new DmcPublisher(this.bus);
+
+        this.backplane.addInstrument('Clock', this.clock);
+        this.backplane.addPublisher('HEvent', this.hEventPublisher);
+        this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
+        this.backplane.addInstrument('ArincProvider', this.arincProvider);
+        this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
+        this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
+        this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
+
     }
 
     get templateID(): string {
@@ -62,9 +57,9 @@ class A380X_PFD extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
-        this.arincProvider.init();
-        this.clock.init();
-        this.dmcPublisher.init();
+        this.backplane.init();
+
+        this.bus.getSubscriber<DmcEvents>().on('trueRefActive').handle(console.log);
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
@@ -78,23 +73,10 @@ class A380X_PFD extends BaseInstrument {
     public Update(): void {
         super.Update();
 
-        if (this.gameState !== 3) {
-            const gamestate = this.getGameState();
-            if (gamestate === 3) {
-                this.simVarPublisher.startPublish();
-                this.hEventPublisher.startPublish();
-                this.adirsValueProvider.start();
-                this.dmcPublisher.onUpdate();
-            }
-            this.gameState = gamestate;
-        } else {
-            this.simVarPublisher.onUpdate();
-            this.simplaneValueProvider.onUpdate();
-            this.clock.onUpdate();
-            this.dmcPublisher.onUpdate();
-        }
+        this.backplane.onUpdate();
     }
 
+    // FIXME remove. This does not belong in the PFD, and in any case we should use GameStateProvider as it has workarounds for issues with onFlightStart
     protected onFlightStart() {
         super.onFlightStart();
         if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
