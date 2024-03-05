@@ -20,13 +20,17 @@ class EngineControl_A380X {
   // Convenience pointer to the data manager
   DataManager* dataManagerPtr = nullptr;
 
+  // FADEC simulation data
   FadecSimData_A380X simData{};
+
+  // to calculate the time difference between two simulation frames
+  FLOAT64 previousSimulationTime;
 
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId{};
 
   // Fuel configuration for loading and storing fuel levels
-  FuelConfiguration_A380X fuelConfiguration{FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION};
+  FuelConfiguration_A380X fuelConfiguration{};
 
   // Engine N2
   FLOAT64 simN2Engine1Pre;
@@ -46,10 +50,10 @@ class EngineControl_A380X {
   FLOAT64 oilTemperatureEngine4Pre;
 
   // Idle parameters
-  //  double idleN1;
-  //  double idleN2;
-  //  double idleFF;
-  //  double idleEGT;
+  FLOAT64 idleN1;
+  FLOAT64 idleN2;
+  FLOAT64 idleFF;
+  FLOAT64 idleEGT;
 
   // additional constants
   static constexpr double LBS_TO_KGS = 0.4535934;
@@ -57,6 +61,8 @@ class EngineControl_A380X {
   static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
  public:
+  EngineControl_A380X() {}
+
   void initialize(MsfsHandler* msfsHandler);
   void update();
   void shutdown();
@@ -69,7 +75,52 @@ class EngineControl_A380X {
    */
   void initializeEngineControlData();
 
+  /**
+   * @brief Generates the idle parameters for the engine.
+   *
+   * This function calculates the idle parameters based on the current flight conditions.
+   * These parameters are used to determine the engine's behavior when it's at idle state.
+   *
+   * @param pressureAltitude The altitude as determined by the atmospheric pressure.
+   * @param mach The Mach number, which is the ratio of the speed of the aircraft to the speed of sound.
+   * @param ambientTemperature The temperature of the surrounding environment.
+   * @param ambientPressure The pressure of the surrounding environment.
+   */
   void generateIdleParameters(FLOAT64 pressureAltitude, FLOAT64 mach, FLOAT64 ambientTemperature, FLOAT64 ambientPressure);
+
+  void engineStateMachine(int engine, FLOAT64 igniter, FLOAT64 starter, FLOAT64 idleN2, FLOAT64 altitude, FLOAT64 temperature);
+
+  void engineStartProcedure(int engine,
+                            FLOAT64 state,
+                            FLOAT64 deltaTime,
+                            FLOAT64 timer,
+                            FLOAT64 simN2,
+                            const FLOAT64 altitude,
+                            const FLOAT64 temperature);
+  void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer);
+
+  int updateFF(int engine, FLOAT64 cn1, FLOAT64 mach, FLOAT64 altitude, FLOAT64 temperature, FLOAT64 pressure);
+  void updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN2);
+  void updateEGT(int engine,
+                 FLOAT64 deltaTime,
+                 bool simOnGround,
+                 FLOAT64 engineState,
+                 FLOAT64 simCN1,
+                 int correctedFuelFlow,
+                 const FLOAT64 mach,
+                 const FLOAT64 altitude,
+                 const FLOAT64 pressure);
+
+  void updateFuel(FLOAT64 deltaTime);
+  void updateThrustLimits(FLOAT64 simulationTime,
+                          FLOAT64 pressureAltitude,
+                          FLOAT64 ambientTemperature,
+                          FLOAT64 ambientPressure,
+                          FLOAT64 mach,
+                          FLOAT64 highest,
+                          bool packs,
+                          bool nai,
+                          bool wai);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H

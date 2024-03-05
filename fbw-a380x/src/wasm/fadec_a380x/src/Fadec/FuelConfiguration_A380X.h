@@ -59,7 +59,7 @@ class FuelConfiguration_A380X {
    *
    * @param configFilename The name of the configuration file.
    */
-  FuelConfiguration_A380X(std::string configFilename) : configFilename{configFilename} {}
+  FuelConfiguration_A380X() {}
 
   /**
    * @brief Loads the fuel configuration from an INI file.
@@ -89,6 +89,10 @@ class FuelConfiguration_A380X {
   double getFuelFeedThree() const { return fuelFeedThree; }
   double getFuelFeedFour() const { return fuelFeedFour; }
   double getFuelTrim() const { return fuelTrim; }
+
+  void setConfigFilename(const std::string& configFilename) {
+    this->configFilename = configFilename;
+  }
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H
