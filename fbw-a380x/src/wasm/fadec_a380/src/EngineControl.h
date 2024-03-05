@@ -1425,6 +1425,7 @@ class EngineControl {
       // Set & Check Engine Status for this Cycle
       engineStateMachine(engine, engineIgniter, engineStarter, simN3, idleN3, pressAltitude, ambientTemp,
                          animationDeltaTime - prevAnimationDeltaTime);
+
       if (engine == 1) {
         engineState = simVars->getEngine1State();
         deltaN3 = simN3 - simN3Engine1Pre;

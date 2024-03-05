@@ -58,6 +58,16 @@ class FadecSimData_A380X {
     FLOAT64 fuelWeightPerGallon;  // A:FUEL WEIGHT PER GALLON
     FLOAT64 naiState1;            // A:ENG ANTI ICE:1
     FLOAT64 naiState2;            // A:ENG ANTI ICE:2
+    FLOAT64 naiState3;            // A:ENG ANTI ICE:3
+    FLOAT64 naiState4;            // A:ENG ANTI ICE:4
+    FLOAT64 engineStarter1;       // A:GENERAL ENG STARTER:1
+    FLOAT64 engineStarter2;       // A:GENERAL ENG STARTER:2
+    FLOAT64 engineStarter3;       // A:GENERAL ENG STARTER:3
+    FLOAT64 engineStarter4;       // A:GENERAL ENG STARTER:4
+    FLOAT64 engineIgniter1;       // A:TURB ENG IGNITION SWITCH EX1:1
+    FLOAT64 engineIgniter2;       // A:TURB ENG IGNITION SWITCH EX1:2
+    FLOAT64 engineIgniter3;       // A:TURB ENG IGNITION SWITCH EX1:3
+    FLOAT64 engineIgniter4;       // A:TURB ENG IGNITION SWITCH EX1:4
     FLOAT64 waiState;             // L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON
     FLOAT64 packState1;           // L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN
     FLOAT64 packState2;           // L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN
@@ -80,12 +90,28 @@ class FadecSimData_A380X {
    * @var FLOAT64 idleEGT Idle exhaust gas temperature for the engine.
    */
   struct EngineIdleData {
-    FLOAT64 idleN1;
-    FLOAT64 idleN2;
-    FLOAT64 idleFF;
-    FLOAT64 idleEGT;
+    FLOAT64 idleN1;   // L:A32NX_ENGINE_IDLE_N1
+    FLOAT64 idleN2;   // L:A32NX_ENGINE_IDLE_N2
+    FLOAT64 idleFF;   // L:A32NX_ENGINE_IDLE_FF
+    FLOAT64 idleEGT;  // L:A32NX_ENGINE_IDLE_EGT
   };
   DataDefinitionVariablePtr<EngineIdleData> engineIdleDataPtr;
+
+  /**
+   * @struct EngineN1Data
+   * @brief This struct represents the N1 data for the aircraft's engines.
+   *
+   * @UpdateFrequency: Every tick
+   *
+   * @var FLOAT64 engine1-4N1 N1 value for engine 1-4.
+   */
+  struct EngineN1Data {
+    FLOAT64 engine1N1;  // A:TURB ENG N1:1
+    FLOAT64 engine2N1;  // A:TURB ENG N1:2
+    FLOAT64 engine3N1;  // A:TURB ENG N1:3
+    FLOAT64 engine4N1;  // A:TURB ENG N1:4
+  };
+  DataDefinitionVariablePtr<EngineN1Data> engineN1DataPtr;
 
   /**
    * @struct EngineN2Data
@@ -102,6 +128,14 @@ class FadecSimData_A380X {
     FLOAT64 engine4N2;  // A:TURB ENG N2:4
   };
   DataDefinitionVariablePtr<EngineN2Data> engineN2DataPtr;
+
+  struct EngineCorrectedN1Data {
+    FLOAT64 engine1CorrectedN1;  // A:TURB ENG CORRECTED N1:1
+    FLOAT64 engine2CorrectedN1;  // A:TURB ENG CORRECTED N1:2
+    FLOAT64 engine3CorrectedN1;  // A:TURB ENG CORRECTED N1:3
+    FLOAT64 engine4CorrectedN1;  // A:TURB ENG CORRECTED N1:4
+  };
+  DataDefinitionVariablePtr<EngineCorrectedN1Data> engineCorrectedN1DataPtr;
 
   // Every tick
   struct EngineTotalOilData {
@@ -170,11 +204,11 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<PumpStateData> pumpStateDataPtr;
 
   struct ThrustLimitData {
-    FLOAT64 thrustLimitIdle; // L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
-    FLOAT64 thrustLimitClimb; // L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB
-    FLOAT64 thrustLimitFlex; // L:A32NX_AUTOTHRUST_THRUST_LIMIT_FLX
-    FLOAT64 thrustLimitMct; // L:A32NX_AUTOTHRUST_THRUST_LIMIT_MCT
-    FLOAT64 thrustLimitToga; // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
+    FLOAT64 thrustLimitIdle;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
+    FLOAT64 thrustLimitClimb;  // L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB
+    FLOAT64 thrustLimitFlex;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_FLX
+    FLOAT64 thrustLimitMct;    // L:A32NX_AUTOTHRUST_THRUST_LIMIT_MCT
+    FLOAT64 thrustLimitToga;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
   };
   DataDefinitionVariablePtr<ThrustLimitData> thrustLimitDataPtr;
 
@@ -196,14 +230,42 @@ class FadecSimData_A380X {
       {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},
       {"AMBIENT PRESSURE", 0, UNITS.Millibars},
       {"FUEL WEIGHT PER GALLON", 0, UNITS.Pounds},
-      {"ENG ANTI ICE:1", 0, UNITS.Bool},
-      {"ENG ANTI ICE:2", 0, UNITS.Bool},
+      {"ENG ANTI ICE", 1, UNITS.Bool},
+      {"ENG ANTI ICE", 2, UNITS.Bool},
+      {"ENG ANTI ICE", 3, UNITS.Bool},
+      {"ENG ANTI ICE", 4, UNITS.Bool},
+      {"GENERAL ENG STARTER", 1, UNITS.Bool},
+      {"GENERAL ENG STARTER", 2, UNITS.Bool},
+      {"GENERAL ENG STARTER", 3, UNITS.Bool},
+      {"GENERAL ENG STARTER", 4, UNITS.Bool},
+      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Bool},
+      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Bool},
+      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Bool},
+      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Bool},
       {"L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", 0, UNITS.Bool},
       {"L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", 0, UNITS.Bool},
       {"L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", 0, UNITS.Bool}
     };
     miscSimDataPtr = dataManager->make_datadefinition_var<MiscSimData>("SIM DATA", simDataDef);
     miscSimDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    DataDefVector engineIdleDataDef = {
+      {"L:A32NX_ENGINE_IDLE_N1", 0, UNITS.Number}, // %N1
+      {"L:A32NX_ENGINE_IDLE_N2", 0, UNITS.Number}, // %N2
+      {"L:A32NX_ENGINE_IDLE_FF", 0, UNITS.Number}, // kg/h
+      {"L:A32NX_ENGINE_IDLE_EGT", 0, UNITS.Number} // °C
+    };
+    engineIdleDataPtr = dataManager->make_datadefinition_var<EngineIdleData>("ENGINE IDLE DATA", engineIdleDataDef);
+    engineIdleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    DataDefVector engineN1DataDef = {
+      {"TURB ENG N1", 1, UNITS.Percent},
+      {"TURB ENG N1", 2, UNITS.Percent},
+      {"TURB ENG N1", 3, UNITS.Percent},
+      {"TURB ENG N1", 4, UNITS.Percent},
+    };
+    engineN1DataPtr = dataManager->make_datadefinition_var<EngineN1Data>("ENGINE N1 DATA", engineN1DataDef);
+    engineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     DataDefVector engineN2DataDef = {
       {"TURB ENG N2", 1, UNITS.Percent},
@@ -213,6 +275,15 @@ class FadecSimData_A380X {
     };
     engineN2DataPtr = dataManager->make_datadefinition_var<EngineN2Data>("ENGINE N2 DATA", engineN2DataDef);
     engineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    DataDefVector engineCorrectedN1DataDef = {
+      {"TURB ENG CORRECTED N1", 1, UNITS.Percent},
+      {"TURB ENG CORRECTED N1", 2, UNITS.Percent},
+      {"TURB ENG CORRECTED N1", 3, UNITS.Percent},
+      {"TURB ENG CORRECTED N1", 4, UNITS.Percent},
+    };
+    engineCorrectedN1DataPtr = dataManager->make_datadefinition_var<EngineCorrectedN1Data>("ENGINE CORRECTED N1 DATA", engineCorrectedN1DataDef);
+    engineCorrectedN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     DataDefVector engineTotalOilDataDef = {
       {"L:A32NX_ENGINE_OIL_TOTAL", 1, UNITS.Number},
@@ -224,10 +295,10 @@ class FadecSimData_A380X {
     engineTotalOilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     DataDefVector engineCombustionDataDef = {
-      {"A:GENERAL ENG COMBUSTION", 1, UNITS.Number},
-      {"A:GENERAL ENG COMBUSTION", 2, UNITS.Number},
-      {"A:GENERAL ENG COMBUSTION", 3, UNITS.Number},
-      {"A:GENERAL ENG COMBUSTION", 4, UNITS.Number},
+      {"GENERAL ENG COMBUSTION", 1, UNITS.Number},
+      {"GENERAL ENG COMBUSTION", 2, UNITS.Number},
+      {"GENERAL ENG COMBUSTION", 3, UNITS.Number},
+      {"GENERAL ENG COMBUSTION", 4, UNITS.Number},
     };
     engineCombustionDataPtr = dataManager->make_datadefinition_var<EngineCombustionData>("ENGINE COMBUSTION DATA", engineCombustionDataDef);
     engineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
@@ -293,7 +364,7 @@ class FadecSimData_A380X {
     };
 
     // clang-format on
-    LOG_INFO("Fadec SimData initialized");
+    LOG_INFO("Fadec::FadecSimData_A380X initialized");
   }
 };
 
