@@ -90,9 +90,40 @@ class FuelConfiguration_A380X {
   double getFuelFeedFour() const { return fuelFeedFour; }
   double getFuelTrim() const { return fuelTrim; }
 
+  void setFuelLeftOuter(double fuelLeftOuter) { this->fuelLeftOuter = fuelLeftOuter; }
+  void setFuelFeedOne(double fuelFeedOne) { this->fuelFeedOne = fuelFeedOne; }
+  void setFuelLeftMid(double fuelLeftMid) { this->fuelLeftMid = fuelLeftMid; }
+  void setFuelLeftInner(double fuelLeftInner) { this->fuelLeftInner = fuelLeftInner; }
+  void setFuelRightOuter(double fuelRightOuter) { this->fuelRightOuter = fuelRightOuter; }
+  void setFuelFeedTwo(double fuelFeedTwo) { this->fuelFeedTwo = fuelFeedTwo; }
+  void setFuelRightMid(double fuelRightMid) { this->fuelRightMid = fuelRightMid; }
+  void setFuelRightInner(double fuelRightInner) { this->fuelRightInner = fuelRightInner; }
+  void setFuelFeedThree(double fuelFeedThree) { this->fuelFeedThree = fuelFeedThree; }
+  void setFuelFeedFour(double fuelFeedFour) { this->fuelFeedFour = fuelFeedFour; }
+  void setFuelTrim(double fuelTrim) { this->fuelTrim = fuelTrim; }
+
   void setConfigFilename(const std::string& configFilename) {
     this->configFilename = configFilename;
   }
+
+  std::string toString() const {
+    std::ostringstream oss;
+    oss << "FuelConfiguration_A380X { "
+        << "fuelLeftOuter: " << fuelLeftOuter
+        << ", fuelFeedOne: " << fuelFeedOne
+        << ", fuelLeftMid: " << fuelLeftMid
+        << ", fuelLeftInner: " << fuelLeftInner
+        << ", fuelRightOuter: " << fuelRightOuter
+        << ", fuelFeedTwo: " << fuelFeedTwo
+        << ", fuelRightMid: " << fuelRightMid
+        << ", fuelRightInner: " << fuelRightInner
+        << ", fuelFeedThree: " << fuelFeedThree
+        << ", fuelFeedFour: " << fuelFeedFour
+        << ", fuelTrim: " << fuelTrim
+        << " }";
+    return oss.str();
+  }
+
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H

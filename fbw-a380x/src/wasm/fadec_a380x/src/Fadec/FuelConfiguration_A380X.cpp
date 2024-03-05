@@ -34,6 +34,9 @@ void FuelConfiguration_A380X::loadConfigurationFromIni() {
   fuelLeftInner = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_INNER_QTY, fuelLeftInnerDefault);
   fuelRightInner = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_MID_QTY, fuelRightInnerDefault);
   fuelTrim = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
+
+  LOG_INFO("Fadec::FuelConfiguration: loaded fuel configuration from " + configFilename + " with the following values:");
+  LOG_INFO("Fadec::FuelConfiguration: " + this->toString());
 }
 
 void FuelConfiguration_A380X::saveConfigurationToIni() {
@@ -59,5 +62,9 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
 
   if (!iniFile.write(ini, true)) {
     LOG_ERROR("Fadec::FuelConfiguration: failed to write engine conf " + configFilename + " due to error \"" + strerror(errno) + "\"");
+    return;
   }
+
+  LOG_INFO("Fadec::FuelConfiguration: saved fuel configuration to " + configFilename + " with the following values:");
+  LOG_INFO("Fadec::FuelConfiguration: " + this->toString());
 }
