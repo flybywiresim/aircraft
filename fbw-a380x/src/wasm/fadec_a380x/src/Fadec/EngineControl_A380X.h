@@ -32,6 +32,11 @@ class EngineControl_A380X {
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A380X fuelConfiguration{};
 
+  // Remember last fuel save time to allow saving fuel only every 5 seconds
+  FLOAT64 lastFuelSaveTime = 0;
+
+  // TODO: most of these below don't have to be fields, they can be local variables in the update methods
+
   // Engine N2
   FLOAT64 simN2Engine1Pre;
   FLOAT64 simN2Engine2Pre;
@@ -44,6 +49,7 @@ class EngineControl_A380X {
   FLOAT64 thermalEnergy3;
   FLOAT64 thermalEnergy4;
   FLOAT64 oilTemperatureMax;
+  FLOAT64 oilTemperature;
   FLOAT64 oilTemperatureEngine1Pre;
   FLOAT64 oilTemperatureEngine2Pre;
   FLOAT64 oilTemperatureEngine3Pre;
@@ -51,7 +57,7 @@ class EngineControl_A380X {
 
   // Idle parameters
   FLOAT64 idleN1;
-  FLOAT64 idleN2;
+  FLOAT64 idleN3;
   FLOAT64 idleFF;
   FLOAT64 idleEGT;
 
@@ -88,19 +94,43 @@ class EngineControl_A380X {
    */
   void generateIdleParameters(FLOAT64 pressureAltitude, FLOAT64 mach, FLOAT64 ambientTemperature, FLOAT64 ambientPressure);
 
-  void engineStateMachine(int engine, FLOAT64 igniter, FLOAT64 starter, FLOAT64 idleN2, FLOAT64 altitude, FLOAT64 temperature);
+  /**
+   * @brief Manages the state of an engine based on various parameters.
+   *
+   * This function is responsible for managing the state of an engine based on the provided parameters.
+   * The exact behavior of the function depends on the implementation details, which are not provided in this code excerpt.
+   *
+   * @param engine The identifier for the engine. It is used to specify which engine's state is being managed.
+   * @param engineIgniter The state of the engine igniter. It is used to start the combustion process in the engine.
+   * @param engineStarter The state of the engine starter. It is used to start the rotation of the engine.
+   * @param simN2 The rotational speed of the engine's high-pressure compressor (N2). It is used to determine the current state of the
+   * engine.
+   * @param idleN2 The idle speed of the engine's high-pressure compressor (N2). It is used to determine if the engine is at idle state.
+   * @param pressureAltitude The current altitude of the aircraft. It can affect the performance and behavior of the engine.
+   * @param ambientTemperature The current temperature of the environment. It can also affect the performance and behavior of the engine.
+   */
+  void engineStateMachine(int engine,
+                          FLOAT64 engineIgniter,
+                          FLOAT64 engineStarter,
+                          FLOAT64 simN2,
+                          FLOAT64 idleN2,
+                          FLOAT64 pressureAltitude,
+                          FLOAT64 ambientTemperature);
 
   void engineStartProcedure(int engine,
                             FLOAT64 state,
                             FLOAT64 deltaTime,
                             FLOAT64 timer,
-                            FLOAT64 simN2,
-                            const FLOAT64 altitude,
-                            const FLOAT64 temperature);
+                            FLOAT64 simN3,
+                            const FLOAT64 pressureAltitude,
+                            const FLOAT64 ambientTemperature);
+
   void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer);
 
   int updateFF(int engine, FLOAT64 cn1, FLOAT64 mach, FLOAT64 altitude, FLOAT64 temperature, FLOAT64 pressure);
-  void updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN2);
+
+  void updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3);
+
   void updateEGT(int engine,
                  FLOAT64 deltaTime,
                  bool simOnGround,
@@ -108,19 +138,21 @@ class EngineControl_A380X {
                  FLOAT64 simCN1,
                  int correctedFuelFlow,
                  const FLOAT64 mach,
-                 const FLOAT64 altitude,
-                 const FLOAT64 pressure);
+                 const FLOAT64 pressureAltitude,
+                 const FLOAT64 ambientPressure);
 
   void updateFuel(FLOAT64 deltaTime);
+
   void updateThrustLimits(FLOAT64 simulationTime,
                           FLOAT64 pressureAltitude,
                           FLOAT64 ambientTemperature,
                           FLOAT64 ambientPressure,
                           FLOAT64 mach,
-                          FLOAT64 highest,
+                          FLOAT64 simN1highest,
                           bool packs,
                           bool nai,
                           bool wai);
+
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
