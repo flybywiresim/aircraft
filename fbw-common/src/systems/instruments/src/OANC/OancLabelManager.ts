@@ -6,7 +6,8 @@ import { clampAngle } from 'msfs-geo';
 import { Feature, LineString } from '@turf/turf';
 import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { filterLabel, OancLabelFilter } from './OancLabelFilter';
+import { FmsDataStore } from 'instruments/src/OANC';
+import { filterLabel, labelStyle, OancLabelFilter } from './OancLabelFilter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';
 
@@ -24,9 +25,9 @@ export class OancLabelManager<T extends number> {
 
     public visibleLabels = ArraySubject.create<Label>([]);
 
-    public visibleLabelElements = new Map<Label, HTMLSpanElement>();
+    public visibleLabelElements = new Map<Label, HTMLDivElement>();
 
-    public reflowLabels() {
+    public reflowLabels(fmsSelectedRunway?: string, btvSelectedRunway?: string) {
         // eslint-disable-next-line prefer-const
         let [offsetX, offsetY] = this.oanc.arpReferencedMapParams.coordinatesToXYy(this.oanc.referencePos);
 
@@ -47,11 +48,13 @@ export class OancLabelManager<T extends number> {
                     continue;
                 }
 
-                const labelVisible = filterLabel(label, this.currentFilter);
+                const labelVisible = filterLabel(label, this.currentFilter, fmsSelectedRunway, btvSelectedRunway);
 
                 if (!labelVisible) {
                     element.style.visibility = 'hidden';
                     continue;
+                } else if ([LabelStyle.BtvSelectedRunwayArrow, LabelStyle.FmsSelectedRunwayEnd].includes(label.style)) {
+                    element.style.visibility = 'visible';
                 }
 
                 const [labelX, labelY] = label.position;
@@ -82,10 +85,12 @@ export class OancLabelManager<T extends number> {
                     element.style.left = `${labelScreenX}px`;
                     element.style.top = `${labelScreenY}px`;
 
-                    if (label.style === LabelStyle.RunwayEnd) {
+                    if (label.style === LabelStyle.RunwayEnd || label.style === LabelStyle.BtvSelectedRunwayEnd) {
                         element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 50px)`;
+                    } else if (label.style === LabelStyle.BtvSelectedRunwayArrow) {
+                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, -100px) rotate(-180deg)`;
                     } else if (label.style === LabelStyle.FmsSelectedRunwayEnd) {
-                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 100px)`;
+                        element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 82.5px)`;
                     } else {
                         element.style.transform = 'translate(-50%, -50%)';
                     }
@@ -176,6 +181,15 @@ export class OancLabelManager<T extends number> {
         } else {
             this.oanc.labelContainerRef.instance.style.visibility = 'hidden';
         }
+    }
+
+    public updateLabelClasses(fmsDataStore: FmsDataStore, isFmsOrigin: boolean, isFmsDestination: boolean, btvSelectedRunway: string, btvSelectedExit: string) {
+        this.visibleLabelElements.forEach((val, key) => {
+            const newLabelStyle = labelStyle(key, fmsDataStore, isFmsOrigin, isFmsDestination, btvSelectedRunway, btvSelectedExit);
+            val.classList.remove(`oanc-label-style-${key.style}`);
+            val.classList.add(`oanc-label-style-${newLabelStyle}`);
+            key.style = newLabelStyle;
+        });
     }
 
     public clearLabels() {

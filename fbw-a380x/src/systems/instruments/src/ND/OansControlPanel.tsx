@@ -7,7 +7,7 @@ import {
     ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent,
     MapSubject, MappedSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
-import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
+import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide } from '@flybywiresim/fbw-sdk';
 
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
@@ -82,15 +82,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         return { lat: lat.value, long: lon.value } as Coordinates;
     }, this.pposLatWord, this.pposLonWord);
 
-    private readonly originAirport = Subject.create<string | null>(null);
-
-    private readonly destAirport = Subject.create<string | null>(null);
-
-    private readonly altnAirport = Subject.create<string | null>(null);
-
-    private readonly landingRunwayIdent = Subject.create<string | null>(null);
-
-    private readonly landingRunwayLength = Subject.create<number | null>(null);
+    private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
     private readonly runwayTora = Subject.create<string | null>(null);
 
@@ -167,17 +159,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.pposLonWord.setWord(value);
         });
 
-        sub.on('fmsOrigin').whenChanged().handle((it) => this.originAirport.set(it));
-        sub.on('fmsDestination').whenChanged().handle((it) => this.destAirport.set(it));
-        sub.on('fmsAlternate').whenChanged().handle((it) => this.altnAirport.set(it));
-        sub.on('fmsLandingRunway').whenChanged().handle((it) => {
+        this.fmsDataStore.landingRunway.sub((it) => {
             // Set control panel display
-            this.landingRunwayIdent.set(it.substring(2));
-            this.availableEntityList.set([it.substring(2)]);
-            this.selectedEntityType.set(EntityTypes.RWY);
-            this.selectedEntityIndex.set(0);
-            this.selectedEntityString.set(it.substring(2));
-            this.updateLandingRunwayData();
+            if (it) {
+                this.availableEntityList.set([it.substring(2)]);
+                this.selectedEntityType.set(EntityTypes.RWY);
+                this.selectedEntityIndex.set(0);
+                this.selectedEntityString.set(it.substring(2));
+                this.updateLandingRunwayData();
+            }
         });
 
         sub.on('realTime').atFrequency(0.2).handle((_) => this.autoLoadAirport());
@@ -186,11 +176,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         // TODO FIXME fms-v2 check when merged
         // Once fms-v2 is merged this will be loaded here (via Msfs backend)
         // TODO unclear whether that's LDA, TORA, ...
-        sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => {
-            this.runwayLda.set(it.toFixed(0));
-            this.runwayTora.set(it.toFixed(0));
-            this.landingRunwayLength.set(it);
-            this.updateLandingRunwayData();
+        this.fmsDataStore.landingRunwayLength.sub((it) => {
+            if (it) {
+                this.runwayLda.set(it.toFixed(0));
+                this.runwayTora.set(it.toFixed(0));
+                this.updateLandingRunwayData();
+            }
         });
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
@@ -199,7 +190,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
 
     private updateLandingRunwayData() {
-        this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.landingRunwayIdent.get() ?? '', length: this.landingRunwayLength.get() ?? 0 });
+        this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.fmsDataStore.landingRunway.get() ?? '', length: this.fmsDataStore.landingRunwayLength.get() ?? 0 });
     }
 
     public updateAirportSearchData() {
@@ -302,7 +293,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }
         // If in flight, load destination airport if distance is <50NM. This could cause stutters, consider deactivating.
         else {
-            const destArpt = this.store.airports.getArray().find((it) => it.idarpt === this.destAirport.get());
+            const destArpt = this.store.airports.getArray().find((it) => it.idarpt === this.fmsDataStore.destination.get());
             if (destArpt && destArpt.idarpt !== this.store.loadedAirport.get()?.idarpt) {
                 if (distanceTo(this.presentPos.get(), { lat: destArpt.coordinates.lat, long: destArpt.coordinates.lon }) < 50) {
                     this.handleSelectAirport(destArpt.idarpt);
@@ -561,36 +552,36 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                     align-items: center; border-left: 2px solid lightgrey"
                                     >
                                         <Button
-                                            label={this.originAirport.map((it) => (it ? (<>{it}</>) : (<>ORIGIN</>)))}
+                                            label={this.fmsDataStore.origin.map((it) => (it ? (<>{it}</>) : (<>ORIGIN</>)))}
                                             onClick={() => {
-                                                const airport = this.originAirport.get();
+                                                const airport = this.fmsDataStore.origin.get();
                                                 if (airport) {
                                                     this.handleSelectAirport(airport);
                                                 }
                                             }}
-                                            disabled={this.originAirport.map((it) => !it)}
+                                            disabled={this.fmsDataStore.origin.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
-                                            label={this.destAirport.map((it) => (it ? (<>{it}</>) : (<>DEST</>)))}
+                                            label={this.fmsDataStore.destination.map((it) => (it ? (<>{it}</>) : (<>DEST</>)))}
                                             onClick={() => {
-                                                const airport = this.destAirport.get();
+                                                const airport = this.fmsDataStore.destination.get();
                                                 if (airport) {
                                                     this.handleSelectAirport(airport);
                                                 }
                                             }}
-                                            disabled={this.destAirport.map((it) => !it)}
+                                            disabled={this.fmsDataStore.destination.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                         <Button
-                                            label={this.altnAirport.map((it) => (it ? (<>{it}</>) : (<>ALTN</>)))}
+                                            label={this.fmsDataStore.alternate.map((it) => (it ? (<>{it}</>) : (<>ALTN</>)))}
                                             onClick={() => {
-                                                const airport = this.altnAirport.get();
+                                                const airport = this.fmsDataStore.alternate.get();
                                                 if (airport) {
                                                     this.handleSelectAirport(airport);
                                                 }
                                             }}
-                                            disabled={this.altnAirport.map((it) => !it)}
+                                            disabled={this.fmsDataStore.alternate.map((it) => !it)}
                                             buttonStyle="width: 100px;"
                                         />
                                     </div>

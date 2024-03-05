@@ -21,6 +21,7 @@ import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublishe
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
+import { FmsDataStore } from 'instruments/src/OANC/OancControlPanelUtils';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -83,6 +84,9 @@ export enum LabelStyle {
     RunwayEnd = 'runway-end',
     FmsSelectedRunwayEnd = 'runway-end-fms-selected',
     FmsSelectedRunwayAxis = 'runway-axis-fms-selected',
+    BtvSelectedRunwayEnd = 'runway-end-btv-selected',
+    BtvSelectedRunwayArrow = 'runway-arrow-btv-selected',
+    BtvSelectedExit = 'taxiway-btv-selected',
 }
 
 export interface Label {
@@ -144,8 +148,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     ];
 
     public labelContainerRef = FSComponent.createRef<HTMLDivElement>();
-
-    private cursorSurfaceRef = FSComponent.createRef<HTMLDivElement>();
 
     private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -256,7 +258,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
 
-    private readonly landingRunwayIdent = Subject.create<string | null>(null);
+    private readonly fmsDataStore = new FmsDataStore(this.props.bus);
+
+    private readonly btvSelectedRunway = Subject.create<string | null>(null);
+
+    private readonly btvSelectedExit = Subject.create<string | null>(null);
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
@@ -285,9 +291,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        this.cursorSurfaceRef.instance.addEventListener('mousedown', this.handleCursorPanStart.bind(this));
-        this.cursorSurfaceRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
-        this.cursorSurfaceRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
+        this.labelContainerRef.instance.addEventListener('mousedown', this.handleCursorPanStart.bind(this));
+        this.labelContainerRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
+        this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
         const sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
 
@@ -306,7 +312,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             this.loadAirportMap(airport);
         });
 
-        sub.on('fmsLandingRunway').whenChanged().handle((rwy) => this.landingRunwayIdent.set(rwy));
+        this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
+        this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
+        this.fmsDataStore.destination.sub(() => this.updateLabelClasses());
+        this.fmsDataStore.landingRunway.sub(() => this.updateLabelClasses());
+        this.btvSelectedRunway.sub(() => this.updateLabelClasses());
+        this.btvSelectedExit.sub(() => this.updateLabelClasses());
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
@@ -336,7 +347,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             this.panContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
             this.panContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
 
-            this.labelManager.reflowLabels();
+            this.labelManager.reflowLabels(
+                this.dataAirportIcao.get() === this.fmsDataStore.origin.get() ? this.fmsDataStore.departureRunway.get() : this.fmsDataStore.landingRunway.get(),
+                this.btvSelectedRunway.get(),
+            );
         });
 
         MappedSubject.create(([x, y]) => {
@@ -465,12 +479,24 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         );
     }
 
-    private createLabelElement(label: Label): HTMLSpanElement {
+    private createLabelElement(label: Label): HTMLDivElement {
         const element = document.createElement('div');
 
         element.classList.add('oanc-label');
         element.classList.add(`oanc-label-style-${label.style}`);
         element.textContent = label.text;
+
+        if (label.style === LabelStyle.RunwayEnd) {
+            element.addEventListener('click', () => {
+                this.btvSelectedRunway.set(`RW${label.text}`);
+                this.props.bus.getPublisher<FmsOansData>().pub('oansSelectedLandingRunway', `RW${label.text}`);
+            });
+        } if (label.style === LabelStyle.Taxiway) {
+            element.addEventListener('click', () => {
+                this.btvSelectedExit.set(label.text);
+                this.props.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', label.text);
+            });
+        }
 
         return element;
     }
@@ -534,7 +560,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             }
 
             if (feature.properties.feattype === FeatureType.Centerline) {
-                const designators = [];
+                const designators: string[] = [];
                 if (feature.properties.idrwy) {
                     designators.push(...feature.properties.idrwy.split('.'));
                 }
@@ -549,58 +575,110 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 const runwayLineEnd = runwayLine.coordinates[runwayLine.coordinates.length - 1];
                 const runwayLineBearing = clampAngle(-Math.atan2(runwayLineStart[1] - runwayLineEnd[1], runwayLineStart[0] - runwayLineEnd[0]) * MathUtils.RADIANS_TO_DEGREES + 90);
 
+                // If reciprocal bearing doesn't match to rwy designator[0], swap designators
+                if (Math.abs(Number(designators[0].replace(/\D/g, '')) * 10 - reciprocal(runwayLineBearing)) > 90 && designators.length === 2) {
+                    const copied = Array.from(designators);
+                    designators.length = 0;
+                    designators.push(copied[1], copied[0]);
+                }
+
+                const isFmsOrigin = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
+                const isFmsDestination = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
+                const isSelectedRunway = (isFmsOrigin && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(2)))
+                    || (isFmsDestination && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(2)));
+
                 const label1: Label = {
-                    text: `${designators[0]}`,
-                    style: LabelStyle.RunwayEnd,
+                    text: designators[0],
+                    style: this.btvSelectedRunway.get() === designators[0] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
                     position: runwayLineStart,
                     rotation: reciprocal(runwayLineBearing),
                     associatedFeature: feature,
                 };
-
-                const label2: Label = {
-                    text: `${designators[1]}`,
-                    style: LabelStyle.RunwayEnd,
-                    position: runwayLineEnd,
-                    rotation: runwayLineBearing,
-                    associatedFeature: feature,
-                };
-
-                const label3: Label = {
-                    text: `${designators[0]}-${designators[1]}`,
-                    style: designators.includes(this.landingRunwayIdent.get()?.substring(2)) ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis,
-                    position: runwayLineEnd,
-                    rotation: runwayLineBearing,
-                    associatedFeature: feature,
-                };
-
-                this.labelManager.labels.push(label1, label2, label3);
                 this.labelManager.visibleLabels.insert(label1);
-                this.labelManager.visibleLabels.insert(label2);
-                this.labelManager.visibleLabels.insert(label3);
+                this.labelManager.labels.push(label1);
 
-                // Selected FMS runway
-                let labelFms: Label;
-                if (designators[0] === this.landingRunwayIdent.get()?.substring(2)) {
-                    labelFms = {
-                        text: '',
-                        style: LabelStyle.FmsSelectedRunwayEnd,
-                        position: runwayLineStart,
-                        rotation: reciprocal(runwayLineBearing),
-                        associatedFeature: feature,
-                    };
-                    this.labelManager.labels.push(labelFms);
-                    this.labelManager.visibleLabels.insert(labelFms);
-                } else if (designators[1] === this.landingRunwayIdent.get()?.substring(2)) {
-                    labelFms = {
-                        text: '',
-                        style: LabelStyle.FmsSelectedRunwayEnd,
+                // Sometimes, runways have only one designator (e.g. EDDF 18R)
+                if (designators[1]) {
+                    const label2: Label = {
+                        text: designators[1],
+                        style: this.btvSelectedRunway.get() === designators[1] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
                         position: runwayLineEnd,
                         rotation: runwayLineBearing,
                         associatedFeature: feature,
                     };
-                    this.labelManager.labels.push(labelFms);
-                    this.labelManager.visibleLabels.insert(labelFms);
+                    this.labelManager.visibleLabels.insert(label2);
+                    this.labelManager.labels.push(label2);
+
+                    const label3: Label = {
+                        text: `${designators[0]}-${designators[1]}`,
+                        style: isSelectedRunway ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis,
+                        position: runwayLineEnd,
+                        rotation: runwayLineBearing,
+                        associatedFeature: feature,
+                    };
+                    this.labelManager.visibleLabels.insert(label3);
+                    this.labelManager.labels.push(label3);
+                } else {
+                    const label3: Label = {
+                        text: designators[0],
+                        style: isSelectedRunway ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis,
+                        position: runwayLineEnd,
+                        rotation: runwayLineBearing,
+                        associatedFeature: feature,
+                    };
+                    this.labelManager.visibleLabels.insert(label3);
+                    this.labelManager.labels.push(label3);
                 }
+
+                // Selected FMS runway (origin or destination)
+                // if ((designators[0] === this.fmsDataStore.landingRunway.get()?.substring(2) && isFmsOrigin)
+                // || (designators[0] === this.fmsDataStore.departureRunway.get()?.substring(2) && isFmsDestination)) {
+                const labelFms1: Label = {
+                    text: designators[0],
+                    style: LabelStyle.FmsSelectedRunwayEnd,
+                    position: runwayLineStart,
+                    rotation: reciprocal(runwayLineBearing),
+                    associatedFeature: feature,
+                };
+                this.labelManager.labels.push(labelFms1);
+                this.labelManager.visibleLabels.insert(labelFms1);
+                // } else if ((designators[1] === this.fmsDataStore.landingRunway.get()?.substring(2) && isFmsOrigin)
+                // || (designators[1] === this.fmsDataStore.departureRunway.get()?.substring(2) && isFmsDestination)) {
+                const labelFms2: Label = {
+                    text: designators[1],
+                    style: LabelStyle.FmsSelectedRunwayEnd,
+                    position: runwayLineEnd,
+                    rotation: runwayLineBearing,
+                    associatedFeature: feature,
+                };
+                this.labelManager.labels.push(labelFms2);
+                this.labelManager.visibleLabels.insert(labelFms2);
+                // }
+
+                // BTV selected runway
+                // if (isFmsDestination) {
+                //     if (designators[0] === this.btvSelectedRunway.get()) {
+                const btvSelectedArrow1: Label = {
+                    text: designators[0],
+                    style: LabelStyle.BtvSelectedRunwayArrow,
+                    position: runwayLineStart,
+                    rotation: reciprocal(runwayLineBearing),
+                    associatedFeature: feature,
+                };
+                this.labelManager.labels.push(btvSelectedArrow1);
+                this.labelManager.visibleLabels.insert(btvSelectedArrow1);
+                // } if (designators[1] === this.btvSelectedRunway.get()) {
+                const btvSelectedArrow2: Label = {
+                    text: designators[1],
+                    style: LabelStyle.BtvSelectedRunwayArrow,
+                    position: runwayLineEnd,
+                    rotation: runwayLineBearing,
+                    associatedFeature: feature,
+                };
+                this.labelManager.labels.push(btvSelectedArrow2);
+                this.labelManager.visibleLabels.insert(btvSelectedArrow2);
+                // }
+                // }
             } else {
                 const text = feature.properties.idlin ?? feature.properties.idstd ?? feature.properties.ident ?? undefined;
 
@@ -772,7 +850,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 this.props.waitScreenRef.instance.style.visibility = 'hidden';
             }
 
-            this.labelManager.reflowLabels();
+            this.labelManager.reflowLabels(
+                this.dataAirportIcao.get() === this.fmsDataStore.origin.get() ? this.fmsDataStore.departureRunway.get() : this.fmsDataStore.landingRunway.get(),
+                this.btvSelectedRunway.get(),
+            );
 
             return;
         }
@@ -798,6 +879,16 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         if (this.arpCoordinates) {
             [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
         }
+    }
+
+    private updateLabelClasses() {
+        this.labelManager.updateLabelClasses(
+            this.fmsDataStore,
+            this.dataAirportIcao.get() === this.fmsDataStore.origin.get(),
+            this.dataAirportIcao.get() === this.fmsDataStore.destination.get(),
+            this.btvSelectedRunway.get(),
+            this.btvSelectedExit.get(),
+        );
     }
 
     private clearData(): void {
@@ -1056,7 +1147,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                     </div>
                 </div>
 
-                <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px;`} />
+                <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
 
                 <div ref={this.animationContainerRef[1]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}>
                     <div ref={this.panContainerRef[1]} style="position: absolute;">
@@ -1069,8 +1160,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                         />
                     </div>
                 </div>
-
-                <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
 
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
@@ -1100,8 +1189,6 @@ const pathCache = new Map< string, Path2D[]>();
 const pathIdCache = new Map<Feature, string>();
 
 function renderFeaturesToCanvas(layer: number, ctx: CanvasRenderingContext2D, data: FeatureCollection<Geometry, AmdbProperties>, startIndex: number, endIndex: number) {
-    console.log(`rendering features: ${data.features.length}`);
-
     const styleRules = STYLE_DATA[layer];
 
     for (let i = startIndex; i < Math.min(endIndex, data.features.length); i++) {

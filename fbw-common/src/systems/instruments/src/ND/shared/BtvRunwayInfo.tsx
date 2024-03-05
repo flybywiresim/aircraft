@@ -12,6 +12,8 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
 
     private runwayLength = Subject.create<number>(0);
 
+    private exitIdent = Subject.create<string>('');
+
     private readonly runwayInfoString = MappedSubject.create(
         ([ident, length]) => `${ident.padStart(5, '\xa0')}${length.toFixed(0).padStart(6, '\xa0')}`,
         this.runwayIdent,
@@ -27,7 +29,11 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<FmsOansData>();
 
-        sub.on('fmsLandingRunway').whenChanged().handle((it) => this.runwayIdent.set(it.substring(2)));
+        // sub.on('fmsLandingRunway').whenChanged().handle((it) => this.runwayIdent.set(it.substring(2)));
+        sub.on('oansSelectedLandingRunway').whenChanged().handle((it) => this.runwayIdent.set(it.substring(2)));
+        sub.on('oansSelectedExit').whenChanged().handle((it) => {
+            this.exitInfoString.set(it ? `${it.padStart(4, '\xa0')}${'----'.padStart(6, '\xa0')}` : null);
+        });
         sub.on('fmsLandingRunwayLength').whenChanged().handle((it) => this.runwayLength.set(it));
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => {

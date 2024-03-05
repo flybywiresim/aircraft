@@ -9,8 +9,14 @@ export interface FmsOansData {
     fmsOrigin: string,
     fmsDestination: string,
     fmsAlternate: string,
-    /** Identifier of landing runway. */
+    /** Identifier of departure runway. */
+    fmsDepartureRunway: string,
+    /** Identifier of landing runway selected through FMS. */
     fmsLandingRunway: string,
+    /** Identifier of landing runway selected for BTV through OANS. */
+    oansSelectedLandingRunway: string,
+    /** Identifier of exit selected for BTV through OANS. */
+    oansSelectedExit: string,
     /** Requested stopping distance (through OANS), in meters. */
     oansRequestedStoppingDistance: number,
     /** Length of selected landing runway, in meters. */

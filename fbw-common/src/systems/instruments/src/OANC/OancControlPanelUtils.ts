@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ArraySubject, DmsFormatter2, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { ArraySubject, ConsumerSubject, DmsFormatter2, EventBus, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { AmdbAirportSearchResult } from '@shared/amdb';
+import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 
 export enum ControlPanelAirportSearchMode {
         Icao,
@@ -54,4 +55,28 @@ export class ControlPanelStore {
     public readonly loadedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 
     public readonly isAirportSelectionPending = Subject.create(false);
+}
+
+export class FmsDataStore {
+    constructor(private bus: EventBus) {
+        const sub = this.bus.getSubscriber<FmsOansData>();
+        this.origin.setConsumer(sub.on('fmsOrigin'));
+        this.destination.setConsumer(sub.on('fmsDestination'));
+        this.alternate.setConsumer(sub.on('fmsAlternate'));
+        this.departureRunway.setConsumer(sub.on('fmsDepartureRunway'));
+        this.landingRunway.setConsumer(sub.on('fmsLandingRunway'));
+        this.landingRunwayLength.setConsumer(sub.on('fmsLandingRunwayLength'));
+    }
+
+    public readonly origin = ConsumerSubject.create<string | null>(null, null);
+
+    public readonly destination = ConsumerSubject.create<string | null>(null, null);
+
+    public readonly alternate = ConsumerSubject.create<string | null>(null, null);
+
+    public readonly departureRunway = ConsumerSubject.create<string | null>(null, null);
+
+    public readonly landingRunway = ConsumerSubject.create<string | null>(null, null);
+
+    public readonly landingRunwayLength = ConsumerSubject.create<number | null>(null, null);
 }

@@ -5,7 +5,7 @@
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
 import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, FmsOansData, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
 
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
@@ -264,25 +264,27 @@ class NDInstrument implements FsInstrument {
             }
         });
 
-        this.ndContainerRef.instance.addEventListener('contextmenu', (e) => {
-            // Not firing right now, use double click
-            this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
-            this.contextMenuRef.instance.display(e.clientX, e.clientY);
-        });
+        if (this.oansRef?.instance?.labelContainerRef?.instance) {
+            this.oansRef.instance.labelContainerRef.instance.addEventListener('contextmenu', (e) => {
+                // Not firing right now, use double click
+                this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
+                this.contextMenuRef.instance.display(e.clientX, e.clientY);
+            });
 
-        this.ndContainerRef.instance.addEventListener('dblclick', (e) => {
-            this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
-            this.contextMenuRef.instance.display(e.clientX, e.clientY);
-        });
+            this.oansRef.instance.labelContainerRef.instance.addEventListener('dblclick', (e) => {
+                this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
+                this.contextMenuRef.instance.display(e.clientX, e.clientY);
+            });
 
-        this.ndContainerRef.instance.addEventListener('click', () => {
-            this.contextMenuRef.instance.hideMenu();
-        });
+            this.oansRef.instance.labelContainerRef.instance.addEventListener('click', () => {
+                this.contextMenuRef.instance.hideMenu();
+            });
 
-        // OANS move cursor
-        this.ndContainerRef.instance.addEventListener('mousedown', this.oansRef.instance.handleCursorPanStart.bind(this.oansRef.instance));
-        this.ndContainerRef.instance.addEventListener('mousemove', this.oansRef.instance.handleCursorPanMove.bind(this.oansRef.instance));
-        this.ndContainerRef.instance.addEventListener('mouseup', this.oansRef.instance.handleCursorPanStop.bind(this.oansRef.instance));
+            // OANS move cursor
+            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mousedown', this.oansRef.instance.handleCursorPanStart.bind(this.oansRef.instance));
+            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mousemove', this.oansRef.instance.handleCursorPanMove.bind(this.oansRef.instance));
+            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mouseup', this.oansRef.instance.handleCursorPanStop.bind(this.oansRef.instance));
+        }
 
         const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();
 
