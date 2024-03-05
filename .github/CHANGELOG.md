@@ -74,6 +74,7 @@
 1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
 1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
 1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
+1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 
 ## 0.11.0
 
