@@ -155,7 +155,7 @@ class MsfsHandler {
   DataManager& getDataManager() { return dataManager; }
 
   /**
-   * @return current simulation time
+   * @return current simulation time in seconds
    */
   [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
 
