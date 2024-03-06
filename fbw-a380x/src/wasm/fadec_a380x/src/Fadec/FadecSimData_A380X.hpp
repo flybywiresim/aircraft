@@ -422,6 +422,7 @@ class FadecSimData_A380X {
    *
    * TODO: Check each how often they need to be read and if they could be auto-written (to simplify the code)
    *  Also check if some can be consolidated into a single data definition or need separation for separate writing.
+   *  Test with SIMCONNECT_DATA_REQUEST_FLAG_CHANGED and SIMCONNECT_DATA_REQUEST_FLAG_TAGGED.
    */
   void initialize(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
