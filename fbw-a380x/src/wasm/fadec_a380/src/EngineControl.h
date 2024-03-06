@@ -806,6 +806,7 @@ class EngineControl {
     double engine2PreFF = simVars->getEngine2PreFF();  // KG/H
     double engine3PreFF = simVars->getEngine3PreFF();  // KG/H
     double engine4PreFF = simVars->getEngine4PreFF();  // KG/H
+
     double engine1FF = simVars->getEngine1FF();        // KG/H
     double engine2FF = simVars->getEngine2FF();        // KG/H
     double engine3FF = simVars->getEngine3FF();        // KG/H
@@ -1021,6 +1022,7 @@ class EngineControl {
       simVars->setFuelFeedFourPre(feedFourQty);              // in LBS
       simVars->setFuelRightOuterPre(rightOuterQty);          // in LBS
       simVars->setFuelTrimPre(trimQty);                      // in LBS
+
     } else {
       if (uiFuelTamper == 1) {
         fuelLeftOuterPre = leftOuterQty;    // in LBS
@@ -1419,10 +1421,6 @@ class EngineControl {
     for (engine = 1; engine <= 4; engine++) {
       engineStarter = simVars->getEngineStarter(engine);
       engineIgniter = simVars->getEngineIgniter(engine);
-      simCN1 = simVars->getCN1(engine);
-      simN1 = simVars->getN1(engine);
-      simN3 = simVars->getN2(engine);
-      thrust = simVars->getThrust(engine);
 
       // Set & Check Engine Status for this Cycle
       engineStateMachine(engine, engineIgniter, engineStarter, simN3, idleN3, pressAltitude, ambientTemp,
@@ -1430,9 +1428,13 @@ class EngineControl {
 
       if (engine == 1) {
         engineState = simVars->getEngine1State();
-        deltaN3 = simN3 - simN3Engine1Pre;
+        simCN1 = simVars->getCN1(engine);
+        simN1 = simVars->getN1(engine);
+        simN3 = simVars->getN2(engine);
         simN3Engine1Pre = simN3;
+        deltaN3 = simN3 - simN3Engine1Pre;
         timer = simVars->getEngine1Timer();
+        thrust = simVars->getThrust(engine);
       } else if (engine == 2) {
         engineState = simVars->getEngine2State();
         deltaN3 = simN3 - simN3Engine2Pre;

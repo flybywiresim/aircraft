@@ -36,6 +36,7 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
   struct MiscSimData {
+    FLOAT64 animationDeltaTime;   // A:ANIMATION DELTA TIME
     FLOAT64 mach;                 // A:AIRSPEED MACH
     FLOAT64 pressureAltitude;     // A:PRESSURE ALTITUDE
     FLOAT64 ambientTemperature;   // A:AMBIENT TEMPERATURE
@@ -60,7 +61,8 @@ class FadecSimData_A380X {
     FLOAT64 refuelRate;           // L:A32NX_EFB_REFUEL_RATE_SETTING
     FLOAT64 refuelStartedByUser;  // L:A32NX_REFUEL_STARTED_BY_USR
   };
-  DataDefVector simDataDef = {{"AIRSPEED MACH", 0, UNITS.Mach},
+  DataDefVector simDataDef = {{"ANIMATION DELTA TIME", 0, UNITS.Seconds},
+                              {"AIRSPEED MACH", 0, UNITS.Mach},
                               {"PRESSURE ALTITUDE", 0, UNITS.Feet},
                               {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},
                               {"AMBIENT PRESSURE", 0, UNITS.Millibars},
@@ -142,6 +144,20 @@ class FadecSimData_A380X {
       {"TURB ENG CORRECTED N2", 4, UNITS.Percent},
   };
   DataDefinitionVariablePtr<SimEngineCorrectedN2Data> simEngineCorrectedN2DataPtr;
+
+struct simThrustData {
+    FLOAT64 engine1Thrust;  // A:TURB ENG JET THRUST:1
+    FLOAT64 engine2Thrust;  // A:TURB ENG JET THRUST:2
+    FLOAT64 engine3Thrust;  // A:TURB ENG JET THRUST:3
+    FLOAT64 engine4Thrust;  // A:TURB ENG JET THRUST:4
+  };
+  DataDefVector simThrustDataDef = {
+    {"TURB ENG JET THRUST", 1, UNITS.Pounds},
+    {"TURB ENG JET THRUST", 2, UNITS.Pounds},
+    {"TURB ENG JET THRUST", 3, UNITS.Pounds},
+    {"TURB ENG JET THRUST", 4, UNITS.Pounds},
+  };
+  DataDefinitionVariablePtr<simThrustData> simThrustDataPtr;
 
   struct SimEngineCombustionData {
     FLOAT64 engine1Combustion;  // A:GENERAL ENG COMBUSTION:1
@@ -439,6 +455,8 @@ class FadecSimData_A380X {
     simEngineCorrectedN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     simEngineCorrectedN2DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN2Data>("SIM ENGINE CN2 DATA", simEngineCorrectedN2DataDef);
     simEngineCorrectedN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simThrustDataPtr = dm->make_datadefinition_var<simThrustData>("SIM THRUST DATA", simThrustDataDef);
+    simThrustDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineCombustionDataPtr = dm->make_datadefinition_var<SimEngineCombustionData>("SIM ENGINE COMB DATA", simEngineCombustionDataDef);
     simEngineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     simEngineOilTempDataPtr = dm->make_datadefinition_var<SimEngineOilTempData>("SIM ENGINE OIL TEMPDATA", simEngineOilTemperatureDataDef);
