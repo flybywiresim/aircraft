@@ -82,24 +82,24 @@ class FuelConfiguration_A380X {
   double getFuelFeedOne() const { return fuelFeedOne; }
   double getFuelLeftMid() const { return fuelLeftMid; }
   double getFuelLeftInner() const { return fuelLeftInner; }
-  double getFuelRightOuter() const { return fuelRightOuter; }
   double getFuelFeedTwo() const { return fuelFeedTwo; }
-  double getFuelRightMid() const { return fuelRightMid; }
-  double getFuelRightInner() const { return fuelRightInner; }
   double getFuelFeedThree() const { return fuelFeedThree; }
+  double getFuelRightInner() const { return fuelRightInner; }
+  double getFuelRightMid() const { return fuelRightMid; }
   double getFuelFeedFour() const { return fuelFeedFour; }
+  double getFuelRightOuter() const { return fuelRightOuter; }
   double getFuelTrim() const { return fuelTrim; }
 
   void setFuelLeftOuter(double fuelLeftOuter) { this->fuelLeftOuter = fuelLeftOuter; }
   void setFuelFeedOne(double fuelFeedOne) { this->fuelFeedOne = fuelFeedOne; }
   void setFuelLeftMid(double fuelLeftMid) { this->fuelLeftMid = fuelLeftMid; }
   void setFuelLeftInner(double fuelLeftInner) { this->fuelLeftInner = fuelLeftInner; }
-  void setFuelRightOuter(double fuelRightOuter) { this->fuelRightOuter = fuelRightOuter; }
   void setFuelFeedTwo(double fuelFeedTwo) { this->fuelFeedTwo = fuelFeedTwo; }
-  void setFuelRightMid(double fuelRightMid) { this->fuelRightMid = fuelRightMid; }
-  void setFuelRightInner(double fuelRightInner) { this->fuelRightInner = fuelRightInner; }
   void setFuelFeedThree(double fuelFeedThree) { this->fuelFeedThree = fuelFeedThree; }
+  void setFuelRightInner(double fuelRightInner) { this->fuelRightInner = fuelRightInner; }
+  void setFuelRightMid(double fuelRightMid) { this->fuelRightMid = fuelRightMid; }
   void setFuelFeedFour(double fuelFeedFour) { this->fuelFeedFour = fuelFeedFour; }
+  void setFuelRightOuter(double fuelRightOuter) { this->fuelRightOuter = fuelRightOuter; }
   void setFuelTrim(double fuelTrim) { this->fuelTrim = fuelTrim; }
 
   void setConfigFilename(const std::string& configFilename) {

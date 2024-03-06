@@ -62,7 +62,7 @@ void EngineControl_A380X::update() {
         simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine1CorrectedN1;
         simN1 = simData.simEngineN1DataPtr->data().engine1N1;
         simN2 = simData.simEngineN2DataPtr->data().engine1N2;
-        simN2Engine1Pre = simN2;
+        engine1N3Pre = simN2;
         timer = simData.engineTimerDataPtr->data().engine1Timer;
         // deltaN2 = simN2 - simN2Engine1Pre; // not used as per original code
         engineStateMachine(1, simData.miscSimDataPtr->data().engineIgniter1, simData.miscSimDataPtr->data().engineStarter1, simN2,
@@ -73,7 +73,7 @@ void EngineControl_A380X::update() {
         simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine2CorrectedN1;
         simN1 = simData.simEngineN1DataPtr->data().engine2N1;
         simN2 = simData.simEngineN2DataPtr->data().engine2N2;
-        simN2Engine2Pre = simN2;
+        engine2N3Pre = simN2;
         timer = simData.engineTimerDataPtr->data().engine2Timer;
         // deltaN2 = simN2 - simN2Engine2Pre; // not used as per original code
         engineStateMachine(2, simData.miscSimDataPtr->data().engineIgniter2, simData.miscSimDataPtr->data().engineStarter2, simN2,
@@ -84,7 +84,7 @@ void EngineControl_A380X::update() {
         simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine3CorrectedN1;
         simN1 = simData.simEngineN1DataPtr->data().engine3N1;
         simN2 = simData.simEngineN2DataPtr->data().engine3N2;
-        simN2Engine3Pre = simN2;
+        engine3N3Pre = simN2;
         timer = simData.engineTimerDataPtr->data().engine3Timer;
         // deltaN2 = simN2 - simN2Engine3Pre; // not used as per original code
         engineStateMachine(3, simData.miscSimDataPtr->data().engineIgniter3, simData.miscSimDataPtr->data().engineStarter3, simN2,
@@ -95,7 +95,7 @@ void EngineControl_A380X::update() {
         simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine4CorrectedN1;
         simN1 = simData.simEngineN1DataPtr->data().engine4N1;
         simN2 = simData.simEngineN2DataPtr->data().engine4N2;
-        simN2Engine4Pre = simN2;
+        engine4N3Pre = simN2;
         timer = simData.engineTimerDataPtr->data().engine4Timer;
         // deltaN2 = simN2 - simN2Engine4Pre; // not used as per original code
         engineStateMachine(4, simData.miscSimDataPtr->data().engineIgniter4, simData.miscSimDataPtr->data().engineStarter4, simN2,
@@ -150,13 +150,13 @@ void EngineControl_A380X::initializeEngineControlData() {
   fuelConfiguration.setConfigFilename(fuelConfigFilename);
   fuelConfiguration.loadConfigurationFromIni();
 
-  // Getting initial N2
-  simN2Engine1Pre = simData.simEngineN2DataPtr->data().engine1N2;
-  simN2Engine2Pre = simData.simEngineN2DataPtr->data().engine2N2;
-  simN2Engine3Pre = simData.simEngineN2DataPtr->data().engine3N2;
-  simN2Engine4Pre = simData.simEngineN2DataPtr->data().engine4N2;
+  // Getting and saving initial N2 into pre (= previous) variables
+  engine1N3Pre = simData.simEngineN2DataPtr->data().engine1N2;
+  engine2N3Pre = simData.simEngineN2DataPtr->data().engine2N2;
+  engine3N3Pre = simData.simEngineN2DataPtr->data().engine3N2;
+  engine4N3Pre = simData.simEngineN2DataPtr->data().engine4N2;
 
-  // Setting initial Oil Quantity
+  // Setting initial Oil Quantity and adding some randomness to it
   const int maxOil = 200;
   const int minOil = 140;
   std::srand(std::time(0));
@@ -172,6 +172,7 @@ void EngineControl_A380X::initializeEngineControlData() {
   thermalEnergy2 = 0;
   thermalEnergy3 = 0;
   thermalEnergy4 = 0;
+  oilTemperatureMax = 85;
   double engine1Combustion = simData.simEngineCombustionDataPtr->data().engine1Combustion;
   double engine2Combustion = simData.simEngineCombustionDataPtr->data().engine2Combustion;
   double engine3Combustion = simData.simEngineCombustionDataPtr->data().engine3Combustion;
@@ -215,16 +216,16 @@ void EngineControl_A380X::initializeEngineControlData() {
 
   // Setting initial Fuel Levels
   const FLOAT64 fuelWeightPerGallon = simData.miscSimDataPtr->data().fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelLeftOuterPre = fuelConfiguration.getFuelLeftOuter() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->data().fuelFeedOnePre = fuelConfiguration.getFuelFeedOne() * fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelLeftMidPre = fuelConfiguration.getFuelLeftMid() * fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelLeftInnerPre = fuelConfiguration.getFuelLeftInner() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->data().fuelFeedTwoPre = fuelConfiguration.getFuelFeedTwo() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->data().fuelFeedThreePre = fuelConfiguration.getFuelFeedThree() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelFeedFourPre = fuelConfiguration.getFuelFeedFour() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftOuterPre = fuelConfiguration.getFuelLeftOuter() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelRightOuterPre = fuelConfiguration.getFuelRightOuter() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftMidPre = fuelConfiguration.getFuelLeftMid() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelRightMidPre = fuelConfiguration.getFuelRightMid() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftInnerPre = fuelConfiguration.getFuelLeftInner() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->data().fuelRightInnerPre = fuelConfiguration.getFuelRightInner() * fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelRightMidPre = fuelConfiguration.getFuelRightMid() * fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelFeedFourPre = fuelConfiguration.getFuelFeedFour() * fuelWeightPerGallon;
+  simData.fuelPreDataPtr->data().fuelRightOuterPre = fuelConfiguration.getFuelRightOuter() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->data().fuelTrimPre = fuelConfiguration.getFuelTrim() * fuelWeightPerGallon;
   simData.fuelPreDataPtr->writeDataToSim();
 
