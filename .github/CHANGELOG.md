@@ -59,7 +59,6 @@
 1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
 1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
 1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
-1. [FLIGHTMODEL] More realistic crosswind controllability in takeoff and landing - @donstim (donbikes)
 1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
 1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
 1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
@@ -73,6 +72,9 @@
 1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
 1. [FCU] Disabled QFE mode - @tracernz (Mike)
 1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
+1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
+1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
+1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 
 ## 0.11.0
 
