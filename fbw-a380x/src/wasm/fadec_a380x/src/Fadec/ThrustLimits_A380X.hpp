@@ -121,6 +121,8 @@ class ThrustLimits_A380X {
       // clang-format on
   };
 
+ public:
+
   /**
    * @brief Finds the top-row boundary in the limits array.
    *

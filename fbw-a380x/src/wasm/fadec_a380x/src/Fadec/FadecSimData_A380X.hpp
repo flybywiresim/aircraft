@@ -53,6 +53,7 @@ class FadecSimData_A380X {
     FLOAT64 engineIgniter2;       // A:TURB ENG IGNITION SWITCH EX1:2
     FLOAT64 engineIgniter3;       // A:TURB ENG IGNITION SWITCH EX1:3
     FLOAT64 engineIgniter4;       // A:TURB ENG IGNITION SWITCH EX1:4
+    FLOAT64 flexTemp;             // L:AIRLINER_TO_FLEX_TEMP
     FLOAT64 waiState;             // L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON
     FLOAT64 packState1;           // L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN
     FLOAT64 packState2;           // L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN
@@ -76,6 +77,7 @@ class FadecSimData_A380X {
                               {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Bool},
                               {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Bool},
                               {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Bool},
+                              {"L:AIRLINER_TO_FLEX_TEMP", 0, UNITS.Number},
                               {"L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", 0, UNITS.Bool},
                               {"L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", 0, UNITS.Bool},
                               {"L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", 0, UNITS.Bool},
@@ -254,8 +256,6 @@ class FadecSimData_A380X {
     {"L:A32NX_ENGINE_N1", 4, UNITS.Number},
   };
 
-
-
   struct EngineStateData {
     FLOAT64 engine1State;  // L:A32NX_ENGINE_STATE:1
     FLOAT64 engine2State;  // L:A32NX_ENGINE_STATE:2
@@ -398,6 +398,7 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<fuelUsedEngineData> fuelUsedEngineDataPtr;
 
   struct ThrustLimitData {
+    FLOAT64 thrustLimitType;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     FLOAT64 thrustLimitIdle;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
     FLOAT64 thrustLimitClimb;  // L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB
     FLOAT64 thrustLimitFlex;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_FLX
@@ -405,6 +406,7 @@ class FadecSimData_A380X {
     FLOAT64 thrustLimitToga;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
   };
   DataDefVector thrustLimitDataDef = {
+      {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", 0, UNITS.Enum}, //  '', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", 0, UNITS.Number},  // %N1
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", 0, UNITS.Number},   // %N1
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", 0, UNITS.Number},   // %N1
@@ -416,12 +418,15 @@ class FadecSimData_A380X {
 
   /**
    * @brief Initialize the SimData and LVar data definitions and register them with the DataManager.
-   * @param dm
+   * @param dm The DataManager instance to register the data definitions with.
+   *
+   * TODO: Check each how often they need to be read and if they could be auto-written (to simplify the code)
+   *  Also check if some can be consolidated into a single data definition or need separation for separate writing.
    */
   void initialize(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
     // on demand update
-    miscSimDataPtr = dm->make_datadefinition_var<MiscSimData>("SIM DATA", simDataDef);
+    miscSimDataPtr = dm->make_datadefinition_var<MiscSimData>("MISC SIM DATA", simDataDef);
     miscSimDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     // SimVars
@@ -436,7 +441,7 @@ class FadecSimData_A380X {
     simEngineCombustionDataPtr = dm->make_datadefinition_var<SimEngineCombustionData>("SIM ENGINE COMB DATA", simEngineCombustionDataDef);
     simEngineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     simEngineOilTempDataPtr = dm->make_datadefinition_var<SimEngineOilTempData>("SIM ENGINE OIL TEMPDATA", simEngineOilTemperatureDataDef);
-    simEngineOilTempDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_NEVER);
+    simEngineOilTempDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     simFuelTankDataPtr = dm->make_datadefinition_var<SimFuelTankData>("SIM FUEL TANK DATA", simFuelTankDataDef);
     simFuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 

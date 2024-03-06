@@ -48,7 +48,6 @@ class EngineControl_A380X {
   FLOAT64 thermalEnergy2;
   FLOAT64 thermalEnergy3;
   FLOAT64 thermalEnergy4;
-  FLOAT64 oilTemperatureMax;
   FLOAT64 oilTemperature;
   FLOAT64 oilTemperatureEngine1Pre;
   FLOAT64 oilTemperatureEngine2Pre;
@@ -60,6 +59,16 @@ class EngineControl_A380X {
   FLOAT64 idleN3;
   FLOAT64 idleFF;
   FLOAT64 idleEGT;
+
+  // Thrust limits
+  static constexpr FLOAT64 waitTime = 10;
+  static constexpr FLOAT64 transitionTime = 30;
+  FLOAT64 prevThrustLimitType = 0;
+  FLOAT64 prevFlexTemperature = 0;
+  bool isFlexActive = false;
+  bool isTransitionActive = false;
+  FLOAT64 transitionFactor = 0;
+  FLOAT64 transitionStartTime = 0;
 
   // additional constants
   static constexpr double LBS_TO_KGS = 0.4535934;
@@ -152,6 +161,7 @@ class EngineControl_A380X {
                           bool packs,
                           bool nai,
                           bool wai);
+
 
 };
 

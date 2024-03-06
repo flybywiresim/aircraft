@@ -250,7 +250,7 @@ class EngineControl {
           engineState = 4;
         }
       }
-    }
+    } // if pause check
 
     switch (engine) {
       case 1:
@@ -1035,6 +1035,7 @@ class EngineControl {
         fuelRightOuterPre = rightOuterQty;  // in LBS
         fuelTrimPre = trimQty;              // in LBS
       }
+
       //--------------------------------------------
       // Engine 1 Fuel Burn routine
       if (fuelFeedOnePre > 0) {
