@@ -2,6 +2,35 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
+    <Template Name="FBW_LIGHTING_Exterior_Retractable_Light_Template">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>LIGHTING_Retractable_#LIGHT_TYPE#_Light_#ID#</ANIM_NAME>
+            <ANIM_LAG>100</ANIM_LAG>
+            <ANIM_FRAMES>100</ANIM_FRAMES>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE type="rnp" return="number" >
+                alias currentPosition = (O:AnimCode, number);
+                alias publishedPosition = (L:A32NX_#LIGHT_TYPE#_#ID#_POSITION, number);
+                let animSpeed = #ANIM_FRAMES, number# / #ANIM_LAG, number#;
+                let animProgress = animSpeed * (A:ANIMATION DELTA TIME, seconds);
+                let requestedPosition = if (L:#LIGHT_TYPE#_#ID#_Retracted, boolean) {0} else {100};
+
+                if currentPosition != requestedPosition {
+                    let newPosition = 0;
+                    if requestedPosition > 0 {
+                       newPosition = (currentPosition + animProgress).min(requestedPosition);
+                    } else {
+                       newPosition = (currentPosition - animProgress).max(requestedPosition);
+                    }
+                    publishedPosition = newPosition;
+                } else {
+                    publishedPosition = currentPosition;
+                }
+                publishedPosition
+            </ANIM_CODE>
+        </UseTemplate>
+    </Template>
     <Template Name="A32NX_ENGINE_Turbine_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
