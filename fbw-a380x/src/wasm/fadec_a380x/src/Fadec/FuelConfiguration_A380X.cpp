@@ -40,7 +40,7 @@ void FuelConfiguration_A380X::loadConfigurationFromIni() {
 }
 
 void FuelConfiguration_A380X::saveConfigurationToIni() {
-  LOG_INFO("Fadec::FuelConfiguration: saving configuration file " + configFilename);
+  LOG_DEBUG("Fadec::FuelConfiguration: saving configuration file " + configFilename);
 
   mINI::INIStructure ini;
   mINI::INIFile iniFile(configFilename);

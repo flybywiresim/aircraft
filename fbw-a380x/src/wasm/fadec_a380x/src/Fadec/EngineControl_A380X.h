@@ -40,10 +40,10 @@ class EngineControl_A380X {
   // Engine N3
   // The A380's N3 values do not exist in the sim - we use the sim's N2 values instead
   // and calculate the N2 values from the N3 values
-  FLOAT64 engine1N3Pre;
-  FLOAT64 engine2N3Pre;
-  FLOAT64 engine3N3Pre;
-  FLOAT64 engine4N3Pre;
+  FLOAT64 simN3Engine1Pre;
+  FLOAT64 simN3Engine2Pre;
+  FLOAT64 simN3Engine3Pre;
+  FLOAT64 simN3Engine4Pre;
 
   // Oil Temperatures
   FLOAT64 thermalEnergy1;
@@ -99,10 +99,11 @@ class EngineControl_A380X {
   void engineStateMachine(int engine,
                           FLOAT64 engineIgniter,
                           FLOAT64 engineStarter,
-                          FLOAT64 simN2,
-                          FLOAT64 idleN2,
+                          FLOAT64 simN3,
+                          FLOAT64 idleN3,
                           FLOAT64 pressureAltitude,
-                          FLOAT64 ambientTemperature);
+                          FLOAT64 ambientTemperature,
+                          FLOAT64 deltaTime);
 
   void engineStartProcedure(int engine,
                             FLOAT64 state,
