@@ -209,7 +209,9 @@ class SimVars {
   void initializeVars() {
     DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
     IsReady = register_named_variable("A32NX_IS_READY");
+
     FlexTemp = register_named_variable("AIRLINER_TO_FLEX_TEMP");
+
     Engine1N3 = register_named_variable("A32NX_ENGINE_N3:1");
     Engine2N3 = register_named_variable("A32NX_ENGINE_N3:2");
     Engine3N3 = register_named_variable("A32NX_ENGINE_N3:3");
@@ -226,6 +228,8 @@ class SimVars {
     EngineIdleN3 = register_named_variable("A32NX_ENGINE_IDLE_N3");
     EngineIdleFF = register_named_variable("A32NX_ENGINE_IDLE_FF");
     EngineIdleEGT = register_named_variable("A32NX_ENGINE_IDLE_EGT");
+
+
     Engine1EGT = register_named_variable("A32NX_ENGINE_EGT:1");
     Engine2EGT = register_named_variable("A32NX_ENGINE_EGT:2");
     Engine3EGT = register_named_variable("A32NX_ENGINE_EGT:3");

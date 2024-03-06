@@ -9,7 +9,6 @@
 #include "logging.h"
 
 #include "EngineControl_A380X.h"
-#include "ScopedTimer.hpp"
 
 void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
@@ -19,6 +18,7 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
 }
 
 void EngineControl_A380X::update() {
+
   // Get ATC ID from sim to be able to load and store fuel levels
   // If not yet available, request it from sim and return early
   // If available initialize the engine control data
@@ -33,14 +33,8 @@ void EngineControl_A380X::update() {
   }
 
   // Calculate delta time
-  // TODO: Unclear why the sim's dt is not sufficient here
   const FLOAT64 deltaTime = (std::max)(0.002, msfsHandlerPtr->getSimulationTime() - this->previousSimulationTime);
   this->previousSimulationTime = msfsHandlerPtr->getSimulationTime();
-
-  // Obtain bleed states
-  bool packs = (simData.miscSimDataPtr->data().packState1 > 0.5 || simData.miscSimDataPtr->data().packState2 > 0.5) ? true : false;
-  bool nai = (simData.miscSimDataPtr->data().naiState1 > 0.5 || simData.miscSimDataPtr->data().naiState2 > 0.5) ? true : false;
-  bool wai = simData.miscSimDataPtr->data().waiState;
 
   const FLOAT64 mach = simData.miscSimDataPtr->data().mach;
   const FLOAT64 pressureAltitude = simData.miscSimDataPtr->data().pressureAltitude;
@@ -48,13 +42,19 @@ void EngineControl_A380X::update() {
   const FLOAT64 ambientPressure = simData.miscSimDataPtr->data().ambientPressure;
   const bool simOnGround = msfsHandlerPtr->getSimOnGround();
 
+  // Obtain bleed states
+  bool packs = (simData.miscSimDataPtr->data().packState1 > 0.5 || simData.miscSimDataPtr->data().packState2 > 0.5) ? true : false;
+  bool nai = (simData.miscSimDataPtr->data().naiState1 > 0.5 || simData.miscSimDataPtr->data().naiState2 > 0.5) ? true : false;
+  bool wai = simData.miscSimDataPtr->data().waiState;
+
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
   FLOAT64 simN1highest;
 
   // Update engine states
   for (int engine = 1; engine <= 4; engine++) {
-    FLOAT64 engineState, deltaN2, timer, simN1, simN2, simCorrectedN1, correctedFuelFlow;
+    FLOAT64 engineState, timer, simN1, simN2, simCorrectedN1, correctedFuelFlow;
+    // deltaN2
 
     switch (engine) {
       case 1:
@@ -117,7 +117,8 @@ void EngineControl_A380X::update() {
       default:
         updatePrimaryParameters(engine, simN1, simN2);
         correctedFuelFlow = updateFF(engine, simCorrectedN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
-        updateEGT(engine, deltaTime, simOnGround, engineState, simCorrectedN1, correctedFuelFlow, mach, pressureAltitude, ambientPressure);
+        updateEGT(engine, deltaTime, simOnGround, engineState, simCorrectedN1, correctedFuelFlow, mach, pressureAltitude,
+                  ambientTemperature);
         // TODO: This has been commented out in the original code as well - no comment on why
         // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
         break;
@@ -130,9 +131,6 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
   updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
                      nai, wai);
-
-  LOG_INFO("Fadec::EngineControl_A380X::update() - " + std::to_string(msfsHandlerPtr->getSimulationTime()) +
-           " dt: " + std::to_string(deltaTime));
 }
 
 void EngineControl_A380X::shutdown() {
@@ -404,8 +402,8 @@ void EngineControl_A380X::engineStartProcedure(int engine,
                                                FLOAT64 deltaTime,
                                                FLOAT64 timer,
                                                FLOAT64 simN3,
-                                               const FLOAT64 pressureAltitude,
-                                               const FLOAT64 ambientTemperature) {
+                                               [[maybe_unused]] FLOAT64 pressureAltitude,
+                                               FLOAT64 ambientTemperature) {
   FLOAT64 preN3Fbw;
   FLOAT64 newN3Fbw;
   FLOAT64 preEgtFbw;
@@ -655,8 +653,25 @@ void EngineControl_A380X::updateEGT(int engine,
                                     int correctedFuelFlow,
                                     const FLOAT64 mach,
                                     const FLOAT64 pressureAltitude,
-                                    const FLOAT64 ambientPressure) {
-  // TODO: Implement updateEGT
+                                    const FLOAT64 ambientTemperature) {
+
+  FLOAT64 correctedEGT = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
+
+  FLOAT64* engineEgt[4]= {&simData.engineEgtDataPtr->data().engine1Egt,
+                          &simData.engineEgtDataPtr->data().engine2Egt,
+                          &simData.engineEgtDataPtr->data().engine3Egt,
+                          &simData.engineEgtDataPtr->data().engine4Egt};
+
+  if (simOnGround && engineState == 0) {
+    *engineEgt[engine - 1] = ambientTemperature;
+  } else {
+    FLOAT64 egtFbwPrevious = *engineEgt[engine - 1];
+    FLOAT64 egtFbwActual = (correctedEGT * Fadec::theta2(mach, ambientTemperature));
+    egtFbwActual = egtFbwActual + (egtFbwPrevious - egtFbwActual) * (std::exp)(-0.1 * deltaTime);
+    *engineEgt[engine - 1] = egtFbwActual;
+  }
+
+  simData.engineEgtDataPtr->writeDataToSim();
 }
 
 void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
@@ -706,17 +721,17 @@ void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
   const FLOAT64 rightOuterQty = simData.simFuelTankDataPtr->data().fuelTankQuantity10 * fuelWeightGallon;  // LBS
   const FLOAT64 trimQty = simData.simFuelTankDataPtr->data().fuelTankQuantity11 * fuelWeightGallon;        // LBS
 
-  double fuelLeftOuter = 0;
-  double fuelFeedOne = 0;
-  double fuelLeftMid = 0;
-  double fuelLeftInner = 0;
-  double fuelFeedTwo = 0;
-  double fuelFeedThree = 0;
-  double fuelRightInner = 0;
-  double fuelRightMid = 0;
-  double fuelFeedFour = 0;
-  double fuelRightOuter = 0;
-  double fuelTrim = 0;
+  FLOAT64 fuelLeftOuter = 0;
+  FLOAT64 fuelFeedOne = 0;
+  FLOAT64 fuelLeftMid = 0;
+  FLOAT64 fuelLeftInner = 0;
+  FLOAT64 fuelFeedTwo = 0;
+  FLOAT64 fuelFeedThree = 0;
+  FLOAT64 fuelRightInner = 0;
+  FLOAT64 fuelRightMid = 0;
+  FLOAT64 fuelFeedFour = 0;
+  FLOAT64 fuelRightOuter = 0;
+  FLOAT64 fuelTrim = 0;
 
   const FLOAT64 fuelTotalActual = leftOuterQty + feedOneQty + leftMidQty + leftInnerQty + feedTwoQty + feedThreeQty + rightInnerQty +
                                   rightMidQty + feedFourQty + rightOuterQty + trimQty;  // LBS
@@ -979,7 +994,6 @@ void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
       (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
        engine2State == 4 || engine2State == 14 || engine3State == 0 || engine3State == 10 || engine3State == 4 || engine3State == 14 ||
        engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14)) {
-    ScopedTimer saveFuelTimer("saveFuelTimer");
     fuelConfiguration.setFuelLeftOuter(simData.fuelPreDataPtr->data().fuelLeftOuterPre / fuelWeightGallon);
     fuelConfiguration.setFuelFeedOne(simData.fuelPreDataPtr->data().fuelFeedOnePre / fuelWeightGallon);
     fuelConfiguration.setFuelLeftMid(simData.fuelPreDataPtr->data().fuelLeftMidPre / fuelWeightGallon);
@@ -1001,9 +1015,102 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
                                              FLOAT64 ambientTemperature,
                                              FLOAT64 ambientPressure,
                                              FLOAT64 mach,
-                                             FLOAT64 simN1highest,
+                                             [[maybe_unused]] FLOAT64 simN1highest,
                                              bool packs,
                                              bool nai,
                                              bool wai) {
-  // TODO: Implement updateThrustLimits
+  FLOAT64 idle = simData.engineIdleDataPtr->data().idleN1;
+  FLOAT64 flexTemp = simData.miscSimDataPtr->data().flexTemp;
+  FLOAT64 thrustLimitType = simData.thrustLimitDataPtr->data().thrustLimitType;
+  FLOAT64 to = 0;
+  FLOAT64 ga = 0;
+  FLOAT64 toga = 0;
+  FLOAT64 clb = 0;
+  FLOAT64 mct = 0;
+  FLOAT64 flex_to = 0;
+  FLOAT64 flex_ga = 0;
+  FLOAT64 flex = 0;
+
+  // Write all N1 Limits
+  to = ThrustLimits_A380X::limitN1(0, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  ga = ThrustLimits_A380X::limitN1(1, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  if (flexTemp > 0) {
+    flex_to =
+        ThrustLimits_A380X::limitN1(0, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+    flex_ga =
+        ThrustLimits_A380X::limitN1(1, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+  }
+  clb = ThrustLimits_A380X::ThrustLimits_A380X::limitN1(2, pressureAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  mct = ThrustLimits_A380X::limitN1(3, pressureAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
+
+  // transition between TO and GA limit -----------------------------------------------------------------------------
+  FLOAT64 machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
+  toga = to + (ga - to) * machFactorLow;
+  flex = flex_to + (flex_ga - flex_to) * machFactorLow;
+
+  // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
+  if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
+    isFlexActive = true;
+  } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
+    isFlexActive = false;
+  }
+
+  if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
+    isTransitionActive = true;
+    transitionStartTime = simulationTime;
+    transitionFactor = 0.2;
+    // transitionFactor = (clb - flex) / transitionTime;
+  } else if (!isFlexActive) {
+    isTransitionActive = false;
+    transitionStartTime = 0;
+    transitionFactor = 0;
+  }
+
+  FLOAT64 deltaThrust = 0;
+
+  if (isTransitionActive) {
+    double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - waitTime);
+    if (timeDifference > 0 && clb > flex) {
+      deltaThrust = min(clb - flex, timeDifference * transitionFactor);
+    }
+    if (flex + deltaThrust >= clb) {
+      isFlexActive = false;
+      isTransitionActive = false;
+    }
+  }
+
+  if (isFlexActive) {
+    clb = (std::min)(clb, flex) + deltaThrust;
+  }
+
+  prevThrustLimitType = thrustLimitType;
+  prevFlexTemperature = flexTemp;
+
+  // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
+
+  // get factors
+  FLOAT64 machFactor = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
+  FLOAT64 altitudeFactorLow = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 16600) / 500)));
+  FLOAT64 altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 25000) / 500)));
+
+  // adapt thrust limits
+  if (pressureAltitude >= 25000) {
+    mct = (std::max)(clb, mct + (clb - mct) * altitudeFactorHigh);
+    toga = mct;
+  } else {
+    if (mct > toga) {
+      mct = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+      toga = mct;
+    } else {
+      toga = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+    }
+  }
+
+  // write limits ---------------------------------------------------------------------------------------------------
+  simData.thrustLimitDataPtr->data().thrustLimitIdle = idle;
+  simData.thrustLimitDataPtr->data().thrustLimitToga = toga;
+  simData.thrustLimitDataPtr->data().thrustLimitFlex = flex;
+  simData.thrustLimitDataPtr->data().thrustLimitClimb = clb;
+  simData.thrustLimitDataPtr->data().thrustLimitMct = mct;
+  simData.thrustLimitDataPtr->writeDataToSim();
 }
