@@ -91,23 +91,25 @@ impl VariablesToObject for GearPosition {
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        const GEAR_POSITION_FOR_FAKE_DOOR_DRAG: f64 = 0.10;
-        const GEAR_POSITION_FOR_FAKE_LANDING_LIGHT_DRAG: f64 = 0.05;
+        // Ratio of MSFS gear drag corresponding to door drag
+        const FAKE_GEAR_POSITION_FOR_DOOR_DRAG: f64 = 0.10;
+        // Ratio of MSFS gear drag corresponding to landing light drag
+        const FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG: f64 = 0.03;
 
         let gear_deployed = values[0] > 5. || values[1] > 5. || values[2] > 5.;
 
         // Nose msfs gear value is gear position + door drag
         let nose_value_after_drag =
-            (values[3] / 100.) * GEAR_POSITION_FOR_FAKE_DOOR_DRAG + values[0] / 100.;
+            (values[3] / 100.) * FAKE_GEAR_POSITION_FOR_DOOR_DRAG + values[0] / 100.;
 
         // Left msfs gear value is gear position + left door drag + left landing light drag
-        let left_value_after_drag = (values[4] / 100.) * GEAR_POSITION_FOR_FAKE_DOOR_DRAG
-            + (values[6] / 100.) * GEAR_POSITION_FOR_FAKE_LANDING_LIGHT_DRAG
+        let left_value_after_drag = (values[4] / 100.) * FAKE_GEAR_POSITION_FOR_DOOR_DRAG
+            + (values[6] / 100.) * FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG
             + values[1] / 100.;
 
         // Right msfs gear value is gear position + right door drag + right landing light drag
-        let right_value_after_drag = (values[5] / 100.) * GEAR_POSITION_FOR_FAKE_DOOR_DRAG
-            + (values[7] / 100.) * GEAR_POSITION_FOR_FAKE_LANDING_LIGHT_DRAG
+        let right_value_after_drag = (values[5] / 100.) * FAKE_GEAR_POSITION_FOR_DOOR_DRAG
+            + (values[7] / 100.) * FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG
             + values[2] / 100.;
 
         self.nose_position = nose_value_after_drag.min(1.).max(0.);
