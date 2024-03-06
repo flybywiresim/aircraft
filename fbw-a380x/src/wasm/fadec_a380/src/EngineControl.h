@@ -1288,6 +1288,7 @@ class EngineControl {
 
     for (engine = 1; engine <= 4; engine++) {
       // Obtain Engine Time
+      // FKO: Seems to be unused
       engTime = simVars->getEngineTime(engine) + engTime;
 
       // Engine Idle Oil Qty

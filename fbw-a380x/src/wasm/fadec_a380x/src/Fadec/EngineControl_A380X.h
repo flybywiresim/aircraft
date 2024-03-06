@@ -37,11 +37,13 @@ class EngineControl_A380X {
 
   // TODO: most of these below don't have to be fields, they can be local variables in the update methods
 
-  // Engine N2
-  FLOAT64 simN2Engine1Pre;
-  FLOAT64 simN2Engine2Pre;
-  FLOAT64 simN2Engine3Pre;
-  FLOAT64 simN2Engine4Pre;
+  // Engine N3
+  // The A380's N3 values do not exist in the sim - we use the sim's N2 values instead
+  // and calculate the N2 values from the N3 values
+  FLOAT64 engine1N3Pre;
+  FLOAT64 engine2N3Pre;
+  FLOAT64 engine3N3Pre;
+  FLOAT64 engine4N3Pre;
 
   // Oil Temperatures
   FLOAT64 thermalEnergy1;
@@ -49,6 +51,7 @@ class EngineControl_A380X {
   FLOAT64 thermalEnergy3;
   FLOAT64 thermalEnergy4;
   FLOAT64 oilTemperature;
+  FLOAT64 oilTemperatureMax;
   FLOAT64 oilTemperatureEngine1Pre;
   FLOAT64 oilTemperatureEngine2Pre;
   FLOAT64 oilTemperatureEngine3Pre;
@@ -83,6 +86,7 @@ class EngineControl_A380X {
   void shutdown();
 
  private:
+
   /**
    * @brief Initialize the FADEC and Fuel model
    *
@@ -90,34 +94,8 @@ class EngineControl_A380X {
    */
   void initializeEngineControlData();
 
-  /**
-   * @brief Generates the idle parameters for the engine.
-   *
-   * This function calculates the idle parameters based on the current flight conditions.
-   * These parameters are used to determine the engine's behavior when it's at idle state.
-   *
-   * @param pressureAltitude The altitude as determined by the atmospheric pressure.
-   * @param mach The Mach number, which is the ratio of the speed of the aircraft to the speed of sound.
-   * @param ambientTemperature The temperature of the surrounding environment.
-   * @param ambientPressure The pressure of the surrounding environment.
-   */
   void generateIdleParameters(FLOAT64 pressureAltitude, FLOAT64 mach, FLOAT64 ambientTemperature, FLOAT64 ambientPressure);
 
-  /**
-   * @brief Manages the state of an engine based on various parameters.
-   *
-   * This function is responsible for managing the state of an engine based on the provided parameters.
-   * The exact behavior of the function depends on the implementation details, which are not provided in this code excerpt.
-   *
-   * @param engine The identifier for the engine. It is used to specify which engine's state is being managed.
-   * @param engineIgniter The state of the engine igniter. It is used to start the combustion process in the engine.
-   * @param engineStarter The state of the engine starter. It is used to start the rotation of the engine.
-   * @param simN2 The rotational speed of the engine's high-pressure compressor (N2). It is used to determine the current state of the
-   * engine.
-   * @param idleN2 The idle speed of the engine's high-pressure compressor (N2). It is used to determine if the engine is at idle state.
-   * @param pressureAltitude The current altitude of the aircraft. It can affect the performance and behavior of the engine.
-   * @param ambientTemperature The current temperature of the environment. It can also affect the performance and behavior of the engine.
-   */
   void engineStateMachine(int engine,
                           FLOAT64 engineIgniter,
                           FLOAT64 engineStarter,
