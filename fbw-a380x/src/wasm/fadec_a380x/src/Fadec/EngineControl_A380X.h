@@ -79,7 +79,17 @@ class EngineControl_A380X {
   static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
   // DEBUG
-  SimpleProfiler profiler{"Fadec::EngineControl_A380X::update()", 100};
+  SimpleProfiler profilerUpdate{"Fadec::EngineControl_A380X::update()", 100};
+  SimpleProfiler profilerGenerateParameters{"Fadec::EngineControl_A380X::generateIdleParameters()", 100};
+  SimpleProfiler profilerEngineStateMachine{"Fadec::EngineControl_A380X::engineStateMachine()", 100};
+  SimpleProfiler profilerEngineStartProcedure{"Fadec::EngineControl_A380X::engineStartProcedure()", 100};
+  SimpleProfiler profilerEngineShutdownProcedure{"Fadec::EngineControl_A380X::engineShutdownProcedure()", 100};
+  SimpleProfiler profilerUpdateFF{"Fadec::EngineControl_A380X::updateFF()", 100};
+  SimpleProfiler profilerUpdatePrimaryParameters{"Fadec::EngineControl_A380X::updatePrimaryParameters()", 100};
+  SimpleProfiler profilerUpdateEGT{"Fadec::EngineControl_A380X::updateEGT()", 100};
+  SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A380X::updateFuel()", 100};
+  SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A380X::updateThrustLimits()", 100};
+  SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A380X::updateOil()", 100};
 
  public:
   EngineControl_A380X() {}
@@ -89,7 +99,6 @@ class EngineControl_A380X {
   void shutdown();
 
  private:
-
   /**
    * @brief Initialize the FADEC and Fuel model
    *
