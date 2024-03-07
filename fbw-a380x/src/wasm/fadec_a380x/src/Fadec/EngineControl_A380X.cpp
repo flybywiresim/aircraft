@@ -18,6 +18,9 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
 }
 
 void EngineControl_A380X::update() {
+
+  profiler.start();
+
   // Get ATC ID from sim to be able to load and store fuel levels
   // If not yet available, request it from sim and return early
   // If available initialize the engine control data
@@ -140,6 +143,9 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
   updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
                      nai, wai);
+
+  profiler.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0) profiler.print();
 }
 
 void EngineControl_A380X::shutdown() {
