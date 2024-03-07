@@ -78,6 +78,9 @@ class EngineControl_A380X {
   static constexpr double KGS_TO_LBS = 1 / 0.4535934;
   static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
+  // DEBUG
+  SimpleProfiler profiler{"Fadec::EngineControl_A380X::update()", 100};
+
  public:
   EngineControl_A380X() {}
 
