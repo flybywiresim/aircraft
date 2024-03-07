@@ -285,35 +285,20 @@ void EngineControl_A380X::engineStateMachine(int engine,
 
   FLOAT64 engineState;
 
-  switch (engine) {
-    case 1:
-      engineState = simData.engineStateDataPtr->data().engine1State;
-      egtFbw = simData.engineEgtDataPtr->data().engine1Egt;
-      break;
-    case 2:
-      engineState = simData.engineStateDataPtr->data().engine2State;
-      egtFbw = simData.engineEgtDataPtr->data().engine2Egt;
-      break;
-    case 3:
-      engineState = simData.engineStateDataPtr->data().engine3State;
-      egtFbw = simData.engineEgtDataPtr->data().engine3Egt;
-      break;
-    case 4:
-      engineState = simData.engineStateDataPtr->data().engine4State;
-      egtFbw = simData.engineEgtDataPtr->data().engine4Egt;
-      break;
-  }
+  engineState = *simData.engineStateDataPtrArray[engine - 1];
+  egtFbw = *simData.engineEgtDataPtrArray[engine - 1];
 
   // TODO: needs verification - we do not check for pause here as the pause is handle in the main update function
-  //
-  //  // Present State PAUSED
-  //  if (deltaTimeDiff == 0 && engineState < 10) {
-  //    engineState = engineState + 10;
-  //    simPaused = true;
-  //  } else if (deltaTimeDiff == 0 && engineState >= 10) {
-  //    simPaused = true;
-  //  } else {
-  //    simPaused = false;
+  /*
+     // Present State PAUSED
+      if (deltaTimeDiff == 0 && engineState < 10) {
+        engineState = engineState + 10;
+        simPaused = true;
+      } else if (deltaTimeDiff == 0 && engineState >= 10) {
+        simPaused = true;
+      } else {
+        simPaused = false;
+  */
 
   // TODO: we most likely do not need engines states >10 as we do not handle pause
 
@@ -380,34 +365,10 @@ void EngineControl_A380X::engineStateMachine(int engine,
   }
   //  } if paused check
 
-  switch (engine) {
-    case 1:
-      simData.engineStateDataPtr->data().engine1State = engineState;
-      if (resetTimer == 1) {
-        simData.engineTimerDataPtr->data().engine1Timer = 0;
-      }
-      break;
-    case 2:
-      simData.engineStateDataPtr->data().engine2State = engineState;
-      if (resetTimer == 1) {
-        simData.engineTimerDataPtr->data().engine2Timer = 0;
-      }
-      break;
-    case 3:
-      simData.engineStateDataPtr->data().engine3State = engineState;
-      if (resetTimer == 1) {
-        simData.engineTimerDataPtr->data().engine3Timer = 0;
-      }
-      break;
-    case 4:
-      simData.engineStateDataPtr->data().engine4State = engineState;
-      if (resetTimer == 1) {
-        simData.engineTimerDataPtr->data().engine4Timer = 0;
-      }
-      break;
-  }
+  *simData.engineStateDataPtrArray[engine - 1] = engineState;
   simData.engineStateDataPtr->writeDataToSim();
   if (resetTimer == 1) {
+    *simData.engineTimerDataPtrArray[engine - 1] = 0;
     simData.engineTimerDataPtr->writeDataToSim();
   }
 }
@@ -419,6 +380,11 @@ void EngineControl_A380X::engineStartProcedure(int engine,
                                                FLOAT64 simN3,
                                                [[maybe_unused]] FLOAT64 pressureAltitude,
                                                FLOAT64 ambientTemperature) {
+  // DEBUG
+  std::cout << "Fadec::EngineControl_A380X::engineStartProcedure() - engine: " << engine << ", engineState: " << engineState
+            << ", deltaTime: " << deltaTime << ", timer: " << timer << ", simN3: " << simN3 << ", pressureAltitude: " << pressureAltitude
+            << ", ambientTemperature: " << ambientTemperature << std::endl;
+
   FLOAT64 preN3Fbw;
   FLOAT64 newN3Fbw;
   FLOAT64 preEgtFbw;
@@ -430,102 +396,28 @@ void EngineControl_A380X::engineStartProcedure(int engine,
   idleFF = simData.engineIdleDataPtr->data().idleFF;
   idleEGT = simData.engineIdleDataPtr->data().idleEGT;
 
-  // clang-format off
-  // These arrays avoid code duplication for the different engines
-  // TODO: Maybe put these into SimData
-
-   FLOAT64* fuelUsedEngine[4] = {
-    &simData.fuelUsedEngineDataPtr->data().fuelUsedEngine1,
-    &simData.fuelUsedEngineDataPtr->data().fuelUsedEngine2,
-    &simData.fuelUsedEngineDataPtr->data().fuelUsedEngine3,
-    &simData.fuelUsedEngineDataPtr->data().fuelUsedEngine4
-  };
-
-  FLOAT64* engineTimer[4] = {
-    &simData.engineTimerDataPtr->data().engine1Timer,
-    &simData.engineTimerDataPtr->data().engine2Timer,
-    &simData.engineTimerDataPtr->data().engine3Timer,
-    &simData.engineTimerDataPtr->data().engine4Timer
-  };
-
-  FLOAT64* engineCorrectedN2[4] = {
-    &simData.simEngineCorrectedN2DataPtr->data().engine1CorrectedN2,
-    &simData.simEngineCorrectedN2DataPtr->data().engine2CorrectedN2,
-    &simData.simEngineCorrectedN2DataPtr->data().engine3CorrectedN2,
-    &simData.simEngineCorrectedN2DataPtr->data().engine4CorrectedN2
-  };
-
-  FLOAT64* engineN2[4] = {
-    &simData.simEngineN2DataPtr->data().engine1N2,
-    &simData.simEngineN2DataPtr->data().engine2N2,
-    &simData.simEngineN2DataPtr->data().engine3N2,
-    &simData.simEngineN2DataPtr->data().engine4N2
-  };
-
-  FLOAT64* engineEgt[4] = {
-    &simData.engineEgtDataPtr->data().engine1Egt,
-    &simData.engineEgtDataPtr->data().engine2Egt,
-    &simData.engineEgtDataPtr->data().engine3Egt,
-    &simData.engineEgtDataPtr->data().engine4Egt
-  };
-
-  FLOAT64* engineN3[4] = {
-    &simData.engineN3DataPtr->data().engine1N3,
-    &simData.engineN3DataPtr->data().engine2N3,
-    &simData.engineN3DataPtr->data().engine3N3,
-    &simData.engineN3DataPtr->data().engine4N3
-  };
-
-  FLOAT64* engineN1[4] = {
-    &simData.engineN1DataPtr->data().engine1N1,
-    &simData.engineN1DataPtr->data().engine2N1,
-    &simData.engineN1DataPtr->data().engine3N1,
-    &simData.engineN1DataPtr->data().engine4N1
-  };
-
-  FLOAT64* engineFf[4] = {
-    &simData.engineFuelFlowDataPtr->data().engine1Ff,
-    &simData.engineFuelFlowDataPtr->data().engine2Ff,
-    &simData.engineFuelFlowDataPtr->data().engine3Ff,
-    &simData.engineFuelFlowDataPtr->data().engine4Ff
-  };
-
-  FLOAT64* engineStates[4] = {
-    &simData.engineStateDataPtr->data().engine1State,
-    &simData.engineStateDataPtr->data().engine2State,
-    &simData.engineStateDataPtr->data().engine3State,
-    &simData.engineStateDataPtr->data().engine4State
-  };
-
-  FLOAT64* engineOilTemperature[4] = {
-    &simData.simEngineOilTempDataPtr->data().engine1OilTemperature,
-    &simData.simEngineOilTempDataPtr->data().engine2OilTemperature,
-    &simData.simEngineOilTempDataPtr->data().engine3OilTemperature,
-    &simData.simEngineOilTempDataPtr->data().engine4OilTemperature
-  };
-  // clang-format on
-
   if (timer < 1.7) {
     if (msfsHandlerPtr->getSimOnGround()) {
-      *fuelUsedEngine[engine - 1] = 0;
+      *simData.fuelUsedEngineDataPtrArray[engine - 1] = 0;
       simData.fuelUsedEngineDataPtr->writeDataToSim();
     }
-    *engineTimer[engine - 1] = timer + deltaTime;
+    *simData.engineTimerDataPtrArray[engine - 1] = timer + deltaTime;
     simData.engineTimerDataPtr->writeDataToSim();
 
-    *engineCorrectedN2[engine - 1] = 0;
+    *simData.simEngineCorrectedN2DataPtrArray[engine - 1] = 0;
     simData.simEngineCorrectedN2DataPtr->writeDataToSim();
   } else {
-    preN3Fbw = *engineN2[engine - 1];
-    preEgtFbw = *engineEgt[engine - 1];
+    preN3Fbw = *simData.engineN2DataPtrArray[engine - 1];
+    preEgtFbw = *simData.engineEgtDataPtrArray[engine - 1];
     newN3Fbw = Polynomial_A380X::startN3(simN3, preN3Fbw, idleN3);
     startEgtFbw = Polynomial_A380X::startEGT(newN3Fbw, idleN3, ambientTemperature, idleEGT);
     shutdownEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
 
-    *engineN3[engine - 1] = newN3Fbw;
-    *engineN2[engine - 1] = newN3Fbw + 0.7;
-    *engineN1[engine - 1] = Polynomial_A380X::startN1(newN3Fbw, idleN3, idleN1);
-    *engineFf[engine - 1] = Polynomial_A380X::startFF(newN3Fbw, idleN3, idleFF);
+    *simData.engineN3DataPtrArray[engine - 1] = newN3Fbw;
+    *simData.engineN2DataPtrArray[engine - 1] = newN3Fbw + 0.7;
+    *simData.engineN1DataPtrArray[engine - 1] = Polynomial_A380X::startN1(newN3Fbw, idleN3, idleN1);
+    *simData.engineFuelFlowDataPtrArray[engine - 1] = Polynomial_A380X::startFF(newN3Fbw, idleN3, idleFF);
+
     simData.engineN3DataPtr->writeDataToSim();
     simData.engineN2DataPtr->writeDataToSim();
     simData.engineN1DataPtr->writeDataToSim();
@@ -533,28 +425,33 @@ void EngineControl_A380X::engineStartProcedure(int engine,
 
     if (engineState == 3) {
       if ((std::abs)(startEgtFbw - preEgtFbw) <= 1.5) {
-        *engineEgt[engine - 1] = startEgtFbw;
-        *engineStates[engine - 1] = 2;
+        *simData.engineEgtDataPtrArray[engine - 1] = startEgtFbw;
+        *simData.engineStateDataPtrArray[engine - 1] = 2;
       } else if (startEgtFbw > preEgtFbw) {
-        *engineEgt[engine - 1] = preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw));
+        *simData.engineEgtDataPtrArray[engine - 1] = preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw));
       } else {
-        *engineEgt[engine - 1] = shutdownEgtFbw;
+        *simData.engineEgtDataPtrArray[engine - 1] = shutdownEgtFbw;
       }
     } else {
-      *engineEgt[engine - 1] = startEgtFbw;
+      *simData.engineEgtDataPtrArray[engine - 1] = startEgtFbw;
     }
     simData.engineEgtDataPtr->writeDataToSim();
     simData.engineStateDataPtr->writeDataToSim();
 
     oilTemperature = Polynomial_A380X::startOilTemp(newN3Fbw, idleN3, ambientTemperature);
     oilTemperatureEngine1Pre = oilTemperature;
-    *engineOilTemperature[engine - 1] = oilTemperature;
+    *simData.simEngineOilTempDataPtrArray[engine - 1] = oilTemperature;
     simData.simEngineOilTempDataPtr->writeDataToSim();
   }
 }
 
 // Original comment: Engine Shutdown Procedure - TEMPORARY SOLUTION
 void EngineControl_A380X::engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer) {
+  // DEBUG
+  std::cout << "Fadec::EngineControl_A380X::engineShutdownProcedure() - engine: " << engine
+            << ", ambientTemperature: " << ambientTemperature << ", simN1: " << simN1 << ", deltaTime: " << deltaTime
+            << ", timer: " << timer << std::endl;
+
   double preN1Fbw;
   double preN3Fbw;
   double preEgtFbw;
@@ -562,63 +459,26 @@ void EngineControl_A380X::engineShutdownProcedure(int engine, FLOAT64 ambientTem
   double newN3Fbw;
   double newEgtFbw;
 
-  // This is much short and less code duplication than a switch statement
-
-  FLOAT64* simDataEngineTimer[4] = {
-      &simData.engineTimerDataPtr->data().engine1Timer,  // 1
-      &simData.engineTimerDataPtr->data().engine2Timer,  // 2
-      &simData.engineTimerDataPtr->data().engine3Timer,  // 3
-      &simData.engineTimerDataPtr->data().engine4Timer   // 4
-  };
-
-  FLOAT64* simDataEngineN1[4] = {
-      &simData.engineN1DataPtr->data().engine1N1,  // 1
-      &simData.engineN1DataPtr->data().engine2N1,  // 2
-      &simData.engineN1DataPtr->data().engine3N1,  // 3
-      &simData.engineN1DataPtr->data().engine4N1   // 4
-  };
-
-  FLOAT64* simDataEngineN2[4] = {
-      &simData.engineN2DataPtr->data().engine1N2,  // 1
-      &simData.engineN2DataPtr->data().engine2N2,  // 2
-      &simData.engineN2DataPtr->data().engine3N2,  // 3
-      &simData.engineN2DataPtr->data().engine4N2   // 4
-  };
-
-  FLOAT64* simDataEngineN3[4] = {
-      &simData.engineN3DataPtr->data().engine1N3,  // 1
-      &simData.engineN3DataPtr->data().engine2N3,  // 2
-      &simData.engineN3DataPtr->data().engine3N3,  // 3
-      &simData.engineN3DataPtr->data().engine4N3   // 4
-  };
-
-  FLOAT64* simDataEngineEgt[4] = {
-      &simData.engineEgtDataPtr->data().engine1Egt,  // 1
-      &simData.engineEgtDataPtr->data().engine2Egt,  // 2
-      &simData.engineEgtDataPtr->data().engine3Egt,  // 3
-      &simData.engineEgtDataPtr->data().engine4Egt   // 4
-  };
-
   if (timer < 1.8) {
-    *simDataEngineTimer[engine - 1] = timer + deltaTime;
+    *simData.engineTimerDataPtrArray[engine - 1] = timer + deltaTime;
     simData.engineTimerDataPtr->writeDataToSim();
   } else {
-    preN1Fbw = *simDataEngineN1[engine - 1];
-    preN3Fbw = *simDataEngineN3[engine - 1];
-    preEgtFbw = *simDataEngineEgt[engine - 1];
+    preN1Fbw = *simData.engineN1DataPtrArray[engine - 1];
+    preN3Fbw = *simData.engineN3DataPtrArray[engine - 1];
+    preEgtFbw = *simData.engineEgtDataPtrArray[engine - 1];
     newN1Fbw = Polynomial_A380X::shutdownN1(preN1Fbw, deltaTime);
     if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
       newN1Fbw = simN1;
     }
     newN3Fbw = Polynomial_A380X::shutdownN3(preN3Fbw, deltaTime);
     newEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
-    *simDataEngineN1[engine - 1] = newN1Fbw;
+    *simData.engineN1DataPtrArray[engine - 1] = newN1Fbw;
     simData.engineN1DataPtr->writeDataToSim();
-    *simDataEngineN2[engine - 1] = newN3Fbw + 0.7;
+    *simData.engineN2DataPtrArray[engine - 1] = newN3Fbw + 0.7;
     simData.engineN2DataPtr->writeDataToSim();
-    *simDataEngineN3[engine - 1] = newN3Fbw;
+    *simData.engineN3DataPtrArray[engine - 1] = newN3Fbw;
     simData.engineN3DataPtr->writeDataToSim();
-    *simDataEngineEgt[engine - 1] = newEgtFbw;
+    *simData.engineEgtDataPtrArray[engine - 1] = newEgtFbw;
     simData.engineEgtDataPtr->writeDataToSim();
   }
 }
@@ -637,54 +497,142 @@ int EngineControl_A380X::updateFF(int engine,
   if (correctedFuelFlow < 1) {
     outFlow = 0;
   } else {
-    outFlow =
-        (correctedFuelFlow * LBS_TO_KGS * Fadec::delta2(mach, ambientPressure) * (std::sqrt)(Fadec::theta2(mach, ambientTemperature)));
+    outFlow = (correctedFuelFlow * LBS_TO_KGS * Fadec::delta2(mach, ambientPressure)  //
+               * (std::sqrt)(Fadec::theta2(mach, ambientTemperature)));
   }
 
-  switch (engine) {
-    case 1:
-      simData.engineFuelFlowDataPtr->data().engine1Ff = outFlow;
-      break;
-    case 2:
-      simData.engineFuelFlowDataPtr->data().engine2Ff = outFlow;
-      break;
-    case 3:
-      simData.engineFuelFlowDataPtr->data().engine3Ff = outFlow;
-      break;
-    case 4:
-      simData.engineFuelFlowDataPtr->data().engine4Ff = outFlow;
-      break;
-  }
+  *simData.engineFuelFlowDataPtrArray[engine - 1] = outFlow;
   simData.engineFuelFlowDataPtr->writeDataToSim();
 
   return correctedFuelFlow;
 }
 
+void EngineControl_A380X::updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp) {
+  // DEBUG
+  std::cout << "Fadec::EngineControl_A380X::updateOil() - engine: " << engine << ", thrust: " << thrust << ", simN3: " << simN3
+            << ", deltaN3: " << deltaN3 << ", deltaTime: " << deltaTime << ", ambientTemp: " << ambientTemp << std::endl;
+
+  // TODO: Unused as per original code needs yet to be migrated
+  /*  double steadyTemperature;
+    double thermalEnergy;
+    double oilTemperaturePre;
+    double oilQtyActual;
+    double oilTotalActual;
+    double oilQtyObjective;
+    double oilBurn;
+    double oilPressureIdle;
+    double oilPressure;
+
+    //--------------------------------------------
+    // Engine Reading
+    //--------------------------------------------
+    if (engine == 1) {
+      steadyTemperature = simVars->getEngine1EGT();
+      thermalEnergy = thermalEnergy1;
+      oilTemperaturePre = oilTemperatureEngine1Pre;
+      oilQtyActual = simVars->getEngine1Oil();
+      oilTotalActual = simVars->getEngine1TotalOil();
+    } else if (engine == 2) {
+      steadyTemperature = simVars->getEngine2EGT();
+      thermalEnergy = thermalEnergy2;
+      oilTemperaturePre = oilTemperatureEngine2Pre;
+      oilQtyActual = simVars->getEngine2Oil();
+      oilTotalActual = simVars->getEngine2TotalOil();
+    } else if (engine == 3) {
+      steadyTemperature = simVars->getEngine3EGT();
+      thermalEnergy = thermalEnergy3;
+      oilTemperaturePre = oilTemperatureEngine3Pre;
+      oilQtyActual = simVars->getEngine3Oil();
+      oilTotalActual = simVars->getEngine3TotalOil();
+    } else {
+      steadyTemperature = simVars->getEngine4EGT();
+      thermalEnergy = thermalEnergy4;
+      oilTemperaturePre = oilTemperatureEngine4Pre;
+      oilQtyActual = simVars->getEngine4Oil();
+      oilTotalActual = simVars->getEngine4TotalOil();
+    }
+
+    //--------------------------------------------
+    // Oil Temperature
+    //--------------------------------------------
+    if (simOnGround == 1 && engineState == 0 && ambientTemp > oilTemperaturePre - 10) {
+      oilTemperature = ambientTemp;
+    } else {
+      if (steadyTemperature > oilTemperatureMax) {
+        steadyTemperature = oilTemperatureMax;
+      }
+      thermalEnergy = (0.995 * thermalEnergy) + (deltaN3 / deltaTime);
+      oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
+    }
+
+    //--------------------------------------------
+    // Oil Quantity
+    //--------------------------------------------
+    // Calculating Oil Qty as a function of thrust
+    oilQtyObjective = oilTotalActual * (1 - poly->oilGulpPct(thrust));
+    oilQtyActual = oilQtyActual - (oilTemperature - oilTemperaturePre);
+
+    // Oil burnt taken into account for tank and total oil
+    oilBurn = (0.00011111 * deltaTime);
+    oilQtyActual = oilQtyActual - oilBurn;
+    oilTotalActual = oilTotalActual - oilBurn;
+
+    //--------------------------------------------
+    // Oil Pressure
+    //--------------------------------------------
+    oilPressureIdle = 0;
+
+    oilPressure = poly->oilPressure(simN3) + oilPressureIdle;
+
+    //--------------------------------------------
+    // Engine Writing
+    //--------------------------------------------
+    if (engine == 1) {
+      thermalEnergy1 = thermalEnergy;
+      oilTemperatureEngine1Pre = oilTemperature;
+      simVars->setEngine1Oil(oilQtyActual);
+      simVars->setEngine1TotalOil(oilTotalActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+      &oilPressure);
+    } else if (engine == 2) {
+      thermalEnergy2 = thermalEnergy;
+      oilTemperatureEngine2Pre = oilTemperature;
+      simVars->setEngine2Oil(oilQtyActual);
+      simVars->setEngine2TotalOil(oilTotalActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+      &oilPressure);
+    } else if (engine == 3) {
+      thermalEnergy3 = thermalEnergy;
+      oilTemperatureEngine3Pre = oilTemperature;
+      simVars->setEngine3Oil(oilQtyActual);
+      simVars->setEngine3TotalOil(oilTotalActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+      &oilPressure);
+    } else {
+      thermalEnergy4 = thermalEnergy;
+      oilTemperatureEngine4Pre = oilTemperature;
+      simVars->setEngine4Oil(oilQtyActual);
+      simVars->setEngine4TotalOil(oilTotalActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+      &oilPressure);
+    }*/
+}
+
 void EngineControl_A380X::updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3) {
-  switch (engine) {
-    case 1:
-      simData.engineN1DataPtr->data().engine1N1 = simN1;
-      simData.engineN2DataPtr->data().engine1N2 = simN3 + 0.7;
-      simData.engineN3DataPtr->data().engine1N3 = simN3;
-      break;
-    case 2:
-      simData.engineN1DataPtr->data().engine2N1 = simN1;
-      simData.engineN2DataPtr->data().engine2N2 = simN3 + 0.7;
-      simData.engineN3DataPtr->data().engine2N3 = simN3;
-      break;
-    case 3:
-      simData.engineN1DataPtr->data().engine3N1 = simN1;
-      simData.engineN2DataPtr->data().engine3N2 = simN3 + 0.7;
-      simData.engineN3DataPtr->data().engine3N3 = simN3;
-      break;
-    case 4:
-      simData.engineN1DataPtr->data().engine4N1 = simN1;
-      simData.engineN2DataPtr->data().engine4N2 = simN3 + 0.7;
-      simData.engineN3DataPtr->data().engine4N3 = simN3;
-      break;
-  }
+  // Use the array of pointers to assign the values
+  *simData.engineN1DataPtrArray[engine - 1] = simN1;
   simData.engineN1DataPtr->writeDataToSim();
+  *simData.engineN2DataPtrArray[engine - 1] = simN3 > 0 ? simN3 + 0.7 : simN3;
   simData.engineN2DataPtr->writeDataToSim();
+  *simData.engineN3DataPtrArray[engine - 1] = simN3;
   simData.engineN3DataPtr->writeDataToSim();
 }
 
