@@ -5,6 +5,8 @@
 
 #include "MsfsHandler.h"
 
+#include "ScopedTimer.hpp"
+#include "SimpleProfiler.hpp"
 #include "lib/inih/ini_type_conversion.h"
 #include "logging.h"
 
@@ -18,8 +20,7 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
 }
 
 void EngineControl_A380X::update() {
-
-  profiler.start();
+  profilerUpdate.start();
 
   // Get ATC ID from sim to be able to load and store fuel levels
   // If not yet available, request it from sim and return early
@@ -144,8 +145,9 @@ void EngineControl_A380X::update() {
   updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
                      nai, wai);
 
-  profiler.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0) profiler.print();
+  profilerUpdate.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdate.print();
 }
 
 void EngineControl_A380X::shutdown() {
@@ -159,6 +161,8 @@ void EngineControl_A380X::shutdown() {
 
 void EngineControl_A380X::initializeEngineControlData() {
   LOG_INFO("Fadec::EngineControl_A380X::initializeEngineControlData()");
+
+  ScopedTimer timer("Fadec::EngineControl_A380X::initializeEngineControlData()");
 
   // Load fuel configuration from file
   const std::string fuelConfigFilename = FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION;
@@ -261,6 +265,8 @@ void EngineControl_A380X::initializeEngineControlData() {
 }
 
 void EngineControl_A380X::generateIdleParameters(FLOAT64 pressAltitude, FLOAT64 mach, FLOAT64 ambientTemp, FLOAT64 ambientPressure) {
+  profilerGenerateParameters.start();
+
   const double idleCN1 = Table1502_A380X::iCN1(pressAltitude, mach, ambientTemp);
 
   idleN1 = idleCN1 * sqrt(Fadec::theta2(0, ambientTemp));
@@ -276,6 +282,10 @@ void EngineControl_A380X::generateIdleParameters(FLOAT64 pressAltitude, FLOAT64 
   simData.engineIdleDataPtr->data().idleFF = idleFF;
   simData.engineIdleDataPtr->data().idleEGT = idleEGT;
   simData.engineIdleDataPtr->writeDataToSim();
+
+  profilerGenerateParameters.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerGenerateParameters.print();
 }
 
 void EngineControl_A380X::engineStateMachine(int engine,
@@ -286,6 +296,8 @@ void EngineControl_A380X::engineStateMachine(int engine,
                                              [[maybe_unused]] FLOAT64 pressureAltitude,
                                              FLOAT64 ambientTemperature,
                                              [[maybe_unused]] FLOAT64 deltaTime) {
+  profilerEngineStateMachine.start();
+
   int resetTimer = 0;
   double egtFbw = 0;
 
@@ -377,6 +389,10 @@ void EngineControl_A380X::engineStateMachine(int engine,
     *simData.engineTimerDataPtrArray[engine - 1] = 0;
     simData.engineTimerDataPtr->writeDataToSim();
   }
+
+  profilerEngineStateMachine.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerEngineStateMachine.print();
 }
 
 void EngineControl_A380X::engineStartProcedure(int engine,
@@ -386,10 +402,7 @@ void EngineControl_A380X::engineStartProcedure(int engine,
                                                FLOAT64 simN3,
                                                [[maybe_unused]] FLOAT64 pressureAltitude,
                                                FLOAT64 ambientTemperature) {
-  // DEBUG
-  std::cout << "Fadec::EngineControl_A380X::engineStartProcedure() - engine: " << engine << ", engineState: " << engineState
-            << ", deltaTime: " << deltaTime << ", timer: " << timer << ", simN3: " << simN3 << ", pressureAltitude: " << pressureAltitude
-            << ", ambientTemperature: " << ambientTemperature << std::endl;
+  profilerEngineStartProcedure.start();
 
   FLOAT64 preN3Fbw;
   FLOAT64 newN3Fbw;
@@ -449,14 +462,15 @@ void EngineControl_A380X::engineStartProcedure(int engine,
     *simData.simEngineOilTempDataPtrArray[engine - 1] = oilTemperature;
     simData.simEngineOilTempDataPtr->writeDataToSim();
   }
+
+  profilerEngineStartProcedure.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerEngineStartProcedure.print();
 }
 
 // Original comment: Engine Shutdown Procedure - TEMPORARY SOLUTION
 void EngineControl_A380X::engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer) {
-  // DEBUG
-  std::cout << "Fadec::EngineControl_A380X::engineShutdownProcedure() - engine: " << engine
-            << ", ambientTemperature: " << ambientTemperature << ", simN1: " << simN1 << ", deltaTime: " << deltaTime
-            << ", timer: " << timer << std::endl;
+  profilerEngineShutdownProcedure.start();
 
   double preN1Fbw;
   double preN3Fbw;
@@ -487,6 +501,10 @@ void EngineControl_A380X::engineShutdownProcedure(int engine, FLOAT64 ambientTem
     *simData.engineEgtDataPtrArray[engine - 1] = newEgtFbw;
     simData.engineEgtDataPtr->writeDataToSim();
   }
+
+  profilerEngineShutdownProcedure.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerEngineShutdownProcedure.print();
 }
 
 int EngineControl_A380X::updateFF(int engine,
@@ -495,6 +513,8 @@ int EngineControl_A380X::updateFF(int engine,
                                   FLOAT64 pressureAltitude,
                                   FLOAT64 ambientTemperature,
                                   FLOAT64 ambientPressure) {
+  profilerUpdateFF.start();
+
   double outFlow;
 
   FLOAT64 correctedFuelFlow = Polynomial_A380X::correctedFuelFlow(simCN1, mach, pressureAltitude);  // in lbs/hr.
@@ -510,14 +530,19 @@ int EngineControl_A380X::updateFF(int engine,
   *simData.engineFuelFlowDataPtrArray[engine - 1] = outFlow;
   simData.engineFuelFlowDataPtr->writeDataToSim();
 
+  profilerUpdateFF.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdateFF.print();
+
   return correctedFuelFlow;
 }
 
-void EngineControl_A380X::updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp) {
-  // DEBUG
-  std::cout << "Fadec::EngineControl_A380X::updateOil() - engine: " << engine << ", thrust: " << thrust << ", simN3: " << simN3
-            << ", deltaN3: " << deltaN3 << ", deltaTime: " << deltaTime << ", ambientTemp: " << ambientTemp << std::endl;
-
+void EngineControl_A380X::updateOil([[maybe_unused]] int engine,            //
+                                    [[maybe_unused]] double thrust,         //
+                                    [[maybe_unused]] double simN3,          //
+                                    [[maybe_unused]] double deltaN3,        //
+                                    [[maybe_unused]] double deltaTime,      //
+                                    [[maybe_unused]] double ambientTemp) {  //
   // TODO: Unused as per original code needs yet to be migrated
   /*  double steadyTemperature;
     double thermalEnergy;
@@ -633,6 +658,8 @@ void EngineControl_A380X::updateOil(int engine, double thrust, double simN3, dou
 }
 
 void EngineControl_A380X::updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3) {
+  profilerUpdatePrimaryParameters.start();
+
   // Use the array of pointers to assign the values
   *simData.engineN1DataPtrArray[engine - 1] = simN1;
   simData.engineN1DataPtr->writeDataToSim();
@@ -640,6 +667,10 @@ void EngineControl_A380X::updatePrimaryParameters(int engine, FLOAT64 simN1, FLO
   simData.engineN2DataPtr->writeDataToSim();
   *simData.engineN3DataPtrArray[engine - 1] = simN3;
   simData.engineN3DataPtr->writeDataToSim();
+
+  profilerUpdatePrimaryParameters.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdatePrimaryParameters.print();
 }
 
 void EngineControl_A380X::updateEGT(int engine,
@@ -651,6 +682,8 @@ void EngineControl_A380X::updateEGT(int engine,
                                     const FLOAT64 mach,
                                     const FLOAT64 pressureAltitude,
                                     const FLOAT64 ambientTemperature) {
+  profilerUpdateEGT.start();
+
   FLOAT64 correctedEGT = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
 
   FLOAT64* engineEgt[4] = {
@@ -669,9 +702,15 @@ void EngineControl_A380X::updateEGT(int engine,
     *(engineEgt[engine - 1]) = egtFbwActual;
   }
   simData.engineEgtDataPtr->writeDataToSim();
+
+  profilerUpdateEGT.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdateEGT.print();
 }
 
 void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
+  profilerUpdateFuel.start();
+
   bool uiFuelTamper = false;
 
   const FLOAT64 refuelRate = simData.miscSimDataPtr->data().refuelRate;
@@ -981,6 +1020,10 @@ void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
     fuelConfiguration.saveConfigurationToIni();
     lastFuelSaveTime = msfsHandlerPtr->getSimulationTime();
   }
+
+  profilerUpdateFuel.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdateFuel.print();
 }
 
 void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
@@ -992,6 +1035,8 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
                                              bool packs,
                                              bool nai,
                                              bool wai) {
+  profilerUpdateThrustLimits.start();
+
   FLOAT64 idle = simData.engineIdleDataPtr->data().idleN1;
   FLOAT64 flexTemp = simData.miscSimDataPtr->data().flexTemp;
   FLOAT64 thrustLimitType = simData.thrustLimitDataPtr->data().thrustLimitType;
@@ -1087,4 +1132,8 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
   simData.thrustLimitDataPtr->data().thrustLimitClimb = clb;
   simData.thrustLimitDataPtr->data().thrustLimitMct = mct;
   simData.thrustLimitDataPtr->writeDataToSim();
+
+  profilerUpdateThrustLimits.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+    profilerUpdateThrustLimits.print();
 }
