@@ -466,148 +466,148 @@ class FadecSimData_A380X {
     miscSimDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     // SimVars
-    simEngineN1DataPtr = dm->make_datadefinition_var<SimEngineN1Data>("SIM ENGINE N1 DATA", simEngineN1DataDef);
-    simEngineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineN1DataPtr = dm->make_datadefinition_var<SimEngineN1Data>("SIM ENGINE N1 DATA", simEngineN1DataDef, UpdateMode::AUTO_WRITE);
+    simEngineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineN1DataPtrArray[0] = &this->simEngineN1DataPtr->data().engine1N1;
     simEngineN1DataPtrArray[1] = &this->simEngineN1DataPtr->data().engine2N1;
     simEngineN1DataPtrArray[2] = &this->simEngineN1DataPtr->data().engine3N1;
     simEngineN1DataPtrArray[3] = &this->simEngineN1DataPtr->data().engine4N1;
 
-    simEngineN2DataPtr = dm->make_datadefinition_var<SimEngineN2Data>("SIM ENGINE N2 DATA", simEngineN2DataDef);
-    simEngineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineN2DataPtr = dm->make_datadefinition_var<SimEngineN2Data>("SIM ENGINE N2 DATA", simEngineN2DataDef, UpdateMode::AUTO_WRITE);
+    simEngineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineN2DataPtrArray[0] = &this->simEngineN2DataPtr->data().engine1N2;
     simEngineN2DataPtrArray[1] = &this->simEngineN2DataPtr->data().engine2N2;
     simEngineN2DataPtrArray[2] = &this->simEngineN2DataPtr->data().engine3N2;
     simEngineN2DataPtrArray[3] = &this->simEngineN2DataPtr->data().engine4N2;
 
-    simEngineCorrectedN1DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN1Data>("SIM ENGINE CN1 DATA", simEngineCorrectedN1DataDef);
-    simEngineCorrectedN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCorrectedN1DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN1Data>("SIM ENGINE CN1 DATA", simEngineCorrectedN1DataDef, UpdateMode::AUTO_WRITE);
+    simEngineCorrectedN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineCorrectedN1DataPtrArray[0] = &this->simEngineCorrectedN1DataPtr->data().engine1CorrectedN1;
     simEngineCorrectedN1DataPtrArray[1] = &this->simEngineCorrectedN1DataPtr->data().engine2CorrectedN1;
     simEngineCorrectedN1DataPtrArray[2] = &this->simEngineCorrectedN1DataPtr->data().engine3CorrectedN1;
     simEngineCorrectedN1DataPtrArray[3] = &this->simEngineCorrectedN1DataPtr->data().engine4CorrectedN1;
 
-    simEngineCorrectedN2DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN2Data>("SIM ENGINE CN2 DATA", simEngineCorrectedN2DataDef);
-    simEngineCorrectedN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCorrectedN2DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN2Data>("SIM ENGINE CN2 DATA", simEngineCorrectedN2DataDef, UpdateMode::AUTO_WRITE);
+    simEngineCorrectedN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineCorrectedN2DataPtrArray[0] = &this->simEngineCorrectedN2DataPtr->data().engine1CorrectedN2;
     simEngineCorrectedN2DataPtrArray[1] = &this->simEngineCorrectedN2DataPtr->data().engine2CorrectedN2;
     simEngineCorrectedN2DataPtrArray[2] = &this->simEngineCorrectedN2DataPtr->data().engine3CorrectedN2;
     simEngineCorrectedN2DataPtrArray[3] = &this->simEngineCorrectedN2DataPtr->data().engine4CorrectedN2;
 
-    simThrustDataPtr = dm->make_datadefinition_var<simThrustData>("SIM THRUST DATA", simThrustDataDef);
+    simThrustDataPtr = dm->make_datadefinition_var<simThrustData>("SIM THRUST DATA", simThrustDataDef, UpdateMode::AUTO_WRITE);
     simThrustDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simThrustDataPtrArray[0] = &this->simThrustDataPtr->data().engine1Thrust;
     simThrustDataPtrArray[1] = &this->simThrustDataPtr->data().engine2Thrust;
     simThrustDataPtrArray[2] = &this->simThrustDataPtr->data().engine3Thrust;
     simThrustDataPtrArray[3] = &this->simThrustDataPtr->data().engine4Thrust;
 
-    simEngineCombustionDataPtr = dm->make_datadefinition_var<SimEngineCombustionData>("SIM ENGINE COMB DATA", simEngineCombustionDataDef);
-    simEngineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCombustionDataPtr = dm->make_datadefinition_var<SimEngineCombustionData>("SIM ENGINE COMB DATA", simEngineCombustionDataDef, UpdateMode::AUTO_WRITE);
+    simEngineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineCombustionDataPtrArray[0] = &this->simEngineCombustionDataPtr->data().engine1Combustion;
     simEngineCombustionDataPtrArray[1] = &this->simEngineCombustionDataPtr->data().engine2Combustion;
     simEngineCombustionDataPtrArray[2] = &this->simEngineCombustionDataPtr->data().engine3Combustion;
     simEngineCombustionDataPtrArray[3] = &this->simEngineCombustionDataPtr->data().engine4Combustion;
 
-    simEngineOilTempDataPtr = dm->make_datadefinition_var<SimEngineOilTempData>("SIM ENGINE OIL TEMPDATA", simEngineOilTemperatureDataDef);
-    simEngineOilTempDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineOilTempDataPtr = dm->make_datadefinition_var<SimEngineOilTempData>("SIM ENGINE OIL TEMPDATA", simEngineOilTemperatureDataDef, UpdateMode::AUTO_WRITE);
+    simEngineOilTempDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     simEngineOilTempDataPtrArray[0] = &this->simEngineOilTempDataPtr->data().engine1OilTemperature;
     simEngineOilTempDataPtrArray[1] = &this->simEngineOilTempDataPtr->data().engine2OilTemperature;
     simEngineOilTempDataPtrArray[2] = &this->simEngineOilTempDataPtr->data().engine3OilTemperature;
     simEngineOilTempDataPtrArray[3] = &this->simEngineOilTempDataPtr->data().engine4OilTemperature;
 
-    simFuelTankDataPtr = dm->make_datadefinition_var<SimFuelTankData>("SIM FUEL TANK DATA", simFuelTankDataDef);
-    simFuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simFuelTankDataPtr = dm->make_datadefinition_var<SimFuelTankData>("SIM FUEL TANK DATA", simFuelTankDataDef, UpdateMode::AUTO_WRITE);
+    simFuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
     // LVARs
-    engineIdleDataPtr = dm->make_datadefinition_var<EngineIdleData>("ENGINE IDLE DATA", engineIdleDataDef);
-    engineIdleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineIdleDataPtr = dm->make_datadefinition_var<EngineIdleData>("ENGINE IDLE DATA", engineIdleDataDef, UpdateMode::AUTO_WRITE); //
+    engineIdleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineIdleDataPtrArray[0] = &this->engineIdleDataPtr->data().idleN1;
     engineIdleDataPtrArray[1] = &this->engineIdleDataPtr->data().idleN2;
     engineIdleDataPtrArray[2] = &this->engineIdleDataPtr->data().idleFF;
     engineIdleDataPtrArray[3] = &this->engineIdleDataPtr->data().idleEGT;
 
-    engineN3DataPtr = dm->make_datadefinition_var<EngineN3Data>("ENGINE N3 DATA", engineN3DataDef);
-    engineN3DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN3DataPtr = dm->make_datadefinition_var<EngineN3Data>("ENGINE N3 DATA", engineN3DataDef, UpdateMode::AUTO_WRITE); //
+    engineN3DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineN3DataPtrArray[0] = &this->engineN3DataPtr->data().engine1N3;
     engineN3DataPtrArray[1] = &this->engineN3DataPtr->data().engine2N3;
     engineN3DataPtrArray[2] = &this->engineN3DataPtr->data().engine3N3;
     engineN3DataPtrArray[3] = &this->engineN3DataPtr->data().engine4N3;
 
-    engineN2DataPtr = dm->make_datadefinition_var<EngineN2Data>("ENGINE N2 DATA", engineN2DataDef);
-    engineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN2DataPtr = dm->make_datadefinition_var<EngineN2Data>("ENGINE N2 DATA", engineN2DataDef, UpdateMode::AUTO_WRITE);
+    engineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineN1DataPtrArray[0] = &this->engineN1DataPtr->data().engine1N1;
     engineN1DataPtrArray[1] = &this->engineN1DataPtr->data().engine2N1;
     engineN1DataPtrArray[2] = &this->engineN1DataPtr->data().engine3N1;
     engineN1DataPtrArray[3] = &this->engineN1DataPtr->data().engine4N1;
 
-    engineN1DataPtr = dm->make_datadefinition_var<EngineN1Data>("ENGINE N1 DATA", engineN1DataDef);
-    engineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN1DataPtr = dm->make_datadefinition_var<EngineN1Data>("ENGINE N1 DATA", engineN1DataDef, UpdateMode::AUTO_WRITE);
+    engineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineN1DataPtrArray[0] = &this->engineN1DataPtr->data().engine1N1;
     engineN1DataPtrArray[1] = &this->engineN1DataPtr->data().engine2N1;
     engineN1DataPtrArray[2] = &this->engineN1DataPtr->data().engine3N1;
     engineN1DataPtrArray[3] = &this->engineN1DataPtr->data().engine4N1;
 
-    engineStateDataPtr = dm->make_datadefinition_var<EngineStateData>("ENGINE STATE DATA", engineStateDataDef);
-    engineStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineStateDataPtr = dm->make_datadefinition_var<EngineStateData>("ENGINE STATE DATA", engineStateDataDef, UpdateMode::AUTO_WRITE);
+    engineStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineStateDataPtrArray[0] = &this->engineStateDataPtr->data().engine1State;
     engineStateDataPtrArray[1] = &this->engineStateDataPtr->data().engine2State;
     engineStateDataPtrArray[2] = &this->engineStateDataPtr->data().engine3State;
     engineStateDataPtrArray[3] = &this->engineStateDataPtr->data().engine4State;
 
-    engineTimerDataPtr = dm->make_datadefinition_var<EngineTimerData>("ENGINE TIMER DATA", engineTimerDataDef);
-    engineTimerDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineTimerDataPtr = dm->make_datadefinition_var<EngineTimerData>("ENGINE TIMER DATA", engineTimerDataDef, UpdateMode::AUTO_WRITE);
+    engineTimerDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineTimerDataPtrArray[0] = &this->engineTimerDataPtr->data().engine1Timer;
     engineTimerDataPtrArray[1] = &this->engineTimerDataPtr->data().engine2Timer;
     engineTimerDataPtrArray[2] = &this->engineTimerDataPtr->data().engine3Timer;
     engineTimerDataPtrArray[3] = &this->engineTimerDataPtr->data().engine4Timer;
 
-    engineEgtDataPtr = dm->make_datadefinition_var<EngineEgtData>("ENGINE EGT DATA", engineEgtDataDef);
-    engineEgtDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineEgtDataPtr = dm->make_datadefinition_var<EngineEgtData>("ENGINE EGT DATA", engineEgtDataDef, UpdateMode::AUTO_WRITE);
+    engineEgtDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineEgtDataPtrArray[0] = &this->engineEgtDataPtr->data().engine1Egt;
     engineEgtDataPtrArray[1] = &this->engineEgtDataPtr->data().engine2Egt;
     engineEgtDataPtrArray[2] = &this->engineEgtDataPtr->data().engine3Egt;
     engineEgtDataPtrArray[3] = &this->engineEgtDataPtr->data().engine4Egt;
 
-    engineTotalOilDataPtr = dm->make_datadefinition_var<EngineTotalOilData>("ENGINE TOTAL OIL DATA", engineTotalOilDataDef);
-    engineTotalOilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineTotalOilDataPtr = dm->make_datadefinition_var<EngineTotalOilData>("ENGINE TOTAL OIL DATA", engineTotalOilDataDef, UpdateMode::AUTO_WRITE);
+    engineTotalOilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineTotalOilDataPtrArray[0] = &this->engineTotalOilDataPtr->data().engine1TotalOil;
     engineTotalOilDataPtrArray[1] = &this->engineTotalOilDataPtr->data().engine2TotalOil;
     engineTotalOilDataPtrArray[2] = &this->engineTotalOilDataPtr->data().engine3TotalOil;
     engineTotalOilDataPtrArray[3] = &this->engineTotalOilDataPtr->data().engine4TotalOil;
 
-    fuelPreDataPtr = dm->make_datadefinition_var<FuelPreData>("FUEL DATA", fuelPreDataDef);
-    fuelPreDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    fuelPreDataPtr = dm->make_datadefinition_var<FuelPreData>("FUEL DATA", fuelPreDataDef, UpdateMode::AUTO_WRITE);
+    fuelPreDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
-    pumpStateDataPtr = dm->make_datadefinition_var<PumpStateData>("PUMP STATE DATA", pumpStateDataDef);
-    pumpStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    pumpStateDataPtr = dm->make_datadefinition_var<PumpStateData>("PUMP STATE DATA", pumpStateDataDef, UpdateMode::AUTO_WRITE);
+    pumpStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     pumpStateDataPtrArray[0] = &this->pumpStateDataPtr->data().pumpStateEngine1;
     pumpStateDataPtrArray[1] = &this->pumpStateDataPtr->data().pumpStateEngine2;
     pumpStateDataPtrArray[2] = &this->pumpStateDataPtr->data().pumpStateEngine3;
     pumpStateDataPtrArray[3] = &this->pumpStateDataPtr->data().pumpStateEngine4;
 
-    engineFuelFlowDataPtr = dm->make_datadefinition_var<engineFuelFlowData>("ENGINE FUEL FLOW DATA", engineFuelFlowDataDef);
-    engineFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineFuelFlowDataPtr = dm->make_datadefinition_var<engineFuelFlowData>("ENGINE FUEL FLOW DATA", engineFuelFlowDataDef, UpdateMode::AUTO_WRITE);
+    engineFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     engineFuelFlowDataPtrArray[0] = &this->engineFuelFlowDataPtr->data().engine1Ff;
     engineFuelFlowDataPtrArray[1] = &this->engineFuelFlowDataPtr->data().engine2Ff;
     engineFuelFlowDataPtrArray[2] = &this->engineFuelFlowDataPtr->data().engine3Ff;
     engineFuelFlowDataPtrArray[3] = &this->engineFuelFlowDataPtr->data().engine4Ff;
 
-    enginePreFuelFlowDataPtr = dm->make_datadefinition_var<enginePreFuelFlowData>("ENGINE PRE FUEL FLOW DATA", enginePreFuelFlowDataDef);
-    enginePreFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    enginePreFuelFlowDataPtr = dm->make_datadefinition_var<enginePreFuelFlowData>("ENGINE PRE FUEL FLOW DATA", enginePreFuelFlowDataDef, UpdateMode::AUTO_WRITE);
+    enginePreFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     enginePreFuelFlowDataPtrArray[0] = &this->enginePreFuelFlowDataPtr->data().engine1PreFf;
     enginePreFuelFlowDataPtrArray[1] = &this->enginePreFuelFlowDataPtr->data().engine2PreFf;
     enginePreFuelFlowDataPtrArray[2] = &this->enginePreFuelFlowDataPtr->data().engine3PreFf;
     enginePreFuelFlowDataPtrArray[3] = &this->enginePreFuelFlowDataPtr->data().engine4PreFf;
 
-    fuelUsedEngineDataPtr = dm->make_datadefinition_var<fuelUsedEngineData>("FUEL USED ENGINE DATA", fuelUsedEngineDataDef);
-    fuelUsedEngineDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    fuelUsedEngineDataPtr = dm->make_datadefinition_var<fuelUsedEngineData>("FUEL USED ENGINE DATA", fuelUsedEngineDataDef, UpdateMode::AUTO_WRITE);
+    fuelUsedEngineDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
     fuelUsedEngineDataPtrArray[0] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine1;
     fuelUsedEngineDataPtrArray[1] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine2;
     fuelUsedEngineDataPtrArray[2] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine3;
     fuelUsedEngineDataPtrArray[3] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine4;
 
-    thrustLimitDataPtr = dm->make_datadefinition_var<ThrustLimitData>("THRUST LIMIT DATA", thrustLimitDataDef);
-    thrustLimitDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    thrustLimitDataPtr = dm->make_datadefinition_var<ThrustLimitData>("THRUST LIMIT DATA", thrustLimitDataDef, UpdateMode::AUTO_WRITE);
+    thrustLimitDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
     LOG_INFO("Fadec::FadecSimData_A380X initialized");
   }
