@@ -307,10 +307,10 @@ struct simThrustData {
     FLOAT64 engine4Egt;  // L:A32NX_ENGINE_EGT:4
   };
   DataDefVector engineEgtDataDef = {
-      {"L:A32NX_ENGINE_EGT", 1, UNITS.Number},
-      {"L:A32NX_ENGINE_EGT", 2, UNITS.Number},
-      {"L:A32NX_ENGINE_EGT", 3, UNITS.Number},
-      {"L:A32NX_ENGINE_EGT", 4, UNITS.Number},
+      {"L:A32NX_ENGINE_EGT", 1, UNITS.Celsius},
+      {"L:A32NX_ENGINE_EGT", 2, UNITS.Celsius},
+      {"L:A32NX_ENGINE_EGT", 3, UNITS.Celsius},
+      {"L:A32NX_ENGINE_EGT", 4, UNITS.Celsius},
   };
   DataDefinitionVariablePtr<EngineEgtData> engineEgtDataPtr;
 
