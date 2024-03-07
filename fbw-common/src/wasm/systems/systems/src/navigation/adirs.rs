@@ -1373,9 +1373,9 @@ impl InertialReference {
         // based on Theta and Phi.
         let g = Acceleration::new::<meter_per_second_squared>(9.81);
         self.body_longitudinal_acc
-            .set_value(context.long_accel() / g - pitch.cos(), ssm);
+            .set_value(context.long_accel() / g + pitch.sin(), ssm);
         self.body_lateral_acc
-            .set_value(context.lat_accel() / g + pitch.cos() * roll.sin(), ssm);
+            .set_value(context.lat_accel() / g - pitch.cos() * roll.sin(), ssm);
         self.body_normal_acc
             .set_value(context.vert_accel() / g + pitch.cos() * roll.cos(), ssm);
     }
