@@ -12,19 +12,15 @@ class FadecSimData_A380X {
  public:
   // TODO: Check if these are really used in the code
 
-  // clang-format off
+  // The defined pointer arrays below are used to simplify the code and avoid code duplication
+  // when iterating over engines in the update functions.
 
   /**
    * @struct AtcID
    * @brief This struct represents the ATC ID of the aircraft.
-   *
-   * The ATC ID is represented as a string of characters and is used to load and store the fuel levels
-   * of the aircraft at the beginning and end of a flight.
-   *
    * @UpdateFrequncey: on demand
-   *
    * @var char atcID[32] The ATC ID of the aircraft.
-   * MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
+   * @note MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm#ATC%20ID
    */
   struct AtcIdData {
@@ -61,30 +57,30 @@ class FadecSimData_A380X {
     FLOAT64 refuelRate;           // L:A32NX_EFB_REFUEL_RATE_SETTING
     FLOAT64 refuelStartedByUser;  // L:A32NX_REFUEL_STARTED_BY_USR
   };
-  DataDefVector simDataDef = {{"ANIMATION DELTA TIME", 0, UNITS.Seconds},
-                              {"AIRSPEED MACH", 0, UNITS.Mach},
-                              {"PRESSURE ALTITUDE", 0, UNITS.Feet},
-                              {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},
-                              {"AMBIENT PRESSURE", 0, UNITS.Millibars},
-                              {"FUEL WEIGHT PER GALLON", 0, UNITS.Pounds},
-                              {"ENG ANTI ICE", 1, UNITS.Bool},
-                              {"ENG ANTI ICE", 2, UNITS.Bool},
-                              {"ENG ANTI ICE", 3, UNITS.Bool},
-                              {"ENG ANTI ICE", 4, UNITS.Bool},
-                              {"GENERAL ENG STARTER", 1, UNITS.Bool},
-                              {"GENERAL ENG STARTER", 2, UNITS.Bool},
-                              {"GENERAL ENG STARTER", 3, UNITS.Bool},
-                              {"GENERAL ENG STARTER", 4, UNITS.Bool},
-                              {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Bool},
-                              {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Bool},
-                              {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Bool},
-                              {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Bool},
-                              {"L:AIRLINER_TO_FLEX_TEMP", 0, UNITS.Number},
-                              {"L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", 0, UNITS.Bool},
-                              {"L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", 0, UNITS.Bool},
-                              {"L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", 0, UNITS.Bool},
-                              {"L:A32NX_EFB_REFUEL_RATE_SETTING", 0, UNITS.Number},
-                              {"L:A32NX_REFUEL_STARTED_BY_USR", 0, UNITS.Bool}};
+  DataDefVector simDataDef = {{"ANIMATION DELTA TIME", 0, UNITS.Seconds},                 //
+                              {"AIRSPEED MACH", 0, UNITS.Mach},                           //
+                              {"PRESSURE ALTITUDE", 0, UNITS.Feet},                       //
+                              {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},                  //
+                              {"AMBIENT PRESSURE", 0, UNITS.Millibars},                   //
+                              {"FUEL WEIGHT PER GALLON", 0, UNITS.Pounds},                //
+                              {"ENG ANTI ICE", 1, UNITS.Bool},                            //
+                              {"ENG ANTI ICE", 2, UNITS.Bool},                            //
+                              {"ENG ANTI ICE", 3, UNITS.Bool},                            //
+                              {"ENG ANTI ICE", 4, UNITS.Bool},                            //
+                              {"GENERAL ENG STARTER", 1, UNITS.Bool},                     //
+                              {"GENERAL ENG STARTER", 2, UNITS.Bool},                     //
+                              {"GENERAL ENG STARTER", 3, UNITS.Bool},                     //
+                              {"GENERAL ENG STARTER", 4, UNITS.Bool},                     //
+                              {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Bool},            //
+                              {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Bool},            //
+                              {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Bool},            //
+                              {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Bool},            //
+                              {"L:AIRLINER_TO_FLEX_TEMP", 0, UNITS.Number},               //
+                              {"L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", 0, UNITS.Bool},    //
+                              {"L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", 0, UNITS.Bool},  //
+                              {"L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", 0, UNITS.Bool},  //
+                              {"L:A32NX_EFB_REFUEL_RATE_SETTING", 0, UNITS.Number},       //
+                              {"L:A32NX_REFUEL_STARTED_BY_USR", 0, UNITS.Bool}};          //
   DataDefinitionVariablePtr<MiscSimData> miscSimDataPtr;
 
   // SimVars
@@ -96,12 +92,13 @@ class FadecSimData_A380X {
     FLOAT64 engine4N1;  // A:TURB ENG N1:4
   };
   DataDefVector simEngineN1DataDef = {
-      {"TURB ENG N1", 1, UNITS.Percent},
-      {"TURB ENG N1", 2, UNITS.Percent},
-      {"TURB ENG N1", 3, UNITS.Percent},
-      {"TURB ENG N1", 4, UNITS.Percent},
+      {"TURB ENG N1", 1, UNITS.Percent},  //
+      {"TURB ENG N1", 2, UNITS.Percent},  //
+      {"TURB ENG N1", 3, UNITS.Percent},  //
+      {"TURB ENG N1", 4, UNITS.Percent},  //
   };
   DataDefinitionVariablePtr<SimEngineN1Data> simEngineN1DataPtr;
+  FLOAT64* simEngineN1DataPtrArray[4];
 
   struct SimEngineN2Data {
     FLOAT64 engine1N2;  // A:TURB ENG N2:1
@@ -110,12 +107,13 @@ class FadecSimData_A380X {
     FLOAT64 engine4N2;  // A:TURB ENG N2:4
   };
   DataDefVector simEngineN2DataDef = {
-      {"TURB ENG N2", 1, UNITS.Percent},
-      {"TURB ENG N2", 2, UNITS.Percent},
-      {"TURB ENG N2", 3, UNITS.Percent},
-      {"TURB ENG N2", 4, UNITS.Percent},
+      {"TURB ENG N2", 1, UNITS.Percent},  //
+      {"TURB ENG N2", 2, UNITS.Percent},  //
+      {"TURB ENG N2", 3, UNITS.Percent},  //
+      {"TURB ENG N2", 4, UNITS.Percent},  //
   };
   DataDefinitionVariablePtr<SimEngineN2Data> simEngineN2DataPtr;
+  FLOAT64* simEngineN2DataPtrArray[4];
 
   struct SimEngineCorrectedN1Data {
     FLOAT64 engine1CorrectedN1;  // A:TURB ENG CORRECTED N1:1
@@ -124,12 +122,13 @@ class FadecSimData_A380X {
     FLOAT64 engine4CorrectedN1;  // A:TURB ENG CORRECTED N1:4
   };
   DataDefVector simEngineCorrectedN1DataDef = {
-      {"TURB ENG CORRECTED N1", 1, UNITS.Percent},
-      {"TURB ENG CORRECTED N1", 2, UNITS.Percent},
-      {"TURB ENG CORRECTED N1", 3, UNITS.Percent},
-      {"TURB ENG CORRECTED N1", 4, UNITS.Percent},
+      {"TURB ENG CORRECTED N1", 1, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N1", 2, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N1", 3, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N1", 4, UNITS.Percent},  //
   };
   DataDefinitionVariablePtr<SimEngineCorrectedN1Data> simEngineCorrectedN1DataPtr;
+  FLOAT64* simEngineCorrectedN1DataPtrArray[4];
 
   struct SimEngineCorrectedN2Data {
     FLOAT64 engine1CorrectedN2;  // A:TURB ENG CORRECTED N2:1
@@ -138,26 +137,28 @@ class FadecSimData_A380X {
     FLOAT64 engine4CorrectedN2;  // A:TURB ENG CORRECTED N2:4
   };
   DataDefVector simEngineCorrectedN2DataDef = {
-      {"TURB ENG CORRECTED N2", 1, UNITS.Percent},
-      {"TURB ENG CORRECTED N2", 2, UNITS.Percent},
-      {"TURB ENG CORRECTED N2", 3, UNITS.Percent},
-      {"TURB ENG CORRECTED N2", 4, UNITS.Percent},
+      {"TURB ENG CORRECTED N2", 1, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N2", 2, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N2", 3, UNITS.Percent},  //
+      {"TURB ENG CORRECTED N2", 4, UNITS.Percent},  //
   };
   DataDefinitionVariablePtr<SimEngineCorrectedN2Data> simEngineCorrectedN2DataPtr;
+  FLOAT64* simEngineCorrectedN2DataPtrArray[4];
 
-struct simThrustData {
+  struct simThrustData {
     FLOAT64 engine1Thrust;  // A:TURB ENG JET THRUST:1
     FLOAT64 engine2Thrust;  // A:TURB ENG JET THRUST:2
     FLOAT64 engine3Thrust;  // A:TURB ENG JET THRUST:3
     FLOAT64 engine4Thrust;  // A:TURB ENG JET THRUST:4
   };
   DataDefVector simThrustDataDef = {
-    {"TURB ENG JET THRUST", 1, UNITS.Pounds},
-    {"TURB ENG JET THRUST", 2, UNITS.Pounds},
-    {"TURB ENG JET THRUST", 3, UNITS.Pounds},
-    {"TURB ENG JET THRUST", 4, UNITS.Pounds},
+      {"TURB ENG JET THRUST", 1, UNITS.Pounds},  //
+      {"TURB ENG JET THRUST", 2, UNITS.Pounds},  //
+      {"TURB ENG JET THRUST", 3, UNITS.Pounds},  //
+      {"TURB ENG JET THRUST", 4, UNITS.Pounds},  //
   };
   DataDefinitionVariablePtr<simThrustData> simThrustDataPtr;
+  FLOAT64* simThrustDataPtrArray[4];
 
   struct SimEngineCombustionData {
     FLOAT64 engine1Combustion;  // A:GENERAL ENG COMBUSTION:1
@@ -166,12 +167,13 @@ struct simThrustData {
     FLOAT64 engine4Combustion;  // A:GENERAL ENG COMBUSTION:4
   };
   DataDefVector simEngineCombustionDataDef = {
-      {"GENERAL ENG COMBUSTION", 1, UNITS.Number},
-      {"GENERAL ENG COMBUSTION", 2, UNITS.Number},
-      {"GENERAL ENG COMBUSTION", 3, UNITS.Number},
-      {"GENERAL ENG COMBUSTION", 4, UNITS.Number},
+      {"GENERAL ENG COMBUSTION", 1, UNITS.Number},  //
+      {"GENERAL ENG COMBUSTION", 2, UNITS.Number},  //
+      {"GENERAL ENG COMBUSTION", 3, UNITS.Number},  //
+      {"GENERAL ENG COMBUSTION", 4, UNITS.Number},  //
   };
   DataDefinitionVariablePtr<SimEngineCombustionData> simEngineCombustionDataPtr;
+  FLOAT64* simEngineCombustionDataPtrArray[4];
 
   struct SimEngineOilTempData {
     FLOAT64 engine1OilTemperature;  // A:GENERAL ENG OIL TEMPERATURE:1
@@ -180,38 +182,39 @@ struct simThrustData {
     FLOAT64 engine4OilTemperature;  // A:GENERAL ENG OIL TEMPERATURE:4
   };
   DataDefVector simEngineOilTemperatureDataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius},
-      {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius},
-      {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius},
-      {"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius},
+      {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius},  //
+      {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius},  //
+      {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius},  //
+      {"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius},  //
   };
   DataDefinitionVariablePtr<SimEngineOilTempData> simEngineOilTempDataPtr;
+  FLOAT64* simEngineOilTempDataPtrArray[4];
 
   struct SimFuelTankData {
     FLOAT64 fuelTankLeftOuter;   // A:FUELSYSTEM TANK QUANTITY:1
-    FLOAT64 fuelTankFeedOne;   // A:FUELSYSTEM TANK QUANTITY:2
-    FLOAT64 fuelTankLeftMid;   // A:FUELSYSTEM TANK QUANTITY:3
+    FLOAT64 fuelTankFeedOne;     // A:FUELSYSTEM TANK QUANTITY:2
+    FLOAT64 fuelTankLeftMid;     // A:FUELSYSTEM TANK QUANTITY:3
     FLOAT64 fuelTankLeftInner;   // A:FUELSYSTEM TANK QUANTITY:4
-    FLOAT64 fuelTankFeedTwo;   // A:FUELSYSTEM TANK QUANTITY:5
+    FLOAT64 fuelTankFeedTwo;     // A:FUELSYSTEM TANK QUANTITY:5
     FLOAT64 fuelTankFeedThree;   // A:FUELSYSTEM TANK QUANTITY:6
-    FLOAT64 fuelTankRightInner;   // A:FUELSYSTEM TANK QUANTITY:7
-    FLOAT64 fuelTankRightMid;   // A:FUELSYSTEM TANK QUANTITY:8
-    FLOAT64 fuelTankFeedFour;   // A:FUELSYSTEM TANK QUANTITY:9
+    FLOAT64 fuelTankRightInner;  // A:FUELSYSTEM TANK QUANTITY:7
+    FLOAT64 fuelTankRightMid;    // A:FUELSYSTEM TANK QUANTITY:8
+    FLOAT64 fuelTankFeedFour;    // A:FUELSYSTEM TANK QUANTITY:9
     FLOAT64 fuelTankRightOuter;  // A:FUELSYSTEM TANK QUANTITY:10
-    FLOAT64 fuelTankTrim;  // A:FUELSYSTEM TANK QUANTITY:11
+    FLOAT64 fuelTankTrim;        // A:FUELSYSTEM TANK QUANTITY:11
   };
   DataDefVector simFuelTankDataDef = {
-    {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 3, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 4, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 5, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 7, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 8, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 10, UNITS.Gallons},
-    {"FUELSYSTEM TANK QUANTITY", 11, UNITS.Gallons}
+      {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 3, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 4, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 5, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 7, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 8, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons},   //
+      {"FUELSYSTEM TANK QUANTITY", 10, UNITS.Gallons},  //
+      {"FUELSYSTEM TANK QUANTITY", 11, UNITS.Gallons}   //
   };
   DataDefinitionVariablePtr<SimFuelTankData> simFuelTankDataPtr;
 
@@ -229,20 +232,22 @@ struct simThrustData {
       {"L:A32NX_ENGINE_IDLE_EGT", 0, UNITS.Number}  // °C
   };
   DataDefinitionVariablePtr<EngineIdleData> engineIdleDataPtr;
+  FLOAT64* engineIdleDataPtrArray[4];
 
   struct EngineN3Data {
-      FLOAT64 engine1N3;  // L:A32NX_ENGINE_N3:1
-      FLOAT64 engine2N3;  // L:A32NX_ENGINE_N3:2
-      FLOAT64 engine3N3;  // L:A32NX_ENGINE_N3:3
-      FLOAT64 engine4N3;  // L:A32NX_ENGINE_N3:4
-    };
-  DataDefinitionVariablePtr<EngineN3Data> engineN3DataPtr;
-  DataDefVector engineN3DataDef = {
-      {"L:A32NX_ENGINE_N3", 1, UNITS.Number},
-      {"L:A32NX_ENGINE_N3", 2, UNITS.Number},
-      {"L:A32NX_ENGINE_N3", 3, UNITS.Number},
-      {"L:A32NX_ENGINE_N3", 4, UNITS.Number},
+    FLOAT64 engine1N3;  // L:A32NX_ENGINE_N3:1
+    FLOAT64 engine2N3;  // L:A32NX_ENGINE_N3:2
+    FLOAT64 engine3N3;  // L:A32NX_ENGINE_N3:3
+    FLOAT64 engine4N3;  // L:A32NX_ENGINE_N3:4
   };
+  DataDefVector engineN3DataDef = {
+      {"L:A32NX_ENGINE_N3", 1, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N3", 2, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N3", 3, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N3", 4, UNITS.Percent},  //
+  };
+  DataDefinitionVariablePtr<EngineN3Data> engineN3DataPtr;
+  FLOAT64* engineN3DataPtrArray[4];
 
   struct EngineN2Data {
     FLOAT64 engine1N2;  // L:A32NX_ENGINE_N2:1
@@ -250,13 +255,14 @@ struct simThrustData {
     FLOAT64 engine3N2;  // L:A32NX_ENGINE_N2:3
     FLOAT64 engine4N2;  // L:A32NX_ENGINE_N2:4
   };
-  DataDefinitionVariablePtr<EngineN2Data> engineN2DataPtr;
   DataDefVector engineN2DataDef = {
-    {"L:A32NX_ENGINE_N2", 1, UNITS.Number},
-    {"L:A32NX_ENGINE_N2", 2, UNITS.Number},
-    {"L:A32NX_ENGINE_N2", 3, UNITS.Number},
-    {"L:A32NX_ENGINE_N2", 4, UNITS.Number},
+      {"L:A32NX_ENGINE_N2", 1, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N2", 2, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N2", 3, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N2", 4, UNITS.Percent},  //
   };
+  DataDefinitionVariablePtr<EngineN2Data> engineN2DataPtr;
+  FLOAT64* engineN2DataPtrArray[4];
 
   struct EngineN1Data {
     FLOAT64 engine1N1;  // L:A32NX_ENGINE_N1:1
@@ -264,13 +270,14 @@ struct simThrustData {
     FLOAT64 engine3N1;  // L:A32NX_ENGINE_N1:3
     FLOAT64 engine4N1;  // L:A32NX_ENGINE_N1:4
   };
-  DataDefinitionVariablePtr<EngineN1Data> engineN1DataPtr;
   DataDefVector engineN1DataDef = {
-    {"L:A32NX_ENGINE_N1", 1, UNITS.Number},
-    {"L:A32NX_ENGINE_N1", 2, UNITS.Number},
-    {"L:A32NX_ENGINE_N1", 3, UNITS.Number},
-    {"L:A32NX_ENGINE_N1", 4, UNITS.Number},
+      {"L:A32NX_ENGINE_N1", 1, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N1", 2, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N1", 3, UNITS.Percent},  //
+      {"L:A32NX_ENGINE_N1", 4, UNITS.Percent},  //
   };
+  DataDefinitionVariablePtr<EngineN1Data> engineN1DataPtr;
+  FLOAT64* engineN1DataPtrArray[4];
 
   struct EngineStateData {
     FLOAT64 engine1State;  // L:A32NX_ENGINE_STATE:1
@@ -279,12 +286,13 @@ struct simThrustData {
     FLOAT64 engine4State;  // L:A32NX_ENGINE_STATE:4
   };
   DataDefVector engineStateDataDef = {
-      {"L:A32NX_ENGINE_STATE", 1, UNITS.Number},
-      {"L:A32NX_ENGINE_STATE", 2, UNITS.Number},
-      {"L:A32NX_ENGINE_STATE", 3, UNITS.Number},
-      {"L:A32NX_ENGINE_STATE", 4, UNITS.Number},
-  };
+      {"L:A32NX_ENGINE_STATE", 1, UNITS.Number},  //
+      {"L:A32NX_ENGINE_STATE", 2, UNITS.Number},  //
+      {"L:A32NX_ENGINE_STATE", 3, UNITS.Number},  //
+      {"L:A32NX_ENGINE_STATE", 4, UNITS.Number},  //
+  };                                              //
   DataDefinitionVariablePtr<EngineStateData> engineStateDataPtr;
+  FLOAT64* engineStateDataPtrArray[4];
 
   struct EngineTimerData {
     FLOAT64 engine1Timer;  // L:A32NX_ENGINE_TIMER:1
@@ -293,12 +301,13 @@ struct simThrustData {
     FLOAT64 engine4Timer;  // L:A32NX_ENGINE_TIMER:4
   };
   DataDefVector engineTimerDataDef = {
-      {"L:A32NX_ENGINE_TIMER", 1, UNITS.Number},
-      {"L:A32NX_ENGINE_TIMER", 2, UNITS.Number},
-      {"L:A32NX_ENGINE_TIMER", 3, UNITS.Number},
-      {"L:A32NX_ENGINE_TIMER", 4, UNITS.Number},
+      {"L:A32NX_ENGINE_TIMER", 1, UNITS.Number},  //
+      {"L:A32NX_ENGINE_TIMER", 2, UNITS.Number},  //
+      {"L:A32NX_ENGINE_TIMER", 3, UNITS.Number},  //
+      {"L:A32NX_ENGINE_TIMER", 4, UNITS.Number},  //
   };
   DataDefinitionVariablePtr<EngineTimerData> engineTimerDataPtr;
+  FLOAT64* engineTimerDataPtrArray[4];
 
   struct EngineEgtData {
     FLOAT64 engine1Egt;  // L:A32NX_ENGINE_EGT:1
@@ -307,12 +316,13 @@ struct simThrustData {
     FLOAT64 engine4Egt;  // L:A32NX_ENGINE_EGT:4
   };
   DataDefVector engineEgtDataDef = {
-      {"L:A32NX_ENGINE_EGT", 1, UNITS.Celsius},
-      {"L:A32NX_ENGINE_EGT", 2, UNITS.Celsius},
-      {"L:A32NX_ENGINE_EGT", 3, UNITS.Celsius},
-      {"L:A32NX_ENGINE_EGT", 4, UNITS.Celsius},
+      {"L:A32NX_ENGINE_EGT", 1, UNITS.Celsius},  //
+      {"L:A32NX_ENGINE_EGT", 2, UNITS.Celsius},  //
+      {"L:A32NX_ENGINE_EGT", 3, UNITS.Celsius},  //
+      {"L:A32NX_ENGINE_EGT", 4, UNITS.Celsius},  //
   };
   DataDefinitionVariablePtr<EngineEgtData> engineEgtDataPtr;
+  FLOAT64* engineEgtDataPtrArray[4];
 
   // Every tick
   struct EngineTotalOilData {
@@ -322,12 +332,13 @@ struct simThrustData {
     FLOAT64 engine4TotalOil;  // L:A32NX_ENGINE_OIL_TOTAL:4
   };
   DataDefVector engineTotalOilDataDef = {
-      {"L:A32NX_ENGINE_OIL_TOTAL", 1, UNITS.Number},
-      {"L:A32NX_ENGINE_OIL_TOTAL", 2, UNITS.Number},
-      {"L:A32NX_ENGINE_OIL_TOTAL", 3, UNITS.Number},
-      {"L:A32NX_ENGINE_OIL_TOTAL", 4, UNITS.Number},
+      {"L:A32NX_ENGINE_OIL_TOTAL", 1, UNITS.Number},  //
+      {"L:A32NX_ENGINE_OIL_TOTAL", 2, UNITS.Number},  //
+      {"L:A32NX_ENGINE_OIL_TOTAL", 3, UNITS.Number},  //
+      {"L:A32NX_ENGINE_OIL_TOTAL", 4, UNITS.Number},  //
   };
   DataDefinitionVariablePtr<EngineTotalOilData> engineTotalOilDataPtr;
+  FLOAT64* engineTotalOilDataPtrArray[4];
 
   struct FuelPreData {
     FLOAT64 fuelLeftOuterPre;   // L:A32NX_FUEL_LEFTOUTER_PRE
@@ -370,6 +381,7 @@ struct simThrustData {
       {"L:A32NX_PUMP_STATE", 4, UNITS.Number},
   };
   DataDefinitionVariablePtr<PumpStateData> pumpStateDataPtr;
+  FLOAT64* pumpStateDataPtrArray[4];
 
   struct engineFuelFlowData {
     FLOAT64 engine1Ff;  // L:A32NX_ENGINE_FF:1
@@ -384,6 +396,7 @@ struct simThrustData {
       {"L:A32NX_ENGINE_FF", 4, UNITS.Number},  // kg/h
   };
   DataDefinitionVariablePtr<engineFuelFlowData> engineFuelFlowDataPtr;
+  FLOAT64* engineFuelFlowDataPtrArray[4];
 
   struct enginePreFuelFlowData {
     FLOAT64 engine1PreFf;  // L:A32NX_ENGINE_PRE_FF:1
@@ -398,6 +411,7 @@ struct simThrustData {
       {"L:A32NX_ENGINE_PRE_FF", 4, UNITS.Number}   // kg/h
   };
   DataDefinitionVariablePtr<enginePreFuelFlowData> enginePreFuelFlowDataPtr;
+  FLOAT64* enginePreFuelFlowDataPtrArray[4];
 
   struct fuelUsedEngineData {
     FLOAT64 fuelUsedEngine1;  // L:A32NX_FUEL_USED:1
@@ -412,6 +426,7 @@ struct simThrustData {
       {"L:A32NX_FUEL_USED", 4, UNITS.Number}   // lbs
   };
   DataDefinitionVariablePtr<fuelUsedEngineData> fuelUsedEngineDataPtr;
+  FLOAT64* fuelUsedEngineDataPtrArray[4];
 
   struct ThrustLimitData {
     FLOAT64 thrustLimitType;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
@@ -422,7 +437,7 @@ struct simThrustData {
     FLOAT64 thrustLimitToga;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
   };
   DataDefVector thrustLimitDataDef = {
-      {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", 0, UNITS.Enum}, //  '', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'
+      {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", 0, UNITS.Enum},    //  '', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", 0, UNITS.Number},  // %N1
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", 0, UNITS.Number},   // %N1
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", 0, UNITS.Number},   // %N1
@@ -430,7 +445,6 @@ struct simThrustData {
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", 0, UNITS.Number}   // %N1
   };
   DataDefinitionVariablePtr<ThrustLimitData> thrustLimitDataPtr;
-  // clang-format on
 
   /**
    * @brief Initialize the SimData and LVar data definitions and register them with the DataManager.
@@ -439,58 +453,159 @@ struct simThrustData {
    * TODO: Check each how often they need to be read and if they could be auto-written (to simplify the code)
    *  Also check if some can be consolidated into a single data definition or need separation for separate writing.
    *  Test with SIMCONNECT_DATA_REQUEST_FLAG_CHANGED and SIMCONNECT_DATA_REQUEST_FLAG_TAGGED.
+   *
+   *  @note The below initialized pointer arrays are used to simplify the code and avoid code duplication
+   *        when iterating over engines in the update functions.
    */
   void initialize(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
     // on demand update
+
+    // MiscSimData
     miscSimDataPtr = dm->make_datadefinition_var<MiscSimData>("MISC SIM DATA", simDataDef);
     miscSimDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     // SimVars
     simEngineN1DataPtr = dm->make_datadefinition_var<SimEngineN1Data>("SIM ENGINE N1 DATA", simEngineN1DataDef);
     simEngineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineN1DataPtrArray[0] = &this->simEngineN1DataPtr->data().engine1N1;
+    simEngineN1DataPtrArray[1] = &this->simEngineN1DataPtr->data().engine2N1;
+    simEngineN1DataPtrArray[2] = &this->simEngineN1DataPtr->data().engine3N1;
+    simEngineN1DataPtrArray[3] = &this->simEngineN1DataPtr->data().engine4N1;
+
     simEngineN2DataPtr = dm->make_datadefinition_var<SimEngineN2Data>("SIM ENGINE N2 DATA", simEngineN2DataDef);
     simEngineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineN2DataPtrArray[0] = &this->simEngineN2DataPtr->data().engine1N2;
+    simEngineN2DataPtrArray[1] = &this->simEngineN2DataPtr->data().engine2N2;
+    simEngineN2DataPtrArray[2] = &this->simEngineN2DataPtr->data().engine3N2;
+    simEngineN2DataPtrArray[3] = &this->simEngineN2DataPtr->data().engine4N2;
+
     simEngineCorrectedN1DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN1Data>("SIM ENGINE CN1 DATA", simEngineCorrectedN1DataDef);
     simEngineCorrectedN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCorrectedN1DataPtrArray[0] = &this->simEngineCorrectedN1DataPtr->data().engine1CorrectedN1;
+    simEngineCorrectedN1DataPtrArray[1] = &this->simEngineCorrectedN1DataPtr->data().engine2CorrectedN1;
+    simEngineCorrectedN1DataPtrArray[2] = &this->simEngineCorrectedN1DataPtr->data().engine3CorrectedN1;
+    simEngineCorrectedN1DataPtrArray[3] = &this->simEngineCorrectedN1DataPtr->data().engine4CorrectedN1;
+
     simEngineCorrectedN2DataPtr = dm->make_datadefinition_var<SimEngineCorrectedN2Data>("SIM ENGINE CN2 DATA", simEngineCorrectedN2DataDef);
     simEngineCorrectedN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCorrectedN2DataPtrArray[0] = &this->simEngineCorrectedN2DataPtr->data().engine1CorrectedN2;
+    simEngineCorrectedN2DataPtrArray[1] = &this->simEngineCorrectedN2DataPtr->data().engine2CorrectedN2;
+    simEngineCorrectedN2DataPtrArray[2] = &this->simEngineCorrectedN2DataPtr->data().engine3CorrectedN2;
+    simEngineCorrectedN2DataPtrArray[3] = &this->simEngineCorrectedN2DataPtr->data().engine4CorrectedN2;
+
     simThrustDataPtr = dm->make_datadefinition_var<simThrustData>("SIM THRUST DATA", simThrustDataDef);
     simThrustDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+    simThrustDataPtrArray[0] = &this->simThrustDataPtr->data().engine1Thrust;
+    simThrustDataPtrArray[1] = &this->simThrustDataPtr->data().engine2Thrust;
+    simThrustDataPtrArray[2] = &this->simThrustDataPtr->data().engine3Thrust;
+    simThrustDataPtrArray[3] = &this->simThrustDataPtr->data().engine4Thrust;
+
     simEngineCombustionDataPtr = dm->make_datadefinition_var<SimEngineCombustionData>("SIM ENGINE COMB DATA", simEngineCombustionDataDef);
     simEngineCombustionDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineCombustionDataPtrArray[0] = &this->simEngineCombustionDataPtr->data().engine1Combustion;
+    simEngineCombustionDataPtrArray[1] = &this->simEngineCombustionDataPtr->data().engine2Combustion;
+    simEngineCombustionDataPtrArray[2] = &this->simEngineCombustionDataPtr->data().engine3Combustion;
+    simEngineCombustionDataPtrArray[3] = &this->simEngineCombustionDataPtr->data().engine4Combustion;
+
     simEngineOilTempDataPtr = dm->make_datadefinition_var<SimEngineOilTempData>("SIM ENGINE OIL TEMPDATA", simEngineOilTemperatureDataDef);
     simEngineOilTempDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    simEngineOilTempDataPtrArray[0] = &this->simEngineOilTempDataPtr->data().engine1OilTemperature;
+    simEngineOilTempDataPtrArray[1] = &this->simEngineOilTempDataPtr->data().engine2OilTemperature;
+    simEngineOilTempDataPtrArray[2] = &this->simEngineOilTempDataPtr->data().engine3OilTemperature;
+    simEngineOilTempDataPtrArray[3] = &this->simEngineOilTempDataPtr->data().engine4OilTemperature;
+
     simFuelTankDataPtr = dm->make_datadefinition_var<SimFuelTankData>("SIM FUEL TANK DATA", simFuelTankDataDef);
     simFuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     // LVARs
     engineIdleDataPtr = dm->make_datadefinition_var<EngineIdleData>("ENGINE IDLE DATA", engineIdleDataDef);
     engineIdleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineIdleDataPtrArray[0] = &this->engineIdleDataPtr->data().idleN1;
+    engineIdleDataPtrArray[1] = &this->engineIdleDataPtr->data().idleN2;
+    engineIdleDataPtrArray[2] = &this->engineIdleDataPtr->data().idleFF;
+    engineIdleDataPtrArray[3] = &this->engineIdleDataPtr->data().idleEGT;
+
     engineN3DataPtr = dm->make_datadefinition_var<EngineN3Data>("ENGINE N3 DATA", engineN3DataDef);
     engineN3DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN3DataPtrArray[0] = &this->engineN3DataPtr->data().engine1N3;
+    engineN3DataPtrArray[1] = &this->engineN3DataPtr->data().engine2N3;
+    engineN3DataPtrArray[2] = &this->engineN3DataPtr->data().engine3N3;
+    engineN3DataPtrArray[3] = &this->engineN3DataPtr->data().engine4N3;
+
     engineN2DataPtr = dm->make_datadefinition_var<EngineN2Data>("ENGINE N2 DATA", engineN2DataDef);
     engineN2DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN1DataPtrArray[0] = &this->engineN1DataPtr->data().engine1N1;
+    engineN1DataPtrArray[1] = &this->engineN1DataPtr->data().engine2N1;
+    engineN1DataPtrArray[2] = &this->engineN1DataPtr->data().engine3N1;
+    engineN1DataPtrArray[3] = &this->engineN1DataPtr->data().engine4N1;
+
     engineN1DataPtr = dm->make_datadefinition_var<EngineN1Data>("ENGINE N1 DATA", engineN1DataDef);
     engineN1DataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineN1DataPtrArray[0] = &this->engineN1DataPtr->data().engine1N1;
+    engineN1DataPtrArray[1] = &this->engineN1DataPtr->data().engine2N1;
+    engineN1DataPtrArray[2] = &this->engineN1DataPtr->data().engine3N1;
+    engineN1DataPtrArray[3] = &this->engineN1DataPtr->data().engine4N1;
+
     engineStateDataPtr = dm->make_datadefinition_var<EngineStateData>("ENGINE STATE DATA", engineStateDataDef);
     engineStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineStateDataPtrArray[0] = &this->engineStateDataPtr->data().engine1State;
+    engineStateDataPtrArray[1] = &this->engineStateDataPtr->data().engine2State;
+    engineStateDataPtrArray[2] = &this->engineStateDataPtr->data().engine3State;
+    engineStateDataPtrArray[3] = &this->engineStateDataPtr->data().engine4State;
+
     engineTimerDataPtr = dm->make_datadefinition_var<EngineTimerData>("ENGINE TIMER DATA", engineTimerDataDef);
     engineTimerDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineTimerDataPtrArray[0] = &this->engineTimerDataPtr->data().engine1Timer;
+    engineTimerDataPtrArray[1] = &this->engineTimerDataPtr->data().engine2Timer;
+    engineTimerDataPtrArray[2] = &this->engineTimerDataPtr->data().engine3Timer;
+    engineTimerDataPtrArray[3] = &this->engineTimerDataPtr->data().engine4Timer;
+
     engineEgtDataPtr = dm->make_datadefinition_var<EngineEgtData>("ENGINE EGT DATA", engineEgtDataDef);
     engineEgtDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineEgtDataPtrArray[0] = &this->engineEgtDataPtr->data().engine1Egt;
+    engineEgtDataPtrArray[1] = &this->engineEgtDataPtr->data().engine2Egt;
+    engineEgtDataPtrArray[2] = &this->engineEgtDataPtr->data().engine3Egt;
+    engineEgtDataPtrArray[3] = &this->engineEgtDataPtr->data().engine4Egt;
+
     engineTotalOilDataPtr = dm->make_datadefinition_var<EngineTotalOilData>("ENGINE TOTAL OIL DATA", engineTotalOilDataDef);
     engineTotalOilDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineTotalOilDataPtrArray[0] = &this->engineTotalOilDataPtr->data().engine1TotalOil;
+    engineTotalOilDataPtrArray[1] = &this->engineTotalOilDataPtr->data().engine2TotalOil;
+    engineTotalOilDataPtrArray[2] = &this->engineTotalOilDataPtr->data().engine3TotalOil;
+    engineTotalOilDataPtrArray[3] = &this->engineTotalOilDataPtr->data().engine4TotalOil;
+
     fuelPreDataPtr = dm->make_datadefinition_var<FuelPreData>("FUEL DATA", fuelPreDataDef);
     fuelPreDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
     pumpStateDataPtr = dm->make_datadefinition_var<PumpStateData>("PUMP STATE DATA", pumpStateDataDef);
     pumpStateDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    pumpStateDataPtrArray[0] = &this->pumpStateDataPtr->data().pumpStateEngine1;
+    pumpStateDataPtrArray[1] = &this->pumpStateDataPtr->data().pumpStateEngine2;
+    pumpStateDataPtrArray[2] = &this->pumpStateDataPtr->data().pumpStateEngine3;
+    pumpStateDataPtrArray[3] = &this->pumpStateDataPtr->data().pumpStateEngine4;
+
     engineFuelFlowDataPtr = dm->make_datadefinition_var<engineFuelFlowData>("ENGINE FUEL FLOW DATA", engineFuelFlowDataDef);
     engineFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineFuelFlowDataPtrArray[0] = &this->engineFuelFlowDataPtr->data().engine1Ff;
+    engineFuelFlowDataPtrArray[1] = &this->engineFuelFlowDataPtr->data().engine2Ff;
+    engineFuelFlowDataPtrArray[2] = &this->engineFuelFlowDataPtr->data().engine3Ff;
+    engineFuelFlowDataPtrArray[3] = &this->engineFuelFlowDataPtr->data().engine4Ff;
+
     enginePreFuelFlowDataPtr = dm->make_datadefinition_var<enginePreFuelFlowData>("ENGINE PRE FUEL FLOW DATA", enginePreFuelFlowDataDef);
     enginePreFuelFlowDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    enginePreFuelFlowDataPtrArray[0] = &this->enginePreFuelFlowDataPtr->data().engine1PreFf;
+    enginePreFuelFlowDataPtrArray[1] = &this->enginePreFuelFlowDataPtr->data().engine2PreFf;
+    enginePreFuelFlowDataPtrArray[2] = &this->enginePreFuelFlowDataPtr->data().engine3PreFf;
+    enginePreFuelFlowDataPtrArray[3] = &this->enginePreFuelFlowDataPtr->data().engine4PreFf;
+
     fuelUsedEngineDataPtr = dm->make_datadefinition_var<fuelUsedEngineData>("FUEL USED ENGINE DATA", fuelUsedEngineDataDef);
     fuelUsedEngineDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    fuelUsedEngineDataPtrArray[0] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine1;
+    fuelUsedEngineDataPtrArray[1] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine2;
+    fuelUsedEngineDataPtrArray[2] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine3;
+    fuelUsedEngineDataPtrArray[3] = &this->fuelUsedEngineDataPtr->data().fuelUsedEngine4;
+
     thrustLimitDataPtr = dm->make_datadefinition_var<ThrustLimitData>("THRUST LIMIT DATA", thrustLimitDataDef);
     thrustLimitDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 

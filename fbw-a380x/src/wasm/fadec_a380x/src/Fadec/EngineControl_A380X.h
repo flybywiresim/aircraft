@@ -141,7 +141,7 @@ class EngineControl_A380X {
                           bool nai,
                           bool wai);
 
-
+  void updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
