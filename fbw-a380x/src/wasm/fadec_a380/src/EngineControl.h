@@ -1124,14 +1124,10 @@ class EngineControl {
       fuelFeedThree = (fuelFeedThree / fuelWeightGallon);  // USG
       fuelFeedFour = (fuelFeedFour / fuelWeightGallon);    // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedOne, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &fuelFeedOne);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedTwo, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &fuelFeedTwo);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedThree, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &fuelFeedThree);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedFour, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &fuelFeedFour);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedOne, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelFeedOne);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedTwo, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelFeedTwo);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedThree, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelFeedThree);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedFour, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelFeedFour);
     }
 
     // Will save the current fuel quantities if on the ground AND engines being shutdown
