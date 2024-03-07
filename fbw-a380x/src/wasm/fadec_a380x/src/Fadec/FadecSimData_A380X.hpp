@@ -188,17 +188,17 @@ struct simThrustData {
   DataDefinitionVariablePtr<SimEngineOilTempData> simEngineOilTempDataPtr;
 
   struct SimFuelTankData {
-    FLOAT64 fuelTankQuantity1;   // A:FUELSYSTEM TANK QUANTITY:1
-    FLOAT64 fuelTankQuantity2;   // A:FUELSYSTEM TANK QUANTITY:2
-    FLOAT64 fuelTankQuantity3;   // A:FUELSYSTEM TANK QUANTITY:3
-    FLOAT64 fuelTankQuantity4;   // A:FUELSYSTEM TANK QUANTITY:4
-    FLOAT64 fuelTankQuantity5;   // A:FUELSYSTEM TANK QUANTITY:5
-    FLOAT64 fuelTankQuantity6;   // A:FUELSYSTEM TANK QUANTITY:6
-    FLOAT64 fuelTankQuantity7;   // A:FUELSYSTEM TANK QUANTITY:7
-    FLOAT64 fuelTankQuantity8;   // A:FUELSYSTEM TANK QUANTITY:8
-    FLOAT64 fuelTankQuantity9;   // A:FUELSYSTEM TANK QUANTITY:9
-    FLOAT64 fuelTankQuantity10;  // A:FUELSYSTEM TANK QUANTITY:10
-    FLOAT64 fuelTankQuantity11;  // A:FUELSYSTEM TANK QUANTITY:11
+    FLOAT64 fuelTankLeftOuter;   // A:FUELSYSTEM TANK QUANTITY:1
+    FLOAT64 fuelTankFeedOne;   // A:FUELSYSTEM TANK QUANTITY:2
+    FLOAT64 fuelTankLeftMid;   // A:FUELSYSTEM TANK QUANTITY:3
+    FLOAT64 fuelTankLeftInner;   // A:FUELSYSTEM TANK QUANTITY:4
+    FLOAT64 fuelTankFeedTwo;   // A:FUELSYSTEM TANK QUANTITY:5
+    FLOAT64 fuelTankFeedThree;   // A:FUELSYSTEM TANK QUANTITY:6
+    FLOAT64 fuelTankRightInner;   // A:FUELSYSTEM TANK QUANTITY:7
+    FLOAT64 fuelTankRightMid;   // A:FUELSYSTEM TANK QUANTITY:8
+    FLOAT64 fuelTankFeedFour;   // A:FUELSYSTEM TANK QUANTITY:9
+    FLOAT64 fuelTankRightOuter;  // A:FUELSYSTEM TANK QUANTITY:10
+    FLOAT64 fuelTankTrim;  // A:FUELSYSTEM TANK QUANTITY:11
   };
   DataDefVector simFuelTankDataDef = {
     {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},

@@ -68,3 +68,21 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
   LOG_DEBUG("Fadec::FuelConfiguration: saved fuel configuration to " + configFilename + " with the following values:");
   LOG_DEBUG("Fadec::FuelConfiguration: " + this->toString());
 }
+
+std::string FuelConfiguration_A380X::toString() const {
+  std::ostringstream oss;
+  oss << "FuelConfiguration_A380X { "
+      << "fuelLeftOuter: " << fuelLeftOuter << "\n"
+      << ", fuelFeedOne: " << fuelFeedOne << "\n"
+      << ", fuelLeftMid: " << fuelLeftMid << "\n"
+      << ", fuelLeftInner: " << fuelLeftInner << "\n"
+      << ", fuelRightOuter: " << fuelRightOuter << "\n"
+      << ", fuelFeedTwo: " << fuelFeedTwo << "\n"
+      << ", fuelRightMid: " << fuelRightMid << "\n"
+      << ", fuelRightInner: " << fuelRightInner << "\n"
+      << ", fuelFeedThree: " << fuelFeedThree << "\n"
+      << ", fuelFeedFour: " << fuelFeedFour << "\n"
+      << ", fuelTrim: " << fuelTrim << "\n"
+      << " }";
+  return oss.str();
+}

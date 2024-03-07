@@ -106,23 +106,7 @@ class FuelConfiguration_A380X {
     this->configFilename = configFilename;
   }
 
-  std::string toString() const {
-    std::ostringstream oss;
-    oss << "FuelConfiguration_A380X { "
-        << "fuelLeftOuter: " << fuelLeftOuter
-        << ", fuelFeedOne: " << fuelFeedOne
-        << ", fuelLeftMid: " << fuelLeftMid
-        << ", fuelLeftInner: " << fuelLeftInner
-        << ", fuelRightOuter: " << fuelRightOuter
-        << ", fuelFeedTwo: " << fuelFeedTwo
-        << ", fuelRightMid: " << fuelRightMid
-        << ", fuelRightInner: " << fuelRightInner
-        << ", fuelFeedThree: " << fuelFeedThree
-        << ", fuelFeedFour: " << fuelFeedFour
-        << ", fuelTrim: " << fuelTrim
-        << " }";
-    return oss.str();
-  }
+  std::string toString() const;
 
 };
 
