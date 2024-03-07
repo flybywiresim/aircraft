@@ -23,6 +23,8 @@ MsfsHandler msfsHandler("Gauge_Fadec_A380X", "A32NX_");
 // This is the only place these have to be added - everything else is handled automatically
 Fadec_A380X fadec(msfsHandler);
 
+SimpleProfiler profiler{"Gauge_Fadec_A380X", 100};
+
 /**
  * Gauge Callback
  * There can by multiple gauges in a single wasm module. Just add another gauge callback function
@@ -41,7 +43,13 @@ extern "C" {
       return msfsHandler.initialize();
     }
     case PANEL_SERVICE_PRE_DRAW: {
-      return msfsHandler.update(static_cast<sGaugeDrawData*>(pData));
+      profiler.start();
+      const bool update = msfsHandler.update(static_cast<sGaugeDrawData*>(pData));
+      profiler.stop();
+      if (msfsHandler.getTickCounter() % 100 == 0) {
+        profiler.print();
+      }
+      return update;
     }
     case PANEL_SERVICE_PRE_KILL: {
       return msfsHandler.shutdown();
