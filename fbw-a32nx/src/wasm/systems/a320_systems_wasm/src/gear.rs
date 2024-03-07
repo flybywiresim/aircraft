@@ -8,6 +8,8 @@ use systems_wasm::aspects::{
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
 
+/// Gear status feedback to MSFS
+/// Note this is also used to inject plane drag from landing lights/RAT/Sat antenna
 pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // Read gear demand from all sim sim events and mask them
     builder.event_to_variable(
@@ -87,14 +89,17 @@ impl VariablesToObject for GearPosition {
             Variable::named("GEAR_DOOR_RIGHT_POSITION"),
             Variable::named("LANDING_2_POSITION"),
             Variable::named("LANDING_3_POSITION"),
+            Variable::named("RAT_STOW_POSITION"),
         ]
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         // Ratio of MSFS gear drag corresponding to door drag
-        const FAKE_GEAR_POSITION_FOR_DOOR_DRAG: f64 = 0.10;
+        const FAKE_GEAR_POSITION_FOR_DOOR_DRAG: f64 = 0.1;
         // Ratio of MSFS gear drag corresponding to landing light drag
-        const FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG: f64 = 0.03;
+        const FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG: f64 = 0.006;
+        // Ratio of MSFS gear drag corresponding to RAT deployed
+        const FAKE_GEAR_POSITION_FOR_RAT_DRAG: f64 = 0.0226;
 
         let gear_deployed = values[0] > 5. || values[1] > 5. || values[2] > 5.;
 
@@ -102,9 +107,10 @@ impl VariablesToObject for GearPosition {
         let nose_value_after_drag =
             (values[3] / 100.) * FAKE_GEAR_POSITION_FOR_DOOR_DRAG + values[0] / 100.;
 
-        // Left msfs gear value is gear position + left door drag + left landing light drag
+        // Left msfs gear value is gear position + left door drag + left landing light drag + RAT drag
         let left_value_after_drag = (values[4] / 100.) * FAKE_GEAR_POSITION_FOR_DOOR_DRAG
             + (values[6] / 100.) * FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG
+            + values[8] * FAKE_GEAR_POSITION_FOR_RAT_DRAG
             + values[1] / 100.;
 
         // Right msfs gear value is gear position + right door drag + right landing light drag
