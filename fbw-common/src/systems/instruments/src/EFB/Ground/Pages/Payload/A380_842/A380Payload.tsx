@@ -5,17 +5,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
-import { t, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card } from '@flybywiresim/flypad';
+import { setPayloadImported, t, useAppDispatch, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card, A380SeatOutlineBg, A380SeatOutlineUpperBg } from '@flybywiresim/flypad';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-
 import Loadsheet from './a380v3.json';
-
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
-
-import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
 
 interface A380Props {
     simbriefUnits: string,
@@ -25,6 +21,7 @@ interface A380Props {
     simbriefBag: number,
     simbriefFreight: number,
     simbriefDataLoaded: boolean,
+    payloadImported: boolean,
     massUnitForDisplay: string,
     isOnGround: boolean,
 
@@ -42,6 +39,7 @@ export const A380Payload: React.FC<A380Props> = ({
     simbriefBag,
     simbriefFreight,
     simbriefDataLoaded,
+    payloadImported,
     massUnitForDisplay,
     isOnGround,
     boardingStarted,
@@ -160,6 +158,7 @@ export const A380Payload: React.FC<A380Props> = ({
     const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
+    const gsxInProgress = () => gsxDeBoardingState >= 4 && gsxDeBoardingState < 6 || gsxBoardingState >= 4 && gsxBoardingState < 6;
     const gsxStates = {
         AVAILABLE: 1,
         NOT_AVAILABLE: 2,
@@ -168,6 +167,15 @@ export const A380Payload: React.FC<A380Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && payloadImported === false) {
+            setSimBriefValues();
+            dispatch(setPayloadImported(true));
+        }
+    }, []);
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
@@ -512,7 +520,7 @@ export const A380Payload: React.FC<A380Props> = ({
 
     return (
         <div>
-            <div className="relative h-content-section-reduced">
+            <div className="h-content-section-reduced relative">
                 <div className="mb-10">
                     <div className="relative flex flex-col">
                         {displayPaxMainDeck && (
@@ -551,9 +559,8 @@ export const A380Payload: React.FC<A380Props> = ({
                                     loadsheet={Loadsheet}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
-                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
                                     displayZfw={displayZfw}
-                                    boardingStarted={boardingStarted}
+                                    BoardingInProgress={gsxInProgress() || boardingStarted}
                                     totalPax={totalPax}
                                     totalPaxDesired={totalPaxDesired}
                                     maxPax={maxPax}
@@ -600,9 +607,9 @@ export const A380Payload: React.FC<A380Props> = ({
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
-                                            className={`flex h-auto items-center justify-center rounded-md rounded-l-none
-                                                       border-2 border-theme-highlight bg-theme-highlight
-                                                       px-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight`}
+                                            className={`border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex
+                                                       h-auto items-center justify-center
+                                                       rounded-md rounded-l-none border-2 px-2 transition duration-100`}
                                             onClick={setSimBriefValues}
                                         >
                                             <CloudArrowDown size={26} />
@@ -669,7 +676,7 @@ export const A380Payload: React.FC<A380Props> = ({
                             </div>
                         )}
                     </div>
-                    <div className="col-1 border border-theme-accent">
+                    <div className="col-1 border-theme-accent border">
                         <ChartWidget
                             width={525}
                             height={511}
