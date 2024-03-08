@@ -10,7 +10,7 @@
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
-    if (dirty) {
+    if (_warnIfDirty && dirty) {
       LOG_WARN("CacheableVariable::get() called on " + name + " but the value is dirty");
     }
     return cachedValue.value();
