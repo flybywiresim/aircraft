@@ -104,7 +104,7 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   profiler.start();
 #endif
 
-  // initial request of data from sim to retrieve all requests which have
+  // Initial request of data from sim to retrieve all requests which have
   // periodic updates enabled. This includes the base sim data for pause detection.
   // Other data without periodic updates are requested either in the data manager or
   // in the modules.
@@ -112,17 +112,11 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 
   // Pause detection
   // In all pause states except active pause return immediately.
-  // Active pause can be handled by the modules but usually simulation should run normally in
+  // Active pause can be handled by the modules, but usually simulation should run normally in
   // active pause with just the aircraft not moving.
-  // See comments above for the different pause states.
-  if (a32nxPauseDetected->readFromSim()) {
-    if (a32nxPauseDetected->getAsInt64() > 0) {
-      if (a32nxPauseDetected->getAsInt64() != 4) {
-        // LOG_DEBUG(simConnectName + ": Pause detected = " + std::to_string(a32nxPauseDetected->getAsInt64()));
-        return true;
-      }
-      // LOG_DEBUG(simConnectName + ": Active Pause detected = " + std::to_string(a32nxPauseDetected->getAsInt64()));
-    }
+  // See the comments above for the different pause states.
+  if (a32nxPauseDetected->getAsInt64() > 0 && a32nxPauseDetected->getAsInt64() != 4) {
+    return true;
   }
 
   // read and update base data from sim
