@@ -102,7 +102,10 @@ class MsfsHandler {
   // Allows immediate view on runtime performance issue. Add additional instances into
   // Modules while developing and profiling a module's performance.
 #ifdef PROFILING
-  SimpleProfiler profiler{"MsfsHandler::update()", 120};
+  SimpleProfiler preUpdate{"MsfsHandler::preUpdate()", 100};
+  SimpleProfiler mainUpdate{"MsfsHandler::mainUpdate()", 100};
+  SimpleProfiler postUpdate{"MsfsHandler::postUpdate()", 100};
+  SimpleProfiler profiler{"MsfsHandler::update()", 100};
 #endif
 
  public:
