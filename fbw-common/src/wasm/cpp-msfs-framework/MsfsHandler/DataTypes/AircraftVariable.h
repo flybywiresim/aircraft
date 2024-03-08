@@ -60,7 +60,6 @@ class AircraftVariable : public CacheableVariable {
    * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of an auto updated the variable in seconds.
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
-   * @param setterEventName The calculator code to write to the variable.
    */
   explicit AircraftVariable(const std::string& varName,
                             int varIndex = 0,
