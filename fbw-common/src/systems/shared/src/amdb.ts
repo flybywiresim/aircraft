@@ -9,7 +9,7 @@ export enum AmdbProjection {
 export enum FeatureType {
     RunwayElement = 0,
     RunwayIntersection = 1,
-    Threshold = 2,
+    RunwayThreshold = 2,
     RunwayMarking = 3,
     Centerline = 4,
     Lahso = 5,
@@ -45,7 +45,7 @@ export enum FeatureType {
     Water = 35,
     Hotspot = 36,
     RunwayCentrelinePoint = 37,
-    ArrestingSystemLocation = 38,
+    ArrestingGearLocation = 38,
     AsmEdge = 39,
     AsmNode = 40,
 }
@@ -53,7 +53,7 @@ export enum FeatureType {
 export enum FeatureTypeString {
     RunwayElement = 'runwayelement',
     RunwayIntersection = 'runwayintersection',
-    Threshold = 'threshold',
+    RunwayThreshold = 'runwaythreshold',
     RunwayMarking = 'runwaymarking',
     Centerline = 'paintedcenterline',
     Lahso = 'lahso',
@@ -89,7 +89,7 @@ export enum FeatureTypeString {
     Water = 'water',
     Hotspot = 'hotspot',
     RunwayCentrelinePoint = 'runwaycenterlinepoint',
-    ArrestingSystemLocation = 'arrestingsystemlocation',
+    ArrestingGearLocation = 'arrestinggearlocation',
     AsmEdge = 'asmedge',
     AsmNode = 'asmnode',
 }
@@ -97,7 +97,7 @@ export enum FeatureTypeString {
 export const AmdbFeatureTypeStrings: Record<FeatureType, FeatureTypeString> = {
     [FeatureType.RunwayElement]: FeatureTypeString.RunwayElement,
     [FeatureType.RunwayIntersection]: FeatureTypeString.RunwayIntersection,
-    [FeatureType.Threshold]: FeatureTypeString.Threshold,
+    [FeatureType.RunwayThreshold]: FeatureTypeString.RunwayThreshold,
     [FeatureType.RunwayMarking]: FeatureTypeString.RunwayMarking,
     [FeatureType.Centerline]: FeatureTypeString.Centerline,
     [FeatureType.Lahso]: FeatureTypeString.Lahso,
@@ -133,7 +133,7 @@ export const AmdbFeatureTypeStrings: Record<FeatureType, FeatureTypeString> = {
     [FeatureType.Water]: FeatureTypeString.Water,
     [FeatureType.Hotspot]: FeatureTypeString.Hotspot,
     [FeatureType.RunwayCentrelinePoint]: FeatureTypeString.RunwayCentrelinePoint,
-    [FeatureType.ArrestingSystemLocation]: FeatureTypeString.ArrestingSystemLocation,
+    [FeatureType.ArrestingGearLocation]: FeatureTypeString.ArrestingGearLocation,
     [FeatureType.AsmEdge]: FeatureTypeString.AsmEdge,
     [FeatureType.AsmNode]: FeatureTypeString.AsmNode,
 };
@@ -175,6 +175,18 @@ export interface AmdbProperties {
     name: string,
 
     iata: string,
+
+    lda: number,
+
+    asda: number,
+
+    toda: number,
+
+    tora: number,
+
+    brngmag: number,
+
+    brngtrue: number,
 }
 
 export type AmdbFeatureCollection = FeatureCollection<Geometry, AmdbProperties>

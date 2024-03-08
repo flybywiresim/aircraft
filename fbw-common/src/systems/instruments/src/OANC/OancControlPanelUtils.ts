@@ -65,7 +65,6 @@ export class FmsDataStore {
         this.alternate.setConsumer(sub.on('fmsAlternate'));
         this.departureRunway.setConsumer(sub.on('fmsDepartureRunway'));
         this.landingRunway.setConsumer(sub.on('fmsLandingRunway'));
-        this.landingRunwayLength.setConsumer(sub.on('fmsLandingRunwayLength'));
     }
 
     public readonly origin = ConsumerSubject.create<string | null>(null, null);
@@ -77,6 +76,4 @@ export class FmsDataStore {
     public readonly departureRunway = ConsumerSubject.create<string | null>(null, null);
 
     public readonly landingRunway = ConsumerSubject.create<string | null>(null, null);
-
-    public readonly landingRunwayLength = ConsumerSubject.create<number | null>(null, null);
 }

@@ -279,11 +279,6 @@ class NDInstrument implements FsInstrument {
             this.oansRef.instance.labelContainerRef.instance.addEventListener('click', () => {
                 this.contextMenuRef.instance.hideMenu();
             });
-
-            // OANS move cursor
-            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mousedown', this.oansRef.instance.handleCursorPanStart.bind(this.oansRef.instance));
-            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mousemove', this.oansRef.instance.handleCursorPanMove.bind(this.oansRef.instance));
-            // this.oansRef.instance.labelContainerRef.instance.addEventListener('mouseup', this.oansRef.instance.handleCursorPanStop.bind(this.oansRef.instance));
         }
 
         const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();

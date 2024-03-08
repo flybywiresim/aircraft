@@ -22,6 +22,7 @@ import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { FmsDataStore } from 'instruments/src/OANC/OancControlPanelUtils';
+import { BrakeToVacateUtils } from 'instruments/src/OANC/BrakeToVacateUtils';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -260,9 +261,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-    private readonly btvSelectedRunway = Subject.create<string | null>(null);
-
-    private readonly btvSelectedExit = Subject.create<string | null>(null);
+    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus, this.fmsDataStore);
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
@@ -316,8 +315,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
         this.fmsDataStore.destination.sub(() => this.updateLabelClasses());
         this.fmsDataStore.landingRunway.sub(() => this.updateLabelClasses());
-        this.btvSelectedRunway.sub(() => this.updateLabelClasses());
-        this.btvSelectedExit.sub(() => this.updateLabelClasses());
+        this.btvUtils.btvRunway.sub(() => this.updateLabelClasses());
+        this.btvUtils.btvExit.sub(() => {
+            this.updateLabelClasses();
+
+            // Draw BTV path
+            // this.layerFeatures[3].features.push(this.btvUtils.btvPath.features[0]);
+            // renderFeaturesToCanvas(3, this.layerCanvasRefs[3].instance.getContext('2d'), this.btvUtils.btvPath, 0, this.btvUtils.btvPath.features.length);
+        });
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
@@ -348,8 +353,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             this.panContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
 
             this.labelManager.reflowLabels(
-                this.dataAirportIcao.get() === this.fmsDataStore.origin.get() ? this.fmsDataStore.departureRunway.get() : this.fmsDataStore.landingRunway.get(),
-                this.btvSelectedRunway.get(),
+                this.fmsDataStore.departureRunway.get(),
+                this.fmsDataStore.landingRunway.get(),
+                this.btvUtils.btvRunway.get(),
             );
         });
 
@@ -394,6 +400,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         this.clearData();
         this.clearMap();
+        this.btvUtils.clearSelection();
 
         const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce((acc, it) => [...acc, ...it.reduce((acc, it) => [...acc, ...it.forFeatureTypes], [])], []);
         const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
@@ -402,6 +409,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         includeLayers.push(FeatureTypeString.AerodromeReferencePoint);
         includeLayers.push(FeatureTypeString.ParkingStandLocation);
         includeLayers.push(FeatureTypeString.Centerline);
+        includeLayers.push(FeatureTypeString.RunwayThreshold);
 
         const data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
         const wgs84ArpDat = await this.amdbClient.getAirportData(icao, [FeatureTypeString.AerodromeReferencePoint], undefined, AmdbProjection.Epsg4326);
@@ -488,13 +496,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         if (label.style === LabelStyle.RunwayEnd) {
             element.addEventListener('click', () => {
-                this.btvSelectedRunway.set(`RW${label.text}`);
-                this.props.bus.getPublisher<FmsOansData>().pub('oansSelectedLandingRunway', `RW${label.text}`);
+                const thresholdFeature = this.data.features.filter((it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text);
+                this.btvUtils.selectRunway(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
             });
         } if (label.style === LabelStyle.Taxiway) {
             element.addEventListener('click', () => {
-                this.btvSelectedExit.set(label.text);
-                this.props.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', label.text);
+                this.btvUtils.selectExit(label.text, label.associatedFeature);
             });
         }
 
@@ -584,12 +591,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
                 const isFmsOrigin = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
                 const isFmsDestination = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
-                const isSelectedRunway = (isFmsOrigin && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(2)))
-                    || (isFmsDestination && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(2)));
+                const isSelectedRunway = (isFmsOrigin && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(2)))
+                    || (isFmsDestination && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(2)));
 
                 const label1: Label = {
                     text: designators[0],
-                    style: this.btvSelectedRunway.get() === designators[0] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
+                    style: this.btvUtils.btvRunway.get() === designators[0] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
                     position: runwayLineStart,
                     rotation: reciprocal(runwayLineBearing),
                     associatedFeature: feature,
@@ -601,7 +608,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 if (designators[1]) {
                     const label2: Label = {
                         text: designators[1],
-                        style: this.btvSelectedRunway.get() === designators[1] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
+                        style: this.btvUtils.btvRunway.get() === designators[1] ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd,
                         position: runwayLineEnd,
                         rotation: runwayLineBearing,
                         associatedFeature: feature,
@@ -631,8 +638,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 }
 
                 // Selected FMS runway (origin or destination)
-                // if ((designators[0] === this.fmsDataStore.landingRunway.get()?.substring(2) && isFmsOrigin)
-                // || (designators[0] === this.fmsDataStore.departureRunway.get()?.substring(2) && isFmsDestination)) {
                 const labelFms1: Label = {
                     text: designators[0],
                     style: LabelStyle.FmsSelectedRunwayEnd,
@@ -642,8 +647,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 };
                 this.labelManager.labels.push(labelFms1);
                 this.labelManager.visibleLabels.insert(labelFms1);
-                // } else if ((designators[1] === this.fmsDataStore.landingRunway.get()?.substring(2) && isFmsOrigin)
-                // || (designators[1] === this.fmsDataStore.departureRunway.get()?.substring(2) && isFmsDestination)) {
+
                 const labelFms2: Label = {
                     text: designators[1],
                     style: LabelStyle.FmsSelectedRunwayEnd,
@@ -653,11 +657,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 };
                 this.labelManager.labels.push(labelFms2);
                 this.labelManager.visibleLabels.insert(labelFms2);
-                // }
 
                 // BTV selected runway
-                // if (isFmsDestination) {
-                //     if (designators[0] === this.btvSelectedRunway.get()) {
                 const btvSelectedArrow1: Label = {
                     text: designators[0],
                     style: LabelStyle.BtvSelectedRunwayArrow,
@@ -667,7 +668,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 };
                 this.labelManager.labels.push(btvSelectedArrow1);
                 this.labelManager.visibleLabels.insert(btvSelectedArrow1);
-                // } if (designators[1] === this.btvSelectedRunway.get()) {
+
                 const btvSelectedArrow2: Label = {
                     text: designators[1],
                     style: LabelStyle.BtvSelectedRunwayArrow,
@@ -677,8 +678,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 };
                 this.labelManager.labels.push(btvSelectedArrow2);
                 this.labelManager.visibleLabels.insert(btvSelectedArrow2);
-                // }
-                // }
             } else {
                 const text = feature.properties.idlin ?? feature.properties.idstd ?? feature.properties.ident ?? undefined;
 
@@ -809,6 +808,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
+        this.btvUtils.updateRemainingDistances(this.projectedPpos);
+
         // TODO figure out how to not need this
         offsetY *= -1;
 
@@ -851,8 +852,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             }
 
             this.labelManager.reflowLabels(
-                this.dataAirportIcao.get() === this.fmsDataStore.origin.get() ? this.fmsDataStore.departureRunway.get() : this.fmsDataStore.landingRunway.get(),
-                this.btvSelectedRunway.get(),
+                this.fmsDataStore.departureRunway.get(),
+                this.fmsDataStore.landingRunway.get(),
+                this.btvUtils.btvRunway.get(),
             );
 
             return;
@@ -886,8 +888,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             this.fmsDataStore,
             this.dataAirportIcao.get() === this.fmsDataStore.origin.get(),
             this.dataAirportIcao.get() === this.fmsDataStore.destination.get(),
-            this.btvSelectedRunway.get(),
-            this.btvSelectedExit.get(),
+            this.btvUtils.btvRunway.get(),
+            this.btvUtils.btvExit.get(),
         );
     }
 

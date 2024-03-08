@@ -8,7 +8,7 @@ import {
     MapSubject, MappedSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
 import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
-import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide } from '@flybywiresim/fbw-sdk';
+import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide, FeatureType, FeatureTypeString } from '@flybywiresim/fbw-sdk';
 
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
@@ -159,38 +159,33 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.pposLonWord.setWord(value);
         });
 
-        this.fmsDataStore.landingRunway.sub((it) => {
+        this.fmsDataStore.landingRunway.sub(async (it) => {
             // Set control panel display
             if (it) {
                 this.availableEntityList.set([it.substring(2)]);
                 this.selectedEntityType.set(EntityTypes.RWY);
                 this.selectedEntityIndex.set(0);
                 this.selectedEntityString.set(it.substring(2));
-                this.updateLandingRunwayData();
+
+                // Load runway data
+                // TODO if no Navigraph sub, fallback to navdata (from fms-v2)
+                const destination = this.fmsDataStore.destination.get();
+                if (destination) {
+                    const data = await this.amdbClient.getAirportData(destination, [FeatureTypeString.RunwayThreshold]);
+                    const thresholdFeature = data.runwaythreshold?.features.filter((td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(2));
+                    if (thresholdFeature) {
+                        this.runwayLda.set(thresholdFeature[0].properties.lda.toFixed(0));
+                        this.runwayTora.set(thresholdFeature[0].properties.tora.toFixed(0));
+                    }
+                }
             }
-        });
+        }, true);
 
         sub.on('realTime').atFrequency(0.2).handle((_) => this.autoLoadAirport());
-
-        // Load runway data from nav data
-        // TODO FIXME fms-v2 check when merged
-        // Once fms-v2 is merged this will be loaded here (via Msfs backend)
-        // TODO unclear whether that's LDA, TORA, ...
-        this.fmsDataStore.landingRunwayLength.sub((it) => {
-            if (it) {
-                this.runwayLda.set(it.toFixed(0));
-                this.runwayTora.set(it.toFixed(0));
-                this.updateLandingRunwayData();
-            }
-        });
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
-    }
-
-    private updateLandingRunwayData() {
-        this.props.bus.getPublisher<OansControlEvents>().pub('btvRunwayInfo', { ident: this.fmsDataStore.landingRunway.get() ?? '', length: this.fmsDataStore.landingRunwayLength.get() ?? 0 });
     }
 
     public updateAirportSearchData() {
@@ -437,8 +432,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="MapDataMain" style="display: flex; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;">
-                                        <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
+                                    <div id="MapDataMain" style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;">
+                                        <div style="display: flex; flex-direction: row; justify-content: space-between;">
                                             <Button
                                                 label="ADD CROSS"
                                                 onClick={() => console.log('ADD CROSS')}
@@ -453,14 +448,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             />
                                             <Button label="LDG SHIFT" onClick={() => this.showLdgShiftPanel()} buttonStyle="flex: 1" disabled={Subject.create(true)} />
                                         </div>
-                                        <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px;">
+                                        <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
                                             <Button
                                                 label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`}
                                                 onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`)}
                                                 disabled={Subject.create(true)}
                                             />
                                         </div>
-                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                                        <div style="display: none; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
                                             <div class="mfd-label" style="margin-right: 10px;">BTV STOP DISTANCE</div>
                                             <div>
                                                 <InputField<number>
