@@ -127,18 +127,37 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   // Datamanager is always called first to ensure that all variables are updated before the modules
   // are called.
 
-  // PRE UPDATE
   bool result = true;
+
+  // PRE UPDATE
+#ifdef PROFILING
+  preUpdate.start();
+#endif
   result &= dataManager.preUpdate(pData);
   result &= std::all_of(modules.begin(), modules.end(), [&pData](Module* pModule) { return pModule->preUpdate(pData); });
+#ifdef PROFILING
+  preUpdate.stop();
+#endif
 
   // UPDATE
+#ifdef PROFILING
+  mainUpdate.start();
+#endif
   result &= dataManager.update(pData);
   result &= std::all_of(modules.begin(), modules.end(), [&pData](Module* pModule) { return pModule->update(pData); });
+#ifdef PROFILING
+  mainUpdate.stop();
+#endif
 
   // POST UPDATE
+#ifdef PROFILING
+  postUpdate.start();
+#endif
   result &= dataManager.postUpdate(pData);
   result &= std::all_of(modules.begin(), modules.end(), [&pData](Module* pModule) { return pModule->postUpdate(pData); });
+#ifdef PROFILING
+  postUpdate.stop();
+#endif
 
   if (!result) {
     LOG_ERROR(simConnectName + ": MsfsHandler::update() - failed");
@@ -147,7 +166,11 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 #ifdef PROFILING
   profiler.stop();
   if (tickCounter % 120 == 0) {
+    preUpdate.print();
+    mainUpdate.print();
+    postUpdate.print();
     profiler.print();
+    std::cout << std::endl;
   }
 #endif
 
