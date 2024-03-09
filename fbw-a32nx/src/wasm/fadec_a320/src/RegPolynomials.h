@@ -6,7 +6,7 @@
 /// A collection of multi-variate regression polynomials for engine parameters
 /// </summary>
 /// <returns>True if successful, false otherwise.</returns>
-class Polynomial_A380X {
+class Polynomial {
  public:
   /// <summary>
   /// Shutdown polynomials - N2 (%)
