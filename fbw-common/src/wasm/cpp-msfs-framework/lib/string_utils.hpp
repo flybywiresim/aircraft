@@ -68,7 +68,7 @@ class StringUtils {
    * @return A string representation of the number, padded with leading zeros to reach the specified total length.
    */
   template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-  std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
+  static std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
     std::string str = std::to_string(value);
     if (str.length() >= total_length) {
       return str;
