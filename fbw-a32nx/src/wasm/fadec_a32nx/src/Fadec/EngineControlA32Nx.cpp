@@ -4,6 +4,7 @@
 #include "ScopedTimer.hpp"
 #include "EngineControlA32Nx.h"
 #include "ThrustLimits_A32NX.hpp"
+#include "Polynomials_A32NX.hpp"
 
 void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
