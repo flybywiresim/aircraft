@@ -10,6 +10,7 @@ export enum SeatType {
     WidebodyBusinessFlatLeft = 5,
     WidebodySuiteRight = 6,
     WidebodySuiteLeft = 7,
+    WidebodyPremiumEconomy = 8
 }
 
 export const CanvasConst = Object.freeze({
@@ -36,7 +37,6 @@ export interface PaxStationInfo {
     capacity: number,
     rows: RowInfo[],
     simVar: string,
-    fill: number,
     stationIndex: number,
     position: number,
     deck: number
@@ -115,6 +115,14 @@ export const SeatConstants = Object.freeze({
         padY: 0,
         imageX: 50,
         imageY: 50,
+    },
+    [SeatType.WidebodyPremiumEconomy]: {
+        len: 18,
+        wid: 13.64,
+        padX: 2,
+        padY: 0,
+        imageX: 18,
+        imageY: 13.64,
     },
 });
 
