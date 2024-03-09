@@ -26,6 +26,11 @@ class FadecSimData_A32NX {
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}};
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
+  /**
+   * @brief Initializes the FadecSimData_A32NX object.
+   * @param dm Pointer to the DataManager object. This object is used to create the data definition
+   *           variable for the ATC ID data.
+   */
   void initialize(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
     // on demand update
