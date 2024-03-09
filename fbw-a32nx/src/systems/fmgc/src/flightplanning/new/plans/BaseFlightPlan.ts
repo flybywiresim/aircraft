@@ -1939,23 +1939,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             throw new Error('[FMS/FPM] Last departure leg cannot be a discontinuity');
         }
 
-        // Check if same point occurs downroute
-        const duplicate = this.findDuplicate(lastDepartureLeg.terminationWaypoint(), lastDepartureLegIndexInPlan);
-        if (duplicate) {
-            // If it does, remove everything inbetween
-            const [_, __, duplicatePlanIndex] = duplicate;
+        if (lastDepartureLeg.isXF()) {
+            // Check if same point occurs downroute
+            const duplicate = this.findDuplicate(lastDepartureLeg.terminationWaypoint(), lastDepartureLegIndexInPlan);
+            if (duplicate) {
+                // If it does, remove everything inbetween
+                const [_, __, duplicatePlanIndex] = duplicate;
 
-            const originAndDestination = lastDepartureLegIndexInPlan === this.originLegIndex && duplicatePlanIndex === this.destinationLegIndex;
+                const originAndDestination = lastDepartureLegIndexInPlan === this.originLegIndex && duplicatePlanIndex === this.destinationLegIndex;
+                if (!originAndDestination) {
+                    this.removeRange(lastDepartureLegIndexInPlan + 1, duplicatePlanIndex + 1);
+                    lastDepartureSegment.strung = true;
 
-            if (originAndDestination && this.enrouteSegment.allLegs[0]?.isDiscontinuity !== true) {
-                // Do not string origin to destination
-                this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
-                this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
-            } else {
-                this.removeRange(lastDepartureLegIndexInPlan + 1, duplicatePlanIndex + 1);
-                lastDepartureSegment.strung = true;
+                    return;
+                }
             }
-        } else if (this.enrouteSegment.allLegs[0]?.isDiscontinuity !== true) {
+        }
+
+        if (this.enrouteSegment.allLegs[0]?.isDiscontinuity === false) {
             // Insert disco otherwise
             this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
             this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
