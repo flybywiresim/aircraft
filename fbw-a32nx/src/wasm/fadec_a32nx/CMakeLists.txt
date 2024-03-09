@@ -16,6 +16,7 @@ include_directories(
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32Nx.cpp
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
 )
@@ -24,6 +25,7 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FadecSimData_A32NX.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32Nx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.h
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
 )
 
