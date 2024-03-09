@@ -10,7 +10,6 @@
 
 class FadecSimData_A32NX {
  public:
-
   enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
   /**
@@ -29,7 +28,6 @@ class FadecSimData_A32NX {
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}};
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
-
   struct FuelLRData {
     FLOAT64 fuelLeftMain;
     FLOAT64 fuelRightMain;
@@ -47,7 +45,6 @@ class FadecSimData_A32NX {
    * @var FLOAT64 fuelRightMain The fuel quantity of the right main tank in gallons.
    */
   DataDefinitionVariablePtr<FuelLRData> fuelLRDataPtr;
-
 
   struct FuelCandAuxData {
     FLOAT64 fuelCenter;
@@ -137,30 +134,31 @@ class FadecSimData_A32NX {
    *           variable for the ATC ID data.
    */
   void initialize(DataManager* dm) {
+    // Initialize the data definition variables
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
-
     fuelLRDataPtr = dm->make_datadefinition_var<FuelLRData>("FUEL LR DATA", fuelLRDataDef);
     fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelCandAuxData>("FUEL CAND AUX DATA", fuelCandAuxDataDef);
-
     oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempLeftData>("OIL TEMP LEFT DATA", oilTempLeftDataDef);
     oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef);
-
     oilPsiLeftDataPtr = dm->make_datadefinition_var<OilPsiLeftData>("OIL PSI LEFT DATA", oilPsiLeftDataDef);
     oilPsiRightDataPtr = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef);
 
+    // Create the client events for the engine starter toggles
     // we just want to mask the events, not do anything with them
     toggleEngineStarter1Event = dm->make_client_event("TOGGLE_STARTER1", true);
-    toggleEngineStarter1Event->addCallback(
-        [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-          LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter1Event TOGGLE_STARTER1 masked");
-        });
     toggleEngineStarter1Event->addClientEventToNotificationGroup(NotificationGroup::NOTIFICATION_GROUP_0, true);
     toggleEngineStarter2Event = dm->make_client_event("TOGGLE_STARTER2", true);
-    toggleEngineStarter2Event->addCallback(
-        [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-          LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
-        });
     toggleEngineStarter2Event->addClientEventToNotificationGroup(NotificationGroup::NOTIFICATION_GROUP_0, true);
+    // Callbacks are only used for logging
+    toggleEngineStarter1Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
+      LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter1Event TOGGLE_STARTER1 masked");
+    });
+    toggleEngineStarter2Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
+      LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
+    });
+
+
+
 
 
     LOG_INFO("Fadec::FadecSimData_A380X initialized");
