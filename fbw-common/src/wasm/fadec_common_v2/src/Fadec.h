@@ -11,8 +11,6 @@
 
 class MsfsHandler;
 
-using DataDefVector = std::vector<DataDefinition>;
-
 class Fadec : public Module {
  public:
   Fadec() = delete;

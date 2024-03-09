@@ -36,6 +36,7 @@ using SimObjectBasePtr = std::shared_ptr<SimObjectBase>;
 using ClientEventPtr = std::shared_ptr<ClientEvent>;
 template <typename T>
 using DataDefinitionVariablePtr = std::shared_ptr<DataDefinitionVariable<T>>;
+using DataDefinitionVector = std::vector<DataDefinition>;
 template <typename T>
 using ClientDataAreaVariablePtr = std::shared_ptr<ClientDataAreaVariable<T>>;
 template <typename T, std::size_t ChunkSize>

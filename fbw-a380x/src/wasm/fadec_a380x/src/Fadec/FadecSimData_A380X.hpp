@@ -26,7 +26,7 @@ class FadecSimData_A380X {
   struct AtcIdData {
     char atcID[32];
   };
-  DataDefVector atcIdDataDef = {
+  DataDefinitionVector atcIdDataDef = {
       // MSFS docs say this is max 10 chars - we use 32 for safety
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}};
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
@@ -57,7 +57,7 @@ class FadecSimData_A380X {
     FLOAT64 refuelRate;           // L:A32NX_EFB_REFUEL_RATE_SETTING
     FLOAT64 refuelStartedByUser;  // L:A32NX_REFUEL_STARTED_BY_USR
   };
-  DataDefVector simDataDef = {{"ANIMATION DELTA TIME", 0, UNITS.Seconds},                 //
+  DataDefinitionVector simDataDef = {{"ANIMATION DELTA TIME", 0, UNITS.Seconds},                 //
                               {"AIRSPEED MACH", 0, UNITS.Mach},                           //
                               {"PRESSURE ALTITUDE", 0, UNITS.Feet},                       //
                               {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},                  //
@@ -91,7 +91,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3N1;  // A:TURB ENG N1:3
     FLOAT64 engine4N1;  // A:TURB ENG N1:4
   };
-  DataDefVector simEngineN1DataDef = {
+  DataDefinitionVector simEngineN1DataDef = {
       {"TURB ENG N1", 1, UNITS.Percent},  //
       {"TURB ENG N1", 2, UNITS.Percent},  //
       {"TURB ENG N1", 3, UNITS.Percent},  //
@@ -106,7 +106,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3N2;  // A:TURB ENG N2:3
     FLOAT64 engine4N2;  // A:TURB ENG N2:4
   };
-  DataDefVector simEngineN2DataDef = {
+  DataDefinitionVector simEngineN2DataDef = {
       {"TURB ENG N2", 1, UNITS.Percent},  //
       {"TURB ENG N2", 2, UNITS.Percent},  //
       {"TURB ENG N2", 3, UNITS.Percent},  //
@@ -121,7 +121,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3CorrectedN1;  // A:TURB ENG CORRECTED N1:3
     FLOAT64 engine4CorrectedN1;  // A:TURB ENG CORRECTED N1:4
   };
-  DataDefVector simEngineCorrectedN1DataDef = {
+  DataDefinitionVector simEngineCorrectedN1DataDef = {
       {"TURB ENG CORRECTED N1", 1, UNITS.Percent},  //
       {"TURB ENG CORRECTED N1", 2, UNITS.Percent},  //
       {"TURB ENG CORRECTED N1", 3, UNITS.Percent},  //
@@ -136,7 +136,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3CorrectedN2;  // A:TURB ENG CORRECTED N2:3
     FLOAT64 engine4CorrectedN2;  // A:TURB ENG CORRECTED N2:4
   };
-  DataDefVector simEngineCorrectedN2DataDef = {
+  DataDefinitionVector simEngineCorrectedN2DataDef = {
       {"TURB ENG CORRECTED N2", 1, UNITS.Percent},  //
       {"TURB ENG CORRECTED N2", 2, UNITS.Percent},  //
       {"TURB ENG CORRECTED N2", 3, UNITS.Percent},  //
@@ -151,7 +151,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3Thrust;  // A:TURB ENG JET THRUST:3
     FLOAT64 engine4Thrust;  // A:TURB ENG JET THRUST:4
   };
-  DataDefVector simThrustDataDef = {
+  DataDefinitionVector simThrustDataDef = {
       {"TURB ENG JET THRUST", 1, UNITS.Pounds},  //
       {"TURB ENG JET THRUST", 2, UNITS.Pounds},  //
       {"TURB ENG JET THRUST", 3, UNITS.Pounds},  //
@@ -166,7 +166,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3Combustion;  // A:GENERAL ENG COMBUSTION:3
     FLOAT64 engine4Combustion;  // A:GENERAL ENG COMBUSTION:4
   };
-  DataDefVector simEngineCombustionDataDef = {
+  DataDefinitionVector simEngineCombustionDataDef = {
       {"GENERAL ENG COMBUSTION", 1, UNITS.Number},  //
       {"GENERAL ENG COMBUSTION", 2, UNITS.Number},  //
       {"GENERAL ENG COMBUSTION", 3, UNITS.Number},  //
@@ -181,7 +181,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3OilTemperature;  // A:GENERAL ENG OIL TEMPERATURE:3
     FLOAT64 engine4OilTemperature;  // A:GENERAL ENG OIL TEMPERATURE:4
   };
-  DataDefVector simEngineOilTemperatureDataDef = {
+  DataDefinitionVector simEngineOilTemperatureDataDef = {
       {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius},  //
       {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius},  //
       {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius},  //
@@ -203,7 +203,7 @@ class FadecSimData_A380X {
     FLOAT64 fuelTankRightOuter;  // A:FUELSYSTEM TANK QUANTITY:10
     FLOAT64 fuelTankTrim;        // A:FUELSYSTEM TANK QUANTITY:11
   };
-  DataDefVector simFuelTankDataDef = {
+  DataDefinitionVector simFuelTankDataDef = {
       {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},   //
       {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons},   //
       {"FUELSYSTEM TANK QUANTITY", 3, UNITS.Gallons},   //
@@ -225,7 +225,7 @@ class FadecSimData_A380X {
     FLOAT64 idleFF;   // L:A32NX_ENGINE_IDLE_FF
     FLOAT64 idleEGT;  // L:A32NX_ENGINE_IDLE_EGT
   };
-  DataDefVector engineIdleDataDef = {
+  DataDefinitionVector engineIdleDataDef = {
       {"L:A32NX_ENGINE_IDLE_N1", 0, UNITS.Number},  // %N1
       {"L:A32NX_ENGINE_IDLE_N2", 0, UNITS.Number},  // %N2
       {"L:A32NX_ENGINE_IDLE_FF", 0, UNITS.Number},  // kg/h
@@ -240,7 +240,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3N3;  // L:A32NX_ENGINE_N3:3
     FLOAT64 engine4N3;  // L:A32NX_ENGINE_N3:4
   };
-  DataDefVector engineN3DataDef = {
+  DataDefinitionVector engineN3DataDef = {
       {"L:A32NX_ENGINE_N3", 1, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N3", 2, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N3", 3, UNITS.Percent},  //
@@ -255,7 +255,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3N2;  // L:A32NX_ENGINE_N2:3
     FLOAT64 engine4N2;  // L:A32NX_ENGINE_N2:4
   };
-  DataDefVector engineN2DataDef = {
+  DataDefinitionVector engineN2DataDef = {
       {"L:A32NX_ENGINE_N2", 1, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N2", 2, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N2", 3, UNITS.Percent},  //
@@ -270,7 +270,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3N1;  // L:A32NX_ENGINE_N1:3
     FLOAT64 engine4N1;  // L:A32NX_ENGINE_N1:4
   };
-  DataDefVector engineN1DataDef = {
+  DataDefinitionVector engineN1DataDef = {
       {"L:A32NX_ENGINE_N1", 1, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N1", 2, UNITS.Percent},  //
       {"L:A32NX_ENGINE_N1", 3, UNITS.Percent},  //
@@ -285,7 +285,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3State;  // L:A32NX_ENGINE_STATE:3
     FLOAT64 engine4State;  // L:A32NX_ENGINE_STATE:4
   };
-  DataDefVector engineStateDataDef = {
+  DataDefinitionVector engineStateDataDef = {
       {"L:A32NX_ENGINE_STATE", 1, UNITS.Number},  //
       {"L:A32NX_ENGINE_STATE", 2, UNITS.Number},  //
       {"L:A32NX_ENGINE_STATE", 3, UNITS.Number},  //
@@ -300,7 +300,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3Timer;  // L:A32NX_ENGINE_TIMER:3
     FLOAT64 engine4Timer;  // L:A32NX_ENGINE_TIMER:4
   };
-  DataDefVector engineTimerDataDef = {
+  DataDefinitionVector engineTimerDataDef = {
       {"L:A32NX_ENGINE_TIMER", 1, UNITS.Number},  //
       {"L:A32NX_ENGINE_TIMER", 2, UNITS.Number},  //
       {"L:A32NX_ENGINE_TIMER", 3, UNITS.Number},  //
@@ -315,7 +315,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3Egt;  // L:A32NX_ENGINE_EGT:3
     FLOAT64 engine4Egt;  // L:A32NX_ENGINE_EGT:4
   };
-  DataDefVector engineEgtDataDef = {
+  DataDefinitionVector engineEgtDataDef = {
       {"L:A32NX_ENGINE_EGT", 1, UNITS.Celsius},  //
       {"L:A32NX_ENGINE_EGT", 2, UNITS.Celsius},  //
       {"L:A32NX_ENGINE_EGT", 3, UNITS.Celsius},  //
@@ -331,7 +331,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3TotalOil;  // L:A32NX_ENGINE_OIL_TOTAL:3
     FLOAT64 engine4TotalOil;  // L:A32NX_ENGINE_OIL_TOTAL:4
   };
-  DataDefVector engineTotalOilDataDef = {
+  DataDefinitionVector engineTotalOilDataDef = {
       {"L:A32NX_ENGINE_OIL_TOTAL", 1, UNITS.Number},  //
       {"L:A32NX_ENGINE_OIL_TOTAL", 2, UNITS.Number},  //
       {"L:A32NX_ENGINE_OIL_TOTAL", 3, UNITS.Number},  //
@@ -353,7 +353,7 @@ class FadecSimData_A380X {
     FLOAT64 fuelRightOuterPre;  // L:A32NX_FUEL_RIGHTOUTER_PRE
     FLOAT64 fuelTrimPre;        // L:A32NX_FUEL_TRIM_PRE
   };
-  DataDefVector fuelPreDataDef = {
+  DataDefinitionVector fuelPreDataDef = {
       {"L:A32NX_FUEL_LEFTOUTER_PRE", 0, UNITS.Number},   // lbs
       {"L:A32NX_FUEL_FEED1_PRE", 0, UNITS.Number},       // lbs
       {"L:A32NX_FUEL_LEFTMID_PRE", 0, UNITS.Number},     // lbs
@@ -374,7 +374,7 @@ class FadecSimData_A380X {
     FLOAT64 pumpStateEngine3;  // L:A32NX_PUMP_STATE:3
     FLOAT64 pumpStateEngine4;  // L:A32NX_PUMP_STATE:4
   };
-  DataDefVector pumpStateDataDef = {
+  DataDefinitionVector pumpStateDataDef = {
       {"L:A32NX_PUMP_STATE", 1, UNITS.Number},
       {"L:A32NX_PUMP_STATE", 2, UNITS.Number},
       {"L:A32NX_PUMP_STATE", 3, UNITS.Number},
@@ -389,7 +389,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3Ff;  // L:A32NX_ENGINE_FF:3
     FLOAT64 engine4Ff;  // L:A32NX_ENGINE_FF:4
   };
-  DataDefVector engineFuelFlowDataDef = {
+  DataDefinitionVector engineFuelFlowDataDef = {
       {"L:A32NX_ENGINE_FF", 1, UNITS.Number},  // kg/h
       {"L:A32NX_ENGINE_FF", 2, UNITS.Number},  // kg/h
       {"L:A32NX_ENGINE_FF", 3, UNITS.Number},  // kg/h
@@ -404,7 +404,7 @@ class FadecSimData_A380X {
     FLOAT64 engine3PreFf;  // L:A32NX_ENGINE_PRE_FF:3
     FLOAT64 engine4PreFf;  // L:A32NX_ENGINE_PRE_FF:4
   };
-  DataDefVector enginePreFuelFlowDataDef = {
+  DataDefinitionVector enginePreFuelFlowDataDef = {
       {"L:A32NX_ENGINE_PRE_FF", 1, UNITS.Number},  // kg/h
       {"L:A32NX_ENGINE_PRE_FF", 2, UNITS.Number},  // kg/h
       {"L:A32NX_ENGINE_PRE_FF", 3, UNITS.Number},  // kg/h
@@ -419,7 +419,7 @@ class FadecSimData_A380X {
     FLOAT64 fuelUsedEngine3;  // L:A32NX_FUEL_USED:3
     FLOAT64 fuelUsedEngine4;  // L:A32NX_FUEL_USED:4
   };
-  DataDefVector fuelUsedEngineDataDef = {
+  DataDefinitionVector fuelUsedEngineDataDef = {
       {"L:A32NX_FUEL_USED", 1, UNITS.Number},  // lbs
       {"L:A32NX_FUEL_USED", 2, UNITS.Number},  // lbs
       {"L:A32NX_FUEL_USED", 3, UNITS.Number},  // lbs
@@ -436,7 +436,7 @@ class FadecSimData_A380X {
     FLOAT64 thrustLimitMct;    // L:A32NX_AUTOTHRUST_THRUST_LIMIT_MCT
     FLOAT64 thrustLimitToga;   // L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
   };
-  DataDefVector thrustLimitDataDef = {
+  DataDefinitionVector thrustLimitDataDef = {
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", 0, UNITS.Enum},    //  '', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", 0, UNITS.Number},  // %N1
       {"L:A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", 0, UNITS.Number},   // %N1

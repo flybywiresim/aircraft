@@ -50,7 +50,7 @@ bool Pushback::initialize() {
 
   // Pushback Base Data
   //  will be updated every visual frame
-  DataDefVector pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
+  DataDefinitionVector pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
                                        {"L:A32NX_PARK_BRAKE_LEVER_POS", 0, UNITS.Bool},
                                        {"PUSHBACK ATTACHED", 0, UNITS.Bool},
                                        {"PLANE HEADING DEGREES TRUE", 0, UNITS.degrees},
@@ -60,7 +60,7 @@ bool Pushback::initialize() {
 
   // Data definitions for PushbackDataID
   //  Will only be written to sim if the pushback system is enabled and the tug connected
-  DataDefVector pushBackDataDef = {{"PUSHBACK WAIT", 0, UNITS.Bool},
+  DataDefinitionVector pushBackDataDef = {{"PUSHBACK WAIT", 0, UNITS.Bool},
                                    {"VELOCITY BODY X", 0, UNITS.FeetSec},
                                    {"VELOCITY BODY Y", 0, UNITS.FeetSec},
                                    {"VELOCITY BODY Z", 0, UNITS.FeetSec},
@@ -81,7 +81,7 @@ bool Pushback::initialize() {
 
   // debug purposes
   pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
-  DataDefVector pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
+  DataDefinitionVector pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
                                         {"L:A32NX_PUSHBACK_SPD", 0, UNITS.FeetSec},
                                         {"L:A32NX_PUSHBACK_HDG", 0, UNITS.degrees},
                                         {"L:A32NX_PUSHBACK_INERTIA_SPD", 0, UNITS.FeetSec},
