@@ -7,6 +7,10 @@
 #include "MsfsHandler.h"
 
 #include "FadecSimData_A32NX.hpp"
+#include "FuelConfiguration_A32NX.h"
+
+#define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
+#define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
 
 class EngineControl_A32NX {
  private:
@@ -20,7 +24,8 @@ class EngineControl_A32NX {
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId{};
 
-
+  // Fuel configuration for loading and storing fuel levels
+  FuelConfiguration_A32NX fuelConfiguration{};
 
   // additional constants
   static constexpr double LBS_TO_KGS = 0.4535934;
@@ -42,7 +47,7 @@ class EngineControl_A32NX {
 
  public:
   void initialize(MsfsHandler* msfsHandler);
-  void update();
+  void update(sGaugeDrawData* pData);
   void shutdown();
 
  private:

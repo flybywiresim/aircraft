@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "EngineControlA32Nx.h"
+#include "ScopedTimer.hpp"
 
 void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
@@ -10,7 +11,7 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
-void EngineControl_A32NX::update() {
+void EngineControl_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
   profilerUpdate.start();
 
   // Get ATC ID from sim to be able to load and store fuel levels
@@ -27,6 +28,8 @@ void EngineControl_A32NX::update() {
   }
 
   // TODO: Implement update logic
+  // DEBUG
+  std::cout << "Fadec::FuelConfiguration_A32NX::update() " << fuelConfiguration.toString() << std::endl;
 
   profilerUpdate.stop();
   if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
@@ -44,7 +47,14 @@ void EngineControl_A32NX::shutdown() {
 // =============================================================================
 
 void EngineControl_A32NX::initializeEngineControlData() {
+  LOG_INFO("Fadec::EngineControl_A32NX::initializeEngineControlData()");
+  ScopedTimer timer("Fadec::EngineControl_A32NX::initializeEngineControlData()");
 
-  // TODO Fuel level initialization
+  // Load fuel configuration from file
+  const std::string fuelConfigFilename = FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION;
+  fuelConfiguration.setConfigFilename(fuelConfigFilename);
+  fuelConfiguration.loadConfigurationFromIni();
+
+  // TODO: Implement initialization logic
 
 }
