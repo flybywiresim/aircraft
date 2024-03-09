@@ -4,11 +4,13 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 
+#include "EngineControlA32Nx.h"
 #include "Fadec.h"
 
 class Fadec_A32NX : public Fadec {
  private:
-
+  // Engine control instance
+  EngineControl_A32NX engineControl{};
 
  public:
   /**
@@ -18,9 +20,9 @@ class Fadec_A32NX : public Fadec {
   explicit Fadec_A32NX(MsfsHandler& msfsHandler) : Fadec(msfsHandler) {}
 
   bool initialize() override;
-  bool preUpdate(sGaugeDrawData* pData) override;
+  bool preUpdate(sGaugeDrawData*) override { return true; }
   bool update(sGaugeDrawData* pData) override;
-  bool postUpdate(sGaugeDrawData* pData) override;
+  bool postUpdate(sGaugeDrawData*) override { return true; }
   bool shutdown() override;
 };
 
