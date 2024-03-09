@@ -8,8 +8,7 @@
 
 class Fadec_A32NX : public Fadec {
  private:
-  // Convenience pointer to the data manager
-  DataManager* dataManager = nullptr;
+
 
  public:
   /**
