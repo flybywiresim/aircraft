@@ -1,8 +1,9 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "EngineControlA32Nx.h"
 #include "ScopedTimer.hpp"
+#include "EngineControlA32Nx.h"
+#include "ThrustLimits_A32NX.hpp"
 
 void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
@@ -28,8 +29,6 @@ void EngineControl_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
   }
 
   // TODO: Implement update logic
-  // DEBUG
-  std::cout << "Fadec::FuelConfiguration_A32NX::update() " << fuelConfiguration.toString() << std::endl;
 
   profilerUpdate.stop();
   if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
