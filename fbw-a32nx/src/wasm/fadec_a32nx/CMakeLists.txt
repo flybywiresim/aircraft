@@ -26,6 +26,7 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FadecSimData_A32NX.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32Nx.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A32NX.hpp
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
 )
 
