@@ -4,7 +4,6 @@
 #include "Fadec_A32NX.h"
 
 bool Fadec_A32NX::initialize() {
-  dataManager = &msfsHandler.getDataManager();
 
   _isInitialized = true;
   LOG_INFO("Fadec_A32NX initialized");
