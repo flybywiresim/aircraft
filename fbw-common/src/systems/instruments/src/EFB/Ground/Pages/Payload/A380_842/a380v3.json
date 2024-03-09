@@ -21,85 +21,45 @@
         {
             "name": "MAIN FWD A",
             "deck": 0,
-            "capacity": 44,
+            "capacity": 28,
             "rows": [
                 {
                     "seats": [
                         {
-                            "type": 2,
-                            "yOffset": 5
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2,
-                            "yOffset": 54.08
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 2,
+                            "type": 8,
                             "yOffset": 3.5
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 77.02
                         },
                         {
-                            "type": 2,
-                            "yOffset": 57.08
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 0,
+                    "xOffset": 18,
                     "yOffset": 0
                 },
                 {
                     "seats": [
                         {
-                            "type": 2,
+                            "type": 8,
                             "yOffset": 1.5
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 81.02
                         },
                         {
-                            "type": 2,
-                            "yOffset": 61.08
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -110,23 +70,17 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 84.02
                         },
                         {
-                            "type": 2,
-                            "yOffset": 66.5
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -137,36 +91,30 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -177,36 +125,30 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -217,47 +159,40 @@
             ],
             "stationIndex": 1,
             "position": 70.7,
-            "fill": 0.088,
             "simVar": "A32NX_PAX_MAIN_FWD_A"
         },
         {
             "name": "MAIN FWD B",
             "deck": 0,
-            "capacity": 44,
+            "capacity": 28,
             "rows": [
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -268,36 +203,30 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -308,36 +237,30 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 14.73
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -348,57 +271,17 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 8,
+                            "yOffset": 42.01
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2
+                            "type": 8
                         },
                         {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2,
-                            "yOffset": 9
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 2,
-                            "yOffset": 45.075
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
+                            "type": 8
                         }
                     ],
                     "x": 0,
@@ -409,28 +292,17 @@
             ],
             "stationIndex": 2,
             "position": 70.7,
-            "fill": 0.088,
             "simVar": "A32NX_PAX_MAIN_FWD_B"
         },
         {
             "name": "MAIN MID 1A",
             "deck": 0,
-            "capacity": 42,
+            "capacity": 39,
             "rows": [
                 {
                     "seats": [
                         {
                             "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2
-                        },
-                        {
-                            "type": 2,
-                            "yOffset": 66.5
                         },
                         {
                             "type": 2
@@ -594,7 +466,6 @@
             ],
             "stationIndex": 3,
             "position": 25.6,
-            "fill": 0.084,
             "simVar": "A32NX_PAX_MAIN_MID_1A"
         },
         {
@@ -805,7 +676,6 @@
             ],
             "stationIndex": 4,
             "position": 25.6,
-            "fill": 0.1,
             "simVar": "A32NX_PAX_MAIN_MID_1B"
         },
         {
@@ -976,7 +846,8 @@
                 {
                     "seats": [
                         {
-                            "type": 2
+                            "type": 2,
+                            "yOffset": 102.875
                         },
                         {
                             "type": 2
@@ -993,7 +864,6 @@
             ],
             "stationIndex": 5,
             "position": 25.6,
-            "fill": 0.086,
             "simVar": "A32NX_PAX_MAIN_MID_1C"
         },
         {
@@ -1199,7 +1069,6 @@
             ],
             "stationIndex": 6,
             "position": -16.1,
-            "fill": 0.096,
             "simVar": "A32NX_PAX_MAIN_MID_2A"
         },
         {
@@ -1370,7 +1239,6 @@
             ],
             "stationIndex": 7,
             "position": -16.1,
-            "fill": 0.08,
             "simVar": "A32NX_PAX_MAIN_MID_2B"
         },
         {
@@ -1528,7 +1396,6 @@
             ],
             "stationIndex": 8,
             "position": -16.1,
-            "fill": 0.072,
             "simVar": "A32NX_PAX_MAIN_MID_2C"
         },
         {
@@ -1713,7 +1580,6 @@
             ],
             "stationIndex": 9,
             "position": -51.9,
-            "fill": 0.084,
             "simVar": "A32NX_PAX_MAIN_AFT_A"
         },
         {
@@ -1885,7 +1751,6 @@
             ],
             "stationIndex": 10,
             "position": -51.9,
-            "fill": 0.08,
             "simVar": "A32NX_PAX_MAIN_AFT_B"
         },
         {
@@ -1981,7 +1846,6 @@
             ],
             "stationIndex": 11,
             "position": 55.8,
-            "fill": 0.028,
             "simVar": "A32NX_PAX_UPPER_FWD"
         },
         {
@@ -2011,6 +1875,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2018,7 +1905,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2034,6 +1921,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2041,7 +1951,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2057,6 +1967,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2064,7 +1997,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2080,80 +2013,11 @@
                             "yOffset": 10
                         },
                         {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
                             "type": 5,
                             "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 4,
-                            "yOffset": 10
                         },
                         {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
-                            "type": 5,
-                            "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 4,
-                            "yOffset": 10
-                        },
-                        {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
-                            "type": 5,
-                            "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 4,
-                            "yOffset": 10
-                        },
-                        {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
+                            "type": 4
                         },
                         {
                             "type": 5,
@@ -2168,7 +2032,6 @@
             ],
             "stationIndex": 11,
             "position": 55.8,
-            "fill": 0.06,
             "simVar": "A32NX_PAX_UPPER_MID_A"
         },
         {
@@ -2179,7 +2042,7 @@
                 {
                     "seats": [
                         {
-                            "type": 4,
+                            "type": 5,
                             "yOffset": 10
                         },
                         {
@@ -2190,7 +2053,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2206,6 +2069,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2213,7 +2099,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2229,6 +2115,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2236,7 +2145,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2252,11 +2161,11 @@
                             "yOffset": 10
                         },
                         {
-                            "type": 4,
+                            "type": 5,
                             "yOffset": 11
                         },
                         {
-                            "type": 5
+                            "type": 4
                         },
                         {
                             "type": 5,
@@ -2271,7 +2180,7 @@
                 {
                     "seats": [
                         {
-                            "type": 4,
+                            "type": 5,
                             "yOffset": 10
                         },
                         {
@@ -2282,53 +2191,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
-                            "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
                             "type": 4,
-                            "yOffset": 10
-                        },
-                        {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
-                            "type": 5,
-                            "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
-                            "type": 4,
-                            "yOffset": 10
-                        },
-                        {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
-                            "type": 5,
                             "yOffset": 11
                         }
                     ],
@@ -2340,7 +2203,6 @@
             ],
             "stationIndex": 11,
             "position": 55.8,
-            "fill": 0.056,
             "simVar": "A32NX_PAX_UPPER_MID_B"
         },
         {
@@ -2370,6 +2232,29 @@
                             "yOffset": 10
                         },
                         {
+                            "type": 5,
+                            "yOffset": 11
+                        },
+                        {
+                            "type": 4
+                        },
+                        {
+                            "type": 5,
+                            "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        {
+                            "type": 5,
+                            "yOffset": 10
+                        },
+                        {
                             "type": 4,
                             "yOffset": 11
                         },
@@ -2377,7 +2262,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
+                            "type": 4,
                             "yOffset": 11
                         }
                     ],
@@ -2393,11 +2278,11 @@
                             "yOffset": 10
                         },
                         {
-                            "type": 4,
+                            "type": 5,
                             "yOffset": 11
                         },
                         {
-                            "type": 5
+                            "type": 4
                         },
                         {
                             "type": 5,
@@ -2412,7 +2297,7 @@
                 {
                     "seats": [
                         {
-                            "type": 4,
+                            "type": 5,
                             "yOffset": 10
                         },
                         {
@@ -2423,30 +2308,7 @@
                             "type": 5
                         },
                         {
-                            "type": 5,
-                            "yOffset": 11
-                        }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        {
                             "type": 4,
-                            "yOffset": 10
-                        },
-                        {
-                            "type": 4,
-                            "yOffset": 11
-                        },
-                        {
-                            "type": 5
-                        },
-                        {
-                            "type": 5,
                             "yOffset": 11
                         }
                     ],
@@ -2458,7 +2320,6 @@
             ],
             "stationIndex": 11,
             "position": 55.8,
-            "fill": 0.036,
             "simVar": "A32NX_PAX_UPPER_AFT"
         }
     ],
