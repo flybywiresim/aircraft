@@ -1,11 +1,11 @@
-# Build-script for the aircraft master branch
-# Builds the A32NX and the A380X and uploads them to the CloudFlare CDN and GitHub Pre-Release Assets
+# Build-script for the aircraft a380x-experimental branch
+# Builds the A32NX and the A380X and uploads them to the CloudFlare CDN
 
-name: master
+name: a380x-experimental
 on:
   push:
     branches:
-      - master
+      - a380x-experimental
 
 jobs:
   build_a32nx:
@@ -16,12 +16,7 @@ jobs:
     env:
       FBW_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      MASTER_PRE_RELEASE_ID: 66067756
-      MASTER_PRE_RELEASE_TAG: assets/master
-      MASTER_ZIP_NAME: A32NX-master.7z
-      VMASTER_PRE_RELEASE_ID: 32243965
-      VMASTER_PRE_RELEASE_TAG: vmaster
-      BUILD_DIR_NAME: master-a32nx
+      BUILD_DIR_NAME: a380x-experimental-a32nx
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -55,37 +50,13 @@ jobs:
           cd ./fbw-a32nx/out/
           7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
+
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/master
+          CDN_BUCKET_DESTINATION: addons/a32nx/a380x-experimental
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
-      - name: Delete old GitHub Pre-Release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          token: ${{ github.token }}
-          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: "${{ env.MASTER_ZIP_NAME }}"
-          fail-if-no-assets: false
-      - name: Upload aircraft package to GitHub Pre-Release Assets
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
-          asset_name: ${{ env.MASTER_ZIP_NAME }}
-          asset_content_type: application/zip
-      - name: Update GitHub Pre-Release Body
-        run: |
-          curl --request PATCH \
-            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
-            }'
 
   build_a380x:
     name: Build and deploy A380X
@@ -94,12 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      MASTER_PRE_RELEASE_ID: 66067756
-      MASTER_PRE_RELEASE_TAG: assets/master
-      MASTER_ZIP_NAME: A380X-master.7z
-      VMASTER_PRE_RELEASE_ID: 32243965
-      VMASTER_PRE_RELEASE_TAG: vmaster
-      BUILD_DIR_NAME: master-a380x
+      BUILD_DIR_NAME: a380x-experimental-a380x
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -133,34 +99,10 @@ jobs:
           cd ./fbw-a380x/out/
           7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
+
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/master
+          CDN_BUCKET_DESTINATION: addons/a380x/a380x-experimental
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
-      - name: Delete old GitHub Pre-Release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          token: ${{ github.token }}
-          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: "${{ env.MASTER_ZIP_NAME }}"
-          fail-if-no-assets: false
-      - name: Upload aircraft package to GitHub Pre-Release Assets
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
-          asset_name: ${{ env.MASTER_ZIP_NAME }}
-          asset_content_type: application/zip
-      - name: Update GitHub Pre-Release Body
-        run: |
-          curl --request PATCH \
-            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
-            }'

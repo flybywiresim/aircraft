@@ -54,6 +54,11 @@ const settingEnumToSync: Map<string, SimVarEnum> = new Map([
             new Map([['REAL', 2], ['FAST', 1], ['INSTANT', 0]]),
         ],
     ],
+    ['CONFIG_ALIGN_TIME',
+        ['L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'number', '0',
+            new Map([['REAL', 0], ['FAST', 2], ['INSTANT', 1]]),
+        ],
+    ],
 ]);
 
 export function readSettingsFromPersistentStorage() {
