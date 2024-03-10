@@ -97,9 +97,9 @@ impl VariablesToObject for GearPosition {
         // Ratio of MSFS gear drag corresponding to door drag
         const FAKE_GEAR_POSITION_FOR_DOOR_DRAG: f64 = 0.1;
         // Ratio of MSFS gear drag corresponding to landing light drag
-        const FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG: f64 = 0.006;
+        const FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG: f64 = 0.021;
         // Ratio of MSFS gear drag corresponding to RAT deployed
-        const FAKE_GEAR_POSITION_FOR_RAT_DRAG: f64 = 0.0226;
+        const FAKE_GEAR_POSITION_FOR_RAT_DRAG: f64 = 0.070;
 
         let gear_deployed = values[0] > 5. || values[1] > 5. || values[2] > 5.;
 
