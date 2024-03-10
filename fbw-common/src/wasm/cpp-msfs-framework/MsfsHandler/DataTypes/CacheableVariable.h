@@ -142,6 +142,8 @@ class CacheableVariable : public ManagedDataObjectBase {
   /**
    * Sets the cache value and marks the variable as dirty.<p/>
    * Does not write the value to the sim or update the time and tick stamps.
+   * Check this variable's updateMode to see if the value will be written automatically to the sim or
+   * if you need to write it manually.
    * @param value the value to set
    */
   virtual void set(FLOAT64 value);
