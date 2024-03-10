@@ -27,6 +27,19 @@ class EngineControl_A32NX {
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
 
+  // various fields
+  // TODO: unclear if really have to be fields or can be local variables
+  int egtImbalance;
+  int ffImbalance;
+  int n2Imbalance;
+  int paramImbalance;
+  int idleOil;
+  int thermalEnergy1;
+  int thermalEnergy2;
+  double oilTemperatureMax;
+  double oilTemperatureLeftPre;
+  double oilTemperatureRightPre;
+
   // additional constants
   static constexpr double LBS_TO_KGS = 0.4535934;
   static constexpr double KGS_TO_LBS = 1 / 0.4535934;
@@ -56,6 +69,10 @@ class EngineControl_A32NX {
    * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
+  void generateEngineImbalance(int i);
+
+  double imbalanceExtractor(double imbalance, int parameter);
+
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROLA32NX_H
