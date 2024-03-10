@@ -128,6 +128,44 @@ class FadecSimData_A32NX {
   CallbackID toggleEngineStarter1EventCallback{};
   CallbackID toggleEngineStarter2EventCallback{};
 
+  // SimVars
+  AircraftVariablePtr engine1Time;
+  AircraftVariablePtr engine2Time;
+  AircraftVariablePtr engine1Combustion;
+  AircraftVariablePtr engine2Combustion;
+  AircraftVariablePtr ambientTemperature;
+  AircraftVariablePtr fuelTankQuantityCenter;
+  AircraftVariablePtr fuelTankQuantityLeft;
+  AircraftVariablePtr fuelTankQuantityRight;
+  AircraftVariablePtr fuelTankQuantityLeftAux;
+  AircraftVariablePtr fuelTankQuantityRightAux;
+  AircraftVariablePtr fuelWeightPerGallon;
+
+  // LVars
+  NamedVariablePtr engineImbalance;
+  NamedVariablePtr engine1OilTotal;
+  NamedVariablePtr engine2OilTotal;
+  NamedVariablePtr engine1State;
+  NamedVariablePtr engine2State;
+  NamedVariablePtr engine1Timer;
+  NamedVariablePtr engine2Timer;
+  NamedVariablePtr startState;
+  NamedVariablePtr fuelCenterPre;
+  NamedVariablePtr fuelLeftPre;
+  NamedVariablePtr fuelRightPre;
+  NamedVariablePtr fuelAuxLeftPre;
+  NamedVariablePtr fuelAuxRightPre;
+  NamedVariablePtr pumpState1;
+  NamedVariablePtr pumpState2;
+  NamedVariablePtr thrustLimitType;
+  NamedVariablePtr thrustLimitIdle;
+  NamedVariablePtr thrustLimitClimb;
+  NamedVariablePtr thrustLimitFlex;
+  NamedVariablePtr thrustLimitMct;
+  NamedVariablePtr thrustLimitToga;
+
+  // ===============================================================================================
+
   /**
    * @brief Initializes the FadecSimData_A32NX object.
    * @param dm Pointer to the DataManager object. This object is used to create the data definition
@@ -138,8 +176,8 @@ class FadecSimData_A32NX {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
     fuelLRDataPtr = dm->make_datadefinition_var<FuelLRData>("FUEL LR DATA", fuelLRDataDef);
     fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelCandAuxData>("FUEL CAND AUX DATA", fuelCandAuxDataDef);
-    oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempLeftData>("OIL TEMP LEFT DATA", oilTempLeftDataDef);
-    oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef);
+    oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempLeftData>("OIL TEMP LEFT DATA", oilTempLeftDataDef, AUTO_WRITE);
+    oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef, AUTO_WRITE);
     oilPsiLeftDataPtr = dm->make_datadefinition_var<OilPsiLeftData>("OIL PSI LEFT DATA", oilPsiLeftDataDef);
     oilPsiRightDataPtr = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef);
 
@@ -157,9 +195,47 @@ class FadecSimData_A32NX {
       LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
     });
 
+    // SimVars
+    // read each tick
+    // TODO: consider DataDefinition for these
+    ambientTemperature = dm->make_aircraft_var("AMBIENT TEMPERATURE", 0, "", nullptr, UNITS.Celsius, AUTO_READ);
+    fuelTankQuantityCenter = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 1, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelTankQuantityLeft = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 2, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelTankQuantityRight = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 3, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelTankQuantityLeftAux = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 4, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelTankQuantityRightAux = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 5, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelWeightPerGallon = dm->make_aircraft_var("FUEL WEIGHT PER GALLON", 0, "", nullptr, UNITS.Pounds, AUTO_READ);
 
+    // not read each tick (mainly only in initialization)
+    engine1Time = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 1, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
+    engine2Time = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 2, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
+    engine1Combustion = dm->make_aircraft_var("GENERAL ENG COMBUSTION:1", 1, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
+    engine2Combustion = dm->make_aircraft_var("GENERAL ENG COMBUSTION:2", 2, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
 
+    // LVars - TODO: consider DataDefinition for these
+    engineImbalance = dm->make_named_var("ENGINE_IMBALANCE", UNITS.Number, AUTO_READ_WRITE);
+    engine1OilTotal = dm->make_named_var("ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
+    engine2OilTotal = dm->make_named_var("ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
+    engine1State = dm->make_named_var("ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    engine2State = dm->make_named_var("ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    engine1Timer = dm->make_named_var("ENGINE_TIMER:1", UNITS.Number, AUTO_READ_WRITE);
+    engine2Timer = dm->make_named_var("ENGINE_TIMER:2", UNITS.Number, AUTO_READ_WRITE);
+    fuelCenterPre = dm->make_named_var("FUEL_CENTER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftPre = dm->make_named_var("FUEL_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightPre = dm->make_named_var("FUEL_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelAuxLeftPre = dm->make_named_var("FUEL_AUX_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelAuxRightPre = dm->make_named_var("FUEL_AUX_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    pumpState1 = dm->make_named_var("PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    pumpState2 = dm->make_named_var("PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
 
+    thrustLimitType = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
+    thrustLimitIdle = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
+    thrustLimitClimb = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
+    thrustLimitFlex = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_FLEX", UNITS.Number, AUTO_WRITE);
+    thrustLimitMct = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
+    thrustLimitToga = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+
+    startState = dm->make_named_var("START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
     LOG_INFO("Fadec::FadecSimData_A380X initialized");
   }
