@@ -54,12 +54,9 @@ export class FlightPlanAsoboSync {
         const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
         // initial sync
-        NXDataStore.getAndSubscribe('FP_SYNC', (val) => {
+        NXDataStore.getAndSubscribe('FP_SYNC', (_, val) => {
             if (val === 'LOAD') {
-                //  this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
                 this.loadFlightPlanFromGame();
-                //  this.rpcClient.destroy();
-                //   this.rpcClient = null;
             } else if (val === 'SAVE') {
                 this.syncFlightPlanToGame();
             }
