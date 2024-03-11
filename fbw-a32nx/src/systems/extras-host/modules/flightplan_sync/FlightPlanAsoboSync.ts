@@ -31,13 +31,11 @@ export class FlightPlanAsoboSync {
 
     private enrouteLegs: (SerializedFlightPlanLeg | Discontinuity)[] = undefined;
 
-    private rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
+    // private rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
 
     private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
-        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
-        // NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     }
 
     static extractRunwayNumber(ident: string) {
@@ -56,15 +54,16 @@ export class FlightPlanAsoboSync {
         const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
         // initial sync
-        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'LOAD') {
-            this.loadFlightPlanFromGame();
-        }
-
-        // initial sync
-        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
-            const pub = this.bus.getPublisher<FlightPlanEvents>();
-            pub.pub('flightPlanManager.syncRequest', undefined, true);
-        }
+        NXDataStore.getAndSubscribe('FP_SYNC', (val) => {
+            if (val === 'LOAD') {
+                //  this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
+                this.loadFlightPlanFromGame();
+                //  this.rpcClient.destroy();
+                //   this.rpcClient = null;
+            } else if (val === 'SAVE') {
+                this.syncFlightPlanToGame();
+            }
+        }, 'LOAD');
 
         sub.on('flightPlanManager.syncResponse').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
@@ -127,9 +126,14 @@ export class FlightPlanAsoboSync {
 
         Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
 
+        const rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
+
+        const pub = this.bus.getPublisher<FlightPlanEvents>();
+        pub.pub('flightPlanManager.syncRequest', undefined, true);
+
         // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
         // currently the rpc client waits 5 seconds before it sends the sync request
-        while (!this.rpcClient.hasActive && !this.rpcClient.hasUplink) {
+        while (!rpcClient.hasActive && !rpcClient.hasUplink) {
             await Wait.awaitDelay(2000);
         }
 
@@ -147,9 +151,9 @@ export class FlightPlanAsoboSync {
                 return;
             }
             console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
-            await this.rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
+            await rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
 
-            this.rpcClient.setPerformanceData('cruiseFlightLevel', 300, FlightPlanIndex.Uplink);
+            await rpcClient.setPerformanceData('cruiseFlightLevel', 300, FlightPlanIndex.Uplink);
 
             // set route
             const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
@@ -166,13 +170,14 @@ export class FlightPlanAsoboSync {
                     const wptMapped = this.mapFacilityToWaypoint(wpt);
                     console.log('adding wp mapped', i, wptMapped);
 
-                    await this.rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
+                    await rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
                 }
             }
 
             console.log('finishing uplink');
-            this.rpcClient.uplinkInsert();
+            await rpcClient.uplinkInsert();
         }
+        rpcClient.destroy();
     }
 
     // TODO JS_WAYPOINT missing in types

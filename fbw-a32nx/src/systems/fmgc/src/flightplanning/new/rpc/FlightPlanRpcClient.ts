@@ -5,7 +5,7 @@
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -26,8 +26,10 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 }
 
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
+    private subs: Subscription[] = [];
+
     constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
-        this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
+        this.subs.push(this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
             if (this.rpcCommandsSent.has(responseId)) {
                 const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
 
@@ -36,7 +38,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
                     this.rpcCommandsSent.delete(responseId);
                 }
             }
-        });
+        }));
     }
 
     private readonly flightPlanManager = new FlightPlanManager<P>(
@@ -74,6 +76,11 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
                 }
             }, 5000);
         });
+    }
+
+    public destroy() {
+        this.flightPlanManager.destroy();
+        this.subs.forEach((sub) => sub.destroy());
     }
 
     get(index: number): FlightPlan<P> {

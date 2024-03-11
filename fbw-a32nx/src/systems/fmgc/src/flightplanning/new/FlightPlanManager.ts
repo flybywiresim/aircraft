@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, Publisher, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import {
     FlightPlanEvents,
     FlightPlanSyncResponsePacket, PerformanceDataFlightPlanSyncEvents,
@@ -25,15 +25,21 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
 
     private ignoreSync = false;
 
+    private subs: Subscription[] = [];
+
+    public destroy() {
+        this.subs.forEach((sub) => sub.destroy());
+    }
+
     constructor(
         private readonly bus: EventBus,
         private readonly performanceDataInit: P,
         private readonly syncClientID: number,
         private readonly master: boolean,
     ) {
-        const subs = bus.getSubscriber<FlightPlanEvents>();
+        const sub = bus.getSubscriber<FlightPlanEvents>();
 
-        subs.on('flightPlanManager.syncRequest').handle(() => {
+        this.subs.push(sub.on('flightPlanManager.syncRequest').handle(() => {
             // TODO clarify, I guess only one instance should reply to this
             if (!this.ignoreSync && this.master) {
                 console.log('[FpmSync] SyncRequest()');
@@ -50,9 +56,9 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
 
                 this.sendEvent('flightPlanManager.syncResponse', response);
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.syncResponse').handle((event) => {
+        this.subs.push(sub.on('flightPlanManager.syncResponse').handle((event) => {
             if (!this.ignoreSync) {
                 console.log('[FpmSync] SyncResponse()');
 
@@ -64,42 +70,42 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
                     this.set(intIndex, newPlan);
                 }
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.create').handle((event) => {
+        this.subs.push(sub.on('flightPlanManager.create').handle((event) => {
             if (!this.ignoreSync) {
                 console.log(`[FpmSync] Create(${event.planIndex})`);
                 this.create(event.planIndex, false);
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.delete').handle((event) => {
+        this.subs.push(sub.on('flightPlanManager.delete').handle((event) => {
             if (!this.ignoreSync) {
                 console.log(`[FpmSync] Delete(${event.planIndex})`);
                 this.delete(event.planIndex, false);
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.deleteAll').handle(() => {
+        this.subs.push(sub.on('flightPlanManager.deleteAll').handle(() => {
             if (!this.ignoreSync) {
                 console.log('[FpmSync] DeleteAll');
                 this.deleteAll(false);
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.copy').handle((event) => {
+        this.subs.push(sub.on('flightPlanManager.copy').handle((event) => {
             if (!this.ignoreSync) {
                 console.log(`[FpmSync] Copy(${event.planIndex}, ${event.targetPlanIndex})`);
                 this.copy(event.planIndex, event.targetPlanIndex, event.options, false);
             }
-        });
+        }));
 
-        subs.on('flightPlanManager.swap').handle((event) => {
+        this.subs.push(sub.on('flightPlanManager.swap').handle((event) => {
             if (!this.ignoreSync) {
                 console.log(`[FpmSync] Swap(${event.planIndex}, ${event.targetPlanIndex})`);
                 this.swap(event.planIndex, event.targetPlanIndex, false);
             }
-        });
+        }));
 
         if (!this.master) {
             setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);
