@@ -4,7 +4,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { Fix, NXDataStore, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
 
@@ -36,7 +36,7 @@ export class FlightPlanAsoboSync {
     private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
-        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
+        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus);
         // NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     }
 
@@ -170,12 +170,13 @@ export class FlightPlanAsoboSync {
                 }
             }
 
-            console.log('finishing upling');
+            console.log('finishing uplink');
             this.rpcClient.uplinkInsert();
         }
     }
 
     // TODO JS_WAYPOINT missing in types
+    // TODO copy from Mapping.ts of MSFS backend, as it would require another FacilityCache
     private mapFacilityToWaypoint(facility: any): Waypoint {
         return {
             databaseId: facility.icao,
