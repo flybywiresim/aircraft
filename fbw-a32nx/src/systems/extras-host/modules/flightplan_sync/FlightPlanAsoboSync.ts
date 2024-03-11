@@ -11,7 +11,6 @@ import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcC
 import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 import { A320FlightPlanPerformanceData, FlightPlanIndex } from '@fmgc/index';
 import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO } from '@microsoft/msfs-sdk';
-import { MsfsMapping } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/Mapping';
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 
 export class FlightPlanAsoboSync {
@@ -30,10 +29,6 @@ export class FlightPlanAsoboSync {
     private procedureDetails = undefined;
 
     private enrouteLegs: (SerializedFlightPlanLeg | Discontinuity)[] = undefined;
-
-    // private rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
-
-    private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
     }
@@ -150,7 +145,7 @@ export class FlightPlanAsoboSync {
             console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
             await rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
 
-            await rpcClient.setPerformanceData('cruiseFlightLevel', 300, FlightPlanIndex.Uplink);
+            await rpcClient.setPerformanceData('cruiseFlightLevel', data.cruisingAltitude / 100, FlightPlanIndex.Uplink);
 
             // set route
             const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
@@ -158,8 +153,8 @@ export class FlightPlanAsoboSync {
             const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
             const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
 
-            for (let i = 0; i < enroute.length; i++) {
-                const wpt = enroute[i];
+            for (let i = 1; i < enroute.length; i++) {
+                const wpt = enroute[i - 1];
                 if (wpt.icao.trim() !== '') {
                     // eslint-disable-next-line no-await-in-loop
 
