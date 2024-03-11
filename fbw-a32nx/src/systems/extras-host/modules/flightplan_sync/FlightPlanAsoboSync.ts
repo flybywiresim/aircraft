@@ -123,13 +123,15 @@ export class FlightPlanAsoboSync {
     }
 
     private async loadFlightPlanFromGame(): Promise<void> {
-        await Wait.awaitDelay(6000);
+        await Wait.awaitDelay(3000);
 
         Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
 
         // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
         // currently the rpc client waits 5 seconds before it sends the sync request
-        await Wait.awaitDelay(6000);
+        while (!this.rpcClient.hasActive) {
+            await Wait.awaitDelay(2000);
+        }
 
         const data = await Coherent.call('GET_FLIGHTPLAN') as any;
         console.log('LOADED FP', data);
@@ -158,8 +160,6 @@ export class FlightPlanAsoboSync {
             for (let i = 0; i < enroute.length; i++) {
                 const wpt = enroute[i];
                 if (wpt.icao.trim() !== '') {
-                    // Without the 'await' the order of import is undefined and the flight plan waypoints
-                    // are not in the correct order
                     // eslint-disable-next-line no-await-in-loop
 
                     console.log('adding wp loaded', i, wpt);
@@ -260,66 +260,65 @@ export class FlightPlanAsoboSync {
 
                     // console.log('DESTINATION SEGMENT', plan.segments);
 
-                    if (this.destinationAirport) {
-                        const destinationRunwayIdent = this.procedureDetails.destinationRunway;
-                        console.log('IDENT', destinationRunwayIdent);
+                    const destinationRunwayIdent = this.procedureDetails.destinationRunway;
+                    console.log('IDENT', destinationRunwayIdent);
 
-                        const arg = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
-                        console.log('ARRIVAL', arg);
-                        for (const runway of arg.runways) {
-                            for (const designation of runway.designation.split('-')) {
-                                console.log(destinationRunwayIdent);
-                                console.log(designation);
-                                if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)) {
-                                    console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is ${JSON.stringify(runway)}`);
-                                    const arrivalIndex = arg.arrivals
-                                        .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
-                                    const arritvalTransitionIndex = arg.arrivals
-                                        .findIndex((arrival) => arrival.enRouteTransitions.map((t) => t.name === this.procedureDetails.arrivalTransitionIdent));
+                    const arg = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
+                    console.log('ARRIVAL', arg);
+                    for (const runway of arg.runways) {
+                        for (const designation of runway.designation.split('-')) {
+                            console.log(destinationRunwayIdent);
+                            console.log(designation);
+                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)) {
+                                console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is ${JSON.stringify(runway)}`);
+                                const arrivalIndex = arg.arrivals
+                                    .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
+                                const arritvalTransitionIndex = arg.arrivals
+                                    .findIndex((arrival) => arrival.enRouteTransitions.map((t) => t.name === this.procedureDetails.arrivalTransitionIdent));
 
-                                    console.log('APPR IDENT', this.procedureDetails.approachIdent);
-                                    console.log('available appr', arg.approaches);
-                                    let approachName = this.procedureDetails.approachIdent;
+                                console.log('APPR IDENT', this.procedureDetails.approachIdent);
+                                console.log('available appr', arg.approaches);
+                                let approachName = this.procedureDetails.approachIdent;
 
-                                    // FIXME how to map that properly
-                                    if (approachName.startsWith('D')) {
-                                        approachName = `VOR ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                        console.log('NEW APPR NAME', approachName);
-                                    } else if (approachName.startsWith('I')) {
-                                        approachName = `ILS ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                        console.log('NEW APPR NAME', approachName);
-                                    } else if (approachName.startsWith('R')) {
-                                        approachName = `RNAV ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                        console.log('NEW APPR NAME', approachName);
-                                    }
-                                    const apoprachIndex = arg.approaches
-                                        .findIndex((approach) => approach.name === approachName);
-                                    const approachEnrouteTransitionIndex = arg.approaches
-                                        .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
-
-                                    console.log('DESTINATION RUNWAY INDEX', destinationRunwayIndex);
-                                    console.log('ARRIVAL INDEX', arrivalIndex);
-                                    console.log('ARRIVAL TransitionIndex', arritvalTransitionIndex);
-                                    console.log('APPROACH INDEX', apoprachIndex);
-                                    console.log('APPROACH TransitionIndex', approachEnrouteTransitionIndex);
-
-                                    await Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', destinationRunwayIndex);
-                                    await Coherent.call('SET_ARRIVAL_PROC_INDEX', arrivalIndex);
-                                    await Coherent.call('SET_ARRIVAL_ENROUTE_TRANSITION_INDEX', arritvalTransitionIndex);
-                                    await Coherent.call('SET_APPROACH_INDEX', apoprachIndex);
-
-                                    await Coherent.call('SET_APPROACH_TRANSITION_INDEX', approachEnrouteTransitionIndex);
-
-                                    // nono
-                                    break;
+                                // FIXME how to map that properly
+                                if (approachName.startsWith('D')) {
+                                    approachName = `VOR ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
+                                    console.log('NEW APPR NAME', approachName);
+                                } else if (approachName.startsWith('I')) {
+                                    approachName = `ILS ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
+                                    console.log('NEW APPR NAME', approachName);
+                                } else if (approachName.startsWith('R')) {
+                                    approachName = `RNAV ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
+                                    console.log('NEW APPR NAME', approachName);
                                 }
-                                destinationRunwayIndex++;
+                                const apoprachIndex = arg.approaches
+                                    .findIndex((approach) => approach.name === approachName);
+                                const approachEnrouteTransitionIndex = arg.approaches
+                                    .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
+
+                                console.log('DESTINATION RUNWAY INDEX', destinationRunwayIndex);
+                                console.log('ARRIVAL INDEX', arrivalIndex);
+                                console.log('ARRIVAL TransitionIndex', arritvalTransitionIndex);
+                                console.log('APPROACH INDEX', apoprachIndex);
+                                console.log('APPROACH TransitionIndex', approachEnrouteTransitionIndex);
+
+                                await Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', destinationRunwayIndex);
+                                await Coherent.call('SET_ARRIVAL_PROC_INDEX', arrivalIndex);
+                                await Coherent.call('SET_ARRIVAL_ENROUTE_TRANSITION_INDEX', arritvalTransitionIndex);
+                                await Coherent.call('SET_APPROACH_INDEX', apoprachIndex);
+
+                                await Coherent.call('SET_APPROACH_TRANSITION_INDEX', approachEnrouteTransitionIndex);
+
+                                // nono
+                                break;
                             }
+                            destinationRunwayIndex++;
                         }
                     }
-                    await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
                 }
+                await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
             }
+
             await Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX', 0);
         } catch (e) {
             console.error(e);

@@ -26,7 +26,7 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 }
 
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
         this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
             if (this.rpcCommandsSent.has(responseId)) {
                 const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
@@ -41,7 +41,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
     private readonly flightPlanManager = new FlightPlanManager<P>(
         this.bus,
-        {} as P /*  This flight plan manager will never create plans, so this is fine */,
+        this.performanceDataInit as P /*  This flight plan manager will never create plans, so this is fine */,
         Math.round(Math.random() * 10_000),
         false,
     );
