@@ -3778,12 +3778,12 @@ mod tests {
                 test_bed.command_pack_flow_selector_position(2);
                 test_bed = test_bed.iterate(100);
                 let flow_zero_pax = test_bed.pack_flow();
-
-                assert!(test_bed.pack_flow() < initial_flow);
+                // When number of pax is 0, the flow is adjusted for max number of passengers
+                assert!(test_bed.pack_flow() > initial_flow);
 
                 test_bed = test_bed.command_number_of_passengers(400).iterate(100);
                 assert!(test_bed.pack_flow() < initial_flow);
-                assert!(test_bed.pack_flow() > flow_zero_pax);
+                assert!(test_bed.pack_flow() < flow_zero_pax);
             }
 
             #[test]
