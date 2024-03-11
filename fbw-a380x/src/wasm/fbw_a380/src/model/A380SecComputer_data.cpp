@@ -163,6 +163,20 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   19.0,
 
+  11.0,
+
+  12.0,
+
+  19.0,
+
+  12.0,
+
+  19.0,
+
+  30.0,
+
+  0.02,
+
   5.0,
 
   1.0,
@@ -249,7 +263,9 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   SignStatusMatrix::NormalOperation,
 
-  true,
+  false,
+
+  false,
 
   true,
 
@@ -260,12 +276,28 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   true,
 
   true,
+
+  true,
+
+  true,
+
+  false,
+
+  0,
 
   0,
 
   1,
 
   2,
+
+  0,
+
+  1,
+
+  2,
+
+  0,
 
   0,
 
@@ -1890,6 +1922,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
       false,
       false,
       false,
+      0.0,
+      false,
       false,
       false,
       false,
@@ -2258,6 +2292,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
     false,
     false,
     false,
+    0.0,
+    false,
     false,
     false,
     false,
@@ -2307,6 +2343,12 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   3.5,
 
   -11.0,
+
+  -1.0,
+
+  0.25,
+
+  -0.25,
 
   0.0,
 
@@ -2391,6 +2433,14 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   false,
 
   false,
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 
