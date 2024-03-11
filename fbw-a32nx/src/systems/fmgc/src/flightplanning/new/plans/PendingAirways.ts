@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airway, AirwayDirection, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AirwayDirection, Fix } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
@@ -43,73 +43,80 @@ export class PendingAirways {
         return this.elements[this.elements.length - 1];
     }
 
+    private findFixIndexAlongAirway(airway: Airway, fix: Fix) {
+        return airway.fixes.findIndex((it) => it.ident === fix.ident && it.icaoCode === fix.icaoCode);
+    }
+
+    private findAutomaticAirwayIntersectionIndex(one: Airway, two: Airway): [number, number] {
+        for (let i = 0; i < one.fixes.length; i++) {
+            const fix = one.fixes[i];
+
+            const matchIndex = this.findFixIndexAlongAirway(two, fix);
+            if (matchIndex !== -1) {
+                return [i, matchIndex];
+            }
+        }
+
+        return [-1, -1];
+    }
+
+    private sliceAirway(airway: Airway, from: number, to: number) {
+        const reversed = from > to;
+        const fixesArray = reversed ? airway.fixes.slice().reverse() : airway.fixes;
+
+        let start: number;
+        let end: number;
+        if (reversed) {
+            start = fixesArray.length - from;
+            end = fixesArray.length - to;
+        } else {
+            start = from + 1;
+            end = to + 1;
+        }
+
+        return fixesArray.slice(start, end);
+    }
+
     thenAirway(airway: Airway) {
         if (airway.direction === AirwayDirection.Backward) {
             airway.fixes.reverse();
         }
 
-        const taiLElement = this.tailElement;
+        const tailElement = this.tailElement;
 
         let startWaypointIndex: number;
-        done: if (!taiLElement || taiLElement.to) {
+        if (!tailElement || tailElement.to) {
             // No airways have been entered. We consider the revised waypoint to be the start of the new entry.
             // OR
             // An airway is entered and has a TO.
-
-            const startIdent = taiLElement ? taiLElement.to.ident : this.revisedWaypoint.ident;
-            const startIcaoCode = taiLElement ? taiLElement.to.icaoCode : this.revisedWaypoint.icaoCode;
-            for (let i = 0; i < airway.fixes.length; i++) {
-                const fix = airway.fixes[i];
-
-                if (startIdent === fix.ident && startIcaoCode === fix.icaoCode) {
-                    startWaypointIndex = i;
-                    break done;
-                }
+            startWaypointIndex = this.findFixIndexAlongAirway(airway, tailElement ? tailElement.to : this.revisedWaypoint);
+            if (startWaypointIndex === -1) {
+                return false;
             }
-
-            return false;
         } else {
             // We do not have an end waypoint defined as part of the previous entry. We find an automatic or geographic intersection.
+            const [indexAlongTailElement, indexAlongEnteredAirway] = this.findAutomaticAirwayIntersectionIndex(tailElement.airway, airway);
 
-            for (let i = 0; i < taiLElement.airway.fixes.length; i++) {
-                const fix = taiLElement.airway.fixes[i];
-
-                const matchInCurrentIndex = airway.fixes.findIndex((it) => it.ident === fix.ident && it.icaoCode === fix.icaoCode);
-                const matchInCurrent = airway.fixes[matchInCurrentIndex];
-
-                if (matchInCurrent && matchInCurrentIndex < airway.fixes.length) {
-                    taiLElement.to = matchInCurrent;
-                    taiLElement.isAutoConnected = true;
-
-                    const reversed = i + 1 <= taiLElement.fromIndex;
-                    const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
-
-                    let start;
-                    let end;
-                    if (reversed) {
-                        start = fixesArray.length - taiLElement.fromIndex;
-                        end = fixesArray.length - i;
-                    } else {
-                        start = taiLElement.fromIndex + 1;
-                        end = i + 1;
-                    }
-
-                    const splitLegs = fixesArray.slice(start, end);
-                    const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, taiLElement.airway.ident));
-
-                    this.legs.push(...mappedSplitLegs);
-
-                    startWaypointIndex = matchInCurrentIndex;
-                    break done;
-                }
+            const fixAlongEnteredAirway = airway.fixes[indexAlongEnteredAirway];
+            if (!fixAlongEnteredAirway) {
+                // No automatic intersection is found, let's try to find a geographic one
+                // TODO
+                console.error(
+                    `No automatic airway intersection found between last airway id=${tailElement.airway.databaseId} and
+                    airway id=${airway.databaseId} - geographic intersections not yet implemented`,
+                );
+                return false;
             }
 
-            // No automatic intersection is found, let's try to find a geographic one
+            tailElement.to = fixAlongEnteredAirway;
+            tailElement.isAutoConnected = true;
 
-            // TODO
+            const splitLegs = this.sliceAirway(tailElement.airway, tailElement.fromIndex, indexAlongTailElement);
+            const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, tailElement.airway.ident));
 
-            console.error(`No automatic airway intersection found between last airway id=${taiLElement.airway.databaseId} and airway id=${airway.databaseId} - geographic intersections not yet implemented`);
-            return false;
+            this.legs.push(...mappedSplitLegs);
+
+            startWaypointIndex = indexAlongEnteredAirway;
         }
 
         // Insert the entry
@@ -123,9 +130,9 @@ export class PendingAirways {
     }
 
     thenTo(waypoint: Fix) {
-        const taiLElement = this.tailElement;
+        const tailElement = this.tailElement;
 
-        if (taiLElement.to) {
+        if (tailElement.to) {
             // The tail element is already complete, so we do a DCT entry
 
             this.elements.push({ to: waypoint, isDct: true });
@@ -137,41 +144,19 @@ export class PendingAirways {
             return true;
         }
 
-        const tailAirway = taiLElement.airway;
+        const tailAirway = tailElement.airway;
 
-        let endWaypointIndex;
-        for (let i = 0; i < tailAirway.fixes.length; i++) {
-            const fix = tailAirway.fixes[i];
-
-            if (waypoint.ident === fix.ident && waypoint.icaoCode === fix.icaoCode) {
-                endWaypointIndex = i;
-                break;
-            }
-        }
-
-        if (endWaypointIndex === undefined) {
+        const endWaypointIndex = this.findFixIndexAlongAirway(tailAirway, waypoint);
+        if (endWaypointIndex === -1) {
             return false;
         }
 
-        const reversed = endWaypointIndex + 1 <= taiLElement.fromIndex;
-        const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
-
-        let start;
-        let end;
-        if (reversed) {
-            start = fixesArray.length - taiLElement.fromIndex;
-            end = fixesArray.length - endWaypointIndex;
-        } else {
-            start = taiLElement.fromIndex + 1;
-            end = endWaypointIndex + 1;
-        }
-
-        const splitLegs = fixesArray.slice(start, end);
-        const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, taiLElement.airway.ident));
+        const splitLegs = this.sliceAirway(tailAirway, tailElement.fromIndex, endWaypointIndex);
+        const mappedSplitLegs = splitLegs.map((it) => FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, tailElement.airway.ident));
 
         this.legs.push(...mappedSplitLegs);
 
-        taiLElement.to = waypoint;
+        tailElement.to = waypoint;
 
         this.flightPlan.incrementVersion();
 

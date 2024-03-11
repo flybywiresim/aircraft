@@ -51,9 +51,9 @@ class CDUAvailableDeparturesPage {
             );
         }
 
-        // NO SID/NO TRANS option is available at the start of the list when non-zero options
+        // NO SID/NO TRANS option is available at the end of the list when non-zero options
         if (availableSids.length > 0) {
-            availableSids.unshift("NO SID");
+            availableSids.push("NO SID");
         }
 
         let selectedSidPage = -1;
@@ -276,7 +276,7 @@ class CDUAvailableDeparturesPage {
             [editingTmpy ? "{ERASE[color]amber" : "{RETURN", editingTmpy ? "INSERT*[color]amber" : "", showEosid ? `{${selectedColour}}{sp}NONE{end}` : '']
         ]);
         mcdu.onPrevPage = () => {
-            CDUAvailableDeparturesPage.ShowPage(mcdu, airport, -1, !sidSelection, forPlan);
+            CDUAvailableDeparturesPage.ShowPage(mcdu, airport, -1, !sidSelection, forPlan, inAlternate);
         };
         mcdu.onNextPage = mcdu.onPrevPage;
     }

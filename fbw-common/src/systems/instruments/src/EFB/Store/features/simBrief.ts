@@ -49,7 +49,7 @@ export interface SimbriefData {
     costInd: string;
 }
 
-export const initialState: {data: SimbriefData} = {
+export const initialState: {data: SimbriefData, simbriefDataPending: boolean, payloadImported: boolean, fuelImported: boolean, toastPresented: boolean} = {
     data: {
         airline: '',
         flightNum: '',
@@ -118,6 +118,10 @@ export const initialState: {data: SimbriefData} = {
         loadsheet: '',
         costInd: '',
     },
+    payloadImported: false,
+    fuelImported: false,
+    toastPresented: false,
+    simbriefDataPending: false,
 };
 
 export const simbriefSlice = createSlice({
@@ -126,6 +130,18 @@ export const simbriefSlice = createSlice({
     reducers: {
         setSimbriefData: (state, action: PayloadAction<SimbriefData>) => {
             state.data = action.payload;
+        },
+        setSimbriefDataPending: (state, action: PayloadAction<boolean>) => {
+            state.simbriefDataPending = action.payload;
+        },
+        setPayloadImported: (state, action: PayloadAction<boolean>) => {
+            state.payloadImported = action.payload;
+        },
+        setFuelImported: (state, action: PayloadAction<boolean>) => {
+            state.fuelImported = action.payload;
+        },
+        setToastPresented: (state, action: PayloadAction<boolean>) => {
+            state.toastPresented = action.payload;
         },
     },
 });
@@ -213,8 +229,8 @@ export async function fetchSimbriefDataAction(naivgraphUsername: string, overrid
 /**
  * @returns Whether or not the SimBrief data has been altered from its original state
  */
-export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief) !== JSON.stringify(initialState);
+export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief.data) !== JSON.stringify(initialState.data);
 
-export const { setSimbriefData } = simbriefSlice.actions;
+export const { setSimbriefData, setSimbriefDataPending, setPayloadImported, setFuelImported, setToastPresented } = simbriefSlice.actions;
 
 export default simbriefSlice.reducer;
