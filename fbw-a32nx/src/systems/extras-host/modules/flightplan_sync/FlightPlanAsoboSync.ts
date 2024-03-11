@@ -36,7 +36,7 @@ export class FlightPlanAsoboSync {
     private mapping: MsfsMapping;
 
     constructor(private readonly bus: EventBus) {
-        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus);
+        this.rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
         // NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     }
 
@@ -129,7 +129,7 @@ export class FlightPlanAsoboSync {
 
         // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
         // currently the rpc client waits 5 seconds before it sends the sync request
-        while (!this.rpcClient.hasActive) {
+        while (!this.rpcClient.hasActive && !this.rpcClient.hasUplink) {
             await Wait.awaitDelay(2000);
         }
 
