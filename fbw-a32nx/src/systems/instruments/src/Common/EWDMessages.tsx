@@ -1,6 +1,3 @@
-// Copyright (c) 2022 FlyByWire Simulations
-// SPDX-License-Identifier: GPL-3.0
-
 const EWDMessages = {
     '000000001': '              \x1b<3mNORMAL',
     '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',

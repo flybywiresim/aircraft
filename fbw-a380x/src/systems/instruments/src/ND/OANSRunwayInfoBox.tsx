@@ -19,7 +19,6 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
         this.rwyDivRef.instance.style.display = 'none';
         this.standDivRef.instance.style.display = 'none';
 
-        /* Temporarily disable
         if (this.props.rwyOrStand.get() === EntityTypes.RWY && this.props.selectedEntity.get()) {
             this.rwyDivRef.instance.style.display = 'grid';
             this.standDivRef.instance.style.display = 'none';
@@ -29,7 +28,7 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
         } else {
             this.rwyDivRef.instance.style.display = 'none';
             this.standDivRef.instance.style.display = 'none';
-        } */
+        }
     }
 
     onAfterRender(node: VNode): void {
@@ -44,7 +43,7 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
     render(): VNode {
         return (
             <>
-                <div ref={this.rwyDivRef} class="oans-info-box" style="display: none; grid-template-columns: 2fr 1fr 1fr; width: 75%; margin: 10px; align-self: center;">
+                <div ref={this.rwyDivRef} class="oans-info-box" style="display: none; grid-template-columns: 2fr 1fr 1fr; width: 75%; margin-top: 20px; align-self: center;">
                     <div>
                         <span class="mfd-label">RWY: </span>
                         <span class="mfd-value smaller" style="text-align: left;">{this.props.selectedEntity}</span>
