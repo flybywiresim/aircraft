@@ -12,7 +12,7 @@ import { courseToFixDistanceToGo, fixToFixGuidance } from '@fmgc/guidance/lnav/C
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { bearingTo, placeBearingDistance } from 'msfs-geo';
-import { Waypoint, MathUtils, Fix } from '@flybywiresim/fbw-sdk';
+import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 

@@ -130,7 +130,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateFlightPlan.incrementVersion();
     }
 
-    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false) {
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
         if (targetLegIndex >= this.firstMissedApproachLegIndex) {
             throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
         }
@@ -269,7 +269,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
             + this.alternateFlightPlan.departureSegment.legCount
             + this.alternateFlightPlan.departureEnrouteTransitionSegment.legCount
-            + this.alternateFlightPlan.enrouteSegment.legCount + 1;
+            + this.alternateFlightPlan.enrouteSegment.legCount;
         const alternateLegsToInsert = this.alternateFlightPlan.allLegs.slice(0, alternateLastEnrouteIndex).map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
 
         // TODO add the destination again - don't know if the origin leg of the altn is counted here

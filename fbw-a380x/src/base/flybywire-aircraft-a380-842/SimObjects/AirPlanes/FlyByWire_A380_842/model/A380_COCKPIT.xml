@@ -150,6 +150,8 @@
                     1 (&gt;L:A32NX_EFIS_R_OPTION)
                 }
 
+                (L:A32NX_AUTOBRAKES_ARMED_MODE) (&gt;L:A380X_KNOB_SWITCHING_BRK_Position)
+
                 (O:PrevPot7Value) s0
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) s1
 
