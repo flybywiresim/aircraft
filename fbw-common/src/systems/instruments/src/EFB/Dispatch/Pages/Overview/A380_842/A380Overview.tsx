@@ -14,7 +14,7 @@ interface InformationEntryProps {
 
 const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) => (
     <div>
-        <div className="flex flex-row items-center space-x-4 text-theme-highlight">
+        <div className="text-theme-highlight flex flex-row items-center space-x-4">
             {children}
             <p className="whitespace-nowrap">{title}</p>
         </div>
@@ -43,12 +43,12 @@ export const A380Overview = () => {
     };
 
     return (
-        <div className="mr-3 h-content-section-reduced w-min overflow-hidden rounded-lg border-2 border-theme-accent p-6">
+        <div className="h-content-section-reduced border-theme-accent mr-3 w-min overflow-hidden rounded-lg border-2 p-6">
             <h1 className="font-bold">Airbus A380</h1>
             <p>{airline}</p>
 
             <div className="mt-6 flex items-center justify-center">
-                <A380NoseOutline className="-ml-56 mr-32 h-64 text-theme-text" />
+                <A380NoseOutline className="text-theme-text -ml-56 mr-32 h-64" />
             </div>
 
             <div className="mt-8 flex flex-row space-x-16">
@@ -69,7 +69,7 @@ export const A380Overview = () => {
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="519 passengers">
+                    <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="484 passengers">
                         <PeopleFill size={23} />
                     </InformationEntry>
                 </div>
