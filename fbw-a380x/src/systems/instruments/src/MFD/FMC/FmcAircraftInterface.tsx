@@ -379,7 +379,7 @@ export class FmcAircraftInterface {
                 pub.pub('fmsOrigin', this.flightPlanService.active.originAirport.ident, true);
             }
 
-            if (this.flightPlanService.active?.originRunway.ident) {
+            if (this.flightPlanService.active?.originRunway?.ident) {
                 pub.pub('fmsDepartureRunway', this.flightPlanService.active.originRunway.ident, true);
             }
 
@@ -387,7 +387,7 @@ export class FmcAircraftInterface {
                 pub.pub('fmsDestination', this.flightPlanService.active.destinationAirport.ident, true);
             }
 
-            if (this.flightPlanService.active?.destinationRunway.ident) {
+            if (this.flightPlanService.active?.destinationRunway?.ident) {
                 pub.pub('fmsLandingRunway', this.flightPlanService.active.destinationRunway.ident, true);
             }
 
