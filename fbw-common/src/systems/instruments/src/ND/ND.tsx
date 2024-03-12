@@ -41,7 +41,7 @@ import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSub
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
-import { OansControlEvents, OansRunwayInfo } from '../OANC';
+import { FmsOansData, OansControlEvents } from '../OANC';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -126,10 +126,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     private showOansRunwayInfo = Subject.create<boolean>(false);
 
-    private oansRunwayInfo = Subject.create<OansRunwayInfo | null>(null);
-
-    private fmgcFlightPhase = Subject.create<number>(0);
-
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -168,22 +164,14 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
         sub.on('ndMode').whenChanged().handle((mode) => {
             this.handleNewMapPage(mode);
+            this.shouldShowOansRunwayInfo();
         });
 
         this.mapRecomputing.sub((recomputing) => {
             this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
         });
 
-        sub.on('fmgcFlightPhase').whenChanged().handle((it) => {
-            this.fmgcFlightPhase.set(it);
-            this.shouldShowOansRunwayInfo();
-        });
-
         sub.on('ndShowOans').whenChanged().handle((show) => this.showOans.set(show));
-        sub.on('btvRunwayInfo').whenChanged().handle((it) => {
-            this.oansRunwayInfo.set(it);
-            this.shouldShowOansRunwayInfo();
-        });
     }
 
     // eslint-disable-next-line arrow-body-style
@@ -274,7 +262,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     }
 
     private shouldShowOansRunwayInfo() {
-        this.showOansRunwayInfo.set(this.oansRunwayInfo.get() !== null && this.fmgcFlightPhase.get() > 1 && this.currentPageMode.get() === EfisNdMode.PLAN);
+        this.showOansRunwayInfo.set(true); // Maybe only active when this.currentPageMode.get() === EfisNdMode.PLAN ?
     }
 
     render(): VNode | null {
@@ -567,7 +555,7 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
 }
 
 class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable<EfisNdMode> }> {
-    private readonly sub = this.props.bus.getSubscriber<ClockEvents & GenericDisplayManagementEvents & NDSimvars & GenericFmsEvents>();
+    private readonly sub = this.props.bus.getSubscriber<ClockEvents & GenericDisplayManagementEvents & NDSimvars & GenericFmsEvents & FmsOansData>();
 
     private readonly trueRefActive = Subject.create(false);
 
@@ -584,6 +572,8 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
     private apprMessage1: number;
 
     private readonly approachMessageValue = Subject.create('');
+
+    private readonly btvMessageValue = Subject.create('');
 
     private readonly isPlanMode = this.props.ndMode.map((mode) => mode === EfisNdMode.PLAN);
 
@@ -637,6 +627,10 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
             this.needApprMessageUpdate = true;
         });
 
+        this.sub.on('ndBtvMessage').whenChanged().handle((value) => {
+            this.btvMessageValue.set(value);
+        });
+
         this.sub.on('simTime').whenChangedBy(100).handle(this.refreshToWptIdent.bind(this));
 
         this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
@@ -653,6 +647,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
             const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
 
             this.approachMessageValue.set(ident);
+            this.needApprMessageUpdate = false;
         }
     }
 
@@ -662,6 +657,10 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
                 <Layer x={384} y={28}>
                     {/* TODO verify */}
                     <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
+                </Layer>
+                <Layer x={384} y={56} visible={MappedSubject.create(([btv, trueRef]) => (btv !== '' && !trueRef), this.btvMessageValue, this.trueRefVisible)}>
+                    {/* TODO verify */}
+                    <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
                 </Layer>
                 <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefVisible} />
                 <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />

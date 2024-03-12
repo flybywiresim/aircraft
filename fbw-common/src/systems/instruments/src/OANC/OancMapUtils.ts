@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { clampAngle } from 'msfs-geo';
+import { Coordinates, bearingTo, clampAngle, distanceTo } from 'msfs-geo';
 
 export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
     return [x1 + (x2 - x1) / 2, y1 + (y2 - y1) / 2];
@@ -65,4 +65,16 @@ function lineLine(x1: number, y1: number, x2: number, y2: number, x3: number, y3
     }
 
     return undefined;
+}
+
+export function globalToAirportCoordinates(airportPos: Coordinates, coordinates: Coordinates): [number, number] {
+    const bearing = bearingTo(airportPos, coordinates);
+    const distance = distanceTo(airportPos, coordinates);
+
+    const xNm = distance * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS);
+    const yNm = distance * Math.sin(bearing * MathUtils.DEGREES_TO_RADIANS);
+
+    const nmToMeters = 1_000 / 0.539957;
+
+    return [yNm * nmToMeters, xNm * nmToMeters];
 }
