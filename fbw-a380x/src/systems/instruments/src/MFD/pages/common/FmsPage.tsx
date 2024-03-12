@@ -148,7 +148,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         }
 
         this.props.fmcService.master?.acInterface.updateOansAirports();
-        this.props.fmcService.master?.acInterface.updateBtvData();
     }
 
     public destroy(): void {
