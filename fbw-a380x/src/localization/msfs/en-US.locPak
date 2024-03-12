@@ -26,7 +26,8 @@
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_BTV": "Set auto brake to brake-to-vacate (BTV)",
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
       "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_3": "Set auto brake to 3",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_HI": "Set auto brake to HI",      "COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE": "Change ND mode",
+      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_HI": "Set auto brake to HI",
+      "COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE": "Change ND mode",
       "COCKPIT.TOOLTIPS.EFIS_CP_ND_RANGE": "Change ND range",
 
       "A380X.TOOLTIPS.STATE_ESS": "ESS",
