@@ -37,7 +37,7 @@ export class BrakeToVacateUtils {
     /** Distance to exit, in meters. Null if not set. */
     readonly btvExitDistance = Subject.create<number | null>(null);
 
-    private btvExitCoordinate: Position;
+    private btvExitPosition: Position;
 
     /** Stopping distance for dry rwy conditions, in meters. Null if not set. */
     readonly btvDryStoppingDistance = Subject.create<number | null>(null);
@@ -50,7 +50,7 @@ export class BrakeToVacateUtils {
 
     btvPath: FeatureCollection<Geometry, AmdbProperties> = featureCollection([]);
 
-    selectRunway(runway: string, centerlineFeature: Feature<Geometry, AmdbProperties>, thresholdFeature: Feature<Geometry, AmdbProperties>) {
+    selectRunwayFromOans(runway: string, centerlineFeature: Feature<Geometry, AmdbProperties>, thresholdFeature: Feature<Geometry, AmdbProperties>) {
         this.clearSelection();
 
         // Derive LDA from geometry (as long as we don't have a proper database)
@@ -80,7 +80,7 @@ export class BrakeToVacateUtils {
         SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, lda);
     }
 
-    selectExit(exit: string, feature: Feature<Geometry, AmdbProperties>) {
+    selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
         const thrLoc = this.btvThresholdFeature.geometry.coordinates as Position;
         const exitLoc1 = feature.geometry.coordinates[0] as Position;
         const exitLoc2 = feature.geometry.coordinates[feature.geometry.coordinates.length - 1] as Position;
@@ -88,16 +88,16 @@ export class BrakeToVacateUtils {
         const exitDist2 = pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
 
         if (exitDist1 < exitDist2) {
-            this.btvExitCoordinate = exitLoc1;
+            this.btvExitPosition = exitLoc1;
         } else {
-            this.btvExitCoordinate = exitLoc2;
+            this.btvExitPosition = exitLoc2;
         }
 
         const exitDistance = pointDistance(
             thrLoc[0],
             thrLoc[1],
-            this.btvExitCoordinate[0],
-            this.btvExitCoordinate[1],
+            this.btvExitPosition[0],
+            this.btvExitPosition[1],
         );
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
@@ -117,13 +117,39 @@ export class BrakeToVacateUtils {
         this.btvExit.set(exit);
     }
 
+    selectRunwayFromNavdata(runway: string, lda: number, heading: number, btvOppositeThresholdPosition: Position) {
+        this.clearSelection();
+
+        this.btvOppositeThresholdPosition = btvOppositeThresholdPosition;
+        this.btvRunwayLda.set(lda);
+        this.btvRunwayHeading.set(heading);
+        this.btvRunway.set(runway);
+
+        const pub = this.bus.getPublisher<FmsOansData>();
+        pub.pub('oansSelectedLandingRunway', runway, true);
+        pub.pub('oansSelectedLandingRunwayBearing', heading, true);
+        SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, lda);
+    }
+
+    selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
+        this.btvExitPosition = btvExitPosition;
+
+        this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
+        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, reqStoppingDistance);
+
+        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/MANUAL`, true);
+
+        this.btvExitDistance.set(reqStoppingDistance);
+        this.btvExit.set('N/A');
+    }
+
     clearSelection() {
         this.btvThresholdFeature = undefined;
         this.btvRunwayLda.set(null);
         this.btvRunwayHeading.set(null);
         this.btvRunway.set(null);
 
-        this.btvExitCoordinate = [];
+        this.btvExitPosition = [];
         this.btvExitDistance.set(null);
         this.btvExit.set(null);
         this.btvPath.features.length = 0;
@@ -132,6 +158,7 @@ export class BrakeToVacateUtils {
         pub.pub('oansSelectedLandingRunway', null, true);
         pub.pub('oansSelectedLandingRunwayBearing', null, true);
         pub.pub('oansSelectedExit', null, true);
+        pub.pub('ndBtvMessage', '', true);
         SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, 0);
         SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, -1);
         SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, -1);
@@ -143,17 +170,17 @@ export class BrakeToVacateUtils {
     }
 
     updateRemainingDistances(pos: Position) {
-        if (!this.btvExitCoordinate || this.btvExitCoordinate.length === 0 || !this.btvOppositeThresholdPosition) {
+        if (!this.btvExitPosition || this.btvExitPosition.length === 0 || !this.btvOppositeThresholdPosition) {
             return;
         }
 
         const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
-        if (fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
+        if (fwcFlightPhase < 5 || fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
             const exitDistance = pointDistance(
                 pos[0],
                 pos[1],
-                this.btvExitCoordinate[0],
-                this.btvExitCoordinate[1],
+                this.btvExitPosition[0],
+                this.btvExitPosition[1],
             );
 
             const rwyEndDistance = pointDistance(

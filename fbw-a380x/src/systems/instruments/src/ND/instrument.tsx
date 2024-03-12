@@ -292,11 +292,6 @@ class NDInstrument implements FsInstrument {
             this.efisCpRange = a380EfisRangeSettings[range];
             this.updateNdOansVisibility();
         });
-
-        const pub = this.bus.getPublisher<FmsOansData>();
-        pub.pub('fmsOrigin', 'EDDM');
-        pub.pub('fmsDestination', 'EDDM');
-        pub.pub('fmsLandingRunway', 'RW26L');
     }
 
     private updateNdOansVisibility() {

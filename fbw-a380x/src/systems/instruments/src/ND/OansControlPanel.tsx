@@ -7,8 +7,8 @@ import {
     ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent,
     MapSubject, MappedSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
-import { ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents } from '@flybywiresim/oanc';
-import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide, FeatureType, FeatureTypeString } from '@flybywiresim/fbw-sdk';
+import { BrakeToVacateUtils, ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents, globalToAirportCoordinates } from '@flybywiresim/oanc';
+import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide, FeatureType, FeatureTypeString, MathUtils, MsfsBackend, Runway } from '@flybywiresim/fbw-sdk';
 
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
@@ -19,8 +19,9 @@ import { InputField } from './UI/InputField';
 import { LengthFormat } from './UI/DataEntryFormats';
 import { IconButton } from './UI/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
-import { Coordinates, distanceTo } from 'msfs-geo';
+import { Coordinates, bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
+import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
 
 export interface OansProps extends ComponentProps {
     bus: EventBus;
@@ -42,6 +43,8 @@ const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export class OansControlPanel extends DisplayComponent<OansProps> {
     private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
+    private readonly navigraphAvailable = Subject.create<boolean>(false);
+
     private amdbClient = new NavigraphAmdbClient();
 
     private readonly oansMenuRef = FSComponent.createRef<HTMLDivElement>();
@@ -51,6 +54,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     private readonly displayAirportButtonRef = FSComponent.createRef<Button>();
 
     private readonly closePanelButtonRef = FSComponent.createRef<HTMLButtonElement>();
+
+    private readonly mapDataLdgShiftPanelRef = FSComponent.createRef<HTMLDivElement>();
+
+    private readonly mapDataMainRef = FSComponent.createRef<HTMLDivElement>();
+
+    private readonly mapDataBtvFallback = FSComponent.createRef<HTMLDivElement>();
 
     private readonly store = new ControlPanelStore();
 
@@ -90,6 +99,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private readonly reqStoppingDistance = Subject.create<number | null>(null);
 
+    private arpCoordinates: Coordinates | undefined;
+
+    private landingRunwayNavdata: Runway | undefined;
+
+    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus, this.fmsDataStore);
+
     private readonly airportDatabase = Subject.create('SXT59027250AA04');
 
     private readonly activeDatabase = Subject.create('30DEC-27JAN');
@@ -97,25 +112,25 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     private readonly secondDatabase = Subject.create('27JAN-24FEB');
 
     private showLdgShiftPanel() {
-        const shiftPanel = document.getElementById('MapDataLdgShiftPanel');
-        const main = document.getElementById('MapDataMain');
-        if (shiftPanel && main) {
-            shiftPanel.style.display = 'flex';
-            main.style.display = 'none';
+        if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
+            this.mapDataLdgShiftPanelRef.instance.style.display = 'flex';
+            this.mapDataMainRef.instance.style.display = 'none';
         }
     }
 
     private hideLdgShiftPanel() {
-        const shiftPanel = document.getElementById('MapDataLdgShiftPanel');
-        const main = document.getElementById('MapDataMain');
-        if (shiftPanel && main) {
-            shiftPanel.style.display = 'none';
-            main.style.display = 'flex';
+        if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
+            this.mapDataLdgShiftPanelRef.instance.style.display = 'none';
+            this.mapDataMainRef.instance.style.display = 'flex';
         }
     }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        new Promise(resolve => setTimeout(resolve, 5000)).then(() => { });
+
+        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
 
         const date = SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
         if (date) {
@@ -129,7 +144,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
         this.amdbClient.searchForAirports('').then((airports) => {
             this.store.airports.set(airports);
-        });
+            this.navigraphAvailable.set(true);
+        }).catch(() => this.navigraphAvailable.set(false));
 
         this.subs.push(
             this.store.airports.sub(() => this.sortAirports(this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao)),
@@ -148,6 +164,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.subs.push(
             this.activeTabIndex.sub((_index) => Coherent.trigger('UNFOCUS_INPUT_FIELD')),
         );
+
+        this.navigraphAvailable.sub((v) => {
+            if (this.mapDataMainRef.getOrDefault() && this.mapDataBtvFallback.getOrDefault()) {
+                this.mapDataMainRef.instance.style.display = v ? 'block' : 'none';
+                this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
+            }
+        }, true);
 
         const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars>();
 
@@ -168,20 +191,44 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                 this.selectedEntityString.set(it.substring(2));
 
                 // Load runway data
-                // TODO if no Navigraph sub, fallback to navdata (from fms-v2)
                 const destination = this.fmsDataStore.destination.get();
-                if (destination) {
+                if (destination && this.navigraphAvailable.get() === true) {
                     const data = await this.amdbClient.getAirportData(destination, [FeatureTypeString.RunwayThreshold]);
                     const thresholdFeature = data.runwaythreshold?.features.filter((td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(2));
                     if (thresholdFeature) {
-                        this.runwayLda.set(thresholdFeature[0].properties.lda.toFixed(0));
-                        this.runwayTora.set(thresholdFeature[0].properties.tora.toFixed(0));
+                        this.runwayLda.set((thresholdFeature[0].properties.lda > 0 ? thresholdFeature[0].properties.lda : 0).toFixed(0));
+                        this.runwayTora.set((thresholdFeature[0].properties.tora > 0 ? thresholdFeature[0].properties.tora : 0).toFixed(0));
                     }
+                } else if (destination && this.navigraphAvailable.get() === false) {
+                    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+                    const arps = await db.getAirports([destination]);
+                    this.arpCoordinates = arps[0].location;
+
+                    const runways = await db.getRunways(destination);
+                    this.landingRunwayNavdata = runways.filter((rw) => rw.ident === it)[0];
+                    this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
+                    this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
+                    const oppositeThreshold = placeBearingDistance(this.landingRunwayNavdata.thresholdLocation, this.landingRunwayNavdata.bearing, this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES);
+                    const localOppThr = globalToAirportCoordinates(this.arpCoordinates, oppositeThreshold);
+
+                    this.btvUtils.selectRunwayFromNavdata(it, this.landingRunwayNavdata.length, this.landingRunwayNavdata.bearing, localOppThr);
                 }
             }
-        }, true);
+        });
 
         sub.on('realTime').atFrequency(0.2).handle((_) => this.autoLoadAirport());
+
+        sub.on('realTime').atFrequency(5).handle((_) => {
+            const ppos: Coordinates = { lat: 0, long: 0 };
+            ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
+            ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+
+            if (this.arpCoordinates && ppos.lat) {
+                const localPpos = globalToAirportCoordinates(this.arpCoordinates, ppos);
+                this.btvUtils.updateRemainingDistances(localPpos);
+            }
+        });
 
         sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
 
@@ -399,7 +446,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             />
                                         </div>
                                     </div>
-                                    <div id="MapDataLdgShiftPanel" style="display: none; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;">
+                                    <div ref={this.mapDataLdgShiftPanelRef} style="display: none; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;">
                                         <div style="flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                             <div class="mfd-label-value-container" style="padding: 15px;">
                                                 <span class="mfd-label mfd-spacing-right">RWY</span>
@@ -432,7 +479,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="MapDataMain" style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;">
+                                    <div ref={this.mapDataMainRef} style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;">
                                         <div style="display: flex; flex-direction: row; justify-content: space-between;">
                                             <Button
                                                 label="ADD CROSS"
@@ -455,18 +502,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                                 disabled={Subject.create(true)}
                                             />
                                         </div>
-                                        <div style="display: none; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
-                                            <div class="mfd-label" style="margin-right: 10px;">BTV STOP DISTANCE</div>
-                                            <div>
-                                                <InputField<number>
-                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
-                                                    dataHandlerDuringValidation={async (val) => SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val)}
-                                                    value={this.reqStoppingDistance}
-                                                    mandatory={Subject.create(false)}
-                                                    inactive={this.selectedEntityString.map((it) => !it)}
-                                                />
-                                            </div>
-                                        </div>
                                         <OansRunwayInfoBox
                                             rwyOrStand={this.selectedEntityType}
                                             selectedEntity={this.selectedEntityString}
@@ -475,6 +510,39 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                             ldaIsReduced={Subject.create(false)}
                                             coordinate={Subject.create('----')}
                                         />
+                                    </div>
+                                    <div ref={this.mapDataBtvFallback} style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;">
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px; margin-bottom: 40px;">
+                                            <div class="mfd-label" style="margin-right: 10px;">BTV MANUAL CONTROL / FALLBACK</div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                                            <div class="mfd-label" style="margin-right: 10px;">RUNWAY LENGTH</div>
+                                            <span class="mfd-value smaller">
+                                                {this.runwayLda}
+                                                <span style="color: rgb(33, 33, 255)">M</span>
+                                            </span>
+                                        </div>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                                            <div class="mfd-label" style="margin-right: 10px;">BTV STOP DISTANCE</div>
+                                            <div>
+                                                <InputField<number>
+                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    dataHandlerDuringValidation={async (val) => {
+                                                        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val);
+
+                                                        if (val && this.landingRunwayNavdata && this.arpCoordinates) {
+                                                            const exitLocation = placeBearingDistance(this.landingRunwayNavdata.thresholdLocation, this.landingRunwayNavdata.bearing, val / MathUtils.METRES_TO_NAUTICAL_MILES);
+                                                            const localExitPos = globalToAirportCoordinates(this.arpCoordinates, exitLocation);
+
+                                                            this.btvUtils.selectExitFromManualEntry(val, localExitPos);
+                                                        }
+                                                    }}
+                                                    value={this.reqStoppingDistance}
+                                                    mandatory={Subject.create(false)}
+                                                    inactive={this.selectedEntityString.map((it) => !it)}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </TopTabNavigatorPage>

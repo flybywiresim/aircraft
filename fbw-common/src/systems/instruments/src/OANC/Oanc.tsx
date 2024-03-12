@@ -15,7 +15,7 @@ import {
     BBox, bbox, bboxPolygon, booleanPointInPolygon, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon,
     Position,
 } from '@turf/turf';
-import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { clampAngle, Coordinates, placeBearingDistance } from 'msfs-geo';
 
 import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -29,7 +29,7 @@ import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
-import { pointAngle, pointDistance } from './OancMapUtils';
+import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -497,11 +497,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         if (label.style === LabelStyle.RunwayEnd) {
             element.addEventListener('click', () => {
                 const thresholdFeature = this.data.features.filter((it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text);
-                this.btvUtils.selectRunway(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
+                this.btvUtils.selectRunwayFromOans(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
             });
         } if (label.style === LabelStyle.Taxiway) {
             element.addEventListener('click', () => {
-                this.btvUtils.selectExit(label.text, label.associatedFeature);
+                this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
             });
         }
 
@@ -736,15 +736,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     private lastTime = 0;
 
     private projectCoordinates(coordinates: Coordinates): [number, number] {
-        const bearing = bearingTo(this.arpCoordinates, coordinates);
-        const distance = distanceTo(this.arpCoordinates, coordinates);
-
-        const xNm = distance * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS);
-        const yNm = distance * Math.sin(bearing * MathUtils.DEGREES_TO_RADIANS);
-
-        const nmToPx = 1_000 / 0.539957;
-
-        return [yNm * nmToPx, xNm * nmToPx];
+        return globalToAirportCoordinates(this.arpCoordinates, coordinates);
     }
 
     public Update() {
