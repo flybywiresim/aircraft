@@ -80,7 +80,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
                         <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
                         <text x={205} y={0} class="Cyan FontSmallest">M</text>
                         <text x={225} y={0} class="White FontSmallest">-</text>
-                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing}</text>
+                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing.map((it) => it?.toFixed(0))}</text>
                         <text x={283} y={0} class="Cyan FontSmallest">°</text>
                     </Layer>
                 </g>

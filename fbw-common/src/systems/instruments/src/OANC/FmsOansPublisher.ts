@@ -38,4 +38,6 @@ export interface FmsOansData {
     btvTurnAroundIdleReverse: number;
     /** (BTV -> OANS) Estimated turnaround time, when using max. reverse during deceleration, in minutes. */
     btvTurnAroundMaxReverse: number;
+    /** Message displayed at the top of the ND (instead of TRUE REF), e.g. BTV 08R/A13 */
+    ndBtvMessage: string;
 }

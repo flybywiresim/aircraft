@@ -103,6 +103,8 @@ export class BrakeToVacateUtils {
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
         SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, exitDistance);
 
+        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/${exit}`, true);
+
         // Draw BTV path
         /* this.btvPath = featureCollection([]);
         const props: AmdbProperties = { ...feature.properties, feattype: FeatureType.ArrestingGearLocation, id: 9999, idlin: 'BTV' };
