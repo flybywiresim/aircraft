@@ -825,7 +825,6 @@ export class FlightManagementComputer implements FmcInterface {
                 this.acInterface.updatePerformanceData();
                 this.acInterface.updatePerfSpeeds();
                 this.acInterface.updateWeights();
-                this.acInterface.updateBtvData();
                 this.acInterface.toSpeedsChecks();
 
                 const toFlaps = this.fmgc.getTakeoffFlapsSetting();
