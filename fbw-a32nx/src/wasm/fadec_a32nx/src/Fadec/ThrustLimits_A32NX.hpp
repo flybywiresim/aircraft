@@ -122,7 +122,7 @@ class ThrustLimits_A32NX {
    * @param index The index to start the search from.
    * @return The index of the top-row boundary in the limits array.
    */
-  int finder(double altitude, int index) {
+  static int finder(double altitude, int index) {
     if (altitude < limits[index][0]) {
       return index;
     } else {
@@ -149,8 +149,16 @@ class ThrustLimits_A32NX {
    * @param wing The status of the wing anti-ice (0 for off, 1 for on).
    * @return The total bleed for the engine.
    */
-  static double
-  bleedTotal(int type, double altitude, double oat, double cp, double lp, double flexTemp, double ac, double nacelle, double wing) {
+  static double bleedTotal(int type,         //
+                           double altitude,  //
+                           double oat,       //
+                           double cp,        //
+                           double lp,        //
+                           double flexTemp,  //
+                           double ac,        //
+                           double nacelle,   //
+                           double wing       //
+  ) {
     double n1Packs = 0;
     double n1Nai = 0;
     double n1Wai = 0;
@@ -250,8 +258,15 @@ class ThrustLimits_A32NX {
    * @param wing The status of the wing anti-ice (0 for off, 1 for on).
    * @return The N1 limit for the engine.
    */
-  double
-  limitN1(int type, double altitude, double ambientTemp, double ambientPressure, double flexTemp, double ac, double nacelle, double wing) {
+  static double limitN1(int type,                //
+                        double altitude,         //
+                        double ambientTemp,      //
+                        double ambientPressure,  //
+                        double flexTemp,         //
+                        double ac,               //
+                        double nacelle,          //
+                        double wing              //
+  ) {
     int rowMin = 0;
     int rowMax = 0;
     int loAltRow = 0;

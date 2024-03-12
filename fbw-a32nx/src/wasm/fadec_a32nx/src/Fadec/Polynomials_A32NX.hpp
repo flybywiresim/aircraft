@@ -108,8 +108,15 @@ class Polynomial_A32NX {
       outN2 += c_N2[i] * pow(normalN2, i);
     }
 
-    // Ensure the calculated N2 percentage is within the range [preN2 + 0.002, idleN2 + 0.1].
-    return (std::min)((std::max)(outN2 * n2, preN2 + 0.002), idleN2 + 0.1);
+    outN2 = outN2 * n2;
+    if (outN2 < preN2) {
+      outN2 = preN2 + 0.002;
+    }
+    if (outN2 >= idleN2 + 0.1) {
+      outN2 = idleN2 + 0.05;
+    }
+
+    return outN2;
   }
 
   /**
@@ -273,10 +280,16 @@ class Polynomial_A32NX {
     return ambientTemp + 10;
   }
 
-  /// <summary>
-  /// Real-life modeled polynomials - Corrected EGT (Celsius)
-  /// </summary>
-  static double correctedEGT(double cn1, double cff, double mach, double alt) {
+  /**
+ * @brief Calculates the corrected Exhaust Gas Temperature (EGT) based on corrected fan speed, corrected fuel flow, Mach number, and altitude.
+ *        Real-life modeled polynomials - Corrected EGT (Celsius)
+ * @param cn1 The corrected fan speed.
+ * @param cff The corrected fuel flow.
+ * @param mach The Mach number.
+ * @param alt The altitude.
+ * @return The calculated corrected EGT in Celsius.
+ */
+static double correctedEGT(double cn1, double cff, double mach, double alt) {
     constexpr double c_EGT[16] = {
         3.2636e+02,   // coefficient for x^0
         0.0000e+00,   // coefficient for x^1
@@ -378,10 +391,6 @@ class Polynomial_A32NX {
   /**
    * @brief Calculates the oil temperature based on energy, previous oil temperature, maximum oil temperature, and delta time.
    *
-   * This function calculates the oil temperature during the engine start-up process. The oil temperature
-   * is calculated based on the energy, previous oil temperature, maximum oil temperature, and delta time.
-   * It uses a series of conditions to determine the oil temperature.
-   *
    * @param energy The energy.
    * @param preOilTemp The previous oil temperature.
    * @param maxOilTemp The maximum oil temperature.
@@ -403,10 +412,7 @@ class Polynomial_A32NX {
 
   /**
    * @brief Calculates the Oil Gulping percentage based on thrust.
-   *
-   * This function calculates the Oil Gulping percentage, which represents the percentage of oil gulping during engine operation.
-   * The calculation is based on the thrust and uses a polynomial equation with coefficients stored in the `c_OilGulp` array.
-   *
+   *        Real-life modeled polynomials - Oil Gulping (%)
    * @param thrust The thrust in Newton.
    * @return The calculated Oil Gulping percentage.
    */
@@ -418,11 +424,7 @@ class Polynomial_A32NX {
 
   /**
    * @brief Calculates the Oil Pressure (PSI) based on simulated N2 value.
-   *
-   * This function calculates the Oil Pressure, which represents the pressure of the engine oil.
-   * The calculation is based on the simulated N2 value. It uses a polynomial equation with coefficients
-   * stored in the `c_OilPress` array.
-   *
+   *        Real-life modeled polynomials - Oil Pressure (PSI)
    * @param simN2 The simulated N2 value in percent.
    * @return The calculated Oil Pressure value in PSI.
    */
