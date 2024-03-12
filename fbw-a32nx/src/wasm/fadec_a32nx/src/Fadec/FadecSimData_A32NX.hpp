@@ -8,10 +8,27 @@
 #include "DataManager.h"
 #include "Fadec.h"
 
+// Make access to variables more readable
+enum EngineAndSide {
+  L,             //
+  E1 = L,        //
+  ENGINE_1 = L,  //
+  R,             //
+  E2 = R,        //
+  ENGINE_2 = R,  //
+};
+
 class FadecSimData_A32NX {
  public:
   enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
+  struct AtcIdData {
+    char atcID[32];
+  };
+  DataDefinitionVector atcIdDataDef = {
+      // MSFS docs say this is max 10 chars - we use 32 for safety
+      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
+  };
   /**
    * @struct AtcID
    * @brief This struct represents the ATC ID of the aircraft.
@@ -20,12 +37,6 @@ class FadecSimData_A32NX {
    * @note MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm#ATC%20ID
    */
-  struct AtcIdData {
-    char atcID[32];
-  };
-  DataDefinitionVector atcIdDataDef = {
-      // MSFS docs say this is max 10 chars - we use 32 for safety
-      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}};
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
   struct FuelLRData {
@@ -123,16 +134,17 @@ class FadecSimData_A32NX {
    */
   DataDefinitionVariablePtr<OilPsiRightData> oilPsiRightDataPtr;
 
+  // Client events
   ClientEventPtr toggleEngineStarter1Event;
   ClientEventPtr toggleEngineStarter2Event;
   CallbackID toggleEngineStarter1EventCallback{};
   CallbackID toggleEngineStarter2EventCallback{};
+  ClientEventPtr setStarterHeldEvent[2];
+  ClientEventPtr setStarterEvent[2];
 
   // SimVars
-  AircraftVariablePtr engine1Time;
-  AircraftVariablePtr engine2Time;
-  AircraftVariablePtr engine1Combustion;
-  AircraftVariablePtr engine2Combustion;
+  AircraftVariablePtr engineTime[2];
+  AircraftVariablePtr engineCombustion[2];
   AircraftVariablePtr ambientTemperature;
   AircraftVariablePtr fuelTankQuantityCenter;
   AircraftVariablePtr fuelTankQuantityLeft;
@@ -140,29 +152,66 @@ class FadecSimData_A32NX {
   AircraftVariablePtr fuelTankQuantityLeftAux;
   AircraftVariablePtr fuelTankQuantityRightAux;
   AircraftVariablePtr fuelWeightPerGallon;
+  AircraftVariablePtr animationDeltaTime;
+  AircraftVariablePtr airSpeedMach;
+  AircraftVariablePtr pressureAltitude;
+  AircraftVariablePtr ambientPressure;
+  AircraftVariablePtr engineAntiIce[2];
+  AircraftVariablePtr engineStarter[2];
+  AircraftVariablePtr engineIgniter[2];
+  AircraftVariablePtr engineCorrectedN1[2];
+  AircraftVariablePtr engineCorrectedN2[2];
+  AircraftVariablePtr simEngineN1[2];
+  AircraftVariablePtr simEngineN2[2];
+  AircraftVariablePtr engineThrust[2];
+  AircraftVariablePtr engineFuelValveOpen[2];
+  AircraftVariablePtr xfrCenterManual[2];
+  AircraftVariablePtr xfrValveCenterAuto[2];
+  AircraftVariablePtr xfrValveCenterOpen[2];
+  AircraftVariablePtr xfrValveOuter1[2];
+  AircraftVariablePtr xfrValveOuter2[2];
+  AircraftVariablePtr lineToCenterFlow[2];
+  AircraftVariablePtr xFeedValve;
+  AircraftVariablePtr fuelPump1[2];
+  AircraftVariablePtr fuelPump2[2];
+  AircraftVariablePtr apuFuelConsumption;
 
   // LVars
+  NamedVariablePtr airlinerToFlexTemp;
+  NamedVariablePtr apuRpmPercent;
+  NamedVariablePtr engineEgt[2];
+  NamedVariablePtr engineFF[2];
+  NamedVariablePtr engineFuelUsed[2];
+  NamedVariablePtr engineIdleEGT;
+  NamedVariablePtr engineIdleFF;
+  NamedVariablePtr engineIdleN1;
+  NamedVariablePtr engineIdleN2;
   NamedVariablePtr engineImbalance;
-  NamedVariablePtr engine1OilTotal;
-  NamedVariablePtr engine2OilTotal;
-  NamedVariablePtr engine1State;
-  NamedVariablePtr engine2State;
-  NamedVariablePtr engine1Timer;
-  NamedVariablePtr engine2Timer;
-  NamedVariablePtr startState;
-  NamedVariablePtr fuelCenterPre;
-  NamedVariablePtr fuelLeftPre;
-  NamedVariablePtr fuelRightPre;
+  NamedVariablePtr engineN1[2];
+  NamedVariablePtr engineN2[2];
+  NamedVariablePtr engineOil[2];
+  NamedVariablePtr engineOilTotal[2];
+  NamedVariablePtr enginePreFF[2];
+  NamedVariablePtr engineStarterPressurized[2];
+  NamedVariablePtr engineState[2];
+  NamedVariablePtr engineTimer[2];
   NamedVariablePtr fuelAuxLeftPre;
   NamedVariablePtr fuelAuxRightPre;
-  NamedVariablePtr pumpState1;
-  NamedVariablePtr pumpState2;
-  NamedVariablePtr thrustLimitType;
-  NamedVariablePtr thrustLimitIdle;
+  NamedVariablePtr fuelCenterPre;
+  NamedVariablePtr fuelLeftPre;
+  NamedVariablePtr fuelPumpState[2];
+  NamedVariablePtr fuelRightPre;
+  NamedVariablePtr packsState[2];
+  NamedVariablePtr refuelRate;
+  NamedVariablePtr refuelStartedByUser;
+  NamedVariablePtr startState;
   NamedVariablePtr thrustLimitClimb;
   NamedVariablePtr thrustLimitFlex;
+  NamedVariablePtr thrustLimitIdle;
   NamedVariablePtr thrustLimitMct;
   NamedVariablePtr thrustLimitToga;
+  NamedVariablePtr thrustLimitType;
+  NamedVariablePtr wingAntiIce;
 
   // ===============================================================================================
 
@@ -172,22 +221,33 @@ class FadecSimData_A32NX {
    *           variable for the ATC ID data.
    */
   void initialize(DataManager* dm) {
-    // Initialize the data definition variables
-    atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef);
-    fuelLRDataPtr = dm->make_datadefinition_var<FuelLRData>("FUEL LR DATA", fuelLRDataDef);
-    fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelCandAuxData>("FUEL CAND AUX DATA", fuelCandAuxDataDef);
+    initDataDefinitions(dm);
+    initEvents(dm);
+    initSimvars(dm);
+    initLvars(dm);
+    LOG_INFO("Fadec::FadecSimData_A380X initialized");
+  }
+
+  void initDataDefinitions(DataManager* dm) {
+    atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef, NO_AUTO_UPDATE);
+
+    fuelLRDataPtr = dm->make_datadefinition_var<FuelLRData>("FUEL LR DATA", fuelLRDataDef, NO_AUTO_UPDATE);
+    fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelCandAuxData>("FUEL CAND AUX DATA", fuelCandAuxDataDef, NO_AUTO_UPDATE);
+
     oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempLeftData>("OIL TEMP LEFT DATA", oilTempLeftDataDef, AUTO_WRITE);
     oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef, AUTO_WRITE);
-    oilPsiLeftDataPtr = dm->make_datadefinition_var<OilPsiLeftData>("OIL PSI LEFT DATA", oilPsiLeftDataDef);
-    oilPsiRightDataPtr = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef);
+    oilPsiLeftDataPtr = dm->make_datadefinition_var<OilPsiLeftData>("OIL PSI LEFT DATA", oilPsiLeftDataDef, AUTO_WRITE);
+    oilPsiRightDataPtr = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef, AUTO_WRITE);
+  }
 
+  void initEvents(DataManager* dm) {
     // Create the client events for the engine starter toggles
     // we just want to mask the events, not do anything with them
     toggleEngineStarter1Event = dm->make_client_event("TOGGLE_STARTER1", true);
-    toggleEngineStarter1Event->addClientEventToNotificationGroup(NotificationGroup::NOTIFICATION_GROUP_0, true);
+    toggleEngineStarter1Event->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0, true);
     toggleEngineStarter2Event = dm->make_client_event("TOGGLE_STARTER2", true);
-    toggleEngineStarter2Event->addClientEventToNotificationGroup(NotificationGroup::NOTIFICATION_GROUP_0, true);
-    // Callbacks are only used for logging
+    toggleEngineStarter2Event->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0, true);
+    // Callbacks are only used for logging - we don't actually do anything with the events
     toggleEngineStarter1Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
       LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter1Event TOGGLE_STARTER1 masked");
     });
@@ -195,49 +255,160 @@ class FadecSimData_A32NX {
       LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
     });
 
-    // SimVars
-    // read each tick
+    setStarterHeldEvent[L] = dm->make_client_event("SET_STARTER1_HELD", true, NOTIFICATION_GROUP_0);
+    setStarterHeldEvent[R] = dm->make_client_event("SET_STARTER2_HELD", true, NOTIFICATION_GROUP_0);
+    setStarterEvent[L] = dm->make_client_event("STARTER1_SET", true, NOTIFICATION_GROUP_0);
+    setStarterEvent[R] = dm->make_client_event("STARTER2_SET", true, NOTIFICATION_GROUP_0);
+  }
+
+  void initSimvars(DataManager* dm) {
+    // read each tick - not written to
     // TODO: consider DataDefinition for these
+    airSpeedMach = dm->make_aircraft_var("AIRSPEED MACH", 0, "", nullptr, UNITS.Mach, AUTO_READ);
+    ambientPressure = dm->make_aircraft_var("AMBIENT PRESSURE", 0, "", nullptr, UNITS.Millibars, AUTO_READ);
     ambientTemperature = dm->make_aircraft_var("AMBIENT TEMPERATURE", 0, "", nullptr, UNITS.Celsius, AUTO_READ);
+    animationDeltaTime = dm->make_aircraft_var("ANIMATION DELTA TIME", 0, "", nullptr, UNITS.Seconds, AUTO_READ);
+    apuFuelConsumption = dm->make_aircraft_var("FUELSYSTEM LINE FUEL FLOW", 18, "", nullptr, UNITS.Gph, AUTO_READ);
+    engineAntiIce[L] = dm->make_aircraft_var("ENG ANTI ICE", 1, "", nullptr, UNITS.Bool, AUTO_READ);
+    engineAntiIce[R] = dm->make_aircraft_var("ENG ANTI ICE", 2, "", nullptr, UNITS.Bool, AUTO_READ);
+    engineCorrectedN1[L] = dm->make_aircraft_var("TURB ENG CORRECTED N1", 1, "", nullptr, UNITS.Percent, AUTO_READ);
+    engineCorrectedN1[R] = dm->make_aircraft_var("TURB ENG CORRECTED N1", 2, "", nullptr, UNITS.Percent, AUTO_READ);
+    engineCorrectedN2[L] = dm->make_aircraft_var("TURB ENG CORRECTED N2", 1, "", nullptr, UNITS.Percent, AUTO_READ);
+    engineCorrectedN2[R] = dm->make_aircraft_var("TURB ENG CORRECTED N2", 2, "", nullptr, UNITS.Percent, AUTO_READ);
+    engineFuelValveOpen[L] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 1, "", nullptr, UNITS.Number, AUTO_READ);
+    engineFuelValveOpen[R] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 2, "", nullptr, UNITS.Number, AUTO_READ);
+    engineIgniter[L] = dm->make_aircraft_var("TURB ENG IGNITION SWITCH EX1", 1, "", nullptr, UNITS.Number, AUTO_READ);
+    engineIgniter[R] = dm->make_aircraft_var("TURB ENG IGNITION SWITCH EX1", 2, "", nullptr, UNITS.Number, AUTO_READ);
+    engineStarter[L] = dm->make_aircraft_var("GENERAL ENG STARTER", 1, "", nullptr, UNITS.Bool, AUTO_READ);
+    engineStarter[R] = dm->make_aircraft_var("GENERAL ENG STARTER", 2, "", nullptr, UNITS.Bool, AUTO_READ);
+    fuelPump1[L] = dm->make_aircraft_var("FUELSYSTEM PUMP ACTIVE", 2, "", nullptr, UNITS.Number, AUTO_READ);
+    fuelPump1[R] = dm->make_aircraft_var("FUELSYSTEM PUMP ACTIVE", 3, "", nullptr, UNITS.Number, AUTO_READ);
+    fuelPump2[L] = dm->make_aircraft_var("FUELSYSTEM PUMP ACTIVE", 5, "", nullptr, UNITS.Number, AUTO_READ);
+    fuelPump2[R] = dm->make_aircraft_var("FUELSYSTEM PUMP ACTIVE", 6, "", nullptr, UNITS.Number, AUTO_READ);
     fuelTankQuantityCenter = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 1, "", nullptr, UNITS.Gallons, AUTO_READ);
     fuelTankQuantityLeft = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 2, "", nullptr, UNITS.Gallons, AUTO_READ);
-    fuelTankQuantityRight = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 3, "", nullptr, UNITS.Gallons, AUTO_READ);
     fuelTankQuantityLeftAux = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 4, "", nullptr, UNITS.Gallons, AUTO_READ);
+    fuelTankQuantityRight = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 3, "", nullptr, UNITS.Gallons, AUTO_READ);
     fuelTankQuantityRightAux = dm->make_aircraft_var("FUELSYSTEM TANK QUANTITY", 5, "", nullptr, UNITS.Gallons, AUTO_READ);
     fuelWeightPerGallon = dm->make_aircraft_var("FUEL WEIGHT PER GALLON", 0, "", nullptr, UNITS.Pounds, AUTO_READ);
+    lineToCenterFlow[L] = dm->make_aircraft_var("FUELSYSTEM LINE FUEL FLOW", 27, "", nullptr, UNITS.Gph, AUTO_READ);
+    lineToCenterFlow[R] = dm->make_aircraft_var("FUELSYSTEM LINE FUEL FLOW", 28, "", nullptr, UNITS.Gph, AUTO_READ);
+    pressureAltitude = dm->make_aircraft_var("PRESSURE ALTITUDE", 0, "", nullptr, UNITS.Feet, AUTO_READ);
+    simEngineN1[L] = dm->make_aircraft_var("TURB ENG N1", 1, "", nullptr, UNITS.Percent, AUTO_READ);
+    simEngineN1[R] = dm->make_aircraft_var("TURB ENG N1", 2, "", nullptr, UNITS.Percent, AUTO_READ);
+    simEngineN2[L] = dm->make_aircraft_var("TURB ENG N2", 1, "", nullptr, UNITS.Percent, AUTO_READ);
+    simEngineN2[R] = dm->make_aircraft_var("TURB ENG N2", 2, "", nullptr, UNITS.Percent, AUTO_READ);
+    xFeedValve = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 3, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrCenterManual[L] = dm->make_aircraft_var("FUELSYSTEM JUNCTION SETTING", 4, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrCenterManual[R] = dm->make_aircraft_var("FUELSYSTEM JUNCTION SETTING", 5, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveCenterAuto[L] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 11, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveCenterAuto[R] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 12, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveCenterOpen[L] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 9, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveCenterOpen[R] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 10, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveOuter1[L] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 6, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveOuter1[R] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 7, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveOuter2[L] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 4, "", nullptr, UNITS.Number, AUTO_READ);
+    xfrValveOuter2[R] = dm->make_aircraft_var("FUELSYSTEM VALVE OPEN", 5, "", nullptr, UNITS.Number, AUTO_READ);
 
-    // not read each tick (mainly only in initialization)
-    engine1Time = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 1, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
-    engine2Time = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 2, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
-    engine1Combustion = dm->make_aircraft_var("GENERAL ENG COMBUSTION:1", 1, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
-    engine2Combustion = dm->make_aircraft_var("GENERAL ENG COMBUSTION:2", 2, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
+    // not read each tick (mainly only once in initialization) - will be updated in code
+    engineCombustion[L] = dm->make_aircraft_var("GENERAL ENG COMBUSTION", 1, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
+    engineCombustion[R] = dm->make_aircraft_var("GENERAL ENG COMBUSTION", 2, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
+    engineTime[L] = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 1, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
+    engineTime[R] = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 2, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
+  }
 
-    // LVars - TODO: consider DataDefinition for these
-    engineImbalance = dm->make_named_var("ENGINE_IMBALANCE", UNITS.Number, AUTO_READ_WRITE);
-    engine1OilTotal = dm->make_named_var("ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
-    engine2OilTotal = dm->make_named_var("ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
-    engine1State = dm->make_named_var("ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
-    engine2State = dm->make_named_var("ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
-    engine1Timer = dm->make_named_var("ENGINE_TIMER:1", UNITS.Number, AUTO_READ_WRITE);
-    engine2Timer = dm->make_named_var("ENGINE_TIMER:2", UNITS.Number, AUTO_READ_WRITE);
-    fuelCenterPre = dm->make_named_var("FUEL_CENTER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelLeftPre = dm->make_named_var("FUEL_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelRightPre = dm->make_named_var("FUEL_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelAuxLeftPre = dm->make_named_var("FUEL_AUX_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelAuxRightPre = dm->make_named_var("FUEL_AUX_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    pumpState1 = dm->make_named_var("PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
-    pumpState2 = dm->make_named_var("PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+  void initLvars(DataManager* dm) {
+    // TODO: consider DataDefinition for the groups tha are read/write each tick
+    startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
-    thrustLimitType = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
-    thrustLimitIdle = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
-    thrustLimitClimb = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
-    thrustLimitFlex = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_FLEX", UNITS.Number, AUTO_WRITE);
-    thrustLimitMct = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
-    thrustLimitToga = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+    engineEgt[L] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[R] = dm->make_named_var("A32NX_ENGINE_EGT:2", UNITS.Number, AUTO_READ_WRITE);
+    engineFF[L] = dm->make_named_var("A32NX_ENGINE_FF:1", UNITS.Number, AUTO_READ_WRITE);
+    engineFF[R] = dm->make_named_var("A32NX_ENGINE_FF:2", UNITS.Number, AUTO_READ_WRITE);
+    engineFuelUsed[L] = dm->make_named_var("A32NX_FUEL_USED:1", UNITS.Number, AUTO_READ_WRITE);
+    engineFuelUsed[R] = dm->make_named_var("A32NX_FUEL_USED:2", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleEGT = dm->make_named_var("A32NX_ENGINE_IDLE_EGT", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleFF = dm->make_named_var("A32NX_ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleN1 = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleN2 = dm->make_named_var("A32NX_ENGINE_IDLE_N2", UNITS.Number, AUTO_READ_WRITE);
+    engineImbalance = dm->make_named_var("A32NX_ENGINE_IMBALANCE", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[L] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[R] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[L] = dm->make_named_var("A32NX_ENGINE_N2:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[R] = dm->make_named_var("A32NX_ENGINE_N2:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOil[L] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOil[R] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTotal[L] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTotal[R] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:2", UNITS.Number, AUTO_READ_WRITE);
+    enginePreFF[L] = dm->make_named_var("A32NX_ENGINE_PRE_FF:1", UNITS.Number, AUTO_READ_WRITE);
+    enginePreFF[R] = dm->make_named_var("A32NX_ENGINE_PRE_FF:2", UNITS.Number, AUTO_READ_WRITE);
+    engineState[L] = dm->make_named_var("A32NX_ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    engineState[R] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    engineTimer[L] = dm->make_named_var("A32NX_ENGINE_TIMER:1", UNITS.Number, AUTO_READ_WRITE);
+    engineTimer[R] = dm->make_named_var("A32NX_ENGINE_TIMER:2", UNITS.Number, AUTO_READ_WRITE);
+    fuelAuxLeftPre = dm->make_named_var("A32NX_FUEL_AUX_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelAuxRightPre = dm->make_named_var("A32NX_FUEL_AUX_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelCenterPre = dm->make_named_var("A32NX_FUEL_CENTER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftPre = dm->make_named_var("A32NX_FUEL_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelPumpState[L] = dm->make_named_var("A32NX_PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    fuelPumpState[R] = dm->make_named_var("A32NX_PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightPre = dm->make_named_var("A32NX_FUEL_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
 
-    startState = dm->make_named_var("START_STATE", UNITS.Number, NO_AUTO_UPDATE);
+    thrustLimitIdle = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
+    thrustLimitClimb = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
+    thrustLimitFlex = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
+    thrustLimitMct = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
+    thrustLimitToga = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
 
-    LOG_INFO("Fadec::FadecSimData_A380X initialized");
+    airlinerToFlexTemp = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
+    apuRpmPercent = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+    engineStarterPressurized[L] = dm->make_named_var("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
+    engineStarterPressurized[R] = dm->make_named_var("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
+    packsState[L] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN:1", UNITS.Number, AUTO_READ);
+    packsState[R] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
+    refuelRate = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
+    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
+    thrustLimitType = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
+    wingAntiIce = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
+
+
+    engineEgt[L]->set(0);
+    engineEgt[R]->set(0);
+    engineFF[L]->set(0);
+    engineFF[R]->set(0);
+    engineFuelUsed[L]->set(0);
+    engineFuelUsed[R]->set(0);
+    engineIdleEGT->set(0);
+    engineIdleFF->set(0);
+    engineIdleN1->set(0);
+    engineIdleN2->set(0);
+    engineImbalance->set(0);
+    engineN1[L]->set(0);
+    engineN1[R]->set(0);
+    engineN2[L]->set(0);
+    engineN2[R]->set(0);
+    engineOilTotal[L]->set(0);
+    engineOilTotal[R]->set(0);
+    engineOil[L]->set(0);
+    engineOil[R]->set(0);
+    enginePreFF[L]->set(0);
+    enginePreFF[R]->set(0);
+    engineState[L]->set(0);
+    engineState[R]->set(0);
+    engineTimer[L]->set(0);
+    engineTimer[R]->set(0);
+    fuelAuxLeftPre->set(0);
+    fuelAuxRightPre->set(0);
+    fuelCenterPre->set(0);
+    fuelLeftPre->set(0);
+    fuelPumpState[L]->set(0);
+    fuelPumpState[R]->set(0);
+    fuelRightPre->set(0);
+    thrustLimitClimb->set(0);
+    thrustLimitFlex->set(0);
+    thrustLimitIdle->set(0);
+    thrustLimitMct->set(0);
+    thrustLimitToga->set(0);
   }
 };
 

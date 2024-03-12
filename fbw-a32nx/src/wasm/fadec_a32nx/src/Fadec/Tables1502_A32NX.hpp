@@ -19,7 +19,7 @@ class Tables1502_A32NX {
    *
    * @return A 2D array representing the CN2 - correctedN1 pairs.
    */
-  static constexpr double table1502t[13][4] = {
+  static constexpr double table1502[13][4] = {
       {18.20, 0.00, 0.00, 17.00},       // CN2 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
       {22.00, 1.90, 1.90, 17.40},       // CN2 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
       {26.00, 2.50, 2.50, 18.20},       // CN2 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
@@ -34,6 +34,8 @@ class Tables1502_A32NX {
       {104.00, 85.00, 85.00, 85.50},    // CN2 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
       {116.50, 101.00, 101.00, 101.00}  // CN2 = 116.50, correctedN1 = [101.00, 101.00] at Mach 0.2, correctedN1 = 101.00 at Mach 0.9
   };
+
+  public:
 
   /**
    * @brief Calculates the expected CN2 at idle.
@@ -74,17 +76,17 @@ class Tables1502_A32NX {
 
     // Find the row in the table that contains the CN2 value and store the index in i
     int i = 0;
-    while (table1502t[i][0] <= cn2 && i < 13) {
+    while (table1502[i][0] <= cn2 && i < 13) {
       i++;
     }
 
     // Retrieve the lower and upper bounds of the CN2 value and the correctedN1 value at Mach 0.2 and Mach 0.9
-    double cn2lo = table1502t[i - 1][0];
-    double cn2hi = table1502t[i][0];
-    double cn1lolo = table1502t[i - 1][1];
-    double cn1hilo = table1502t[i][1];
-    double cn1lohi = table1502t[i - 1][3];
-    double cn1hihi = table1502t[i][3];
+    double cn2lo = table1502[i - 1][0];
+    double cn2hi = table1502[i][0];
+    double cn1lolo = table1502[i - 1][1];
+    double cn1hilo = table1502[i][1];
+    double cn1lohi = table1502[i - 1][3];
+    double cn1hihi = table1502[i][3];
 
     // Interpolate the correctedN1 value based on the CN2 value and the Mach number
     double cn1_lo = Fadec::interpolate(cn2, cn2lo, cn2hi, cn1lolo, cn1hilo);
