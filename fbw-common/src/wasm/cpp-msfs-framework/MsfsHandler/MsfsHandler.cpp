@@ -166,7 +166,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 
 #ifdef PROFILING
   profiler.stop();
-  if (tickCounter % 120 == 0) {
+  if (tickCounter % 100 == 0) {
+    LOG_INFO("Profiler Info for " + this->simConnectName);
     preUpdate.print();
     mainUpdate.print();
     postUpdate.print();
