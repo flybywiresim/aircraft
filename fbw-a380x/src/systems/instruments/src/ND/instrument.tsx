@@ -12,6 +12,7 @@ import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMe
 import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { FmsOansPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
+import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -225,6 +226,7 @@ class NDInstrument implements FsInstrument {
                             side={this.efisSide}
                             rangeValues={a380EfisRangeSettings}
                         />
+                <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
                     </div>
                     <ContextMenu
                         ref={this.contextMenuRef}
