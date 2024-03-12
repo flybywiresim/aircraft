@@ -31,10 +31,10 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
         const gs = this.navigation.groundSpeed;
         const dtg = this.guidanceController.activeLegDtg ?? Infinity;
         const ttg = gs > 10 ? 3600 * dtg / gs : Infinity;
-        const nextLeg = this.guidanceController.activeGeometry.legs.get(this.guidanceController.activeLegIndex + 1);
+        const nextLeg = this.guidanceController.activeGeometry?.legs?.get(this.guidanceController.activeLegIndex + 1);
 
         // if within 1.5 min of PI and it's path goes outside the coded distance limit
-        const turnAreaExceeded = ttg <= 90 && nextLeg instanceof PILeg && nextLeg.turnAreaExceeded;
+        const turnAreaExceeded = ttg <= 90 && nextLeg && nextLeg instanceof PILeg && nextLeg.turnAreaExceeded;
 
         this.trigRising.input = turnAreaExceeded;
         this.trigRising.update(deltaTime);

@@ -1,8 +1,9 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightArea } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanManager } from '@fmgc/index';
+import { FlightPlanService, getFlightPhaseManager } from '@fmgc/index';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightArea } from './FlightArea';
 
 const rnpDefaults: Record<FlightArea, number> = {
     [FlightArea.Takeoff]: 1,
@@ -24,7 +25,7 @@ export class RequiredPerformance {
 
     manualRnp = false;
 
-    constructor(private flightPlanManager: FlightPlanManager) {}
+    constructor(private flightPlanService: FlightPlanService) {}
 
     update(_deltaTime: number): void {
         this.updateAutoRnp();
@@ -47,9 +48,11 @@ export class RequiredPerformance {
             return;
         }
 
-        const plan = this.flightPlanManager.activeFlightPlan;
-        if (plan && plan.activeWaypoint) {
-            const legRnp = plan.activeWaypoint.additionalData.rnp;
+        const plan = this.flightPlanService.active;
+
+        if (plan && plan.activeLeg && plan.activeLeg.isDiscontinuity === false) {
+            const legRnp = plan.activeLeg.rnp;
+
             if (legRnp !== undefined) {
                 if (legRnp !== this.activeRnp) {
                     this.setActiveRnp(legRnp);
@@ -58,7 +61,7 @@ export class RequiredPerformance {
             }
         }
 
-        const area = this.flightPlanManager.activeArea;
+        const area = this.flightPlanService.active.calculateActiveArea();
         const rnp = rnpDefaults[area];
 
         if (rnp !== this.activeRnp) {
@@ -73,10 +76,11 @@ export class RequiredPerformance {
     }
 
     private updateLDev(): void {
-        const area = this.flightPlanManager.activeArea;
+        const area = this.flightPlanService.active.calculateActiveArea();
         const ldev = area !== FlightArea.Enroute
             && area !== FlightArea.Oceanic
-            && this.activeRnp < 0.305;
+            && this.activeRnp < 0.305
+            && getFlightPhaseManager().phase >= FmgcFlightPhase.Takeoff;
         if (ldev !== this.requestLDev) {
             this.requestLDev = ldev;
             SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);

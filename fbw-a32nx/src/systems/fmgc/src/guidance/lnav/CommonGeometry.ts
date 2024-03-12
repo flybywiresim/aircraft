@@ -5,9 +5,9 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { ControlLaw, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
-import { SegmentType } from '@fmgc/wtsdk';
 import { MathUtils, Constants } from '@flybywiresim/fbw-sdk';
-import { bearingTo } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 
 /**
  * Compute the remaining distance around an arc
@@ -19,12 +19,12 @@ import { bearingTo } from 'msfs-geo';
  * @returns
  */
 export function arcDistanceToGo(ppos: Coordinates, itp: Coordinates, centreFix: Coordinates, sweepAngle: Degrees) {
-    const itpBearing = Avionics.Utils.computeGreatCircleHeading(centreFix, itp);
-    const pposBearing = Avionics.Utils.computeGreatCircleHeading(centreFix, ppos);
-    const radius = Avionics.Utils.computeGreatCircleDistance(centreFix, itp);
+    const itpBearing = bearingTo(centreFix, itp);
+    const pposBearing = bearingTo(centreFix, ppos);
+    const radius = distanceTo(centreFix, itp);
 
-    const refFrameOffset = Avionics.Utils.diffAngle(0, itpBearing);
-    const pposAngle = sweepAngle < 0 ? Avionics.Utils.clampAngle(refFrameOffset - pposBearing) : Avionics.Utils.clampAngle(pposBearing - refFrameOffset);
+    const refFrameOffset = MathUtils.diffAngle(0, itpBearing);
+    const pposAngle = sweepAngle < 0 ? MathUtils.clampAngle(refFrameOffset - pposBearing) : MathUtils.clampAngle(pposBearing - refFrameOffset);
 
     // before the arc... this implies max sweep angle is <340, arinc allows less than that anyway
     if (pposAngle >= 340) {
@@ -50,16 +50,16 @@ export function arcDistanceToGo(ppos: Coordinates, itp: Coordinates, centreFix: 
  * @returns lateral path law params
  */
 export function arcGuidance(ppos: Coordinates, trueTrack: Degrees, itp: Coordinates, centreFix: Coordinates, sweepAngle: Degrees): LateralPathGuidance {
-    const bearingPpos = Avionics.Utils.computeGreatCircleHeading(
+    const bearingPpos = bearingTo(
         centreFix,
         ppos,
     );
 
-    const desiredTrack = sweepAngle > 0 ? Avionics.Utils.clampAngle(bearingPpos + 90) : Avionics.Utils.clampAngle(bearingPpos - 90);
-    const trackAngleError = Avionics.Utils.diffAngle(trueTrack, desiredTrack);
+    const desiredTrack = sweepAngle > 0 ? MathUtils.clampAngle(bearingPpos + 90) : MathUtils.clampAngle(bearingPpos - 90);
+    const trackAngleError = MathUtils.diffAngle(trueTrack, desiredTrack);
 
-    const radius = Avionics.Utils.computeGreatCircleDistance(centreFix, itp);
-    const distanceFromCenter = Avionics.Utils.computeGreatCircleDistance(centreFix, ppos);
+    const radius = distanceTo(centreFix, itp);
+    const distanceFromCenter = distanceTo(centreFix, ppos);
 
     const crossTrackError = sweepAngle > 0
         ? distanceFromCenter - radius
@@ -89,11 +89,10 @@ export function pointOnCourseToFix(
     course: DegreesTrue,
     fix: Coordinates,
 ): Coordinates {
-    return Avionics.Utils.bearingDistanceToCoordinates(
-        Avionics.Utils.clampAngle(course + 180),
+    return placeBearingDistance(
+        fix,
+        reciprocal(course),
         distanceFromEnd,
-        fix.lat,
-        fix.long,
     );
 }
 
@@ -111,17 +110,16 @@ export function pointOnArc(
     centreFix: Coordinates,
     sweepAngle: Degrees,
 ): Coordinates {
-    const radius = Avionics.Utils.computeGreatCircleDistance(centreFix, ftp);
+    const radius = distanceTo(centreFix, ftp);
     const distanceRatio = distanceFromFtp / arcLength(radius, sweepAngle);
     const angleFromFtp = -distanceRatio * sweepAngle;
 
-    const centerToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(centreFix, ftp);
+    const centerToTerminationBearing = bearingTo(centreFix, ftp);
 
-    return Avionics.Utils.bearingDistanceToCoordinates(
-        Avionics.Utils.clampAngle(centerToTerminationBearing + angleFromFtp),
+    return placeBearingDistance(
+        centreFix,
+        MathUtils.clampAngle(centerToTerminationBearing + angleFromFtp),
         radius,
-        centreFix.lat,
-        centreFix.long,
     );
 }
 
@@ -182,23 +180,23 @@ export function maxTad(tas: Knots | undefined): NauticalMiles {
 }
 
 export function courseToFixDistanceToGo(ppos: Coordinates, course: Degrees, fix: Coordinates): NauticalMiles {
-    const pposToFixBearing = Avionics.Utils.computeGreatCircleHeading(ppos, fix);
-    const pposToFixDist = Avionics.Utils.computeGreatCircleDistance(ppos, fix);
+    const pposToFixBearing = bearingTo(ppos, fix);
+    const pposToFixDist = distanceTo(ppos, fix);
 
-    const pposToFixAngle = Avionics.Utils.diffAngle(pposToFixBearing, course);
+    const pposToFixAngle = MathUtils.diffAngle(pposToFixBearing, course);
 
     return Math.max(0, pposToFixDist * Math.cos(pposToFixAngle * Math.PI / 180));
 }
 
 export function courseToFixGuidance(ppos: Coordinates, trueTrack: Degrees, course: Degrees, fix: Coordinates): LateralPathGuidance {
-    const pposToFixBearing = Avionics.Utils.computeGreatCircleHeading(ppos, fix);
-    const pposToFixDist = Avionics.Utils.computeGreatCircleDistance(ppos, fix);
+    const pposToFixBearing = bearingTo(ppos, fix);
+    const pposToFixDist = distanceTo(ppos, fix);
 
-    const pposToFixAngle = Avionics.Utils.diffAngle(course, pposToFixBearing);
+    const pposToFixAngle = MathUtils.diffAngle(course, pposToFixBearing);
 
     const crossTrackError = pposToFixDist * Math.sin(pposToFixAngle * Math.PI / 180);
 
-    const trackAngleError = Avionics.Utils.diffAngle(trueTrack, course);
+    const trackAngleError = MathUtils.diffAngle(trueTrack, course);
 
     return {
         law: ControlLaw.LATERAL_PATH,
@@ -235,12 +233,12 @@ export function sideOfPointOnCourseToFix(fix: Coordinates, course: DegreesTrue, 
     return PointSide.Before;
 }
 
-function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
+export function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
     const R = Constants.EARTH_RADIUS_NM;
 
-    const d13 = Avionics.Utils.computeGreatCircleDistance(start, ppos) / R;
-    const Theta13 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, ppos);
-    const Theta12 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, end);
+    const d13 = distanceTo(start, ppos) / R;
+    const Theta13 = MathUtils.DEGREES_TO_RADIANS * bearingTo(start, ppos);
+    const Theta12 = MathUtils.DEGREES_TO_RADIANS * bearingTo(start, end);
 
     const deltaXt = Math.asin(Math.sin(d13) * Math.sin(Theta13 - Theta12));
 
@@ -250,10 +248,10 @@ function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coo
 }
 
 export function getIntermediatePoint(start: Coordinates, end: Coordinates, fraction: number): Coordinates {
-    const Phi1 = start.lat * Avionics.Utils.DEG2RAD;
-    const Gamma1 = start.long * Avionics.Utils.DEG2RAD;
-    const Phi2 = end.lat * Avionics.Utils.DEG2RAD;
-    const Gamma2 = end.long * Avionics.Utils.DEG2RAD;
+    const Phi1 = start.lat * MathUtils.DEGREES_TO_RADIANS;
+    const Gamma1 = start.long * MathUtils.DEGREES_TO_RADIANS;
+    const Phi2 = end.lat * MathUtils.DEGREES_TO_RADIANS;
+    const Gamma2 = end.long * MathUtils.DEGREES_TO_RADIANS;
 
     const deltaPhi = Phi2 - Phi1;
     const deltaGamma = Gamma2 - Gamma1;
@@ -272,32 +270,32 @@ export function getIntermediatePoint(start: Coordinates, end: Coordinates, fract
     const Gamma3 = Math.atan2(y, x);
 
     return {
-        lat: Phi3 * Avionics.Utils.RAD2DEG,
-        long: Gamma3 * Avionics.Utils.RAD2DEG,
+        lat: Phi3 * MathUtils.RADIANS_TO_DEGREES,
+        long: Gamma3 * MathUtils.RADIANS_TO_DEGREES,
     };
 }
 
 export function fixToFixGuidance(ppos: Coordinates, trueTrack: DegreesTrue, from: Coordinates, to: Coordinates): LateralPathGuidance {
     // Track angle error
-    const totalTrackDistance = Avionics.Utils.computeGreatCircleDistance(from, to);
+    const totalTrackDistance = distanceTo(from, to);
     const alongTrackDistance = getAlongTrackDistanceTo(from, to, ppos);
 
     const intermediatePoint = getIntermediatePoint(from, to, Math.min(Math.max(alongTrackDistance / totalTrackDistance, 0.05), 0.95));
 
-    const desiredTrack = Avionics.Utils.computeGreatCircleHeading(intermediatePoint, to);
+    const desiredTrack = bearingTo(intermediatePoint, to);
     const trackAngleError = MathUtils.mod(desiredTrack - trueTrack + 180, 360) - 180;
 
     // Cross track error
-    const bearingAC = Avionics.Utils.computeGreatCircleHeading(from, ppos);
-    const bearingAB = Avionics.Utils.computeGreatCircleHeading(from, to);
-    const distanceAC = Avionics.Utils.computeDistance(from, ppos);
+    const bearingAC = bearingTo(from, ppos);
+    const bearingAB = bearingTo(from, to);
+    const distanceAC = distanceTo(from, ppos);
 
     const desiredOffset = 0;
     const actualOffset = (
         Math.asin(
-            Math.sin(Avionics.Utils.DEG2RAD * (distanceAC / Constants.EARTH_RADIUS_NM))
-            * Math.sin(Avionics.Utils.DEG2RAD * (bearingAC - bearingAB)),
-        ) * Avionics.Utils.RAD2DEG
+            Math.sin(MathUtils.DEGREES_TO_RADIANS * (distanceAC / Constants.EARTH_RADIUS_NM))
+            * Math.sin(MathUtils.DEGREES_TO_RADIANS * (bearingAC - bearingAB)),
+        ) * MathUtils.RADIANS_TO_DEGREES
     ) * Constants.EARTH_RADIUS_NM;
     const crossTrackError = desiredOffset - actualOffset;
 
@@ -316,5 +314,17 @@ export function arcLength(radius: NauticalMiles, sweepAngle: Degrees): NauticalM
 }
 
 export function reciprocal(course: Degrees): Degrees {
-    return Avionics.Utils.clampAngle(course + 180);
+    return MathUtils.clampAngle(course + 180);
+}
+
+export function getRollAnticipationDistance(gs: Knots, bankA: Degrees, bankB: Degrees): NauticalMiles {
+    // calculate delta phi
+    const deltaPhi = Math.abs(bankA - bankB);
+
+    // calculate RAD
+    const maxRollRate = 5; // deg / s, TODO picked off the wind
+    const k2 = 0.0038;
+    const rad = gs / 3600 * (Math.sqrt(1 + 2 * k2 * 9.81 * deltaPhi / maxRollRate) - 1) / (k2 * 9.81);
+
+    return rad;
 }

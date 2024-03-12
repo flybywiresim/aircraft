@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
-import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
-import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 export class StepAhead implements FMMessageSelector {
@@ -13,28 +13,35 @@ export class StepAhead implements FMMessageSelector {
 
     private guidanceController: GuidanceController;
 
+    private flightPlanService: FlightPlanService;
+
     private lastState = false;
 
-    init(baseInstrument: BaseInstrument): void {
+    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
         this.guidanceController = baseInstrument.guidanceController;
+        this.flightPlanService = flightPlanService;
     }
 
     process(_: number): FMMessageUpdate {
-        const fpm = this.guidanceController.flightPlanManager;
-        const distanceToEnd = this.guidanceController.vnavDriver.distanceToEnd;
+        const distanceToEnd = this.guidanceController.alongTrackDistanceToDestination;
 
         if (!this.guidanceController.vnavDriver.mcduProfile?.isReadyToDisplay || distanceToEnd <= 0) {
             return FMMessageUpdate.NO_ACTION;
         }
 
+        const activePlan = this.flightPlanService.active;
+
         let newState = false;
-        for (let i = fpm.getActiveWaypointIndex(); i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
-            const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
-            if (!waypoint || !waypoint.additionalData.cruiseStep || waypoint.additionalData.cruiseStep.isIgnored) {
+        for (let i = activePlan.activeLegIndex; i < activePlan.legCount; i++) {
+            const leg = activePlan.maybeElementAt(i);
+
+            if (!leg || leg.isDiscontinuity === true || !leg.calculated || !leg.cruiseStep || leg.cruiseStep.isIgnored) {
                 continue;
             }
 
-            if (distanceToEnd - waypoint.additionalData.distanceToEnd < 20) {
+            const legDistanceToEnd = leg.calculated.cumulativeDistanceToEndWithTransitions;
+
+            if (distanceToEnd - legDistanceToEnd < 20) {
                 newState = true;
             }
         }

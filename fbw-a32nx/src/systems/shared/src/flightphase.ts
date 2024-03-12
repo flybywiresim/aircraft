@@ -1,4 +1,4 @@
-import { VerticalMode } from './autopilot';
+import { VerticalMode } from '@shared/autopilot';
 
 export enum FmgcFlightPhase {
     Preflight,

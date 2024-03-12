@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FcuSync } from '@fmgc/components/FcuSync';
 import { ReadySignal } from '@fmgc/components/ReadySignal';
-import { FlightPlanManager } from '@fmgc/wtsdk';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 import { FmsMessages } from './fms-messages';
 
@@ -12,8 +16,8 @@ const components: FmgcComponent[] = [
     new FcuSync(),
 ];
 
-export function initComponents(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
-    components.forEach((component) => component.init(baseInstrument, flightPlanManager));
+export function initComponents(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
+    components.forEach((component) => component.init(baseInstrument, flightPlanService));
 }
 
 export function updateComponents(deltaTime: number): void {

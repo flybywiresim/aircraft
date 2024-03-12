@@ -81,7 +81,7 @@ export class LatchedDescentGuidance {
         this.verticalState = newState;
     }
 
-    private reset() {
+    reset() {
         this.requestedVerticalMode = RequestedVerticalMode.None;
         this.targetAltitude = 0;
         this.targetVerticalSpeed = 0;
@@ -94,6 +94,7 @@ export class LatchedDescentGuidance {
         this.aircraftToDescentProfileRelation.update(distanceToEnd);
 
         if (!this.aircraftToDescentProfileRelation.isValid) {
+            this.changeState(DescentVerticalGuidanceState.InvalidProfile);
             return;
         }
 
@@ -249,5 +250,21 @@ export class LatchedDescentGuidance {
         } if (!this.isInOverspeedCondition && airspeed > overspeedTriggerSpeed) {
             this.isInOverspeedCondition = true;
         }
+    }
+
+    public getDesSubmode(): RequestedVerticalMode {
+        return this.requestedVerticalMode;
+    }
+
+    public getTargetVerticalSpeed(): FeetPerMinute {
+        return this.targetVerticalSpeed;
+    }
+
+    public getLinearDeviation(): Feet {
+        if (!this.aircraftToDescentProfileRelation.isValid) {
+            return undefined;
+        }
+
+        return this.aircraftToDescentProfileRelation.computeLinearDeviation();
     }
 }

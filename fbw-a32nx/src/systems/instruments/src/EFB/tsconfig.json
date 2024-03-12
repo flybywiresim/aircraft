@@ -1,14 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "resolveJsonModule" : true,
-    "paths": {
-      "@instruments/common/*": ["./instruments/src/Common/*"],
-      "@typings/*": ["../../../fbw-common/src/typings/*"],
-      "@sentry/*": ["./sentry-client/src/*"],
-      "@failures": ["./failures/src/index.ts"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
-    }
+    "resolveJsonModule" : true
   }
 }

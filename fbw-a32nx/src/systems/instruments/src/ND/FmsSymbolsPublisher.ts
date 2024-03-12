@@ -12,6 +12,9 @@ export interface FmsSymbolsData {
     vectorsActive: PathVector[],
     vectorsDashed: PathVector[],
     vectorsTemporary: PathVector[],
+    vectorsMissed: PathVector[],
+    vectorsAlternate: PathVector[],
+    vectorsSecondary: PathVector[],
     traffic: NdTraffic[],
 }
 
@@ -36,6 +39,18 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
         this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
             this.publish('vectorsTemporary', data);
         }, `A32NX_EFIS_VECTORS_${side}_TEMPORARY`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsMissed', data);
+        }, `A32NX_EFIS_VECTORS_${side}_MISSED`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsAlternate', data);
+        }, `A32NX_EFIS_VECTORS_${side}_ALTERNATE`));
+
+        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
+            this.publish('vectorsSecondary', data);
+        }, `A32NX_EFIS_VECTORS_${side}_SECONDARY`));
 
         this.events.push(new GenericDataListenerSync((ev, data: NdTraffic[]) => {
             this.publish('traffic', data);

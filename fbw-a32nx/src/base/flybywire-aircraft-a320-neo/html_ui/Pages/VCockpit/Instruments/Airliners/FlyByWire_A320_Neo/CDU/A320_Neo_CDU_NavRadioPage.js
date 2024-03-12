@@ -97,12 +97,12 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectVORsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualVor(receiverIndex, navaid.additionalData.facility);
+                    mcdu.setManualVor(receiverIndex, navaid);
                     mcdu.requestCall(() => {
                         CDUNavRadioPage.ShowPage(mcdu);
                     });
@@ -207,12 +207,13 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectILSsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualIls(navaid.additionalData.facility).then(onDone);
+
+                    mcdu.setManualIls(navaid).then(onDone);
                 } else {
                     // FIXME new navaid page when it's built
                     mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -285,7 +286,7 @@ class CDUNavRadioPage {
 
     static showSlope(mcdu, mmr) {
         const takeoff = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF;
-        const ilsAppr = mcdu.flightPlanManager.getApproachType(FlightPlans.Active) === ApproachType.APPROACH_TYPE_ILS;
+        const ilsAppr = mcdu.flightPlanService.active.approach && mcdu.flightPlanService.active.approach.type === 5; // ILS
         return mmr.manual || (!takeoff && ilsAppr);
     }
 
@@ -335,12 +336,12 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectNDBsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualAdf(receiverIndex, navaid.additionalData.facility);
+                    mcdu.setManualAdf(receiverIndex, navaid);
                     mcdu.requestCall(() => {
                         CDUNavRadioPage.ShowPage(mcdu);
                     });

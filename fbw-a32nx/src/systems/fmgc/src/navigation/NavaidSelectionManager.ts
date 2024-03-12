@@ -1,14 +1,14 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
+import { arrayFlat, UpdateThrottler, ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
-import { arrayFlat, VorClass, VorType } from '@flybywiresim/fbw-sdk';
-import { FlightPlanManager } from '@shared/flightplan';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
 
-type VorFacilityWithDistance = RawVor & { distance: number };
+type VorFacilityWithDistance = VhfNavaid & { distance: number };
 
 export enum VorSelectionReason {
     None,
@@ -22,17 +22,17 @@ export class NavaidSelectionManager {
     // the closest VOR needs to be this much closer than the currently tuned one to make us swap
     private static readonly DISPLAY_VOR_STICKINESS_THRESHOLD = 2;
 
-    private static readonly SPECIFIED_VOR_APPROACH_TYPES = [ApproachType.APPROACH_TYPE_RNAV, ApproachType.APPROACH_TYPE_VOR, ApproachType.APPROACH_TYPE_VORDME];
+    private static readonly SPECIFIED_VOR_APPROACH_TYPES = [ApproachType.Rnav, ApproachType.Vor, ApproachType.VorDme, ApproachType.Vortac];
 
-    private static readonly SPECIFIED_NDB_APPROACH_TYPES = [ApproachType.APPROACH_TYPE_NDB, ApproachType.APPROACH_TYPE_NDBDME];
+    private static readonly SPECIFIED_NDB_APPROACH_TYPES = [ApproachType.Ndb, ApproachType.NdbDme];
 
     private readonly nearbyFacilities: NearbyFacilities = NearbyFacilities.getInstance();
 
-    private readonly candidateUpdateThrottler = new A32NX_Util.UpdateThrottler(180);
+    private readonly candidateUpdateThrottler = new UpdateThrottler(180);
 
-    private readonly dmePairUpdateThrottler = new A32NX_Util.UpdateThrottler(10);
+    private readonly dmePairUpdateThrottler = new UpdateThrottler(10);
 
-    private readonly autotuneUpdateThrottler = new A32NX_Util.UpdateThrottler(1);
+    private readonly autotuneUpdateThrottler = new UpdateThrottler(1);
 
     private ppos = { lat: 0, long: 0 };
 
@@ -42,9 +42,7 @@ export class NavaidSelectionManager {
 
     private altitude = 0;
 
-    private horizonDistance = 40;
-
-    private coneOfConfusionDistance = 0;
+    private heightAboveGround = 0;
 
     /** Current candidate navaids eligbible for selection, sorted by distance from the aircraft (nearer navaids first) */
     private candidateList: VorFacilityWithDistance[] = [];
@@ -55,13 +53,13 @@ export class NavaidSelectionManager {
     /** Blacklist of navaids that were tuned but not received, maps icao to blacklist time */
     private blackList = new Map<string, number>();
 
-    private selectedDisplayVor: RawVor | null = null;
+    private selectedDisplayVor: VhfNavaid | null = null;
 
     private selectedDisplayVorReason = VorSelectionReason.None;
 
-    private selectedDmePair: [RawVor, RawVor] | null = null;
+    private selectedDmePair: [VhfNavaid, VhfNavaid] | null = null;
 
-    private selectedNdb: RawNdb | null = null;
+    private selectedNdb: NdbNavaid | null = null;
 
     private deselectedFacilities = new Set<string>();
 
@@ -72,8 +70,8 @@ export class NavaidSelectionManager {
     private filteredHeight = null;
 
     constructor(
+        private readonly flightPlanService: FlightPlanService,
         private readonly navigationProvider: NavigationProvider,
-        private readonly fpm: FlightPlanManager,
     ) {}
 
     update(deltaTime: number, forceUpdate = false): void {
@@ -124,20 +122,11 @@ export class NavaidSelectionManager {
         // so we do a bit of a hack and assume all navaids are at ground level
         const baroAltitude = this.navigationProvider.getBaroCorrectedAltitude() ?? this.navigationProvider.getPressureAltitude();
         if (baroAltitude !== null) {
-            // FIXME use baroAltitude when we have elevation data for navaids
-            const height = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-            if (this.filteredHeight === null) {
-                this.filteredHeight = height;
-            } else {
-                this.filteredHeight = 0.01 * height + 0.99 * this.filteredHeight;
-            }
-            this.altitude = this.filteredHeight;
-
-            const planeAltNm = this.altitude / 6076.12;
-            this.horizonDistance = Math.sqrt(planeAltNm * (2 * EARTH_RADIUS + planeAltNm));
-
-            this.coneOfConfusionDistance = planeAltNm * Math.tan(Math.PI / 6);
+            this.altitude = baroAltitude;
         }
+
+        // we need this as a fallback for MSFS-sourced facilities with missing elevation data
+        this.heightAboveGround = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
     }
 
     private updateCandidateList(): void {
@@ -152,13 +141,14 @@ export class NavaidSelectionManager {
                 continue;
             }
 
-            const distance = distanceTo(this.ppos, { lat: facility.lat, long: facility.lon });
+            const distance = distanceTo(this.ppos, facility.dmeLocation ?? facility.location);
 
-            if (this.isInLineOfSight(distance)) {
-                if (frequencies.has(facility.freqBCD16)) {
-                    duplicateFrequencies.add(facility.freqBCD16);
+            if (this.isInLineOfSight(facility, distance)) {
+                // FIXME BCD frequency type in msfs-navdata... comparing floats is problematic
+                if (frequencies.has(facility.frequency)) {
+                    duplicateFrequencies.add(facility.frequency);
                 }
-                frequencies.add(facility.freqBCD16);
+                frequencies.add(facility.frequency);
             }
 
             const candidate = { distance, ...facility };
@@ -173,7 +163,7 @@ export class NavaidSelectionManager {
 
         for (let i = this.candidateList.length - 1; i >= 0; i--) {
             const facility = this.candidateList[i];
-            if (duplicateFrequencies.has(facility.freqBCD16)) {
+            if (duplicateFrequencies.has(facility.frequency)) {
                 this.candidateList.splice(i, 1);
             }
         }
@@ -183,79 +173,93 @@ export class NavaidSelectionManager {
         this.vorCandidateList.length = Math.min(this.vorCandidateList.length, 7);
     }
 
-    private isEligibleCandidate(facility: RawVor, distance: number): boolean {
+    private isEligibleCandidate(facility: VhfNavaid, distance: number): boolean {
         return !this.isBlackListed(facility)
             && !this.isDeselected(facility)
-            && this.isInLineOfSight(distance)
+            && this.isInLineOfSight(facility, distance)
             && this.isWithinFom(facility, distance)
             && !this.isWithinConeOfConfusion(facility, distance)
             && this.isWithinGroundRange(distance);
     }
 
-    private isEligibleDisplayVor(facility: RawVor, distance: number): boolean {
+    private isEligibleDisplayVor(facility: VhfNavaid, distance: number): boolean {
         return this.isVor(facility)
             && this.isWithinFom(facility, distance)
             && !this.isDeselected(facility);
     }
 
     /** Checks if a navaid is a VOR type for display VOR tuning */
-    private isVor(facility: RawVor): boolean {
+    private isVor(facility: VhfNavaid): boolean {
         return this.typeIsVor(facility.type);
     }
 
-    private typeIsVor(type: VorType): boolean {
-        return type === VorType.VOR
-            || type === VorType.VORDME
-            || type === VorType.VORTAC;
-        // FIXME TACAN when the VOR tuner can handle TACANs..
+    private typeIsVor(type: VhfNavaidType): boolean {
+        return type === VhfNavaidType.Vor
+            || type === VhfNavaidType.VorDme
+            || type === VhfNavaidType.Vortac;
     }
 
     /** Checks if a navaid is a co-located VOR/DME type for navigation */
-    private isVorDme(facility: RawVor): boolean {
-        return facility.type === VorType.VORDME
-            || facility.type === VorType.VORTAC;
+    private isVorDme(facility: VhfNavaid): boolean {
+        return facility.type === VhfNavaidType.VorDme || facility.type === VhfNavaidType.Vortac;
     }
 
     /** Checks if a navaid has been blacklisted due to no reception */
-    private isBlackListed(facility: RawVor): boolean {
-        return this.blackList.has(facility.icao);
+    private isBlackListed(facility: VhfNavaid): boolean {
+        return this.blackList.has(facility.databaseId);
     }
 
     /** Checks if a navaid is delsected by the pilot in the MCDU */
-    private isDeselected(facility: RawVor | RawNdb): boolean {
-        return this.deselectedFacilities.has(facility.icao);
+    private isDeselected(facility: VhfNavaid | NdbNavaid): boolean {
+        return this.deselectedFacilities.has(facility.databaseId);
     }
 
     /** Checks if the navaid is able to be received over the horizon */
-    private isInLineOfSight(distance: number): boolean {
-        // FIXME should also consider navaid elevation but we don't have that from MSFS
-        return distance <= Math.max(10, 7 / 6 * this.horizonDistance);
+    private isInLineOfSight(facility: VhfNavaid, distance: number): boolean {
+        let heightAboveNavaid: number;
+        if (facility.dmeLocation.alt !== undefined) {
+            heightAboveNavaid = Math.max(0, this.altitude - facility.dmeLocation.alt) / 6076.12;
+        } else {
+            // fallback for MSFS navdata with missing navaid elevations
+            heightAboveNavaid = this.altitude - this.heightAboveGround;
+        }
+
+        const heightAboveNavaidNm = heightAboveNavaid / 6076.12;
+        const lineOfSightDist = Math.sqrt(heightAboveNavaidNm * (2 * EARTH_RADIUS + heightAboveNavaidNm));
+        return distance <= Math.max(10, 7 / 6 * lineOfSightDist);
     }
 
     /** Checks if the navaid is within it's figure of merit limits */
-    private isWithinFom(facility: RawVor, distance?: number): boolean {
+    private isWithinFom(facility: VhfNavaid, distance?: number): boolean {
         if (distance === undefined) {
-            distance = distanceTo(this.ppos, { lat: facility.lat, long: facility.lon });
+            distance = distanceTo(this.ppos, facility.dmeLocation ?? facility.location);
         }
 
-        switch (facility.vorClass) {
-        // MSFS thinks everything is 130ish
-        case VorClass.HighAlttitude: //  return distance <= 250; // FoM 3
-        case VorClass.Unknown:
-            return distance <= 130; // unclassified, FoM 2
-        case VorClass.LowAltitude:
-            return distance <= 70 && this.altitude < 18000; // FoM 1
-        case VorClass.Terminal:
-            return distance <= 40 && this.altitude < 12000; // FoM 0
+        switch (facility.figureOfMerit) {
+        case 3:
+            return distance <= 250;
+        case 2:
+            return distance <= 130;
+        case 1:
+            return distance <= 70 && this.altitude < 18000;
+        case 0:
+            return distance <= 40 && this.altitude < 12000;
         default:
             return false;
         }
     }
 
     /** Checks if the navaid is too close to the aircraft overhead it */
-    private isWithinConeOfConfusion(facility: RawVor, distance: number): boolean {
-        // FIXME should consider navaid elevation but MSFS doesn't give it to us
-        return distance < this.coneOfConfusionDistance;
+    private isWithinConeOfConfusion(facility: VhfNavaid, distance: number): boolean {
+        let coneHeight: number;
+        if (facility.dmeLocation.alt !== undefined) {
+            coneHeight = Math.max(0, this.altitude - facility.dmeLocation.alt) / 6076.12;
+        } else {
+            // fallback for MSFS navdata with missing navaid elevations
+            coneHeight = this.altitude - this.heightAboveGround;
+        }
+        const coneOfConfusionDistance = coneHeight / 6076.12 * Math.tan(Math.PI / 6);
+        return distance < coneOfConfusionDistance;
     }
 
     /** Checks if the navaid is too close to the aircraft laterally */
@@ -264,11 +268,17 @@ export class NavaidSelectionManager {
     }
 
     /** Filters out unsuitable types of MSFS navaid */
-    private isSuitableType(facility: RawVor): boolean {
-        // FIXME we should be able to use ILS/DME but MSFS doesn't allow us to determine if an ILS has a DME
-        return facility.vorClass !== VorClass.VOT
-            && facility.type !== VorType.TACAN
-            && facility.type !== VorType.ILS;
+    private isSuitableType(facility: VhfNavaid): boolean {
+        switch (facility.type) {
+        case VhfNavaidType.Dme:
+        case VhfNavaidType.IlsDme:
+        case VhfNavaidType.IlsTacan:
+        case VhfNavaidType.VorDme:
+        case VhfNavaidType.Vortac:
+            return true;
+        default:
+            return false;
+        }
     }
 
     private selectDmePair(): void {
@@ -281,7 +291,10 @@ export class NavaidSelectionManager {
             geometryCheck = angle < 70 || angle > 110;
 
             // check the current pair are still valid candidates
-            findNewPair = findNewPair || (!this.candidateList.some((v) => v.icao === this.selectedDmePair[0].icao) || !this.candidateList.some((v) => v.icao === this.selectedDmePair[1].icao));
+            findNewPair = findNewPair || (
+                !this.candidateList.some((v) => v.databaseId === this.selectedDmePair[0].databaseId)
+                || !this.candidateList.some((v) => v.databaseId === this.selectedDmePair[1].databaseId)
+            );
 
             // FIXME either of the navaid idents don't match expected
             // FIXME either navaid not received or unstable for 10 seconds
@@ -324,21 +337,20 @@ export class NavaidSelectionManager {
         }
     }
 
-    private calcDmePairAngle(a: RawVor, b: RawVor): number {
+    private calcDmePairAngle(a: VhfNavaid, b: VhfNavaid): number {
         // FIXME bearingTo really needs an overload that takes lat and lon as args
-        const bearingA = bearingTo(this.ppos, { lat: a.lat, long: a.lon });
-        const bearingB = bearingTo(this.ppos, { lat: b.lat, long: b.lon });
+        const bearingA = bearingTo(this.ppos, a.dmeLocation);
+        const bearingB = bearingTo(this.ppos, b.dmeLocation);
         return Math.abs(diffAngle(bearingA, bearingB));
     }
 
-    private getSpecifiedNavaid(): RawVor | null {
-        if (NavaidSelectionManager.SPECIFIED_VOR_APPROACH_TYPES.includes(this.fpm.getApproachType(FlightPlans.Active))) {
-            const waypoints = this.fpm.getApproachWaypoints(FlightPlans.Active);
-            // due to cfms 1.5 messing up the last leg of the final approach, we take the second last
-            const finalLeg = waypoints[waypoints.length - 2];
+    private getSpecifiedNavaid(): VhfNavaid | null {
+        if (NavaidSelectionManager.SPECIFIED_VOR_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
+            const segment = this.flightPlanService.active.approachSegment;
+
             // eslint-disable-next-line no-underscore-dangle
-            const facility: RawVor | null = finalLeg?.additionalData.recommendedFacility?.__Type === 'JS_FacilityVOR' ? finalLeg.additionalData.recommendedFacility : null;
-            if (facility !== null && this.isVor(facility as RawVor)) {
+            const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
+            if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.VhfNavaid && this.isVor(facility)) {
                 return facility;
             }
         }
@@ -351,7 +363,7 @@ export class NavaidSelectionManager {
         this.specifiedVorDeselected = false;
 
         // procedure specified for the approach
-        if (this.fpm.isActiveApproach(FlightPlans.Active)) {
+        if (this.flightPlanService.active.isApproachActive) {
             const specified = this.getSpecifiedNavaid();
             if (specified !== null) {
                 if (this.isDeselected(specified)) {
@@ -381,17 +393,23 @@ export class NavaidSelectionManager {
         }
 
         // route navaid (to waypoint or 5 next downpath within FoM limit)
-        const activeLegIndex = this.fpm.getActiveWaypointIndex(false, false, FlightPlans.Active);
+        const activeLegIndex = this.flightPlanService.activeLegIndex;
         if (activeLegIndex >= 0) {
             for (let i = activeLegIndex; i < activeLegIndex + 5; i++) {
-                const leg = this.fpm.getWaypoint(i, FlightPlans.Active, true);
-                if (!leg) {
+                const element = this.flightPlanService.active.allLegs[i];
+                if (!element) {
                     break;
                 }
 
+                if (element.isDiscontinuity) {
+                    break;
+                }
+
+                const leg = element as FlightPlanLeg;
+
                 // eslint-disable-next-line no-underscore-dangle
-                const facility: RawVor | null = leg.additionalData.facility?.__Type === 'JS_FacilityVOR' ? leg.additionalData.facility : null;
-                if (facility !== null && this.isVor(facility as RawVor) && this.isWithinFom(facility)) {
+                const facility = leg.definition.waypoint ?? null;
+                if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.VhfNavaid && this.isVor(facility) && this.isWithinFom(facility)) {
                     this.setDisplayVor(facility, VorSelectionReason.Route);
                     return;
                 }
@@ -400,7 +418,7 @@ export class NavaidSelectionManager {
 
         // closest vor/dme within FoM, with a little bit of stickiness to avoid swapping back and forth
         if (this.vorCandidateList.length > 0 && this.displayVor !== null) {
-            const currentVor = this.vorCandidateList.find((v) => v.icao === this.displayVor.icao);
+            const currentVor = this.vorCandidateList.find((v) => v.databaseId === this.displayVor.databaseId);
             const replaceCurrentVor = !currentVor
                 || this.selectedDisplayVorReason !== VorSelectionReason.Display
                 || (currentVor.distance - this.vorCandidateList[0].distance) > NavaidSelectionManager.DISPLAY_VOR_STICKINESS_THRESHOLD;
@@ -415,7 +433,7 @@ export class NavaidSelectionManager {
         }
     }
 
-    private getNearestColocatedNavaid(): RawVor | null {
+    private getNearestColocatedNavaid(): VhfNavaid | null {
         for (const candidate of this.candidateList) {
             if (this.isVorDme(candidate)) {
                 return candidate;
@@ -427,27 +445,26 @@ export class NavaidSelectionManager {
     /**
      * Finds a VOR/DME or VOR/TAC within 5 NM of the destination runway and within 51 NM or the aircraft
      */
-    private getReferenceNavaid(): RawVor | null {
-        const destRunway = this.fpm.getDestinationRunway(FlightPlans.Active);
+    private getReferenceNavaid(): VhfNavaid | null {
+        const destRunway = this.flightPlanService.active.destinationRunway;
         if (!destRunway) {
             return null;
         }
         const candidates = this.candidateList.filter((v) => this.isVorDme(v) && v.distance < 51);
-        candidates.sort((a, b) => distanceTo(destRunway.thresholdCoordinates, { lat: a.lat, long: a.lon }) - distanceTo(destRunway.thresholdCoordinates, { lat: b.lat, long: b.lon }));
-        if (candidates.length > 0 && distanceTo(destRunway.thresholdCoordinates, { lat: candidates[0].lat, long: candidates[0].lon }) < 5) {
+        candidates.sort((a, b) => distanceTo(destRunway.thresholdLocation, a.dmeLocation) - distanceTo(destRunway.thresholdLocation, b.dmeLocation));
+        if (candidates.length > 0 && distanceTo(destRunway.thresholdLocation, candidates[0].dmeLocation) < 5) {
             return candidates[0];
         }
         return null;
     }
 
-    private getSpecifiedNdb(): RawNdb | null {
-        if (NavaidSelectionManager.SPECIFIED_NDB_APPROACH_TYPES.includes(this.fpm.getApproachType(FlightPlans.Active))) {
-            const waypoints = this.fpm.getApproachWaypoints(FlightPlans.Active);
-            // due to cfms 1.5 messing up the last leg of the final approach, we take the second last
-            const finalLeg = waypoints[waypoints.length - 2];
+    private getSpecifiedNdb(): NdbNavaid | null {
+        if (NavaidSelectionManager.SPECIFIED_NDB_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
+            const segment = this.flightPlanService.active.approachSegment;
+
             // eslint-disable-next-line no-underscore-dangle
-            const facility: RawNdb | null = finalLeg?.additionalData.recommendedFacility?.__Type === 'JS_FacilityNDB' ? finalLeg.additionalData.recommendedFacility : null;
-            if (facility !== null) {
+            const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
+            if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.NdbNavaid) {
                 return facility;
             }
         }
@@ -456,7 +473,7 @@ export class NavaidSelectionManager {
 
     private selectDisplayNdb(): void {
         this.specifiedNdbDeselected = false;
-        if (this.fpm.isActiveApproach(FlightPlans.Active)) {
+        if (this.flightPlanService.active.isApproachActive) {
             const specified = this.getSpecifiedNdb();
             if (specified !== null) {
                 if (this.isDeselected(specified)) {
@@ -470,16 +487,16 @@ export class NavaidSelectionManager {
         this.setDisplayNdb(null);
     }
 
-    private setDisplayNdb(ndb: RawNdb | null): void {
+    private setDisplayNdb(ndb: NdbNavaid | null): void {
         this.selectedNdb = ndb;
     }
 
-    private setDisplayVor(vor: RawVor | null, reason: VorSelectionReason): void {
+    private setDisplayVor(vor: VhfNavaid | null, reason: VorSelectionReason): void {
         this.selectedDisplayVor = vor;
         this.selectedDisplayVorReason = reason;
     }
 
-    get displayVor(): RawVor | null {
+    get displayVor(): VhfNavaid | null {
         return this.selectedDisplayVor;
     }
 
@@ -487,7 +504,7 @@ export class NavaidSelectionManager {
         return this.selectedDisplayVorReason;
     }
 
-    get displayNdb(): RawNdb | null {
+    get displayNdb(): NdbNavaid | null {
         return this.selectedNdb;
     }
 
@@ -495,7 +512,7 @@ export class NavaidSelectionManager {
         return this.selectedNdb !== null ? VorSelectionReason.Display : VorSelectionReason.None;
     }
 
-    get dmePair(): [RawVor, RawVor] | null {
+    get dmePair(): [VhfNavaid, VhfNavaid] | null {
         return this.selectedDmePair;
     }
 

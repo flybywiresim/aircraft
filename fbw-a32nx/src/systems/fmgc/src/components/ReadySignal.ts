@@ -1,12 +1,17 @@
-import { FlightPlanManager } from '@fmgc/wtsdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 
 export class ReadySignal implements FmgcComponent {
     private baseInstrument: BaseInstrument = null;
 
-    private updateThrottler = new A32NX_Util.UpdateThrottler(1000);
+    private updateThrottler = new UpdateThrottler(1000);
 
-    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+    init(baseInstrument: BaseInstrument, _flightPlanService: FlightPlanService): void {
         this.baseInstrument = baseInstrument;
     }
 

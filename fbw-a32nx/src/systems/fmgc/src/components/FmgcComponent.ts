@@ -1,6 +1,10 @@
-import { FlightPlanManager } from '@fmgc/wtsdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
 export interface FmgcComponent {
-    init(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void;
+    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
     update(deltaTime: number): void;
 }

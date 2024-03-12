@@ -47,27 +47,19 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     return simbriefDataParser(json);
 };
 
-const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
-    const { general } = simbriefJson;
-    const { origin } = simbriefJson;
-    const { aircraft } = simbriefJson;
-    const { destination } = simbriefJson;
-    const { times } = simbriefJson;
-    const { weights } = simbriefJson;
-    const { fuel } = simbriefJson;
-    const { params } = simbriefJson;
+export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
+    const { general, navlog, origin, aircraft, destination, times, weights, fuel, params, files, text, weather, atc } = simbriefJson;
     const alternate = Array.isArray(simbriefJson.alternate) ? simbriefJson.alternate[0] : simbriefJson.alternate;
-    const { files } = simbriefJson;
-    const { text } = simbriefJson;
-    const { weather } = simbriefJson;
 
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
+        callsign: atc.callsign,
         aircraftReg: aircraft.reg,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,
+        navlog: navlog.fix,
         files: { loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined },
         origin: {
             iata: origin.iata_code,
@@ -77,6 +69,8 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             posLat: origin.pos_lat,
             posLong: origin.pos_long,
             metar: weather.orig_metar,
+            transAlt: parseInt(origin.trans_alt, 10),
+            transLevel: parseInt(origin.trans_level, 10),
         },
         destination: {
             iata: destination.iata_code,
@@ -86,9 +80,12 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             posLat: destination.pos_lat,
             posLong: destination.pos_long,
             metar: weather.dest_metar,
+            transAlt: parseInt(destination.trans_alt, 10),
+            transLevel: parseInt(destination.trans_level, 10),
         },
         distance: `${general.air_distance}nm`,
         flightETAInSeconds: times.est_time_enroute,
+        averageTropopause: general.avg_tropopause,
         weights: {
             cargo: weights.cargo,
             estLandingWeight: weights.est_ldw,
@@ -123,6 +120,10 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             icao: alternate.icao_code,
             iata: alternate.iata_code,
             burn: alternate.burn,
+            transAlt: parseInt(alternate.trans_alt, 10),
+            transLevel: parseInt(alternate.trans_level, 10),
+            averageWindDirection: parseInt(alternate.avg_wind_dir, 10),
+            averageWindSpeed: parseInt(alternate.avg_wind_spd, 10),
         },
         times: {
             contFuelTime: times.contfuel_time,
