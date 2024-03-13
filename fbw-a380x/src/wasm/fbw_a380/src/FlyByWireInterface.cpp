@@ -1381,8 +1381,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.rat_deployed = idRatPosition->get() > 0.9;
-  prims[primIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = idRatContactorClosed->get();
+  prims[primIndex].modelInputs.in.discrete_inputs.rat_deployed = primIndex == 0 ? idRatPosition->get() > 0.9 : false;
+  prims[primIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = primIndex == 0 ? idRatContactorClosed->get() : false;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
@@ -1605,8 +1605,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimReset;
   secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
   secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
-  secs[secIndex].modelInputs.in.discrete_inputs.rat_deployed = idRatPosition->get() > 0.9;
-  secs[secIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = idRatContactorClosed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.rat_deployed = secIndex == 0 ? idRatPosition->get() > 0.9 : false;
+  secs[secIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = secIndex == 0 ? idRatContactorClosed->get() : false;
   secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
