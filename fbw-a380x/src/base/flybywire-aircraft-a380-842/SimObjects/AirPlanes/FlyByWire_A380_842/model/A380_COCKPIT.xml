@@ -5368,6 +5368,7 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPGA_ON_PB_IS_AUTO, Bool))%{if}Turn ON
                             elec hyd pump%{else}Turn AUTO elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5385,6 +5386,7 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPGB_ON_PB_IS_AUTO, Bool))%{if}Turn ON
                             elec hyd pump%{else}Turn AUTO elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5402,6 +5404,7 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPYA_ON_PB_IS_AUTO, Bool))%{if}Turn ON
                             elec hyd pump%{else}Turn AUTO elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5419,6 +5422,7 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPYB_ON_PB_IS_AUTO, Bool))%{if}Turn ON
                             elec hyd pump%{else}Turn AUTO elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5437,7 +5441,6 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO, Bool))%{if}Turn OFF
                             Green A elec hyd pump%{else}Turn AUTO Green A elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5454,7 +5457,6 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO, Bool))%{if}Turn OFF
                             Green B elec hyd pump%{else}Turn AUTO Green B elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5471,7 +5473,6 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPYA_OFF_PB_IS_AUTO, Bool))%{if}Turn OFF
                             Yellow A elec hyd pump%{else}Turn AUTO Yellow A elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -5488,7 +5489,6 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <MOMENTARY />
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPYB_OFF_PB_IS_AUTO, Bool))%{if}Turn OFF
                             Yellow B elec hyd pump%{else}Turn AUTO Yellow B elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
