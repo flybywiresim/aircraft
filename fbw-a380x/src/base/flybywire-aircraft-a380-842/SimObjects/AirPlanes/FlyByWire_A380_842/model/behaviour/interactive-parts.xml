@@ -744,5 +744,21 @@
                 <TOOLTIPID>Open or Close Landing Gear Pins Compartment</TOOLTIPID>
             </UseTemplate>
         </Component>
+		
+        <!-- PAX DOOR M4L -->
+
+        <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>ANIM_DOOR_M4L</ANIM_NAME>
+                <ANIM_LAG>20</ANIM_LAG>
+                <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:ANIM_DOOR_M4L) ! (&gt;L:ANIM_DOOR_M4L)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>Open or Close PAX Door M4L</TOOLTIPID>
+            </UseTemplate>
+        </Component>
     </Template>
 </ModelBehaviors>
