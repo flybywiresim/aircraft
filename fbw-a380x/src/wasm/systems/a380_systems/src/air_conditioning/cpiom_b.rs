@@ -368,8 +368,14 @@ impl AirGenerationSystemApplication {
             acs_overhead.flow_selector_position(),
             OverheadFlowSelector::Norm
         ) {
-            // Minimum 40% flow to maintain temperature with zero pax
-            (self.pax_number_fms as f64 / Self::A380_PASSENGER_FACTOR).max(0.4)
+            if self.pax_number_fms == 0 {
+                // If the number of passengers hasn't been entered in the FMS,
+                // airflow is adjusted for the maximum number of passengers
+                1.15
+            } else {
+                // Minimum 40% flow to maintain temperature with low pax
+                (self.pax_number_fms as f64 / Self::A380_PASSENGER_FACTOR).max(0.4)
+            }
         } else {
             1.
         };
