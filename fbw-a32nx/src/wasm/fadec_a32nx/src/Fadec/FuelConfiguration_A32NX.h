@@ -6,6 +6,7 @@
 
 #include <string>
 
+// Define constants for the INI file sections and keys
 #define INI_SECTION_FUEL "FUEL"
 #define INI_SECTION_FUEL_CENTER_QUANTITY "FUEL_CENTER_QUANTITY"
 #define INI_SECTION_FUEL_LEFT_QUANTITY "FUEL_LEFT_QUANTITY"
@@ -13,6 +14,13 @@
 #define INI_SECTION_FUEL_LEFT_AUX_QUANTITY "FUEL_LEFT_AUX_QUANTITY"
 #define INI_SECTION_FUEL_RIGHT_AUX_QUANTITY "FUEL_RIGHT_AUX_QUANTITY"
 
+/**
+ * @class FuelConfiguration_A32NX
+ * @brief Class to manage the fuel configuration for the A32NX aircraft.
+ *
+ * This class provides methods to load and save the fuel configuration from/to an INI file.
+ * It also provides getter and setter methods for each fuel tank quantity.
+ */
 class FuelConfiguration_A32NX {
  private:
   // Fuel tank default quantities in gallons
@@ -48,22 +56,35 @@ class FuelConfiguration_A32NX {
    */
   void saveConfigurationToIni();
 
-  void setConfigFilename(const std::string& configFilename) { FuelConfiguration_A32NX::configFilename = configFilename; }
-
-  const std::string& getConfigFilename() const { return configFilename; }
-
+  /**
+ * @brief Converts the current fuel configuration to a string.
+ *
+ * This method is used to convert the current state of the fuel configuration into a string format.
+ * The string includes the quantities of fuel in each tank.
+ *
+ * @return A string representation of the current fuel configuration.
+   */
   std::string toString() const;
 
+  // === Getters and setters ===
+
+  const std::string& getConfigFilename() const { return configFilename; }
+  void setConfigFilename(const std::string& configFilename) { this->configFilename = configFilename; }
+
   double getFuelCenter() const { return fuelCenter; }
-  void setFuelCenter(double fuelCenter) { FuelConfiguration_A32NX::fuelCenter = fuelCenter; }
+  void setFuelCenter(double fuelCenter) { this->fuelCenter = fuelCenter; }
+
   double getFuelLeft() const { return fuelLeft; }
-  void setFuelLeft(double fuelLeft) { FuelConfiguration_A32NX::fuelLeft = fuelLeft; }
+  void setFuelLeft(double fuelLeft) { this->fuelLeft = fuelLeft; }
+
   double getFuelRight() const { return fuelRight; }
-  void setFuelRight(double fuelRight) { FuelConfiguration_A32NX::fuelRight = fuelRight; }
+  void setFuelRight(double fuelRight) { this->fuelRight = fuelRight; }
+
   double getFuelLeftAux() const { return fuelLeftAux; }
-  void setFuelLeftAux(double fuelLeftAux) { FuelConfiguration_A32NX::fuelLeftAux = fuelLeftAux; }
+  void setFuelLeftAux(double fuelLeftAux) { this->fuelLeftAux = fuelLeftAux; }
+
   double getFuelRightAux() const { return fuelRightAux; }
-  void setFuelRightAux(double fuelRightAux) { FuelConfiguration_A32NX::fuelRightAux = fuelRightAux; }
+  void setFuelRightAux(double fuelRightAux) { this->fuelRightAux = fuelRightAux; }
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A32NX_H
