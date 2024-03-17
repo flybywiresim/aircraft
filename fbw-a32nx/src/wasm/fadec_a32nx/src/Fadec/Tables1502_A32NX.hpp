@@ -40,30 +40,16 @@ class Tables1502_A32NX {
   /**
    * @brief Calculates the expected CN2 at idle.
    *
-   * This function calculates the expected CN2 (Corrected Fan Speed) value when the engine is at idle.
-   * The calculation is based on the pressure altitude and the Mach number. It uses the standard atmospheric
-   * temperature at sea level (288.15 K) and the lapse rate (1.98 K/1000 ft) to calculate the temperature
-   * at the given altitude. It then calculates the square root of the ratio of this temperature to the
-   * sea level temperature, and multiplies it by the square root of 1 plus 0.2 times the square of the
-   * Mach number. The result is divided into 68.2 to give the expected CN2 value.
-   *
    * @param pressAltitude The pressure altitude in feet.
    * @param mach The Mach number.
    * @return The expected CN2 value at idle.
    */
   static double iCN2(double pressAltitude, double mach) {
-    return 68.2 / (sqrt((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * sqrt(1 + (0.2 * pow(mach, 2))));
+    return 68.2 / ((std::sqrt)((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * (std::sqrt)(1 + (0.2 * (std::pow)(mach, 2))));
   }
 
   /**
    * @brief Calculates the expected CN1 at idle.
-   *
-   * This function calculates the expected CN1 (Corrected Core Speed) value when the engine is at idle.
-   * The calculation is based on the pressure altitude, the Mach number, and the ambient temperature.
-   * It first calculates the expected CN2 value using the iCN2 function. It then finds the row in the table1502t
-   * that contains the CN2 value and stores the index in i. The lower and upper bounds of the CN2 value, as well
-   * as the lower and upper bounds of the correctedN1 value at Mach 0.2 and Mach 0.9, are retrieved from the table.
-   * The function then interpolates the correctedN1 value based on the CN2 value and the Mach number.
    *
    * @param pressAltitude The pressure altitude in feet.
    * @param mach The Mach number.
@@ -72,7 +58,7 @@ class Tables1502_A32NX {
    */
   static double iCN1(double pressAltitude, double mach, [[maybe_unused]] double ambientTemp) {
     // Calculate the expected CN2 value
-    double cn2 = iCN2(pressAltitude, mach);
+    const double cn2 = iCN2(pressAltitude, mach);
 
     // Find the row in the table that contains the CN2 value and store the index in i
     int i = 0;
@@ -81,16 +67,16 @@ class Tables1502_A32NX {
     }
 
     // Retrieve the lower and upper bounds of the CN2 value and the correctedN1 value at Mach 0.2 and Mach 0.9
-    double cn2lo = table1502[i - 1][0];
-    double cn2hi = table1502[i][0];
-    double cn1lolo = table1502[i - 1][1];
-    double cn1hilo = table1502[i][1];
-    double cn1lohi = table1502[i - 1][3];
-    double cn1hihi = table1502[i][3];
+    const double cn2lo = table1502[i - 1][0];
+    const double cn2hi = table1502[i][0];
+    const double cn1lolo = table1502[i - 1][1];
+    const double cn1hilo = table1502[i][1];
+    const double cn1lohi = table1502[i - 1][3];
+    const double cn1hihi = table1502[i][3];
 
     // Interpolate the correctedN1 value based on the CN2 value and the Mach number
-    double cn1_lo = Fadec::interpolate(cn2, cn2lo, cn2hi, cn1lolo, cn1hilo);
-    double cn1_hi = Fadec::interpolate(cn2, cn2lo, cn2hi, cn1lohi, cn1hihi);
+    const double cn1_lo = Fadec::interpolate(cn2, cn2lo, cn2hi, cn1lolo, cn1hilo);
+    const double cn1_hi = Fadec::interpolate(cn2, cn2lo, cn2hi, cn1lohi, cn1hihi);
 
     return Fadec::interpolate(mach, 0.2, 0.9, cn1_lo, cn1_hi);
   }

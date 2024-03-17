@@ -108,7 +108,7 @@ class ThrustLimits_A32NX {
   static double cas2mach(double cas, double ambientPressure) {
     double k = 2188648.141;
     double delta = ambientPressure / 1013;
-    return sqrt((5 * pow(((pow(((pow(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5);
+    return sqrt((5 * (std::pow)((((std::pow)((((std::pow)(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5);
   }
 
   /**
@@ -123,11 +123,10 @@ class ThrustLimits_A32NX {
    * @return The index of the top-row boundary in the limits array.
    */
   static int finder(double altitude, int index) {
-    if (altitude < limits[index][0]) {
-      return index;
-    } else {
-      return finder(altitude, index + 1);
+    while (altitude >= limits[index][0]) {
+      index++;
     }
+    return index;
   }
 
   /**
