@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cmath>
+
+#include "EngineRatios.hpp"
 #include "Fadec.h"
 
 class ThrustLimits_A32NX {
@@ -357,7 +359,7 @@ class ThrustLimits_A32NX {
     bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, ac, nacelle, wing);
 
     // Setting N1
-    n1 = (cn1 * (std::sqrt)(Fadec::theta2(mach, ambientTemp))) + bleed;
+    n1 = (cn1 * (std::sqrt)(EngineRatios::theta2(mach, ambientTemp))) + bleed;
     /*if (type == 3) {
       std::cout << "FADEC: bleed= " << bleed << " cn1= " << cn1 << " theta2= " << (std::sqrt)(ratios->theta2(mach, ambientTemp))
                 << " n1= " << n1 << std::endl;

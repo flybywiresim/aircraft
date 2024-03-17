@@ -23,6 +23,7 @@ set(SOURCE_FILES
 
 set(INCLUDE_FILES
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
+    ${FBW_COMMON}/fadec_common_v2/src/EngineRatios.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A380X.h
