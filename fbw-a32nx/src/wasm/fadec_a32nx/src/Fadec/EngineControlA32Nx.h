@@ -41,13 +41,14 @@ class EngineControl_A32NX {
   // TODO - get rid of this if possible - pause is handled by the framework
   bool simPaused;
 
+  // Possible states for the engine state machine
   enum EngineState : int {
     OFF = 0,
     ON = 1,
     STARTING = 2,
     RESTARTING = 3,
     SHUTTING = 4,
-    // the following are for the paused state which are probably not needed
+    // the following are for the paused-states that are probably not needed
     OffPaused = 10,
     OnPaused = 11,
     StartingPaused = 12,
@@ -134,6 +135,8 @@ class EngineControl_A32NX {
    *
    * @param initial A flag to indicate whether this is the initial generation of engine imbalance. If initial is 1, a new imbalance is
    * generated. Otherwise, the existing imbalance is used.
+   *
+   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
    */
   void generateEngineImbalance(int i);
 
@@ -160,7 +163,7 @@ class EngineControl_A32NX {
    *                   with 1 being the engine number and 8 being the oil temperature.
    * @return The extracted parameter as a double.
    *
-   * // TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
+   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
    */
   double imbalanceExtractor(double imbalance, int parameter);
 
@@ -303,10 +306,24 @@ class EngineControl_A32NX {
 
   /**
    * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
+   *
    * @param deltaTimeSeconds Frame delta time in seconds
    */
   void updateFuel(double deltaTimeSeconds);
 
+  /**
+   * @brief Updates the thrust limits of the engine.
+   *
+   * @param simulationTime The current time in the simulation.
+   * @param altitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemp The current ambient temperature in degrees Celsius.
+   * @param ambientPressure The current ambient pressure in hPa.
+   * @param mach The current Mach number of the aircraft.
+   * @param simN1highest The highest N1 value from the simulator.
+   * @param packs The current state of the packs (0 or 1).
+   * @param nai The current state of the NAI (0 or 1).
+   * @param wai The current state of the WAI (0 or 1).
+   */
   void updateThrustLimits(double simulationTime,
                           double altitude,
                           double ambientTemp,
