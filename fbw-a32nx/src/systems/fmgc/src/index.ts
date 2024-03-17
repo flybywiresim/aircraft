@@ -7,6 +7,8 @@ import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { A320AircraftConfig } from '@fmgc/flightplanning/new/A320AircraftConfig';
+import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -59,4 +61,6 @@ export {
     DataManager,
     EventBus,
     a320EfisRangeSettings,
+    A320AircraftConfig,
+    A380AircraftConfig,
 };
