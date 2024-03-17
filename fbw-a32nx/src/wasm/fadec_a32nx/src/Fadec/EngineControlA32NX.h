@@ -39,41 +39,27 @@ class EngineControl_A32NX {
   double pumpStateLeftTimeStamp = 0.0;
   double pumpStateRightTimeStamp = 0.0;
 
-  // TODO - get rid of this if possible - pause is handled by the framework
-  bool simPaused;
-
   // Possible states for the engine state machine
-  enum EngineState : int {
+  enum EngineState {
     OFF = 0,
     ON = 1,
     STARTING = 2,
     RESTARTING = 3,
     SHUTTING = 4,
-    // the following are for the paused-states that are probably not needed
-    OffPaused = 10,
-    OnPaused = 11,
-    StartingPaused = 12,
-    RestartingPaused = 13,
-    ShuttingPaused = 14
-  } engineState;
+  };
 
   // various fields
   // TODO: unclear if really have to be fields or can be local variables
-  int egtImbalance;
-  int ffImbalance;
-  int n2Imbalance;
-  int paramImbalance;
-  int engineImbalanced;
+  double idleN1;
+  double idleN2;
+  double idleFF;
+  double idleEGT;
   double idleOil;
   double thermalEnergy1;
   double thermalEnergy2;
   double oilTemperatureMax;
   double oilTemperaturePre[2];
   double animationDeltaTime;
-  double idleN1;
-  double idleN2;
-  double idleFF;
-  double idleEGT;
   double prevEngineMasterPos[2] = {0, 0};
   bool prevEngineStarterState[2] = {false, false};
   double simN2Pre[2] = {0, 0};
@@ -120,7 +106,10 @@ class EngineControl_A32NX {
   /**
    * @brief Generates a random engine imbalance.
    *
-   * This function generates a random engine imbalance for an engine. The imbalance is represented as a coded digital word.
+   * This function generates a random engine imbalance for an engine.
+   *
+   * As this imbalance is stored and shared via a LVar the imbalance is encoded as a digital number/word.
+   *
    * The coded digital word is structured as follows:
    * - The first 2 digits represent the engine number (1 or 2).
    * - The next 2 digits represent the EGT imbalance (max 20 degree C).
@@ -200,17 +189,17 @@ class EngineControl_A32NX {
    * @param ambientTemp The current ambient temperature in degrees Celsius.
    * @param deltaTimeDiff The difference in time since the last update.
    */
-  void engineStateMachine(int engine,
-                          double engineIgniter,
-                          bool engineStarter,
-                          bool engineStarterTurnedOff,
-                          bool engineMasterTurnedOn,
-                          bool engineMasterTurnedOff,
-                          double simN2,
-                          double idleN2,
-                          double pressAltitude,
-                          double ambientTemp,
-                          double deltaTimeDiff);
+  EngineState engineStateMachine(int engine,
+                                 double engineIgniter,
+                                 bool engineStarter,
+                                 bool engineStarterTurnedOff,
+                                 bool engineMasterTurnedOn,
+                                 bool engineMasterTurnedOff,
+                                 double simN2,
+                                 double idleN2,
+                                 double pressAltitude,
+                                 double ambientTemp,
+                                 double deltaTimeDiff);
 
   /**
    * @brief This function manages the engine start procedure.
