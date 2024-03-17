@@ -11,25 +11,25 @@ include_directories(
     ${FBW_COMMON}/fadec_common_v2/src/
 )
 
-
 # define the source files
 set(SOURCE_FILES
+    ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32Nx.cpp
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32NX.cpp
 )
 
 set(INCLUDE_FILES
+    ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
+    ${FBW_COMMON}/fadec_common_v2/src/EngineRatios.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FadecSimData_A32NX.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32Nx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/ThrustLimits_A32NX.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Polynomials_A32NX.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Tables1502_A32NX.hpp
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
 )
 
 # create the targets
