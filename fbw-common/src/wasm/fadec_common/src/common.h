@@ -33,12 +33,10 @@ double interpolate(double x, double x0, double x1, double y0, double y1) {
 /// </summary>
 double powFBW(double base, size_t exponent) {
   double power = 1.0;
-
   while (exponent > 0) {
     power *= base;
     --exponent;
   }
-
   return power;
 }
 
