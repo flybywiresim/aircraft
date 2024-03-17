@@ -82,6 +82,9 @@ Afterburner=0
 FuelValveOpen=False
 
 [FuelSystem.0]
+Tank.1=0
+Tank.4=0 // Tank 2 & 3 are set through FADEC wasm
+Tank.5=0
 Valve.1=False
 Valve.2=False
 Valve.3=False

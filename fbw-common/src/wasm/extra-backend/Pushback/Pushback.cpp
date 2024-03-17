@@ -139,7 +139,6 @@ bool Pushback::update(sGaugeDrawData* pData) {
       parkingBrakeEngaged ? (aircraftTurnSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftTurnSpeedFactor->get();
   const FLOAT64 computedRotationVelocity = turnDampener.updateSpeed(
       (inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor);
-  std::cout << "computedRotationVelocity: " << computedRotationVelocity << std::endl;
 
   // The heading of the tug is calculated based on the aircraft heading and the user input (0.0-1.0).
   const FLOAT64 computedTugHdg =
@@ -201,6 +200,6 @@ bool Pushback::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 
 bool Pushback::shutdown() {
   _isInitialized = false;
-  std::cout << "Pushback::shutdown()" << std::endl;
+  LOG_INFO("Pushback::shutdown()");
   return true;
 }
