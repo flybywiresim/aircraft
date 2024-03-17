@@ -328,9 +328,9 @@ class EngineControl {
 
     // Checking engine imbalance
     if (engineImbalanced == engine) {
+      n2Imbalance = imbalanceExtractor(imbalance, 4) / 100;
       ffImbalance = imbalanceExtractor(imbalance, 3);
       egtImbalance = imbalanceExtractor(imbalance, 2);
-      n2Imbalance = imbalanceExtractor(imbalance, 4) / 100;
     }
 
     if (engine == 1) {
@@ -1238,6 +1238,7 @@ class EngineControl {
       simCN1 = simVars->getCN1(engine);
       simN1 = simVars->getN1(engine);
       simN2 = simVars->getN2(engine);
+
       thrust = simVars->getThrust(engine);
       engineFuelValveOpen = simVars->getValve(engine);
       engineStarterPressurized = simVars->getStarterPressurized(engine);

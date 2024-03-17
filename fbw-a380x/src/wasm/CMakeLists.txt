@@ -10,6 +10,6 @@ add_subdirectory(fadec_a380x)
 
 # FIXME: remove the if-clause as soon as all components are using CMake
 if (WIN32)
-#    add_subdirectory(fadec_a380)
+    add_subdirectory(fadec_a380)
     add_subdirectory(fbw_a380)
 endif ()
