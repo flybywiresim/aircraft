@@ -3,7 +3,8 @@
 
 #include "lib/string_utils.hpp"
 
-#include "EngineControlA32Nx.h"
+#include "EngineControlA32NX.h"
+#include "EngineRatios.hpp"
 #include "Polynomials_A32NX.hpp"
 #include "ScopedTimer.hpp"
 #include "Tables1502_A32NX.hpp"
@@ -334,11 +335,11 @@ void EngineControl_A32NX::generateIdleParameters(double pressAltitude,      //
                                                  double ambientTemp,        //
                                                  double ambientPressure) {  //
   double idleCN1 = Tables1502_A32NX::iCN1(pressAltitude, mach, ambientTemp);
-  this->idleN1 = idleCN1 * sqrt(Fadec::theta2(0, ambientTemp));
-  this->idleN2 = Tables1502_A32NX::iCN2(pressAltitude, mach) * sqrt(Fadec::theta(ambientTemp));
+  this->idleN1 = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemp));
+  this->idleN2 = Tables1502_A32NX::iCN2(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemp));
   double idleCFF = Polynomial_A32NX::correctedFuelFlow(idleCN1, 0, pressAltitude);                                // lbs/hr
-  this->idleFF = idleCFF * LBS_TO_KGS * Fadec::delta2(0, ambientPressure) * sqrt(Fadec::theta2(0, ambientTemp));  // Kg/hr
-  this->idleEGT = Polynomial_A32NX::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * Fadec::theta2(0, ambientTemp);
+  this->idleFF = idleCFF * LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemp));  // Kg/hr
+  this->idleEGT = Polynomial_A32NX::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * EngineRatios::theta2(0, ambientTemp);
   simData.engineIdleN1->set(idleN1);
   simData.engineIdleN2->set(idleN2);
   simData.engineIdleFF->set(idleFF);
@@ -590,8 +591,8 @@ double EngineControl_A32NX::updateFF(int engine,
   double outFlow = 0;
   if (correctedFuelFlow >= 1) {
     outFlow = (std::max)(0.0,                                                                    //
-                         (correctedFuelFlow * LBS_TO_KGS * Fadec::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(Fadec::theta2(mach, ambientTemp)))                       //
+                         (correctedFuelFlow * LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemp)))                       //
                              - paramImbalance);                                                  //
   }
   simData.engineFF[engine - 1]->set(outFlow);
@@ -657,7 +658,7 @@ void EngineControl_A32NX::updateEGT(int engine,
     }
     const double correctedEGT = Polynomial_A32NX::correctedEGT(simCN1, cFbwFF, mach, pressAltitude);
     const double egtFbwPreviousEng = simData.engineEgt[engineIdx]->get();
-    double egtFbwActualEng = (correctedEGT * Fadec::theta2(mach, ambientTemp)) - paramImbalance;
+    double egtFbwActualEng = (correctedEGT * EngineRatios::theta2(mach, ambientTemp)) - paramImbalance;
     egtFbwActualEng = egtFbwActualEng + (egtFbwPreviousEng - egtFbwActualEng) * (std::exp)(-0.1 * deltaTime);
     simData.engineEgt[engineIdx]->set(egtFbwActualEng);
   }

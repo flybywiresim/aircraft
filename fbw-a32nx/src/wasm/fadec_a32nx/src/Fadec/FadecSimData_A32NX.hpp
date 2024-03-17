@@ -5,7 +5,9 @@
 #define FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A32NX_HPP
 
 #include <MSFS/Legacy/gauges.h>
+
 #include "DataManager.h"
+
 #include "Fadec.h"
 
 // Make access to variables more readable
@@ -143,38 +145,38 @@ class FadecSimData_A32NX {
   ClientEventPtr setStarterEvent[2];
 
   // SimVars
-  AircraftVariablePtr engineTime[2];
-  AircraftVariablePtr engineCombustion[2];
-  AircraftVariablePtr ambientTemperature;
-  AircraftVariablePtr fuelTankQuantityCenter;
-  AircraftVariablePtr fuelTankQuantityLeft;
-  AircraftVariablePtr fuelTankQuantityRight;
-  AircraftVariablePtr fuelTankQuantityLeftAux;
-  AircraftVariablePtr fuelTankQuantityRightAux;
-  AircraftVariablePtr fuelWeightPerGallon;
-  AircraftVariablePtr animationDeltaTime;
   AircraftVariablePtr airSpeedMach;
-  AircraftVariablePtr pressureAltitude;
   AircraftVariablePtr ambientPressure;
+  AircraftVariablePtr ambientTemperature;
+  AircraftVariablePtr animationDeltaTime;
+  AircraftVariablePtr apuFuelConsumption;
   AircraftVariablePtr engineAntiIce[2];
-  AircraftVariablePtr engineStarter[2];
-  AircraftVariablePtr engineIgniter[2];
+  AircraftVariablePtr engineCombustion[2];
   AircraftVariablePtr engineCorrectedN1[2];
   AircraftVariablePtr engineCorrectedN2[2];
+  AircraftVariablePtr engineFuelValveOpen[2];
+  AircraftVariablePtr engineIgniter[2];
+  AircraftVariablePtr engineStarter[2];
+  AircraftVariablePtr engineThrust[2];
+  AircraftVariablePtr engineTime[2];
+  AircraftVariablePtr fuelPump1[2];
+  AircraftVariablePtr fuelPump2[2];
+  AircraftVariablePtr fuelTankQuantityCenter;
+  AircraftVariablePtr fuelTankQuantityLeft;
+  AircraftVariablePtr fuelTankQuantityLeftAux;
+  AircraftVariablePtr fuelTankQuantityRight;
+  AircraftVariablePtr fuelTankQuantityRightAux;
+  AircraftVariablePtr fuelWeightPerGallon;
+  AircraftVariablePtr lineToCenterFlow[2];
+  AircraftVariablePtr pressureAltitude;
   AircraftVariablePtr simEngineN1[2];
   AircraftVariablePtr simEngineN2[2];
-  AircraftVariablePtr engineThrust[2];
-  AircraftVariablePtr engineFuelValveOpen[2];
+  AircraftVariablePtr xFeedValve;
   AircraftVariablePtr xfrCenterManual[2];
   AircraftVariablePtr xfrValveCenterAuto[2];
   AircraftVariablePtr xfrValveCenterOpen[2];
   AircraftVariablePtr xfrValveOuter1[2];
   AircraftVariablePtr xfrValveOuter2[2];
-  AircraftVariablePtr lineToCenterFlow[2];
-  AircraftVariablePtr xFeedValve;
-  AircraftVariablePtr fuelPump1[2];
-  AircraftVariablePtr fuelPump2[2];
-  AircraftVariablePtr apuFuelConsumption;
 
   // LVars
   NamedVariablePtr airlinerToFlexTemp;
@@ -189,8 +191,8 @@ class FadecSimData_A32NX {
   NamedVariablePtr engineImbalance;
   NamedVariablePtr engineN1[2];
   NamedVariablePtr engineN2[2];
-  NamedVariablePtr engineOil[2];
   NamedVariablePtr engineOilTotal[2];
+  NamedVariablePtr engineOil[2];
   NamedVariablePtr enginePreFF[2];
   NamedVariablePtr engineStarterPressurized[2];
   NamedVariablePtr engineState[2];
@@ -371,7 +373,7 @@ class FadecSimData_A32NX {
     thrustLimitType = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
     wingAntiIce = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
 
-
+    // reset LVars to 0
     engineEgt[L]->set(0);
     engineEgt[R]->set(0);
     engineFF[L]->set(0);

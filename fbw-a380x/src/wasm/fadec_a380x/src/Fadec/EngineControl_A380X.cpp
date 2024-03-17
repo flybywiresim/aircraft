@@ -11,6 +11,7 @@
 #include "logging.h"
 
 #include "EngineControl_A380X.h"
+#include "EngineRatios.hpp"
 
 void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
@@ -262,13 +263,13 @@ void EngineControl_A380X::generateIdleParameters(FLOAT64 pressAltitude, FLOAT64 
 
   const double idleCN1 = Table1502_A380X::iCN1(pressAltitude, mach, ambientTemp);
 
-  idleN1 = idleCN1 * sqrt(Fadec::theta2(0, ambientTemp));
-  idleN3 = Table1502_A380X::iCN2(pressAltitude, mach) * sqrt(Fadec::theta(ambientTemp));
+  idleN1 = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemp));
+  idleN3 = Table1502_A380X::iCN2(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemp));
 
   const double idleCFF = Polynomial_A380X::correctedFuelFlow(idleCN1, 0, pressAltitude);                    // lbs/hr
-  idleFF = idleCFF * LBS_TO_KGS * Fadec::delta2(0, ambientPressure) * sqrt(Fadec::theta2(0, ambientTemp));  // Kg/hr
+  idleFF = idleCFF * LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemp));  // Kg/hr
 
-  idleEGT = Polynomial_A380X::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * Fadec::theta2(0, ambientTemp);
+  idleEGT = Polynomial_A380X::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * EngineRatios::theta2(0, ambientTemp);
 
   simData.engineIdleDataPtr->data().idleN1 = idleN1;
   simData.engineIdleDataPtr->data().idleN2 = idleN3;
@@ -497,8 +498,8 @@ int EngineControl_A380X::updateFF(int engine,
   if (correctedFuelFlow < 1) {
     outFlow = 0;
   } else {
-    outFlow = (correctedFuelFlow * LBS_TO_KGS * Fadec::delta2(mach, ambientPressure)  //
-               * (std::sqrt)(Fadec::theta2(mach, ambientTemperature)));
+    outFlow = (correctedFuelFlow * LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+               * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)));
   }
 
   *simData.engineFuelFlowDataPtrArray[engine - 1] = outFlow;
@@ -667,7 +668,7 @@ void EngineControl_A380X::updateEGT(int engine,
     *(engineEgt[engine - 1]) = ambientTemperature;
   } else {
     FLOAT64 egtFbwPrevious = *(engineEgt[engine - 1]);
-    FLOAT64 egtFbwActual = (correctedEGT * Fadec::theta2(mach, ambientTemperature));
+    FLOAT64 egtFbwActual = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature));
     egtFbwActual = egtFbwActual + (egtFbwPrevious - egtFbwActual) * (std::exp)(-0.1 * deltaTime);
     *(engineEgt[engine - 1]) = egtFbwActual;
   }

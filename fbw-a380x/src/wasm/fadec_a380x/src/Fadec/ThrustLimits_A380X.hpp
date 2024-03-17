@@ -10,6 +10,7 @@
 
 #include "logging.h"
 
+#include "EngineRatios.hpp"
 #include "Fadec.h"
 
 /**
@@ -306,7 +307,7 @@ class ThrustLimits_A380X {
     double bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, ac, nacelle, wing);
 
     // Setting N1
-    return (cn1 * sqrt(Fadec::theta2(mach, ambientTemp))) + bleed;
+    return (cn1 * sqrt(EngineRatios::theta2(mach, ambientTemp))) + bleed;
   }
 };
 

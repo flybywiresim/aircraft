@@ -4,7 +4,7 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 
-#include "EngineControlA32Nx.h"
+#include "EngineControlA32NX.h"
 #include "Fadec.h"
 
 class Fadec_A32NX : public Fadec {

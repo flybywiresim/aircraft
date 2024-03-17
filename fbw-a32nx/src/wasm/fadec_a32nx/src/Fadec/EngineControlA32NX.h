@@ -18,6 +18,7 @@ class EngineControl_A32NX {
   MsfsHandler* msfsHandlerPtr = nullptr;
   // Convenience pointer to the data manager
   DataManager* dataManagerPtr = nullptr;
+
   // FADEC simulation data
   FadecSimData_A32NX simData{};
 
