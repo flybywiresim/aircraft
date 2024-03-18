@@ -277,7 +277,7 @@ class FadecSimData_A32NX {
     initEvents(dm);
     initSimvars(dm);
     initLvars(dm);
-    LOG_INFO("Fadec::FadecSimData_A380X initialized");
+    LOG_INFO("Fadec::FadecSimData_A32NX initialized");
   }
 
   void initDataDefinitions(DataManager* dm) {
@@ -301,10 +301,10 @@ class FadecSimData_A32NX {
     toggleEngineStarter2Event->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0, true);
     // Callbacks are only used for logging - we don't actually do anything with the events
     toggleEngineStarter1Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
-      LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter1Event TOGGLE_STARTER1 masked");
+      LOG_INFO("Fadec::FadecSimData_A32NX::toggleEngineStarter1Event TOGGLE_STARTER1 masked");
     });
     toggleEngineStarter2Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
-      LOG_INFO("Fadec::FadecSimData_A380X::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
+      LOG_INFO("Fadec::FadecSimData_A32NX::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
     });
 
     setStarterHeldEvent[L] = dm->make_client_event("SET_STARTER1_HELD", true, NOTIFICATION_GROUP_0);

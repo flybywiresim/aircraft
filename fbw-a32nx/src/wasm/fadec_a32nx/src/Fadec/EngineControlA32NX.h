@@ -28,9 +28,6 @@ class EngineControl_A32NX {
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
 
-  // previous simulation time to calculate the delta sim time between frames
-  double previousSimulationTime = 0.0;
-
   // previous time the fuel levels were saved to file
   static constexpr double fuelSaveInterval = 5.0;  // seconds
   double lastFuelSaveTime = 0.0;
@@ -38,6 +35,23 @@ class EngineControl_A32NX {
   // some pump timings - unclear why these are needed
   double pumpStateLeftTimeStamp = 0.0;
   double pumpStateRightTimeStamp = 0.0;
+
+  // thrust limits transition for flex
+  static constexpr double transitionWaitTime = 10;
+  bool isTransitionActive = false;
+
+  // values that need previous state
+  double prevFlexTemperature = 0.0;
+  double prevThrustLimitType = 0.0;
+  double prevEngineMasterPos[2] = {0, 0};
+  bool prevEngineStarterState[2] = {false, false};
+
+  // additional constants
+  static constexpr int maxOil = 200;
+  static constexpr int minOil = 140;
+  static constexpr double LBS_TO_KGS = 0.4535934;
+  static constexpr double KGS_TO_LBS = 1 / 0.4535934;
+  static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
   // Possible states for the engine state machine
   enum EngineState {
@@ -47,36 +61,6 @@ class EngineControl_A32NX {
     RESTARTING = 3,
     SHUTTING = 4,
   };
-
-  // various fields
-  // TODO: unclear if really have to be fields or can be local variables
-  double idleN1;
-  double idleN2;
-  double idleFF;
-  double idleEGT;
-  double idleOil;
-  double thermalEnergy1;
-  double thermalEnergy2;
-  double oilTemperatureMax;
-  double oilTemperaturePre[2];
-  double animationDeltaTime;
-  double prevEngineMasterPos[2] = {0, 0};
-  bool prevEngineStarterState[2] = {false, false};
-  double simN2Pre[2] = {0, 0};
-  bool isFlexActive = false;
-  double prevThrustLimitType = 0.0;
-  double prevFlexTemperature = 0.0;
-  static constexpr double waitTime = 10;
-  bool isTransitionActive = false;
-  double transitionFactor = 0;
-  double transitionStartTime = 0;
-
-  // additional constants
-  static constexpr int maxOil = 200;
-  static constexpr int minOil = 140;
-  static constexpr double LBS_TO_KGS = 0.4535934;
-  static constexpr double KGS_TO_LBS = 1 / 0.4535934;
-  static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
   // DEBUG Profiling
   SimpleProfiler profilerUpdate{"Fadec::EngineControl_A32NX::update()", 100};
@@ -185,21 +169,17 @@ class EngineControl_A32NX {
    * @param engineMasterTurnedOff A boolean indicating whether the engine master has been turned off.
    * @param simN2 The current N2 value from the simulator.
    * @param idleN2 The current idle N2 value.
-   * @param pressAltitude The current pressure altitude of the aircraft in feet.
    * @param ambientTemp The current ambient temperature in degrees Celsius.
-   * @param deltaTimeDiff The difference in time since the last update.
    */
-  EngineState engineStateMachine(int engine,
-                                 double engineIgniter,
-                                 bool engineStarter,
-                                 bool engineStarterTurnedOff,
-                                 bool engineMasterTurnedOn,
-                                 bool engineMasterTurnedOff,
-                                 double simN2,
-                                 double idleN2,
-                                 double pressAltitude,
-                                 double ambientTemp,
-                                 double deltaTimeDiff);
+  EngineControl_A32NX::EngineState engineStateMachine(int engine,
+                                                      double engineIgniter,
+                                                      bool engineStarter,
+                                                      bool engineStarterTurnedOff,
+                                                      bool engineMasterTurnedOn,
+                                                      bool engineMasterTurnedOff,
+                                                      double simN2,
+                                                      double idleN2,
+                                                      double ambientTemp);
 
   /**
    * @brief This function manages the engine start procedure.
@@ -320,9 +300,9 @@ class EngineControl_A32NX {
                           double ambientPressure,
                           double mach,
                           double simN1highest,
-                          double packs,
-                          double nai,
-                          double wai);
+                          int packs,
+                          int nai,
+                          int wai);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROLA32NX_H

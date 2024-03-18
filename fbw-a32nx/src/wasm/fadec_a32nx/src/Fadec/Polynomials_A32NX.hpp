@@ -60,15 +60,9 @@ class Polynomial_A32NX {
       outN2 += c_N2[i] * (std::pow)(normalN2, i);
     }
 
-    outN2 = outN2 * n2;
-    if (outN2 < preN2) {
-      outN2 = preN2 + 0.002;
-    }
-    if (outN2 >= idleN2 + 0.1) {
-      outN2 = idleN2 + 0.05;
-    }
-
-    return outN2;
+    outN2 *= n2;
+    outN2 = (std::max)(outN2, preN2 + 0.002);
+    return (std::min)(outN2, idleN2 + 0.1);
   }
 
   /**
