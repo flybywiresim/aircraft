@@ -28,7 +28,6 @@ class Fadec : public Module {
   virtual bool shutdown() override = 0;
 
  public:
-  // TODO: should these functions below be in here?
 
   /**
    * @brief Interpolates a value using linear interpolation.

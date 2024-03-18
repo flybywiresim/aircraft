@@ -110,7 +110,9 @@ class ThrustLimits_A32NX {
   static double cas2mach(double cas, double ambientPressure) {
     double k = 2188648.141;
     double delta = ambientPressure / 1013;
-    return (std::sqrt)((5 * (std::pow)((((std::pow)((((std::pow)(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5);
+    return (std::sqrt)(                                                                                                         //
+        (5 * (std::pow)((((std::pow)((((std::pow)(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5  //
+    );
   }
 
   /**
@@ -145,7 +147,7 @@ class ThrustLimits_A32NX {
    * @param cp The corner point - the temperature below which the engine can operate at full thrust without any restrictions.
    * @param lp The limit point - the temperature above which the engine thrust starts to be limited.
    * @param flexTemp The flex temperature.
-   * @param ac The status of the air conditioning (0 for off, 1 for on).
+   * @param packs The status of the air conditioning (0 for off, 1 for on).
    * @param nacelle The status of the nacelle anti-ice (0 for off, 1 for on).
    * @param wing The status of the wing anti-ice (0 for off, 1 for on).
    * @return The total bleed for the engine.
@@ -156,9 +158,9 @@ class ThrustLimits_A32NX {
                            double cp,        //
                            double lp,        //
                            double flexTemp,  //
-                           double ac,        //
-                           double nacelle,   //
-                           double wing       //
+                           int packs,        //
+                           int nacelle,      //
+                           int wing          //
   ) {
     double n1Packs = 0;
     double n1Nai = 0;
@@ -229,17 +231,9 @@ class ThrustLimits_A32NX {
       }
     }
 
-    if (ac == 0) {
-      n1Packs = 0;
-    }
-    if (nacelle == 0) {
-      n1Nai = 0;
-    }
-    if (wing == 0) {
-      n1Wai = 0;
-    }
-
-    return n1Packs + n1Nai + n1Wai;
+    return (packs * n1Packs)    //
+           + (nacelle * n1Nai)  //
+           + (wing * n1Wai);    //
   }
 
   /**
@@ -254,7 +248,7 @@ class ThrustLimits_A32NX {
    * @param ambientTemp The ambient temperature.
    * @param ambientPressure The ambient pressure.
    * @param flexTemp The flex temperature.
-   * @param ac The status of the air conditioning (0 for off, 1 for on).
+   * @param packs The status of the air conditioning (0 for off, 1 for on).
    * @param nacelle The status of the nacelle anti-ice (0 for off, 1 for on).
    * @param wing The status of the wing anti-ice (0 for off, 1 for on).
    * @return The N1 limit for the engine.
@@ -264,9 +258,9 @@ class ThrustLimits_A32NX {
                         double ambientTemp,      //
                         double ambientPressure,  //
                         double flexTemp,         //
-                        double ac,               //
-                        double nacelle,          //
-                        double wing              //
+                        int packs,               //
+                        int nacelle,             //
+                        int wing                 //
   ) {
     int rowMin = 0;
     int rowMax = 0;
@@ -356,7 +350,7 @@ class ThrustLimits_A32NX {
     }
 
     // Define bleed rating/ derating
-    bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, ac, nacelle, wing);
+    bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, packs, nacelle, wing);
 
     // Setting N1
     n1 = (cn1 * (std::sqrt)(EngineRatios::theta2(mach, ambientTemp))) + bleed;
