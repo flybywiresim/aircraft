@@ -228,8 +228,10 @@ void EngineControl_A32NX::initializeEngineControlData() {
     oilTemperaturePre[L] = simData.ambientTemperature->get();
     oilTemperaturePre[R] = simData.ambientTemperature->get();
   }
-  simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperaturePre[L];    // will be auto written at the end of the update
-  simData.oilTempRightDataPtr->data().oilTempRight = oilTemperaturePre[R];  // will be auto written at the end of the update
+  simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperaturePre[L];
+  simData.oilTempRightDataPtr->data().oilTempRight = oilTemperaturePre[R];
+  simData.oilTempLeftDataPtr->writeDataToSim();
+  simData.oilTempRightDataPtr->writeDataToSim();
 
   // Initialize Engine State
   simData.engineState[L]->set(OFF);
@@ -505,9 +507,11 @@ void EngineControl_A32NX::engineStartProcedure(int engine,
   switch (engine) {
     case 1:
       simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperature;
+      simData.oilTempLeftDataPtr->writeDataToSim();
       break;
     case 2:
       simData.oilTempRightDataPtr->data().oilTempRight = oilTemperature;
+      simData.oilTempRightDataPtr->writeDataToSim();
       break;
     default:
       LOG_ERROR("Fadec::EngineControl_A32NX::engineStartProcedure() - invalid engine number: " + std::to_string(engine));
@@ -609,7 +613,7 @@ void EngineControl_A32NX::updatePrimaryParameters(int engine, double imbalance, 
 
   // Check which engine is imbalanced and set the imbalance parameter
   double engineImbalanced = imbalanceExtractor(imbalance, 1);
-  double  paramImbalance = 0;
+  double paramImbalance = 0;
   if (engineImbalanced == engine) {
     paramImbalance = imbalanceExtractor(imbalance, 4) / 100;
   }
