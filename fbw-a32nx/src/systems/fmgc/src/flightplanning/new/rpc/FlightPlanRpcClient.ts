@@ -5,12 +5,13 @@
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcServer';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
@@ -25,17 +26,31 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 }
 
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
-    constructor(private readonly bus: EventBus) {
+    private subs: Subscription[] = [];
+
+    constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
+        this.subs.push(this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
+            if (this.rpcCommandsSent.has(responseId)) {
+                const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
+
+                if (resolve) {
+                    resolve(response);
+                    this.rpcCommandsSent.delete(responseId);
+                }
+            }
+        }));
     }
 
     private readonly flightPlanManager = new FlightPlanManager<P>(
         this.bus,
-        {} as P /*  This flight plan manager will never create plans, so this is fine */,
+        this.performanceDataInit as P /*  This flight plan manager will never create plans, so this is fine */,
         Math.round(Math.random() * 10_000),
         false,
     );
 
     private readonly pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
+
+    private readonly sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
 
     private rpcCommandsSent = new Map<string, [PromiseFn, PromiseFn]>();
 
@@ -44,7 +59,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
         const id = v4();
 
-        this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args]);
+        this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true);
 
         const result = await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>>(id);
 
@@ -54,7 +69,18 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     private waitForRpcCommandResponse<T>(id: string): Promise<T> {
         return new Promise((resolve, reject) => {
             this.rpcCommandsSent.set(id, [resolve, reject]);
+            setTimeout(() => {
+                if (this.rpcCommandsSent.has(id)) {
+                    this.rpcCommandsSent.delete(id);
+                    reject(new Error(`Timeout waiting for response from server for request ${id}`));
+                }
+            }, 5000);
         });
+    }
+
+    public destroy() {
+        this.flightPlanManager.destroy();
+        this.subs.forEach((sub) => sub.destroy());
     }
 
     get(index: number): FlightPlan<P> {
