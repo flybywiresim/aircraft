@@ -21,7 +21,7 @@ void EngineControl_A32NX::shutdown() {
   LOG_INFO("Fadec::EngineControl_A32NX::shutdown()");
 }
 
-void EngineControl_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
+void EngineControl_A32NX::update(sGaugeDrawData* pData) {
 #ifdef PROFILING
   profilerUpdate.start();
 #endif
@@ -871,6 +871,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     apuBurn2 = 0;
 
     //--------------------------------------------
+    // Fuel used accumulators
+    double fuelUsedLeft = simData.engineFuelUsed[L]->get() + fuelBurn1;
+    double fuelUsedRight = simData.engineFuelUsed[R]->get() + fuelBurn2;
+
+    //--------------------------------------------
     // Cross-feed fuel burn routine
     // If fuel pumps for a given tank are closed,
     // all fuel will be burnt on the other tank
@@ -919,11 +924,6 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     // Final Fuel levels for left and right inner tanks
     fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;      // LBS
     fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;  // LBS
-
-    //--------------------------------------------
-    // Fuel used accumulators
-    double fuelUsedLeft = simData.engineFuelUsed[L]->get() + fuelBurn1;
-    double fuelUsedRight = simData.engineFuelUsed[R]->get() + fuelBurn2;
 
     //--------------------------------------------
     // Setting new pre-cycle conditions
