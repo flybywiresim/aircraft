@@ -46,21 +46,21 @@ void EngineControl_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
   // animationDeltaTimes being used to detect a Paused situation
   // TODO: is this still required as pause is handled by the framework??
   double prevAnimationDeltaTime = this->animationDeltaTime;
-  this->animationDeltaTime = simData.animationDeltaTime->get();
+  this->animationDeltaTime = simData.simVarsDataPtr->data().animationDeltaTime;
 
   bool simOnGround = msfsHandlerPtr->getSimOnGround();
 
   // TODO: in the original code these are fields - but I assume these could be local variables
-  double mach = simData.airSpeedMach->get();
-  double pressAltitude = simData.pressureAltitude->get();
-  double ambientTemp = simData.ambientTemperature->get();
-  double ambientPressure = simData.ambientPressure->get();
+  double mach = simData.simVarsDataPtr->data().airSpeedMach;
+  double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  double ambientTemp = simData.simVarsDataPtr->data().ambientTemperature;
+  double ambientPressure = simData.simVarsDataPtr->data().ambientPressure;
   double imbalance = simData.engineImbalance->get();
 
   // Obtain Bleed Variables
   // TODO: could probably be bools
   double packs = (simData.packsState[L]->get() > 0.5 || simData.packsState[R]->get() > 0.5) ? 1 : 0;
-  double nai = (simData.engineAntiIce[L]->get() > 0.5 || simData.engineAntiIce[R]->get() > 0.5) ? 1 : 0;
+  double nai = (simData.simVarsDataPtr->data().engineAntiIce[L] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[R] > 0.5) ? 1 : 0;
   double wai = simData.wingAntiIce->get();
 
   generateIdleParameters(pressAltitude, mach, ambientTemp, ambientPressure);
@@ -79,13 +79,13 @@ void EngineControl_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
   for (int engine = 1; engine <= 2; engine++) {
     const int engineIdx = engine - 1;
 
-    engineStarter = simData.engineStarter[engineIdx]->getAsBool();
-    engineIgniter = simData.engineIgniter[engineIdx]->get();
-    simCN1 = simData.engineCorrectedN1[engineIdx]->get();
-    simN1 = simData.simEngineN1[engineIdx]->get();
-    simN2 = simData.simEngineN2[engineIdx]->get();
+    engineStarter = simData.simVarsDataPtr->data().engineStarter[engineIdx] == 1.0;
+    engineIgniter = simData.simVarsDataPtr->data().engineIgniter[engineIdx];
+    simCN1 = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
+    simN1 = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
+    simN2 = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
 
-    double engineFuelValveOpen = simData.engineFuelValveOpen[engineIdx]->get();
+    double engineFuelValveOpen = simData.simVarsDataPtr->data().engineFuelValveOpen[engineIdx];
     double engineStarterPressurized = simData.engineStarterPressurized[engineIdx]->get();
 
     // simulates delay to start valve open through fuel valve travel time
@@ -188,8 +188,8 @@ void EngineControl_A32NX::initializeEngineControlData() {
   fuelConfiguration.loadConfigurationFromIni();
 
   // save initial N2 values
-  this->simN2Pre[L] = simData.simEngineN2[L]->get();
-  this->simN2Pre[R] = simData.simEngineN2[R]->get();
+  this->simN2Pre[L] = simData.simVarsDataPtr->data().simEngineN2[L];
+  this->simN2Pre[R] = simData.simVarsDataPtr->data().simEngineN2[R];
 
   // prepare random number generator for engine imbalance
   srand((int)time(0));
@@ -225,8 +225,8 @@ void EngineControl_A32NX::initializeEngineControlData() {
     oilTemperaturePre[L] = 85.0;
     oilTemperaturePre[R] = 85.0;
   } else {
-    oilTemperaturePre[L] = simData.ambientTemperature->get();
-    oilTemperaturePre[R] = simData.ambientTemperature->get();
+    oilTemperaturePre[L] = simData.simVarsDataPtr->data().ambientTemperature;
+    oilTemperaturePre[R] = simData.simVarsDataPtr->data().ambientTemperature;
   }
   simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperaturePre[L];
   simData.oilTempRightDataPtr->data().oilTempRight = oilTemperaturePre[R];
@@ -242,13 +242,13 @@ void EngineControl_A32NX::initializeEngineControlData() {
   simData.engineTimer[R]->set(0);
 
   // Initialize Fuel Tanks
-  const double centerQuantity = simData.fuelTankQuantityCenter->get();      // gal
-  const double leftQuantity = simData.fuelTankQuantityLeft->get();          // gal
-  const double rightQuantity = simData.fuelTankQuantityRight->get();        // gal
-  const double leftAuxQuantity = simData.fuelTankQuantityLeftAux->get();    // gal
-  const double rightAuxQuantity = simData.fuelTankQuantityRightAux->get();  // gal
+  const double centerQuantity = simData.simVarsDataPtr->data().fuelTankQuantityCenter;      // gal
+  const double leftQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeft;          // gal
+  const double rightQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRight;        // gal
+  const double leftAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux;    // gal
+  const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
 
-  const double fuelWeightGallon = simData.fuelWeightPerGallon->get();  // weight of gallon of jet A in lbs
+  const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;  // weight of gallon of jet A in lbs
 
   // only loads saved fuel quantity on C/D spawn
   if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
@@ -685,18 +685,18 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   double refuelStartedByUser = simData.refuelStartedByUser->get();
   double pumpStateLeft = simData.fuelPumpState[L]->get();
   double pumpStateRight = simData.fuelPumpState[R]->get();
-  bool xfrCenterLeftManual = simData.xfrCenterManual[L]->get() > 1.5;                                                         // junction 4
-  bool xfrCenterRightManual = simData.xfrCenterManual[R]->get() > 1.5;                                                        // junction 5
-  bool xfrCenterLeftAuto = simData.xfrValveCenterAuto[L]->get() > 1.5 && !xfrCenterLeftManual;                                // valve 11
-  bool xfrCenterRightAuto = simData.xfrValveCenterAuto[R]->get() > 1.5 && !xfrCenterRightManual;                              // valve 12
-  bool xfrValveCenterLeftOpen = simData.xfrValveCenterOpen[L]->get() > 1.5 && (xfrCenterLeftAuto || xfrCenterLeftManual);     // valve 9
-  bool xfrValveCenterRightOpen = simData.xfrValveCenterOpen[R]->get() > 1.5 && (xfrCenterRightAuto || xfrCenterRightManual);  // valve 10
-  double xfrValveOuterLeft1 = simData.xfrValveOuter1[L]->get();                                                               // valve 6
-  double xfrValveOuterRight1 = simData.xfrValveOuter1[R]->get();                                                              // valve 7
-  double xfrValveOuterLeft2 = simData.xfrValveOuter2[L]->get();                                                               // valve 4
-  double xfrValveOuterRight2 = simData.xfrValveOuter2[R]->get();                                                              // valve 5
-  double lineLeftToCenterFlow = simData.lineToCenterFlow[L]->get();
-  double lineRightToCenterFlow = simData.lineToCenterFlow[R]->get();
+  bool xfrCenterLeftManual = simData.simVarsDataPtr->data().xfrCenterManual[L] > 1.5;                             // junction 4
+  bool xfrCenterRightManual = simData.simVarsDataPtr->data().xfrCenterManual[R] > 1.5;                            // junction 5
+  bool xfrCenterLeftAuto = simData.simVarsDataPtr->data().xfrValveCenterAuto[L] > 1.5 && !xfrCenterLeftManual;    // valve 11
+  bool xfrCenterRightAuto = simData.simVarsDataPtr->data().xfrValveCenterAuto[R] > 1.5 && !xfrCenterRightManual;  // valve 12
+  bool xfrValveCenterLeftOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[L] > 1.5 && (xfrCenterLeftAuto || xfrCenterLeftManual);  // valve 9
+  bool xfrValveCenterRightOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[R] > 1.5 && (xfrCenterRightAuto || xfrCenterRightManual);  // valve 10
+  double xfrValveOuterLeft1 = simData.simVarsDataPtr->data().xfrValveOuter1[L];                                    // valve 6
+  double xfrValveOuterRight1 = simData.simVarsDataPtr->data().xfrValveOuter1[R];                                   // valve 7
+  double xfrValveOuterLeft2 = simData.simVarsDataPtr->data().xfrValveOuter2[L];                                    // valve 4
+  double xfrValveOuterRight2 = simData.simVarsDataPtr->data().xfrValveOuter2[R];                                   // valve 5
+  double lineLeftToCenterFlow = simData.simVarsDataPtr->data().lineToCenterFlow[L];
+  double lineRightToCenterFlow = simData.simVarsDataPtr->data().lineToCenterFlow[R];
 
   double engine1PreFF = simData.enginePreFF[L]->get();
   double engine2PreFF = simData.enginePreFF[R]->get();
@@ -704,7 +704,7 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   double engine2FF = simData.engineFF[R]->get();
 
   /// weight of one gallon of fuel in pounds
-  double fuelWeightGallon = simData.fuelWeightPerGallon->get();
+  double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;
   double fuelUsedLeft = simData.engineFuelUsed[L]->get();
   double fuelUsedRight = simData.engineFuelUsed[R]->get();
 
@@ -713,11 +713,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   double fuelAuxLeftPre = simData.fuelAuxLeftPre->get();
   double fuelAuxRightPre = simData.fuelAuxRightPre->get();
   double fuelCenterPre = simData.fuelCenterPre->get();
-  double leftQuantity = simData.fuelTankQuantityLeft->get() * fuelWeightGallon;
-  double rightQuantity = simData.fuelTankQuantityRight->get() * fuelWeightGallon;
-  double leftAuxQuantity = simData.fuelTankQuantityLeftAux->get() * fuelWeightGallon;
-  double rightAuxQuantity = simData.fuelTankQuantityRightAux->get() * fuelWeightGallon;
-  double centerQuantity = simData.fuelTankQuantityCenter->get() * fuelWeightGallon;
+  double leftQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeft * fuelWeightGallon;
+  double rightQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRight * fuelWeightGallon;
+  double leftAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux * fuelWeightGallon;
+  double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux * fuelWeightGallon;
+  double centerQuantity = simData.simVarsDataPtr->data().fuelTankQuantityCenter * fuelWeightGallon;
   /// Left inner tank fuel quantity in pounds
   double fuelLeft = 0;
   /// Right inner tank fuel quantity in pounds
@@ -737,11 +737,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   double engine2State = simData.engineState[R]->get();
 
   int isTankClosed = 0;
-  double xFeedValve = simData.xFeedValve->get();
-  double leftPump1 = simData.fuelPump1[L]->get();
-  double rightPump1 = simData.fuelPump1[R]->get();
-  double leftPump2 = simData.fuelPump2[L]->get();
-  double rightPump2 = simData.fuelPump2[R]->get();
+  double xFeedValve = simData.simVarsDataPtr->data().xFeedValve;
+  double leftPump1 = simData.simVarsDataPtr->data().fuelPump1[L];
+  double rightPump1 = simData.simVarsDataPtr->data().fuelPump1[R];
+  double leftPump2 = simData.simVarsDataPtr->data().fuelPump2[L];
+  double rightPump2 = simData.simVarsDataPtr->data().fuelPump2[R];
 
   double apuNpercent = simData.apuRpmPercent->get();
 
@@ -901,7 +901,7 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     }
 
     /// apu fuel consumption for this frame in pounds
-    double apuFuelConsumption = simData.apuFuelConsumption->get() * fuelWeightGallon * deltaTimeHours;
+    double apuFuelConsumption = simData.simVarsDataPtr->data().apuFuelConsumption * fuelWeightGallon * deltaTimeHours;
 
     // check if APU is actually running instead of just the ASU which doesn't consume fuel
     if (apuNpercent <= 0.0) {
@@ -1030,7 +1030,7 @@ void EngineControl_A32NX::updateThrustLimits(double simulationTime,
   double engineIdleN1 = simData.engineIdleN1->get();
   double flexTemp = simData.airlinerToFlexTemp->get();
   double thrustLimitType = simData.thrustLimitType->get();
-  double pressAltitude = simData.pressureAltitude->get();  // TODO: was field in original code - need check
+  double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;  // TODO: was field in original code - need check
   double to = 0;
   double ga = 0;
   double toga = 0;
