@@ -4,19 +4,29 @@
 #ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
 #define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
 
+#include "MsfsHandler.h"
+
 #include "FadecSimData_A380X.hpp"
 #include "FuelConfiguration_A380X.h"
-#include "Polynomials_A380X.hpp"
-#include "Table1502_A380X.hpp"
-#include "ThrustLimits_A380X.hpp"
 
 #define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
 #define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
 
+/**
+ * @class EngineControl_A380X
+ * @brief Manages the engine control for the A380XX aircraft, coordinating and synchronising the
+ *        simulator's jet engine simulation with realistic custom values.
+ *
+ * Engine control is adding more realistic values and behaviour to the engine simulation of the simulator.
+ * Esp. for startup, shutdown, fuel consumption, thrust limits, etc.
+ *
+ * TODO: The EngineControl_A380X class is still work in progress and might be extended or replaced in the future.
+ */
 class EngineControl_A380X {
  private:
   // Convenience pointer to the msfs handler
   MsfsHandler* msfsHandlerPtr = nullptr;
+
   // Convenience pointer to the data manager
   DataManager* dataManagerPtr = nullptr;
 
@@ -30,28 +40,37 @@ class EngineControl_A380X {
   FuelConfiguration_A380X fuelConfiguration{};
 
   // Remember last fuel save time to allow saving fuel only every 5 seconds
-  static constexpr double fuelSaveInterval = 5.0;  // seconds
   FLOAT64 lastFuelSaveTime = 0;
+  static constexpr double FUEL_SAVE_INTERVAL = 5.0;  // seconds
 
   // thrust limits transition for flex
-  static constexpr double transitionWaitTime = 10;
   bool isTransitionActive = false;
+  static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
   double prevFlexTemperature = 0.0;
   double prevThrustLimitType = 0.0;
 
-  // TODO
+  // TODO - might not be required - feeds into stateMachine but really relevant
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
   // additional constants
-  static constexpr int maxOil = 200;
-  static constexpr int minOil = 140;
+  static constexpr int MAX_OIL = 200;
+  static constexpr int MIN_OIL = 140;
   static constexpr double LBS_TO_KGS = 0.4535934;
   static constexpr double KGS_TO_LBS = 1 / 0.4535934;
-  static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
+  static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
-  // Possible states for the engine state machine
+  /**
+   * @enum EngineState
+   * @brief Enumerates the possible states for the engine state machine.
+   *
+   * @var OFF The engine is turned off. This is the initial state of the engine.
+   * @var ON The engine is turned on and running.
+   * @var STARTING The engine is in the process of starting up.
+   * @var RESTARTING The engine is in the process of restarting.
+   * @var SHUTTING The engine is in the process of shutting down.
+   */
   enum EngineState {
     OFF = 0,
     ON = 1,
@@ -60,7 +79,8 @@ class EngineControl_A380X {
     SHUTTING = 4,
   };
 
-  // DEBUG
+#ifdef PROFILING
+  // Profiling for the engine control - can eventually be removed
   SimpleProfiler profilerUpdate{"Fadec::EngineControl_A380X::update()", 100};
   SimpleProfiler profilerEngineStateMachine{"Fadec::EngineControl_A380X::engineStateMachine()", 100};
   SimpleProfiler profilerEngineStartProcedure{"Fadec::EngineControl_A380X::engineStartProcedure()", 100};
@@ -70,24 +90,63 @@ class EngineControl_A380X {
   SimpleProfiler profilerUpdateEGT{"Fadec::EngineControl_A380X::updateEGT()", 100};
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A380X::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A380X::updateThrustLimits()", 100};
+#endif
+
+  // ===========================================================================
+  // Public methods
+  // ===========================================================================
 
  public:
-  EngineControl_A380X() {}
-
+  /**
+   * @brief Initializes the EngineControl_A32NX class once during the gauge initialization.
+   * @param msfsHandler
+   */
   void initialize(MsfsHandler* msfsHandler);
+
+  /**
+   * @brief Updates the EngineControl_A32NX class once per frame.
+   * @param pData
+   */
   void update(sGaugeDrawData* pData);
+
+  /**
+   * @brief Shuts down the EngineControl_A32NX class once during the gauge shutdown.
+   */
   void shutdown();
+
+  // ===========================================================================
+  // Private methods
+  // ===========================================================================
 
  private:
   /**
    * @brief Initialize the FADEC and Fuel model
-   *
    * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
 
+  /**
+   * @brief Generate Idle / Initial Engine Parameters (non-imbalanced)
+   *
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param mach The current Mach number of the aircraft.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   * @param ambientPressure The current ambient pressure in hPa.
+   */
   void generateIdleParameters(FLOAT64 pressureAltitude, FLOAT64 mach, FLOAT64 ambientTemperature, FLOAT64 ambientPressure);
 
+  /**
+   * @brief Manages the state and state changes of the engine.
+   *
+   * @param engine The engine number (1 or 2).
+   * @param engineIgniter The status of the engine igniter.
+   * @param engineStarter The status of the engine starter.
+   * @param simN3 The current N2 value from the simulator used as N3 for the A380X.
+   * @param idleN3 The idle N3 value.
+   * @param ambientTemperature The current ambient temperature.
+   * @return The current state of the engine as an enum of type EngineState.
+   * @see EngineState
+   */
   EngineControl_A380X::EngineState engineStateMachine(int engine,
                                                       double engineIgniter,
                                                       bool engineStarter,
@@ -95,6 +154,18 @@ class EngineControl_A380X {
                                                       double idleN3,
                                                       double ambientTemperature);
 
+  /**
+   * @brief This function manages the engine start procedure.
+   *
+   * @param engine The engine number (1 or 2).
+   * @param engineState The current state of the engine as an enum of type EngineState.
+   * @param deltaTime The time difference since the last update in seconds.
+   * @param engineTimer A timer used to calculate the elapsed time for various operations.
+   * @param simN3 The current N3 value from the simulator in percent (actually reading the sim's N2 as the sim does not have an N3.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   *
+   * @see EngineState
+   */
   void engineStartProcedure(int engine,
                             EngineState engineState,
                             double deltaTime,
@@ -102,24 +173,86 @@ class EngineControl_A380X {
                             double simN3,
                             double ambientTemperature);
 
-  void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer);
+  /**
+   * @brief This function manages the engine shutdown procedure.
+   *        TODO: Temporary solution as per comment in original code
+   *
+   * @param engine The engine number (1 or 2).
+   * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
+   * @param simN1 The current N1 value from the simulator.
+   * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
+   * @param engineTimer A timer used to calculate the elapsed time for various operations.
+   */
+  void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 engineTimer);
 
-  int updateFF(int engine, FLOAT64 cn1, FLOAT64 mach, FLOAT64 altitude, FLOAT64 temperature, FLOAT64 pressure);
+  /**
+   * @brief Updates the fuel flow of the engine.
+   *
+   * @param engine The engine number (1 or 2).
+   * @param simCN1 The current corrected fan speed value from the simulator.
+   * @param mach The current Mach number of the aircraft.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
+   * @param ambientPressure The current ambient pressure in hPa.
+   * @return The updated fuel flow as a double.
+   */
+  int updateFF(int engine, FLOAT64 simCN1, FLOAT64 mach, FLOAT64 altitude, FLOAT64 temperature, FLOAT64 pressure);
 
+  /**
+   * @brief Updates the primary cusomter parameters (LVars) of the engine when not starting or stopping the engine
+   *        and the sim has control.
+   *
+   * @param engine The engine number (1 or 2).
+   * @param imbalance The current encoded imbalance number of the engine.
+   * @param simN1 The current N1 value from the simulator in percent.
+   * @param simN3 The current N2 value from the simulator in percent used as N3 input in the A380X.
+   */
   void updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3);
 
+  /**
+   * @brief FBW Exhaust Gas Temperature (in degree Celsius). Updates EGT with realistic values visualized in the ECAM
+   *
+   * @param engine The engine number (1 or 2).
+   * @param deltaTime The time difference since the last update to calculate the rate of change of various parameters.
+   * @param simOnGround The on ground status of the aircraft (0 or 1).
+   * @param engineState The current state of the engine.
+   * @param simCN1 The current corrected fan speed value from the simulator.
+   * @param customFuelFlow The current custom fuel flow of the engine (FBW corrected).
+   * @param mach The current Mach number of the aircraft.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientPressure The current ambient pressure in hPa.
+   *
+   * @see EngineState
+   */
   void updateEGT(int engine,
                  FLOAT64 deltaTime,
                  bool simOnGround,
                  FLOAT64 engineState,
                  FLOAT64 simCN1,
-                 int correctedFuelFlow,
+                 int customFuelFlow,
                  const FLOAT64 mach,
                  const FLOAT64 pressureAltitude,
                  const FLOAT64 ambientPressure);
 
-  void updateFuel(FLOAT64 deltaTime);
+  /**
+   * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
+   *
+   * @param deltaTimeSeconds Frame delta time in seconds
+   */
+  void updateFuel(FLOAT64 deltaTimeSeconds);
 
+  /**
+   * @brief Updates the thrust limits of the engine.
+   *
+   * @param simulationTime The current time in the simulation.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   * @param ambientPressure The current ambient pressure in hPa.
+   * @param mach The current Mach number of the aircraft.
+   * @param packs The current state of the packs (0 or 1).
+   * @param nai The current state of the NAI (0 or 1).
+   * @param wai The current state of the WAI (0 or 1).
+   */
   void updateThrustLimits(double simulationTime,
                           double pressureAltitude,
                           double ambientTemperature,
@@ -128,7 +261,6 @@ class EngineControl_A380X {
                           bool packs,
                           bool nai,
                           bool wai);
-
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
