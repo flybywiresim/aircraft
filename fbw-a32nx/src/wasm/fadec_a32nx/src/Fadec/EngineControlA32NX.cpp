@@ -40,8 +40,8 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
   }
 
   const double mach = simData.simVarsDataPtr->data().airSpeedMach;
-  const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
-  const double ambientTemp = simData.simVarsDataPtr->data().ambientTemperature;
+  const double pressureAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
   const double ambientPressure = simData.simVarsDataPtr->data().ambientPressure;
   const double imbalance = simData.engineImbalance->get();
   const double idleN2 = simData.engineIdleN2->get();
@@ -51,7 +51,7 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
   const int nai = (simData.simVarsDataPtr->data().engineAntiIce[L] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[R] > 0.5) ? 1 : 0;
   const int wai = simData.wingAntiIce->getAsInt64();
 
-  generateIdleParameters(pressAltitude, mach, ambientTemp, ambientPressure);
+  generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
   bool engineStarter;
   double engineIgniter;
@@ -103,25 +103,25 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
                                                  engineMasterTurnedOff,   //
                                                  simN2,                   //
                                                  idleN2,                  //
-                                                 ambientTemp);            //
+                                                 ambientTemperature);     //
 
-    double cFbwFF;
+    double correctedFuelFlow;
     switch (engineState) {
       case STARTING:
       case RESTARTING:
         if (engineStarter) {
-          engineStartProcedure(engine, engineState, imbalance, pData->dt, engineTimer, simN2, pressAltitude, ambientTemp);
+          engineStartProcedure(engine, engineState, imbalance, pData->dt, engineTimer, simN2, pressureAltitude, ambientTemperature);
           break;
         }
       case SHUTTING:
-        engineShutdownProcedure(engine, ambientTemp, simN1, pData->dt, engineTimer);
-        cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
+        engineShutdownProcedure(engine, ambientTemperature, simN1, pData->dt, engineTimer);
+        correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         break;
       default:
         updatePrimaryParameters(engine, imbalance, simN1, simN2);
-        cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
-        updateEGT(engine, imbalance, pData->dt, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, cFbwFF, mach, pressAltitude,
-                  ambientTemp);
+        correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        updateEGT(engine, imbalance, pData->dt, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach,
+                  pressureAltitude, ambientTemperature);
         // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
     }
 
@@ -132,7 +132,8 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
   }
 
   updateFuel(pData->dt);
-  updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressAltitude, ambientTemp, ambientPressure, mach, simN1highest, packs, nai, wai);
+  updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
+                     nai, wai);
 
 #ifdef PROFILING
   profilerUpdate.stop();
@@ -192,7 +193,7 @@ void EngineControl_A32NX::initializeEngineControlData() {
     oilTemperaturePre[L] = simData.simVarsDataPtr->data().ambientTemperature;
     oilTemperaturePre[R] = simData.simVarsDataPtr->data().ambientTemperature;
   }
-  simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperaturePre[L];
+  simData.oilTempLeftDataPtr->data().oilTempE1 = oilTemperaturePre[L];
   simData.oilTempRightDataPtr->data().oilTempRight = oilTemperaturePre[R];
   simData.oilTempLeftDataPtr->writeDataToSim();
   simData.oilTempRightDataPtr->writeDataToSim();
@@ -206,13 +207,13 @@ void EngineControl_A32NX::initializeEngineControlData() {
   simData.engineTimer[R]->set(0);
 
   // Initialize Fuel Tanks
+  const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;  // weight of gallon of jet A in lbs
+
   const double centerQuantity = simData.simVarsDataPtr->data().fuelTankQuantityCenter;      // gal
   const double leftQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeft;          // gal
   const double rightQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRight;        // gal
   const double leftAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux;    // gal
   const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
-
-  const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;  // weight of gallon of jet A in lbs
 
   // only loads saved fuel quantity on C/D spawn
   if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
@@ -228,6 +229,7 @@ void EngineControl_A32NX::initializeEngineControlData() {
     simData.fuelAuxLeftPre->set(leftAuxQuantity * fuelWeightGallon);    // in LBS
     simData.fuelAuxRightPre->set(rightAuxQuantity * fuelWeightGallon);  // in LBS
   }
+
   // Initialize Pump State
   simData.fuelPumpState[L]->set(0);
   simData.fuelPumpState[R]->set(0);
@@ -297,10 +299,7 @@ double EngineControl_A32NX::imbalanceExtractor(double imbalanceCode, int paramet
   return static_cast<int>(imbalanceCode) % 100;
 }
 
-void EngineControl_A32NX::generateIdleParameters(double pressAltitude,      //
-                                                 double mach,               //
-                                                 double ambientTemp,        //
-                                                 double ambientPressure) {  //
+void EngineControl_A32NX::generateIdleParameters(double pressAltitude, double mach, double ambientTemp, double ambientPressure) {
   const double idleCN1 = Tables1502_A32NX::iCN1(pressAltitude, mach, ambientTemp);
   const double idleN1 = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemp));
   const double idleN2 = Tables1502_A32NX::iCN2(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemp));
@@ -470,7 +469,7 @@ void EngineControl_A32NX::engineStartProcedure(int engine,
 
   switch (engine) {
     case 1:
-      simData.oilTempLeftDataPtr->data().oilTempLeft = oilTemperature;
+      simData.oilTempLeftDataPtr->data().oilTempE1 = oilTemperature;
       simData.oilTempLeftDataPtr->writeDataToSim();
       break;
     case 2:
@@ -539,7 +538,7 @@ double EngineControl_A32NX::updateFF(int engine,
   profilerUpdateFF.start();
 #endif
 
-  double correctedFuelFlow = Polynomial_A32NX::correctedFuelFlow(simCN1, mach, pressAltitude);  // in lbs/hr.
+  const double correctedFuelFlow = Polynomial_A32NX::correctedFuelFlow(simCN1, mach, pressAltitude);  // in lbs/hr.
 
   // Check which engine is imbalanced and set the imbalance parameter
   const double engineImbalanced = imbalanceExtractor(imbalance, 1);
@@ -782,9 +781,9 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
     fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
 
-    simData.fuelLRDataPtr->data().fuelLeftMain = fuelLeft;
-    simData.fuelLRDataPtr->data().fuelRightMain = fuelRight;
-    simData.fuelLRDataPtr->writeDataToSim();
+    simData.fuelFeedTankDataPtr->data().fuelLeftMain = fuelLeft;
+    simData.fuelFeedTankDataPtr->data().fuelRightMain = fuelRight;
+    simData.fuelFeedTankDataPtr->writeDataToSim();
 
     simData.fuelCandAuxDataPtr->data().fuelCenter = fuelCenter;
     simData.fuelCandAuxDataPtr->data().fuelLeftAux = fuelLeftAux;
@@ -931,6 +930,7 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     simData.enginePreFF[R]->set(engine2FF);
     simData.engineFuelUsed[L]->set(fuelUsedLeft);
     simData.engineFuelUsed[R]->set(fuelUsedRight);
+
     simData.fuelAuxLeftPre->set(leftAuxQuantity);
     simData.fuelAuxRightPre->set(rightAuxQuantity);
     simData.fuelCenterPre->set(centerQuantity);
@@ -941,9 +941,9 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     fuelLeft = (fuelLeft / fuelWeightGallon);    // USG
     fuelRight = (fuelRight / fuelWeightGallon);  // USG
 
-    simData.fuelLRDataPtr->data().fuelLeftMain = fuelLeft;
-    simData.fuelLRDataPtr->data().fuelRightMain = fuelRight;
-    simData.fuelLRDataPtr->writeDataToSim();
+    simData.fuelFeedTankDataPtr->data().fuelLeftMain = fuelLeft;
+    simData.fuelFeedTankDataPtr->data().fuelRightMain = fuelRight;
+    simData.fuelFeedTankDataPtr->writeDataToSim();
   }
 
   //--------------------------------------------
@@ -1033,7 +1033,6 @@ void EngineControl_A32NX::updateThrustLimits(double simulationTime,
   }
 
   double deltaThrust = 0;
-
   if (isTransitionActive) {
     double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - transitionWaitTime);
     if (timeDifference > 0 && clb > flex) {

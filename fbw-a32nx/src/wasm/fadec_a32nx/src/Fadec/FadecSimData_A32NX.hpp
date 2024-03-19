@@ -41,7 +41,7 @@ class FadecSimData_A32NX {
    */
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
-  struct FuelLRData {
+  struct FuelFeedTankData {
     FLOAT64 fuelLeftMain;
     FLOAT64 fuelRightMain;
   };
@@ -57,9 +57,9 @@ class FadecSimData_A32NX {
    * @var FLOAT64 fuelLeftMain The fuel quantity of the left main tank in gallons.
    * @var FLOAT64 fuelRightMain The fuel quantity of the right main tank in gallons.
    */
-  DataDefinitionVariablePtr<FuelLRData> fuelLRDataPtr;
+  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;
 
-  struct FuelCandAuxData {
+  struct FuelTankData {
     FLOAT64 fuelCenter;
     FLOAT64 fuelLeftAux;
     FLOAT64 fuelRightAux;
@@ -78,10 +78,10 @@ class FadecSimData_A32NX {
    * @var FLOAT64 fuelLeftAux The fuel quantity of the left aux tank in gallons.
    * @var FLOAT64 fuelRightAux The fuel quantity of the right aux tank in gallons.
    */
-  DataDefinitionVariablePtr<FuelCandAuxData> fuelCandAuxDataPtr;
+  DataDefinitionVariablePtr<FuelTankData> fuelCandAuxDataPtr;
 
-  struct OliTempLeftData {
-    FLOAT64 oilTempLeft;
+  struct OliTempE1Data {
+    FLOAT64 oilTempE1;
   };
   DataDefinitionVector oilTempLeftDataDef = {
       {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}  //
@@ -92,7 +92,7 @@ class FadecSimData_A32NX {
    * @UpdateFrequncey: manual write only
    * @var FLOAT64 oilTempLeft The oil temperature of the left engine in Celsius.
    */
-  DataDefinitionVariablePtr<OliTempLeftData> oilTempLeftDataPtr;
+  DataDefinitionVariablePtr<OliTempE1Data> oilTempLeftDataPtr;
 
   struct OliTempRightData {
     FLOAT64 oilTempRight;
@@ -108,7 +108,7 @@ class FadecSimData_A32NX {
    */
   DataDefinitionVariablePtr<OliTempRightData> oilTempRightDataPtr;
 
-  struct OilPsiLeftData {
+  struct OilPsiData {
     FLOAT64 oilPsiLeft;
   };
   DataDefinitionVector oilPsiLeftDataDef = {
@@ -120,7 +120,7 @@ class FadecSimData_A32NX {
    * @UpdateFrequncey: manual write only
    * @var FLOAT64 oilPsiLeft The oil pressure of the left engine in Psi.
    */
-  DataDefinitionVariablePtr<OilPsiLeftData> oilPsiLeftDataPtr;
+  DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr;
 
   struct OilPsiRightData {
     FLOAT64 oilPsiRight;
@@ -282,14 +282,15 @@ class FadecSimData_A32NX {
 
   void initDataDefinitions(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef, NO_AUTO_UPDATE);
-    fuelLRDataPtr = dm->make_datadefinition_var<FuelLRData>("FUEL LR DATA", fuelLRDataDef, NO_AUTO_UPDATE);
-    fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelCandAuxData>("FUEL CAND AUX DATA", fuelCandAuxDataDef, NO_AUTO_UPDATE);
-    oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempLeftData>("OIL TEMP LEFT DATA", oilTempLeftDataDef, NO_AUTO_UPDATE);
+    fuelFeedTankDataPtr = dm->make_datadefinition_var<FuelFeedTankData>("FUEL LR DATA", fuelLRDataDef, NO_AUTO_UPDATE);
+    fuelCandAuxDataPtr = dm->make_datadefinition_var<FuelTankData>("FUEL CAND AUX DATA", fuelCandAuxDataDef, NO_AUTO_UPDATE);
+    oilTempLeftDataPtr = dm->make_datadefinition_var<OliTempE1Data>("OIL TEMP LEFT DATA", oilTempLeftDataDef, NO_AUTO_UPDATE);
     oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef, NO_AUTO_UPDATE);
-    oilPsiLeftDataPtr = dm->make_datadefinition_var<OilPsiLeftData>("OIL PSI LEFT DATA", oilPsiLeftDataDef, NO_AUTO_UPDATE);
+    oilPsiDataPtr = dm->make_datadefinition_var<OilPsiData>("OIL PSI LEFT DATA", oilPsiLeftDataDef, NO_AUTO_UPDATE);
     oilPsiRightDataPtr = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef, NO_AUTO_UPDATE);
 
-    simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef, AUTO_READ);
+    simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
+    simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
   void initEvents(DataManager* dm) {
@@ -368,7 +369,7 @@ class FadecSimData_A32NX {
     apuRpmPercent = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
     engineStarterPressurized[L] = dm->make_named_var("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
     engineStarterPressurized[R] = dm->make_named_var("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
-    packsState[L] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN:1", UNITS.Number, AUTO_READ);
+    packsState[L] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
     packsState[R] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
     refuelRate = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
