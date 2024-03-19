@@ -46,7 +46,7 @@ add_definitions(
     # EXAMPLES | NO_EXAMPLES
     -DNO_EXAMPLES
     #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
-    -DPROFILING
+    -DNO_PROFILING
 )
 
 # add the common components

@@ -13,24 +13,14 @@ bool Fadec_A380X::initialize() {
   return true;
 }
 
-bool Fadec_A380X::preUpdate([[maybe_unused]] sGaugeDrawData* _pData) {
-  // empty
-  return true;
-}
-
 bool Fadec_A380X::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
     std::cerr << "Fadec_A380X::update() - not initialized" << std::endl;
     return false;
   }
 
-  engineControl.update();
+  engineControl.update(pData);
 
-  return true;
-}
-
-bool Fadec_A380X::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  //  empty
   return true;
 }
 

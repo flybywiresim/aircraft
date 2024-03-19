@@ -4,10 +4,8 @@
 #include <algorithm>
 
 #include "MsfsHandler.h"
-
 #include "ScopedTimer.hpp"
 #include "SimpleProfiler.hpp"
-#include "lib/inih/ini_type_conversion.h"
 #include "logging.h"
 
 #include "EngineControl_A380X.h"
@@ -20,8 +18,14 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   LOG_INFO("Fadec::EngineControl_A380X::initialize() - initialized");
 }
 
-void EngineControl_A380X::update() {
+void EngineControl_A380X::shutdown() {
+  LOG_INFO("Fadec::EngineControl_A380X::shutdown()");
+}
+
+void EngineControl_A380X::update(sGaugeDrawData* pData) {
+#ifdef PROFILING
   profilerUpdate.start();
+#endif
 
   // Get ATC ID from sim to be able to load and store fuel levels
   // If not yet available, request it from sim and return early
@@ -36,105 +40,64 @@ void EngineControl_A380X::update() {
     return;
   }
 
-  // Calculate delta time - this is the difference between the current and previous simulation time in seconds.
-  // The simulation time is in seconds and is the time since the start of the simulation.
-  // It is halted when the sim is paused.
-  const FLOAT64 deltaTime = (std::max)(0.002, msfsHandlerPtr->getSimulationTime() - this->previousSimulationTime);
-  this->previousSimulationTime = msfsHandlerPtr->getSimulationTime();
-
-  // TODO: the original code also uses animationDeltaTime, which is the time since the last frame in seconds
-  //  but it is unclear why and what the difference ti deltaTime is.
-
-  const FLOAT64 mach = simData.miscSimDataPtr->data().mach;
-  const FLOAT64 pressureAltitude = simData.miscSimDataPtr->data().pressureAltitude;
-  const FLOAT64 ambientTemperature = simData.miscSimDataPtr->data().ambientTemperature;
-  const FLOAT64 ambientPressure = simData.miscSimDataPtr->data().ambientPressure;
-  const bool simOnGround = msfsHandlerPtr->getSimOnGround();
+  const double mach = simData.simVarsDataPtr->data().airSpeedMach;
+  const double pressureAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
+  const double ambientPressure = simData.simVarsDataPtr->data().ambientPressure;
+  const double idleN3 = simData.engineIdleN3->get();
 
   // Obtain bleed states
-  bool packs = (simData.miscSimDataPtr->data().packState1 > 0.5 || simData.miscSimDataPtr->data().packState2 > 0.5) ? true : false;
-  bool nai = (simData.miscSimDataPtr->data().naiState1 > 0.5 || simData.miscSimDataPtr->data().naiState2 > 0.5) ? true : false;
-  bool wai = simData.miscSimDataPtr->data().waiState;
+  // Obtain Bleed Variables
+  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
+  const int nai = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5 ||
+                   simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[E4] > 0.5)
+                      ? 1
+                      : 0;
+  const int wai = simData.wingAntiIce->getAsInt64();
 
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
-  FLOAT64 simN1highest;
+  bool engineStarter;
+  double engineIgniter;
+  double simCN1;
+  double simN1;
+  double simN1highest;
+  double simN3;
+  double engineTimer;
 
   // Update engine states
   for (int engine = 1; engine <= 4; engine++) {
-    FLOAT64 engineState, timer, simN1, simN3, simCorrectedN1, correctedFuelFlow;
-    [[maybe_unused]] FLOAT64 thrust, deltaN2;
+    const int engineIdx = engine - 1;
 
-    // TODO: Refactor to reduce code duplication
-    switch (engine) {
-      case 1:
-        engineState = simData.engineStateDataPtr->data().engine1State;
-        simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine1CorrectedN1;
-        simN1 = simData.simEngineN1DataPtr->data().engine1N1;
-        simN3 = simData.simEngineN2DataPtr->data().engine1N2;
-        simN3Engine1Pre = simN3;
-        timer = simData.engineTimerDataPtr->data().engine1Timer;
-        deltaN2 = simN3 - simN3Engine1Pre;                        // not used as per original code
-        thrust = simData.simThrustDataPtr->data().engine1Thrust;  // not used as per original code
-        engineStateMachine(1, simData.miscSimDataPtr->data().engineIgniter1, simData.miscSimDataPtr->data().engineStarter1, simN3, idleN3,
-                           pressureAltitude, ambientTemperature, deltaTime);
-        break;
-      case 2:
-        engineState = simData.engineStateDataPtr->data().engine2State;
-        simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine2CorrectedN1;
-        simN1 = simData.simEngineN1DataPtr->data().engine2N1;
-        simN3 = simData.simEngineN2DataPtr->data().engine2N2;
-        simN3Engine2Pre = simN3;
-        timer = simData.engineTimerDataPtr->data().engine2Timer;
-        deltaN2 = simN3 - simN3Engine2Pre;                        // not used as per original code
-        thrust = simData.simThrustDataPtr->data().engine2Thrust;  // not used as per original code
-        engineStateMachine(2, simData.miscSimDataPtr->data().engineIgniter2, simData.miscSimDataPtr->data().engineStarter2, simN3, idleN3,
-                           pressureAltitude, ambientTemperature, deltaTime);
-        break;
-      case 3:
-        engineState = simData.engineStateDataPtr->data().engine3State;
-        simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine3CorrectedN1;
-        simN1 = simData.simEngineN1DataPtr->data().engine3N1;
-        simN3 = simData.simEngineN2DataPtr->data().engine3N2;
-        simN3Engine3Pre = simN3;
-        timer = simData.engineTimerDataPtr->data().engine3Timer;
-        deltaN2 = simN3 - simN3Engine3Pre;                        // not used as per original code
-        thrust = simData.simThrustDataPtr->data().engine3Thrust;  // not used as per original code
-        engineStateMachine(3, simData.miscSimDataPtr->data().engineIgniter3, simData.miscSimDataPtr->data().engineStarter3, simN3, idleN3,
-                           pressureAltitude, ambientTemperature, deltaTime);
-        break;
-      case 4:
-        engineState = simData.engineStateDataPtr->data().engine4State;
-        simCorrectedN1 = simData.simEngineCorrectedN1DataPtr->data().engine4CorrectedN1;
-        simN1 = simData.simEngineN1DataPtr->data().engine4N1;
-        simN3 = simData.simEngineN2DataPtr->data().engine4N2;
-        simN3Engine4Pre = simN3;
-        timer = simData.engineTimerDataPtr->data().engine4Timer;
-        deltaN2 = simN3 - simN3Engine4Pre;                        // not used as per original code
-        thrust = simData.simThrustDataPtr->data().engine4Thrust;  // not used as per original code
-        engineStateMachine(4, simData.miscSimDataPtr->data().engineIgniter4, simData.miscSimDataPtr->data().engineStarter4, simN3, idleN3,
-                           pressureAltitude, ambientTemperature, deltaTime);
-        break;
-    }
+    engineStarter = simData.simVarsDataPtr->data().engineStarter[engineIdx] == 1.0;
+    engineIgniter = simData.simVarsDataPtr->data().engineIgniter[engineIdx];
 
-    // From Engine State Machine
-    // 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting, 3 - Engine Re-starting & 4 - Engine Shutting
+    EngineState engineState =
+        engineStateMachine(engine, engineIgniter, engineStarter, prevSimEngineN3[engineIdx], idleN3, ambientTemperature);
+
+    simCN1 = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
+    simN1 = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
+    simN3 = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
+    prevSimEngineN3[engineIdx] = simN3;
+    engineTimer = simData.engineTimer[engineIdx]->get();
+
+    // Set & Check Engine Status for this Cycle
+    int correctedFuelFlow;
     switch (static_cast<int>(engineState)) {
-      case 2:
-      case 3:
-        engineStartProcedure(engine, engineState, deltaTime, timer, simN3, pressureAltitude, ambientTemperature);
+      case STARTING:
+      case RESTARTING:
+        engineStartProcedure(engine, engineState, pData->dt, engineTimer, simN3, ambientTemperature);
         break;
-      case 4:
-        engineShutdownProcedure(engine, ambientTemperature, simN1, deltaTime, timer);
-        correctedFuelFlow = updateFF(engine, simCorrectedN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+      case SHUTTING:
+        engineShutdownProcedure(engine, ambientTemperature, simN1, pData->dt, engineTimer);
+        correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         break;
       default:
         updatePrimaryParameters(engine, simN1, simN3);
-        correctedFuelFlow = updateFF(engine, simCorrectedN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
-        updateEGT(engine, deltaTime, simOnGround, engineState, simCorrectedN1, correctedFuelFlow, mach, pressureAltitude,
+        correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        updateEGT(engine, pData->dt, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach, pressureAltitude,
                   ambientTemperature);
-        // TODO: This has been commented out in the original code as well - no comment on why
-        // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
+        // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemperature);
         break;
     }
 
@@ -142,18 +105,23 @@ void EngineControl_A380X::update() {
     simN1highest = (std::max)(simN1highest, simN1);
   }
 
-  updateFuel(deltaTime);
-  updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
-                     nai, wai);
+  updateFuel(pData->dt);
+  updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, packs, nai, wai);
 
+#ifdef PROFILING
   profilerUpdate.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
+    profilerUpdateThrustLimits.print();
+    profilerUpdateFuel.print();
+    profilerUpdateEGT.print();
+    profilerUpdateFF.print();
+    profilerEngineShutdownProcedure.print();
+    profilerEngineStartProcedure.print();
+    profilerUpdatePrimaryParameters.print();
+    profilerEngineStateMachine.print();
     profilerUpdate.print();
-}
-
-void EngineControl_A380X::shutdown() {
-  LOG_INFO("Fadec::EngineControl_A380X::shutdown()");
-  // TODO: Implement shutdown if required
+  }
+#endif
 }
 
 // =====================================================================================================================
@@ -165,592 +133,473 @@ void EngineControl_A380X::initializeEngineControlData() {
 
   ScopedTimer timer("Fadec::EngineControl_A380X::initializeEngineControlData()");
 
+  const FLOAT64 timeStamp = msfsHandlerPtr->getTimeStamp();
+  const UINT64 tickCounter = msfsHandlerPtr->getTickCounter();
+
   // Load fuel configuration from file
   const std::string fuelConfigFilename = FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION;
   fuelConfiguration.setConfigFilename(fuelConfigFilename);
   fuelConfiguration.loadConfigurationFromIni();
 
   // Getting and saving initial N2 into pre (= previous) variables
-  simN3Engine1Pre = simData.simEngineN2DataPtr->data().engine1N2;
-  simN3Engine2Pre = simData.simEngineN2DataPtr->data().engine2N2;
-  simN3Engine3Pre = simData.simEngineN2DataPtr->data().engine3N2;
-  simN3Engine4Pre = simData.simEngineN2DataPtr->data().engine4N2;
+  prevSimEngineN3[0] = simData.simVarsDataPtr->data().simEngineN2[0];
+  prevSimEngineN3[1] = simData.simVarsDataPtr->data().simEngineN2[1];
+  prevSimEngineN3[2] = simData.simVarsDataPtr->data().simEngineN2[2];
+  prevSimEngineN3[3] = simData.simVarsDataPtr->data().simEngineN2[3];
 
   // Setting initial Oil Quantity and adding some randomness to it
-  const int maxOil = 200;
   const int minOil = 140;
+  const int maxOil = 200;
   std::srand(std::time(0));
-  simData.engineTotalOilDataPtr->data().engine1TotalOil = (rand() % (maxOil - minOil + 1) + minOil) / 10;
-  simData.engineTotalOilDataPtr->data().engine2TotalOil = (rand() % (maxOil - minOil + 1) + minOil) / 10;
-  simData.engineTotalOilDataPtr->data().engine3TotalOil = (rand() % (maxOil - minOil + 1) + minOil) / 10;
-  simData.engineTotalOilDataPtr->data().engine4TotalOil = (rand() % (maxOil - minOil + 1) + minOil) / 10;
+  simData.engineOilTotal[E1]->set((std::rand() % (maxOil - minOil + 1) + minOil) / 10);
+  simData.engineOilTotal[E2]->set((std::rand() % (maxOil - minOil + 1) + minOil) / 10);
+  simData.engineOilTotal[E3]->set((std::rand() % (maxOil - minOil + 1) + minOil) / 10);
+  simData.engineOilTotal[E4]->set((std::rand() % (maxOil - minOil + 1) + minOil) / 10);
 
   // Setting initial Oil Temperature
   const bool simOnGround = msfsHandlerPtr->getSimOnGround();
-  thermalEnergy1 = 0;
-  thermalEnergy2 = 0;
-  thermalEnergy3 = 0;
-  thermalEnergy4 = 0;
-  oilTemperatureMax = 85;
-  double engine1Combustion = simData.simEngineCombustionDataPtr->data().engine1Combustion;
-  double engine2Combustion = simData.simEngineCombustionDataPtr->data().engine2Combustion;
-  double engine3Combustion = simData.simEngineCombustionDataPtr->data().engine3Combustion;
-  double engine4Combustion = simData.simEngineCombustionDataPtr->data().engine4Combustion;
+
+  const bool engine1Combustion = static_cast<bool>(simData.engineCombustion[E1]->updateFromSim(timeStamp, tickCounter));
+  const bool engine2Combustion = static_cast<bool>(simData.engineCombustion[E2]->updateFromSim(timeStamp, tickCounter));
+  const bool engine3Combustion = static_cast<bool>(simData.engineCombustion[E3]->updateFromSim(timeStamp, tickCounter));
+  const bool engine4Combustion = static_cast<bool>(simData.engineCombustion[E4]->updateFromSim(timeStamp, tickCounter));
+
+  double oilTemperaturePre[4];
   if (simOnGround == 1 && engine1Combustion == 1 && engine2Combustion == 1 && engine3Combustion == 1 && engine4Combustion == 1) {
-    oilTemperatureEngine1Pre = 75;
-    oilTemperatureEngine2Pre = 75;
-    oilTemperatureEngine3Pre = 75;
-    oilTemperatureEngine4Pre = 75;
+    oilTemperaturePre[E1] = 75;
+    oilTemperaturePre[E2] = 75;
+    oilTemperaturePre[E3] = 75;
+    oilTemperaturePre[E4] = 75;
   } else if (simOnGround == 0 && engine1Combustion == 1 && engine2Combustion == 1 && engine3Combustion == 1 && engine4Combustion == 1) {
-    oilTemperatureEngine1Pre = 85;
-    oilTemperatureEngine2Pre = 85;
-    oilTemperatureEngine3Pre = 85;
-    oilTemperatureEngine4Pre = 85;
+    oilTemperaturePre[E1] = 85;
+    oilTemperaturePre[E2] = 85;
+    oilTemperaturePre[E3] = 85;
+    oilTemperaturePre[E4] = 85;
   } else {
-    const FLOAT64 ambientTemperature = simData.miscSimDataPtr->data().ambientTemperature;
-    oilTemperatureEngine1Pre = ambientTemperature;
-    oilTemperatureEngine2Pre = ambientTemperature;
-    oilTemperatureEngine3Pre = ambientTemperature;
-    oilTemperatureEngine4Pre = ambientTemperature;
+    const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
+    oilTemperaturePre[E1] = ambientTemperature;
+    oilTemperaturePre[E2] = ambientTemperature;
+    oilTemperaturePre[E3] = ambientTemperature;
+    oilTemperaturePre[E4] = ambientTemperature;
   }
-  simData.simEngineOilTempDataPtr->data().engine1OilTemperature = oilTemperatureEngine1Pre;
-  simData.simEngineOilTempDataPtr->data().engine2OilTemperature = oilTemperatureEngine2Pre;
-  simData.simEngineOilTempDataPtr->data().engine3OilTemperature = oilTemperatureEngine3Pre;
-  simData.simEngineOilTempDataPtr->data().engine4OilTemperature = oilTemperatureEngine4Pre;
+  simData.oilTempDataPtr[E1]->data().oilTemp = oilTemperaturePre[E1];
+  simData.oilTempDataPtr[E1]->writeDataToSim();
+  simData.oilTempDataPtr[E2]->data().oilTemp = oilTemperaturePre[E2];
+  simData.oilTempDataPtr[E2]->writeDataToSim();
+  simData.oilTempDataPtr[E3]->data().oilTemp = oilTemperaturePre[E3];
+  simData.oilTempDataPtr[E3]->writeDataToSim();
+  simData.oilTempDataPtr[E4]->data().oilTemp = oilTemperaturePre[E4];
+  simData.oilTempDataPtr[E4]->writeDataToSim();
 
   // Setting initial Engine State
-  simData.engineStateDataPtr->data().engine1State = 10;
-  simData.engineStateDataPtr->data().engine2State = 10;
-  simData.engineStateDataPtr->data().engine3State = 10;
-  simData.engineStateDataPtr->data().engine4State = 10;
+  simData.engineState[E1]->set(OFF);
+  simData.engineState[E2]->set(OFF);
+  simData.engineState[E3]->set(OFF);
+  simData.engineState[E4]->set(OFF);
 
   // Setting initial Engine Timer
-  simData.engineTimerDataPtr->data().engine1Timer = 0;
-  simData.engineTimerDataPtr->data().engine2Timer = 0;
-  simData.engineTimerDataPtr->data().engine3Timer = 0;
-  simData.engineTimerDataPtr->data().engine4Timer = 0;
+  simData.engineTimer[E1]->set(0);
+  simData.engineTimer[E2]->set(0);
+  simData.engineTimer[E3]->set(0);
+  simData.engineTimer[E4]->set(0);
 
   // Setting initial Fuel Levels
-  const FLOAT64 fuelWeightPerGallon = simData.miscSimDataPtr->data().fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftOuterPre = fuelConfiguration.getFuelLeftOuter() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelFeedOnePre = fuelConfiguration.getFuelFeedOne() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftMidPre = fuelConfiguration.getFuelLeftMid() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelLeftInnerPre = fuelConfiguration.getFuelLeftInner() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelFeedTwoPre = fuelConfiguration.getFuelFeedTwo() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelFeedThreePre = fuelConfiguration.getFuelFeedThree() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelRightInnerPre = fuelConfiguration.getFuelRightInner() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelRightMidPre = fuelConfiguration.getFuelRightMid() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelFeedFourPre = fuelConfiguration.getFuelFeedFour() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelRightOuterPre = fuelConfiguration.getFuelRightOuter() * fuelWeightPerGallon;
-  simData.fuelPreDataPtr->data().fuelTrimPre = fuelConfiguration.getFuelTrim() * fuelWeightPerGallon;
+  const double fuelWeightPerGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;
+
+  const double fuelLeftOuterQty = simData.fuelTankDataPtr->data().fuelSystemLeftOuter;
+  const double fuelFeedOneQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne;
+  const double fuelLeftMidQty = simData.fuelTankDataPtr->data().fuelSystemLeftMid;
+  const double fuelLeftInnerQty = simData.fuelTankDataPtr->data().fuelSystemLeftInner;
+  const double fuelFeedTwoQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo;
+  const double fuelFeedThreeQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree;
+  const double fuelRightInnerQty = simData.fuelTankDataPtr->data().fuelSystemRightInner;
+  const double fuelRightMidQty = simData.fuelTankDataPtr->data().fuelSystemRightMid;
+  const double fuelFeedFourQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour;
+  const double fuelRightOuterQty = simData.fuelTankDataPtr->data().fuelSystemRightOuter;
+  const double fuelTrimQty = simData.fuelTankDataPtr->data().fuelSystemTrim;
+
+  // only loads saved fuel quantity on C/D spawn
+  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+    simData.fuelLeftOuterPre->set(fuelConfiguration.getFuelLeftOuter() * fuelWeightPerGallon);
+    simData.fuelFeedOnePre->set(fuelConfiguration.getFuelFeedOne() * fuelWeightPerGallon);
+    simData.fuelLeftMidPre->set(fuelConfiguration.getFuelLeftMid() * fuelWeightPerGallon);
+    simData.fuelLeftInnerPre->set(fuelConfiguration.getFuelLeftInner() * fuelWeightPerGallon);
+    simData.fuelFeedTwoPre->set(fuelConfiguration.getFuelFeedTwo() * fuelWeightPerGallon);
+    simData.fuelFeedThreePre->set(fuelConfiguration.getFuelFeedThree() * fuelWeightPerGallon);
+    simData.fuelRightInnerPre->set(fuelConfiguration.getFuelRightInner() * fuelWeightPerGallon);
+    simData.fuelRightMidPre->set(fuelConfiguration.getFuelRightMid() * fuelWeightPerGallon);
+    simData.fuelFeedFourPre->set(fuelConfiguration.getFuelFeedFour() * fuelWeightPerGallon);
+    simData.fuelRightOuterPre->set(fuelConfiguration.getFuelRightOuter() * fuelWeightPerGallon);
+    simData.fuelTrimPre->set(fuelConfiguration.getFuelTrim() * fuelWeightPerGallon);
+  } else {
+    simData.fuelLeftOuterPre->set(fuelLeftOuterQty);
+    simData.fuelFeedOnePre->set(fuelFeedOneQty);
+    simData.fuelLeftMidPre->set(fuelLeftMidQty);
+    simData.fuelLeftInnerPre->set(fuelLeftInnerQty);
+    simData.fuelFeedTwoPre->set(fuelFeedTwoQty);
+    simData.fuelFeedThreePre->set(fuelFeedThreeQty);
+    simData.fuelRightInnerPre->set(fuelRightInnerQty);
+    simData.fuelRightMidPre->set(fuelRightMidQty);
+    simData.fuelFeedFourPre->set(fuelFeedFourQty);
+    simData.fuelRightOuterPre->set(fuelRightOuterQty);
+    simData.fuelTrimPre->set(fuelTrimQty);
+  }
 
   // Setting initial Fuel Flow
-  simData.pumpStateDataPtr->data().pumpStateEngine1 = 0;
-  simData.pumpStateDataPtr->data().pumpStateEngine2 = 0;
-  simData.pumpStateDataPtr->data().pumpStateEngine3 = 0;
-  simData.pumpStateDataPtr->data().pumpStateEngine4 = 0;
+  simData.fuelPumpState[E1]->set(0);
+  simData.fuelPumpState[E2]->set(0);
+  simData.fuelPumpState[E3]->set(0);
+  simData.fuelPumpState[E4]->set(0);
 
   // Setting initial Thrust Limits
-  simData.thrustLimitDataPtr->data().thrustLimitIdle = 0;
-  simData.thrustLimitDataPtr->data().thrustLimitClimb = 0;
-  simData.thrustLimitDataPtr->data().thrustLimitFlex = 0;
-  simData.thrustLimitDataPtr->data().thrustLimitMct = 0;
-  simData.thrustLimitDataPtr->data().thrustLimitToga = 0;
+  simData.thrustLimitIdle->set(0);
+  simData.thrustLimitClimb->set(0);
+  simData.thrustLimitFlex->set(0);
+  simData.thrustLimitMct->set(0);
+  simData.thrustLimitToga->set(0);
 }
 
-void EngineControl_A380X::generateIdleParameters(FLOAT64 pressAltitude, FLOAT64 mach, FLOAT64 ambientTemp, FLOAT64 ambientPressure) {
-  profilerGenerateParameters.start();
+void EngineControl_A380X::generateIdleParameters(double pressAltitude, double mach, double ambientTemperature, double ambientPressure) {
+  const double idleCN1 = Table1502_A380X::iCN1(pressAltitude, mach, ambientTemperature);
+  const double idleN1 = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemperature));
+  const double idleN3 = Table1502_A380X::iCN2(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemperature));
+  const double idleCFF = Polynomial_A380X::correctedFuelFlow(idleCN1, 0, pressAltitude);
+  const double idleFF = idleCFF * LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemperature));
+  const double idleEGT = Polynomial_A380X::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * EngineRatios::theta2(0, ambientTemperature);
 
-  const double idleCN1 = Table1502_A380X::iCN1(pressAltitude, mach, ambientTemp);
-
-  idleN1 = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemp));
-  idleN3 = Table1502_A380X::iCN2(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemp));
-
-  const double idleCFF = Polynomial_A380X::correctedFuelFlow(idleCN1, 0, pressAltitude);                    // lbs/hr
-  idleFF = idleCFF * LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemp));  // Kg/hr
-
-  idleEGT = Polynomial_A380X::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * EngineRatios::theta2(0, ambientTemp);
-
-  simData.engineIdleDataPtr->data().idleN1 = idleN1;
-  simData.engineIdleDataPtr->data().idleN2 = idleN3;
-  simData.engineIdleDataPtr->data().idleFF = idleFF;
-  simData.engineIdleDataPtr->data().idleEGT = idleEGT;
-
-  profilerGenerateParameters.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerGenerateParameters.print();
+  simData.engineIdleN1->set(idleN1);
+  simData.engineIdleN3->set(idleN3);
+  simData.engineIdleFF->set(idleFF);
+  simData.engineIdleEGT->set(idleEGT);
 }
 
-void EngineControl_A380X::engineStateMachine(int engine,
-                                             FLOAT64 engineIgniter,
-                                             FLOAT64 engineStarter,
-                                             FLOAT64 simN3,
-                                             FLOAT64 idleN3,
-                                             [[maybe_unused]] FLOAT64 pressureAltitude,
-                                             FLOAT64 ambientTemperature,
-                                             [[maybe_unused]] FLOAT64 deltaTime) {
+EngineControl_A380X::EngineState EngineControl_A380X::engineStateMachine(int engine,
+                                                                         double engineIgniter,
+                                                                         bool engineStarter,
+                                                                         double simN3,
+                                                                         double idleN3,
+                                                                         double ambientTemperature) {
+#ifdef PROFILING
   profilerEngineStateMachine.start();
+#endif
 
-  int resetTimer = 0;
-  double egtFbw = 0;
+  const int engineIdx = engine - 1;
 
-  FLOAT64 engineState;
+  bool resetTimer = false;
 
-  engineState = *simData.engineStateDataPtrArray[engine - 1];
-  egtFbw = *simData.engineEgtDataPtrArray[engine - 1];
+  EngineState engineState = static_cast<EngineState>(simData.engineState[engineIdx]->get());
 
-  // TODO: needs verification - we do not check for pause here as the pause is handle in the main update function
-  /*
-     // Present State PAUSED
-      if (deltaTimeDiff == 0 && engineState < 10) {
-        engineState = engineState + 10;
-        simPaused = true;
-      } else if (deltaTimeDiff == 0 && engineState >= 10) {
-        simPaused = true;
-      } else {
-        simPaused = false;
-  */
-
-  // TODO: we most likely do not need engines states >10 as we do not handle pause
-
-  // State OFF
-  if (engineState == 0 || engineState == 10) {
-    if (engineIgniter == 1 && engineStarter == 1 && simN3 > 20) {
-      engineState = 1;
-    } else if (engineIgniter == 2 && engineStarter == 1) {
-      engineState = 2;
+  // Current State: OFF
+  if (engineState == OFF) {
+    if (engineIgniter == 1 && engineStarter && simN3 > 20) {
+      engineState = ON;
+    } else if (engineIgniter == 2 && engineStarter) {
+      engineState = STARTING;
     } else {
-      engineState = 0;
+      engineState = OFF;
     }
   }
-
-  // State ON
-  if (engineState == 1 || engineState == 11) {
-    if (engineStarter == 1) {
-      engineState = 1;
+  // Current State: ON
+  else if (engineState == ON) {
+    if (engineStarter) {
+      engineState = ON;
     } else {
-      engineState = 4;
+      engineState = SHUTTING;
     }
   }
-
-  // State Starting.
-  if (engineState == 2 || engineState == 12) {
-    if (engineStarter == 1 && simN3 >= (idleN3 - 0.1)) {
-      engineState = 1;
-      resetTimer = 1;
-    } else if (engineStarter == 0) {
-      engineState = 4;
-      resetTimer = 1;
+  // Current State: Starting.
+  else if (engineState == STARTING) {
+    if (engineStarter && simN3 >= (idleN3 - 0.1)) {
+      engineState = ON;
+      resetTimer = true;
+    } else if (!engineStarter) {
+      engineState = SHUTTING;
+      resetTimer = true;
     } else {
-      engineState = 2;
+      engineState = STARTING;
     }
   }
-
-  // State Re-Starting.
-  if (engineState == 3 || engineState == 13) {
-    if (engineStarter == 1 && simN3 >= (idleN3 - 0.1)) {
-      engineState = 1;
-      resetTimer = 1;
-    } else if (engineStarter == 0) {
-      engineState = 4;
-      resetTimer = 1;
+  // Current State: Re-Starting.
+  else if (engineState == RESTARTING) {
+    if (engineStarter && simN3 >= (idleN3 - 0.1)) {
+      engineState = ON;
+      resetTimer = true;
+    } else if (!engineStarter) {
+      engineState = SHUTTING;
+      resetTimer = true;
     } else {
-      engineState = 3;
+      engineState = RESTARTING;
     }
   }
-
-  // State Shutting
-  if (engineState == 4 || engineState == 14) {
-    if (engineIgniter == 2 && engineStarter == 1) {
-      engineState = 3;
-      resetTimer = 1;
-    } else if (engineStarter == 0 && simN3 < 0.05 && egtFbw <= ambientTemperature) {
-      engineState = 0;
-      resetTimer = 1;
+  // Current State: Shutting
+  else if (engineState == SHUTTING) {
+    if (engineIgniter == 2 && engineStarter) {
+      engineState = RESTARTING;
+      resetTimer = true;
+    } else if (!engineStarter && simN3 < 0.05 && simData.engineEgt[engineIdx]->get() <= ambientTemperature) {
+      engineState = OFF;
+      resetTimer = true;
     } else if (engineStarter == 1 && simN3 > 50) {
-      engineState = 3;
-      resetTimer = 1;
+      engineState = RESTARTING;
+      resetTimer = true;
     } else {
-      engineState = 4;
+      engineState = SHUTTING;
     }
   }
-  //  } if paused check
 
-  *simData.engineStateDataPtrArray[engine - 1] = engineState;
-  if (resetTimer == 1) {
-    *simData.engineTimerDataPtrArray[engine - 1] = 0;
+  simData.engineState[engineIdx]->set(static_cast<int>(engineState));
+  if (resetTimer) {
+    simData.engineTimer[engineIdx]->set(0);
   }
 
+#ifdef PROFILING
   profilerEngineStateMachine.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerEngineStateMachine.print();
+#endif
+
+  return static_cast<EngineState>(engineState);
 }
 
 void EngineControl_A380X::engineStartProcedure(int engine,
-                                               FLOAT64 engineState,
-                                               FLOAT64 deltaTime,
-                                               FLOAT64 timer,
-                                               FLOAT64 simN3,
-                                               [[maybe_unused]] FLOAT64 pressureAltitude,
-                                               FLOAT64 ambientTemperature) {
+                                               EngineState engineState,
+                                               double deltaTime,
+                                               double engineTimer,
+                                               double simN3,
+                                               double ambientTemperature) {
+#ifdef PROFILING
   profilerEngineStartProcedure.start();
+#endif
 
-  FLOAT64 preN3Fbw;
-  FLOAT64 newN3Fbw;
-  FLOAT64 preEgtFbw;
-  FLOAT64 startEgtFbw;
-  FLOAT64 shutdownEgtFbw;
+  const int engineIdx = engine - 1;
 
-  idleN3 = simData.engineIdleDataPtr->data().idleN2;
-  idleN1 = simData.engineIdleDataPtr->data().idleN1;
-  idleFF = simData.engineIdleDataPtr->data().idleFF;
-  idleEGT = simData.engineIdleDataPtr->data().idleEGT;
+  const double idleN1 = simData.engineIdleN1->get();
+  const double idleN3 = simData.engineIdleN3->get();
+  const double idleFF = simData.engineIdleFF->get();
+  const double idleEGT = simData.engineIdleEGT->get();
 
-  if (timer < 1.7) {
+  if (engineTimer < 1.7) {
     if (msfsHandlerPtr->getSimOnGround()) {
-      *simData.fuelUsedEngineDataPtrArray[engine - 1] = 0;
+      simData.engineFuelUsed[engineIdx]->set(0);
     }
-    *simData.engineTimerDataPtrArray[engine - 1] = timer + deltaTime;
-
-    *simData.simEngineCorrectedN2DataPtrArray[engine - 1] = 0;
+    simData.engineTimer[engineIdx]->set(engineTimer + deltaTime);
+    simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = 0;
+    simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
   } else {
-    preN3Fbw = *simData.engineN2DataPtrArray[engine - 1];
-    preEgtFbw = *simData.engineEgtDataPtrArray[engine - 1];
-    newN3Fbw = Polynomial_A380X::startN3(simN3, preN3Fbw, idleN3);
-    startEgtFbw = Polynomial_A380X::startEGT(newN3Fbw, idleN3, ambientTemperature, idleEGT);
-    shutdownEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
+    const double preN3Fbw = simData.engineN3[engineIdx]->get();
+    const double preEgtFbw = simData.engineEgt[engineIdx]->get();
+    const double newN3Fbw = Polynomial_A380X::startN3(simN3, preN3Fbw, idleN3);
 
-    *simData.engineN3DataPtrArray[engine - 1] = newN3Fbw;
-    *simData.engineN2DataPtrArray[engine - 1] = newN3Fbw + 0.7;
-    *simData.engineN1DataPtrArray[engine - 1] = Polynomial_A380X::startN1(newN3Fbw, idleN3, idleN1);
-    *simData.engineFuelFlowDataPtrArray[engine - 1] = Polynomial_A380X::startFF(newN3Fbw, idleN3, idleFF);
+    const double startN1Fbw = Polynomial_A380X::startN1(newN3Fbw, idleN3, idleN1);
+    const double startFfFbw = Polynomial_A380X::startFF(newN3Fbw, idleN3, idleFF);
+    const double startEgtFbw = Polynomial_A380X::startEGT(newN3Fbw, idleN3, ambientTemperature, idleEGT);
 
-    if (engineState == 3) {
+    const double shutdownEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
+
+    simData.engineN3[engineIdx]->set(newN3Fbw);
+    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);
+    simData.engineN1[engineIdx]->set(startN1Fbw);
+    simData.engineFF[engineIdx]->set(startFfFbw);
+
+    if (engineState == RESTARTING) {
       if ((std::abs)(startEgtFbw - preEgtFbw) <= 1.5) {
-        *simData.engineEgtDataPtrArray[engine - 1] = startEgtFbw;
-        *simData.engineStateDataPtrArray[engine - 1] = 2;
+        simData.engineEgt[engineIdx]->set(startEgtFbw);
+        simData.engineState[engineIdx]->set(STARTING);
       } else if (startEgtFbw > preEgtFbw) {
-        *simData.engineEgtDataPtrArray[engine - 1] = preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw));
+        simData.engineEgt[engineIdx]->set(preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw)));
       } else {
-        *simData.engineEgtDataPtrArray[engine - 1] = shutdownEgtFbw;
+        simData.engineEgt[engineIdx]->set(shutdownEgtFbw);
       }
     } else {
-      *simData.engineEgtDataPtrArray[engine - 1] = startEgtFbw;
+      simData.engineEgt[engineIdx]->set(startEgtFbw);
     }
 
-    oilTemperature = Polynomial_A380X::startOilTemp(newN3Fbw, idleN3, ambientTemperature);
-    oilTemperatureEngine1Pre = oilTemperature;
-    *simData.simEngineOilTempDataPtrArray[engine - 1] = oilTemperature;
+    const double oilTemperature = Polynomial_A380X::startOilTemp(newN3Fbw, idleN3, ambientTemperature);
+    simData.oilTempDataPtr[engineIdx]->data().oilTemp = oilTemperature;
+    simData.oilTempDataPtr[engineIdx]->writeDataToSim();
   }
 
+#ifdef PROFILING
   profilerEngineStartProcedure.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerEngineStartProcedure.print();
+#endif
 }
 
 // Original comment: Engine Shutdown Procedure - TEMPORARY SOLUTION
-void EngineControl_A380X::engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer) {
+void EngineControl_A380X::engineShutdownProcedure(int engine, double ambientTemperature, double simN1, double deltaTime, double timer) {
+#ifdef PROFILING
   profilerEngineShutdownProcedure.start();
+#endif
 
-  double preN1Fbw;
-  double preN3Fbw;
-  double preEgtFbw;
-  double newN1Fbw;
-  double newN3Fbw;
-  double newEgtFbw;
+  const int engineIdx = engine - 1;
 
   if (timer < 1.8) {
-    *simData.engineTimerDataPtrArray[engine - 1] = timer + deltaTime;
+    simData.engineTimer[engineIdx]->set(timer + deltaTime);
   } else {
-    preN1Fbw = *simData.engineN1DataPtrArray[engine - 1];
-    preN3Fbw = *simData.engineN3DataPtrArray[engine - 1];
-    preEgtFbw = *simData.engineEgtDataPtrArray[engine - 1];
-    newN1Fbw = Polynomial_A380X::shutdownN1(preN1Fbw, deltaTime);
+    const double preN1Fbw = simData.engineN1[engineIdx]->get();
+    const double preN3Fbw = simData.engineN3[engineIdx]->get();
+    const double preEgtFbw = simData.engineEgt[engineIdx]->get();
+
+    double newN1Fbw = Polynomial_A380X::shutdownN1(preN1Fbw, deltaTime);
     if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
       newN1Fbw = simN1;
     }
-    newN3Fbw = Polynomial_A380X::shutdownN3(preN3Fbw, deltaTime);
-    newEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
-    *simData.engineN1DataPtrArray[engine - 1] = newN1Fbw;
-    *simData.engineN2DataPtrArray[engine - 1] = newN3Fbw + 0.7;
-    *simData.engineN3DataPtrArray[engine - 1] = newN3Fbw;
-    *simData.engineEgtDataPtrArray[engine - 1] = newEgtFbw;
+    const double newN3Fbw = Polynomial_A380X::shutdownN3(preN3Fbw, deltaTime);
+    const double newEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
+
+    simData.engineN1[engineIdx]->set(newN1Fbw);
+    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);
+    simData.engineN3[engineIdx]->set(newN3Fbw);
+    simData.engineEgt[engineIdx]->set(newEgtFbw);
   }
 
+#ifdef PROFILING
   profilerEngineShutdownProcedure.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerEngineShutdownProcedure.print();
+#endif
 }
 
 int EngineControl_A380X::updateFF(int engine,
-                                  FLOAT64 simCN1,
-                                  FLOAT64 mach,
-                                  FLOAT64 pressureAltitude,
-                                  FLOAT64 ambientTemperature,
-                                  FLOAT64 ambientPressure) {
+                                  double simCN1,
+                                  double mach,
+                                  double pressureAltitude,
+                                  double ambientTemperature,
+                                  double ambientPressure) {
+#ifdef PROFILING
   profilerUpdateFF.start();
+#endif
 
-  double outFlow;
-
-  FLOAT64 correctedFuelFlow = Polynomial_A380X::correctedFuelFlow(simCN1, mach, pressureAltitude);  // in lbs/hr.
+  const double correctedFuelFlow = Polynomial_A380X::correctedFuelFlow(simCN1, mach, pressureAltitude);  // in lbs/hr.
 
   // Checking Fuel Logic and final Fuel Flow
-  if (correctedFuelFlow < 1) {
-    outFlow = 0;
-  } else {
-    outFlow = (correctedFuelFlow * LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-               * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)));
+  double outFlow = 0;
+  if (correctedFuelFlow >= 1) {
+    outFlow = (std::max)(0.0,                                                                           //
+                         (correctedFuelFlow * LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
   }
+  simData.engineFF[engine - 1]->set(outFlow);
 
-  *simData.engineFuelFlowDataPtrArray[engine - 1] = outFlow;
-
+#ifdef PROFILING
   profilerUpdateFF.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerUpdateFF.print();
+#endif
 
   return correctedFuelFlow;
 }
 
-void EngineControl_A380X::updateOil([[maybe_unused]] int engine,            //
-                                    [[maybe_unused]] double thrust,         //
-                                    [[maybe_unused]] double simN3,          //
-                                    [[maybe_unused]] double deltaN3,        //
-                                    [[maybe_unused]] double deltaTime,      //
-                                    [[maybe_unused]] double ambientTemp) {  //
-  // TODO: Unused as per original code needs yet to be migrated
-  /*  double steadyTemperature;
-    double thermalEnergy;
-    double oilTemperaturePre;
-    double oilQtyActual;
-    double oilTotalActual;
-    double oilQtyObjective;
-    double oilBurn;
-    double oilPressureIdle;
-    double oilPressure;
-
-    //--------------------------------------------
-    // Engine Reading
-    //--------------------------------------------
-    if (engine == 1) {
-      steadyTemperature = simVars->getEngine1EGT();
-      thermalEnergy = thermalEnergy1;
-      oilTemperaturePre = oilTemperatureEngine1Pre;
-      oilQtyActual = simVars->getEngine1Oil();
-      oilTotalActual = simVars->getEngine1TotalOil();
-    } else if (engine == 2) {
-      steadyTemperature = simVars->getEngine2EGT();
-      thermalEnergy = thermalEnergy2;
-      oilTemperaturePre = oilTemperatureEngine2Pre;
-      oilQtyActual = simVars->getEngine2Oil();
-      oilTotalActual = simVars->getEngine2TotalOil();
-    } else if (engine == 3) {
-      steadyTemperature = simVars->getEngine3EGT();
-      thermalEnergy = thermalEnergy3;
-      oilTemperaturePre = oilTemperatureEngine3Pre;
-      oilQtyActual = simVars->getEngine3Oil();
-      oilTotalActual = simVars->getEngine3TotalOil();
-    } else {
-      steadyTemperature = simVars->getEngine4EGT();
-      thermalEnergy = thermalEnergy4;
-      oilTemperaturePre = oilTemperatureEngine4Pre;
-      oilQtyActual = simVars->getEngine4Oil();
-      oilTotalActual = simVars->getEngine4TotalOil();
-    }
-
-    //--------------------------------------------
-    // Oil Temperature
-    //--------------------------------------------
-    if (simOnGround == 1 && engineState == 0 && ambientTemp > oilTemperaturePre - 10) {
-      oilTemperature = ambientTemp;
-    } else {
-      if (steadyTemperature > oilTemperatureMax) {
-        steadyTemperature = oilTemperatureMax;
-      }
-      thermalEnergy = (0.995 * thermalEnergy) + (deltaN3 / deltaTime);
-      oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
-    }
-
-    //--------------------------------------------
-    // Oil Quantity
-    //--------------------------------------------
-    // Calculating Oil Qty as a function of thrust
-    oilQtyObjective = oilTotalActual * (1 - poly->oilGulpPct(thrust));
-    oilQtyActual = oilQtyActual - (oilTemperature - oilTemperaturePre);
-
-    // Oil burnt taken into account for tank and total oil
-    oilBurn = (0.00011111 * deltaTime);
-    oilQtyActual = oilQtyActual - oilBurn;
-    oilTotalActual = oilTotalActual - oilBurn;
-
-    //--------------------------------------------
-    // Oil Pressure
-    //--------------------------------------------
-    oilPressureIdle = 0;
-
-    oilPressure = poly->oilPressure(simN3) + oilPressureIdle;
-
-    //--------------------------------------------
-    // Engine Writing
-    //--------------------------------------------
-    if (engine == 1) {
-      thermalEnergy1 = thermalEnergy;
-      oilTemperatureEngine1Pre = oilTemperature;
-      simVars->setEngine1Oil(oilQtyActual);
-      simVars->setEngine1TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-      &oilPressure);
-    } else if (engine == 2) {
-      thermalEnergy2 = thermalEnergy;
-      oilTemperatureEngine2Pre = oilTemperature;
-      simVars->setEngine2Oil(oilQtyActual);
-      simVars->setEngine2TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-      &oilPressure);
-    } else if (engine == 3) {
-      thermalEnergy3 = thermalEnergy;
-      oilTemperatureEngine3Pre = oilTemperature;
-      simVars->setEngine3Oil(oilQtyActual);
-      simVars->setEngine3TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-      &oilPressure);
-    } else {
-      thermalEnergy4 = thermalEnergy;
-      oilTemperatureEngine4Pre = oilTemperature;
-      simVars->setEngine4Oil(oilQtyActual);
-      simVars->setEngine4TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-      &oilPressure);
-    }*/
-}
-
-void EngineControl_A380X::updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3) {
+void EngineControl_A380X::updatePrimaryParameters(int engine, double simN1, double simN3) {
+#ifdef PROFILING
   profilerUpdatePrimaryParameters.start();
+#endif
+
+  const int engineIdx = engine - 1;
 
   // Use the array of pointers to assign the values
-  *simData.engineN1DataPtrArray[engine - 1] = simN1;
-  *simData.engineN2DataPtrArray[engine - 1] = simN3 > 0 ? simN3 + 0.7 : simN3;
-  *simData.engineN3DataPtrArray[engine - 1] = simN3;
+  simData.engineN1[engineIdx]->set(simN1);
+  simData.engineN2[engineIdx]->set(simN3 > 0 ? simN3 + 0.7 : simN3);
+  simData.engineN3[engineIdx]->set(simN3);
 
+#ifdef PROFILING
   profilerUpdatePrimaryParameters.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerUpdatePrimaryParameters.print();
+#endif
 }
 
 void EngineControl_A380X::updateEGT(int engine,
-                                    FLOAT64 deltaTime,
+                                    double deltaTime,
                                     bool simOnGround,
-                                    FLOAT64 engineState,
-                                    FLOAT64 simCN1,
+                                    double engineState,
+                                    double simCN1,
                                     int correctedFuelFlow,
-                                    const FLOAT64 mach,
-                                    const FLOAT64 pressureAltitude,
-                                    const FLOAT64 ambientTemperature) {
+                                    const double mach,
+                                    const double pressureAltitude,
+                                    const double ambientTemperature) {
+#ifdef PROFILING
   profilerUpdateEGT.start();
+#endif
 
-  FLOAT64 correctedEGT = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
-
-  FLOAT64* engineEgt[4] = {
-      &simData.engineEgtDataPtr->data().engine1Egt,  // 1
-      &simData.engineEgtDataPtr->data().engine2Egt,  // 2
-      &simData.engineEgtDataPtr->data().engine3Egt,  // 3
-      &simData.engineEgtDataPtr->data().engine4Egt   // 4
-  };
+  const int engineIdx = engine - 1;
 
   if (simOnGround && engineState == 0) {
-    *(engineEgt[engine - 1]) = ambientTemperature;
+    simData.engineEgt[engineIdx]->set(ambientTemperature);
   } else {
-    FLOAT64 egtFbwPrevious = *(engineEgt[engine - 1]);
-    FLOAT64 egtFbwActual = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature));
-    egtFbwActual = egtFbwActual + (egtFbwPrevious - egtFbwActual) * (std::exp)(-0.1 * deltaTime);
-    *(engineEgt[engine - 1]) = egtFbwActual;
+    const double correctedEGT = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
+    const double egtFbwPrevious = simData.engineEgt[engineIdx]->get();
+    double egtFbwActualEng = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature));
+    egtFbwActualEng = egtFbwActualEng + (egtFbwPrevious - egtFbwActualEng) * (std::exp)(-0.1 * deltaTime);
+    simData.engineEgt[engineIdx]->set(egtFbwActualEng);
   }
+
+#ifdef PROFILING
   profilerUpdateEGT.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerUpdateEGT.print();
+#endif
 }
 
-void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
+void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
+#ifdef PROFILING
   profilerUpdateFuel.start();
+#endif
 
   bool uiFuelTamper = false;
 
-  const FLOAT64 refuelRate = simData.miscSimDataPtr->data().refuelRate;
-  const FLOAT64 refuelStartedByUser = simData.miscSimDataPtr->data().refuelStartedByUser;
+  const double engine1PreFF = simData.enginePreFF[E1]->get();
+  const double engine2PreFF = simData.enginePreFF[E2]->get();
+  const double engine3PreFF = simData.enginePreFF[E3]->get();
+  const double engine4PreFF = simData.enginePreFF[E4]->get();
 
-  const FLOAT64 engine1PreFF = simData.enginePreFuelFlowDataPtr->data().engine1PreFf;  // KG/H
-  const FLOAT64 engine2PreFF = simData.enginePreFuelFlowDataPtr->data().engine2PreFf;  // KG/H
-  const FLOAT64 engine3PreFF = simData.enginePreFuelFlowDataPtr->data().engine3PreFf;  // KG/H
-  const FLOAT64 engine4PreFF = simData.enginePreFuelFlowDataPtr->data().engine4PreFf;  // KG/H
+  const double engine1FF = simData.engineFF[E1]->get();
+  const double engine2FF = simData.engineFF[E2]->get();
+  const double engine3FF = simData.engineFF[E3]->get();
+  const double engine4FF = simData.engineFF[E4]->get();
 
-  const FLOAT64 engine1FF = simData.engineFuelFlowDataPtr->data().engine1Ff;  // KG/H
-  const FLOAT64 engine2FF = simData.engineFuelFlowDataPtr->data().engine2Ff;  // KG/H
-  const FLOAT64 engine3FF = simData.engineFuelFlowDataPtr->data().engine3Ff;  // KG/H
-  const FLOAT64 engine4FF = simData.engineFuelFlowDataPtr->data().engine4Ff;  // KG/H
+  /// weight of one gallon of fuel in pounds
+  const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;
 
-  FLOAT64 fuelUsedEngine1 = simData.fuelUsedEngineDataPtr->data().fuelUsedEngine1;  // Kg
-  FLOAT64 fuelUsedEngine2 = simData.fuelUsedEngineDataPtr->data().fuelUsedEngine2;  // Kg
-  FLOAT64 fuelUsedEngine3 = simData.fuelUsedEngineDataPtr->data().fuelUsedEngine3;  // Kg
-  FLOAT64 fuelUsedEngine4 = simData.fuelUsedEngineDataPtr->data().fuelUsedEngine4;  // Kg
+  double fuelUsedEngine1 = simData.engineFuelUsed[E1]->get();
+  double fuelUsedEngine2 = simData.engineFuelUsed[E2]->get();
+  double fuelUsedEngine3 = simData.engineFuelUsed[E3]->get();
+  double fuelUsedEngine4 = simData.engineFuelUsed[E4]->get();
 
-  FLOAT64 fuelLeftOuterPre = simData.fuelPreDataPtr->data().fuelLeftOuterPre;    // LBS
-  FLOAT64 fuelFeedOnePre = simData.fuelPreDataPtr->data().fuelFeedOnePre;        // LBS
-  FLOAT64 fuelLeftMidPre = simData.fuelPreDataPtr->data().fuelLeftMidPre;        // LBS
-  FLOAT64 fuelLeftInnerPre = simData.fuelPreDataPtr->data().fuelLeftInnerPre;    // LBS
-  FLOAT64 fuelFeedTwoPre = simData.fuelPreDataPtr->data().fuelFeedTwoPre;        // LBS
-  FLOAT64 fuelFeedThreePre = simData.fuelPreDataPtr->data().fuelFeedThreePre;    // LBS
-  FLOAT64 fuelRightInnerPre = simData.fuelPreDataPtr->data().fuelRightInnerPre;  // LBS
-  FLOAT64 fuelRightMidPre = simData.fuelPreDataPtr->data().fuelRightMidPre;      // LBS
-  FLOAT64 fuelFeedFourPre = simData.fuelPreDataPtr->data().fuelFeedFourPre;      // LBS
-  FLOAT64 fuelRightOuterPre = simData.fuelPreDataPtr->data().fuelRightOuterPre;  // LBS
-  FLOAT64 fuelTrimPre = simData.fuelPreDataPtr->data().fuelTrimPre;              // LBS
+  double fuelLeftOuterPre = simData.fuelLeftOuterPre->get();
+  double fuelFeedOnePre = simData.fuelFeedOnePre->get();
+  double fuelLeftMidPre = simData.fuelLeftMidPre->get();
+  double fuelLeftInnerPre = simData.fuelLeftInnerPre->get();
+  double fuelFeedTwoPre = simData.fuelFeedTwoPre->get();
+  double fuelFeedThreePre = simData.fuelFeedThreePre->get();
+  double fuelRightInnerPre = simData.fuelRightInnerPre->get();
+  double fuelRightMidPre = simData.fuelRightMidPre->get();
+  double fuelFeedFourPre = simData.fuelFeedFourPre->get();
+  double fuelRightOuterPre = simData.fuelRightOuterPre->get();
+  double fuelTrimPre = simData.fuelTrimPre->get();
 
-  const FLOAT64 fuelWeightGallon = simData.miscSimDataPtr->data().fuelWeightPerGallon;
+  const double leftOuterQty = simData.fuelTankDataPtr->data().fuelSystemLeftOuter * fuelWeightGallon;      // LBS
+  const double feedOneQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * fuelWeightGallon;      // LBS
+  const double leftMidQty = simData.fuelTankDataPtr->data().fuelSystemLeftMid * fuelWeightGallon;          // LBS
+  const double leftInnerQty = simData.fuelTankDataPtr->data().fuelSystemLeftInner * fuelWeightGallon;      // LBS
+  const double feedTwoQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo * fuelWeightGallon;      // LBS
+  const double feedThreeQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree * fuelWeightGallon;  // LBS
+  const double rightInnerQty = simData.fuelTankDataPtr->data().fuelSystemRightInner * fuelWeightGallon;    // LBS
+  const double rightMidQty = simData.fuelTankDataPtr->data().fuelSystemRightMid * fuelWeightGallon;        // LBS
+  const double feedFourQty = simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour * fuelWeightGallon;    // LBS
+  const double rightOuterQty = simData.fuelTankDataPtr->data().fuelSystemRightOuter * fuelWeightGallon;    // LBS
+  const double trimQty = simData.fuelTankDataPtr->data().fuelSystemTrim * fuelWeightGallon;                // LBS
 
-  const FLOAT64 leftOuterQty = simData.simFuelTankDataPtr->data().fuelTankLeftOuter * fuelWeightGallon;    // LBS
-  const FLOAT64 feedOneQty = simData.simFuelTankDataPtr->data().fuelTankFeedOne * fuelWeightGallon;        // LBS
-  const FLOAT64 leftMidQty = simData.simFuelTankDataPtr->data().fuelTankLeftMid * fuelWeightGallon;        // LBS
-  const FLOAT64 leftInnerQty = simData.simFuelTankDataPtr->data().fuelTankLeftInner * fuelWeightGallon;    // LBS
-  const FLOAT64 feedTwoQty = simData.simFuelTankDataPtr->data().fuelTankFeedTwo * fuelWeightGallon;        // LBS
-  const FLOAT64 feedThreeQty = simData.simFuelTankDataPtr->data().fuelTankFeedThree * fuelWeightGallon;    // LBS
-  const FLOAT64 rightInnerQty = simData.simFuelTankDataPtr->data().fuelTankRightInner * fuelWeightGallon;  // LBS
-  const FLOAT64 rightMidQty = simData.simFuelTankDataPtr->data().fuelTankRightMid * fuelWeightGallon;      // LBS
-  const FLOAT64 feedFourQty = simData.simFuelTankDataPtr->data().fuelTankFeedFour * fuelWeightGallon;      // LBS
-  const FLOAT64 rightOuterQty = simData.simFuelTankDataPtr->data().fuelTankRightOuter * fuelWeightGallon;  // LBS
-  const FLOAT64 trimQty = simData.simFuelTankDataPtr->data().fuelTankTrim * fuelWeightGallon;              // LBS
+  const double fuelTotalActual = leftOuterQty + feedOneQty + leftMidQty + leftInnerQty + feedTwoQty + feedThreeQty + rightInnerQty +
+                                 rightMidQty + feedFourQty + rightOuterQty + trimQty;  // LBS
+  const double fuelTotalPre = fuelLeftOuterPre + fuelFeedOnePre + fuelLeftMidPre + fuelLeftInnerPre + fuelFeedTwoPre + fuelFeedThreePre +
+                              fuelRightInnerPre + fuelRightMidPre + fuelFeedFourPre + fuelRightOuterPre + fuelTrimPre;  // LBS
+  const double deltaFuelRate = (std::abs)(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTimeSeconds);      // LBS/ sec
 
-  const FLOAT64 fuelTotalActual = leftOuterQty + feedOneQty + leftMidQty + leftInnerQty + feedTwoQty + feedThreeQty + rightInnerQty +
-                                  rightMidQty + feedFourQty + rightOuterQty + trimQty;  // LBS
-  const FLOAT64 fuelTotalPre = fuelLeftOuterPre + fuelFeedOnePre + fuelLeftMidPre + fuelLeftInnerPre + fuelFeedTwoPre + fuelFeedThreePre +
-                               fuelRightInnerPre + fuelRightMidPre + fuelFeedFourPre + fuelRightOuterPre + fuelTrimPre;  // LBS
-  const FLOAT64 deltaFuelRate = (std::abs)(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);             // LBS/ sec
+  const EngineState engine1State = static_cast<EngineState>(simData.engineState[E1]->get());
+  const EngineState engine2State = static_cast<EngineState>(simData.engineState[E2]->get());
+  const EngineState engine3State = static_cast<EngineState>(simData.engineState[E3]->get());
+  const EngineState engine4State = static_cast<EngineState>(simData.engineState[E4]->get());
 
-  const FLOAT64 engine1State = simData.engineStateDataPtr->data().engine1State;
-  const FLOAT64 engine2State = simData.engineStateDataPtr->data().engine2State;
-  const FLOAT64 engine3State = simData.engineStateDataPtr->data().engine3State;
-  const FLOAT64 engine4State = simData.engineStateDataPtr->data().engine4State;
-
-  // Check DevelopmentStateVar for UI
-  const bool isReady = msfsHandlerPtr->getAircraftIsReadyVar();
-  const FLOAT64 devState = msfsHandlerPtr->getAircraftDevelopmentStateVar();
-
-  // why???
-  deltaTime = deltaTime / 3600;
+  /// Delta time for this update in hours
+  const double deltaTimeHours = deltaTimeSeconds / 3600;
 
   // TODO:  Pump Logic - TO BE IMPLEMENTED
   /*
 
-  const FLOAT64 pumpStateEngine1 = simData.pumpStateDataPtr->data().pumpStateEngine1;
-  const FLOAT64 pumpStateEngine2 = simData.pumpStateDataPtr->data().pumpStateEngine2;
-  const FLOAT64 pumpStateEngine3 = simData.pumpStateDataPtr->data().pumpStateEngine3;
-  const FLOAT64 pumpStateEngine4 = simData.pumpStateDataPtr->data().pumpStateEngine4;
+  const double pumpStateEngine1 = simData.pumpStateDataPtr->data().pumpStateEngine1;
+  const double pumpStateEngine2 = simData.pumpStateDataPtr->data().pumpStateEngine2;
+  const double pumpStateEngine3 = simData.pumpStateDataPtr->data().pumpStateEngine3;
+  const double pumpStateEngine4 = simData.pumpStateDataPtr->data().pumpStateEngine4;
 
   // Pump State Logic for Engine 1
   if (pumpStateEngine1 == 0 && (timerEngine1.elapsed() == 0 || timerEngine1.elapsed() >= 1000)) {
@@ -834,56 +683,60 @@ void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
   --------------------------------------------*/
 
   // Checking for in-game UI Fuel tampering
-  if ((isReady == 1 && refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
-      (isReady == 1 && refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
+  const bool isReadyVar = msfsHandlerPtr->getAircraftIsReadyVar();
+  const double refuelRate = simData.refuelRate->get();
+  const double refuelStartedByUser = simData.refuelStartedByUser->get();
+  if ((isReadyVar && !refuelStartedByUser && deltaFuelRate > FUEL_THRESHOLD) ||
+      (isReadyVar && refuelStartedByUser && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
     uiFuelTamper = true;
   }
 
   //--------------------------------------------
   // Main Fuel Burn Logic
   //--------------------------------------------
+  const FLOAT64 aircraftDevelopmentStateVar = msfsHandlerPtr->getAircraftDevelopmentStateVar();
 
-  // Pause is handled in the main update function
-  if (uiFuelTamper && devState == 0) {
-    simData.fuelPreDataPtr->data().fuelLeftOuterPre = fuelLeftOuterPre;    // lbs
-    simData.fuelPreDataPtr->data().fuelFeedOnePre = fuelFeedOnePre;        // lbs
-    simData.fuelPreDataPtr->data().fuelLeftMidPre = fuelLeftMidPre;        // lbs
-    simData.fuelPreDataPtr->data().fuelLeftInnerPre = fuelLeftInnerPre;    // lbs
-    simData.fuelPreDataPtr->data().fuelFeedTwoPre = fuelFeedTwoPre;        // lbs
-    simData.fuelPreDataPtr->data().fuelFeedThreePre = fuelFeedThreePre;    // lbs
-    simData.fuelPreDataPtr->data().fuelRightInnerPre = fuelRightInnerPre;  // lbs
-    simData.fuelPreDataPtr->data().fuelRightMidPre = fuelRightMidPre;      // lbs
-    simData.fuelPreDataPtr->data().fuelFeedFourPre = fuelFeedFourPre;      // lbs
-    simData.fuelPreDataPtr->data().fuelRightOuterPre = fuelRightOuterPre;  // lbs
-    simData.fuelPreDataPtr->data().fuelTrimPre = fuelTrimPre;              // lbs
+  if (uiFuelTamper && aircraftDevelopmentStateVar == 0) {
+    simData.fuelLeftOuterPre->set(fuelLeftOuterPre);
+    simData.fuelFeedOnePre->set(fuelFeedOnePre);
+    simData.fuelLeftMidPre->set(fuelLeftMidPre);
+    simData.fuelLeftInnerPre->set(fuelLeftInnerPre);
+    simData.fuelFeedTwoPre->set(fuelFeedTwoPre);
+    simData.fuelFeedThreePre->set(fuelFeedThreePre);
+    simData.fuelRightInnerPre->set(fuelRightInnerPre);
+    simData.fuelRightMidPre->set(fuelRightMidPre);
+    simData.fuelFeedFourPre->set(fuelFeedFourPre);
+    simData.fuelRightOuterPre->set(fuelRightOuterPre);
+    simData.fuelTrimPre->set(fuelTrimPre);
 
-    simData.simFuelTankDataPtr->data().fuelTankLeftOuter = fuelLeftOuterPre / fuelWeightGallon;    // gal
-    simData.simFuelTankDataPtr->data().fuelTankFeedOne = fuelFeedOnePre / fuelWeightGallon;        // gal
-    simData.simFuelTankDataPtr->data().fuelTankLeftMid = fuelLeftMidPre / fuelWeightGallon;        // gal
-    simData.simFuelTankDataPtr->data().fuelTankLeftInner = fuelLeftInnerPre / fuelWeightGallon;    // gal
-    simData.simFuelTankDataPtr->data().fuelTankFeedTwo = fuelFeedTwoPre / fuelWeightGallon;        // gal
-    simData.simFuelTankDataPtr->data().fuelTankFeedThree = fuelFeedThreePre / fuelWeightGallon;    // gal
-    simData.simFuelTankDataPtr->data().fuelTankRightInner = fuelRightInnerPre / fuelWeightGallon;  // gal
-    simData.simFuelTankDataPtr->data().fuelTankRightMid = fuelRightMidPre / fuelWeightGallon;      // gal
-    simData.simFuelTankDataPtr->data().fuelTankFeedFour = fuelFeedFourPre / fuelWeightGallon;      // gal
-    simData.simFuelTankDataPtr->data().fuelTankRightOuter = fuelRightOuterPre / fuelWeightGallon;  // gal
-    simData.simFuelTankDataPtr->data().fuelTankTrim = fuelTrimPre / fuelWeightGallon;              // gal
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne = fuelFeedOnePre / fuelWeightGallon;      // gal
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo = fuelFeedTwoPre / fuelWeightGallon;      // gal
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = fuelFeedThreePre / fuelWeightGallon;  // gal
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour = fuelFeedFourPre / fuelWeightGallon;    // gal
+    simData.fuelFeedTankDataPtr->writeDataToSim();
 
+    simData.fuelTankDataPtr->data().fuelSystemLeftOuter = fuelLeftOuterPre / fuelWeightGallon;    // gal
+    simData.fuelTankDataPtr->data().fuelSystemLeftMid = fuelLeftMidPre / fuelWeightGallon;        // gal
+    simData.fuelTankDataPtr->data().fuelSystemLeftInner = fuelLeftInnerPre / fuelWeightGallon;    // gal
+    simData.fuelTankDataPtr->data().fuelSystemRightInner = fuelRightInnerPre / fuelWeightGallon;  // gal
+    simData.fuelTankDataPtr->data().fuelSystemRightMid = fuelRightMidPre / fuelWeightGallon;      // gal
+    simData.fuelTankDataPtr->data().fuelSystemRightOuter = fuelRightOuterPre / fuelWeightGallon;  // gal
+    simData.fuelTankDataPtr->data().fuelSystemTrim = fuelTrimPre / fuelWeightGallon;              // gal
+    simData.fuelTankDataPtr->writeDataToSim();
   }
   // Detects refueling from the EFB
   else if (!uiFuelTamper && refuelStartedByUser == 1) {
-    simData.fuelPreDataPtr->data().fuelLeftOuterPre = leftOuterQty;    // lbs
-    simData.fuelPreDataPtr->data().fuelFeedOnePre = feedOneQty;        // lbs
-    simData.fuelPreDataPtr->data().fuelLeftMidPre = leftMidQty;        // lbs
-    simData.fuelPreDataPtr->data().fuelLeftInnerPre = leftInnerQty;    // lbs
-    simData.fuelPreDataPtr->data().fuelFeedTwoPre = feedTwoQty;        // lbs
-    simData.fuelPreDataPtr->data().fuelFeedThreePre = feedThreeQty;    // lbs
-    simData.fuelPreDataPtr->data().fuelRightInnerPre = rightInnerQty;  // lbs
-    simData.fuelPreDataPtr->data().fuelRightMidPre = rightMidQty;      // lbs
-    simData.fuelPreDataPtr->data().fuelFeedFourPre = feedFourQty;      // lbs
-    simData.fuelPreDataPtr->data().fuelRightOuterPre = rightOuterQty;  // lbs
-    simData.fuelPreDataPtr->data().fuelTrimPre = trimQty;              // lbs
-
+    simData.fuelLeftOuterPre->set(leftOuterQty);
+    simData.fuelFeedOnePre->set(feedOneQty);
+    simData.fuelLeftMidPre->set(leftMidQty);
+    simData.fuelLeftInnerPre->set(leftInnerQty);
+    simData.fuelFeedTwoPre->set(feedTwoQty);
+    simData.fuelFeedThreePre->set(feedThreeQty);
+    simData.fuelRightInnerPre->set(rightInnerQty);
+    simData.fuelRightMidPre->set(rightMidQty);
+    simData.fuelFeedFourPre->set(feedFourQty);
+    simData.fuelRightOuterPre->set(rightOuterQty);
+    simData.fuelTrimPre->set(trimQty);
   } else {
     if (uiFuelTamper) {
       fuelLeftOuterPre = leftOuterQty;    // in LBS
@@ -899,142 +752,146 @@ void EngineControl_A380X::updateFuel(FLOAT64 deltaTime) {
       fuelTrimPre = trimQty;              // in LBS
     }
 
-    FLOAT64 fuelFlowRateChange = 0;    // was m in the original code
-    FLOAT64 previousFuelFlowRate = 0;  // was b in the original code
-    FLOAT64 fuelBurn1 = 0;
-    FLOAT64 fuelBurn2 = 0;
-    FLOAT64 fuelBurn3 = 0;
-    FLOAT64 fuelBurn4 = 0;
+    double fuelFlowRateChange = 0;    // was m in the original code
+    double previousFuelFlowRate = 0;  // was b in the original code
+    double fuelBurn1 = 0;
+    double fuelBurn2 = 0;
+    double fuelBurn3 = 0;
+    double fuelBurn4 = 0;
 
     // Initialize arrays to avoid code duplication when looping over engines
-    FLOAT64 fuelFeedPre[4] = {fuelFeedOnePre, fuelFeedTwoPre, fuelFeedThreePre, fuelFeedFourPre};
-    FLOAT64 engineFF[4] = {engine1FF, engine2FF, engine3FF, engine4FF};
-    FLOAT64 enginePreFF[4] = {engine1PreFF, engine2PreFF, engine3PreFF, engine4PreFF};
-    FLOAT64 fuelBurn[4] = {fuelBurn1, fuelBurn2, fuelBurn3, fuelBurn4};
-    FLOAT64 fuelUsedEngine[4] = {fuelUsedEngine1, fuelUsedEngine2, fuelUsedEngine3, fuelUsedEngine4};
+    const double* engineFF[4] = {&engine1FF, &engine2FF, &engine3FF, &engine4FF};
+    const double* enginePreFF[4] = {&engine1PreFF, &engine2PreFF, &engine3PreFF, &engine4PreFF};
+    double* fuelFeedPre[4] = {&fuelFeedOnePre, &fuelFeedTwoPre, &fuelFeedThreePre, &fuelFeedFourPre};
+    double* fuelBurn[4] = {&fuelBurn1, &fuelBurn2, &fuelBurn3, &fuelBurn4};
+    double* fuelUsedEngine[4] = {&fuelUsedEngine1, &fuelUsedEngine2, &fuelUsedEngine3, &fuelUsedEngine4};
 
     // Loop over engines
     for (int i = 0; i < 4; i++) {
       // Engines fuel burn routine
-      if (fuelFeedPre[i] > 0) {
+      if (*fuelFeedPre[i] > 0) {
         // Cycle Fuel Burn
-        if (devState != 2) {
-          fuelFlowRateChange = (engineFF[i] - enginePreFF[i]) / deltaTime;
-          previousFuelFlowRate = enginePreFF[i];
-          fuelBurn[i] = (fuelFlowRateChange * (std::pow)(deltaTime, 2) / 2) + (previousFuelFlowRate * deltaTime);  // KG
+        if (aircraftDevelopmentStateVar != 2) {
+          fuelFlowRateChange = (*engineFF[i] - *enginePreFF[i]) / deltaTimeHours;
+          previousFuelFlowRate = *enginePreFF[i];
+          *fuelBurn[i] = (fuelFlowRateChange * (std::pow)(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
         }
         // Fuel Used Accumulators
-        fuelUsedEngine[i] += fuelBurn[i];
+        *fuelUsedEngine[i] += *fuelBurn[i];
       } else {
         fuelBurn[i] = 0;
         fuelFeedPre[i] = 0;
       }
     }
 
-    FLOAT64 fuelFeedOne = fuelFeedOnePre - (fuelBurn1 * KGS_TO_LBS);      // LBS
-    FLOAT64 fuelFeedTwo = fuelFeedTwoPre - (fuelBurn2 * KGS_TO_LBS);      // LBS
-    FLOAT64 fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * KGS_TO_LBS);  // LBS
-    FLOAT64 fuelFeedFour = fuelFeedFourPre - (fuelBurn4 * KGS_TO_LBS);    // LBS
+    const double fuelFeedOne = fuelFeedOnePre - (fuelBurn1 * KGS_TO_LBS);      // LBS
+    const double fuelFeedTwo = fuelFeedTwoPre - (fuelBurn2 * KGS_TO_LBS);      // LBS
+    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * KGS_TO_LBS);  // LBS
+    const double fuelFeedFour = fuelFeedFourPre - (fuelBurn4 * KGS_TO_LBS);    // LBS
 
     // Setting new pre-cycle conditions
+    simData.enginePreFF[E1]->set(engine1FF);
+    simData.enginePreFF[E2]->set(engine2FF);
+    simData.enginePreFF[E3]->set(engine3FF);
+    simData.enginePreFF[E4]->set(engine4FF);
 
-    simData.enginePreFuelFlowDataPtr->data().engine1PreFf = engine1FF;
-    simData.enginePreFuelFlowDataPtr->data().engine2PreFf = engine2FF;
-    simData.enginePreFuelFlowDataPtr->data().engine3PreFf = engine3FF;
-    simData.enginePreFuelFlowDataPtr->data().engine4PreFf = engine4FF;
+    simData.engineFuelUsed[E1]->set(fuelUsedEngine1);
+    simData.engineFuelUsed[E2]->set(fuelUsedEngine2);
+    simData.engineFuelUsed[E3]->set(fuelUsedEngine3);
+    simData.engineFuelUsed[E4]->set(fuelUsedEngine4);
 
-    simData.fuelUsedEngineDataPtr->data().fuelUsedEngine1 = fuelUsedEngine1;  // in KG
-    simData.fuelUsedEngineDataPtr->data().fuelUsedEngine2 = fuelUsedEngine2;  // in KG
-    simData.fuelUsedEngineDataPtr->data().fuelUsedEngine3 = fuelUsedEngine3;  // in KG
-    simData.fuelUsedEngineDataPtr->data().fuelUsedEngine4 = fuelUsedEngine4;  // in KG
+    simData.fuelFeedOnePre->set(fuelFeedOne);
+    simData.fuelFeedTwoPre->set(fuelFeedTwo);
+    simData.fuelFeedThreePre->set(fuelFeedThree);
+    simData.fuelFeedFourPre->set(fuelFeedFour);
 
-    simData.fuelPreDataPtr->data().fuelFeedOnePre = fuelFeedOne;      // in LBS
-    simData.fuelPreDataPtr->data().fuelFeedTwoPre = fuelFeedTwo;      // in LBS
-    simData.fuelPreDataPtr->data().fuelFeedThreePre = fuelFeedThree;  // in LBS
-    simData.fuelPreDataPtr->data().fuelFeedFourPre = fuelFeedFour;    // in LBS
-
-    simData.simFuelTankDataPtr->data().fuelTankFeedOne = (fuelFeedOne / fuelWeightGallon);
-    simData.simFuelTankDataPtr->data().fuelTankFeedTwo = (fuelFeedTwo / fuelWeightGallon);
-    simData.simFuelTankDataPtr->data().fuelTankFeedThree = (fuelFeedThree / fuelWeightGallon);
-    simData.simFuelTankDataPtr->data().fuelTankFeedFour = (fuelFeedFour / fuelWeightGallon);
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne = (fuelFeedOne / fuelWeightGallon);
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo = (fuelFeedTwo / fuelWeightGallon);
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = (fuelFeedThree / fuelWeightGallon);
+    simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour = (fuelFeedFour / fuelWeightGallon);
+    simData.fuelFeedTankDataPtr->writeDataToSim();
   }
 
   // Will save the current fuel quantities if on the ground AND engines being shutdown
   // AND 5 seconds have passed since the last save
   if (msfsHandlerPtr->getSimOnGround() && (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > 5.0 &&
-      (engine1State == 0 || engine1State == 4 ||  // 1
-       engine2State == 0 || engine2State == 4 ||  // 2
-       engine3State == 0 || engine3State == 4 ||  // 3
-       engine4State == 0 || engine4State == 4)    // 4
+      (engine1State == OFF || engine1State == SHUTTING ||  // 1
+       engine2State == OFF || engine2State == SHUTTING ||  // 2
+       engine3State == OFF || engine3State == SHUTTING ||  // 3
+       engine4State == OFF || engine4State == SHUTTING)    // 4
   ) {
-    fuelConfiguration.setFuelLeftOuter(simData.fuelPreDataPtr->data().fuelLeftOuterPre / fuelWeightGallon);
-    fuelConfiguration.setFuelFeedOne(simData.fuelPreDataPtr->data().fuelFeedOnePre / fuelWeightGallon);
-    fuelConfiguration.setFuelLeftMid(simData.fuelPreDataPtr->data().fuelLeftMidPre / fuelWeightGallon);
-    fuelConfiguration.setFuelLeftInner(simData.fuelPreDataPtr->data().fuelLeftInnerPre / fuelWeightGallon);
-    fuelConfiguration.setFuelFeedTwo(simData.fuelPreDataPtr->data().fuelFeedTwoPre / fuelWeightGallon);
-    fuelConfiguration.setFuelFeedThree(simData.fuelPreDataPtr->data().fuelFeedThreePre / fuelWeightGallon);
-    fuelConfiguration.setFuelRightInner(simData.fuelPreDataPtr->data().fuelRightInnerPre / fuelWeightGallon);
-    fuelConfiguration.setFuelRightMid(simData.fuelPreDataPtr->data().fuelRightMidPre / fuelWeightGallon);
-    fuelConfiguration.setFuelFeedFour(simData.fuelPreDataPtr->data().fuelFeedFourPre / fuelWeightGallon);
-    fuelConfiguration.setFuelRightOuter(simData.fuelPreDataPtr->data().fuelRightOuterPre / fuelWeightGallon);
-    fuelConfiguration.setFuelTrim(simData.fuelPreDataPtr->data().fuelTrimPre / fuelWeightGallon);
+    fuelConfiguration.setFuelLeftOuter(simData.fuelTankDataPtr->data().fuelSystemLeftOuter / fuelWeightGallon);
+    fuelConfiguration.setFuelFeedOne(simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne / fuelWeightGallon);
+    fuelConfiguration.setFuelLeftMid(simData.fuelTankDataPtr->data().fuelSystemLeftMid / fuelWeightGallon);
+    fuelConfiguration.setFuelLeftInner(simData.fuelTankDataPtr->data().fuelSystemLeftInner / fuelWeightGallon);
+    fuelConfiguration.setFuelFeedTwo(simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo / fuelWeightGallon);
+    fuelConfiguration.setFuelFeedThree(simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree / fuelWeightGallon);
+    fuelConfiguration.setFuelRightInner(simData.fuelTankDataPtr->data().fuelSystemRightInner / fuelWeightGallon);
+    fuelConfiguration.setFuelRightMid(simData.fuelTankDataPtr->data().fuelSystemRightMid / fuelWeightGallon);
+    fuelConfiguration.setFuelFeedFour(simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour / fuelWeightGallon);
+    fuelConfiguration.setFuelRightOuter(simData.fuelTankDataPtr->data().fuelSystemRightOuter / fuelWeightGallon);
+    fuelConfiguration.setFuelTrim(simData.fuelTankDataPtr->data().fuelSystemTrim / fuelWeightGallon);
     fuelConfiguration.saveConfigurationToIni();
     lastFuelSaveTime = msfsHandlerPtr->getSimulationTime();
   }
 
+#ifdef PROFILING
   profilerUpdateFuel.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerUpdateFuel.print();
+#endif
 }
 
-void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
-                                             FLOAT64 pressureAltitude,
-                                             FLOAT64 ambientTemperature,
-                                             FLOAT64 ambientPressure,
-                                             FLOAT64 mach,
-                                             [[maybe_unused]] FLOAT64 simN1highest,
+void EngineControl_A380X::updateThrustLimits(double simulationTime,
+                                             double pressureAltitude,
+                                             double ambientTemperature,
+                                             double ambientPressure,
+                                             double mach,
                                              bool packs,
                                              bool nai,
                                              bool wai) {
+#ifdef PROFILING
   profilerUpdateThrustLimits.start();
+#endif
 
-  FLOAT64 idle = simData.engineIdleDataPtr->data().idleN1;
-  FLOAT64 flexTemp = simData.miscSimDataPtr->data().flexTemp;
-  FLOAT64 thrustLimitType = simData.thrustLimitDataPtr->data().thrustLimitType;
+  const double flexTemp = simData.airlinerToFlexTemp->get();
+  const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
 
-  FLOAT64 to = 0;
-  FLOAT64 ga = 0;
-  FLOAT64 toga = 0;
-  FLOAT64 clb = 0;
-  FLOAT64 mct = 0;
-  FLOAT64 flex_to = 0;
-  FLOAT64 flex_ga = 0;
-  FLOAT64 flex = 0;
+  double to = 0;
+  double ga = 0;
+  double toga = 0;
+  double clb = 0;
+  double mct = 0;
+  double flex_to = 0;
+  double flex_ga = 0;
+  double flex = 0;
 
   // Write all N1 Limits
-  to = ThrustLimits_A380X::limitN1(0, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
-  ga = ThrustLimits_A380X::limitN1(1, min(16600.0, pressureAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  to = ThrustLimits_A380X::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  ga = ThrustLimits_A380X::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
   if (flexTemp > 0) {
-    flex_to = ThrustLimits_A380X::limitN1(0, min(16600.0, pressureAltitude), ambientTemperature,  //
-                                          ambientPressure, flexTemp, packs, nai, wai);
-    flex_ga = ThrustLimits_A380X::limitN1(1, min(16600.0, pressureAltitude), ambientTemperature,  //
-                                          ambientPressure, flexTemp, packs, nai, wai);
+    flex_to =
+        ThrustLimits_A380X::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+    flex_ga =
+        ThrustLimits_A380X::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
   }
-  clb = ThrustLimits_A380X::ThrustLimits_A380X::limitN1(2, pressureAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
-  mct = ThrustLimits_A380X::limitN1(3, pressureAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  clb = ThrustLimits_A380X::limitN1(2, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
+  mct = ThrustLimits_A380X::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
 
   // transition between TO and GA limit -----------------------------------------------------------------------------
-  FLOAT64 machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
+  double machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
   toga = to + (ga - to) * machFactorLow;
   flex = flex_to + (flex_ga - flex_to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
+  bool isFlexActive = false;
+  const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
     isFlexActive = true;
   } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
     isFlexActive = false;
   }
 
+  double transitionStartTime = 0;
+  double transitionFactor = 0;
   if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive = true;
     transitionStartTime = simulationTime;
@@ -1046,12 +903,11 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
     transitionFactor = 0;
   }
 
-  FLOAT64 deltaThrust = 0;
-
+  double deltaThrust = 0;
   if (isTransitionActive) {
-    double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - waitTime);
+    double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - transitionWaitTime);
     if (timeDifference > 0 && clb > flex) {
-      deltaThrust = min(clb - flex, timeDifference * transitionFactor);
+      deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
     }
     if (flex + deltaThrust >= clb) {
       isFlexActive = false;
@@ -1069,9 +925,9 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
   // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 
   // get factors
-  FLOAT64 machFactor = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
-  FLOAT64 altitudeFactorLow = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 16600) / 500)));
-  FLOAT64 altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 25000) / 500)));
+  double machFactor = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
+  double altitudeFactorLow = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 16600) / 500)));
+  double altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 25000) / 500)));
 
   // adapt thrust limits
   if (pressureAltitude >= 25000) {
@@ -1087,13 +943,13 @@ void EngineControl_A380X::updateThrustLimits(FLOAT64 simulationTime,
   }
 
   // write limits ---------------------------------------------------------------------------------------------------
-  simData.thrustLimitDataPtr->data().thrustLimitIdle = idle;
-  simData.thrustLimitDataPtr->data().thrustLimitToga = toga;
-  simData.thrustLimitDataPtr->data().thrustLimitFlex = flex;
-  simData.thrustLimitDataPtr->data().thrustLimitClimb = clb;
-  simData.thrustLimitDataPtr->data().thrustLimitMct = mct;
+  simData.thrustLimitIdle->set(simData.engineIdleN1->get());
+  simData.thrustLimitToga->set(toga);
+  simData.thrustLimitFlex->set(flex);
+  simData.thrustLimitClimb->set(clb);
+  simData.thrustLimitMct->set(mct);
 
+#ifdef PROFILING
   profilerUpdateThrustLimits.stop();
-  if (msfsHandlerPtr->getTickCounter() % 100 == 0)
-    profilerUpdateThrustLimits.print();
+#endif
 }
