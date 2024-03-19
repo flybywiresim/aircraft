@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROLA32NX_H
-#define FLYBYWIRE_AIRCRAFT_ENGINECONTROLA32NX_H
+#ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H
+#define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H
 
 #include "MsfsHandler.h"
 
@@ -12,10 +12,21 @@
 #define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
 #define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
 
+/**
+ * @class EngineControl_A32NX
+ * @brief Manages the engine control for the A32NX aircraft, coordinating and synchronising the
+ *        simulator's jet engine simulation with realistic custom values.
+ *
+ * Engine control is adding more realistic values and behaviour to the engine simulation of the simulator.
+ * Esp. for startup, shutdown, fuel consumption, thrust limits, etc.
+ *
+ * TODO: The EngineControl_A32NX class is still work in progress and might be extended or replaced in the future.
+ */
 class EngineControl_A32NX {
  private:
   // Convenience pointer to the msfs handler
   MsfsHandler* msfsHandlerPtr = nullptr;
+
   // Convenience pointer to the data manager
   DataManager* dataManagerPtr = nullptr;
 
@@ -29,16 +40,16 @@ class EngineControl_A32NX {
   FuelConfiguration_A32NX fuelConfiguration{};
 
   // previous time the fuel levels were saved to file
-  static constexpr double fuelSaveInterval = 5.0;  // seconds
   double lastFuelSaveTime = 0.0;
+  static constexpr double FUEL_SAVE_INTERVAL = 5.0;  // seconds
 
   // some pump timings - unclear why these are needed
   double pumpStateLeftTimeStamp = 0.0;
   double pumpStateRightTimeStamp = 0.0;
 
-  // thrust limits transition for flex
-  static constexpr double transitionWaitTime = 10;
   bool isTransitionActive = false;
+  // thrust limits transition for flex
+  static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
   double prevFlexTemperature = 0.0;
@@ -47,13 +58,22 @@ class EngineControl_A32NX {
   bool prevEngineStarterState[2] = {false, false};
 
   // additional constants
-  static constexpr int maxOil = 200;
-  static constexpr int minOil = 140;
+  static constexpr int MAX_OIL = 200;
+  static constexpr int MIN_OIL = 140;
   static constexpr double LBS_TO_KGS = 0.4535934;
   static constexpr double KGS_TO_LBS = 1 / 0.4535934;
-  static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
+  static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
-  // Possible states for the engine state machine
+  /**
+   * @enum EngineState
+   * @brief Enumerates the possible states for the engine state machine.
+   *
+   * @var OFF The engine is turned off. This is the initial state of the engine.
+   * @var ON The engine is turned on and running.
+   * @var STARTING The engine is in the process of starting up.
+   * @var RESTARTING The engine is in the process of restarting.
+   * @var SHUTTING The engine is in the process of shutting down.
+   */
   enum EngineState {
     OFF = 0,
     ON = 1,
@@ -62,7 +82,8 @@ class EngineControl_A32NX {
     SHUTTING = 4,
   };
 
-  // DEBUG Profiling
+#ifdef PROFILING
+  // Profiling for the engine control - can eventually be removed
   SimpleProfiler profilerUpdate{"Fadec::EngineControl_A32NX::update()", 100};
   SimpleProfiler profilerGenerateParameters{"Fadec::EngineControl_A32NX::generateIdleParameters()", 100};
   SimpleProfiler profilerEngineStateMachine{"Fadec::EngineControl_A32NX::engineStateMachine()", 100};
@@ -74,11 +95,33 @@ class EngineControl_A32NX {
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A32NX::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A32NX::updateThrustLimits()", 100};
   SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
+#endif
+
+  // ===========================================================================
+  // Public methods
+  // ===========================================================================
 
  public:
+  /**
+   * @brief Initializes the EngineControl_A32NX class once during the gauge initialization.
+   * @param msfsHandler
+   */
   void initialize(MsfsHandler* msfsHandler);
+
+  /**
+   * @brief Updates the EngineControl_A32NX class once per frame.
+   * @param pData
+   */
   void update(sGaugeDrawData* pData);
+
+  /**
+   * @brief Shuts down the EngineControl_A32NX class once during the gauge shutdown.
+   */
   void shutdown();
+
+  // ===========================================================================
+  // Private methods
+  // ===========================================================================
 
  private:
   /**
@@ -91,8 +134,8 @@ class EngineControl_A32NX {
    * @brief Generates a random engine imbalance.
    *
    * This function generates a random engine imbalance for an engine.
-   *
    * As this imbalance is stored and shared via a LVar the imbalance is encoded as a digital number/word.
+   * (LVars are limited to FLOAT64)
    *
    * The coded digital word is structured as follows:
    * - The first 2 digits represent the engine number (1 or 2).
@@ -104,13 +147,12 @@ class EngineControl_A32NX {
    * - The next 2 digits represent the Oil Pressure Random Idle (-6 to +6 PSI).
    * - The last 2 digits represent the Oil Temperature (85 to 95 Celsius).
    *
-   * The function is currently using string operations to generate the coded digital word. Future work includes refactoring this to avoid
-   * string operations.
+   * The function is currently using string operations to generate the coded digital word.
+   * Future work includes refactoring this to avoid string operations.
+   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
    *
    * @param initial A flag to indicate whether this is the initial generation of engine imbalance. If initial is 1, a new imbalance is
-   * generated. Otherwise, the existing imbalance is used.
-   *
-   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
+   * generated. Otherwise, the existing imbalance is used. TODO: is this required? A flag would do instead of a parameter
    */
   void generateEngineImbalance(int i);
 
@@ -128,16 +170,15 @@ class EngineControl_A32NX {
    * - The next 2 digits represent the Oil Pressure Random Idle (-6 to +6 PSI).
    * - The last 2 digits represent the Oil Temperature (85 to 95 Celsius).
    *
-   * The function takes the imbalance code and the parameter number as input. It then calculates the
+   * The function takes the imbalance code number and the parameter number as input. It then calculates the
    * position of the parameter in the imbalance code and extracts the corresponding two digits.
    * The function returns the extracted parameter as a double.
+   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
    *
    * @param imbalanceCode The imbalance code from which to extract the parameter.
    * @param parameter The number of the parameter to extract. The parameters are numbered from 1 to 8,
    *                   with 1 being the engine number and 8 being the oil temperature.
    * @return The extracted parameter as a double.
-   *
-   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
    */
   double imbalanceExtractor(double imbalance, int parameter);
 
@@ -152,24 +193,19 @@ class EngineControl_A32NX {
   void generateIdleParameters(double pressAltitude, double mach, double ambientTemp, double ambientPressure);
 
   /**
-   * @brief This function manages the state of the engine based on various parameters.
-   *
-   * The function takes in several parameters related to the engine and its operation, and based on these parameters,
-   * it determines the current state of the engine and sets the engine state accordingly.
-   * The engine state is represented as an integer, with different values representing different states:
-   * // TODO: make this an enum
-   * 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting, 3 - Engine Re-starting & 4 - Engine Shutting
-   * The function also checks if the simulation is paused and adjusts the engine state accordingly.
+   * @brief Manages the state and state changes of the engine.
    *
    * @param engine The engine number (1 or 2).
-   * @param engineIgniter The current state of the engine igniter (1 or 2).
-   * @param engineStarter The current state of the engine starter (0 or 1).
-   * @param engineStarterTurnedOff A boolean indicating whether the engine starter has been turned off.
-   * @param engineMasterTurnedOn A boolean indicating whether the engine master has been turned on.
-   * @param engineMasterTurnedOff A boolean indicating whether the engine master has been turned off.
+   * @param engineIgniter The status of the engine igniter.
+   * @param engineStarter The status of the engine starter.
+   * @param engineStarterTurnedOff The status of the engine starter being turned off.
+   * @param engineMasterTurnedOn The status of the engine master switch being turned on.
+   * @param engineMasterTurnedOff The status of the engine master switch being turned off.
    * @param simN2 The current N2 value from the simulator.
-   * @param idleN2 The current idle N2 value.
-   * @param ambientTemp The current ambient temperature in degrees Celsius.
+   * @param idleN2 The idle N2 value.
+   * @param ambientTemperature The current ambient temperature.
+   * @return The current state of the engine as an enum of type EngineState.
+   * @see EngineState
    */
   EngineControl_A32NX::EngineState engineStateMachine(int engine,
                                                       double engineIgniter,
@@ -179,89 +215,89 @@ class EngineControl_A32NX {
                                                       bool engineMasterTurnedOff,
                                                       double simN2,
                                                       double idleN2,
-                                                      double ambientTemp);
+                                                      double ambientTemperature);
 
   /**
    * @brief This function manages the engine start procedure.
    *
    * @param engine The engine number (1 or 2).
-   * @param engineState The current state of the engine. This is represented as a double, with different values representing different
-   * states.
-   * @param imbalance The current imbalance of the engine. This is represented as a double, with different values representing different
-   * imbalances.
-   * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
-   * @param timer The current time in the simulation. This is used to calculate the elapsed time for various operations.
-   * @param simN2 The current N2 value from the simulator. N2 is a measure of the rotational speed of the engine's high-pressure compressor.
-   * @param pressAltitude The current pressure altitude of the aircraft in feet. This is used to calculate the ambient pressure.
-   * @param ambientTemp The current ambient temperature in degrees Celsius. This is used to calculate the engine's operating temperature.
+   * @param engineState The current state of the engine as an enum of type EngineState.
+   * @param imbalance The current encoded imbalance number of the engine.
+   * @param deltaTime The time difference since the last update in seconds.
+   * @param engineTimer A timer used to calculate the elapsed time for various operations.
+   * @param simN2 The current N2 value from the simulator in percent.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   *
+   * @see EngineState
    */
   void engineStartProcedure(int engine,
                             EngineState engineState,
                             double imbalance,
                             double deltaTime,
-                            double timer,
+                            double engineTimer,
                             double simN2,
-                            double pressAltitude,
-                            double ambientTemp);
+                            double pressureAltitude,
+                            double ambientTemperature);
 
   /**
    * @brief This function manages the engine shutdown procedure.
-   *        TODO: Temporary solution
+   *        TODO: Temporary solution as per comment in original code
    *
    * @param engine The engine number (1 or 2).
-   * @param ambientTemp The current ambient temperature in degrees Celsius. This is used to calculate the engine's operating temperature.
-   * @param simN1 The current N1 value from the simulator. N1 is a measure of the rotational speed of the engine's low-pressure compressor.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
+   * @param simN1 The current N1 value from the simulator.
    * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
-   * @param timer The current time in the simulation. This is used to calculate the elapsed time for various operations.
+   * @param engineTimer A timer used to calculate the elapsed time for various operations.
    */
-  void engineShutdownProcedure(int engine, double ambientTemp, double simN1, double deltaTime, double timer);
+  void engineShutdownProcedure(int engine, double ambientTemperature, double simN1, double deltaTime, double engineTimer);
 
   /**
    * @brief Updates the fuel flow of the engine.
    *
    * @param engine The engine number (1 or 2).
-   * @param imbalance The current imbalance of the engine. This is represented as a double, with different values representing different
-   * imbalances.
-   * @param simCN1 The current corrected fan speed value from the simulator. CN1 is a measure of the rotational speed of the engine's fan.
+   * @param imbalance The current encoded imbalance number of the engine.
+   * @param simCN1 The current corrected fan speed value from the simulator.
    * @param mach The current Mach number of the aircraft.
-   * @param pressAltitude The current pressure altitude of the aircraft in feet. This is used to calculate the ambient pressure.
-   * @param ambientTemp The current ambient temperature in degrees Celsius. This is used to calculate the engine's operating temperature.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
    * @param ambientPressure The current ambient pressure in hPa.
    * @return The updated fuel flow as a double.
    */
-  double updateFF(int engine,               //
-                  double imbalance,         //
-                  double simCN1,            //
-                  double mach,              //
-                  double pressAltitude,     //
-                  double ambientTemp,       //
-                  double ambientPressure);  //
+  double updateFF(int engine,                 //
+                  double imbalance,           //
+                  double simCN1,              //
+                  double mach,                //
+                  double pressureAltitude,    //
+                  double ambientTemperature,  //
+                  double ambientPressure);    //
 
   /**
-   * @brief Updates the primary parameters of the engine.
+   * @brief Updates the primary cusomter parameters (LVars) of the engine when not starting or stopping the engine
+   *        and the sim has control.
    *
    * @param engine The engine number (1 or 2).
-   * @param imbalance The current imbalance of the engine. This is represented as a double, with different values representing different
-   *                  imbalances.
-   * @param simN1 The current N1 value from the simulator. N1 is a measure of the rotational speed of the engine's low-pressure compressor.
-   * @param simN2 The current N2 value from the simulator. N2 is a measure of the rotational speed of the engine's high-pressure compressor.
+   * @param imbalance The current encoded imbalance number of the engine.
+   * @param simN1 The current N1 value from the simulator in percent.
+   * @param simN2 The current N2 value from the simulator in percent.
    */
   void updatePrimaryParameters(int engine, double imbalance, double simN1, double simN2);
 
   /**
    * @brief FBW Exhaust Gas Temperature (in degree Celsius). Updates EGT with realistic values visualized in the ECAM
+   *
    * @param engine The engine number (1 or 2).
-   * @param imbalance The current imbalance of the engine. This is represented as a double, with different values representing different
-   *                   imbalances.
-   * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
-   * @param simOnGround The on ground status of the aircraft (0 or 1). This is used to determine the operating conditions of the engine.
-   * @param engineState The current state of the engine. This is represented as a double, with different values representing different
-   *                    states.
-   * @param simCN1 The current corrected fan speed value from the simulator. CN1 is a measure of the rotational speed of the engine's fan.
-   * @param cFbwFF The current fuel flow of the engine. This is used to calculate the EGT.
-   * @param mach The current Mach number of the aircraft. This is used to calculate the EGT.
-   * @param pressAltitude The current pressure altitude of the aircraft in feet. This is used to calculate the EGT.
-   * @param ambientTemp The current ambient temperature in degrees Celsius. This is used to calculate the EGT.
+   * @param imbalance The current encoded imbalance number of the engine.
+   * @param deltaTime The time difference since the last update to calculate the rate of change of various parameters.
+   * @param simOnGround The on ground status of the aircraft (0 or 1).
+   * @param engineState The current state of the engine.
+   * @param simCN1 The current corrected fan speed value from the simulator.
+   * @param customFuelFlow The current custom fuel flow of the engine.
+   * @param mach The current Mach number of the aircraft.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   *
+   * @see EngineState
    */
   void updateEGT(int engine,
                  double imbalance,
@@ -269,10 +305,10 @@ class EngineControl_A32NX {
                  double simOnGround,
                  EngineState engineState,
                  double simCN1,
-                 double cFbwFF,
+                 double customFuelFlow,
                  double mach,
-                 double pressAltitude,
-                 double ambientTemp);
+                 double pressureAltitude,
+                 double ambientTemperature);
 
   /**
    * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
@@ -285,8 +321,8 @@ class EngineControl_A32NX {
    * @brief Updates the thrust limits of the engine.
    *
    * @param simulationTime The current time in the simulation.
-   * @param altitude The current pressure altitude of the aircraft in feet.
-   * @param ambientTemp The current ambient temperature in degrees Celsius.
+   * @param pressureAltitude The current pressure altitude of the aircraft in feet.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
    * @param ambientPressure The current ambient pressure in hPa.
    * @param mach The current Mach number of the aircraft.
    * @param simN1highest The highest N1 value from the simulator.
@@ -295,8 +331,8 @@ class EngineControl_A32NX {
    * @param wai The current state of the WAI (0 or 1).
    */
   void updateThrustLimits(double simulationTime,
-                          double altitude,
-                          double ambientTemp,
+                          double pressureAltitude,
+                          double ambientTemperature,
                           double ambientPressure,
                           double mach,
                           double simN1highest,
@@ -305,4 +341,4 @@ class EngineControl_A32NX {
                           int wai);
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROLA32NX_H
+#endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H

@@ -16,11 +16,7 @@
 class Polynomial_A32NX {
  public:
   /**
-   * @brief Calculates the N2 percentage during engine start-up.
-   *
-   * This function calculates the N2 percentage during the engine start-up process. The N2 percentage
-   * is calculated based on the previous N2 percentage, the idle N2 percentage, and the current N2 percentage.
-   * It uses a polynomial equation with coefficients stored in the c_N2 array.
+   * @brief Calculates the N2 percentage during engine start-up using real-life modeled polynomials.
    *
    * @param n2 The current N2 percentage.
    * @param preN2 The previous N2 percentage.
@@ -68,12 +64,7 @@ class Polynomial_A32NX {
   /**
    * @brief Calculates the N1 percentage during engine start-up.
    *
-   * This function calculates the N1 percentage during the engine start-up process. The N1 percentage
-   * is calculated based on the current N2 percentage (`fbwN2`), the idle N2 percentage (`idleN2`),
-   * and the idle N1 percentage (`idleN1`). It uses a polynomial equation with coefficients stored
-   * in the `c_N1` array.
-   *
-   * @param fbwN2 The current N2 percentage.
+   * @param fbwN2 The current custom N2 percentage.
    * @param idleN2 The idle N2 percentage.
    * @param idleN1 The idle N1 percentage.
    * @return The calculated N1 percentage.
@@ -112,11 +103,7 @@ class Polynomial_A32NX {
   }
 
   /**
-   * @brief Calculates the Fuel Flow (FF) during engine start-up.
-   *
-   * This function calculates the FF during the engine start-up process. The FF
-   * is calculated based on the current N2 percentage (`fbwN2`), the idle N2 percentage (`idleN2`),
-   * and the idle FF (`idleFF`). It uses a polynomial equation with coefficients stored in the `c_FF` array.
+   * @brief Calculates the Fuel Flow (FF) during engine start-up using real-life modeled polynomials.
    *
    * @param fbwN2 The current N2 percentage.
    * @param idleN2 The idle N2 percentage.
@@ -154,12 +141,7 @@ class Polynomial_A32NX {
   }
 
   /**
-   * @brief Calculates the Exhaust Gas Temperature (EGT) during engine start-up.
-   *
-   * This function calculates the EGT during the engine start-up process. The EGT
-   * is calculated based on the current N2 percentage (`fbwN2`), the idle N2 percentage (`idleN2`),
-   * the ambient temperature (`ambientTemp`), and the idle EGT (`idleEGT`). It uses a polynomial equation
-   * with coefficients stored in the `c_EGT` array for certain conditions.
+   * @brief Calculates the Exhaust Gas Temperature (EGT) during engine start-up using real-life modeled polynomials.
    *
    * @param fbwN2 The current N2 percentage.
    * @param idleN2 The idle N2 percentage.
@@ -169,16 +151,17 @@ class Polynomial_A32NX {
    */
   static double startEGT(double fbwN2, double idleN2, double ambientTemp, double idleEGT) {
     // Normalize the current N2 percentage by dividing it with the idle N2 percentage.
-    const double normalN2 = fbwN2 / idleN2;
-    double normalEGT;
+    const double normalizedN2 = fbwN2 / idleN2;
 
-    // If the normalized N2 percentage is less than 0.17, the EGT is 0.
-    if (normalN2 < 0.17) {
-      normalEGT = 0;
+
+    // Calculate the normalized EGT value based on the normalized N2 value
+    double normalizedEGT;
+    if (normalizedN2 < 0.17) {
+      normalizedEGT = 0;
     }
     // If the normalized N2 percentage is less than or equal to 0.4, the EGT is calculated using a linear equation.
-    else if (normalN2 <= 0.4) {
-      normalEGT = (0.04783 * normalN2) - 0.00813;
+    else if (normalizedN2 <= 0.4) {
+      normalizedEGT = (0.04783 * normalizedN2) - 0.00813;
     }
     // If the normalized N2 percentage is greater than 0.4, the EGT is calculated using a polynomial equation.
     else {
@@ -196,46 +179,39 @@ class Polynomial_A32NX {
       };
 
       // Calculate the EGT using the polynomial equation.
-      normalEGT = 0.0;
+      normalizedEGT = 0.0;
       for (int i = 0; i < 9; ++i) {
-        normalEGT += c_EGT[i] * (std::pow)(normalN2, i);
+        normalizedEGT += c_EGT[i] * (std::pow)(normalizedN2, i);
       }
     }
 
     // Return the calculated EGT, ensuring it is within the range [ambientTemp, idleEGT].
-    return (normalEGT * (idleEGT - (ambientTemp))) + (ambientTemp);
+    return (normalizedEGT * (idleEGT - (ambientTemp))) + (ambientTemp);
   }
 
   /**
    * @brief Calculates the Oil Temperature during engine start-up.
    *
-   * This function calculates the Oil Temperature during the engine start-up process. The Oil Temperature
-   * is calculated based on the current N2 percentage (`fbwN2`), the idle N2 percentage (`idleN2`),
-   * and the ambient temperature (`ambientTemp`). It uses a series of conditions to determine the oil temperature.
-   *
-   * @param fbwN2 The current N2 percentage.
-   * @param idleN2 The idle N2 percentage.
-   * @param ambientTemp The ambient temperature.
+   * @param fbwN2 The current custom N2 percentage.
+   * @param idleN2 The custom idle N2 percentage.
+   * @param ambientTemperature The ambient temperature.
    * @return The calculated Oil Temperature.
    */
-  static double startOilTemp(double fbwN2, double idleN2, double ambientTemp) {
+  static double startOilTemp(double fbwN2, double idleN2, double ambientTemperature) {
     if (fbwN2 < 0.79 * idleN2) {
-      return ambientTemp;
+      return ambientTemperature;
     }
     if (fbwN2 < 0.98 * idleN2) {
-      return ambientTemp + 5;
+      return ambientTemperature + 5;
     }
-    return ambientTemp + 10;
+    return ambientTemperature + 10;
   }
 
   /**
    * @brief Calculates the N2 percentage during engine shutdown.
    *
-   * This function calculates the N2 percentage during the engine shutdown process. The N2 percentage
-   * is calculated based on the previous N2 percentage and the elapsed time since the last calculation.
-   *
    * @param previousN2 The previous N2 percentage.
-   * @param deltaTime The elapsed time since the last calculation.
+   * @param deltaTime The elapsed time since the last calculation in seconds.
    * @return The calculated N2 percentage.
    */
   static double shutdownN2(double previousN2, double deltaTime) {
@@ -246,14 +222,11 @@ class Polynomial_A32NX {
     // The choice to use a different decay rate for 'previousN2' values below 30 suggests that the
     // engine's shutdown behavior changes at this threshold.
     double decayRate = previousN2 < 30 ? -0.0515 : -0.08183;
-    return previousN2 * exp(decayRate * deltaTime);
+    return previousN2 * (std::exp)(decayRate * deltaTime);
   }
 
   /**
    * @brief Calculates the N1 percentage during engine shutdown.
-   *
-   * This function calculates the N1 percentage during the engine shutdown process. The N1 percentage
-   * is calculated based on the previous N1 percentage and the elapsed time since the last calculation.
    *
    * @param previousN1 The previous N1 percentage.
    * @param deltaTime The elapsed time since the last calculation.
@@ -272,15 +245,10 @@ class Polynomial_A32NX {
   /**
    * @brief Calculates the Exhaust Gas Temperature (EGT) during engine shutdown.
    *
-   * This function calculates the EGT during the engine shutdown process. The EGT is calculated based
-   * on the previous EGT, the ambient temperature, and the elapsed time since the last calculation.
-   * It uses a decay rate and a steady state temperature that are determined based on whether the
-   * previous EGT is above a certain threshold.
-   *
-   * @param previousEGT The previous EGT.
-   * @param ambientTemp The ambient temperature.
-   * @param deltaTime The elapsed time since the last calculation.
-   * @return The calculated EGT.
+   * @param previousEGT The previous EGT value in degrees Celsius.
+   * @param ambientTemp The ambient temperature in degrees Celsius.
+   * @param deltaTime The elapsed time since the last update in seconds.
+   * @return The calculated EGT value in degrees Celsius.
    */
   static double shutdownEGT(double previousEGT, double ambientTemp, double deltaTime) {
     // The specific values used (140, 0.0257743, 135, 0.00072756, and 30) are likely derived from empirical
@@ -295,13 +263,12 @@ class Polynomial_A32NX {
 
   /**
    * @brief Calculates the corrected Exhaust Gas Temperature (EGT) based on corrected fan speed,
-   * corrected fuel flow, Mach number, and altitude. Real-life modeled polynomials.
-   * Corrected EGT (Celsius)
+   *        corrected fuel flow, Mach number, and altitude. Real-life modeled polynomials.
    *
-   * @param cn1 The corrected fan speed.
-   * @param cff The corrected fuel flow.
+   * @param cn1 The corrected fan speed in percent.
+   * @param cff The corrected fuel flow in pounds per hour.
    * @param mach The Mach number.
-   * @param alt The altitude.
+   * @param alt The altitude in feet.
    * @return The calculated corrected EGT in Celsius.
    */
   static double correctedEGT(double cn1, double cff, double mach, double alt) {
@@ -343,16 +310,13 @@ class Polynomial_A32NX {
   }
 
   /**
-   * @brief Calculates the corrected fuel flow based on cn1, mach, and altitude.
-   *
-   * This function calculates the corrected fuel flow during the engine operation. The corrected fuel flow
-   * is calculated based on cn1 (corrected fan speed), mach (Mach number), and altitude. It uses a polynomial equation
-   * with coefficients stored in the `c_Flow` array.
+   * @brief Calculates the customer corrected fuel flow based on cn1, mach, and altitude based on
+   *        real-life modeled polynomials.
    *
    * @param cn1 The corrected fan speed.
    * @param mach The Mach number.
    * @param alt The altitude.
-   * @return The calculated corrected fuel flow.
+   * @return The calculated corrected fuel flow in pounds per hour.
    */
   static double correctedFuelFlow(double cn1, double mach, double alt) {
     constexpr double c_Flow[21] = {
@@ -405,13 +369,15 @@ class Polynomial_A32NX {
   /**
    * @brief Calculates the oil temperature based on energy, previous oil temperature, maximum oil temperature, and time interval.
    *
-   * @param thermalEnergy The thermal energy.
-   * @param previousOilTemp The previous oil temperature.
-   * @param maxOilTemperature The maximum oil temperature.
-   * @param timeInterval The time interval.
-   * @return The calculated oil temperature.
+   * @param thermalEnergy The thermal energy in Joules.
+   * @param previousOilTemp The previous oil temperature in Celsius.
+   * @param maxOilTemperature The maximum oil temperature in Celsius.
+   * @param deltaTime The time interval in seconds.
+   * @return The calculated oil temperature in Celsius.
+   *
+   * TODO: Currently not used in the code.
    */
-  static double oilTemperature(double thermalEnergy, double previousOilTemp, double maxOilTemperature, double timeInterval) {
+  static double oilTemperature(double thermalEnergy, double previousOilTemp, double maxOilTemperature, double deltaTime) {
     // these constants are likely derived from empirical data or a mathematical model of the engine's behavior
     // they were not documented in the original code, and their names here are inferred from their usage
     const double heatTransferCoefficient = 0.001;
@@ -419,9 +385,9 @@ class Polynomial_A32NX {
     const double temperatureThreshold = 10;
     const double temperatureScalingFactor = 0.999997;
 
-    const double changeInThermalEnergy = thermalEnergy * timeInterval * energyScalingFactor;
+    const double changeInThermalEnergy = thermalEnergy * deltaTime * energyScalingFactor;
     const double steadyStateTemp =
-        ((maxOilTemperature * heatTransferCoefficient * timeInterval) + previousOilTemp) / (1 + (heatTransferCoefficient * timeInterval));
+        ((maxOilTemperature * heatTransferCoefficient * deltaTime) + previousOilTemp) / (1 + (heatTransferCoefficient * deltaTime));
 
     const double newTemp = steadyStateTemp - changeInThermalEnergy;
     if (newTemp >= maxOilTemperature) {
@@ -441,8 +407,9 @@ class Polynomial_A32NX {
    * @return The calculated Oil Gulping percentage.
    */
   static double oilGulpPct(double thrust) {
-    const double c_OilGulp[3] = {20.1968848, -1.2270302e-4, 1.78442e-8};
-    const double outOilGulpPct = c_OilGulp[0] + (c_OilGulp[1] * thrust) + (c_OilGulp[2] * (std::pow)(thrust, 2));
+    const double oilGulpCoefficients[3] = {20.1968848, -1.2270302e-4, 1.78442e-8};
+    const double outOilGulpPct =
+        oilGulpCoefficients[0] + (oilGulpCoefficients[1] * thrust) + (oilGulpCoefficients[2] * (std::pow)(thrust, 2));
     return outOilGulpPct / 100;
   }
 
@@ -453,8 +420,8 @@ class Polynomial_A32NX {
    * @return The calculated Oil Pressure value in PSI.
    */
   static double oilPressure(double simN2) {
-    const double c_OilPress[3] = {-0.88921, 0.23711, 0.00682};
-    return c_OilPress[0] + (c_OilPress[1] * simN2) + (c_OilPress[2] * (std::pow)(simN2, 2));
+    const double oilPressureCoefficients[3] = {-0.88921, 0.23711, 0.00682};
+    return oilPressureCoefficients[0] + (oilPressureCoefficients[1] * simN2) + (oilPressureCoefficients[2] * (std::pow)(simN2, 2));
   }
 };
 

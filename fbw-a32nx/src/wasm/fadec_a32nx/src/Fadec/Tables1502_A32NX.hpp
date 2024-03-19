@@ -8,6 +8,16 @@
 
 #include "Fadec.h"
 
+/**
+ * @class Table1502_A32NX
+ *
+ * This class contains methods and data used in the calculation of the corrected fan speed (CN1 and CN2).
+ * The class has a 2D array `table` that contains values used in the calculation of the corrected fan speed.
+ * Each row in the `table` represents a set of values. The columns represent different parameters used in the calculation.
+ * The class also has two static methods `iCN3` and `iCN1` that calculate the corrected fan speed (CN2 and CN1) respectively.
+ *
+ * TODO: extract the reusable code to a common library
+ */
 class Tables1502_A32NX {
   /**
    * @brief Table 1502 (CN2 vs correctedN1) representations with FSX nomenclature.
@@ -40,25 +50,27 @@ class Tables1502_A32NX {
   /**
    * @brief Calculates the expected CN2 at idle.
    *
-   * @param pressAltitude The pressure altitude in feet.
+   * @param pressureAltitude The pressure altitude in feet.
    * @param mach The Mach number.
-   * @return The expected CN2 value at idle.
+   * @return The expected CN2 value at idle in percent.
    */
-  static double iCN2(double pressAltitude, double mach) {
-    return 68.2 / ((std::sqrt)((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * (std::sqrt)(1 + (0.2 * (std::pow)(mach, 2))));
+  static double iCN2(double pressureAltitude, double mach) {
+    // The specific values are likely derived from empirical data or a mathematical model of the engine's behavior.
+    // The original source code does not provide any information on the origin of these values.
+    return 68.2 / ((std::sqrt)((288.15 - (1.98 * pressureAltitude / 1000)) / 288.15) * (std::sqrt)(1 + (0.2 * (std::pow)(mach, 2))));
   }
 
   /**
    * @brief Calculates the expected CN1 at idle.
    *
-   * @param pressAltitude The pressure altitude in feet.
+   * @param pressureAltitude The pressure altitude in feet.
    * @param mach The Mach number.
    * @param ambientTemp The ambient temperature in Kelvin.
    * @return The expected CN1 value at idle.
    */
-  static double iCN1(double pressAltitude, double mach, [[maybe_unused]] double ambientTemp) {
+  static double iCN1(double pressureAltitude, double mach, [[maybe_unused]] double ambientTemp) {
     // Calculate the expected CN2 value
-    const double cn2 = iCN2(pressAltitude, mach);
+    const double cn2 = iCN2(pressureAltitude, mach);
 
     // Find the row in the table that contains the CN2 value and store the index in i
     int i = 0;

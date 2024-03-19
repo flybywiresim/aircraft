@@ -5,9 +5,7 @@
 #define FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A380X_HPP
 
 #include <MSFS/Legacy/gauges.h>
-
 #include "DataManager.h"
-
 #include "Fadec.h"
 
 // Make access to variables more readable
@@ -26,6 +24,11 @@ enum EngineAndSide {
   ENGINE_4 = OR,  //
 };
 
+/**
+ * @class FadecSimData_A380X
+ * @brief This class manages the simulation data for the FADEC (Full Authority Digital Engine Control)
+ *        simulation for the A380X aircraft.
+ */
 class FadecSimData_A380X {
  public:
   enum NotificationGroup { NOTIFICATION_GROUP_0 };
@@ -35,18 +38,19 @@ class FadecSimData_A380X {
   };
   DataDefinitionVector atcIdDataDef = {
       // MSFS docs say this is max 10 chars - we use 32 for safety
-      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
+      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32} //
   };
   /**
-   * @struct AtcID
+   * @var atcIdDataPtr
    * @brief This struct represents the ATC ID of the aircraft.
-   * @UpdateFrequncey: on demand
-   * @var char atcID[32] The ATC ID of the aircraft.
+   * @UpdateFrequncey on demand
+   * @data char atcID[32] The ATC ID of the aircraft.
    * @note MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm#ATC%20ID
    */
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
+  // Fuel Feed Tank Data in one Data Definition as they are read and updated together
   struct FuelFeedTankData {
     FLOAT64 fuelSystemFeedOne;
     FLOAT64 fuelSystemFeedTwo;
@@ -61,6 +65,7 @@ class FadecSimData_A380X {
   };
   DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;
 
+  // Fuel Tank Data in one Data Definition as they are read and updated together
   struct FuelTankData {
     FLOAT64 fuelSystemLeftOuter;
     FLOAT64 fuelSystemLeftMid;
@@ -112,7 +117,7 @@ class FadecSimData_A380X {
   DataDefinitionVector engine4CN3DataDef = {{"TURB ENG CORRECTED N2", 4, UNITS.Percent}};
   DataDefinitionVariablePtr<CorrectedN3Data> engineCorrectedN3DataPtr[4];
 
-  // TODO: Fuelsystem Logic Data not yet implemented
+  // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
     FLOAT64 animationDeltaTime;
     FLOAT64 airSpeedMach;
@@ -162,6 +167,7 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
   // Client events
+  // TODO: not yet used in this A380x implementation but kept for future use
   ClientEventPtr toggleEngineStarter1Event;
   ClientEventPtr toggleEngineStarter2Event;
   ClientEventPtr toggleEngineStarter3Event;
@@ -222,9 +228,8 @@ class FadecSimData_A380X {
   // ===============================================================================================
 
   /**
-   * @brief Initializes the FadecSimData_A32NX object.
-   * @param dm Pointer to the DataManager object. This object is used to create the data definition
-   *           variable for the ATC ID data.
+   * @brief Initializes the FadecSimData_A380X object.
+   * @param dm Pointer to the DataManager object that is used to manage the data definitions and variables.
    */
   void initialize(DataManager* dm) {
     initDataDefinitions(dm);
@@ -291,6 +296,7 @@ class FadecSimData_A380X {
     engineCombustion[E2] = dm->make_aircraft_var("GENERAL ENG COMBUSTION", 2, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
     engineCombustion[E3] = dm->make_aircraft_var("GENERAL ENG COMBUSTION", 3, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
     engineCombustion[E4] = dm->make_aircraft_var("GENERAL ENG COMBUSTION", 4, "", nullptr, UNITS.Bool, NO_AUTO_UPDATE);
+
     engineTime[E1] = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 1, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
     engineTime[E2] = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 2, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
     engineTime[E3] = dm->make_aircraft_var("GENERAL ENG ELAPSED TIME", 3, "", nullptr, UNITS.Seconds, NO_AUTO_UPDATE);
@@ -361,6 +367,12 @@ class FadecSimData_A380X {
     engineTimer[E3] = dm->make_named_var("A32NX_ENGINE_TIMER:3", UNITS.Number, AUTO_READ_WRITE);
     engineTimer[E4] = dm->make_named_var("A32NX_ENGINE_TIMER:4", UNITS.Number, AUTO_READ_WRITE);
 
+    packsState[0] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
+    packsState[1] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
+    wingAntiIce = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
+
+    refuelRate = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
+    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
     fuelLeftOuterPre = dm->make_named_var("A32NX_FUEL_LEFTOUTER_PRE", UNITS.Number, AUTO_READ_WRITE);
     fuelFeedOnePre = dm->make_named_var("A32NX_FUEL_FEED1_PRE", UNITS.Number, AUTO_READ_WRITE);
     fuelLeftMidPre = dm->make_named_var("A32NX_FUEL_LEFTMID_PRE", UNITS.Number, AUTO_READ_WRITE);
@@ -378,6 +390,7 @@ class FadecSimData_A380X {
     fuelPumpState[E3] = dm->make_named_var("A32NX_PUMP_STATE:3", UNITS.Number, AUTO_READ_WRITE);
     fuelPumpState[E4] = dm->make_named_var("A32NX_PUMP_STATE:4", UNITS.Number, AUTO_READ_WRITE);
 
+    thrustLimitType = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
     thrustLimitIdle = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
     thrustLimitClimb = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
     thrustLimitFlex = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
@@ -386,12 +399,6 @@ class FadecSimData_A380X {
 
     airlinerToFlexTemp = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
     apuRpmPercent = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
-    packsState[0] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
-    packsState[1] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
-    refuelRate = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
-    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
-    thrustLimitType = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
-    wingAntiIce = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     engineEgt[E1]->set(0);
