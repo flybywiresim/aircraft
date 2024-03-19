@@ -76,6 +76,7 @@
 1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
 1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
+2. [FAC] Improve sideslip estimation - @lukecologne (luke)
 
 ## 0.11.0
 
