@@ -1159,7 +1159,6 @@ class EngineControl {
                           double ambientTemp,
                           double ambientPressure,
                           double mach,
-                          double simN1highest,
                           double packs,
                           double nai,
                           double wai) {
@@ -1470,7 +1469,7 @@ class EngineControl {
 
     updateFuel(deltaTime);
 
-    updateThrustLimits(simulationTime, pressAltitude, ambientTemp, ambientPressure, mach, simN1highest, packs, nai, wai);
+    updateThrustLimits(simulationTime, pressAltitude, ambientTemp, ambientPressure, mach, packs, nai, wai);
     // timer.elapsed();
   }
 

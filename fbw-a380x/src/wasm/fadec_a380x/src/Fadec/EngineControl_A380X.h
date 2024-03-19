@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
-#define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
+#ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
+#define FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
 
 #include "FadecSimData_A380X.hpp"
 #include "FuelConfiguration_A380X.h"
@@ -23,9 +23,6 @@ class EngineControl_A380X {
   // FADEC simulation data
   FadecSimData_A380X simData{};
 
-  // to calculate the time difference between two simulation frames
-  FLOAT64 previousSimulationTime;
-
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId{};
 
@@ -33,54 +30,38 @@ class EngineControl_A380X {
   FuelConfiguration_A380X fuelConfiguration{};
 
   // Remember last fuel save time to allow saving fuel only every 5 seconds
+  static constexpr double fuelSaveInterval = 5.0;  // seconds
   FLOAT64 lastFuelSaveTime = 0;
 
-  // TODO: most of these below don't have to be fields, they can be local variables in the update methods
-
-  // Engine N3
-  // The A380's N3 values do not exist in the sim - we use the sim's N2 values instead
-  // and calculate the N2 values from the N3 values
-  FLOAT64 simN3Engine1Pre;
-  FLOAT64 simN3Engine2Pre;
-  FLOAT64 simN3Engine3Pre;
-  FLOAT64 simN3Engine4Pre;
-
-  // Oil Temperatures
-  FLOAT64 thermalEnergy1;
-  FLOAT64 thermalEnergy2;
-  FLOAT64 thermalEnergy3;
-  FLOAT64 thermalEnergy4;
-  FLOAT64 oilTemperature;
-  FLOAT64 oilTemperatureMax;
-  FLOAT64 oilTemperatureEngine1Pre;
-  FLOAT64 oilTemperatureEngine2Pre;
-  FLOAT64 oilTemperatureEngine3Pre;
-  FLOAT64 oilTemperatureEngine4Pre;
-
-  // Idle parameters
-  FLOAT64 idleN1;
-  FLOAT64 idleN3;
-  FLOAT64 idleFF;
-  FLOAT64 idleEGT;
-
-  // Thrust limits
-  static constexpr FLOAT64 waitTime = 10;
-  static constexpr FLOAT64 transitionTime = 30;
-  FLOAT64 prevThrustLimitType = 0;
-  FLOAT64 prevFlexTemperature = 0;
-  bool isFlexActive = false;
+  // thrust limits transition for flex
+  static constexpr double transitionWaitTime = 10;
   bool isTransitionActive = false;
-  FLOAT64 transitionFactor = 0;
-  FLOAT64 transitionStartTime = 0;
+
+  // values that need previous state
+  double prevFlexTemperature = 0.0;
+  double prevThrustLimitType = 0.0;
+
+  // TODO
+  double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
   // additional constants
+  static constexpr int maxOil = 200;
+  static constexpr int minOil = 140;
   static constexpr double LBS_TO_KGS = 0.4535934;
   static constexpr double KGS_TO_LBS = 1 / 0.4535934;
   static constexpr double FUEL_THRESHOLD = 661;  // lbs/sec
 
+  // Possible states for the engine state machine
+  enum EngineState {
+    OFF = 0,
+    ON = 1,
+    STARTING = 2,
+    RESTARTING = 3,
+    SHUTTING = 4,
+  };
+
   // DEBUG
   SimpleProfiler profilerUpdate{"Fadec::EngineControl_A380X::update()", 100};
-  SimpleProfiler profilerGenerateParameters{"Fadec::EngineControl_A380X::generateIdleParameters()", 100};
   SimpleProfiler profilerEngineStateMachine{"Fadec::EngineControl_A380X::engineStateMachine()", 100};
   SimpleProfiler profilerEngineStartProcedure{"Fadec::EngineControl_A380X::engineStartProcedure()", 100};
   SimpleProfiler profilerEngineShutdownProcedure{"Fadec::EngineControl_A380X::engineShutdownProcedure()", 100};
@@ -89,13 +70,12 @@ class EngineControl_A380X {
   SimpleProfiler profilerUpdateEGT{"Fadec::EngineControl_A380X::updateEGT()", 100};
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A380X::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A380X::updateThrustLimits()", 100};
-  SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A380X::updateOil()", 100};
 
  public:
   EngineControl_A380X() {}
 
   void initialize(MsfsHandler* msfsHandler);
-  void update();
+  void update(sGaugeDrawData* pData);
   void shutdown();
 
  private:
@@ -108,22 +88,19 @@ class EngineControl_A380X {
 
   void generateIdleParameters(FLOAT64 pressureAltitude, FLOAT64 mach, FLOAT64 ambientTemperature, FLOAT64 ambientPressure);
 
-  void engineStateMachine(int engine,
-                          FLOAT64 engineIgniter,
-                          FLOAT64 engineStarter,
-                          FLOAT64 simN3,
-                          FLOAT64 idleN3,
-                          FLOAT64 pressureAltitude,
-                          FLOAT64 ambientTemperature,
-                          FLOAT64 deltaTime);
+  EngineControl_A380X::EngineState engineStateMachine(int engine,
+                                                      double engineIgniter,
+                                                      bool engineStarter,
+                                                      double simN3,
+                                                      double idleN3,
+                                                      double ambientTemperature);
 
   void engineStartProcedure(int engine,
-                            FLOAT64 state,
-                            FLOAT64 deltaTime,
-                            FLOAT64 timer,
-                            FLOAT64 simN3,
-                            const FLOAT64 pressureAltitude,
-                            const FLOAT64 ambientTemperature);
+                            EngineState engineState,
+                            double deltaTime,
+                            double engineTimer,
+                            double simN3,
+                            double ambientTemperature);
 
   void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 timer);
 
@@ -143,17 +120,15 @@ class EngineControl_A380X {
 
   void updateFuel(FLOAT64 deltaTime);
 
-  void updateThrustLimits(FLOAT64 simulationTime,
-                          FLOAT64 pressureAltitude,
-                          FLOAT64 ambientTemperature,
-                          FLOAT64 ambientPressure,
-                          FLOAT64 mach,
-                          FLOAT64 simN1highest,
+  void updateThrustLimits(double simulationTime,
+                          double pressureAltitude,
+                          double ambientTemperature,
+                          double ambientPressure,
+                          double mach,
                           bool packs,
                           bool nai,
                           bool wai);
 
-  void updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp);
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_H
+#endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H

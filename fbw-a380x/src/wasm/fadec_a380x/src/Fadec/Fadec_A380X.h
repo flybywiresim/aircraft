@@ -4,8 +4,8 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
 
-#include "Fadec.h"
 #include "EngineControl_A380X.h"
+#include "Fadec.h"
 
 /**
  * @brief: The Fadec_A380X class is responsible for managing the FADEC system for the A380X aircraft.
@@ -16,7 +16,6 @@
  */
 class Fadec_A380X : public Fadec {
  private:
-
   // Engine control instance
   EngineControl_A380X engineControl{};
 
@@ -28,9 +27,9 @@ class Fadec_A380X : public Fadec {
   explicit Fadec_A380X(MsfsHandler& msfsHandler) : Fadec(msfsHandler) {}
 
   bool initialize() override;
-  bool preUpdate(sGaugeDrawData* pData) override;
+  bool preUpdate(sGaugeDrawData*) override { return true; }
   bool update(sGaugeDrawData* pData) override;
-  bool postUpdate(sGaugeDrawData* pData) override;
+  bool postUpdate(sGaugeDrawData*) override { return true; }
   bool shutdown() override;
 };
 

@@ -57,17 +57,18 @@ class FadecGauge {
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation8, "PAYLOAD STATION WEIGHT:8", "Pounds");
 
       // SimConnect Tanker Definitions
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftOuter, "FUELSYSTEM TANK QUANTITY:1", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemFeedOne, "FUELSYSTEM TANK QUANTITY:2", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftMid, "FUELSYSTEM TANK QUANTITY:3", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftInner, "FUELSYSTEM TANK QUANTITY:4", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemFeedTwo, "FUELSYSTEM TANK QUANTITY:5", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemFeedThree, "FUELSYSTEM TANK QUANTITY:6", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemRightInner, "FUELSYSTEM TANK QUANTITY:7", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemRightMid, "FUELSYSTEM TANK QUANTITY:8", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemFeedFour, "FUELSYSTEM TANK QUANTITY:9", "Gallons");
+
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftOuter,  "FUELSYSTEM TANK QUANTITY:1", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftMid,    "FUELSYSTEM TANK QUANTITY:3", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemLeftInner,  "FUELSYSTEM TANK QUANTITY:4", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemRightInner, "FUELSYSTEM TANK QUANTITY:7", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemRightMid,   "FUELSYSTEM TANK QUANTITY:8", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemRightOuter, "FUELSYSTEM TANK QUANTITY:10", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemTrim, "FUELSYSTEM TANK QUANTITY:11", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelSystemTrim,       "FUELSYSTEM TANK QUANTITY:11", "Gallons");
 
       // SimConnect Oil Temperature Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilTempEngine1, "GENERAL ENG OIL TEMPERATURE:1", "Celsius");

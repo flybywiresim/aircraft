@@ -11,7 +11,6 @@ include_directories(
     ${FBW_COMMON}/fadec_common_v2/src/
 )
 
-
 # define the source files
 set(SOURCE_FILES
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
