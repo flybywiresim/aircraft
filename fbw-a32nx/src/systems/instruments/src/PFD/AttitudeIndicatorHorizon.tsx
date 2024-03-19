@@ -440,10 +440,6 @@ interface SideslipIndicatorProps {
 class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     private latAccFilter = new LagFilter(0.5);
 
-    private estimatedBetaFilter = new LagFilter(2);
-
-    private betaTargetFilter = new LagFilter(2);
-
     private classNameSub = Subject.create('Yellow');
 
     private filteredLatAccSub = Subject.create(0);
