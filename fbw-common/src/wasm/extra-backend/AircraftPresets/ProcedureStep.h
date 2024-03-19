@@ -15,6 +15,7 @@
  * @field delayAfter Time to delay next step of execution of action - will be skipped if expected state is already set
  * @field expectedStateCheckCode Check if desired state is already set so the action can be skipped
  * @field actionCode Calculator code to achieve the desired state. If it is a conditional this calculator code needs to eval to true or false
+ * @field noExpedite If true, the step will not be expedited even if expedite is set (default: false)
  */
 struct ProcedureStep {
   std::string description;
@@ -23,6 +24,7 @@ struct ProcedureStep {
   double delayAfter;
   std::string expectedStateCheckCode;
   std::string actionCode;
+  bool noExpedite = false;
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_H
