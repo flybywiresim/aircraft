@@ -10,6 +10,12 @@
 #include "EngineRatios.hpp"
 #include "Fadec.h"
 
+/**
+ * @class ThrustLimits_A32NX
+ * @brief A static class that provides methods for calculating various engine thrust limits for the A33NX aircraft.
+ *
+ * TODO: extract the reusable code to a common library
+ */
 class ThrustLimits_A32NX {
   /**
    * @brief A 2D array representing various engine thrust limits.
@@ -107,20 +113,8 @@ class ThrustLimits_A32NX {
   };
 
  public:
-  static double cas2mach(double cas, double ambientPressure) {
-    double k = 2188648.141;
-    double delta = ambientPressure / 1013;
-    return (std::sqrt)(                                                                                                         //
-        (5 * (std::pow)((((std::pow)((((std::pow)(cas, 2) / k) + 1), 3.5) * (1 / delta)) - (1 / delta) + 1), 0.285714286)) - 5  //
-    );
-  }
-
   /**
    * @brief Finds the top-row boundary in the limits array.
-   *
-   * This function recursively searches through the limits array to find the index of the row where
-   * the altitude is less than the altitude in the first column of the current row. It starts searching
-   * from the given index and increments the index by 1 in each recursive call until it finds the top-row boundary.
    *
    * @param altitude The altitude to find the top-row boundary for.
    * @param index The index to start the search from.
@@ -134,23 +128,41 @@ class ThrustLimits_A32NX {
   }
 
   /**
+   * @brief Structure to store the bleed values for different types of limits.
+   *
+   * This structure contains three members, each representing a specific bleed value:
+   * - `n1Packs`: A double representing the bleed value for the packs.
+   * - `n1Nai`: A double representing the bleed value for the nacelle anti-ice.
+   * - `n1Wai`: A double representing the bleed value for the wing anti-ice.
+   */
+  struct BleedValues {
+    double n1Packs;
+    double n1Nai;
+    double n1Wai;
+  };
+
+  /**
+   * @brief Lookup table for bleed values based on limit type.
+   *
+   * This map stores the bleed values for different types of limits. The key is an integer
+   * representing the type of limit (0-TO, 1-GA, 2-CLB, 3-MCT),
+   * and the value is a `BleedValues` structure containing the values for `n1Packs`, `n1Nai`, and `n1Wai`.
+   */
+  static std::map<int, BleedValues> bleedValuesLookup;  // see below for initialization
+
+  /**
    * @brief Calculates the total bleed for the engine.
    *
-   * This function calculates the total bleed for the engine based on various parameters such as the
-   * type of operation, altitude, outside air temperature (OAT), corner point (CP), limit point (LP),
-   * flex temperature, and the status of the air conditioning (AC), nacelle anti-ice (nacelle), and
-   * wing anti-ice (wing).
-   *
    * @param type The type of operation (0-TO, 1-GA, 2-CLB, 3-MCT).
-   * @param altitude The current altitude of the aircraft.
-   * @param oat The outside air temperature.
-   * @param cp The corner point - the temperature below which the engine can operate at full thrust without any restrictions.
-   * @param lp The limit point - the temperature above which the engine thrust starts to be limited.
-   * @param flexTemp The flex temperature.
+   * @param altitude The current altitude of the aircraft in feet.
+   * @param oat The outside air temperature in degrees Celsius.
+   * @param cp The corner point - the temperature below which the engine can operate at full thrust without any restrictions (in degrees Celsius).
+   * @param lp The limit point - the temperature above which the engine thrust starts to be limited (in degrees Celsius).
+   * @param flexTemp The flex temperature in degrees Celsius.
    * @param packs The status of the air conditioning (0 for off, 1 for on).
    * @param nacelle The status of the nacelle anti-ice (0 for off, 1 for on).
    * @param wing The status of the wing anti-ice (0 for off, 1 for on).
-   * @return The total bleed for the engine.
+   * @return The total bleed for the engine
    */
   static double bleedTotal(int type,         //
                            double altitude,  //
@@ -162,78 +174,42 @@ class ThrustLimits_A32NX {
                            int nacelle,      //
                            int wing          //
   ) {
+    if (flexTemp > lp && type <= 1) {
+      return packs * -0.6 + nacelle * -0.7 + wing * -0.7;
+    }
+
+    // Define a map to store the bleed values for different conditions
+    // Keys:
+    // int - Represents the type of operation (0-TO, 1-GA, 2-CLB, 3-MCT).
+    // bool - Represents whether the altitude is less than 8000.
+    // bool - Represents whether the outside air temperature is less than the corner point.
+    // Values:
+    // double - Represents the bleed value for the packs.
+    // double - Represents the bleed value for the nacelle anti-ice.
+    // double - Represents the bleed value for the wing anti-ice.
+    std::map<std::tuple<int, bool, bool>, std::tuple<double, double, double>> bleedValues = {
+        {{0, true, true}, {-0.4, -0.6, -0.7}},    //
+        {{0, true, false}, {-0.5, -0.6, -0.7}},   //
+        {{0, false, true}, {-0.6, -0.8, -0.8}},   //
+        {{0, false, false}, {-0.7, -0.8, -0.8}},  //
+        {{1, true, true}, {-0.4, -0.6, -0.6}},    //
+        {{1, true, false}, {-0.4, -0.6, -0.6}},   //
+        {{1, false, true}, {-0.6, -0.7, -0.8}},   //
+        {{1, false, false}, {-0.6, -0.7, -0.8}},  //
+        {{2, true, false}, {-0.2, -0.8, -0.4}},   //
+        {{2, false, false}, {-0.3, -0.8, -0.4}},  //
+        {{3, true, false}, {-0.6, -0.9, -1.2}},   //
+        {{3, false, false}, {-0.6, -0.9, -1.2}}   //
+    };
+
     double n1Packs = 0;
     double n1Nai = 0;
     double n1Wai = 0;
 
-    if (flexTemp > lp && type <= 1) {
-      n1Packs = -0.6;
-      n1Nai = -0.7;
-      n1Wai = -0.7;
-    } else {
-      switch (type) {
-        case 0:
-          if (altitude < 8000) {
-            if (oat < cp) {
-              n1Packs = -0.4;
-            } else {
-              n1Packs = -0.5;
-              n1Nai = -0.6;
-              n1Wai = -0.7;
-            }
-          } else {
-            if (oat < cp) {
-              n1Packs = -0.6;
-            } else {
-              n1Packs = -0.7;
-              n1Nai = -0.8;
-              n1Wai = -0.8;
-            }
-          }
-          break;
-        case 1:
-          if (altitude < 8000) {
-            if (oat < cp) {
-              n1Packs = -0.4;
-            } else {
-              n1Packs = -0.4;
-              n1Nai = -0.6;
-              n1Wai = -0.6;
-            }
-          } else {
-            if (oat < cp) {
-              n1Packs = -0.6;
-            } else {
-              n1Packs = -0.6;
-              n1Nai = -0.7;
-              n1Wai = -0.8;
-            }
-          }
-          break;
-        case 2:
-          if (oat < cp) {
-            n1Packs = -0.2;
-          } else {
-            n1Packs = -0.3;
-            n1Nai = -0.8;
-            n1Wai = -0.4;
-          }
-          break;
-        case 3:
-          if (oat < cp) {
-            n1Packs = -0.6;
-          } else {
-            n1Packs = -0.6;
-            n1Nai = -0.9;
-            n1Wai = -1.2;
-          }
-          break;
-      }
-    }
+    // Use the map to get the bleed values
+    std::tie(n1Packs, n1Nai, n1Wai) = bleedValues[{type, altitude < 8000, oat < cp}];
 
-    return (packs * n1Packs)    //
-           + (nacelle * n1Nai)  //
-           + (wing * n1Wai);    //
+    return packs * n1Packs + nacelle * n1Nai + wing * n1Wai;
   }
 
   /**
@@ -267,48 +243,38 @@ class ThrustLimits_A32NX {
     int loAltRow = 0;
     int hiAltRow = 0;
     double mach = 0;
-    double cp = 0;
-    double lp = 0;
-    double cn1 = 0;
-    double n1 = 0;
-    double cn1Flat = 0;
-    double cn1Last = 0;
-    double cn1Flex = 0;
-    double m = 0;
-    double b = 0;
-    double bleed = 0;
 
     // Set main variables per Limit Type
     switch (type) {
-      case 0:
+      case 0: // TO
         rowMin = 0;
         rowMax = 20;
         mach = 0;
         break;
-      case 1:
+      case 1: // GA
         rowMin = 21;
         rowMax = 41;
         mach = 0.225;
         break;
-      case 2:
+      case 2: // CLB
         rowMin = 42;
         rowMax = 58;
         if (altitude <= 10000) {
-          mach = cas2mach(250, ambientPressure);
+          mach = Fadec::cas2mach(250, ambientPressure);
         } else {
-          mach = cas2mach(300, ambientPressure);
+          mach = Fadec::cas2mach(300, ambientPressure);
           if (mach > 0.78)
             mach = 0.78;
         }
         break;
-      case 3:
+      case 3: // MCT
         rowMin = 59;
         rowMax = 71;
-        mach = cas2mach(230, ambientPressure);
+        mach = Fadec::cas2mach(230, ambientPressure);
         break;
     }
 
-    // Check for over/ underflows. Else, find top row value
+    // Check for over/under flows. Else, find top row value
     if (altitude <= limits[rowMin][0]) {
       hiAltRow = rowMin;
       loAltRow = rowMin;
@@ -321,13 +287,16 @@ class ThrustLimits_A32NX {
     }
 
     // Define key table variables and interpolation
-    cp = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][1], limits[hiAltRow][1]);
-    lp = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][2], limits[hiAltRow][2]);
-    cn1Flat = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][3], limits[hiAltRow][3]);
-    cn1Last = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][4], limits[hiAltRow][4]);
-    cn1Flex = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][5], limits[hiAltRow][5]);
+    const double cp = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][1], limits[hiAltRow][1]);
+    const double lp = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][2], limits[hiAltRow][2]);
+    const double cn1Flat = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][3], limits[hiAltRow][3]);
+    const double cn1Last = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][4], limits[hiAltRow][4]);
+    const double cn1Flex = Fadec::interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][5], limits[hiAltRow][5]);
 
-    if (flexTemp > 0 && type <= 1) {  // CN1 for Flex Case
+    double cn1 = 0;
+    double m = 0;
+    double b = 0;
+    if (flexTemp > 0 && type <= 1) { // CN1 for Flex Case
       if (flexTemp <= cp) {
         cn1 = cn1Flat;
       } else if (flexTemp > lp) {
@@ -339,7 +308,8 @@ class ThrustLimits_A32NX {
         b = cn1Last - m * lp;
         cn1 = (m * flexTemp) + b;
       }
-    } else {  // CN1 for All other cases
+    }
+    else { // CN1 for All other cases
       if (ambientTemp <= cp) {
         cn1 = cn1Flat;
       } else {
@@ -349,16 +319,10 @@ class ThrustLimits_A32NX {
       }
     }
 
-    // Define bleed rating/ derating
-    bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, packs, nacelle, wing);
+    // Define bleed rating/ de-rating
+    const double bleed = bleedTotal(type, altitude, ambientTemp, cp, lp, flexTemp, packs, nacelle, wing);
 
-    // Setting N1
-    n1 = (cn1 * (std::sqrt)(EngineRatios::theta2(mach, ambientTemp))) + bleed;
-    /*if (type == 3) {
-      std::cout << "FADEC: bleed= " << bleed << " cn1= " << cn1 << " theta2= " << (std::sqrt)(ratios->theta2(mach, ambientTemp))
-                << " n1= " << n1 << std::endl;
-    }*/
-    return n1;
+    return (cn1 * (std::sqrt)(EngineRatios::theta2(mach, ambientTemp))) + bleed;
   }
 };
 
