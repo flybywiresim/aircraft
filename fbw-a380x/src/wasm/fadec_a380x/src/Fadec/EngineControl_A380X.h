@@ -194,12 +194,12 @@ class EngineControl_A380X {
    * @param pressureAltitude The current pressure altitude of the aircraft in feet.
    * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
    * @param ambientPressure The current ambient pressure in hPa.
-   * @return The updated fuel flow as a double.
+   * @return The updated fuel flow as a double in kg/hour.
    */
   int updateFF(int engine, FLOAT64 simCN1, FLOAT64 mach, FLOAT64 altitude, FLOAT64 temperature, FLOAT64 pressure);
 
   /**
-   * @brief Updates the primary cusomter parameters (LVars) of the engine when not starting or stopping the engine
+   * @brief Updates the primary custom parameters (LVars) of the engine when not starting or stopping the engine
    *        and the sim has control.
    *
    * @param engine The engine number (1 or 2).

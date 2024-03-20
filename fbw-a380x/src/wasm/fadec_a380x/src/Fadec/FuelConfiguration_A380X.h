@@ -24,30 +24,34 @@
  * @brief This struct represents the fuel configuration for the aircraft.
  */
 class FuelConfiguration_A380X {
+  // Fuel tank default quantities in gallons
   static constexpr double fuelFeedOneDefault = 1082.0;
   static constexpr double fuelFeedTwoDefault = fuelFeedOneDefault;
   static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;
   static constexpr double fuelFeedFourDefault = fuelFeedOneDefault;
+
   static constexpr double fuelLeftOuterDefault = 2731.0;
   static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;
   static constexpr double fuelLeftMidDefault = 9630.0;
   static constexpr double fuelRightMidDefault = fuelLeftMidDefault;
   static constexpr double fuelLeftInnerDefault = 12187.0;
   static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;
+
   static constexpr double fuelTrimDefault = 6259.0;
 
  private:
-  double fuelLeftOuter;
-  double fuelFeedOne;
-  double fuelLeftMid;
-  double fuelLeftInner;
-  double fuelRightOuter;
-  double fuelFeedTwo;
-  double fuelRightMid;
-  double fuelRightInner;
-  double fuelFeedThree;
-  double fuelFeedFour;
-  double fuelTrim;
+  // Actual fuel tank quantities in gallons
+  double fuelLeftOuterGallons;
+  double fuelFeedOneGallons;
+  double fuelLeftMidGallons;
+  double fuelLeftInnerGallons;
+  double fuelRightOuterGallons;
+  double fuelFeedTwoGallons;
+  double fuelRightMidGallons;
+  double fuelRightInnerGallons;
+  double fuelFeedThreeGallons;
+  double fuelFeedFourGallons;
+  double fuelTrimGallons;
 
   std::string configFilename;
 
@@ -78,29 +82,29 @@ class FuelConfiguration_A380X {
   void saveConfigurationToIni();
 
  public:
-  double getFuelLeftOuter() const { return fuelLeftOuter; }
-  double getFuelFeedOne() const { return fuelFeedOne; }
-  double getFuelLeftMid() const { return fuelLeftMid; }
-  double getFuelLeftInner() const { return fuelLeftInner; }
-  double getFuelFeedTwo() const { return fuelFeedTwo; }
-  double getFuelFeedThree() const { return fuelFeedThree; }
-  double getFuelRightInner() const { return fuelRightInner; }
-  double getFuelRightMid() const { return fuelRightMid; }
-  double getFuelFeedFour() const { return fuelFeedFour; }
-  double getFuelRightOuter() const { return fuelRightOuter; }
-  double getFuelTrim() const { return fuelTrim; }
+  double getFuelFeedOneGallons() const { return fuelFeedOneGallons; }
+  double getFuelLeftOuterGallons() const { return fuelLeftOuterGallons; }
+  double getFuelLeftMidGallons() const { return fuelLeftMidGallons; }
+  double getFuelLeftInnerGallons() const { return fuelLeftInnerGallons; }
+  double getFuelFeedTwoGallons() const { return fuelFeedTwoGallons; }
+  double getFuelFeedThreeGallons() const { return fuelFeedThreeGallons; }
+  double getFuelRightInnerGallons() const { return fuelRightInnerGallons; }
+  double getFuelRightMidGallons() const { return fuelRightMidGallons; }
+  double getFuelFeedFourGallons() const { return fuelFeedFourGallons; }
+  double getFuelRightOuterGallons() const { return fuelRightOuterGallons; }
+  double getFuelTrimGallons() const { return fuelTrimGallons; }
 
-  void setFuelLeftOuter(double fuelLeftOuter) { this->fuelLeftOuter = fuelLeftOuter; }
-  void setFuelFeedOne(double fuelFeedOne) { this->fuelFeedOne = fuelFeedOne; }
-  void setFuelLeftMid(double fuelLeftMid) { this->fuelLeftMid = fuelLeftMid; }
-  void setFuelLeftInner(double fuelLeftInner) { this->fuelLeftInner = fuelLeftInner; }
-  void setFuelFeedTwo(double fuelFeedTwo) { this->fuelFeedTwo = fuelFeedTwo; }
-  void setFuelFeedThree(double fuelFeedThree) { this->fuelFeedThree = fuelFeedThree; }
-  void setFuelRightInner(double fuelRightInner) { this->fuelRightInner = fuelRightInner; }
-  void setFuelRightMid(double fuelRightMid) { this->fuelRightMid = fuelRightMid; }
-  void setFuelFeedFour(double fuelFeedFour) { this->fuelFeedFour = fuelFeedFour; }
-  void setFuelRightOuter(double fuelRightOuter) { this->fuelRightOuter = fuelRightOuter; }
-  void setFuelTrim(double fuelTrim) { this->fuelTrim = fuelTrim; }
+  void   setFuelLeftOuterGallons(double fuelLeftOuterGallons) { this->fuelLeftOuterGallons = fuelLeftOuterGallons; }
+  void   setFuelFeedOneGallons(double fuelFeedOneGallons) { this->fuelFeedOneGallons = fuelFeedOneGallons; }
+  void   setFuelLeftMidGallons(double fuelLeftMidGallons) { this->fuelLeftMidGallons = fuelLeftMidGallons; }
+  void   setFuelLeftInnerGallons(double fuelLeftInnerGallons) { this->fuelLeftInnerGallons = fuelLeftInnerGallons; }
+  void   setFuelFeedTwoGallons(double fuelFeedTwoGallons) { this->fuelFeedTwoGallons = fuelFeedTwoGallons; }
+  void   setFuelFeedThreeGallons(double fuelFeedThreeGallons) { this->fuelFeedThreeGallons = fuelFeedThreeGallons; }
+  void   setFuelRightInnerGallons(double fuelRightInnerGallons) { this->fuelRightInnerGallons = fuelRightInnerGallons; }
+  void   setFuelRightMidGallons(double fuelRightMidGallons) { this->fuelRightMidGallons = fuelRightMidGallons; }
+  void   setFuelFeedFourGallons(double fuelFeedFourGallons) { this->fuelFeedFourGallons = fuelFeedFourGallons; }
+  void   setFuelRightOuterGallons(double fuelRightOuterGallons) { this->fuelRightOuterGallons = fuelRightOuterGallons; }
+  void   setFuelTrimGallons(double fuelTrimGallons) { this->fuelTrimGallons = fuelTrimGallons; }
 
   void setConfigFilename(const std::string& configFilename) {
     this->configFilename = configFilename;

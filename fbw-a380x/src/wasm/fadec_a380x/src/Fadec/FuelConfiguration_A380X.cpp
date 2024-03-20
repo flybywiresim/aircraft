@@ -23,17 +23,17 @@ void FuelConfiguration_A380X::loadConfigurationFromIni() {
     return;
   }
 
-  fuelLeftOuter = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_OUTER_QTY, fuelLeftOuterDefault);
-  fuelFeedOne = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_ONE_QTY, fuelFeedOneDefault);
-  fuelLeftMid = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_MID_QTY, fuelLeftMidDefault);
-  fuelLeftInner = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_INNER_QTY, fuelLeftInnerDefault);
-  fuelFeedTwo = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_THREE_QTY, fuelFeedTwoDefault);
-  fuelFeedThree = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_FOUR_QTY, fuelFeedThreeDefault);
-  fuelRightInner = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_INNER_QTY, fuelRightInnerDefault);
-  fuelRightMid = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_MID_QTY, fuelRightMidDefault);
-  fuelFeedFour = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_FOUR_QTY, fuelFeedFourDefault);
-  fuelRightOuter = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_OUTER_QTY, fuelRightOuterDefault);
-  fuelTrim = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
+  fuelLeftOuterGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_OUTER_QTY, fuelLeftOuterDefault);
+  fuelFeedOneGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_ONE_QTY, fuelFeedOneDefault);
+  fuelLeftMidGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_MID_QTY, fuelLeftMidDefault);
+  fuelLeftInnerGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_INNER_QTY, fuelLeftInnerDefault);
+  fuelFeedTwoGallons    = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_TWO_QTY, fuelFeedTwoDefault);
+  fuelFeedThreeGallons  = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_THREE_QTY, fuelFeedThreeDefault);
+  fuelRightInnerGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_INNER_QTY, fuelRightInnerDefault);
+  fuelRightMidGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_MID_QTY, fuelRightMidDefault);
+  fuelFeedFourGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_FOUR_QTY, fuelFeedFourDefault);
+  fuelRightOuterGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_OUTER_QTY, fuelRightOuterDefault);
+  fuelTrimGallons       = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
 
   LOG_DEBUG("Fadec::FuelConfiguration: loaded fuel configuration from " + configFilename + " with the following values:");
   LOG_DEBUG("Fadec::FuelConfiguration: " + this->toString());
@@ -48,17 +48,17 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
   // Do not check a possible error since the file may not exist yet
   iniFile.read(ini);
 
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_OUTER_QTY] = std::to_string(this->fuelLeftOuter);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_ONE_QTY] = std::to_string(this->fuelFeedOne);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_MID_QTY] = std::to_string(this->fuelLeftMid);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_INNER_QTY] = std::to_string(this->fuelLeftInner);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_TWO_QTY] = std::to_string(this->fuelFeedTwo);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_THREE_QTY] = std::to_string(this->fuelFeedThree);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_INNER_QTY] = std::to_string(this->fuelRightInner);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_MID_QTY] = std::to_string(this->fuelRightMid);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_FOUR_QTY] = std::to_string(this->fuelFeedFour);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_OUTER_QTY] = std::to_string(this->fuelRightOuter);
-  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_TRIM_QTY] = std::to_string(this->fuelTrim);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_OUTER_QTY]  = std::to_string(this->fuelLeftOuterGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_ONE_QTY]    = std::to_string(this->fuelFeedOneGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_MID_QTY]    = std::to_string(this->fuelLeftMidGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_LEFT_INNER_QTY]  = std::to_string(this->fuelLeftInnerGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_TWO_QTY]    = std::to_string(this->fuelFeedTwoGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_THREE_QTY]  = std::to_string(this->fuelFeedThreeGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_INNER_QTY] = std::to_string(this->fuelRightInnerGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_MID_QTY]   = std::to_string(this->fuelRightMidGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_FEED_FOUR_QTY]   = std::to_string(this->fuelFeedFourGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_RIGHT_OUTER_QTY] = std::to_string(this->fuelRightOuterGallons);
+  ini[INI_SECTION_FUEL][INI_SECTION_FUEL_TRIM_QTY]        = std::to_string(this->fuelTrimGallons);
 
   if (!iniFile.write(ini, true)) {
     LOG_ERROR("Fadec::FuelConfiguration: failed to write engine conf " + configFilename + " due to error \"" + strerror(errno) + "\"");
@@ -71,18 +71,18 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
 
 std::string FuelConfiguration_A380X::toString() const {
   std::ostringstream oss;
-  oss << "FuelConfiguration_A380X { "
-      << "fuelLeftOuter: " << fuelLeftOuter << "\n"
-      << ", fuelFeedOne: " << fuelFeedOne << "\n"
-      << ", fuelLeftMid: " << fuelLeftMid << "\n"
-      << ", fuelLeftInner: " << fuelLeftInner << "\n"
-      << ", fuelRightOuter: " << fuelRightOuter << "\n"
-      << ", fuelFeedTwo: " << fuelFeedTwo << "\n"
-      << ", fuelRightMid: " << fuelRightMid << "\n"
-      << ", fuelRightInner: " << fuelRightInner << "\n"
-      << ", fuelFeedThree: " << fuelFeedThree << "\n"
-      << ", fuelFeedFour: " << fuelFeedFour << "\n"
-      << ", fuelTrim: " << fuelTrim << "\n"
-      << " }";
+  oss << "FuelConfiguration_A380X { " << "\n"
+      << "  fuelLeftOuter: " << fuelLeftOuterGallons << "\n"
+      << "  fuelFeedOne: " << fuelFeedOneGallons << "\n"
+      << "  fuelLeftMid: " << fuelLeftMidGallons << "\n"
+      << "  fuelLeftInner: " << fuelLeftInnerGallons << "\n"
+      << "  fuelFeedTwo: " << fuelFeedTwoGallons << "\n"
+      << "  fuelFeedThree: " << fuelFeedThreeGallons << "\n"
+      << "  fuelRightInner: " << fuelRightInnerGallons << "\n"
+      << "  fuelRightMid: " << fuelRightMidGallons << "\n"
+      << "  fuelFeedFour: " << fuelFeedFourGallons << "\n"
+      << "  fuelRightOuter: " << fuelRightOuterGallons << "\n"
+      << "  fuelTrim: " << fuelTrimGallons << "\n"
+      << "}";
   return oss.str();
 }
