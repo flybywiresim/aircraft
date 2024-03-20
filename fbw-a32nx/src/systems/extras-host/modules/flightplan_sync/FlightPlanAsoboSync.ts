@@ -4,19 +4,18 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { NXDataStore, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, RunwayDesignatorChar, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
 
 import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
-import { A320FlightPlanPerformanceData, FlightPlanIndex } from '@fmgc/index';
+import { A320FlightPlanPerformanceData, FlightPlanIndex, NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
 import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO } from '@microsoft/msfs-sdk';
+import { ApproachType as MSApproachType } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 
 export class FlightPlanAsoboSync {
     private isReady = false;
-
-    private lastFlightPlanVersion = undefined;
 
     private facilityLoaderCustom: FacilityLoader;
 
@@ -46,9 +45,10 @@ export class FlightPlanAsoboSync {
     }
 
     init(): void {
+        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+
         const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
-        // initial sync
         NXDataStore.getAndSubscribe('FP_SYNC', (_, val) => {
             if (val === 'LOAD') {
                 this.loadFlightPlanFromGame();
@@ -153,7 +153,7 @@ export class FlightPlanAsoboSync {
             const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
             const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
 
-            for (let i = 1; i < enroute.length; i++) {
+            for (let i = 1; i <= enroute.length; i++) {
                 const wpt = enroute[i - 1];
                 if (wpt.icao.trim() !== '') {
                     // eslint-disable-next-line no-await-in-loop
@@ -170,19 +170,6 @@ export class FlightPlanAsoboSync {
             await rpcClient.uplinkInsert();
         }
         rpcClient.destroy();
-    }
-
-    // TODO JS_WAYPOINT missing in types
-    // TODO copy from Mapping.ts of MSFS backend, as it would require another FacilityCache
-    private mapFacilityToWaypoint(facility: any): Waypoint {
-        return {
-            databaseId: facility.icao,
-            icaoCode: facility.icao.substring(1, 3),
-            ident: FacilityCache.ident(facility.icao),
-            name: Utils.Translate(facility.name),
-            location: { lat: facility.lla.lat, long: facility.lla.long },
-            area: facility.icao.substring(3, 7).trim().length > 0 ? WaypointArea.Terminal : WaypointArea.Enroute,
-        } as Waypoint;
     }
 
     private async syncFlightPlanToGame(): Promise<void> {
@@ -225,12 +212,15 @@ export class FlightPlanAsoboSync {
                     const originFacility = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.originAirport.substring(0, 4)} `);
                     let originRw = 0;
                     let departureRw = 0;
+                    const originRwIdent = this.procedureDetails.originRunway;
                     for (const runway of originFacility.runways) {
+                        departureRw = 0;
                         for (const designation of runway.designation.split('-')) {
                             console.log('ORIGIN RUNWAY', this.procedureDetails.originRunway);
                             console.log(designation);
-                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(this.procedureDetails.originRunway)) {
-                                console.log(`Runway parent ${originRw} is matching with actual index ${departureRw}. Is ${JSON.stringify(runway)}`);
+                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(originRwIdent)
+                                    && (runway.designatorCharSecondary === 0 || runway.designatorCharSecondary === this.mapRunwayDesignator(originRwIdent[originRwIdent.length - 1]))) {
+                                console.log(`Runway parent ${originRw} is matching with actual index ${departureRw}. Is`, runway);
                                 await Coherent.call('SET_ORIGIN_RUNWAY_INDEX', originRw);
                                 await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', departureRw);
                                 const departureIndex = originFacility.departures
@@ -260,37 +250,32 @@ export class FlightPlanAsoboSync {
                     const destinationRunwayIdent = this.procedureDetails.destinationRunway;
                     console.log('IDENT', destinationRunwayIdent);
 
-                    const arg = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
-                    console.log('ARRIVAL', arg);
-                    for (const runway of arg.runways) {
+                    const airportFacility = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
+                    console.log('ARRIVAL', airportFacility);
+                    for (const runway of airportFacility.runways) {
                         for (const designation of runway.designation.split('-')) {
                             console.log(destinationRunwayIdent);
                             console.log(designation);
-                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)) {
-                                console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is ${JSON.stringify(runway)}`);
-                                const arrivalIndex = arg.arrivals
+                            if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)
+                                    && runway.designatorCharSecondary === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1])) {
+                                console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is`, runway);
+                                const arrivalIndex = airportFacility.arrivals
                                     .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
-                                const arritvalTransitionIndex = arg.arrivals
+                                const arritvalTransitionIndex = airportFacility.arrivals
                                     .findIndex((arrival) => arrival.enRouteTransitions.map((t) => t.name === this.procedureDetails.arrivalTransitionIdent));
 
                                 console.log('APPR IDENT', this.procedureDetails.approachIdent);
-                                console.log('available appr', arg.approaches);
-                                let approachName = this.procedureDetails.approachIdent;
+                                console.log('available appr', airportFacility.approaches);
+                                const approachType = this.mapToMsfsApproachType(this.procedureDetails.approachIdent[0]);
 
-                                // FIXME how to map that properly
-                                if (approachName.startsWith('D')) {
-                                    approachName = `VOR ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                    console.log('NEW APPR NAME', approachName);
-                                } else if (approachName.startsWith('I')) {
-                                    approachName = `ILS ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                    console.log('NEW APPR NAME', approachName);
-                                } else if (approachName.startsWith('R')) {
-                                    approachName = `RNAV ${FlightPlanAsoboSync.extractRunwayNumber(approachName)} ${approachName.substring(approachName.length - 1)}`.trim();
-                                    console.log('NEW APPR NAME', approachName);
-                                }
-                                const apoprachIndex = arg.approaches
-                                    .findIndex((approach) => approach.name === approachName);
-                                const approachEnrouteTransitionIndex = arg.approaches
+                                console.log('APPROACH TYPE', approachType);
+                                console.log('RUNWAY DESIGNATOR', this.mapRunwayDesignator(runway.designatorCharSecondary));
+                                console.log('RUNWAY DESIGNATION', designation);
+                                const apoprachIndex = airportFacility.approaches
+                                    .findIndex((approach) => (approach.runwayNumber.toFixed(0) === designation && approach.runwayDesignator === runway.designatorCharSecondary
+                                        && approach.approachType as unknown as MSApproachType) === approachType
+                                    && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1]));
+                                const approachEnrouteTransitionIndex = airportFacility.approaches
                                     .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
 
                                 console.log('DESTINATION RUNWAY INDEX', destinationRunwayIndex);
@@ -320,5 +305,68 @@ export class FlightPlanAsoboSync {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    // TODO this is a copy from Mapping.ts of MSFS backend but reversed
+    private mapToMsfsApproachType(ident: string) {
+        switch (ident) {
+        case 'B':
+            return MSApproachType.Backcourse;
+        case 'D':
+            return MSApproachType.Vor;
+        case 'I':
+            return MSApproachType.Ils;
+        case 'L':
+            return MSApproachType.Loc;
+        case 'N':
+            return MSApproachType.Ndb;
+        case 'P':
+            return MSApproachType.Gps;
+        case 'Q':
+            return MSApproachType.NdbDme;
+        case 'R':
+            return MSApproachType.Rnav;
+        case 'U':
+            return MSApproachType.Sdf;
+        case 'V':
+            return MSApproachType.Vor;
+        case 'X':
+            return MSApproachType.Lda;
+        default:
+            throw new Error(`Unknown approach type ${ident}`);
+        }
+    }
+
+    // TODO this is a copy from Mapping.ts of MSFS backend but reversed
+    private mapRunwayDesignator(designatorChar: string): RunwayDesignatorChar {
+        switch (designatorChar) {
+        case 'A':
+            return RunwayDesignatorChar.A;
+        case 'B':
+            return RunwayDesignatorChar.B;
+        case 'C':
+            return RunwayDesignatorChar.C;
+        case 'L':
+            return RunwayDesignatorChar.L;
+        case 'R':
+            return RunwayDesignatorChar.R;
+        case 'W':
+            return RunwayDesignatorChar.W;
+        default:
+            return RunwayDesignatorChar.L;
+        }
+    }
+
+    // TODO JS_WAYPOINT missing in types
+    // TODO copy from Mapping.ts of MSFS backend, as it would require another FacilityCache
+    private mapFacilityToWaypoint(facility: any): Waypoint {
+        return {
+            databaseId: facility.icao,
+            icaoCode: facility.icao.substring(1, 3),
+            ident: FacilityCache.ident(facility.icao),
+            name: Utils.Translate(facility.name),
+            location: { lat: facility.lla.lat, long: facility.lla.long },
+            area: facility.icao.substring(3, 7).trim().length > 0 ? WaypointArea.Terminal : WaypointArea.Enroute,
+        } as Waypoint;
     }
 }
