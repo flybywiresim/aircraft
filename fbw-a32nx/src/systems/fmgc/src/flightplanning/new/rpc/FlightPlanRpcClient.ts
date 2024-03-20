@@ -5,7 +5,7 @@
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { EventBus, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, EventSubscriber, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -28,6 +28,12 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
     private subs: Subscription[] = [];
 
+    private readonly flightPlanManager: FlightPlanManager<P>;
+
+    private readonly pub : Publisher<FlightPlanRemoteClientRpcEvents<P>>;
+
+    private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
+
     constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
         this.subs.push(this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
             if (this.rpcCommandsSent.has(responseId)) {
@@ -39,18 +45,15 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
                 }
             }
         }));
+        this.flightPlanManager = new FlightPlanManager<P>(
+            this.bus,
+            this.performanceDataInit as P /*  TODO, is this comment still valid? "This flight plan manager will never create plans, so this is fine" */,
+            Math.round(Math.random() * 10_000),
+            false,
+        );
+        this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
+        this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
     }
-
-    private readonly flightPlanManager = new FlightPlanManager<P>(
-        this.bus,
-        this.performanceDataInit as P /*  This flight plan manager will never create plans, so this is fine */,
-        Math.round(Math.random() * 10_000),
-        false,
-    );
-
-    private readonly pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
-
-    private readonly sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
 
     private rpcCommandsSent = new Map<string, [PromiseFn, PromiseFn]>();
 
