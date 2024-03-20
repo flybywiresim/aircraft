@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { EventBus, Publisher, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import {
     FlightPlanEvents,
     FlightPlanSyncResponsePacket, PerformanceDataFlightPlanSyncEvents,
