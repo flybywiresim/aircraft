@@ -10,7 +10,7 @@ import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcC
 
 import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 import { A320FlightPlanPerformanceData, FlightPlanIndex, NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
-import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO } from '@microsoft/msfs-sdk';
+import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO, ApproachProcedure, AirportRunway } from '@microsoft/msfs-sdk';
 import { ApproachType as MSApproachType } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 
@@ -257,7 +257,8 @@ export class FlightPlanAsoboSync {
                             console.log(destinationRunwayIdent);
                             console.log(designation);
                             if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)
-                                    && runway.designatorCharSecondary === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1])) {
+                                    && (runway.designatorCharSecondary === 0
+                                            || runway.designatorCharSecondary === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1]))) {
                                 console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is`, runway);
                                 const arrivalIndex = airportFacility.arrivals
                                     .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
@@ -271,10 +272,8 @@ export class FlightPlanAsoboSync {
                                 console.log('APPROACH TYPE', approachType);
                                 console.log('RUNWAY DESIGNATOR', this.mapRunwayDesignator(runway.designatorCharSecondary));
                                 console.log('RUNWAY DESIGNATION', designation);
-                                const apoprachIndex = airportFacility.approaches
-                                    .findIndex((approach) => (approach.runwayNumber.toFixed(0) === designation && approach.runwayDesignator === runway.designatorCharSecondary
-                                        && approach.approachType as unknown as MSApproachType) === approachType
-                                    && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1]));
+                                const apoprachIndex = this.findApproachIndexByRunwayAndApproachType(airportFacility.approaches, runway, designation, approachType);
+
                                 const approachEnrouteTransitionIndex = airportFacility.approaches
                                     .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
 
@@ -305,6 +304,15 @@ export class FlightPlanAsoboSync {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    private findApproachIndexByRunwayAndApproachType(approaches: readonly ApproachProcedure[], runway: AirportRunway, designation: string, approachType: MSApproachType): number {
+        return approaches
+            .findIndex((approach) => approach.runwayNumber.toFixed(0) === designation
+            // L/R etc...
+            && approach.runwayDesignator === runway.designatorCharSecondary
+            && approach.approachType as unknown as MSApproachType === approachType
+        && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1]));
     }
 
     // TODO this is a copy from Mapping.ts of MSFS backend but reversed
@@ -353,7 +361,7 @@ export class FlightPlanAsoboSync {
         case 'W':
             return RunwayDesignatorChar.W;
         default:
-            return RunwayDesignatorChar.L;
+            throw new Error(`Unknown runway designatorchar ${designatorChar}`);
         }
     }
 
