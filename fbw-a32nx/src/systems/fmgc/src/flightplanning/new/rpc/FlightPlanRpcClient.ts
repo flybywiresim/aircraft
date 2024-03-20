@@ -35,6 +35,9 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
 
     constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
+        this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
+        this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
+
         this.subs.push(this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
             if (this.rpcCommandsSent.has(responseId)) {
                 const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
@@ -51,8 +54,6 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
             Math.round(Math.random() * 10_000),
             false,
         );
-        this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
-        this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
     }
 
     private rpcCommandsSent = new Map<string, [PromiseFn, PromiseFn]>();
