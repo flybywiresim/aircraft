@@ -341,7 +341,7 @@ export class FlightPlanAsoboSync {
         case 'X':
             return MSApproachType.Lda;
         default:
-            throw new Error(`Unknown approach type ${ident}`);
+            return MSApproachType.Ils;
         }
     }
 
@@ -361,7 +361,7 @@ export class FlightPlanAsoboSync {
         case 'W':
             return RunwayDesignatorChar.W;
         default:
-            throw new Error(`Unknown runway designatorchar ${designatorChar}`);
+            return RunwayDesignatorChar.L;
         }
     }
 
