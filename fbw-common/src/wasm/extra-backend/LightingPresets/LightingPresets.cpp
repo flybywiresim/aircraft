@@ -33,7 +33,6 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
   // only run when aircraft is ready
-  // FIXME: It appears the the IS_READY signal is not reliable on the A380X yet esp. when using Quick Reload).
   if (!msfsHandler.getAircraftIsReadyVar()) {
     LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
     return true;

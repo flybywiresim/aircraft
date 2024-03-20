@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include <iostream>
+#include <sstream>
+#include <string>
+
+#include <MSFS\MSFS_CommBus.h>
 
 #include "AircraftPresets.h"
 #include "SimUnits.h"
@@ -38,11 +42,15 @@ bool AircraftPresets::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // LVARs
-  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ);
   loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
+
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetExpediteDelay =
+      dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250);
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -61,7 +69,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
   if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
-  // has request to load a preset been received?
+  // has a request to load a preset been received?
   if (loadAircraftPresetRequest->getAsInt64() > 0) {
     // we do not allow loading of presets in the air to prevent users from
     // accidentally changing the aircraft configuration
@@ -76,7 +84,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     progressAircraftPreset->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
     progressAircraftPresetId->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
 
-    // check if we already have an active loading process or if this is a new request which
+    // check if we already have an active loading process or if this is a new request that
     // needs to be initialized
     if (!loadingIsActive) {
       // get the requested procedure
@@ -90,7 +98,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
         return true;
       }
 
-      // initialize new loading process
+      // initialize a new loading process
       currentProcedureID = loadAircraftPresetRequest->getAsInt64();
       currentProcedure = requestedProcedure.value();
       currentLoadingTime = 0;
@@ -103,7 +111,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
-    // reset the LVAR to the currently running procedure in case it has been changed
+    // Reset the LVAR to the current running procedure in case it has been changed
     // during a running procedure. We only allow "0" as a signal to interrupt the
     // current procedure
     loadAircraftPresetRequest->setAsInt64(currentProcedureID);
@@ -138,9 +146,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
-      // update progress var
-      progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
-      progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+      updateProgress(currentStepPtr);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
                " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
@@ -151,8 +157,13 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
+    // allow execution of the procedure without a delay if expedite is set
+    if (aircraftPresetExpedite->getAsBool() && !currentStepPtr->noExpedite) {
+      currentDelay = currentLoadingTime + aircraftPresetExpediteDelay->get();
+    }
+
     // test if the next step is required or if the state is already set in
-    // which case the action can be skipped and delay can be ignored.
+    // which case the action can be skipped, and delay can be ignored.
     fvalue = 0;
     ivalue = 0;
     svalue = nullptr;
@@ -173,13 +184,11 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       }
     }
 
-    // update progress var
-    progressAircraftPreset->setAndWriteToSim(static_cast<double>(currentStep) / currentProcedure->size());
-    progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+    updateProgress(currentStepPtr);
 
     // execute code to set expected state
     LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
-             " (delay after: " + std::to_string(currentStepPtr->delayAfter) + ")");
+             " (delay after: " + std::to_string(static_cast<int>(currentDelay - currentLoadingTime)) + ")");
     execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
     currentStep++;
 
@@ -197,3 +206,22 @@ bool AircraftPresets::shutdown() {
   std::cout << "AircraftPresets::shutdown()" << std::endl;
   return true;
 }
+
+// ==============================================================================
+// Private methods
+// ==============================================================================
+
+void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {
+  const FLOAT64 loadPercentage = static_cast<double>(currentStep) / currentProcedure->size();
+
+  // update the progress LVARs
+  progressAircraftPreset->setAndWriteToSim(loadPercentage);
+  progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
+
+  // send this progress to the flyPad using Comm Bus
+  std::ostringstream oss;
+  oss << loadPercentage << ";" << currentStepPtr->description;
+  std::string buffer = oss.str();
+  fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer.c_str(), buffer.size() + 1, FsCommBusBroadcast_JS);
+}
+
