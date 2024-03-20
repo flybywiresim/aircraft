@@ -10,17 +10,17 @@
 
 // Make access to variables more readable
 enum EngineAndSide {
-  OL = 0,         // outer left
-  E1 = OL,        //
+  OL       = 0,   // outer left
+  E1       = OL,  //
   ENGINE_1 = OL,  //
-  IL = 1,         // inner left
-  E2 = IL,        //
+  IL       = 1,   // inner left
+  E2       = IL,  //
   ENGINE_2 = IL,  //
-  IR = 2,         // inner right
-  E3 = IR,        //
+  IR       = 2,   // inner right
+  E3       = IR,  //
   ENGINE_3 = IR,  //
-  OR = 3,         // outer right
-  E4 = OR,        //
+  OR       = 3,   // outer right
+  E4       = OR,  //
   ENGINE_4 = OR,  //
 };
 
@@ -37,8 +37,8 @@ class FadecSimData_A380X {
     char atcID[32];
   };
   DataDefinitionVector atcIdDataDef = {
-      // MSFS docs say this is max 10 chars - we use 32 for safety
-      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32} //
+  // MSFS docs say this is max 10 chars - we use 32 for safety
+      {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
   };
   /**
    * @var atcIdDataPtr
@@ -52,58 +52,74 @@ class FadecSimData_A380X {
 
   // Fuel Feed Tank Data in one Data Definition as they are read and updated together
   struct FuelFeedTankData {
-    FLOAT64 fuelSystemFeedOne;
-    FLOAT64 fuelSystemFeedTwo;
-    FLOAT64 fuelSystemFeedThree;
-    FLOAT64 fuelSystemFeedFour;
+    FLOAT64 fuelSystemFeedOne; // in Gallons
+    FLOAT64 fuelSystemFeedTwo; // in Gallons
+    FLOAT64 fuelSystemFeedThree; // in Gallons
+    FLOAT64 fuelSystemFeedFour; // in Gallons
   };
   DataDefinitionVector fuelFeedTankDataDef = {
-      {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons},  //
-      {"FUELSYSTEM TANK QUANTITY", 5, UNITS.Gallons},  //
-      {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons},  //
-      {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons},  //
+      {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 5, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons}, //
   };
-  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;
+  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr; // in Gallons
 
   // Fuel Tank Data in one Data Definition as they are read and updated together
   struct FuelTankData {
-    FLOAT64 fuelSystemLeftOuter;
-    FLOAT64 fuelSystemLeftMid;
-    FLOAT64 fuelSystemLeftInner;
-    FLOAT64 fuelSystemRightInner;
-    FLOAT64 fuelSystemRightMid;
-    FLOAT64 fuelSystemRightOuter;
-    FLOAT64 fuelSystemTrim;
+    FLOAT64 fuelSystemLeftOuter; // in Gallons
+    FLOAT64 fuelSystemLeftMid; // in Gallons
+    FLOAT64 fuelSystemLeftInner; // in Gallons
+    FLOAT64 fuelSystemRightInner; // in Gallons
+    FLOAT64 fuelSystemRightMid; // in Gallons
+    FLOAT64 fuelSystemRightOuter; // in Gallons
+    FLOAT64 fuelSystemTrim; // in Gallons
   };
   DataDefinitionVector fuelTankDataDef = {
-      {"FUELSYSTEM TANK QUANTITY", 1, UNITS.Gallons},   //
-      {"FUELSYSTEM TANK QUANTITY", 3, UNITS.Gallons},   //
-      {"FUELSYSTEM TANK QUANTITY", 4, UNITS.Gallons},   //
-      {"FUELSYSTEM TANK QUANTITY", 7, UNITS.Gallons},   //
-      {"FUELSYSTEM TANK QUANTITY", 8, UNITS.Gallons},   //
-      {"FUELSYSTEM TANK QUANTITY", 10, UNITS.Gallons},  //
-      {"FUELSYSTEM TANK QUANTITY", 11, UNITS.Gallons},  //
+      {"FUELSYSTEM TANK QUANTITY", 1,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 3,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 4,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 7,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 8,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 10, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 11, UNITS.Gallons}, //
   };
-  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr;
+  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr; // in Gallons
 
   // Oil Temp Data in separate Data Definitions as they are updated separately
   struct OilTempData {
     FLOAT64 oilTemp;
   };
-  DataDefinitionVector oilTempE1DataDef = {{"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}};
-  DataDefinitionVector oilTempE2DataDef = {{"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}};
-  DataDefinitionVector oilTempE3DataDef = {{"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius}};
-  DataDefinitionVector oilTempE4DataDef = {{"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius}};
+  DataDefinitionVector oilTempE1DataDef = {
+      {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}
+  };
+  DataDefinitionVector oilTempE2DataDef = {
+      {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}
+  };
+  DataDefinitionVector oilTempE3DataDef = {
+      {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius}
+  };
+  DataDefinitionVector oilTempE4DataDef = {
+      {"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius}
+  };
   DataDefinitionVariablePtr<OilTempData> oilTempDataPtr[4];
 
   // Oil Psi Data in separate Data Definitions as they are updated separately
   struct OilPsiData {
     FLOAT64 oilPsi;
   };
-  DataDefinitionVector oilPsiE1DataDef = {{"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi}};
-  DataDefinitionVector oilPsiE2DataDef = {{"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi}};
-  DataDefinitionVector oilPsiE3DataDef = {{"GENERAL ENG OIL PRESSURE", 3, UNITS.Psi}};
-  DataDefinitionVector oilPsiE4DataDef = {{"GENERAL ENG OIL PRESSURE", 4, UNITS.Psi}};
+  DataDefinitionVector oilPsiE1DataDef = {
+      {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi}
+  };
+  DataDefinitionVector oilPsiE2DataDef = {
+      {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi}
+  };
+  DataDefinitionVector oilPsiE3DataDef = {
+      {"GENERAL ENG OIL PRESSURE", 3, UNITS.Psi}
+  };
+  DataDefinitionVector oilPsiE4DataDef = {
+      {"GENERAL ENG OIL PRESSURE", 4, UNITS.Psi}
+  };
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[4];
 
   // Corrected N3 Data in separate Data Definitions as they are updated separately
@@ -111,10 +127,18 @@ class FadecSimData_A380X {
   struct CorrectedN3Data {
     FLOAT64 correctedN3;
   };
-  DataDefinitionVector engine1CN3DataDef = {{"TURB ENG CORRECTED N2", 1, UNITS.Percent}};
-  DataDefinitionVector engine2CN3DataDef = {{"TURB ENG CORRECTED N2", 2, UNITS.Percent}};
-  DataDefinitionVector engine3CN3DataDef = {{"TURB ENG CORRECTED N2", 3, UNITS.Percent}};
-  DataDefinitionVector engine4CN3DataDef = {{"TURB ENG CORRECTED N2", 4, UNITS.Percent}};
+  DataDefinitionVector engine1CN3DataDef = {
+      {"TURB ENG CORRECTED N2", 1, UNITS.Percent}
+  };
+  DataDefinitionVector engine2CN3DataDef = {
+      {"TURB ENG CORRECTED N2", 2, UNITS.Percent}
+  };
+  DataDefinitionVector engine3CN3DataDef = {
+      {"TURB ENG CORRECTED N2", 3, UNITS.Percent}
+  };
+  DataDefinitionVector engine4CN3DataDef = {
+      {"TURB ENG CORRECTED N2", 4, UNITS.Percent}
+  };
   DataDefinitionVariablePtr<CorrectedN3Data> engineCorrectedN3DataPtr[4];
 
   // SimVars Data in one Data Definition as they are read together and never updated
@@ -124,7 +148,7 @@ class FadecSimData_A380X {
     FLOAT64 ambientPressure;
     FLOAT64 ambientTemperature;
     FLOAT64 pressureAltitude;
-    FLOAT64 fuelWeightPerGallon;
+    FLOAT64 fuelWeightLbsPerGallon;
     FLOAT64 engineAntiIce[4];
     FLOAT64 engineCorrectedN1[4];
     FLOAT64 engineIgniter[4];
@@ -133,36 +157,36 @@ class FadecSimData_A380X {
     FLOAT64 simEngineN2[4];
   };
   DataDefinitionVector simVarsDataDef = {
-      {"ANIMATION DELTA TIME", 0, UNITS.Seconds},         //
-      {"AIRSPEED MACH", 0, UNITS.Mach},                   //
-      {"AMBIENT PRESSURE", 0, UNITS.Millibars},           //
-      {"AMBIENT TEMPERATURE", 0, UNITS.Celsius},          //
-      {"PRESSURE ALTITUDE", 0, UNITS.Feet},               //
-      {"FUEL WEIGHT PER GALLON", 0, UNITS.Pounds},        //
-      {"ENG ANTI ICE", 1, UNITS.Bool},                    //
-      {"ENG ANTI ICE", 2, UNITS.Bool},                    //
-      {"ENG ANTI ICE", 3, UNITS.Bool},                    //
-      {"ENG ANTI ICE", 4, UNITS.Bool},                    //
-      {"TURB ENG CORRECTED N1", 1, UNITS.Percent},        //
-      {"TURB ENG CORRECTED N1", 2, UNITS.Percent},        //
-      {"TURB ENG CORRECTED N1", 3, UNITS.Percent},        //
-      {"TURB ENG CORRECTED N1", 4, UNITS.Percent},        //
-      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number},  //
-      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number},  //
-      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number},  //
-      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number},  //
-      {"GENERAL ENG STARTER", 1, UNITS.Bool},             //
-      {"GENERAL ENG STARTER", 2, UNITS.Bool},             //
-      {"GENERAL ENG STARTER", 3, UNITS.Bool},             //
-      {"GENERAL ENG STARTER", 4, UNITS.Bool},             //
-      {"TURB ENG N1", 1, UNITS.Percent},                  //
-      {"TURB ENG N1", 2, UNITS.Percent},                  //
-      {"TURB ENG N1", 3, UNITS.Percent},                  //
-      {"TURB ENG N1", 4, UNITS.Percent},                  //
-      {"TURB ENG N2", 1, UNITS.Percent},                  //
-      {"TURB ENG N2", 2, UNITS.Percent},                  //
-      {"TURB ENG N2", 3, UNITS.Percent},                  //
-      {"TURB ENG N2", 4, UNITS.Percent},                  //
+      {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
+      {"AIRSPEED MACH",                0, UNITS.Mach     }, //
+      {"AMBIENT PRESSURE",             0, UNITS.Millibars}, //
+      {"AMBIENT TEMPERATURE",          0, UNITS.Celsius  }, //
+      {"PRESSURE ALTITUDE",            0, UNITS.Feet     }, //
+      {"FUEL WEIGHT PER GALLON",       0, UNITS.Pounds   }, //
+      {"ENG ANTI ICE",                 1, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
+      {"TURB ENG CORRECTED N1",        1, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        2, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        3, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        4, UNITS.Percent  }, //
+      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number   }, //
+      {"GENERAL ENG STARTER",          1, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",          4, UNITS.Bool     }, //
+      {"TURB ENG N1",                  1, UNITS.Percent  }, //
+      {"TURB ENG N1",                  2, UNITS.Percent  }, //
+      {"TURB ENG N1",                  3, UNITS.Percent  }, //
+      {"TURB ENG N1",                  4, UNITS.Percent  }, //
+      {"TURB ENG N2",                  1, UNITS.Percent  }, //
+      {"TURB ENG N2",                  2, UNITS.Percent  }, //
+      {"TURB ENG N2",                  3, UNITS.Percent  }, //
+      {"TURB ENG N2",                  4, UNITS.Percent  }, //
   };
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
@@ -172,10 +196,10 @@ class FadecSimData_A380X {
   ClientEventPtr toggleEngineStarter2Event;
   ClientEventPtr toggleEngineStarter3Event;
   ClientEventPtr toggleEngineStarter4Event;
-  CallbackID toggleEngineStarter1EventCallback{};
-  CallbackID toggleEngineStarter2EventCallback{};
-  CallbackID toggleEngineStarter3EventCallback{};
-  CallbackID toggleEngineStarter4EventCallback{};
+  CallbackID     toggleEngineStarter1EventCallback{};
+  CallbackID     toggleEngineStarter2EventCallback{};
+  CallbackID     toggleEngineStarter3EventCallback{};
+  CallbackID     toggleEngineStarter4EventCallback{};
   ClientEventPtr setStarterHeldEvent[4];
   ClientEventPtr setStarterEvent[4];
 
@@ -201,17 +225,17 @@ class FadecSimData_A380X {
   NamedVariablePtr enginePreFF[4];
   NamedVariablePtr engineState[4];
   NamedVariablePtr engineTimer[4];
-  NamedVariablePtr fuelLeftOuterPre;
-  NamedVariablePtr fuelFeedOnePre;
-  NamedVariablePtr fuelLeftMidPre;
-  NamedVariablePtr fuelLeftInnerPre;
-  NamedVariablePtr fuelFeedTwoPre;
-  NamedVariablePtr fuelFeedThreePre;
-  NamedVariablePtr fuelRightInnerPre;
-  NamedVariablePtr fuelRightMidPre;
-  NamedVariablePtr fuelFeedFourPre;
-  NamedVariablePtr fuelRightOuterPre;
-  NamedVariablePtr fuelTrimPre;
+  NamedVariablePtr fuelLeftOuterPre;   // Pounds
+  NamedVariablePtr fuelFeedOnePre;     // Pounds
+  NamedVariablePtr fuelLeftMidPre;     // Pounds
+  NamedVariablePtr fuelLeftInnerPre;   // Pounds
+  NamedVariablePtr fuelFeedTwoPre;     // Pounds
+  NamedVariablePtr fuelFeedThreePre;   // Pounds
+  NamedVariablePtr fuelRightInnerPre;  // Pounds
+  NamedVariablePtr fuelRightMidPre;    // Pounds
+  NamedVariablePtr fuelFeedFourPre;    // Pounds
+  NamedVariablePtr fuelRightOuterPre;  // Pounds
+  NamedVariablePtr fuelTrimPre;        // Pounds
   NamedVariablePtr fuelPumpState[4];
   NamedVariablePtr packsState[2];
   NamedVariablePtr refuelRate;
@@ -307,10 +331,10 @@ class FadecSimData_A380X {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
     startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
-    engineIdleN1 = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Percent, AUTO_READ_WRITE);
-    engineIdleN3 = dm->make_named_var("A32NX_ENGINE_IDLE_N3", UNITS.Percent, AUTO_READ_WRITE);
+    engineIdleN1  = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Percent, AUTO_READ_WRITE);
+    engineIdleN3  = dm->make_named_var("A32NX_ENGINE_IDLE_N3", UNITS.Percent, AUTO_READ_WRITE);
     engineIdleEGT = dm->make_named_var("A32NX_ENGINE_IDLE_EGT", UNITS.Number, AUTO_READ_WRITE);
-    engineIdleFF = dm->make_named_var("A32NX_ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleFF  = dm->make_named_var("A32NX_ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
 
     engineState[E1] = dm->make_named_var("A32NX_ENGINE_STATE:1", UNITS.Enum, AUTO_READ_WRITE);
     engineState[E2] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Enum, AUTO_READ_WRITE);
@@ -367,38 +391,37 @@ class FadecSimData_A380X {
     engineTimer[E3] = dm->make_named_var("A32NX_ENGINE_TIMER:3", UNITS.Number, AUTO_READ_WRITE);
     engineTimer[E4] = dm->make_named_var("A32NX_ENGINE_TIMER:4", UNITS.Number, AUTO_READ_WRITE);
 
-    packsState[0] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
-    packsState[1] = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
-    wingAntiIce = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
-
-    refuelRate = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
-    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
-    fuelLeftOuterPre = dm->make_named_var("A32NX_FUEL_LEFTOUTER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelFeedOnePre = dm->make_named_var("A32NX_FUEL_FEED1_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelLeftMidPre = dm->make_named_var("A32NX_FUEL_LEFTMID_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelLeftInnerPre = dm->make_named_var("A32NX_FUEL_LEFTINNER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelFeedTwoPre = dm->make_named_var("A32NX_FUEL_FEED2_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelFeedThreePre = dm->make_named_var("A32NX_FUEL_FEED3_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelRightInnerPre = dm->make_named_var("A32NX_FUEL_RIGHTINNER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelRightMidPre = dm->make_named_var("A32NX_FUEL_RIGHTMID_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelFeedFourPre = dm->make_named_var("A32NX_FUEL_FEED4_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelRightOuterPre = dm->make_named_var("A32NX_FUEL_RIGHTOUTER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelTrimPre = dm->make_named_var("A32NX_FUEL_TRIM_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftOuterPre  = dm->make_named_var("A32NX_FUEL_LEFTOUTER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelFeedOnePre    = dm->make_named_var("A32NX_FUEL_FEED1_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelLeftMidPre    = dm->make_named_var("A32NX_FUEL_LEFTMID_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelLeftInnerPre  = dm->make_named_var("A32NX_FUEL_LEFTINNER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelFeedTwoPre    = dm->make_named_var("A32NX_FUEL_FEED2_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelFeedThreePre  = dm->make_named_var("A32NX_FUEL_FEED3_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelRightInnerPre = dm->make_named_var("A32NX_FUEL_RIGHTINNER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelRightMidPre   = dm->make_named_var("A32NX_FUEL_RIGHTMID_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelFeedFourPre   = dm->make_named_var("A32NX_FUEL_FEED4_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelRightOuterPre = dm->make_named_var("A32NX_FUEL_RIGHTOUTER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelTrimPre       = dm->make_named_var("A32NX_FUEL_TRIM_PRE", UNITS.Pounds, AUTO_READ_WRITE);
 
     fuelPumpState[E1] = dm->make_named_var("A32NX_PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
     fuelPumpState[E2] = dm->make_named_var("A32NX_PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
     fuelPumpState[E3] = dm->make_named_var("A32NX_PUMP_STATE:3", UNITS.Number, AUTO_READ_WRITE);
     fuelPumpState[E4] = dm->make_named_var("A32NX_PUMP_STATE:4", UNITS.Number, AUTO_READ_WRITE);
 
-    thrustLimitType = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
-    thrustLimitIdle = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
+    thrustLimitType  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
+    thrustLimitIdle  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
     thrustLimitClimb = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
-    thrustLimitFlex = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
-    thrustLimitMct = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
-    thrustLimitToga = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+    thrustLimitFlex  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
+    thrustLimitMct   = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
+    thrustLimitToga  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
 
-    airlinerToFlexTemp = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
-    apuRpmPercent = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+    packsState[0]       = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
+    packsState[1]       = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
+    wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
+    refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
+    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Gallons, AUTO_READ);
+    airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
+    apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     engineEgt[E1]->set(0);
