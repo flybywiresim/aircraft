@@ -9,7 +9,6 @@ import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/Pushbutton
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import { FlightPlanTest } from './modules/flight_plan_test/FlightPlanTest';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -42,8 +41,6 @@ class ExtrasHost extends BaseInstrument {
     private readonly versionCheck: VersionCheck;
 
     private readonly keyInterceptor: KeyInterceptor;
-
-    private readonly flightPlanTest: FlightPlanTest;
 
     private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
 
