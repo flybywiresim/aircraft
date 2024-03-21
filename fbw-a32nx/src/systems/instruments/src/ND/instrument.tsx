@@ -105,8 +105,6 @@ class NDInstrument implements FsInstrument {
     private doInit(): void {
         this.backplane.init();
 
-        this.dmcPublisher.init();
-
         this.adirsValueProvider.start();
 
         const sub = this.bus.getSubscriber<NDSimvars>();
