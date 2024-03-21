@@ -40,11 +40,11 @@ class EngineControl_A380X {
   FuelConfiguration_A380X fuelConfiguration{};
 
   // Remember last fuel save time to allow saving fuel only every 5 seconds
-  FLOAT64 lastFuelSaveTime = 0;
+  FLOAT64                 lastFuelSaveTime   = 0;
   static constexpr double FUEL_SAVE_INTERVAL = 5.0;  // seconds
 
   // thrust limits transition for flex
-  bool isTransitionActive = false;
+  bool                    isTransitionActive   = false;
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
@@ -55,8 +55,8 @@ class EngineControl_A380X {
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
   // additional constants
-  static constexpr int MAX_OIL = 200;
-  static constexpr int MIN_OIL = 140;
+  static constexpr int    MAX_OIL             = 200;
+  static constexpr int    MIN_OIL             = 140;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
@@ -70,11 +70,11 @@ class EngineControl_A380X {
    * @var SHUTTING The engine is in the process of shutting down.
    */
   enum EngineState {
-    OFF = 0,
-    ON = 1,
-    STARTING = 2,
+    OFF        = 0,
+    ON         = 1,
+    STARTING   = 2,
     RESTARTING = 3,
-    SHUTTING = 4,
+    SHUTTING   = 4,
   };
 
 #ifdef PROFILING
@@ -137,17 +137,17 @@ class EngineControl_A380X {
    * @brief Manages the state and state changes of the engine.
    *
    * @param engine The engine number (1 or 2).
-   * @param engineIgniter The status of the engine igniter.
-   * @param engineStarter The status of the engine starter.
-   * @param simN3 The current N2 value from the simulator used as N3 for the A380X.
-   * @param idleN3 The idle N3 value.
-   * @param ambientTemperature The current ambient temperature.
-   * @return The current state of the engine as an enum of type EngineState.
+   * @param engineIgniter The status of the engine igniter (enum 0=Crank, 1=Norm, 2=Ign).
+   * @param engineStarter The status of the engine starter as bool.
+   * @param simN3 The current N2 value from the simulator used as N3 for the A380X in percent.
+   * @param idleN3 The idle N3 value in percent.
+   * @param ambientTemperature The current ambient temperature in degrees Celsius.
+   * @return The current state of the engine as an enum of type EngineState (OFF, ON, STARTING, RESTARTING, SHUTTING).
    * @see EngineState
    */
-  EngineControl_A380X::EngineState engineStateMachine(int engine,
-                                                      double engineIgniter,
-                                                      bool engineStarter,
+  EngineControl_A380X::EngineState engineStateMachine(int    engine,
+                                                      int    engineIgniter,
+                                                      bool   engineStarter,
                                                       double simN3,
                                                       double idleN3,
                                                       double ambientTemperature);
@@ -164,12 +164,12 @@ class EngineControl_A380X {
    *
    * @see EngineState
    */
-  void engineStartProcedure(int engine,
+  void engineStartProcedure(int         engine,
                             EngineState engineState,
-                            double deltaTime,
-                            double engineTimer,
-                            double simN3,
-                            double ambientTemperature);
+                            double      deltaTime,
+                            double      engineTimer,
+                            double      simN3,
+                            double      ambientTemperature);
 
   /**
    * @brief This function manages the engine shutdown procedure.
@@ -181,7 +181,7 @@ class EngineControl_A380X {
    * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
    * @param engineTimer A timer used to calculate the elapsed time for various operations.
    */
-  void engineShutdownProcedure(int engine, FLOAT64 ambientTemperature, FLOAT64 simN1, FLOAT64 deltaTime, FLOAT64 engineTimer);
+  void engineShutdownProcedure(int engine, double deltaTime, double engineTimer, double simN1, double ambientTemperature);
 
   /**
    * @brief Updates the fuel flow of the engine.
@@ -215,22 +215,22 @@ class EngineControl_A380X {
    * @param simOnGround The on ground status of the aircraft (0 or 1).
    * @param engineState The current state of the engine.
    * @param simCN1 The current corrected fan speed value from the simulator.
-   * @param customFuelFlow The current custom fuel flow of the engine (FBW corrected).
+   * @param correctedFuelFlow The current custom fuel flow of the engine (FBW corrected).
    * @param mach The current Mach number of the aircraft.
    * @param pressureAltitude The current pressure altitude of the aircraft in feet.
-   * @param ambientPressure The current ambient pressure in hPa.
+   * @param ambientTemperature The current ambient pressure in hPa.
    *
    * @see EngineState
    */
-  void updateEGT(int engine,
-                 FLOAT64 deltaTime,
-                 bool simOnGround,
-                 FLOAT64 engineState,
-                 FLOAT64 simCN1,
-                 int customFuelFlow,
-                 const FLOAT64 mach,
-                 const FLOAT64 pressureAltitude,
-                 const FLOAT64 ambientPressure);
+  void updateEGT(int          engine,
+                 double       engineState,
+                 double       deltaTime,
+                 double       simCN1,
+                 int          customFuelFlow,
+                 const double mach,
+                 const double pressureAltitude,
+                 const double ambientPressure,
+                 bool         simOnGround);
 
   /**
    * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
@@ -256,9 +256,9 @@ class EngineControl_A380X {
                           double ambientTemperature,
                           double ambientPressure,
                           double mach,
-                          bool packs,
-                          bool nai,
-                          bool wai);
+                          int    packs,
+                          int    nai,
+                          int    wai);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H

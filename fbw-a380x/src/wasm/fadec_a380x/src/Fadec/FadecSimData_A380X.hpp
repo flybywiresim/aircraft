@@ -132,9 +132,9 @@ class FadecSimData_A380X {
     FLOAT64 pressureAltitude;        // in Feet
     FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
     FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineCorrectedN1[4];    // in Percent
     FLOAT64 engineIgniter[4];        // 0 or 1
     FLOAT64 engineStarter[4];        // 0 or 1
+    FLOAT64 simEngineCorrectedN1[4];    // in Percent
     FLOAT64 simEngineN1[4];          // in Percent
     FLOAT64 simEngineN2[4];          // in Percent
   };
@@ -149,18 +149,18 @@ class FadecSimData_A380X {
       {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
-      {"TURB ENG CORRECTED N1",        1, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        2, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        3, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        4, UNITS.Percent  }, //
-      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Enum     }, //
+      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Enum     }, //
+      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Enum     }, //
+      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Enum     }, //
       {"GENERAL ENG STARTER",          1, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          4, UNITS.Bool     }, //
+      {"TURB ENG CORRECTED N1",        1, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        2, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        3, UNITS.Percent  }, //
+      {"TURB ENG CORRECTED N1",        4, UNITS.Percent  }, //
       {"TURB ENG N1",                  1, UNITS.Percent  }, //
       {"TURB ENG N1",                  2, UNITS.Percent  }, //
       {"TURB ENG N1",                  3, UNITS.Percent  }, //
