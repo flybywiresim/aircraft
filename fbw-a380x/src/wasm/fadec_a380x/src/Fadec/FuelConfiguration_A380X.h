@@ -22,22 +22,25 @@
 /**
  * @class FuelConfiguration
  * @brief This struct represents the fuel configuration for the aircraft.
+ *
+ * This class provides methods to load and save the fuel configuration from/to an INI file.
+ * It also provides getter and setter methods for each fuel tank quantity.
  */
 class FuelConfiguration_A380X {
   // Fuel tank default quantities in gallons
-  static constexpr double fuelFeedOneDefault = 1082.0;
-  static constexpr double fuelFeedTwoDefault = fuelFeedOneDefault;
-  static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;
-  static constexpr double fuelFeedFourDefault = fuelFeedOneDefault;
+  static constexpr double fuelFeedOneDefault   = 1082.0;              // tank 2
+  static constexpr double fuelFeedTwoDefault   = fuelFeedOneDefault;  // tank 5
+  static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;  // tank 6
+  static constexpr double fuelFeedFourDefault  = fuelFeedOneDefault;  // tank 9
 
-  static constexpr double fuelLeftOuterDefault = 2731.0;
-  static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;
-  static constexpr double fuelLeftMidDefault = 9630.0;
-  static constexpr double fuelRightMidDefault = fuelLeftMidDefault;
-  static constexpr double fuelLeftInnerDefault = 12187.0;
-  static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;
+  static constexpr double fuelLeftOuterDefault  = 2731.0;                // tank 1
+  static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;  // tank 10
+  static constexpr double fuelLeftMidDefault    = 9630.0;                // tank 3
+  static constexpr double fuelRightMidDefault   = fuelLeftMidDefault;    // tank 8
+  static constexpr double fuelLeftInnerDefault  = 12187.0;               // tank 4
+  static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;  // tank 7
 
-  static constexpr double fuelTrimDefault = 6259.0;
+  static constexpr double fuelTrimDefault = 6259.0;  // tank 11
 
  private:
   // Actual fuel tank quantities in gallons
@@ -53,17 +56,24 @@ class FuelConfiguration_A380X {
   double fuelFeedFourGallons;
   double fuelTrimGallons;
 
-  std::string configFilename;
+  std::string configFilename{"A380X-default-fuel-config.ini"};
 
  public:
+
   /**
-   * @brief Constructor for the FuelConfiguration class.
-   *
-   * This constructor initializes the FuelConfiguration object with a configuration file name.
-   *
-   * @param configFilename The name of the configuration file.
+   * @brief Returns the filename of the INI file to use for loading and saving the fuel configuration.
    */
-  FuelConfiguration_A380X() {}
+  std::string getConfigFilename() const { return configFilename; }
+
+  /**
+   * @brief Sets the filename of the INI file to use for loading and saving the fuel configuration.
+   *
+   * This must to be done before calling loadConfigurationFromIni or saveConfigurationToIni otherwise
+   * the default filename will be used.
+   *
+   * @param configFilename The filename of the INI file to use for loading and saving the fuel configuration.
+   */
+  void setConfigFilename(const std::string& configFilename) { this->configFilename = configFilename; }
 
   /**
    * @brief Loads the fuel configuration from an INI file.
@@ -94,24 +104,19 @@ class FuelConfiguration_A380X {
   double getFuelRightOuterGallons() const { return fuelRightOuterGallons; }
   double getFuelTrimGallons() const { return fuelTrimGallons; }
 
-  void   setFuelLeftOuterGallons(double fuelLeftOuterGallons) { this->fuelLeftOuterGallons = fuelLeftOuterGallons; }
-  void   setFuelFeedOneGallons(double fuelFeedOneGallons) { this->fuelFeedOneGallons = fuelFeedOneGallons; }
-  void   setFuelLeftMidGallons(double fuelLeftMidGallons) { this->fuelLeftMidGallons = fuelLeftMidGallons; }
-  void   setFuelLeftInnerGallons(double fuelLeftInnerGallons) { this->fuelLeftInnerGallons = fuelLeftInnerGallons; }
-  void   setFuelFeedTwoGallons(double fuelFeedTwoGallons) { this->fuelFeedTwoGallons = fuelFeedTwoGallons; }
-  void   setFuelFeedThreeGallons(double fuelFeedThreeGallons) { this->fuelFeedThreeGallons = fuelFeedThreeGallons; }
-  void   setFuelRightInnerGallons(double fuelRightInnerGallons) { this->fuelRightInnerGallons = fuelRightInnerGallons; }
-  void   setFuelRightMidGallons(double fuelRightMidGallons) { this->fuelRightMidGallons = fuelRightMidGallons; }
-  void   setFuelFeedFourGallons(double fuelFeedFourGallons) { this->fuelFeedFourGallons = fuelFeedFourGallons; }
-  void   setFuelRightOuterGallons(double fuelRightOuterGallons) { this->fuelRightOuterGallons = fuelRightOuterGallons; }
-  void   setFuelTrimGallons(double fuelTrimGallons) { this->fuelTrimGallons = fuelTrimGallons; }
-
-  void setConfigFilename(const std::string& configFilename) {
-    this->configFilename = configFilename;
-  }
+  void setFuelLeftOuterGallons(double fuelLeftOuterGallons) { this->fuelLeftOuterGallons = fuelLeftOuterGallons; }
+  void setFuelFeedOneGallons(double fuelFeedOneGallons) { this->fuelFeedOneGallons = fuelFeedOneGallons; }
+  void setFuelLeftMidGallons(double fuelLeftMidGallons) { this->fuelLeftMidGallons = fuelLeftMidGallons; }
+  void setFuelLeftInnerGallons(double fuelLeftInnerGallons) { this->fuelLeftInnerGallons = fuelLeftInnerGallons; }
+  void setFuelFeedTwoGallons(double fuelFeedTwoGallons) { this->fuelFeedTwoGallons = fuelFeedTwoGallons; }
+  void setFuelFeedThreeGallons(double fuelFeedThreeGallons) { this->fuelFeedThreeGallons = fuelFeedThreeGallons; }
+  void setFuelRightInnerGallons(double fuelRightInnerGallons) { this->fuelRightInnerGallons = fuelRightInnerGallons; }
+  void setFuelRightMidGallons(double fuelRightMidGallons) { this->fuelRightMidGallons = fuelRightMidGallons; }
+  void setFuelFeedFourGallons(double fuelFeedFourGallons) { this->fuelFeedFourGallons = fuelFeedFourGallons; }
+  void setFuelRightOuterGallons(double fuelRightOuterGallons) { this->fuelRightOuterGallons = fuelRightOuterGallons; }
+  void setFuelTrimGallons(double fuelTrimGallons) { this->fuelTrimGallons = fuelTrimGallons; }
 
   std::string toString() const;
-
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_FUELCONFIGURATION_A380X_H

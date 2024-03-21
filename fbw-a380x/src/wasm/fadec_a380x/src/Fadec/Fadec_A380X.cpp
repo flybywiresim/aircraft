@@ -3,8 +3,6 @@
 
 #include "Fadec_A380X.h"
 
-#include "EngineControl_A380X.h"
-
 bool Fadec_A380X::initialize() {
   engineControl.initialize(&msfsHandler);
 

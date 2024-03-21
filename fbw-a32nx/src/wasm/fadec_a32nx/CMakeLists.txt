@@ -16,8 +16,8 @@ set(SOURCE_FILES
     ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A32NX.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControlA32NX.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A32NX.cpp
 )
 
 set(INCLUDE_FILES

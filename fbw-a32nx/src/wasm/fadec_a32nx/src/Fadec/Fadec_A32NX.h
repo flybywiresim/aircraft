@@ -7,6 +7,13 @@
 #include "EngineControlA32NX.h"
 #include "Fadec.h"
 
+/**
+ * @brief: The Fadec_A32NX class is responsible for managing the FADEC system for the A32NX aircraft.
+ *
+ * In this current implementation is only holding the EngineControl_A32NX instance and is
+ * responsible for calling its initialize, update and shutdown methods.
+ * The actual fadec logic is implemented in the EngineControl_A32NX class.
+ */
 class Fadec_A32NX : public Fadec {
  private:
   // Engine control instance
@@ -26,4 +33,4 @@ class Fadec_A32NX : public Fadec {
   bool shutdown() override;
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_FADEC_H
+#endif  // FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H

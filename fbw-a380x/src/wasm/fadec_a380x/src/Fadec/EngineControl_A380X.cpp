@@ -50,44 +50,27 @@ void EngineControl_A380X::update(sGaugeDrawData* pData) {
   const double ambientPressure    = simData.simVarsDataPtr->data().ambientPressure;
   const double idleN3             = simData.engineIdleN3->get();
 
-  // Obtain bleed states
-  // Obtain Bleed Variables
-  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
-  const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5 ||
-                   simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[E4] > 0.5)
-                        ? 1
-                        : 0;
-  const int wai   = simData.wingAntiIce->getAsInt64();
-
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
-
-  bool   engineStarter;
-  double engineIgniter;
-  double simCN1;
-  double simN1;
-  double simN1highest;
-  double simN3;
-  double engineTimer;
 
   // Update engine states
   for (int engine = 1; engine <= 4; engine++) {
     const int engineIdx = engine - 1;
 
-    engineStarter = simData.simVarsDataPtr->data().engineStarter[engineIdx] == 1.0;
-    engineIgniter = simData.simVarsDataPtr->data().engineIgniter[engineIdx];
+    const bool   simOnGround   = msfsHandlerPtr->getSimOnGround();
+    const bool   engineStarter = simData.simVarsDataPtr->data().engineStarter[engineIdx] == 1.0;
+    const double engineIgniter = simData.simVarsDataPtr->data().engineIgniter[engineIdx];
 
     EngineState engineState =
         engineStateMachine(engine, engineIgniter, engineStarter, prevSimEngineN3[engineIdx], idleN3, ambientTemperature);
 
-    simCN1      = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
-    simN1       = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
-    simN3       = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
-    engineTimer = simData.engineTimer[engineIdx]->get();
+    const double simCN1      = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
+    const double simN1       = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
+    const double simN3       = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
+    const double engineTimer = simData.engineTimer[engineIdx]->get();
 
     prevSimEngineN3[engineIdx] = simN3;
 
     // Set & Check Engine Status for this Cycle
-    int correctedFuelFlow;
     switch (static_cast<int>(engineState)) {
       case STARTING:
       case RESTARTING:
@@ -95,25 +78,31 @@ void EngineControl_A380X::update(sGaugeDrawData* pData) {
         break;
       case SHUTTING:
         engineShutdownProcedure(engine, ambientTemperature, simN1, pData->dt, engineTimer);
-        correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         break;
       default:
         updatePrimaryParameters(engine, simN1, simN3);
-        correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
-        updateEGT(engine, pData->dt, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach, pressureAltitude,
-                  ambientTemperature);
+        double correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        updateEGT(engine, pData->dt, simOnGround, engineState, simCN1, correctedFuelFlow, mach, pressureAltitude, ambientTemperature);
         // TODO: Oil to be implemented
         // The following call is commented out because it was not yet implemented/working in the original code
         // The function is at the end of this files in its original form
         // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemperature);
         break;
     }
-
-    // set highest N1 from either engine
-    simN1highest = (std::max)(simN1highest, simN1);
   }
 
   updateFuel(pData->dt);
+
+  // Obtain bleed states
+  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
+  const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
+                   || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5  //
+                   || simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5  //
+                   || simData.simVarsDataPtr->data().engineAntiIce[E4] > 0.5)
+                        ? 1
+                        : 0;
+  const int wai   = simData.wingAntiIce->getAsInt64();
   updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, packs, nai, wai);
 
 #ifdef PROFILING
@@ -209,13 +198,12 @@ void EngineControl_A380X::initializeEngineControlData() {
   // Setting initial Fuel Levels
   const double weightLbsPerGallon = simData.simVarsDataPtr->data().fuelWeightLbsPerGallon;
 
-  // Load fuel configuration from file
-  const std::string fuelConfigFilename = FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION;
-  fuelConfiguration.setConfigFilename(fuelConfigFilename);
-  fuelConfiguration.loadConfigurationFromIni();
-
   // only loads saved fuel quantity on C/D spawn
   if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+    // Load fuel configuration from file
+    fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
+    fuelConfiguration.loadConfigurationFromIni();
+
     simData.fuelLeftOuterPre->set(fuelConfiguration.getFuelLeftOuterGallons() * weightLbsPerGallon);
     simData.fuelFeedOnePre->set(fuelConfiguration.getFuelFeedOneGallons() * weightLbsPerGallon);
     simData.fuelLeftMidPre->set(fuelConfiguration.getFuelLeftMidGallons() * weightLbsPerGallon);
@@ -228,12 +216,12 @@ void EngineControl_A380X::initializeEngineControlData() {
     simData.fuelRightOuterPre->set(fuelConfiguration.getFuelRightOuterGallons() * weightLbsPerGallon);
     simData.fuelTrimPre->set(fuelConfiguration.getFuelTrimGallons() * weightLbsPerGallon);
 
+    // set fuel levels from configuration to the sim
     simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne   = fuelConfiguration.getFuelFeedOneGallons();
     simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo   = fuelConfiguration.getFuelFeedTwoGallons();
     simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = fuelConfiguration.getFuelFeedThreeGallons();
     simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour  = fuelConfiguration.getFuelFeedFourGallons();
     simData.fuelFeedTankDataPtr->writeDataToSim();
-
     simData.fuelTankDataPtr->data().fuelSystemLeftOuter  = fuelConfiguration.getFuelLeftOuterGallons();
     simData.fuelTankDataPtr->data().fuelSystemLeftMid    = fuelConfiguration.getFuelLeftMidGallons();
     simData.fuelTankDataPtr->data().fuelSystemLeftInner  = fuelConfiguration.getFuelLeftInnerGallons();
@@ -242,8 +230,9 @@ void EngineControl_A380X::initializeEngineControlData() {
     simData.fuelTankDataPtr->data().fuelSystemRightOuter = fuelConfiguration.getFuelRightOuterGallons();
     simData.fuelTankDataPtr->data().fuelSystemTrim       = fuelConfiguration.getFuelTrimGallons();
     simData.fuelTankDataPtr->writeDataToSim();
-
-  } else {
+  }
+  // on a non C/D spawn, set fuel levels from the sim
+  else {
     simData.fuelLeftOuterPre->set(simData.fuelTankDataPtr->data().fuelSystemLeftOuter * weightLbsPerGallon);
     simData.fuelFeedOnePre->set(simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon);
     simData.fuelLeftMidPre->set(simData.fuelTankDataPtr->data().fuelSystemLeftMid * weightLbsPerGallon);
@@ -276,7 +265,7 @@ void EngineControl_A380X::generateIdleParameters(double pressAltitude, double ma
   const double idleN1  = idleCN1 * sqrt(EngineRatios::theta2(0, ambientTemperature));
   const double idleN3  = Table1502_A380X::iCN3(pressAltitude, mach) * sqrt(EngineRatios::theta(ambientTemperature));
   const double idleCFF = Polynomial_A380X::correctedFuelFlow(idleCN1, 0, pressAltitude);
-  const double idleFF = idleCFF * LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemperature));
+  const double idleFF = idleCFF * Fadec::LBS_TO_KGS * EngineRatios::delta2(0, ambientPressure) * sqrt(EngineRatios::theta2(0, ambientTemperature));
   const double idleEGT = Polynomial_A380X::correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * EngineRatios::theta2(0, ambientTemperature);
 
   simData.engineIdleN1->set(idleN1);
@@ -424,8 +413,7 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
       simData.engineEgt[engineIdx]->set(startEgtFbw);
     }
 
-    const double oilTemperature                       = Polynomial_A380X::startOilTemp(newN3Fbw, idleN3, ambientTemperature);
-    simData.oilTempDataPtr[engineIdx]->data().oilTemp = oilTemperature;
+    simData.oilTempDataPtr[engineIdx]->data().oilTemp = Polynomial_A380X::startOilTemp(newN3Fbw, idleN3, ambientTemperature);
     simData.oilTempDataPtr[engineIdx]->writeDataToSim();
   }
 
@@ -480,10 +468,10 @@ int EngineControl_A380X::updateFF(int    engine,
   const double correctedFuelFlow = Polynomial_A380X::correctedFuelFlow(simCN1, mach, pressureAltitude);  // in lbs/hr.
 
   // Checking Fuel Logic and final Fuel Flow
-  double outFlow = 0;
+  double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
     outFlow = (std::max)(0.0,                                                                           //
-                         (correctedFuelFlow * LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                         (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
                           * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
   }
   simData.engineFF[engine - 1]->set(outFlow);
@@ -502,7 +490,6 @@ void EngineControl_A380X::updatePrimaryParameters(int engine, double simN1, doub
 
   const int engineIdx = engine - 1;
 
-  // Use the array of pointers to assign the values
   simData.engineN1[engineIdx]->set(simN1);
   simData.engineN2[engineIdx]->set(simN3 > 0 ? simN3 + 0.7 : simN3);
   simData.engineN3[engineIdx]->set(simN3);
@@ -796,10 +783,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
       }
     }
 
-    const double fuelFeedOne   = fuelFeedOnePre - (fuelBurn1 * KGS_TO_LBS);    // Pounds
-    const double fuelFeedTwo   = fuelFeedTwoPre - (fuelBurn2 * KGS_TO_LBS);    // Pounds
-    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * KGS_TO_LBS);  // Pounds
-    const double fuelFeedFour  = fuelFeedFourPre - (fuelBurn4 * KGS_TO_LBS);   // Pounds
+    const double fuelFeedOne   = fuelFeedOnePre - (fuelBurn1 * Fadec::KGS_TO_LBS);    // Pounds
+    const double fuelFeedTwo   = fuelFeedTwoPre - (fuelBurn2 * Fadec::KGS_TO_LBS);    // Pounds
+    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * Fadec::KGS_TO_LBS);  // Pounds
+    const double fuelFeedFour  = fuelFeedFourPre - (fuelBurn4 * Fadec::KGS_TO_LBS);   // Pounds
 
     // Setting new pre-cycle conditions
     simData.enginePreFF[E1]->set(engine1FF);
