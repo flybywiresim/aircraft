@@ -166,13 +166,78 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
                         <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
                         <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
                     </g>
-                    <g id="AircraftReference" class="NormalStroke Green">
-                        <path d="m 465.5,236.6 h 33.3 v 5.9" />
-                        <path d="m 511.7,239.7 h 7.1 v -6 h -7.1 z" />
-                        <path d="m 530.9,242.5 v -5.8 h 33.3" />
-                    </g>
+                    <AircraftReference bus={this.props.bus} />
                     <FlightPathVector bus={this.props.bus} />
                     <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+                </g>
+            </>
+        );
+    }
+}
+
+class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
+    private declutterMode = 0;
+
+    private fdActive = false;
+
+    private radioAltitude = new Arinc429Word(0);
+
+    private visibilityAirSub = Subject.create('hidden');
+
+    private visibilityGroundSub = Subject.create('hidden');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+
+        sub.on('chosenRa').handle((ra) => {
+            this.radioAltitude = ra;
+            if (ra.value > 100) {
+                // FIXME tailstrike margin
+                if (this.declutterMode === 0 || this.declutterMode === 1 || this.declutterMode === 2) {
+                    this.visibilityAirSub.set('display:inline');
+                }
+            } else {
+                this.visibilityAirSub.set('display:none');
+            }
+        });
+
+        sub.on('fd1Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 1) {
+                this.fdActive = fd;
+            }
+        });
+
+        sub.on('fd2Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 2) {
+                this.fdActive = fd;
+            }
+        });
+
+        sub.on('declutterMode').handle((mode) => {
+            this.declutterMode = mode;
+        });
+
+        sub.on('activeLateralMode').whenChanged().handle((lm) => {
+            if ((lm === 34 || (lm === 40 && this.radioAltitude.value < 50)) && this.fdActive) {
+                this.visibilityGroundSub.set('display:inline');
+            } else {
+                this.visibilityGroundSub.set('display:none');
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <>
+                <g id="AircraftReference" class="NormalStroke Green" style={this.visibilityAirSub}>
+                    <path d="m 465.5,236.6 h 33.3 v 5.9" />
+                    <path d="m 511.7,239.7 h 7.1 v -6 h -7.1 z" />
+                    <path d="m 530.9,242.5 v -5.8 h 33.3" />
+                </g>
+                <g id="AircraftReferenceOnGround" class="NormalStroke Green" style={this.visibilityGroundSub}>
+                    <path d="m 503.5,283.37305 18,0.17677 -9,15.45018 z" />
                 </g>
             </>
         );
