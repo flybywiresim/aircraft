@@ -321,7 +321,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
     render(): VNode {
         return (
-            <path ref={this.yawRef} id="GroundYawSymbol" class="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+            <path ref={this.yawRef} id="GroundYawSymbol" class="NormalStroke Green" d="m 512.5,299.5 -3,8.5 v 25 h 6 v -25 z" />
         );
     }
 }
