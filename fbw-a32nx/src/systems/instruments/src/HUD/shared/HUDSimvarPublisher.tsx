@@ -13,6 +13,7 @@ import {
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
+    declutterMode: number;
     coldDark: number;
     elec: boolean;
     elecFo: boolean;
@@ -167,6 +168,7 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
   }
 
 export enum HUDVars {
+    declutterMode = 'L:A32NX_HUD_DECLUTTER_MODE',
     coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
     elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
@@ -328,6 +330,7 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
         ...AdirsSimVarDefinitions,
         ...SwitchingPanelSimVarsDefinitions,
+        ['declutterMode', { name: HUDVars.declutterMode, type: SimVarValueType.Number }],
         ['coldDark', { name: HUDVars.coldDark, type: SimVarValueType.Number }],
         ['elec', { name: HUDVars.elec, type: SimVarValueType.Bool }],
         ['elecFo', { name: HUDVars.elecFo, type: SimVarValueType.Bool }],
