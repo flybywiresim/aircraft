@@ -37,9 +37,24 @@ class FuelConfiguration_A32NX {
   double fuelLeftAux = fuelLeftAuxDefault;
   double fuelRightAux = fuelRightAuxDefault;
 
-  std::string configFilename;
+  std::string configFilename{"A32NX-default-fuel-config.ini"};
 
  public:
+  /**
+   * @brief Returns the filename of the INI file to use for loading and saving the fuel configuration.
+   */
+  std::string getConfigFilename() const { return configFilename; }
+
+  /**
+   * @brief Sets the filename of the INI file to use for loading and saving the fuel configuration.
+   *
+   * This must be called before calling loadConfigurationFromIni or saveConfigurationToIni otherwise the default
+   * filename will be used.
+   *
+   * @param configFilename The filename of the INI file to use for loading and saving the fuel configuration.
+   */
+  void setConfigFilename(const std::string& configFilename) { this->configFilename = configFilename; }
+
   /**
    * @brief Loads the fuel configuration from an INI file.
    *
@@ -68,22 +83,16 @@ class FuelConfiguration_A32NX {
 
   // === Getters and setters ===
 
-  const std::string& getConfigFilename() const { return configFilename; }
-  void setConfigFilename(const std::string& configFilename) { this->configFilename = configFilename; }
-
   double getFuelCenter() const { return fuelCenter; }
-  void setFuelCenter(double fuelCenter) { this->fuelCenter = fuelCenter; }
-
   double getFuelLeft() const { return fuelLeft; }
-  void setFuelLeft(double fuelLeft) { this->fuelLeft = fuelLeft; }
-
   double getFuelRight() const { return fuelRight; }
-  void setFuelRight(double fuelRight) { this->fuelRight = fuelRight; }
-
   double getFuelLeftAux() const { return fuelLeftAux; }
-  void setFuelLeftAux(double fuelLeftAux) { this->fuelLeftAux = fuelLeftAux; }
-
   double getFuelRightAux() const { return fuelRightAux; }
+
+  void setFuelCenter(double fuelCenter) { this->fuelCenter = fuelCenter; }
+  void setFuelLeft(double fuelLeft) { this->fuelLeft = fuelLeft; }
+  void setFuelRight(double fuelRight) { this->fuelRight = fuelRight; }
+  void setFuelLeftAux(double fuelLeftAux) { this->fuelLeftAux = fuelLeftAux; }
   void setFuelRightAux(double fuelRightAux) { this->fuelRightAux = fuelRightAux; }
 };
 

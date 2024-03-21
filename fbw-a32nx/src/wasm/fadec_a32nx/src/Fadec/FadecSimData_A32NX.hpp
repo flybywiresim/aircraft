@@ -5,15 +5,15 @@
 #define FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A32NX_HPP
 
 #include <MSFS/Legacy/gauges.h>
+
 #include "DataManager.h"
-#include "Fadec.h"
 
 // Make access to variables more readable
 enum EngineAndSide {
-  L,             //
+  L        = 0,  //
   E1       = L,  //
   ENGINE_1 = L,  //
-  R,             //
+  R        = 1,  //
   E2       = R,  //
   ENGINE_2 = R,  //
 };
@@ -25,19 +25,18 @@ enum EngineAndSide {
  */
 class FadecSimData_A32NX {
  public:
+  // Notification groups for events
   enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
   struct AtcIdData {
-    char atcID[32];
+    char atcID[32];  // MSFS docs say this is max 10 chars - we use 32 for safety
   };
   DataDefinitionVector atcIdDataDef = {
-  // MSFS docs say this is max 10 chars - we use 32 for safety
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
   };
   /**
    * @struct AtcID
-   * @brief This struct represents the ATC ID of the aircraft.
-   * @UpdateFrequncey: on demand
+   * @brief This struct represents the ATC ID of the aircraft which we use to create the filename to store and load the fuel configuration.
    * @var char atcID[32] The ATC ID of the aircraft.
    * @note MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm#ATC%20ID
@@ -52,14 +51,6 @@ class FadecSimData_A32NX {
       {"FUEL TANK LEFT MAIN QUANTITY",  0, UNITS.Gallons}, //
       {"FUEL TANK RIGHT MAIN QUANTITY", 0, UNITS.Gallons}  //
   };
-  /**
-   * @struct FuelLRData
-   * @brief This struct represents the fuel quantity of the left and right main tanks.
-   *        These are always written together, so we use a single struct for both.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 fuelLeftMain The fuel quantity of the left main tank in gallons.
-   * @var FLOAT64 fuelRightMain The fuel quantity of the right main tank in gallons.
-   */
   DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;
 
   struct FuelTankData {
@@ -72,103 +63,57 @@ class FadecSimData_A32NX {
       {"FUEL TANK LEFT AUX QUANTITY",  0, UNITS.Gallons}, //
       {"FUEL TANK RIGHT AUX QUANTITY", 0, UNITS.Gallons}  //
   };
-  /**
-   * @struct FuelCandAuxData
-   * @brief This struct represents the fuel quantity of the center, left aux and right aux tanks.
-   *        These are always written together, so we use a single struct for all three.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 fuelCenter The fuel quantity of the center tank in gallons.
-   * @var FLOAT64 fuelLeftAux The fuel quantity of the left aux tank in gallons.
-   * @var FLOAT64 fuelRightAux The fuel quantity of the right aux tank in gallons.
-   */
   DataDefinitionVariablePtr<FuelTankData> fuelCandAuxDataPtr;
 
-  struct OliTempE1Data {
-    FLOAT64 oilTempE1;
+  // Oil Temp Data in separate Data Definitions as they are updated separately
+  // clang-format off
+  struct OliTempData {
+    FLOAT64 oilTemp; // Celsius
   };
-  DataDefinitionVector oilTempLeftDataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}  //
-  };
-  /**
-   * @struct OliTempLeftData
-   * @brief This struct represents the oil temperature of the left engine.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 oilTempLeft The oil temperature of the left engine in Celsius.
-   */
-  DataDefinitionVariablePtr<OliTempE1Data> oilTempLeftDataPtr;
+  DataDefinitionVector oilTempE1DataDef = { {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}  };
+  DataDefinitionVector oilTempE2DataDef = { {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}  };
+  DataDefinitionVariablePtr<OliTempData> oilTempDataPtr[2];
 
-  struct OliTempRightData {
-    FLOAT64 oilTempRight;
-  };
-  DataDefinitionVector oilTempRightDataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}  //
-  };
-  /**
-   * @struct OliTempRightData
-   * @brief This struct represents the oil temperature of the right engine.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 oilTempRight The oil temperature of the right engine in Celsius.
-   */
-  DataDefinitionVariablePtr<OliTempRightData> oilTempRightDataPtr;
-
+// Oil Psi Data in separate Data Definitions as they are updated separately
   struct OilPsiData {
-    FLOAT64 oilPsiLeft;
+    FLOAT64 oilPsi; // Psi
   };
-  DataDefinitionVector oilPsiLeftDataDef = {
-      {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi}  //
-  };
-  /**
-   * @struct OilPsiLeftData
-   * @brief This struct represents the oil pressure of the left engine.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 oilPsiLeft The oil pressure of the left engine in Psi.
-   */
-  DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr;
+  DataDefinitionVector oilPsiE1DataDef = { {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi} };
+  DataDefinitionVector oilPsiE2DataDef = { {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi} };
+  DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[2];
+  // clang-format on
 
-  struct OilPsiRightData {
-    FLOAT64 oilPsiRight;
-  };
-  DataDefinitionVector oilPsiRightDataDef = {
-      {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi}  //
-  };
-  /**
-   * @struct OilPsiRightData
-   * @brief This struct represents the oil pressure of the right engine.
-   * @UpdateFrequncey: manual write only
-   * @var FLOAT64 oilPsiRight The oil pressure of the right engine in Psi.
-   */
-  DataDefinitionVariablePtr<OilPsiRightData> oilPsiRightDataPtr;
-
+  // Various simvars we require each tick
   struct SimVarsData {
-    FLOAT64 airSpeedMach;
-    FLOAT64 ambientPressure;
-    FLOAT64 ambientTemperature;
-    FLOAT64 animationDeltaTime;
-    FLOAT64 apuFuelConsumption;
-    FLOAT64 engineAntiIce[2];
-    FLOAT64 engineCorrectedN1[2];
-    FLOAT64 engineCorrectedN2[2];
-    FLOAT64 engineFuelValveOpen[2];
-    FLOAT64 engineIgniter[2];
-    FLOAT64 engineStarter[2];
-    FLOAT64 fuelPump1[2];
-    FLOAT64 fuelPump2[2];
-    FLOAT64 fuelTankQuantityCenter;
-    FLOAT64 fuelTankQuantityLeft;
-    FLOAT64 fuelTankQuantityLeftAux;
-    FLOAT64 fuelTankQuantityRight;
-    FLOAT64 fuelTankQuantityRightAux;
-    FLOAT64 fuelWeightPerGallon;
-    FLOAT64 lineToCenterFlow[2];
-    FLOAT64 pressureAltitude;
-    FLOAT64 simEngineN1[2];
-    FLOAT64 simEngineN2[2];
-    FLOAT64 xFeedValve;
-    FLOAT64 xfrCenterManual[2];
-    FLOAT64 xfrValveCenterAuto[2];
-    FLOAT64 xfrValveCenterOpen[2];
-    FLOAT64 xfrValveOuter1[2];
-    FLOAT64 xfrValveOuter2[2];
+    FLOAT64 airSpeedMach;              // Mach
+    FLOAT64 ambientPressure;           // Millibars
+    FLOAT64 ambientTemperature;        // Celsius
+    FLOAT64 animationDeltaTime;        // Seconds
+    FLOAT64 apuFuelConsumption;        // Gallons per hour
+    FLOAT64 engineAntiIce[2];          // Bool
+    FLOAT64 engineCorrectedN1[2];      // Percent
+    FLOAT64 engineCorrectedN2[2];      // Percent
+    FLOAT64 engineFuelValveOpen[2];    // Number
+    FLOAT64 engineIgniter[2];          // Number
+    FLOAT64 engineStarter[2];          // Bool
+    FLOAT64 fuelPump1[2];              // Number
+    FLOAT64 fuelPump2[2];              // Number
+    FLOAT64 fuelTankQuantityCenter;    // Gallons
+    FLOAT64 fuelTankQuantityLeft;      // Gallons
+    FLOAT64 fuelTankQuantityLeftAux;   // Gallons
+    FLOAT64 fuelTankQuantityRight;     // Gallons
+    FLOAT64 fuelTankQuantityRightAux;  // Gallons
+    FLOAT64 fuelWeightPerGallon;       // Pounds
+    FLOAT64 lineToCenterFlow[2];       // Gallons per hour
+    FLOAT64 pressureAltitude;          // Feet
+    FLOAT64 simEngineN1[2];            // Percent
+    FLOAT64 simEngineN2[2];            // Percent
+    FLOAT64 xFeedValve;                // Number
+    FLOAT64 xfrCenterManual[2];        // Number
+    FLOAT64 xfrValveCenterAuto[2];     // Number
+    FLOAT64 xfrValveCenterOpen[2];     // Number
+    FLOAT64 xfrValveOuter1[2];         // Number
+    FLOAT64 xfrValveOuter2[2];         // Number
   };
   DataDefinitionVector simVarsDataDef = {
       {"AIRSPEED MACH",                0,  UNITS.Mach     }, //
@@ -228,12 +173,12 @@ class FadecSimData_A32NX {
   ClientEventPtr setStarterEvent[2];
 
   // SimVars
-  AircraftVariablePtr engineCombustion[2];
-  AircraftVariablePtr engineTime[2];
+  AircraftVariablePtr engineCombustion[2];  // Bool
+  AircraftVariablePtr engineTime[2];        // Seconds
 
   // LVars
-  NamedVariablePtr airlinerToFlexTemp;
-  NamedVariablePtr apuRpmPercent;
+  NamedVariablePtr airlinerToFlexTemp;  // Celsius
+  NamedVariablePtr apuRpmPercent;       // Percent
   NamedVariablePtr engineEgt[2];
   NamedVariablePtr engineFF[2];
   NamedVariablePtr engineFuelUsed[2];
@@ -287,10 +232,10 @@ class FadecSimData_A32NX {
     atcIdDataPtr        = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef, NO_AUTO_UPDATE);
     fuelFeedTankDataPtr = dm->make_datadefinition_var<FuelFeedTankData>("FUEL LR DATA", fuelLRDataDef, NO_AUTO_UPDATE);
     fuelCandAuxDataPtr  = dm->make_datadefinition_var<FuelTankData>("FUEL CAND AUX DATA", fuelCandAuxDataDef, NO_AUTO_UPDATE);
-    oilTempLeftDataPtr  = dm->make_datadefinition_var<OliTempE1Data>("OIL TEMP LEFT DATA", oilTempLeftDataDef, NO_AUTO_UPDATE);
-    oilTempRightDataPtr = dm->make_datadefinition_var<OliTempRightData>("OIL TEMP RIGHT DATA", oilTempRightDataDef, NO_AUTO_UPDATE);
-    oilPsiDataPtr       = dm->make_datadefinition_var<OilPsiData>("OIL PSI LEFT DATA", oilPsiLeftDataDef, NO_AUTO_UPDATE);
-    oilPsiRightDataPtr  = dm->make_datadefinition_var<OilPsiRightData>("OIL PSI RIGHT DATA", oilPsiRightDataDef, NO_AUTO_UPDATE);
+    oilTempDataPtr[L]   = dm->make_datadefinition_var<OliTempData>("OIL TEMP LEFT DATA", oilTempE1DataDef, NO_AUTO_UPDATE);
+    oilTempDataPtr[R]   = dm->make_datadefinition_var<OliTempData>("OIL TEMP RIGHT DATA", oilTempE2DataDef, NO_AUTO_UPDATE);
+    oilPsiDataPtr[L]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI LEFT DATA", oilPsiE1DataDef, NO_AUTO_UPDATE);
+    oilPsiDataPtr[R]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI RIGHT DATA", oilPsiE2DataDef, NO_AUTO_UPDATE);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
@@ -303,10 +248,6 @@ class FadecSimData_A32NX {
     toggleEngineStarter1Event->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0, true);
     toggleEngineStarter2Event = dm->make_client_event("TOGGLE_STARTER2", true);
     toggleEngineStarter2Event->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0, true);
-
-    toggleEngineStarter2Event->addCallback([&](const int, const DWORD, const DWORD, const DWORD, const DWORD, const DWORD) {
-      LOG_INFO("Fadec::FadecSimData_A32NX::toggleEngineStarter2Event TOGGLE_STARTER2 masked");
-    });
 
     setStarterHeldEvent[L] = dm->make_client_event("SET_STARTER1_HELD", true, NOTIFICATION_GROUP_0);
     setStarterHeldEvent[R] = dm->make_client_event("SET_STARTER2_HELD", true, NOTIFICATION_GROUP_0);

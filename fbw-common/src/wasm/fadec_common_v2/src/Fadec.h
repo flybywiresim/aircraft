@@ -11,12 +11,17 @@
 
 class MsfsHandler;
 
+
 class Fadec : public Module {
  public:
+  static constexpr double LBS_TO_KGS = 0.4535934;
+  static constexpr double KGS_TO_LBS = 1 / 0.4535934;
+
+  // delete the default constructor for this virtual class
   Fadec() = delete;
 
   /**
-   * Creates a new Pushback instance and takes a reference to the MsfsHandler instance.
+   * Creates a new Fadec instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
   explicit Fadec(MsfsHandler& msfsHandler) : Module(msfsHandler) {}

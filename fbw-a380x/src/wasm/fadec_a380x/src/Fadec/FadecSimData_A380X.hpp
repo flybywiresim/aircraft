@@ -5,8 +5,8 @@
 #define FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A380X_HPP
 
 #include <MSFS/Legacy/gauges.h>
+
 #include "DataManager.h"
-#include "Fadec.h"
 
 // Make access to variables more readable
 enum EngineAndSide {
@@ -31,6 +31,7 @@ enum EngineAndSide {
  */
 class FadecSimData_A380X {
  public:
+  // Notification groups for events
   enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
   struct AtcIdData {
@@ -42,8 +43,7 @@ class FadecSimData_A380X {
   };
   /**
    * @var atcIdDataPtr
-   * @brief This struct represents the ATC ID of the aircraft.
-   * @UpdateFrequncey on demand
+   * @brief This struct represents the ATC ID of the aircraft which we use to create the filename to store and load the fuel configuration.
    * @data char atcID[32] The ATC ID of the aircraft.
    * @note MSFS docs say that the ATC ID is a string of max 10 characters. We use 32 for safety.
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm#ATC%20ID
@@ -52,10 +52,10 @@ class FadecSimData_A380X {
 
   // Fuel Feed Tank Data in one Data Definition as they are read and updated together
   struct FuelFeedTankData {
-    FLOAT64 fuelSystemFeedOne; // in Gallons
-    FLOAT64 fuelSystemFeedTwo; // in Gallons
-    FLOAT64 fuelSystemFeedThree; // in Gallons
-    FLOAT64 fuelSystemFeedFour; // in Gallons
+    FLOAT64 fuelSystemFeedOne;    // in Gallons
+    FLOAT64 fuelSystemFeedTwo;    // in Gallons
+    FLOAT64 fuelSystemFeedThree;  // in Gallons
+    FLOAT64 fuelSystemFeedFour;   // in Gallons
   };
   DataDefinitionVector fuelFeedTankDataDef = {
       {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons}, //
@@ -63,17 +63,17 @@ class FadecSimData_A380X {
       {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons}, //
       {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons}, //
   };
-  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr; // in Gallons
+  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;  // in Gallons
 
   // Fuel Tank Data in one Data Definition as they are read and updated together
   struct FuelTankData {
-    FLOAT64 fuelSystemLeftOuter; // in Gallons
-    FLOAT64 fuelSystemLeftMid; // in Gallons
-    FLOAT64 fuelSystemLeftInner; // in Gallons
-    FLOAT64 fuelSystemRightInner; // in Gallons
-    FLOAT64 fuelSystemRightMid; // in Gallons
-    FLOAT64 fuelSystemRightOuter; // in Gallons
-    FLOAT64 fuelSystemTrim; // in Gallons
+    FLOAT64 fuelSystemLeftOuter;   // in Gallons
+    FLOAT64 fuelSystemLeftMid;     // in Gallons
+    FLOAT64 fuelSystemLeftInner;   // in Gallons
+    FLOAT64 fuelSystemRightInner;  // in Gallons
+    FLOAT64 fuelSystemRightMid;    // in Gallons
+    FLOAT64 fuelSystemRightOuter;  // in Gallons
+    FLOAT64 fuelSystemTrim;        // in Gallons
   };
   DataDefinitionVector fuelTankDataDef = {
       {"FUELSYSTEM TANK QUANTITY", 1,  UNITS.Gallons}, //
@@ -84,77 +84,59 @@ class FadecSimData_A380X {
       {"FUELSYSTEM TANK QUANTITY", 10, UNITS.Gallons}, //
       {"FUELSYSTEM TANK QUANTITY", 11, UNITS.Gallons}, //
   };
-  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr; // in Gallons
+  DataDefinitionVariablePtr<FuelTankData> fuelTankDataPtr;  // in Gallons
 
   // Oil Temp Data in separate Data Definitions as they are updated separately
+  // clang-format off
   struct OilTempData {
-    FLOAT64 oilTemp;
+    FLOAT64 oilTemp; // in Celsius
   };
-  DataDefinitionVector oilTempE1DataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius}
-  };
-  DataDefinitionVector oilTempE2DataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}
-  };
-  DataDefinitionVector oilTempE3DataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius}
-  };
-  DataDefinitionVector oilTempE4DataDef = {
-      {"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius}
-  };
+  DataDefinitionVector oilTempE1DataDef = { {"GENERAL ENG OIL TEMPERATURE", 1, UNITS.Celsius} };
+  DataDefinitionVector oilTempE2DataDef = { {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius} };
+  DataDefinitionVector oilTempE3DataDef = { {"GENERAL ENG OIL TEMPERATURE", 3, UNITS.Celsius} };
+  DataDefinitionVector oilTempE4DataDef = { {"GENERAL ENG OIL TEMPERATURE", 4, UNITS.Celsius} };
   DataDefinitionVariablePtr<OilTempData> oilTempDataPtr[4];
+  // clang-format on
 
   // Oil Psi Data in separate Data Definitions as they are updated separately
+  // clang-format off
   struct OilPsiData {
-    FLOAT64 oilPsi;
+    FLOAT64 oilPsi; // in Psi
   };
-  DataDefinitionVector oilPsiE1DataDef = {
-      {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi}
-  };
-  DataDefinitionVector oilPsiE2DataDef = {
-      {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi}
-  };
-  DataDefinitionVector oilPsiE3DataDef = {
-      {"GENERAL ENG OIL PRESSURE", 3, UNITS.Psi}
-  };
-  DataDefinitionVector oilPsiE4DataDef = {
-      {"GENERAL ENG OIL PRESSURE", 4, UNITS.Psi}
-  };
+  DataDefinitionVector oilPsiE1DataDef = { {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi} };
+  DataDefinitionVector oilPsiE2DataDef = { {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi} };
+  DataDefinitionVector oilPsiE3DataDef = { {"GENERAL ENG OIL PRESSURE", 3, UNITS.Psi} };
+  DataDefinitionVector oilPsiE4DataDef = { {"GENERAL ENG OIL PRESSURE", 4, UNITS.Psi} };
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[4];
+  // clang-format on
 
   // Corrected N3 Data in separate Data Definitions as they are updated separately
   // Note: the sim does not have a direct N3 value, so we use N2 as a proxy
+  // clang-format off
   struct CorrectedN3Data {
-    FLOAT64 correctedN3;
+    FLOAT64 correctedN3; // in Percent
   };
-  DataDefinitionVector engine1CN3DataDef = {
-      {"TURB ENG CORRECTED N2", 1, UNITS.Percent}
-  };
-  DataDefinitionVector engine2CN3DataDef = {
-      {"TURB ENG CORRECTED N2", 2, UNITS.Percent}
-  };
-  DataDefinitionVector engine3CN3DataDef = {
-      {"TURB ENG CORRECTED N2", 3, UNITS.Percent}
-  };
-  DataDefinitionVector engine4CN3DataDef = {
-      {"TURB ENG CORRECTED N2", 4, UNITS.Percent}
-  };
+  DataDefinitionVector engine1CN3DataDef = { {"TURB ENG CORRECTED N2", 1, UNITS.Percent} };
+  DataDefinitionVector engine2CN3DataDef = { {"TURB ENG CORRECTED N2", 2, UNITS.Percent} };
+  DataDefinitionVector engine3CN3DataDef = { {"TURB ENG CORRECTED N2", 3, UNITS.Percent} };
+  DataDefinitionVector engine4CN3DataDef = { {"TURB ENG CORRECTED N2", 4, UNITS.Percent} };
   DataDefinitionVariablePtr<CorrectedN3Data> engineCorrectedN3DataPtr[4];
+  // clang-format on
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;
-    FLOAT64 airSpeedMach;
-    FLOAT64 ambientPressure;
-    FLOAT64 ambientTemperature;
-    FLOAT64 pressureAltitude;
-    FLOAT64 fuelWeightLbsPerGallon;
-    FLOAT64 engineAntiIce[4];
-    FLOAT64 engineCorrectedN1[4];
-    FLOAT64 engineIgniter[4];
-    FLOAT64 engineStarter[4];
-    FLOAT64 simEngineN1[4];
-    FLOAT64 simEngineN2[4];
+    FLOAT64 animationDeltaTime;      // in Seconds
+    FLOAT64 airSpeedMach;            // in Mach
+    FLOAT64 ambientPressure;         // in Millibars
+    FLOAT64 ambientTemperature;      // in Celsius
+    FLOAT64 pressureAltitude;        // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
+    FLOAT64 engineAntiIce[4];        // 0 or 1
+    FLOAT64 engineCorrectedN1[4];    // in Percent
+    FLOAT64 engineIgniter[4];        // 0 or 1
+    FLOAT64 engineStarter[4];        // 0 or 1
+    FLOAT64 simEngineN1[4];          // in Percent
+    FLOAT64 simEngineN2[4];          // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -204,25 +186,25 @@ class FadecSimData_A380X {
   ClientEventPtr setStarterEvent[4];
 
   // SimVars
-  AircraftVariablePtr engineCombustion[4];
-  AircraftVariablePtr engineTime[4];
+  AircraftVariablePtr engineCombustion[4];  // 0 or 1
+  AircraftVariablePtr engineTime[4];        // in Seconds
 
   // LVars
-  NamedVariablePtr airlinerToFlexTemp;
-  NamedVariablePtr apuRpmPercent;
-  NamedVariablePtr engineEgt[4];
-  NamedVariablePtr engineFF[4];
-  NamedVariablePtr engineFuelUsed[4];
-  NamedVariablePtr engineIdleEGT;
+  NamedVariablePtr airlinerToFlexTemp;  // Celsius
+  NamedVariablePtr apuRpmPercent;       // Percent
+  NamedVariablePtr engineEgt[4];        // Celsius
+  NamedVariablePtr engineFF[4];         // kg/hour
+  NamedVariablePtr engineFuelUsed[4];   // kg
+  NamedVariablePtr engineIdleEGT;       // Celsius
   NamedVariablePtr engineIdleFF;
-  NamedVariablePtr engineIdleN1;
-  NamedVariablePtr engineIdleN3;
-  NamedVariablePtr engineN1[4];
-  NamedVariablePtr engineN2[4];
-  NamedVariablePtr engineN3[4];
+  NamedVariablePtr engineIdleN1;  // Percent
+  NamedVariablePtr engineIdleN3;  // Percent
+  NamedVariablePtr engineN1[4];   // Percent
+  NamedVariablePtr engineN2[4];   // Percent
+  NamedVariablePtr engineN3[4];   // Percent
   NamedVariablePtr engineOilTotal[4];
   NamedVariablePtr engineOil[4];
-  NamedVariablePtr enginePreFF[4];
+  NamedVariablePtr enginePreFF[4];  // kg/hour
   NamedVariablePtr engineState[4];
   NamedVariablePtr engineTimer[4];
   NamedVariablePtr fuelLeftOuterPre;   // Pounds

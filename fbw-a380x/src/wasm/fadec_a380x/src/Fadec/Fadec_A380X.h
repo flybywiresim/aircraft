@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
-#define FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
+#ifndef FLYBYWIRE_AIRCRAFT_FADEC_A380X_H
+#define FLYBYWIRE_AIRCRAFT_FADEC_A380X_H
 
 #include "EngineControl_A380X.h"
 #include "Fadec.h"
@@ -33,4 +33,4 @@ class Fadec_A380X : public Fadec {
   bool shutdown() override;
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_FADEC_A32NX_H
+#endif  // FLYBYWIRE_AIRCRAFT_FADEC_A380X_H
