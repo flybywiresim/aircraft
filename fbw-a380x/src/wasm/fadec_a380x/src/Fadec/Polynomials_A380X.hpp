@@ -20,17 +20,17 @@ class Polynomial_A380X {
   /**
    * @brief Calculates the N3 value during engine startup using real-life modeled polynomials.
    *
-   * @param currentN3 The current N3 value in percent.
+   * @param currentSimN3 The current N3 value in percent (taken from the sim's N2 value).
    * @param previousN3 The previous N3 value in percent.
    * @param idleN3 The idle N3 value in percent.
    * @return The calculated N3 value in percent.
    */
-  static double startN3(double currentN3, double previousN3, double idleN3) {
+  static double startN3(double currentSimN3, double previousN3, double idleN3) {
     // Normalize the current N3 percentage by scaling it with the idle N2
     // percentage and a constant factor.
     // The constant factor 60.0 is likely derived from empirical data or a mathematical model of the
     // engine's behavior.
-    double normalizedN3 = currentN3 * 60.0 / idleN3;
+    double normalizedN3 = currentSimN3 * 60.0 / idleN3;
 
     // Coefficients for the polynomial used to calculate the N2 percentage.
     constexpr double coefficients[16] = {
@@ -57,7 +57,7 @@ class Polynomial_A380X {
     for (int i = 0; i < 16; i++) {
       outN3 += coefficients[i] * (std::pow)(normalizedN3, i);
     }
-    outN3 *= currentN3;
+    outN3 *= currentSimN3;
 
     // Ensure the calculated N3 value is within the expected range
     if (outN3 < previousN3) {

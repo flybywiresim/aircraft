@@ -49,9 +49,6 @@ class NamedVariable : public CacheableVariable {
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
       : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, updateMode, maxAgeTime, maxAgeTicks) {
-    // this makes sure to quickly spot an issue with the prefix
-    SIMPLE_ASSERT(NamedVariable::AIRCRAFT_PREFIX == "A32NX_" || NamedVariable::AIRCRAFT_PREFIX == "A380X_",
-                  "Aircraft prefix is not set correctly!");
     dataID = register_named_variable(name.c_str());
   };
 

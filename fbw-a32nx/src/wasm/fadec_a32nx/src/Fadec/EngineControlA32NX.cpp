@@ -44,6 +44,8 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
     return;
   }
 
+  const double deltaTime          = pData->dt;
+  const double simTime            = msfsHandlerPtr->getSimulationTime();
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
   const double pressureAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
   const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
@@ -58,8 +60,6 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
 
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
-  bool   engineStarter;
-  double engineIgniter;
   double simCN1;
   double simN1;
   double simN1highest;
@@ -69,11 +69,11 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
   for (int engine = 1; engine <= 2; engine++) {
     const int engineIdx = engine - 1;
 
-    engineStarter = simData.simVarsDataPtr->data().engineStarter[engineIdx] == 1.0;
-    engineIgniter = simData.simVarsDataPtr->data().engineIgniter[engineIdx];
-    simCN1        = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
-    simN1         = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
-    simN2         = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
+    const int engineIgniter = static_cast<int>(simData.simVarsDataPtr->data().engineIgniter[engineIdx]);  // 0: crank, 1:norm, 2: ign
+    bool      engineStarter = static_cast<bool>(simData.simVarsDataPtr->data().engineStarter[engineIdx]);
+    simCN1                  = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
+    simN1                   = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
+    simN2                   = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
 
     const double engineFuelValveOpen      = simData.simVarsDataPtr->data().engineFuelValveOpen[engineIdx];
     const double engineStarterPressurized = simData.engineStarterPressurized[engineIdx]->get();
@@ -90,7 +90,7 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
       simData.setStarterHeldEvent[engineIdx]->trigger(1);
       engineStarter = true;
     }
-    // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
+    // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 20%
     else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && !engineStarterPressurized && simN2 < 20))) {
       simData.setStarterHeldEvent[engineIdx]->trigger(0);
       simData.setStarterEvent[engineIdx]->trigger(0);
@@ -110,22 +110,21 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
                                                  idleN2,                  //
                                                  ambientTemperature);     //
 
-    double correctedFuelFlow;
     switch (engineState) {
       case STARTING:
       case RESTARTING:
         if (engineStarter) {
-          engineStartProcedure(engine, engineState, imbalance, pData->dt, engineTimer, simN2, pressureAltitude, ambientTemperature);
+          engineStartProcedure(engine, engineState, imbalance, deltaTime, engineTimer, simN2, pressureAltitude, ambientTemperature);
           break;
         }
       case SHUTTING:
-        engineShutdownProcedure(engine, ambientTemperature, simN1, pData->dt, engineTimer);
-        correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        engineShutdownProcedure(engine, ambientTemperature, simN1, deltaTime, engineTimer);
+        updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         break;
       default:
         updatePrimaryParameters(engine, imbalance, simN1, simN2);
-        correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
-        updateEGT(engine, imbalance, pData->dt, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach,
+        const double correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
+        updateEGT(engine, imbalance, deltaTime, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach,
                   pressureAltitude, ambientTemperature);
         // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
     }
@@ -136,9 +135,8 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
     prevEngineStarterState[engineIdx] = engineStarter;
   }
 
-  updateFuel(pData->dt);
-  updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs,
-                     nai, wai);
+  updateFuel(deltaTime);
+  updateThrustLimits(simTime, pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs, nai, wai);
 
 #ifdef PROFILING
   profilerUpdate.stop();
@@ -556,10 +554,10 @@ double EngineControl_A32NX::updateFF(int    engine,
   // Checking Fuel Logic and final Fuel Flow
   double outFlow = 0;
   if (correctedFuelFlow >= 1) {
-    outFlow = (std::max)(0.0,                                                                           //
+    outFlow = (std::max)(0.0,                                                                                  //
                          (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)))                //
-                             - paramImbalance);                                                         //
+                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)))                       //
+                             - paramImbalance);                                                                //
   }
   simData.engineFF[engine - 1]->set(outFlow);
 
