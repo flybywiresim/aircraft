@@ -60,8 +60,6 @@ class EngineControl_A32NX {
   // additional constants
   static constexpr int MAX_OIL = 200;
   static constexpr int MIN_OIL = 140;
-  static constexpr double LBS_TO_KGS = 0.4535934;
-  static constexpr double KGS_TO_LBS = 1 / 0.4535934;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**

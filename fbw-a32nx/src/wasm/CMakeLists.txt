@@ -7,7 +7,8 @@ add_definitions(-DA32NX)
 add_subdirectory(extra-backend-a32nx)
 add_subdirectory(fadec_a32nx)
 
-# FIXME: remove the if-clause as soon as all components are using CMake
+# these are only here to allow CMake compatible IDEs (JetBrains' Clion for example) to show systax
+# highlighting and allow code navigation
 if (WIN32)
     add_subdirectory(fadec_a320)
     add_subdirectory(fbw_a320)
