@@ -8,12 +8,12 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec
     ${FBW_COMMON}/cpp-msfs-framework/
-    ${FBW_COMMON}/fadec_common_v2/src/
+    ${FBW_COMMON}/fadec_common/src/
 )
 
 # define the source files
 set(SOURCE_FILES
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.cpp
+    ${FBW_COMMON}/fadec_common/src/Fadec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.cpp
@@ -21,8 +21,8 @@ set(SOURCE_FILES
 )
 
 set(INCLUDE_FILES
-    ${FBW_COMMON}/fadec_common_v2/src/Fadec.h
-    ${FBW_COMMON}/fadec_common_v2/src/EngineRatios.hpp
+    ${FBW_COMMON}/fadec_common/src/Fadec.h
+    ${FBW_COMMON}/fadec_common/src/EngineRatios.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A380X.h
