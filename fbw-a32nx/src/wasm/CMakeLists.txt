@@ -10,6 +10,5 @@ add_subdirectory(fadec_a32nx)
 # these are only here to allow CMake compatible IDEs (JetBrains' Clion for example) to show systax
 # highlighting and allow code navigation
 if (WIN32)
-    add_subdirectory(fadec_a320)
     add_subdirectory(fbw_a320)
 endif ()
