@@ -129,9 +129,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Cockpit Door Locked",         2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
         // TODO: find a way to expedite this
+        ProcedureStep{"ADIRS QUICK MODE ON",         2070, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==", "1 (>L:A32NX_ADIRS_QUICK_MODE)"},
         ProcedureStep{"Await ADIRS 1 Alignment",     2062, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 2 Alignment",     2064, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 3 Alignment",     2066, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"ADIRS QUICK MODE OFF",        2071, false, 0,    "(L:A32NX_ADIRS_QUICK_MODE) 0 ==",              "0 (>L:A32NX_ADIRS_QUICK_MODE)"},
       },
 
       .PUSHBACK_CONFIG_OFF = {
@@ -173,20 +175,23 @@ class AircraftPresetProcedures_A380X {
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET3) "
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET4)"},
 
+        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",      "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 1 On",             3020, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                  "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 2 On",             3022, false, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                  "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 1 Avail",    3024, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
-        ProcedureStep{"Await ENG 2 Avail",    3025, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        ProcedureStep{"Await ENG 1 Avail",    3024, true,  2000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
+        ProcedureStep{"Await ENG 2 Avail",    3025, true,  2000,  "",                                                   "(L:A32NX_ENGINE_STATE:2) 1 =="},
         ProcedureStep{"ENG 3 On",             3026, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                  "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 4 On",             3028, false, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                  "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"Await ENG 3 Avail",    3030, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:3) 1 =="},
         ProcedureStep{"Await ENG 4 Avail",    3031, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:4) 1 =="},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                   "0 (>L:A32NX_FADEC_QUICK_MODE)"},
+
 
 //        // SOP: AFTER START
-        ProcedureStep{"ENG MODE SEL Norm",    3011, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1) 1 == "
-                                                                  "(A:TURB ENG IGNITION SWITCH EX1:2) 1 == "
-                                                                  "(A:TURB ENG IGNITION SWITCH EX1:3) 1 == "
-                                                                  "(A:TURB ENG IGNITION SWITCH EX1:4) 1 == "
+        ProcedureStep{"ENG MODE SEL Norm",    3011, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1, Number) 1 == "
+                                                                  "(A:TURB ENG IGNITION SWITCH EX1:2, Number) 1 == "
+                                                                  "(A:TURB ENG IGNITION SWITCH EX1:3, Number) 1 == "
+                                                                  "(A:TURB ENG IGNITION SWITCH EX1:4, Number) 1 == "
                                                                   "0 || || || ||",                                      "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET2) "
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET3) "
@@ -232,6 +237,7 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Rudder Trim Reset",     3043, false, 2000, "(A:RUDDER TRIM, Radians) 0 ==",                      "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Spoiler Disarm",        3041, false, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",                      "0 (>K:SPOILERS_ARM_SET)"},
 
+        ProcedureStep{"FADEC QUICK MODE ON",   3012, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",       "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 4 Off",             3029, false, 2000, "(A:FUELSYSTEM VALVE OPEN:4, Bool) !",                "4 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 3 Off",             3027, false, 2000, "(A:FUELSYSTEM VALVE OPEN:3, Bool) !",                "3 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             3023, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",                "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
@@ -239,7 +245,9 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"ENG 4 N1 <3%",          3032, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:4) 3 <"},
         ProcedureStep{"ENG 3 N1 <3%",          3033, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:3) 3 <"},
         ProcedureStep{"ENG 2 N1 <3%",          3034, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:2) 3 <"},
-        ProcedureStep{"ENG 1 N1 <3%",          3035, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:1) 3 <"}
+        ProcedureStep{"ENG 1 N1 <3%",          3035, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:1) 3 <"},
+        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
+
       },
 
       .TAKEOFF_CONFIG_ON = {

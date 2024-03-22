@@ -354,15 +354,20 @@ impl SimulationElement for AdirsSimulatorData {
 pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
+    adirs_align_quick_mode_id: VariableIdentifier,
     uses_gps_as_primary_id: VariableIdentifier,
 
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
+    adirs_align_quick_mode: bool,
     simulator_data: AdirsSimulatorData,
 }
 impl AirDataInertialReferenceSystem {
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
+    // A32NX_ADIRS_QUICK_MODE LVar is set by the Aircraft Presets to allow expedited presets without
+    // changing the general  alignment time setting
+    const ADIRS_QUICK_MODE_KEY: &'static str = "ADIRS_QUICK_MODE";
     // TODO this is an FMS thing, nothing to do with ADIRUs
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
@@ -372,6 +377,8 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
             configured_align_time_id: context
                 .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
+            adirs_align_quick_mode_id: context
+                .get_identifier(Self::ADIRS_QUICK_MODE_KEY.to_owned()),
             uses_gps_as_primary_id: context
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
@@ -381,6 +388,7 @@ impl AirDataInertialReferenceSystem {
                 AirDataInertialReferenceUnit::new(context, 3, vmo, mmo),
             ],
             configured_align_time: AlignTime::Realistic,
+            adirs_align_quick_mode: false,
             simulator_data: AdirsSimulatorData::new(context),
         }
     }
@@ -390,7 +398,13 @@ impl AirDataInertialReferenceSystem {
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
     ) {
-        let align_time = self.configured_align_time;
+        // adirs_quick_mode is set by the Aircraft Presets to allow expedited presets without
+        // changing the alignment time setting
+        let align_time = if self.adirs_align_quick_mode {
+            AlignTime::Instant
+        } else {
+            self.configured_align_time
+        };
         let simulator_data = self.simulator_data;
         self.adirus
             .iter_mut()
@@ -429,6 +443,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.configured_align_time = reader.read(&self.configured_align_time_id);
+        self.adirs_align_quick_mode = reader.read(&self.adirs_align_quick_mode_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
