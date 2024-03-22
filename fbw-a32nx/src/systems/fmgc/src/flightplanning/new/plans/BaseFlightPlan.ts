@@ -702,7 +702,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get originDeparture(): Departure {
-        return this.departureSegment.originDeparture;
+        return this.departureSegment.procedure;
     }
 
     async setDeparture(databaseId: string | undefined) {

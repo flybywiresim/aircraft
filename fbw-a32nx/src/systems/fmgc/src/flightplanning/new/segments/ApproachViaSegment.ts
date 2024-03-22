@@ -16,15 +16,18 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
     allLegs: FlightPlanElement[] = []
 
-    get procedure(): ProcedureTransition | undefined {
+    get procedure() {
         return this.approachVia;
     }
 
-    private approachVia: ProcedureTransition | undefined = undefined
+    /**
+     * The approach via procedure. If it's `undefined`, it means that no approach via is set. If it's `null`, it means that the "NO VIA" is explicitly selected.
+     */
+    private approachVia: ProcedureTransition | undefined | null
 
-    setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (databaseId === undefined) {
-            this.approachVia = undefined;
+    setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined || databaseId === null) {
+            this.approachVia = databaseId === undefined ? undefined : null;
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;
