@@ -9,8 +9,8 @@ import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 
-const DistanceSpacing = 15;
-const ValueSpacing = 10;
+const DistanceSpacing = 147;
+const ValueSpacing = 5;
 
 interface FlightPathVectorData {
     roll: Arinc429WordData;
@@ -88,7 +88,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
     }
 
     private moveBird() {
-        const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
+        const daLimConv = Math.max(Math.min(this.data.da.value, 26), -26) * DistanceSpacing / ValueSpacing;
         const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
         const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
         const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
@@ -103,20 +103,29 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
         return (
             <>
                 <g ref={this.bird} id="bird">
-                    <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
+                    <svg x="461.875" y="218.7" width="100.25" height="36" version="1.1" viewBox="0 0 100.25 36" xmlns="http://www.w3.org/2000/svg">
                         <g>
-                            <path
-                                class="NormalOutline"
-                                // eslint-disable-next-line max-len
-                                d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                            <circle
+                                class="NormalStroke Green"
+                                cx="50.25"
+                                cy="23.25"
+                                r="12.5"
                             />
-                            <path class="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
                             <path
                                 class="NormalStroke Green"
-                                // eslint-disable-next-line max-len
-                                d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                                d="m 0.25,23.25 c 0.21875,0 37.25,0 37.25,0"
+
                             />
-                            <path class="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                            <path
+                                class="NormalStroke Green"
+                                d="m 62.75,23.25 c 0.21875,0 37.25,0 37.25,0"
+
+                            />
+                            <path
+                                class="NormalStroke Green"
+                                d="M 50,10.5 V 0.25"
+
+                            />
                         </g>
                     </svg>
                 </g>

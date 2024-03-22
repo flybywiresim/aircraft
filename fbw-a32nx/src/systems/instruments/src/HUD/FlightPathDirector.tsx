@@ -10,8 +10,8 @@ import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 
-const DistanceSpacing = 15;
-const ValueSpacing = 10;
+const DistanceSpacing = 147;
+const ValueSpacing = 5;
 
 interface FlightPathVectorData {
     roll: Arinc429WordData;
@@ -46,7 +46,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
 
     private birdPath = FSComponent.createRef<SVGGElement>();
 
-    private birdPathWings = FSComponent.createRef<SVGGElement>();
+    // private birdPathWings = FSComponent.createRef<SVGGElement>();
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -158,7 +158,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
             const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
 
             this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
-            this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
+            // this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
         }
         this.needsUpdate = false;
     }
@@ -167,8 +167,14 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
         return (
 
             <g ref={this.birdPath}>
-                <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                    <g ref={this.birdPathWings} class="CornerRound">
+                <svg x="461.875" y="218.7" width="100.25" height="36" version="1.1" viewBox="0 0 100.25 36" xmlns="http://www.w3.org/2000/svg">
+                    <circle
+                        class="NormalStroke Green"
+                        cx="50"
+                        cy="23.25"
+                        r="7.5"
+                    />
+                    {/* <g ref={this.birdPathWings} class="CornerRound">
                         <path
                             class="NormalOutline"
                             // eslint-disable-next-line max-len
@@ -179,7 +185,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
                             // eslint-disable-next-line max-len
                             d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
                         />
-                    </g>
+                    </g> */}
                 </svg>
             </g>
 

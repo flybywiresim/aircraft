@@ -1,15 +1,14 @@
-export const calculateHorizonOffsetFromPitch = (pitch: number) => {
-    if (pitch > -5 && pitch <= 20) {
-        return pitch * 1.8;
-    } if (pitch > 20 && pitch <= 30) {
-        return -0.04 * pitch ** 2 + 3.4 * pitch - 16;
-    } if (pitch > 30) {
-        return 20 + pitch;
-    } if (pitch < -5 && pitch >= -15) {
-        return 0.04 * pitch ** 2 + 2.2 * pitch + 1;
-    }
-    return pitch - 8;
-};
+export const calculateHorizonOffsetFromPitch = (pitch: number) => pitch * 29.48;
+// if (pitch > -5 && pitch <= 20) {
+//     return pitch * 1.8 * 16.34722222222222;
+// } if (pitch > 20 && pitch <= 30) {
+//     return (-0.04 * pitch ** 2 + 3.4 * pitch - 16) * 16.34722222222222;
+// } if (pitch > 30) {
+//     return (20 + pitch) * 16.34722222222222;
+// } if (pitch < -5 && pitch >= -15) {
+//     return (0.04 * pitch ** 2 + 2.2 * pitch + 1) * 16.34722222222222;
+// }
+// return (pitch - 8) * 16.34722222222222;
 
 export const calculateVerticalOffsetFromRoll = (roll: number) => {
     let offset = 0;
