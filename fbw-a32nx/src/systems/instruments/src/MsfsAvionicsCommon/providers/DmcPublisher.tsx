@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -41,7 +41,8 @@ export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
         super(simVars, eventBus);
     }
 
-    init(): void {
+    /** @inheritdoc */
+    public startPublish(): void {
         const pub = this.eventBus.getPublisher<DmcLogicEvents>();
 
         this.trueRefActive.sub((v) => {
@@ -65,6 +66,8 @@ export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
         sub.on('magTrackRaw').handle((v) => this.magTrack.setWord(v));
         sub.on('trueHeadingRaw').handle((v) => this.trueHeading.setWord(v));
         sub.on('trueTrackRaw').handle((v) => this.trueTrack.setWord(v));
+
+        super.startPublish();
     }
 
     private handleTrueRef(): void {

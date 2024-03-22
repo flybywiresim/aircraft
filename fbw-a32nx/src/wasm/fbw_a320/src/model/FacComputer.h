@@ -68,10 +68,10 @@ class FacComputer final
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_f;
     rtDW_LagFilter_FacComputer_T sf_LagFilter_i;
     rtDW_LagFilter_FacComputer_T sf_LagFilter_c;
-    rtDW_LagFilter_FacComputer_g_T sf_LagFilter_d;
+    rtDW_LagFilter_FacComputer_g_T sf_LagFilter_d5;
     rtDW_LagFilter_FacComputer_T sf_LagFilter_f;
     rtDW_LagFilter_FacComputer_g_T sf_LagFilter_k;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter_b;
+    rtDW_LagFilter_FacComputer_T sf_LagFilter_d;
     rtDW_RateLimiter_FacComputer_T sf_RateLimiter_a;
     rtDW_RateLimiter_FacComputer_T sf_RateLimiter_n;
     rtDW_RateLimiter_FacComputer_T sf_RateLimiter_j;
@@ -93,13 +93,13 @@ class FacComputer final
     base_fac_analog_outputs fac_analog_output_MATLABStruct;
     base_fac_laws_outputs fac_laws_output_MATLABStruct;
     base_fac_discrete_outputs fac_discrete_output_MATLABStruct;
-    real_T LagFilter_C1;
     real_T LagFilter1_C1;
+    real_T LagFilter1_C1_d;
     real_T LagFilter2_C1;
     real_T LagFilter3_C1;
-    real_T LagFilter_C1_f;
+    real_T LagFilter_C1;
     real_T LagFilter_C1_k;
-    real_T LagFilter_C1_fa;
+    real_T LagFilter_C1_f;
     real_T WashoutFilter_C1;
     real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteDerivativeVariableTs_Gain_l;
@@ -206,7 +206,6 @@ class FacComputer final
     base_fac_bus Constant4_Value;
     base_fac_flight_envelope_outputs Constant5_Value;
     real_T Constant_Value;
-    real_T Constant_Value_n;
     real_T Constant2_Value;
     real_T Constant3_Value;
     real_T Constant1_Value;
@@ -220,7 +219,6 @@ class FacComputer final
     real_T Gain_Gain;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
-    real_T Gain_Gain_h;
     real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_l;
     real_T Gain5_Gain;
