@@ -74,13 +74,27 @@ class FadecSimData_A32NX {
   DataDefinitionVector oilTempE2DataDef = { {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}  };
   DataDefinitionVariablePtr<OliTempData> oilTempDataPtr[2];
 
-// Oil Psi Data in separate Data Definitions as they are updated separately
+  // Oil Psi Data in separate Data Definitions as they are updated separately
   struct OilPsiData {
     FLOAT64 oilPsi; // Psi
   };
   DataDefinitionVector oilPsiE1DataDef = { {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi} };
   DataDefinitionVector oilPsiE2DataDef = { {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi} };
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[2];
+
+  struct CorrectedN1Data {
+    FLOAT64 correctedN1;  // Percent
+  };
+  DataDefinitionVector correctedN1E1DataDef = { {"TURB ENG CORRECTED N1", 1, UNITS.Percent}} ;
+  DataDefinitionVector correctedN1E2DataDef = { {"TURB ENG CORRECTED N1", 2, UNITS.Percent}} ;
+  DataDefinitionVariablePtr<CorrectedN1Data> correctedN1DataPtr[2];
+
+  struct CorrectedN2Data {
+    FLOAT64 correctedN2;  // Percent
+  };
+  DataDefinitionVector correctedN2E1DataDef = { {"TURB ENG CORRECTED N2", 1, UNITS.Percent} };
+  DataDefinitionVector correctedN2E2DataDef = { {"TURB ENG CORRECTED N2", 2, UNITS.Percent} };
+  DataDefinitionVariablePtr<CorrectedN2Data> correctedN2DataPtr[2];
   // clang-format on
 
   // Various simvars we require each tick
@@ -91,8 +105,6 @@ class FadecSimData_A32NX {
     FLOAT64 animationDeltaTime;        // Seconds
     FLOAT64 apuFuelConsumption;        // Gallons per hour
     FLOAT64 engineAntiIce[2];          // Bool
-    FLOAT64 engineCorrectedN1[2];      // Percent
-    FLOAT64 engineCorrectedN2[2];      // Percent
     FLOAT64 engineFuelValveOpen[2];    // Number
     FLOAT64 engineIgniter[2];          // Number
     FLOAT64 engineStarter[2];          // Bool
@@ -123,10 +135,6 @@ class FadecSimData_A32NX {
       {"FUELSYSTEM LINE FUEL FLOW",    18, UNITS.Gph      }, //
       {"ENG ANTI ICE",                 1,  UNITS.Bool     }, //
       {"ENG ANTI ICE",                 2,  UNITS.Bool     }, //
-      {"TURB ENG CORRECTED N1",        1,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        2,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N2",        1,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N2",        2,  UNITS.Percent  }, //
       {"FUELSYSTEM VALVE OPEN",        1,  UNITS.Number   }, //
       {"FUELSYSTEM VALVE OPEN",        2,  UNITS.Number   }, //
       {"TURB ENG IGNITION SWITCH EX1", 1,  UNITS.Number   }, //
@@ -213,6 +221,8 @@ class FadecSimData_A32NX {
   NamedVariablePtr thrustLimitType;
   NamedVariablePtr wingAntiIce;
 
+  NamedVariablePtr fadecQuickMode;  // 0 or 1
+
   // ===============================================================================================
 
   /**
@@ -236,6 +246,16 @@ class FadecSimData_A32NX {
     oilTempDataPtr[R]   = dm->make_datadefinition_var<OliTempData>("OIL TEMP RIGHT DATA", oilTempE2DataDef, NO_AUTO_UPDATE);
     oilPsiDataPtr[L]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI LEFT DATA", oilPsiE1DataDef, NO_AUTO_UPDATE);
     oilPsiDataPtr[R]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI RIGHT DATA", oilPsiE2DataDef, NO_AUTO_UPDATE);
+
+    correctedN1DataPtr[L] = dm->make_datadefinition_var<CorrectedN1Data>("CORRECTED N1 LEFT DATA", correctedN1E1DataDef, NO_AUTO_UPDATE);
+    correctedN1DataPtr[L]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    correctedN1DataPtr[R] = dm->make_datadefinition_var<CorrectedN1Data>("CORRECTED N1 RIGHT DATA", correctedN1E2DataDef, NO_AUTO_UPDATE);
+    correctedN1DataPtr[R]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    correctedN2DataPtr[L] = dm->make_datadefinition_var<CorrectedN2Data>("CORRECTED N2 LEFT DATA", correctedN2E1DataDef, NO_AUTO_UPDATE);
+    correctedN2DataPtr[L]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    correctedN2DataPtr[R] = dm->make_datadefinition_var<CorrectedN2Data>("CORRECTED N2 RIGHT DATA", correctedN2E2DataDef, NO_AUTO_UPDATE);
+    correctedN2DataPtr[R]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
@@ -332,6 +352,9 @@ class FadecSimData_A32NX {
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
     airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+
+    fadecQuickMode = dm->make_named_var("A32NX_FADEC_QUICK_MODE", UNITS.Number, AUTO_READ);
+    fadecQuickMode->set(0);
 
     // reset LVars to 0
     engineEgt[L]->setAndWriteToSim(0);
