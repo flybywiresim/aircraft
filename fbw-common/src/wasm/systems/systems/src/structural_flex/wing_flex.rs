@@ -53,7 +53,7 @@ impl LandingGearWeightOnWheelsEstimator {
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
     // For now allowing to select between guesstimate and msfs methods
-    const USE_MSFS_METHOD: bool = true;
+    const USE_MSFS_METHOD: bool = false;
 
     // Method 1 msfs formula. Sadly we don't know exact msfs spring constants
     // MSFS spring formula
