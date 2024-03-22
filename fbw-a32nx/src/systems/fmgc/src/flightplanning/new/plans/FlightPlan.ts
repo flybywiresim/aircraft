@@ -98,15 +98,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     async setAlternateDestinationAirport(icao: string | undefined) {
+        // Reset procedures because they don't make sense anymore for the new alternate
         // TODO setting both airport and runway here means we fetch the airport's approaches twice from the DB
         // TODO optimize
-        await this.alternateFlightPlan.setDestinationAirport(icao);
-        // Reset procedures because they don't make sense anymore for the new alternate
         await this.alternateFlightPlan.setDestinationRunway(undefined);
         await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
         await this.alternateFlightPlan.setArrival(undefined);
         await this.alternateFlightPlan.setApproach(undefined);
         await this.alternateFlightPlan.setApproachVia(undefined);
+        await this.alternateFlightPlan.setDestinationAirport(icao);
 
         if (this.alternateFlightPlan.originAirport) {
             this.alternateFlightPlan.availableOriginRunways = await loadAllRunways(this.alternateFlightPlan.originAirport);
