@@ -49,7 +49,7 @@ AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::air
  * https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
  */
 extern "C" {
-[[maybe_unused]] MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext ctx, int svcId, void* pData) {
+MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext ctx, int svcId, void* pData) {
   switch (svcId) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return msfsHandler.initialize();
@@ -66,3 +66,4 @@ extern "C" {
   return false;
 }
 }
+
