@@ -99,8 +99,6 @@ class NDInstrument implements FsInstrument {
     private doInit(): void {
         this.backplane.init();
 
-        this.dmcPublisher.init();
-
         this.adirsValueProvider.start();
 
         FSComponent.render(
