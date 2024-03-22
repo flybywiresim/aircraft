@@ -388,8 +388,12 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     LOG_INFO("Fadec::EngineControl_A380X::engineStartProcedure() - Quick Start");
     simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = idleN3;
     simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = idleN1;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
     simData.engineN3[engineIdx]->set(idleN3);
-    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
+    simData.engineN1[engineIdx]->set(idleN1);
+    simData.engineState[engineIdx]->set(ON);
+    return;
   }
   // delay to simulate the delay between master-switch setting and actual engine start
   else if (engineTimer < 1.7) {
@@ -463,6 +467,7 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
     simData.engineN2[engineIdx]->set(0.0);
     simData.engineN3[engineIdx]->set(0.0);
     simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
+    // simData.engineState[engineIdx]->set(OFF);
   }
   // delay to simulate the delay between master-switch setting and actual engine shutdown
   else if (engineTimer < 1.8) {
