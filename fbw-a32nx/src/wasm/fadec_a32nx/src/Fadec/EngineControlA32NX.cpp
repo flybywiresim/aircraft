@@ -66,7 +66,7 @@ void EngineControl_A32NX::update() {
 
     const int engineIgniter = static_cast<int>(simData.simVarsDataPtr->data().engineIgniter[engineIdx]);  // 0: crank, 1:norm, 2: ign
     bool      engineStarter = static_cast<bool>(simData.simVarsDataPtr->data().engineStarter[engineIdx]);
-    simCN1                  = simData.simVarsDataPtr->data().engineCorrectedN1[engineIdx];
+    simCN1                  = simData.correctedN1DataPtr[engineIdx]->data().correctedN1;
     simN1                   = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
     simN2                   = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
 
@@ -458,6 +458,20 @@ void EngineControl_A32NX::engineStartProcedure(int                     engine,
     simData.engineFuelUsed[engineIdx]->set(0);
   }
 
+  // Quick Start for expedited engine start for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 < idleN2) {
+    LOG_INFO("Fadec::EngineControl_A32NX::engineStartProcedure() - Quick Start");
+    simN2 = idleN2;
+    simData.correctedN2DataPtr[engineIdx]->data().correctedN2 = idleN2;
+    simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN2[engineIdx]->set(idleN2);
+    simData.correctedN1DataPtr[engineIdx]->data().correctedN1 = idleN1;
+    simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN1[engineIdx]->set(idleN1);
+    simData.engineState[engineIdx]->set(ON);
+    return;
+  }
+
   const double preN2Fbw       = simData.engineN2[engineIdx]->get();
   const double preEgtFbw      = simData.engineEgt[engineIdx]->get();
   const double newN2Fbw       = Polynomial_A32NX::startN2(simN2, preN2Fbw, idleN2 - n2Imbalance);
@@ -504,6 +518,19 @@ void EngineControl_A32NX::engineShutdownProcedure(int    engine,              //
 #endif
 
   const int engineIdx = engine - 1;
+
+  // Quick Shutdown for expedited engine shutdown for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 > 0.0) {
+    LOG_INFO("Fadec::EngineControl_A32NX::engineShutdownProcedure() - Quick Shutdown");
+    simData.correctedN2DataPtr[engineIdx]->data().correctedN2 = 0;
+    simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
+    simData.correctedN1DataPtr[engineIdx]->data().correctedN1 = 0;
+    simData.correctedN1DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN1[engineIdx]->set(0.0);
+    simData.engineN2[engineIdx]->set(0.0);
+    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
+    return;
+  }
 
   if (engineTimer < 1.8) {
     simData.engineTimer[engineIdx]->set(engineTimer + deltaTime);
