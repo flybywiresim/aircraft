@@ -129,9 +129,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Cockpit Door Locked",         2060, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",           "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
         // TODO: find a way to expedite this
+        ProcedureStep{"ADIRS QUICK MODE ON",         2070, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==", "1 (>L:A32NX_ADIRS_QUICK_MODE)"},
         ProcedureStep{"Await ADIRS 1 Alignment",     2062, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 2 Alignment",     2064, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 3 Alignment",     2066, true,  2000, "",                                             "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"ADIRS QUICK MODE OFF",        2071, false, 0,    "(L:A32NX_ADIRS_QUICK_MODE) 0 ==",              "0 (>L:A32NX_ADIRS_QUICK_MODE)"},
       },
 
       .PUSHBACK_CONFIG_OFF = {
