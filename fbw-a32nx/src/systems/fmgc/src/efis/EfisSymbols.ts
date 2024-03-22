@@ -134,18 +134,9 @@ export class EfisSymbols<T extends number> {
         }
 
         // FIXME map reference is also computed in GuidanceController, share?
-        let planCentre = plan?.maybeElementAt(planCentreIndex);
+        const planCentre = plan?.maybeElementAt(planCentreIndex);
 
-        // Only if we have a planCentre, check if it is a disco. If we don't have a centre at all, don't bother checking anyhthing
-        if (planCentre && planCentre.isDiscontinuity === true) {
-            planCentre = plan?.elementAt(Math.max(0, (planCentreIndex - 1)));
-        }
-
-        if (planCentre?.isDiscontinuity === true) {
-            throw new Error('bruh');
-        }
-
-        const termination = planCentre?.terminationWaypoint()?.location;
+        const termination = this.guidanceController.focusedWaypointCoordinates;
 
         const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
         if (efisInterfaceChanged) {
@@ -655,7 +646,7 @@ export class EfisSymbols<T extends number> {
 
         const airports: [Airport | undefined, Runway | undefined][] = [
             // The alternate origin airport symbol is not shown as it is the same as the primary destination
-            [!isAlternate ? flightPlan.originAirport : undefined, flightPlan.originRunway],
+            [flightPlan.originAirport, flightPlan.originRunway],
             [flightPlan.destinationAirport, flightPlan.destinationRunway],
         ];
 
