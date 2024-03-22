@@ -95,7 +95,7 @@
 
 - A380X_OVHD_ELEC_BAT_SELECTOR_KNOB
     - Number
-    - The position of the battery display knob from left to right 
+    - The position of the battery display knob from left to right
     - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
     - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
         - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
@@ -139,6 +139,10 @@
     - Temperature of trim air coming out of the ducts in the cabin and cockpit
     - {id}
         - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_COND_PURS_SEL_TEMPERATURE
+    - Degree Celsius
+    - Temperature selected by the crew using the FAP (Flight Attendant Panel). For us, this is selected in the EFB.
 
 - A32NX_COND_PACK_{id}_IS_OPERATING
     - Bool
