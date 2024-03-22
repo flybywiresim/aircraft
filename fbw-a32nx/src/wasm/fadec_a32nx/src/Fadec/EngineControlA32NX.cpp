@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "lib/string_utils.hpp"
 
 #include "logging.h"
 #ifdef PROFILING
@@ -52,11 +51,6 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
   const double ambientPressure    = simData.simVarsDataPtr->data().ambientPressure;
   const double imbalance          = simData.engineImbalance->get();
   const double idleN2             = simData.engineIdleN2->get();
-
-  // Obtain Bleed Variables
-  const int packs = (simData.packsState[L]->get() > 0.5 || simData.packsState[R]->get() > 0.5) ? 1 : 0;
-  const int nai = (simData.simVarsDataPtr->data().engineAntiIce[L] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[R] > 0.5) ? 1 : 0;
-  const int wai = simData.wingAntiIce->getAsInt64();
 
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
@@ -135,7 +129,13 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
     prevEngineStarterState[engineIdx] = engineStarter;
   }
 
+  // update fuel & tank data
   updateFuel(deltaTime);
+
+  // Obtain Bleed Variables and update Thrust Limits
+  const int packs = (simData.packsState[L]->get() > 0.5 || simData.packsState[R]->get() > 0.5) ? 1 : 0;
+  const int nai = (simData.simVarsDataPtr->data().engineAntiIce[L] > 0.5 || simData.simVarsDataPtr->data().engineAntiIce[R] > 0.5) ? 1 : 0;
+  const int wai = simData.wingAntiIce->getAsInt64();
   updateThrustLimits(simTime, pressureAltitude, ambientTemperature, ambientPressure, mach, simN1highest, packs, nai, wai);
 
 #ifdef PROFILING
