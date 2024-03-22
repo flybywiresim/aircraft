@@ -69,7 +69,7 @@ void EngineControl_A380X::update(sGaugeDrawData* pData) {
 
     const bool   simOnGround   = msfsHandlerPtr->getSimOnGround();
     const double engineTimer   = simData.engineTimer[engineIdx]->get();
-    const double simCN1        = simData.simVarsDataPtr->data().simEngineCorrectedN1[engineIdx];
+    const double simCN1        = simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1;
     const double simN1         = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
     const double simN3         = simData.simVarsDataPtr->data().simEngineN2[engineIdx];  // as the sim does not have N3, we use N2
     prevSimEngineN3[engineIdx] = simN3;
@@ -389,7 +389,7 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = idleN3;
     simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
     simData.engineN3[engineIdx]->set(idleN3);
-    simData.engineTimer[engineIdx]->set(2.0);
+    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
   }
   // delay to simulate the delay between master-switch setting and actual engine start
   else if (engineTimer < 1.7) {
@@ -454,13 +454,15 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
 
   // Quick Shutdown for expedited engine shutdown for Aircraft Presets
   if (simData.fadecQuickMode->getAsBool() && simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 > 0.0) {
-    LOG_INFO("Fadec::EngineControl_A380X::engineStartProcedure() - Quick Shutdown");
+    LOG_INFO("Fadec::EngineControl_A380X::engineShutdownProcedure() - Quick Shutdown");
     simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = 0;
     simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = 0;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
     simData.engineN1[engineIdx]->set(0.0);
     simData.engineN2[engineIdx]->set(0.0);
     simData.engineN3[engineIdx]->set(0.0);
-    simData.engineTimer[engineIdx]->set(2.0);
+    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
   }
   // delay to simulate the delay between master-switch setting and actual engine shutdown
   else if (engineTimer < 1.8) {

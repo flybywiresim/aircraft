@@ -110,7 +110,18 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[4];
   // clang-format on
 
-  // Corrected N3 Data in separate Data Definitions as they are updated separately
+  // Corrected N1 Data in separate Data Definitions as they are updated separately
+  // clang-format off
+  struct CorrectedN1Data {
+    FLOAT64 correctedN1; // in Percent
+  };
+  DataDefinitionVector engine1CN1DataDef = { {"TURB ENG CORRECTED N1", 1, UNITS.Percent} };
+  DataDefinitionVector engine2CN1DataDef = { {"TURB ENG CORRECTED N1", 2, UNITS.Percent} };
+  DataDefinitionVector engine3CN1DataDef = { {"TURB ENG CORRECTED N1", 3, UNITS.Percent} };
+  DataDefinitionVector engine4CN1DataDef = { {"TURB ENG CORRECTED N1", 4, UNITS.Percent} };
+  DataDefinitionVariablePtr<CorrectedN1Data> engineCorrectedN1DataPtr[4];
+
+// Corrected N3 Data in separate Data Definitions as they are updated separately
   // Note: the sim does not have a direct N3 value, so we use N2 as a proxy
   // clang-format off
   struct CorrectedN3Data {
@@ -134,7 +145,6 @@ class FadecSimData_A380X {
     FLOAT64 engineAntiIce[4];         // 0 or 1
     FLOAT64 engineIgniter[4];         // 0 or 1
     FLOAT64 engineStarter[4];         // 0 or 1
-    FLOAT64 simEngineCorrectedN1[4];  // in Percent
     FLOAT64 simEngineN1[4];           // in Percent
     FLOAT64 simEngineN2[4];           // in Percent
   };
@@ -157,10 +167,6 @@ class FadecSimData_A380X {
       {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          4, UNITS.Bool     }, //
-      {"TURB ENG CORRECTED N1",        1, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        2, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        3, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        4, UNITS.Percent  }, //
       {"TURB ENG N1",                  1, UNITS.Percent  }, //
       {"TURB ENG N1",                  2, UNITS.Percent  }, //
       {"TURB ENG N1",                  3, UNITS.Percent  }, //
@@ -275,6 +281,15 @@ class FadecSimData_A380X {
     engineCorrectedN3DataPtr[E2]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     engineCorrectedN3DataPtr[E3]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
     engineCorrectedN3DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    engineCorrectedN1DataPtr[E1] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 1", engine1CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E2] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 2", engine2CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E3] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 3", engine3CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E4] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 4", engine4CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E1]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E2]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E3]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
