@@ -1,8 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <algorithm>
-
 #include "logging.h"
 #ifdef PROFILING
 #include "ScopedTimer.hpp"
