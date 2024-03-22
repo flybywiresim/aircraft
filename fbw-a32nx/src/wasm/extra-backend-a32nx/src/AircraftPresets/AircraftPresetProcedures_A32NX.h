@@ -123,9 +123,12 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"FUEL PUMP 6 On",          2060, false, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",            "6 (>K:FUELSYSTEM_PUMP_ON)"},
         // next step will keep a slgitht delay as the A32NX otherwise often did not start up the ENG2 in step 3010
         ProcedureStep{"Cockpit Door Locked",     2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)", true},
+
+        ProcedureStep{"ADIRS QUICK MODE ON",     2070, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==", "1 (>L:A32NX_ADIRS_QUICK_MODE)"},
         ProcedureStep{"Await ADIRS 1 Alignment", 2150, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 2 Alignment", 2160, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 3 Alignment", 2170, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"ADIRS QUICK MODE OFF",    2071, false, 0,    "(L:A32NX_ADIRS_QUICK_MODE) 0 ==",              "0 (>L:A32NX_ADIRS_QUICK_MODE)"},
       },
 
       .PUSHBACK_CONFIG_OFF = {
