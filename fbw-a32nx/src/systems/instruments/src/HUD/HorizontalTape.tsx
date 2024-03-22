@@ -51,18 +51,18 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             labels: [] as SVGTextElement[],
         };
 
-        const tickLength = 4;
+        const tickLength = 7;
         let textRef = FSComponent.createRef<SVGTextElement>();
 
-        result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} transform="translate(0 0)" />);
+        result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} transform="translate(0 0)" />);
 
         result.labels.push(
             <text
                 id="HeadingLabel"
-                class="White MiddleAlign FontMedium"
+                class="Green MiddleAlign FontSmallest"
                 ref={textRef}
-                x="68.979425"
-                y="154.64206"
+                x="512"
+                y="410"
                 transform={`translate(${0} 0)`}
             >
                 360
@@ -76,13 +76,13 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             const headingOffset = (1 + i) * this.props.valueSpacing;
             const dX = this.props.distanceSpacing / this.props.valueSpacing * headingOffset;
 
-            if (headingOffset % 10 === 0) {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
-                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
-            } else {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
-                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
-            }
+            // if (headingOffset % 10 === 0) {
+            result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+            result.ticks.unshift(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
+            // } else {
+            //     result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+            //     result.ticks.unshift(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
+            // }
 
             if (headingOffset % 10 === 0) {
                 textRef = FSComponent.createRef<SVGTextElement>();
@@ -90,10 +90,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                 result.labels.unshift(
                     <text
                         id="HeadingLabel"
-                        class={`White MiddleAlign ${i % 3 === 0 ? 'FontSmallest' : 'FontMedium'}`}
+                        class="Green MiddleAlign FontSmallest"
                         ref={textRef}
-                        x="68.979425"
-                        y="154.64206"
+                        x="512"
+                        y="410"
                         style={`transform: translate3d(${-dX}px, 0px, 0px)`}
                     >
                         {headingOffset}
@@ -105,10 +105,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                 result.labels.push(
                     <text
                         id="HeadingLabel"
-                        class={`White MiddleAlign ${i % 3 === 0 ? 'FontSmallest' : 'FontMedium'}`}
+                        class="Green MiddleAlign FontSmallest"
                         ref={textRef}
-                        x="68.979425"
-                        y="154.64206"
+                        x="512"
+                        y="410"
                         style={`transform: translate3d(${dX}px, 0px, 0px)`}
                     >
                         {(360 - headingOffset)}
@@ -152,13 +152,13 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                         } else {
                             scrollerValue.textContent = '';
                         }
-                        if (hdg % 30 === 0) {
-                            scrollerValue.classList.remove('FontSmallest');
-                            scrollerValue.classList.add('FontMedium');
-                        } else {
-                            scrollerValue.classList.add('FontSmallest');
-                            scrollerValue.classList.remove('FontMedium');
-                        }
+                        // if (hdg % 30 === 0) {
+                        //     scrollerValue.classList.remove('FontSmallest');
+                        //     scrollerValue.classList.add('FontMedium');
+                        // } else {
+                        //     scrollerValue.classList.add('FontSmallest');
+                        //     scrollerValue.classList.remove('FontMedium');
+                        // }
                     }
                 });
             }

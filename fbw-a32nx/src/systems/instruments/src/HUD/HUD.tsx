@@ -131,7 +131,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         // eslint-disable-next-line max-len
                         d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
                     />
-                    <HeadingTape bus={this.props.bus} failed={this.headingFailed} />
+                    {/* <HeadingTape bus={this.props.bus} failed={this.headingFailed} /> */}
                     <AltitudeIndicator bus={this.props.bus} />
                     <AirspeedIndicator
                         bus={this.props.bus}
