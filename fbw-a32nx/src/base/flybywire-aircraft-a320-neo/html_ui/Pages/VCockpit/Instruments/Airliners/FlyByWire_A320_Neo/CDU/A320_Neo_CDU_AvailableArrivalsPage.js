@@ -41,9 +41,11 @@ const ApproachTypeOrder = Object.freeze({
 const ArrivalPagination = Object.freeze(
     {
         ARR_PAGE: 3,
-        TRNS_PAGE: 2
+        TRNS_PAGE: 2,
+        VIA_PAGE: 3,
     }
 );
+
 class CDUAvailableArrivalsPage {
     static async ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
         /** @type {BaseFlightPlan} */
@@ -51,8 +53,9 @@ class CDUAvailableArrivalsPage {
 
         const isTemporary = targetPlan.index === Fmgc.FlightPlanIndex.Temporary;
 
-        const selectedStarId = targetPlan.arrival ? targetPlan.arrival.databaseId : undefined;
-        const selectedTransitionId = targetPlan.arrivalEnrouteTransition ? targetPlan.arrivalEnrouteTransition.databaseId : undefined;
+        const selectedApproachId = targetPlan.approach ? targetPlan.approach.databaseId : targetPlan.approach;
+        const selectedStarId = targetPlan.arrival ? targetPlan.arrival.databaseId : targetPlan.arrival;
+        const selectedTransitionId = targetPlan.arrivalEnrouteTransition ? targetPlan.arrivalEnrouteTransition.databaseId : targetPlan.arrivalEnrouteTransition;
 
         const flightPlanAccentColor = isTemporary ? "yellow" : "green";
 
@@ -65,6 +68,9 @@ class CDUAvailableArrivalsPage {
         let selectedViasCellColor = "white";
         let selectedTransitionCellColor = "white";
 
+        let viasPageLabel = "";
+        let viasPageLine = "";
+
         const selectedApproach = targetPlan.approach;
 
         if (selectedApproach && selectedApproach.ident) {
@@ -72,19 +78,18 @@ class CDUAvailableArrivalsPage {
             selectedApproachCellColor = flightPlanAccentColor;
 
             const selectedApproachTransition = targetPlan.approachVia;
+            const availableVias = targetPlan.availableApproachVias;
 
-            if (selectedApproachTransition) {
-                selectedViasCell = selectedApproachTransition.ident;
-            } else {
+            if (availableVias.length === 0 || selectedApproachTransition === null) {
                 selectedViasCell = "NONE";
+                selectedViasCellColor = flightPlanAccentColor;
+            } else if (selectedApproachTransition) {
+                selectedViasCell = selectedApproachTransition.ident;
+                selectedViasCellColor = flightPlanAccentColor;
             }
-
-            selectedViasCellColor = flightPlanAccentColor;
         } else if (!selectedApproach && targetPlan.destinationRunway) {
             selectedApproachCell = Fmgc.RunwayUtils.runwayString(targetPlan.destinationRunway.ident);
             selectedApproachCellColor = flightPlanAccentColor;
-            selectedViasCell = "NONE";
-            selectedViasCellColor = flightPlanAccentColor;
         }
 
         let selectedStarCell = "------";
@@ -97,8 +102,12 @@ class CDUAvailableArrivalsPage {
             selectedStarCellColor = flightPlanAccentColor;
 
             const selectedTransition = targetPlan.arrivalEnrouteTransition;
+            const availableTransitions = selectedArrival.enrouteTransitions;
 
-            if (selectedTransition) {
+            if (availableTransitions.length === 0 || selectedTransition === null) {
+                selectedTransitionCell = "NONE";
+                selectedTransitionCellColor = flightPlanAccentColor;
+            } else if (selectedTransition) {
                 selectedTransitionCell = selectedTransition.ident;
                 selectedTransitionCellColor = flightPlanAccentColor;
             }
@@ -114,12 +123,6 @@ class CDUAvailableArrivalsPage {
          */
         const runways = targetPlan.availableDestinationRunways;
         const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(targetPlan.destinationAirport.ident);
-
-        // Add an index member variable, so we can track the original order of approaches
-        for (let j = 0; j < approaches.length; j++) {
-            // TODO: Is this still used? (fms-v2)
-            approaches[j].index = j;
-        }
 
         // Sort the approaches in Honeywell's documented order
         const sortedApproaches = approaches.slice()
@@ -156,6 +159,9 @@ class CDUAvailableArrivalsPage {
                     let runwayCourse = '---';
 
                     const isCircling = approach.runwayIdent === 'RW00';
+                    const isSelected = selectedApproach && selectedApproachId === approach.databaseId;
+                    const color = isSelected && !isTemporary ? "green" : "cyan";
+
                     if (isCircling) {
                         rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", ""];
                     } else {
@@ -169,36 +175,43 @@ class CDUAvailableArrivalsPage {
                             const hasIls = !!matchingIls;
                             const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
 
-                            rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                            rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                             rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
                         }
                     }
 
-                    mcdu.onLeftInput[i + 2] = async () => {
-                        await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
+                    // Clicking the already selected approach is a no-op
+                    if (!isSelected) {
+                        mcdu.onLeftInput[i + 2] = async () => {
+                            await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
 
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                    };
+                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                        };
+                    }
                 } else if (runway) {
                     const runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                     const runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
-                    rows[2 * i] = [`{cyan}{${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                    const isSelected = !selectedApproach && targetPlan.destinationRunway && runway.databaseId === targetPlan.destinationRunway.databaseId;
+                    const color = isSelected && !isTemporary ? "green" : "cyan";
+
+                    rows[2 * i] = [`{${color}}${!isSelected ? "{" : "{sp}"}${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                     rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
 
-                    mcdu.onLeftInput[i + 2] = async () => {
-                        await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
-                        await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
+                    // Clicking the already selected runway is a no-op
+                    if (!isSelected) {
+                        mcdu.onLeftInput[i + 2] = async () => {
+                            await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
+                            await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
 
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                    };
+                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                        };
+                    }
                 }
             }
         } else {
             if (selectedApproach && selectedApproach.runwayIdent) {
                 const arrivals = targetPlan.availableArrivals;
-
-                const selectedRunway = selectedApproach.runway;
 
                 for (let i = 0; i < arrivals.length; i++) {
                     const arrival = arrivals[i];
@@ -227,90 +240,106 @@ class CDUAvailableArrivalsPage {
             for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
                 let index = i + (pageCurrent * ArrivalPagination.ARR_PAGE);
                 if (index === 0) {
-                    let color = "cyan";
-                    if (!selectedArrival) {
-                        color = "green";
+                    const isSelected = selectedArrival === null;
+                    const color = isSelected && !isTemporary ? "green" : "cyan";
+
+                    rows[2 * i] = [`{${color}}${!isSelected ? "{" : "{sp}"}${Labels.NO_STAR}{end}`];
+
+                    if (!isSelected) {
+                        mcdu.onLeftInput[i + 2] = async () => {
+                            await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
+
+                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                        };
                     }
-                    rows[2 * i] = ["{NO STAR[color]" + color];
-
-                    mcdu.onLeftInput[i + 2] = async () => {
-                        await mcdu.flightPlanService.setArrival(undefined, forPlan, inAlternate);
-
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                    };
                 } else {
                     index--;
                     if (matchingArrivals[index]) {
                         const star = matchingArrivals[index].arrival;
                         const starDatabaseId = matchingArrivals[index].arrival.databaseId;
+                        const isSelected = selectedStarId === starDatabaseId;
+                        const color = isSelected && !isTemporary ? "green" : "cyan";
 
-                        let color = "cyan";
-                        if (selectedStarId === starDatabaseId) {
-                            color = "green";
+                        rows[2 * i] = [`{${color}}${!isSelected ? "{" : "{sp}"}${star.ident}{end}`];
+
+                        // Clicking the already selected star is a no-op
+                        if (!isSelected) {
+                            mcdu.onLeftInput[i + 2] = async () => {
+                                const destinationRunway = targetPlan.destinationRunway;
+
+                                const arrivalRunway = destinationRunway ? star.runwayTransitions.find(t => {
+                                    return t.ident === destinationRunway.ident;
+                                }) : undefined;
+
+                                if (arrivalRunway !== undefined) {
+                                    await mcdu.flightPlanService.setDestinationRunway(arrivalRunway.ident, forPlan, inAlternate);
+                                }
+
+                                await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
+
+                                const approach = targetPlan.approach;
+                                const availableVias = targetPlan.availableApproachVias;
+
+                                if (approach !== undefined && availableVias.length > 0) {
+                                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                                } else {
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                }
+                            };
                         }
-                        rows[2 * i] = ["{" + star.ident + "[color]" + color];
-                        mcdu.onLeftInput[i + 2] = async () => {
-                            const destinationRunway = targetPlan.destinationRunway;
-
-                            const arrivalRunway = destinationRunway ? star.runwayTransitions.find(t => {
-                                return t.ident === destinationRunway.ident;
-                            }) : undefined;
-
-                            if (arrivalRunway !== undefined) {
-                                await mcdu.flightPlanService.setDestinationRunway(arrivalRunway.ident, forPlan, inAlternate);
-                            }
-
-                            await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
-
-                            const approach = targetPlan.approach;
-
-                            if (approach !== undefined) {
-                                CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                            } else {
-                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                            }
-
-                        };
                     }
                 }
             }
+
             if (selectedArrival) {
-                rows[0][1] = "NO TRANS}[color]cyan";
-            }
+                if (selectedArrival.enrouteTransitions.length > 0) {
+                    const isNoTransSelected = selectedTransitionId === null;
+                    const color = isNoTransSelected && !isTemporary ? "green" : "cyan";
 
-            mcdu.onRightInput[2] = async () => {
-                await mcdu.flightPlanService.setArrival(undefined, forPlan, inAlternate);
+                    rows[0][1] = `${Labels.NO_TRANS}${!isNoTransSelected ? "}" : "{sp}"}[color]${color}`;
 
-                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
-            };
+                    mcdu.onRightInput[2] = async () => {
+                        await mcdu.flightPlanService.setArrivalEnrouteTransition(null, forPlan, inAlternate);
 
-            for (let i = 0; i < ArrivalPagination.TRNS_PAGE; i++) {
-                const index = i + pageCurrent * ArrivalPagination.TRNS_PAGE;
-                if (selectedArrival) {
-                    const transition = selectedArrival.enrouteTransitions[index];
-                    if (transition) {
-                        rows[2 * (i + 1)][1] = `${transition.ident}${selectedTransitionId === transition.databaseId ? " " : "}"}[color]cyan`;
+                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                    };
 
-                        mcdu.onRightInput[i + 3] = async () => {
-                            await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
+                    for (let i = 0; i < ArrivalPagination.TRNS_PAGE; i++) {
+                        const index = i + pageCurrent * ArrivalPagination.TRNS_PAGE;
 
-                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                        };
+                        const transition = selectedArrival.enrouteTransitions[index];
+                        if (transition) {
+                            const isSelected = selectedTransitionId === transition.databaseId;
+                            const color = isSelected && !isTemporary ? "green" : "cyan";
+
+                            rows[2 * (i + 1)][1] = `{${color}}${transition.ident}${!isSelected ? "}" : "{sp}"}{end}`;
+
+                            // Clicking the already selected transition is a no-op
+                            if (!isSelected) {
+                                mcdu.onRightInput[i + 3] = async () => {
+                                    await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
+
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
+                                };
+                            }
+                        }
                     }
                 }
             }
-        }
-        let viasPageLabel = "";
-        let viasPageLine = "";
-        if (starSelection) {
+
             if (selectedApproach) {
-                viasPageLabel = "{sp}APPR";
-                viasPageLine = "<VIAS";
-                mcdu.onLeftInput[1] = () => {
-                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                };
-            }
+                const availableApproachVias = targetPlan.availableApproachVias;
+
+                if (availableApproachVias.length > 0) {
+                    viasPageLabel = "{sp}APPR";
+                    viasPageLine = "<VIAS";
+                    mcdu.onLeftInput[1] = () => {
+                        CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                    };
+                }
+             }
         }
+
         let bottomLine = ["<RETURN"];
         if (isTemporary) {
             bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
@@ -356,12 +385,12 @@ class CDUAvailableArrivalsPage {
         }
         mcdu.setArrows(up, down, true, true);
         mcdu.setTemplate([
-            ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end}"],
+            ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{sp}{end}"],
             ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
-            [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
+            [`{${selectedApproachCellColor}}${selectedApproachCell.padEnd(10)}{end}{${selectedViasCellColor}}${selectedViasCell}{end}`, selectedStarCell + "[color]" + selectedStarCellColor],
             [viasPageLabel, "TRANS{sp}"],
             [viasPageLine, selectedTransitionCell + "[color]" + selectedTransitionCellColor],
-            [(starSelection ? "STARS" : "APPR").padStart(5) + "{sp}{sp}AVAILABLE", starSelection ? "TRANS" : "", ""],
+            ["{big}" + (starSelection ? "STARS" : "APPR").padEnd(5) + "{end}{sp}{sp}AVAILABLE", starSelection ? "{big}TRANS{end}" : "", ""],
             rows[0],
             rows[1],
             rows[2],
@@ -378,20 +407,19 @@ class CDUAvailableArrivalsPage {
     }
 
     static ShowViasPage(mcdu, airport, pageCurrent = 0, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
-        const appr_page = 3;
-
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-        const planColor = targetPlan.index === Fmgc.FlightPlanIndex.Temporary ? "yellow" : "green";
+        const isTemporary = targetPlan.index === Fmgc.FlightPlanIndex.Temporary;
+        const planColor = isTemporary ? "yellow" : "green";
 
         const availableApproachVias = targetPlan.availableApproachVias;
 
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AvailableArrivalsPageVias;
-        let selectedApproachCell = "---";
+        let selectedApproachCell = "------";
         let selectedApproachCellColor = "white";
-        let selectedViasCell = "NONE";
+        let selectedViasCell = "------";
         let selectedViasCellColor = "white";
 
         const selectedApproach = targetPlan.approach;
@@ -401,7 +429,10 @@ class CDUAvailableArrivalsPage {
             selectedApproachCell = Fmgc.ApproachUtils.shortApproachName(selectedApproach);
             selectedApproachCellColor = planColor;
 
-            if (selectedApproachVia) {
+            if (selectedApproachVia === null) {
+                selectedViasCell = "NONE";
+                selectedViasCellColor = planColor;
+            } else if (selectedApproachVia) {
                 selectedViasCell = selectedApproachVia.ident;
                 selectedViasCellColor = planColor;
             }
@@ -419,18 +450,23 @@ class CDUAvailableArrivalsPage {
 
         const rows = [[""], [""], [""], [""], [""], [""]];
 
-        for (let i = 0; i < appr_page; i++) {
-            const index = i + pageCurrent * appr_page;
+        for (let i = 0; i < ArrivalPagination.VIA_PAGE; i++) {
+            const index = i + pageCurrent * ArrivalPagination.VIA_PAGE;
             const via = availableApproachVias[index];
 
             if (selectedApproach && via) {
-                rows[2 * i + 1][0] = `${via.databaseId === (selectedApproachVia ? selectedApproachVia.databaseId : undefined) ? "{green} " : "{cyan}{"}${via.ident}{end}`;
+                const isSelected = selectedApproachVia && via.databaseId === selectedApproachVia.databaseId;
+                const color = isSelected && !isTemporary ? "green" : "cyan";
 
-                mcdu.onLeftInput[i + 2] = async () => {
-                    await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+                rows[2 * i + 1][0] = `{${color}}${!isSelected ? "{" : "{sp}"}${via.ident}{end}`;
 
-                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                };
+                if (!isSelected) {
+                    mcdu.onLeftInput[i + 2] = async () => {
+                        await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+
+                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                    };
+                }
             }
         }
 
@@ -458,12 +494,15 @@ class CDUAvailableArrivalsPage {
             };
         }
 
+        const isNoViaSelected = selectedApproachVia === null;
+        const color = isNoViaSelected && !isTemporary ? "green" : "cyan"
+
         mcdu.setTemplate([
             ["APPROACH VIAS"],
             ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
-            [selectedApproachCell + "[color]" + selectedApproachCellColor , selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
+            [`{${selectedApproachCellColor}}${selectedApproachCell.padEnd(10)}{end}{${selectedViasCellColor}}${selectedViasCell}{end}`, selectedStarCell + "[color]" + selectedStarCellColor],
             ["APPR VIAS"],
-            ["{NO VIAS[color]cyan"],
+            [`${!isNoViaSelected ? "{" : "{sp}"}${Labels.NO_VIA}[color]${color}`],
             rows[0],
             rows[1],
             rows[2],
@@ -474,14 +513,14 @@ class CDUAvailableArrivalsPage {
             bottomLine
         ]);
         mcdu.onLeftInput[1] = async () => {
-            await mcdu.flightPlanService.setApproachVia(undefined, forPlan, inAlternate);
+            await mcdu.flightPlanService.setApproachVia(null, forPlan, inAlternate);
 
             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
         };
         let up = false;
         let down = false;
 
-        if (pageCurrent < Math.ceil(selectedApproach.transitions.length / appr_page) - 1) {
+        if (pageCurrent < Math.ceil(selectedApproach.transitions.length / ArrivalPagination.VIA_PAGE) - 1) {
             mcdu.onUp = () => {
                 pageCurrent++;
                 if (pageCurrent < 0) {
