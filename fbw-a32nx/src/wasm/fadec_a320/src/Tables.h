@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "SimVars.h"
 #include "common.h"
 

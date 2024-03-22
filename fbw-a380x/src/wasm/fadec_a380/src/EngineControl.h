@@ -1,5 +1,11 @@
 #pragma once
 
+#include <iostream>
+#include <algorithm>
+
+#include <MSFS\MSFS.h>
+#include <SimConnect.h>
+
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -779,6 +785,7 @@ class EngineControl {
   /// Updates Fuel Consumption with realistic values
   /// </summary>
   void updateFuel(double deltaTime) {
+
     double m = 0;
     double b = 0;
     double fuelBurn1 = 0;
@@ -1169,6 +1176,9 @@ class EngineControl {
     double flex_ga = 0;
     double flex = 0;
 
+    using std::min;
+    using std::max;
+
     // Write all N1 Limits
     to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
     ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
@@ -1206,7 +1216,7 @@ class EngineControl {
     double deltaThrust = 0;
 
     if (isTransitionActive) {
-      double timeDifference = max(0, (simulationTime - transitionStartTime) - waitTime);
+      double timeDifference = max(0.0, (simulationTime - transitionStartTime) - waitTime);
 
       if (timeDifference > 0 && clb > flex) {
         deltaThrust = min(clb - flex, timeDifference * transitionFactor);
@@ -1454,7 +1464,7 @@ class EngineControl {
       }
 
       // set highest N1 from either engine
-      simN1highest = max(simN1highest, simN1);
+      simN1highest = (std::max)(simN1highest, simN1);
     }
 
     updateFuel(deltaTime);

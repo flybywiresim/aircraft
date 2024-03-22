@@ -812,7 +812,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             break;
         }
         case VerticalMode.VS: {
-            const VSText = `${(this.selectedVS > 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
+            const VSText = `${(this.selectedVS > 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, '\xa0');
 
             text = 'V/S';
 
@@ -1536,9 +1536,9 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
         ([mdaMode, dh, mda]) => {
             switch (mdaMode) {
             case MdaMode.Baro:
-                return Math.round(mda.value).toString().padStart(6, ' ');
+                return Math.round(mda.value).toString().padStart(6, '\xa0');
             case MdaMode.Radio:
-                return Math.round(dh.value).toString().padStart(4, ' ');
+                return Math.round(dh.value).toString().padStart(4, '\xa0');
             default:
                 return '';
             }
