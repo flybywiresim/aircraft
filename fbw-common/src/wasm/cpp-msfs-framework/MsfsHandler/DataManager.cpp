@@ -160,7 +160,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
   // with different expected values via Index and SimUnits.
   const std::string uniqueName{varName + ":" + std::to_string(index) + ":" + unit.name};
 
-  // Check if variable already exists
+  // Check if variable already exists.
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
   const auto pair = variables.find(uniqueName);
