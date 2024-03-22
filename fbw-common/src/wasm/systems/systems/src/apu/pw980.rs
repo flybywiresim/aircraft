@@ -1016,6 +1016,7 @@ mod apu_generator_tests {
     use ntest::assert_about_eq;
     use uom::si::frequency::hertz;
 
+    use crate::simulation::InitContext;
     use crate::{
         apu::tests::test_bed_pw980 as test_bed_with,
         shared,
@@ -1023,7 +1024,6 @@ mod apu_generator_tests {
     };
 
     use super::*;
-    use crate::simulation::InitContext;
 
     #[test]
     fn starts_without_output() {

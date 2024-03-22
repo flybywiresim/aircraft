@@ -125,18 +125,18 @@ class FadecSimData_A380X {
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;      // in Seconds
-    FLOAT64 airSpeedMach;            // in Mach
-    FLOAT64 ambientPressure;         // in Millibars
-    FLOAT64 ambientTemperature;      // in Celsius
-    FLOAT64 pressureAltitude;        // in Feet
-    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
-    FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineIgniter[4];        // 0 or 1
-    FLOAT64 engineStarter[4];        // 0 or 1
-    FLOAT64 simEngineCorrectedN1[4];    // in Percent
-    FLOAT64 simEngineN1[4];          // in Percent
-    FLOAT64 simEngineN2[4];          // in Percent
+    FLOAT64 animationDeltaTime;       // in Seconds
+    FLOAT64 airSpeedMach;             // in Mach
+    FLOAT64 ambientPressure;          // in Millibars
+    FLOAT64 ambientTemperature;       // in Celsius
+    FLOAT64 pressureAltitude;         // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;   // in Pounds
+    FLOAT64 engineAntiIce[4];         // 0 or 1
+    FLOAT64 engineIgniter[4];         // 0 or 1
+    FLOAT64 engineStarter[4];         // 0 or 1
+    FLOAT64 simEngineCorrectedN1[4];  // in Percent
+    FLOAT64 simEngineN1[4];           // in Percent
+    FLOAT64 simEngineN2[4];           // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -149,10 +149,10 @@ class FadecSimData_A380X {
       {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Enum     }, //
+      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number   }, //
       {"GENERAL ENG STARTER",          1, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
@@ -231,6 +231,8 @@ class FadecSimData_A380X {
   NamedVariablePtr thrustLimitType;
   NamedVariablePtr wingAntiIce;
 
+  NamedVariablePtr fadecQuickMode;  // 0 or 1
+
   // ===============================================================================================
 
   /**
@@ -269,6 +271,10 @@ class FadecSimData_A380X {
     engineCorrectedN3DataPtr[E2] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 2", engine2CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E3] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 3", engine3CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E4] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 4", engine4CN3DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN3DataPtr[E1]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E2]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E3]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
@@ -405,6 +411,9 @@ class FadecSimData_A380X {
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Gallons, AUTO_READ);
     airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+
+    fadecQuickMode = dm->make_named_var("A32NX_FADEC_QUICK_MODE", UNITS.Number, AUTO_READ);
+    fadecQuickMode->set(0);
 
     // reset LVars to 0
     engineEgt[E1]->setAndWriteToSim(0);
