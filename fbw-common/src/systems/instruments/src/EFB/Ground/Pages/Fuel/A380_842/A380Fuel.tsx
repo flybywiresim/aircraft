@@ -277,7 +277,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                         <tbody>
                             <tr>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Left Outer
+                                    Feed Two
                                 </td>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
                                     <ProgressBar
@@ -287,58 +287,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                         completedBarBegin={100}
                                         isLabelVisible={false}
                                         bgcolor="var(--color-highlight)"
-                                        completed={leftOuterGal * FUEL_GALLONS_TO_KG / OUTER_TANK_MAX_KG * 100}
+                                        completed={feedTwoGal * FUEL_GALLONS_TO_KG / INNER_FEED_MAX_KG * 100}
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                                     <ValueUnitDisplay
-                                        value={Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG)}
-                                        padTo={6}
-                                        unit={massUnitForDisplay}
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed One
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={feedOneGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
-                                    />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay
-                                        value={Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG)}
-                                        padTo={6}
-                                        unit={massUnitForDisplay}
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Left Mid
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={leftMidGal * FUEL_GALLONS_TO_KG / MID_TANK_MAX_KG * 100}
-                                    />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay
-                                        value={Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG)}
+                                        value={Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG)}
                                         padTo={6}
                                         unit={massUnitForDisplay}
                                     />
@@ -369,7 +323,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                             </tr>
                             <tr>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed Two
+                                    Left Mid
                                 </td>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
                                     <ProgressBar
@@ -379,18 +333,63 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                         completedBarBegin={100}
                                         isLabelVisible={false}
                                         bgcolor="var(--color-highlight)"
-                                        completed={feedTwoGal * FUEL_GALLONS_TO_KG / INNER_FEED_MAX_KG * 100}
+                                        completed={leftMidGal * FUEL_GALLONS_TO_KG / MID_TANK_MAX_KG * 100}
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                                     <ValueUnitDisplay
-                                        value={Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG)}
+                                        value={Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG)}
                                         padTo={6}
                                         unit={massUnitForDisplay}
                                     />
                                 </td>
                             </tr>
-
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Feed One
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={feedOneGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Left Outer
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={leftOuterGal * FUEL_GALLONS_TO_KG / OUTER_TANK_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </Card>
@@ -405,7 +404,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                         <tbody>
                             <tr>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Right Outer
+                                    Feed Three
                                 </td>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
                                     <ProgressBar
@@ -415,58 +414,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                         completedBarBegin={100}
                                         isLabelVisible={false}
                                         bgcolor="var(--color-highlight)"
-                                        completed={rightOuterGal * FUEL_GALLONS_TO_KG / OUTER_TANK_MAX_KG * 100}
+                                        completed={feedThreeGal * FUEL_GALLONS_TO_KG / INNER_FEED_MAX_KG * 100}
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                                     <ValueUnitDisplay
-                                        value={Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG)}
-                                        padTo={6}
-                                        unit={massUnitForDisplay}
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed Four
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={feedFourGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
-                                    />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay
-                                        value={Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG)}
-                                        padTo={6}
-                                        unit={massUnitForDisplay}
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Right Mid
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={rightMidGal * FUEL_GALLONS_TO_KG / MID_TANK_MAX_KG * 100}
-                                    />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay
-                                        value={Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG)}
+                                        value={Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG)}
                                         padTo={6}
                                         unit={massUnitForDisplay}
                                     />
@@ -497,7 +450,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                             </tr>
                             <tr>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed Three
+                                    Right Mid
                                 </td>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
                                     <ProgressBar
@@ -507,12 +460,58 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                         completedBarBegin={100}
                                         isLabelVisible={false}
                                         bgcolor="var(--color-highlight)"
-                                        completed={feedThreeGal * FUEL_GALLONS_TO_KG / INNER_FEED_MAX_KG * 100}
+                                        completed={rightMidGal * FUEL_GALLONS_TO_KG / MID_TANK_MAX_KG * 100}
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                                     <ValueUnitDisplay
-                                        value={Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG)}
+                                        value={Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Feed Four
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={feedFourGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Right Outer
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={rightOuterGal * FUEL_GALLONS_TO_KG / OUTER_TANK_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG)}
                                         padTo={6}
                                         unit={massUnitForDisplay}
                                     />
