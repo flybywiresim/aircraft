@@ -663,7 +663,7 @@ class CDUFlightPlanPage {
         let firstWp = scrollWindow.length;
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
-            const { marker: cMarker, holdResumeExit: cHold, speedConstraint: cSpd, altitudeConstraint: cAlt, ident: cIdent } = scrollWindow[rowI];
+            const { marker: cMarker, holdResumeExit: cHold, spdColor: cSpdColor, altColor: cAltColor, speedConstraint: cSpd, altitudeConstraint: cAlt, ident: cIdent } = scrollWindow[rowI];
             let spdRpt = false;
             let altRpt = false;
             let showFix = true;
@@ -676,17 +676,17 @@ class CDUFlightPlanPage {
                 scrollText[(rowI * 2) + 1] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
             } else if (!cMarker) { // Waypoint
                 if (rowI > 0) {
-                    const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
+                    const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt } = scrollWindow[rowI - 1];
                     if (!pMarker && !pPwp && !pHold) {
                         firstWp = Math.min(firstWp, rowI);
                         if (rowI === firstWp) {
                             showNm = true;
                         }
-                        if (cSpd !== Speed.NoPrediction && cSpd === pSpd) {
+                        if (cSpd !== Speed.NoPrediction && cSpdColor !== "magenta" && cSpd === pSpd) {
                             spdRpt = true;
                         }
 
-                        if (cAlt !== Altitude.NoPrediction && cAlt === pAlt) {
+                        if (cAlt !== Altitude.NoPrediction && cAltColor !== "magenta" && cAlt === pAlt) {
                             altRpt = true;
                         }
                     // If previous row is a marker, clear all headers unless it's a speed limit
@@ -734,7 +734,7 @@ class CDUFlightPlanPage {
             }
             let destTimeCell = "----";
             let destDistCell = "----";
-            let destEFOBCell = "-----";
+            let destEFOBCell = "---.-";
 
             if (targetPlan.destinationAirport) {
                 if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
