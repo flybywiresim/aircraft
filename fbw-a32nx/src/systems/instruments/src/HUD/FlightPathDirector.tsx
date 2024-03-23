@@ -141,21 +141,22 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, is
     private moveBird() {
         if (this.data.fdActive && this.isTrkFpaActive) {
             const FDRollOrder = this.data.fdRoll;
-            const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
+            // FIXME assume that the FPD reaches vertical tapes when roll order is +-45
+            const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45) * 8.07;
             const FDPitchOrder = this.data.fdPitch;
-            const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
+            const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * DistanceSpacing / ValueSpacing;
 
             const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
             const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
             const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
             const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
 
-            const FDRollOffset = FDRollOrderLim * 0.77;
+            // const FDRollOffset = FDRollOrderLim * 8.07;
             const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
             const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
-            const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin;
-            const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
+            const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin + FDRollOrderLim * rollCos;
+            const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos + FDRollOrderLim * rollSin;
 
             this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
             // this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
