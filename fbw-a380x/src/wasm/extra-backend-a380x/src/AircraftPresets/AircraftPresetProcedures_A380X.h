@@ -89,7 +89,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"BAT2 Off",              1015, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
         ProcedureStep{"BAT ESS Off",           1013, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
         ProcedureStep{"BAT1 Off",              1011, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"AC BUS Off Check",      1009, true,  5000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+
+        ProcedureStep{"APU QUICK MODE ON",     1003, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",         "1 (>L:A32NX_APU_QUICK_MODE)"},
+        ProcedureStep{"AC BUS Off Check",      1009, true,  2000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+        ProcedureStep{"APU QUICK MODE OFF",    1001, false, 0,    "(L:A32NX_APU_QUICK_MODE) 0 ==",                        "0 (>L:A32NX_APU_QUICK_MODE)"},
+
         ProcedureStep{"ENG 1 Fire Test Reset", 1033, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
         // ProcedureStep{"FWC Init Reset",     1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
       },
