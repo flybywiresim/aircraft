@@ -175,8 +175,8 @@ class CDUAvailableArrivalsPage {
                             const hasIls = !!matchingIls;
                             const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
 
-                            rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
-                            rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
+                            rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`];
+                            rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
                         }
                     }
 
@@ -195,7 +195,7 @@ class CDUAvailableArrivalsPage {
                     const isSelected = !selectedApproach && targetPlan.destinationRunway && runway.databaseId === targetPlan.destinationRunway.databaseId;
                     const color = isSelected && !isTemporary ? "green" : "cyan";
 
-                    rows[2 * i] = [`{${color}}${!isSelected ? "{" : "{sp}"}${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                    rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`];
                     rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
 
                     // Clicking the already selected runway is a no-op
