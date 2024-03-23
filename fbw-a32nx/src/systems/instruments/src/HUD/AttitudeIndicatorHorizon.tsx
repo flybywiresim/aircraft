@@ -555,11 +555,14 @@ class PitchScale extends DisplayComponent<{ bus: ArincEventBus }> {
             );
         }
 
-        for (let i = -4; i < 7 && i !== 0; i++) {
+        for (let i = -4; i < 7; i++) {
+            if (i === 0) {
+                continue;
+            }
             const value:number = i * 5;
             const str: string = value.toString();
-            result.push(<text class="FontSmall Green Fill EndAlign" x="348" y={384 - i * 147.72}>{str}</text>);
-            result.push(<text class="FontSmall Green Fill StartAlign" x="676" y={384 - i * 147.72}>{str}</text>);
+            result.push(<text class="FontSmall Green Fill EndAlign CentralAlign" x="348" y={384 - i * 147.72 + 8.35}>{str}</text>);
+            result.push(<text class="FontSmall Green Fill StartAlign CentralAlign" x="676" y={384 - i * 147.72 + 8.35}>{str}</text>);
         }
 
         return (
