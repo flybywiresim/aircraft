@@ -154,13 +154,15 @@ class AircraftPresetProcedures_A32NX {
 
         ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 2 On",             3010, false, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"Await ENG 2 Avail",    3020, true,  2000,  "",                                                 "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 1 On",             3030, false, 2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"Await ENG 1 Avail",    3040, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:1) 1 =="},
         // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    3050, false, 3000,  "",                                                 "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
                                                                                                                       "1 (>K:TURBINE_IGNITION_SWITCH_SET2) "},
-        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_FADEC_QUICK_MODE)"},
 
         ProcedureStep{"APU Bleed Off",        3060, false, 2000,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",      "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",       3070, false, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",       "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
@@ -205,9 +207,9 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"FADEC QUICK MODE ON",   3012, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",       "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 1 Off",             3220, false, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",         "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             3230, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",         "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 1 N1 <3%",          3240, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:1) 3 <"},
         ProcedureStep{"ENG 2 N1 <3%",          3250, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:2) 3 <"},
-        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
       },
 
       .TAKEOFF_CONFIG_ON = {
