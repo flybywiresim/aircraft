@@ -57,6 +57,7 @@ impl Turbine for ShutdownPw980Turbine {
         _: bool,
         _: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
+        _: bool,
     ) -> Box<dyn Turbine> {
         self.egt = calculate_towards_ambient_egt(self.egt, context);
 
@@ -287,10 +288,15 @@ impl Turbine for Starting {
         _: bool,
         _: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
+        apu_quick_mode: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n2 = self.calculate_n2();
-        self.n = self.calculate_n();
+        self.n = if apu_quick_mode {
+            Ratio::new::<percent>(100.)
+        } else {
+            self.calculate_n()
+        };
         self.egt = self.calculate_egt(context);
 
         match controller.signal() {
@@ -527,6 +533,7 @@ impl Turbine for Running {
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
+        _: bool,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
         self.n2 = self.calculate_n2(context, apu_bleed_is_used);
@@ -745,6 +752,7 @@ impl Turbine for Stopping {
         _: bool,
         _: bool,
         _: &dyn ControllerSignal<TurbineSignal>,
+        _: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n = Stopping::calculate_n1(self.since) * self.n_factor;

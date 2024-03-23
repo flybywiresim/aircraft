@@ -39,7 +39,6 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     apu_is_emergency_shutdown_id: VariableIdentifier,
     apu_bleed_air_pressure_id: VariableIdentifier,
     apu_fuel_line_flow_id: VariableIdentifier,
-    apu_quick_mode_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -92,9 +91,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
             apu_fuel_line_flow_id: context
                 .get_identifier(format!("FUELSYSTEM LINE FUEL FLOW:{}", C::FUEL_LINE_ID)),
-            // set by the Aircraft Presets to immediately power off the aircraft without waiting
-            // for the APU to cool down
-            apu_quick_mode_id: context.get_identifier("APU_QUICK_MODE".to_owned()),
 
             powered_by,
             is_powered: false,
@@ -180,10 +176,11 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
+    pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine, apu_quick_mode: bool) {
         self.update_air_intake_state(context);
         self.update_fuel_used(context);
 
+        self.apu_quick_mode = apu_quick_mode;
         self.n2 = turbine.n2();
         self.n = turbine.n();
         self.egt = turbine.egt();
@@ -361,6 +358,34 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     fn fuel_used(&self) -> Mass {
         self.fuel_used
     }
+
+    /// Determines if a cooldown is required for the APU.
+    ///
+    /// This method checks if the APU is in quick mode (for Aircraft Presets) or not.
+    /// If it is in quick mode, cooldown is not required and the method returns false.
+    /// If the APU is not in quick mode, the method checks if the bleed air valve was open
+    /// in the last cooldown duration or if the APU is in a cooldown period.
+    /// If either of these conditions is true, the method returns true indicating that
+    /// a cooldown is required.
+    /// Otherwise, it returns false.
+    ///
+    /// # Returns
+    ///
+    /// * `bool` - True if a cooldown is required, false otherwise.
+    fn cooldown_required(&self) -> bool {
+        let cool_down_required: bool;
+        // this allows the Aircraft Presets to immediately power off the aircraft
+        // without waiting for the APU to cool down
+        if self.apu_quick_mode {
+            cool_down_required = false;
+            println!("apu/electronic_control_box.rs: APU Quick Mode Shutdown\n");
+        } else {
+            cool_down_required = self
+                .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
+                || self.is_cooldown_period();
+        };
+        cool_down_required
+    }
 }
 /// APU start Motor contactors controller
 impl<C: ApuConstants> ControllerSignal<ContactorSignal> for ElectronicControlBox<C> {
@@ -436,35 +461,6 @@ impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C
     }
 }
 
-impl<C: ApuConstants> ElectronicControlBox<C> {
-    /// Determines if a cooldown is required for the APU.
-    ///
-    /// This method checks if the APU is in quick mode (for Aircraft Presets) or not.
-    /// If it is in quick mode, cooldown is not required and the method returns false.
-    /// If the APU is not in quick mode, the method checks if the bleed air valve was open
-    /// in the last cooldown duration or if the APU is in a cooldown period.
-    /// If either of these conditions is true, the method returns true indicating that
-    /// a cooldown is required.
-    /// Otherwise, it returns false.
-    ///
-    /// # Returns
-    ///
-    /// * `bool` - True if a cooldown is required, false otherwise.
-    fn cooldown_required(&self) -> bool {
-        let cool_down_required: bool;
-        // this allows the Aircraft Presets to immediately power off the aircraft
-        // without waiting for the APU to cool down
-        if self.apu_quick_mode {
-            cool_down_required = false;
-            println!("apu/electronic_control_box.rs: APU Quick Mode Shutdown\n");
-        } else {
-            cool_down_required = self
-                .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
-                || self.is_cooldown_period();
-        };
-        cool_down_required
-    }
-}
 /// Bleed air valve controller
 impl<C: ApuConstants> ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<ApuBleedAirValveSignal> {
@@ -530,7 +526,6 @@ impl<C: ApuConstants> SimulationElement for ElectronicControlBox<C> {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let fuel_flow_gallon_per_hour: f64 = reader.read(&self.apu_fuel_line_flow_id);
         self.fuel_flow = VolumeRate::new::<gallon_per_minute>(fuel_flow_gallon_per_hour / 60.);
-        self.apu_quick_mode = reader.read(&self.apu_quick_mode_id);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
