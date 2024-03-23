@@ -116,7 +116,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 512 384)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
