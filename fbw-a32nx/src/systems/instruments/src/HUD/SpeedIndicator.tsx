@@ -1097,15 +1097,15 @@ export class MachNumber extends DisplayComponent<{bus: ArincEventBus}> {
                 return;
             }
             this.failedRef.instance.style.display = 'none';
-            const machPermille = Math.round(mach.valueOr(0) * 1000) * 0.001;
-            if (this.showMach && machPermille < 0.45) {
+            const machPermille = Math.round(mach.valueOr(0) * 1000);
+            if (this.showMach && machPermille < 450) {
                 this.showMach = false;
                 this.machTextSub.set('');
-            } else if (!this.showMach && machPermille > 0.5) {
+            } else if (!this.showMach && machPermille > 500) {
                 this.showMach = true;
             }
             if (this.showMach) {
-                this.machTextSub.set(`${machPermille}`);
+                this.machTextSub.set(`${Math.floor(mach.valueOr(0))}.${machPermille}`);
             }
         });
 
