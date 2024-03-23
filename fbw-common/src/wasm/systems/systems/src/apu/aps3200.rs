@@ -205,6 +205,20 @@ impl Turbine for Starting {
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
+        // DEBUG
+        println!(
+            "Starting: n: {}, egt: {}, signal: {} \n",
+            self.n.value,
+            self.egt.value,
+            if controller.signal() == Some(TurbineSignal::StartOrContinue) {
+                "StartOrContinue"
+            } else {
+                "Stop"
+            }
+        );
+        self.n = Ratio::new::<percent>(100.);
+        // DEBUG
+
         match controller.signal() {
             Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(self.egt, self.n)),
             Some(TurbineSignal::StartOrContinue)
