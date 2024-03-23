@@ -10,7 +10,7 @@ import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcC
 
 import { FlightPlanEvents, PerformanceDataFlightPlanSyncEvents, SyncFlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
 import { A320FlightPlanPerformanceData, FlightPlanIndex, NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
-import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO, ApproachProcedure, AirportRunway } from '@microsoft/msfs-sdk';
+import { EventBus, FacilityType, FacilityLoader, FacilityRepository, Wait, ICAO, ApproachProcedure, AirportRunway, Subscription } from '@microsoft/msfs-sdk';
 import { ApproachType as MSApproachType } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 
@@ -28,6 +28,8 @@ export class FlightPlanAsoboSync {
     private procedureDetails = undefined;
 
     private enrouteLegs: (SerializedFlightPlanLeg | Discontinuity)[] = undefined;
+
+    private subs: Subscription[] = [];
 
     constructor(private readonly bus: EventBus) {
     }
@@ -49,16 +51,8 @@ export class FlightPlanAsoboSync {
 
         const sub = this.bus.getSubscriber<FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>>();
 
-        NXDataStore.getAndSubscribe('FP_SYNC', (_, val) => {
-            if (val === 'LOAD') {
-                this.loadFlightPlanFromGame();
-            } else if (val === 'SAVE') {
-                this.syncFlightPlanToGame();
-            }
-        }, 'LOAD');
-
-        sub.on('flightPlanManager.syncResponse').handle(async (event) => {
-            if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
+        this.subs.push(sub.on('flightPlanManager.syncResponse').handle(async (event) => {
+            if (NXDataStore.get('FP_SYNC', 'NONE') === 'SAVE') {
                 console.log('SYNC RESPONSE', event);
                 const plan = event.plans[FlightPlanIndex.Active];
                 this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
@@ -82,35 +76,43 @@ export class FlightPlanAsoboSync {
 
                 await this.syncFlightPlanToGame();
             }
-        });
+        }));
 
-        sub.on('flightPlan.setPerformanceData.cruiseFlightLevel').handle(async (event) => {
+        this.subs.push(sub.on('flightPlan.setPerformanceData.cruiseFlightLevel').handle(async (event) => {
             if (event.planIndex === FlightPlanIndex.Active) {
                 this.cruiseFlightLevel = event.value;
                 console.log('SET CRUISE FLIGHT LEVEL', this.cruiseFlightLevel);
                 await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
             }
-        });
-        sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
+        }));
+        this.subs.push(sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
             console.log('SEGMENT LEGS', event);
             if ((event.planIndex === FlightPlanIndex.Active) && event.segmentIndex === 4) {
                 this.enrouteLegs = event.legs;
                 await this.syncFlightPlanToGame();
             }
-        });
+        }));
 
-        sub.on('flightPlanManager.copy').handle(async (event) => {
+        this.subs.push(sub.on('flightPlanManager.copy').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.targetPlanIndex === FlightPlanIndex.Active) {
                 const pub = this.bus.getPublisher<FlightPlanEvents>();
                 pub.pub('flightPlanManager.syncRequest', undefined, true);
             }
-        });
-        sub.on('flightPlanManager.create').handle(async (event) => {
+        }));
+        this.subs.push(sub.on('flightPlanManager.create').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.planIndex === FlightPlanIndex.Active) {
                 const pub = this.bus.getPublisher<FlightPlanEvents>();
                 pub.pub('flightPlanManager.syncRequest', undefined, true);
             }
-        });
+        }));
+        NXDataStore.getAndSubscribe('FP_SYNC', (_, val) => {
+            if (val !== 'NONE') {
+                this.subs.forEach((sub) => sub.resume());
+                this.loadFlightPlanFromGame();
+            } else {
+                this.subs.forEach((sub) => sub.pause());
+            }
+        }, 'NONE');
     }
 
     private async loadFlightPlanFromGame(): Promise<void> {
@@ -156,12 +158,10 @@ export class FlightPlanAsoboSync {
             for (let i = 1; i <= enroute.length; i++) {
                 const wpt = enroute[i - 1];
                 if (wpt.icao.trim() !== '') {
-                    // eslint-disable-next-line no-await-in-loop
-
                     console.log('adding wp loaded', i, wpt);
                     const wptMapped = this.mapFacilityToWaypoint(wpt);
                     console.log('adding wp mapped', i, wptMapped);
-
+                    // eslint-disable-next-line no-await-in-loop
                     await rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
                 }
             }
@@ -197,8 +197,6 @@ export class FlightPlanAsoboSync {
                         if (!leg.isDiscontinuity) {
                             const fpLeg = leg as SerializedFlightPlanLeg;
                             if (fpLeg) {
-                                console.log('DEFINITION', fpLeg.definition);
-                                console.log('DBID', fpLeg.definition.waypoint.databaseId);
                                 // eslint-disable-next-line no-await-in-loop
                                 if (!fpLeg.definition.waypoint.databaseId.startsWith('A')) {
                                     console.log('ADDING WAYPOINT with index', fpLeg.definition.waypoint.databaseId, globalIndex);
@@ -241,14 +239,9 @@ export class FlightPlanAsoboSync {
                         originRw++;
                     }
 
-                    console.log(originFacility);
-
                     let destinationRunwayIndex = 0;
 
-                    // console.log('DESTINATION SEGMENT', plan.segments);
-
                     const destinationRunwayIdent = this.procedureDetails.destinationRunway;
-                    console.log('IDENT', destinationRunwayIdent);
 
                     const airportFacility = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
                     console.log('ARRIVAL', airportFacility);
