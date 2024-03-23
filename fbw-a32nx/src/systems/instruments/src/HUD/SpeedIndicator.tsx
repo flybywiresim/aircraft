@@ -12,7 +12,7 @@ import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 const ValueSpacing = 10;
-const DistanceSpacing = 10;
+const DistanceSpacing = 35.12;
 const DisplayRange = 42;
 
 class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
@@ -57,8 +57,8 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
     render(): VNode {
         return (
             <g id="V1BugGroup" style={this.offsetSub} visibility={this.visibilitySub}>
-                <path class="NormalStroke Cyan" d="m16.613 80.82h5.4899" />
-                <text class="FontLarge MiddleAlign Cyan" x="26.205544" y="82.96">1</text>
+                <path class="ThickStroke Green" d="m131 384h15" />
+                <text class="FontLarge MiddleAlign Green" x="162" y="372.9">1</text>
             </g>
         );
     }
@@ -105,12 +105,14 @@ class VRBugElement extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <path
+            <circle
                 visibility={this.visibilitySub}
                 transform={this.offsetSub}
                 id="RotateSpeedMarker"
-                class="NormalStroke Cyan"
-                d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z"
+                class="NormalStroke Green"
+                cx="137"
+                cy="384"
+                r="5.5"
             />
         );
     }
@@ -232,9 +234,9 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                 </g>
 
                 <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements}>
-                    <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
+                    {/* <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" /> */}
                     {/* Outline */}
-                    <path id="SpeedTapeOutlineRight" class="NormalStroke White" d={this.pathSub} />
+                    <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m132.219 234.874v297" />
                     <VerticalTape
                         tapeValue={this.speedSub}
                         lowerLimit={30}
@@ -281,16 +283,17 @@ class FlapsSpeedPointBugs extends DisplayComponent<{bus: ArincEventBus}> {
         return (
             <>
                 <g id="GreenDotSpeedMarker" ref={this.greenDotBug} style="transform:translate3d(0px, 0px,0px)">
-                    <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
-                    <path class="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
+                    {/* <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" /> */}
+                    <circle class="NormalStroke Green" cx="134.25" cy="384" r="5.5" />
+                    {/* <path class="NormalStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" /> */}
                 </g>
                 <g id="FlapsSlatsBug" ref={this.flapsBug} style="transform: translate3d(0px, 0px,0px)">
-                    <path class="NormalStroke Green" d="m19.031 80.82h3.8279" />
-                    <text class="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">F</text>
+                    <path class="ThickStroke Green" d="m137 384h18.18" />
+                    <text class="FontLarge MiddleAlign Green" x="177.41" y="384">F</text>
                 </g>
                 <g id="FlapsSlatsBug" ref={this.slatBug} style="transform: translate3d(0px, 0px,0px)">
-                    <path class="NormalStroke Green" d="m19.031 80.82h3.8279" />
-                    <text class="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">S</text>
+                    <path class="ThickStroke Green" d="m137 384h18.18" />
+                    <text class="FontLarge MiddleAlign Green" x="177.41" y="384">S</text>
                 </g>
             </>
         );
@@ -412,20 +415,20 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     render(): VNode {
         return (
             <>
-                <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
+                {/* <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
                     <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
                     <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
-                </g>
+                </g> */}
                 <g id="SpeedOfftapeGroup" ref={this.offTapeRef}>
-                    <path id="SpeedTapeOutlineUpper" class="NormalStroke White" d="m1.9058 38.086h21.859" />
+                    <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m72 235h77" />
                     <SpeedTarget bus={this.props.bus} />
-                    <text id="AutoBrkDecel" ref={this.decelRef} class="FontMedium EndAlign Green" x="20.53927" y="129.06996">DECEL</text>
-                    <path class="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
-                    <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-                    <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
+                    <text id="AutoBrkDecel" ref={this.decelRef} class="FontMedium EndAlign Green" x="149" y="546.5">DECEL</text>
+                    <path class="Fill Green SmallOutline" d="m 64,383 v 2 h 10 v -2 z" />
+                    <path class="Fill Green SmallOutline" d="m 120.29043,382.65332 v 2.59187 l 19.44819,0.0209 9.2616,4.32658 v -10.84205 l -9.2616,3.90316 z" />
+                    <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m72 531.500h77" />
                     <g ref={this.spdLimFlagRef}>
-                        <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red Blink9Seconds">SPD</text>
-                        <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red Blink9Seconds">LIM</text>
+                        <text id="SpdLimFailTextUpper" x="161" y="497" class="FontMedium EndAlign Green Blink9Seconds">SPD</text>
+                        <text id="SpdLimFailTextLower" x="161" y="522" class="FontMedium EndAlign Green Blink9Seconds">LIM</text>
                     </g>
                 </g>
             </>
@@ -464,14 +467,14 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
             const sign = Math.sign(this.vCTrend.value);
 
             const offset = -this.vCTrend.value * DistanceSpacing / ValueSpacing;
-            const neutralPos = 80.823;
+            const neutralPos = 384;
             if (sign > 0) {
-                pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
+                pathString = `m119 ${neutralPos + offset} l -4.5 9 M119 ${neutralPos + offset} l 4.5 9`;
             } else {
-                pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
+                pathString = `m119 ${neutralPos + offset} l 4.5 -9 M119 ${neutralPos + offset} l -4.5 -9`;
             }
 
-            this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
+            this.offset.set(`m119 384v${offset.toFixed(10)}`);
 
             this.pathString.set(pathString);
         }
@@ -492,8 +495,8 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
     render(): VNode | null {
         return (
             <g id="SpeedTrendArrow" ref={this.refElement}>
-                <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Yellow" d={this.offset} />
-                <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Yellow" d={this.pathString} />
+                <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Green" d={this.offset} />
+                <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Green" d={this.pathString} />
             </g>
         );
     }
@@ -522,10 +525,10 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
             const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
 
-            const VLsPos = (this.airSpeed.value - this.vls.value) * DistanceSpacing / ValueSpacing + 80.818;
+            const VLsPos = (this.airSpeed.value - this.vls.value) * DistanceSpacing / ValueSpacing + 384;
             const offset = (this.vls.value - (normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0))) * DistanceSpacing / ValueSpacing;
 
-            this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
+            this.vlsPath.set(`m132.25 ${VLsPos}h 6.23v${offset}`);
         } else {
             this.vlsVisbility.set('hidden');
         }
@@ -568,7 +571,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
     }
 
     render(): VNode {
-        return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} visibility={this.vlsVisbility} />;
+        return <path id="VLsIndicator" class="NormalStroke Green" d={this.vlsPath} visibility={this.vlsVisbility} />;
     }
 }
 
@@ -593,7 +596,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
             const delta = this.airSpeed.value - DisplayRange - this.vAlphaLim.value;
             const offset = delta * DistanceSpacing / ValueSpacing;
 
-            this.VAlimIndicator.instance.setAttribute('d', `m19.031 123.56h3.425v${offset}h-3.425z`);
+            this.VAlimIndicator.instance.setAttribute('d', `m132.219 531 h10.8v${offset}h-10.8z`);
         }
     }
 
@@ -624,7 +627,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
     }
 
     render(): VNode {
-        return <path ref={this.VAlimIndicator} id="VAlimIndicator" class="Fill Red" />;
+        return <path ref={this.VAlimIndicator} id="VAlimIndicator" class="Fill Green" />;
     }
 }
 
@@ -684,9 +687,9 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
             <path
                 id="VAlphaProtBarberpole"
                 ref={this.VAprotIndicator}
-                class="BarAmber"
+                class="BarGreen"
                 // eslint-disable-next-line max-len
-                d="m19.031 169.9v-1.4111h2.9213v1.4111zm2.9213-2.923v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm1.9748-4.3341h0.94654v1.4111h-2.9213v-1.4111z"
+                d="m 132.2575,654.23504 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-8.85669 v 4.58106 m 0,-13.43775 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 0,-30.8454 h 8.85154 v 4.27563 h -8.85154 z m 8.85154,13.13232 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71338 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 0,-17.71338 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,0 v 4.58106 m 0,-13.43775 v 4.58106 m 0,-13.43775 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 8.85154,-17.71369 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 0,-30.8454 h 8.85154 v 4.27564 h -8.85154 z m 8.85154,13.13233 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 8.85154,-17.71338 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 0,-17.71338 v -4.27564 h 8.85154 v 4.27564 z m 8.85154,0 v 4.58105 m 0,-13.43774 v 4.58105 m 0,-13.43774 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 8.85154,-17.71369 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 0,-30.8454 h 8.85154 v 4.27563 h -8.85154 z m 8.85154,13.13232 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71338 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 0,-17.71338 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,0 v 4.58106 m 0,-13.43775 v 4.58106 m 0,-13.43775 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71368 v 4.58105 m -8.85154,4.27564 v -4.27564 h 8.85154 v 4.27564 z m 0,-30.8454 h 8.85154 v 4.27563 h -8.85154 z m 8.85154,13.13232 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,-17.71338 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 0,-17.71338 v -4.27563 h 8.85154 v 4.27563 z m 8.85154,0 v 4.58106 m 0,-13.43775 v 4.58106 m 0,-13.43775 v 4.58106 m -8.85154,4.27563 v -4.27563 h 8.85154 v 4.27563 z m 5.98364,-13.13232 h 2.86802 v 4.27563 h -8.85154 v -4.27563 z"
             />
         );
     }
@@ -733,9 +736,9 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
             <path
                 id="OverspeedBarberpole"
                 ref={this.VMaxIndicator}
-                class="BarRed"
+                class="BarGreen"
                 // eslint-disable-next-line max-len
-                d="m22.053-2.2648v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
+                d="m 142.80702,93.30442 v -9.16137 m -10.56464,-8.45661 v 8.45661 h 10.56464 v -8.45661 z m 10.56464,35.23527 v -9.16137 m 0,26.77971 v -9.16138 m 0,26.77972 V 136.997 m 0,26.77973 v -9.16138 m 0,-43.69189 h -10.56464 v 8.45697 h 10.56464 z m 0,43.69189 v -8.45696 h -10.56464 v 8.45696 z m 0,-26.0753 v 8.45695 h -10.56464 v -8.45695 z M 132.24238,93.30478 v 8.4566 h 10.56464 v -8.4566 z m 10.56464,88.08993 v -9.16139 m 0,26.77972 v -9.16137 m 0,26.77971 V 207.47 m 0,26.77972 v -9.16137 m 0,-43.69189 h -10.56464 v 8.45695 h 10.56464 z m 0,43.69189 v -8.45697 h -10.56464 v 8.45697 z m 0,-26.07531 V 207.47 h -10.56464 v -8.45696 z m -10.56464,-35.23527 v 8.4566 h 10.56464 v -8.4566 z m 10.56464,88.08993 v -9.16138 m 0,26.77973 v -9.1614 m 0,26.77972 v -9.16138 m 0,26.77973 v -9.16138 m 0,-43.69188 h -10.56464 v 8.45694 h 10.56464 z m 0,43.69188 v -8.45697 h -10.56464 v 8.45697 z m 0,-26.07529 v 8.45694 h -10.56464 v -8.45694 z m -10.56464,-35.23529 v 8.45661 h 10.56464 v -8.45661 z m 10.56464,88.08995 v -9.16139 m 0,26.77972 v -9.16138 m 0,26.77972 v -9.16137 m 0,26.7797 v -9.16139 m -10.56464,17.61835 h 10.56464 v -8.45696 h -10.56464 z m 10.56464,-61.31127 h -10.56464 v 8.45696 h 10.56464 z m 0,43.69188 v -8.45695 h -10.56464 v 8.45695 z m 0,-26.07529 v 8.45697 h -10.56464 v -8.45697 z m -10.56464,-35.23527 v 8.4566 h 10.56464 v -8.4566 z"
             />
         );
     }
@@ -797,9 +800,9 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
             <path
                 id="StallWarnBarberpole"
                 ref={this.VStallWarnIndicator}
-                class="BarRed"
+                class="BarGreen"
                 // eslint-disable-next-line max-len
-                d="m22.053 85.835v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.419h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.419h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
+                d="m 143.05662,401.76198 v -9.19517 m -10.6036,-8.4878 v 8.4878 h 10.6036 v -8.4878 z m 10.6036,35.36526 v -9.19518 m 0,26.87851 v -9.19518 m 0,26.87852 v -9.19518 m 0,26.87852 v -9.19518 m 0,-43.85309 h -10.6036 v 8.48817 h 10.6036 z m 0,43.85309 v -8.4878 h -10.6036 v 8.4878 z m 0,-26.1715 v 8.48816 h -10.6036 v -8.48816 z m -10.6036,-35.36527 v 8.48781 h 10.6036 v -8.48781 z m 10.6036,88.41494 v -9.19518 m 0,26.87852 v -9.19519 m 0,26.87852 v -9.19517 m 0,26.8785 v -9.19517 m 0,-43.85307 h -10.6036 v 8.48781 h 10.6036 z m 0,43.85307 v -8.48816 h -10.6036 v 8.48816 z m 0,-26.17149 v 8.48816 h -10.6036 v -8.48816 z m -10.6036,-35.36528 v 8.48782 h 10.6036 v -8.48782 z m 10.6036,88.41494 v -9.19518 m 0,26.87851 v -9.19516 m 0,26.8785 v -9.19517 m 0,26.87852 v -9.19518 m 0,-43.85308 h -10.6036 v 8.48815 h 10.6036 z m 0,43.85308 v -8.48817 h -10.6036 v 8.48817 z m 0,-26.17151 v 8.48817 h -10.6036 v -8.48817 z m -10.6036,-35.36526 v 8.48779 h 10.6036 v -8.48779 z m 10.6036,88.41493 v -9.19518 m 0,26.87852 v -9.19517 m 0,26.87852 v -9.19518 m 0,26.87851 v -9.19518 m -10.6036,17.68332 h 10.6036 v -8.48814 h -10.6036 z m 10.6036,-61.53746 h -10.6036 v 8.48781 h 10.6036 z m 0,43.85307 v -8.48779 h -10.6036 v 8.48779 z m 0,-26.17148 v 8.48816 h -10.6036 v -8.48816 z m -10.6036,-35.36527 v 8.4878 h 10.6036 v -8.4878 z"
             />
         );
     }
@@ -838,7 +841,7 @@ class V1Offtape extends DisplayComponent<{ bus: ArincEventBus }> {
 
     render() {
         return (
-            <text ref={this.v1TextRef} id="V1SpeedText" class="FontTiny Cyan" x="21.271021" y="43.23">0</text>
+            <text ref={this.v1TextRef} id="V1SpeedText" class="FontMedium Green" x="151" y="260">0</text>
         );
     }
 }
@@ -877,17 +880,17 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
         isMach: false,
     }
 
-    private handleManagedSpeed() {
-        if (this.speedState.isSpeedManaged) {
-            this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
-            const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-            this.textSub.set(text);
-        } else {
-            this.currentVisible.instance.classList.replace('Magenta', 'Cyan');
-            const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-            this.textSub.set(text);
-        }
-    }
+    // private handleManagedSpeed() {
+    //     if (this.speedState.isSpeedManaged) {
+    //         this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
+    //         const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
+    //         this.textSub.set(text);
+    //     } else {
+    //         this.currentVisible.instance.classList.replace('Magenta', 'Cyan');
+    //         const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
+    //         this.textSub.set(text);
+    //     }
+    // }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -935,7 +938,7 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
 
             this.determineTargetSpeed();
             const inRange = this.handleLowerUpperBound();
-            this.handleManagedSpeed();
+            // this.handleManagedSpeed();
 
             if (inRange) {
                 const multiplier = 100;
@@ -966,25 +969,20 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
         let inRange = false;
 
         const currentTargetSpeed = this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed;
-        if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
-            this.upperBoundRef.instance.style.visibility = 'visible';
-            this.lowerBoundRef.instance.style.visibility = 'hidden';
-            this.speedTargetRef.instance.style.visibility = 'hidden';
-            this.currentVisible = this.upperBoundRef;
-        } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
+        if (Math.abs(this.speedState.speed.value - currentTargetSpeed) > DisplayRange && !this.decelActive) {
+            // this.upperBoundRef.instance.style.visibility = 'visible';
             this.lowerBoundRef.instance.style.visibility = 'visible';
-            this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'hidden';
-            this.currentVisible = this.lowerBoundRef;
+            // this.currentVisible = this.lowerBoundRef;
         } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
             this.lowerBoundRef.instance.style.visibility = 'hidden';
-            this.upperBoundRef.instance.style.visibility = 'hidden';
+            // this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'visible';
-            this.currentVisible = this.speedTargetRef;
+            // this.currentVisible = this.speedTargetRef;
             inRange = true;
         } else {
             this.lowerBoundRef.instance.style.visibility = 'hidden';
-            this.upperBoundRef.instance.style.visibility = 'hidden';
+            // this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'hidden';
         }
         return inRange;
@@ -993,9 +991,9 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
     render(): VNode {
         return (
             <>
-                <text ref={this.upperBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.078989" y="128.27917">{this.textSub}</text>
-                <text ref={this.lowerBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.113895" y="36.670692">{this.textSub}</text>
-                <path ref={this.speedTargetRef} class="NormalStroke CornerRound Cyan" style="transform: translate3d(0px, 0px, 0px)" d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
+                {/* <text ref={this.upperBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="148.680" y="128.27917">{this.textSub}</text> */}
+                <g ref={this.lowerBoundRef}><text id="SelectedSpeedLowerText" class="FontSmallest EndAlign Green" x="148.680" y="234.874">{this.textSub}</text></g>
+                <path ref={this.speedTargetRef} class="NormalStroke CornerRound Green" style="transform: translate3d(0px, 0px, 0px)" d="m131 381 21 -11  0 28 -21 -11" />
                 <SpeedMargins bus={this.props.bus} />
             </>
         );
@@ -1099,15 +1097,15 @@ export class MachNumber extends DisplayComponent<{bus: ArincEventBus}> {
                 return;
             }
             this.failedRef.instance.style.display = 'none';
-            const machPermille = Math.round(mach.valueOr(0) * 1000);
-            if (this.showMach && machPermille < 450) {
+            const machPermille = Math.round(mach.valueOr(0) * 1000) * 0.001;
+            if (this.showMach && machPermille < 0.45) {
                 this.showMach = false;
                 this.machTextSub.set('');
-            } else if (!this.showMach && machPermille > 500) {
+            } else if (!this.showMach && machPermille > 0.5) {
                 this.showMach = true;
             }
             if (this.showMach) {
-                this.machTextSub.set(`.${machPermille}`);
+                this.machTextSub.set(`${machPermille}`);
             }
         });
 
@@ -1126,7 +1124,7 @@ export class MachNumber extends DisplayComponent<{bus: ArincEventBus}> {
         return (
             <>
                 <text ref={this.failedRef} id="MachFailText" class="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
-                <text id="CurrentMachText" class="FontLargest StartAlign Green" x="5.566751" y="137.03004">{this.machTextSub}</text>
+                <text id="CurrentMachText" class="FontLargest StartAlign Green" x="85.5" y="560">{this.machTextSub}</text>
             </>
         );
     }
@@ -1173,8 +1171,8 @@ class VProtBug extends DisplayComponent<{bus: ArincEventBus}> {
     render(): VNode {
         return (
             <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
-                <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-                <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
+                {/* <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" /> */}
+                <path class="ThickStroke Green" d="m108 385.5 h12m0 -3 h-12" />
             </g>
         );
     }
