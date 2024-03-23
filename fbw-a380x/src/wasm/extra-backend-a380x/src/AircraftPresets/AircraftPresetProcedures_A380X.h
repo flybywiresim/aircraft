@@ -182,14 +182,15 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",      "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 1 On",             3020, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                  "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 2 On",             3022, false, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                  "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                   "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"Await ENG 1 Avail",    3024, true,  2000,  "",                                                   "(L:A32NX_ENGINE_STATE:1) 1 =="},
         ProcedureStep{"Await ENG 2 Avail",    3025, true,  2000,  "",                                                   "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",      "1 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 3 On",             3026, false, 1000,  "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                  "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 4 On",             3028, false, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                  "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                   "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"Await ENG 3 Avail",    3030, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:3) 1 =="},
         ProcedureStep{"Await ENG 4 Avail",    3031, true,  5000,  "",                                                   "(L:A32NX_ENGINE_STATE:4) 1 =="},
-        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                   "0 (>L:A32NX_FADEC_QUICK_MODE)"},
-
 
 //        // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    3011, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1, Number) 1 == "
@@ -246,11 +247,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"ENG 3 Off",             3027, false, 2000, "(A:FUELSYSTEM VALVE OPEN:3, Bool) !",                "3 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             3023, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",                "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 1 Off",             3021, false, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",                "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
         ProcedureStep{"ENG 4 N1 <3%",          3032, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:4) 3 <"},
         ProcedureStep{"ENG 3 N1 <3%",          3033, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:3) 3 <"},
         ProcedureStep{"ENG 2 N1 <3%",          3034, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:2) 3 <"},
         ProcedureStep{"ENG 1 N1 <3%",          3035, true,   500, "",                                                   "(L:A32NX_ENGINE_N1:1) 3 <"},
-        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
 
       },
 
