@@ -573,12 +573,15 @@ enum BTVState {
 struct BtvDecelScheduler {
     dev_exit_distance_to_touchdown_id: VariableIdentifier,
     runway_length_id: VariableIdentifier,
+    distance_to_exit_id: VariableIdentifier,
+
     ground_speed_id: VariableIdentifier,
 
     runway_length: Length,
 
     rolling_distance: Length,
-    dev_distance_to_exit_from_touchdown: Length,
+    fallback_distance_to_exit_from_touchdown: Length,
+    oans_distance_to_exit: Length,
 
     spoilers_active: bool,
 
@@ -599,20 +602,23 @@ impl BtvDecelScheduler {
 
     const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
 
-    // ARRAYS PER TYPE OF EXIT : 90° / FAST ...
-    const DISTANCE_OFFSET_TO_RELEASE_BTV: [f64; 2] = [50., 100.];
-    const TARGET_SPEED_TO_RELEASE_BTV: [f64; 2] = [5.15, 25.7];
+    const DISTANCE_OFFSET_TO_RELEASE_BTV: f64 = 50.;
+    const TARGET_SPEED_TO_RELEASE_BTV: f64 = 5.15;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
             dev_exit_distance_to_touchdown_id: context
-                .get_identifier("BTV_DEV_DISTANCE_TO_EXIT_METERS".to_owned()),
-            runway_length_id: context.get_identifier("OANS_LANDING_RWY_LENGTH".to_owned()),
+                .get_identifier("OANS_BTV_REQ_STOPPING_DISTANCE".to_owned()),
+            runway_length_id: context.get_identifier("OANS_RWY_LENGTH".to_owned()),
+            distance_to_exit_id: context
+                .get_identifier("OANS_BTV_REMAINING_DIST_TO_EXIT".to_owned()),
+
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
             runway_length: Length::default(),
             rolling_distance: Length::default(),
-            dev_distance_to_exit_from_touchdown: Length::default(),
+            fallback_distance_to_exit_from_touchdown: Length::default(),
+            oans_distance_to_exit: Length::default(),
 
             spoilers_active: false,
             ground_speed: Velocity::default(),
@@ -659,9 +665,7 @@ impl BtvDecelScheduler {
             "BTV MODE {:?}, roll distance {:.0}m, remaining_dist {:.1} m, speed {:.1} knot",
             self.state,
             self.rolling_distance.get::<meter>(),
-            (self.dev_distance_to_exit_from_touchdown - self.rolling_distance)
-                .get::<meter>()
-                .max(0.),
+            self.braking_distance_remaining().get::<meter>().max(0.),
             self.ground_speed.get::<knot>()
         );
 
@@ -671,13 +675,13 @@ impl BtvDecelScheduler {
     }
 
     fn braking_distance_remaining(&self) -> Length {
-        let distance_remaining_raw =
-            self.dev_distance_to_exit_from_touchdown - self.rolling_distance;
+        let distance_remaining_raw = if self.is_oans_fallback_mode() {
+            self.fallback_distance_to_exit_from_touchdown - self.rolling_distance
+        } else {
+            self.oans_distance_to_exit
+        };
 
-        let exit_index = 0;
-
-        let distance_from_btv_exit =
-            Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV[exit_index]);
+        let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV);
 
         (distance_remaining_raw - distance_from_btv_exit).max(Length::default())
     }
@@ -688,10 +692,8 @@ impl BtvDecelScheduler {
             | BTVState::Decel
             | BTVState::EndOfBraking
             | BTVState::OutOfDecelRange => {
-                let exit_index = 0;
-                let speed_at_btv_release = Velocity::new::<meter_per_second>(
-                    Self::TARGET_SPEED_TO_RELEASE_BTV[exit_index],
-                ) * 0.9; // 10% safety margin on release speed
+                let speed_at_btv_release =
+                    Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV) * 0.9; // 10% safety margin on release speed
 
                 self.final_distance_remaining = self.braking_distance_remaining();
 
@@ -732,6 +734,8 @@ impl BtvDecelScheduler {
 
     fn arming_authorized(&self) -> bool {
         self.runway_length.get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
+            && (self.oans_distance_to_exit.get::<meter>() > -1.
+                || self.fallback_distance_to_exit_from_touchdown.get::<meter>() > -1.)
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
@@ -803,7 +807,7 @@ impl BtvDecelScheduler {
             BTVState::Decel => {
                 if self.final_distance_remaining.get::<meter>() < 50.
                     || self.ground_speed.get::<meter_per_second>()
-                        <= Self::TARGET_SPEED_TO_RELEASE_BTV[0]
+                        <= Self::TARGET_SPEED_TO_RELEASE_BTV
                 {
                     BTVState::EndOfBraking
                 } else {
@@ -811,8 +815,7 @@ impl BtvDecelScheduler {
                 }
             }
             BTVState::EndOfBraking => {
-                if self.ground_speed.get::<meter_per_second>()
-                    <= Self::TARGET_SPEED_TO_RELEASE_BTV[0]
+                if self.ground_speed.get::<meter_per_second>() <= Self::TARGET_SPEED_TO_RELEASE_BTV
                 {
                     self.disarm();
                     BTVState::Disabled
@@ -847,23 +850,41 @@ impl BtvDecelScheduler {
             BTVState::Disabled | BTVState::Armed => self.rolling_distance = Length::default(),
         }
     }
+
+    fn is_oans_fallback_mode(&self) -> bool {
+        self.oans_distance_to_exit.get::<meter>() < 0.
+    }
 }
 impl SimulationElement for BtvDecelScheduler {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.dev_exit_distance_to_touchdown_id,
-            self.dev_distance_to_exit_from_touchdown.get::<meter>(),
+            self.fallback_distance_to_exit_from_touchdown.get::<meter>(),
         );
         writer.write(&self.runway_length_id, self.runway_length.get::<meter>());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let raw_exit_distance_meters = reader.read_f64(&self.dev_exit_distance_to_touchdown_id);
-        self.dev_distance_to_exit_from_touchdown = Length::new::<meter>(raw_exit_distance_meters);
+        let fallback_raw_exit_distance_meters =
+            reader.read_f64(&self.dev_exit_distance_to_touchdown_id);
+        self.fallback_distance_to_exit_from_touchdown =
+            Length::new::<meter>(fallback_raw_exit_distance_meters);
 
         let runway_length_meters = reader.read_f64(&self.runway_length_id);
         self.runway_length = Length::new::<meter>(runway_length_meters);
 
+        let raw_oans_distance_to_exit = reader.read_f64(&self.distance_to_exit_id);
+        self.oans_distance_to_exit = Length::new::<meter>(raw_oans_distance_to_exit);
+
         self.ground_speed = reader.read(&self.ground_speed_id);
+
+        // println!(
+        //     "OANS ===> DISTANCE {:.0}  FB {:.0}  IS FB mode {:?}, armingAut {:?}, runwayL {:?}",
+        //     self.oans_distance_to_exit.get::<meter>(),
+        //     self.fallback_distance_to_exit_from_touchdown.get::<meter>(),
+        //     self.is_oans_fallback_mode(),
+        //     self.arming_authorized(),
+        //     self.runway_length.get::<meter>()
+        // );
     }
 }
