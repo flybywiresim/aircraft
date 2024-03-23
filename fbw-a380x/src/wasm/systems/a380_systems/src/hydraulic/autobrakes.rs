@@ -188,6 +188,9 @@ pub struct A380AutobrakeController {
     placeholder_ground_spoilers_out: bool,
 
     btv_scheduler: BtvDecelScheduler,
+
+    // This delay is added only so you have time to click the knob pass the BTV position without an unprogrammed BTV sending knob back to disarm
+    should_disarm_selection_knob_delayed: DelayedTrueLogicGate,
 }
 impl A380AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: Duration = Duration::from_secs(10);
@@ -196,14 +199,10 @@ impl A380AutobrakeController {
     // Time breakpoint map is shared by all normal modes, and there's a BTV placeholder delaying braking
     const NORMAL_MODE_DECEL_PROFILE_TIME_S: [f64; 3] = [0., 0.1, 2.5];
 
-    // BTV placeholder delays braking 4s
-    const BTV_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 3.99, 4., 6.];
-
     const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -2.];
     const L2_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -2.5];
     const L3_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., 0., -3.];
     const HIGH_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 3] = [4., -2., -3.5];
-    const BTV_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., -1., -2.5];
 
     const RTO_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
@@ -255,6 +254,10 @@ impl A380AutobrakeController {
             placeholder_ground_spoilers_out: false,
 
             btv_scheduler: BtvDecelScheduler::new(context),
+
+            should_disarm_selection_knob_delayed: DelayedTrueLogicGate::new(Duration::from_millis(
+                500,
+            )),
         }
     }
 
@@ -270,27 +273,13 @@ impl A380AutobrakeController {
         Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
-    fn determine_mode(
-        &mut self,
-        context: &UpdateContext,
-        autobrake_panel: &A380AutobrakePanel,
-    ) -> A380AutobrakeMode {
-        if self.should_disarm(context, autobrake_panel) {
-            self.disarm_actions();
-            return A380AutobrakeMode::DISARM;
-        }
-
-        if self.mode == A380AutobrakeMode::RTO
-            || autobrake_panel.rto_pressed()
-                && !self.should_reject_rto_mode_after_time_in_flight.output()
+    fn determine_mode(&mut self, autobrake_panel: &A380AutobrakePanel) -> A380AutobrakeMode {
+        if self.mode != A380AutobrakeMode::RTO
+            && autobrake_panel.rto_pressed()
+            && !self.should_reject_rto_mode_after_time_in_flight.output()
         {
-            if autobrake_panel.selected_mode() != A380AutobrakeKnobPosition::DISARM {
-                self.autobrake_knob.disarm(true);
-            }
-
             A380AutobrakeMode::RTO
         } else {
-            self.autobrake_knob.disarm(false);
             if autobrake_panel.selected_mode_has_changed() {
                 match autobrake_panel.selected_mode() {
                     A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
@@ -412,18 +401,20 @@ impl A380AutobrakeController {
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
             || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
-            || self.rto_mode_deselected_this_update(autobrake_panel)
             || self.should_disarm_after_time_in_flight.output()
             || (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO)
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
+            || (self.mode == A380AutobrakeMode::DISARM
+                && autobrake_panel.selected_mode() != A380AutobrakeKnobPosition::DISARM)
+          // || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.arming_authorized())
+            || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
     }
 
     fn disarm_actions(&mut self) {
-        self.autobrake_knob.disarm(true);
         self.btv_scheduler.disarm();
-
         self.nose_gear_was_compressed_once = false;
+        self.mode = A380AutobrakeMode::DISARM;
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -455,14 +446,6 @@ impl A380AutobrakeController {
     }
 
     fn compute_btv_decel_target_ms2(&self) -> f64 {
-        // Placeholder BTV deceleration
-
-        // interpolation(
-        //     &Self::BTV_MODE_DECEL_PROFILE_TIME_S,
-        //     &Self::BTV_MODE_DECEL_PROFILE_ACCEL_MS2,
-        //     self.deceleration_governor.time_engaged().as_secs_f64(),
-        // )
-
         self.btv_scheduler.decel().get::<meter_per_second_squared>()
     }
 
@@ -517,7 +500,23 @@ impl A380AutobrakeController {
             lgciu2,
         );
 
-        self.mode = self.determine_mode(context, autobrake_panel);
+        let rto_disable = self.rto_mode_deselected_this_update(autobrake_panel);
+
+        //println!("PRE MOD AFFECTATION => {:?}", self.mode);
+        self.mode = self.determine_mode(autobrake_panel);
+        //println!("AFTER MOD AFFECTATION => {:?}", self.mode);
+
+        if rto_disable || self.should_disarm(context, autobrake_panel) {
+            self.disarm_actions();
+        }
+
+        self.should_disarm_selection_knob_delayed.update(
+            context,
+            self.mode == A380AutobrakeMode::DISARM || self.mode == A380AutobrakeMode::RTO,
+        );
+
+        self.autobrake_knob
+            .disarm(self.should_disarm_selection_knob_delayed.output());
 
         self.deceleration_governor
             .engage_when(self.should_engage_deceleration_governor(context, autobrake_panel));
@@ -854,6 +853,10 @@ impl BtvDecelScheduler {
 
     fn is_oans_fallback_mode(&self) -> bool {
         self.oans_distance_to_exit.get::<meter>() < 0.
+    }
+
+    fn is_armed(&self) -> bool {
+        self.state != BTVState::Disabled
     }
 }
 impl SimulationElement for BtvDecelScheduler {
