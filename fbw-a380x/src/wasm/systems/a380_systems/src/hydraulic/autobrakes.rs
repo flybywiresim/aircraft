@@ -422,6 +422,7 @@ impl A380AutobrakeController {
     fn disarm_actions(&mut self) {
         self.autobrake_knob.disarm(true);
         self.btv_scheduler.disarm();
+
         self.nose_gear_was_compressed_once = false;
     }
 
