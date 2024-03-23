@@ -41,8 +41,8 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                     const tickRef = FSComponent.createRef<SVGGElement>();
                     graduationPoints.push(
                         <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px)`}>
-                            <path class="NormalStroke White" d="m19.031 80.818h-2.8206" />
-                            <text class="FontMedium MiddleAlign White" x="8.0348943" y="82.936722">{text}</text>
+                            <path class="NormalStroke Green" d="m132.219 384h-8" />
+                            <text class="FontMedium MiddleAlign Green" x="92.5" y="394">{text}</text>
                         </g>,
                     );
                     this.tickRefs.push(tickRef);
@@ -78,9 +78,9 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
                     graduationPoints.push(
                         <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px`}>
-                            <path class="NormalStroke White HiddenElement" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />
-                            <path class="NormalStroke White" d="m130.85 80.819h-2.0147" />
-                            <text class="FontMedium MiddleAlign White" x="123.28826" y="82.64006">{text}</text>
+                            {/* <path class="NormalStroke Green HiddenElement" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" /> */}
+                            <path class="NormalStroke Green" d="m892 384h-8" />
+                            <text class="FontMedium MiddleAlign Green" x="863.5" y="394">{text}</text>
                         </g>,
                     );
                     this.tickRefs.push(tickRef);
@@ -117,11 +117,14 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                                 text = Math.abs(elementValue).toString().padStart(3, '0');
                             }
                         } else if (this.props.type === 'altitude') {
+                            // if (elementValue % 500 === 0) {
+                            //     text = (Math.abs(elementValue) / 100).toString().padStart(3, '0');
+                            //     this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
+                            // } else {
+                            //     this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+                            // }
                             if (elementValue % 500 === 0) {
                                 text = (Math.abs(elementValue) / 100).toString().padStart(3, '0');
-                                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
-                            } else {
-                                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
                             }
                         }
 

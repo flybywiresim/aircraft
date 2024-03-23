@@ -39,6 +39,11 @@
   stroke: $display-red;
   stroke-width: 0.11px;
 }
+.BarGreen {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.37px;
+}
 
 .SmallStroke {
   stroke-width: 0.10mm;
@@ -96,7 +101,7 @@
 }
 
 .FontLargest {
-  font-size: 7px;
+  font-size: 22.2px;
 }
 
 .FontLarge {
@@ -104,7 +109,7 @@
 }
 
 .FontMedium {
-  font-size: 6px;
+  font-size: 20px;
 }
 
 .FontMediumSmaller {

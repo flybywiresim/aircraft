@@ -14,7 +14,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
-const DistanceSpacing = 7.5;
+const DistanceSpacing = 25.43;
 
 class LandingElevationIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
@@ -229,8 +229,8 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     render(): VNode {
         return (
             <g id="AltitudeTape">
-                <AltTapeBackground />
-                <LandingElevationIndicator bus={this.props.bus} />
+                {/* <AltTapeBackground /> */}
+                {/* <LandingElevationIndicator bus={this.props.bus} /> */}
                 <g ref={this.tapeRef}>
                     <VerticalTape
                         displayRange={DisplayRange + 60}
