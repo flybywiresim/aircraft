@@ -365,9 +365,9 @@ pub struct AirDataInertialReferenceSystem {
 impl AirDataInertialReferenceSystem {
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
-    // A32NX_ADIRS_QUICK_MODE LVar is set by the Aircraft Presets to allow expedited presets without
+    // A32NX_AIRCRAFT_PRESET_QUICK_MODE LVar is set by the Aircraft Presets to allow expedited presets without
     // changing the general  alignment time setting
-    const ADIRS_QUICK_MODE_KEY: &'static str = "ADIRS_QUICK_MODE";
+    const AIRCRAFT_PRESET_QUICK_MODE_KEY: &'static str = "AIRCRAFT_PRESET_QUICK_MODE";
     // TODO this is an FMS thing, nothing to do with ADIRUs
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
@@ -378,7 +378,7 @@ impl AirDataInertialReferenceSystem {
             configured_align_time_id: context
                 .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
             adirs_align_quick_mode_id: context
-                .get_identifier(Self::ADIRS_QUICK_MODE_KEY.to_owned()),
+                .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
             uses_gps_as_primary_id: context
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
