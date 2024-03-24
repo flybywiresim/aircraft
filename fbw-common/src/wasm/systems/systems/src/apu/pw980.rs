@@ -288,14 +288,15 @@ impl Turbine for Starting {
         _: bool,
         _: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
-        apu_quick_mode: bool,
+        aircraft_preset_quick_mode: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n2 = self.calculate_n2();
-        self.n = if apu_quick_mode {
-            Ratio::new::<percent>(100.)
+        if aircraft_preset_quick_mode {
+            self.n = Ratio::new::<percent>(100.);
+            println!("apu/pw980.rs: Aircraft Preset Quick Mode is active, setting N to 100%");
         } else {
-            self.calculate_n()
+            self.n = self.calculate_n();
         };
         self.egt = self.calculate_egt(context);
 
@@ -752,10 +753,15 @@ impl Turbine for Stopping {
         _: bool,
         _: bool,
         _: &dyn ControllerSignal<TurbineSignal>,
-        _: bool,
+        aircraft_preset_quick_mode: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
-        self.n = Stopping::calculate_n1(self.since) * self.n_factor;
+        if aircraft_preset_quick_mode {
+            self.n = Ratio::new::<percent>(0.);
+            println!("apu/pw980.rs: Aircraft Preset Quick Mode is active, setting N to 0%.");
+        } else {
+            self.n = Stopping::calculate_n1(self.since) * self.n_factor
+        };
         self.n2 = Stopping::calculate_n2(self.since) * self.n2_factor;
         self.egt = self.base_temperature + Stopping::calculate_egt_delta(self.n2)
             - self.egt_delta_at_entry;
