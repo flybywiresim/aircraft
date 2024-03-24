@@ -35,7 +35,7 @@ class PresetProcedures {
 #ifdef DEBUG
   static inline void printProcedure(const ProcedureDefinition& procedures) {
     for (const auto& p : procedures) {
-      std::cout << p.id << " = " << p.description << std::endl;
+      std::cout << p.description << std::endl;
     }
   }
 #endif

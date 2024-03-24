@@ -29,9 +29,6 @@ class AircraftPresets : public Module {
   // It is a number between 1 and 5 and is set to 0 to reset the request.
   NamedVariablePtr loadAircraftPresetRequest{};
 
-  // "<prefix>AIRCRAFT_PRESET_LOAD_CURRENT_ID" is the LVAR that is used to track the progress of the preset load.
-  NamedVariablePtr progressAircraftPresetId{};
-
   // "<prefix>AIRCRAFT_PRESET_LOAD_PROGRESS" is the LVAR that is used to track the progress of the preset load.
   NamedVariablePtr progressAircraftPreset{};
 

@@ -32,7 +32,7 @@
 // AircraftPresets will be dormant most of the time, this is saving a lot of
 // unnecessary reads/writes.
 //
-// In addition, the AircraftPresets module is a very specific use case amd uses
+// In addition, the AircraftPresets module is a very specific use case and uses
 // SimConnect execute_calculator_code extensively for the procedures to work.
 // This is a good demonstration that the Cpp WASM framework does not limit
 // applications to a specific pattern.
@@ -44,7 +44,6 @@ bool AircraftPresets::initialize() {
   // LVARs
   loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   progressAircraftPreset    = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
-  progressAircraftPresetId  = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
 
   aircraftPresetVerbose  = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
@@ -84,7 +83,6 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // read the progress vars once to get the current state
     progressAircraftPreset->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
-    progressAircraftPresetId->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
 
     // check if we already have an active loading process or if this is a new request that
     // needs to be initialized
@@ -109,7 +107,6 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       loadingIsActive    = true;
       aircraftPresetQuickMode->setAndWriteToSim(aircraftPresetExpedite->getAsBool() ? 1 : 0);
       progressAircraftPreset->setAndWriteToSim(0);
-      progressAircraftPresetId->setAndWriteToSim(0);
       LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
       return true;
     }
@@ -123,9 +120,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     if (currentStep >= currentProcedure->size()) {
       LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " done!");
       progressAircraftPreset->setAndWriteToSim(0);
-      progressAircraftPresetId->setAndWriteToSim(0);
-      loadAircraftPresetRequest->set(0);
       aircraftPresetQuickMode->setAndWriteToSim(0);
+      loadAircraftPresetRequest->set(0);
       loadingIsActive = false;
       return true;
     }
@@ -140,6 +136,12 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // convenience tmp
     const ProcedureStep* currentStepPtr = (*currentProcedure)[currentStep];
 
+    // expedite mode is active and the current step is not a required step
+    if (aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::PROC) {
+      currentStep++;
+      return true;
+    }
+
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
 
@@ -149,7 +151,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     PCSTRINGZ svalue = nullptr;
 
     // check if the current step is a condition step and check the condition
-    if (currentStepPtr->isConditional) {
+    if (currentStepPtr->type == StepType::COND) {
       updateProgress(currentStepPtr);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
@@ -162,7 +164,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     }
 
     // allow execution of the procedure without a delay if expedite is set
-    if (aircraftPresetExpedite->getAsBool() && !currentStepPtr->noExpedite) {
+    if (aircraftPresetExpedite->getAsBool() && !(currentStepPtr->type == StepType::NOEX)) {
       currentDelay = currentLoadingTime + aircraftPresetExpediteDelay->get();
     }
 
@@ -221,7 +223,6 @@ void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const 
 
   // update the progress LVARs
   progressAircraftPreset->setAndWriteToSim(loadPercentage);
-  progressAircraftPresetId->setAndWriteToSim(currentStepPtr->id);
 
   // send this progress to the flyPad using Comm Bus
   std::ostringstream oss;
