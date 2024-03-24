@@ -172,10 +172,12 @@ class AircraftPresetProcedures_A380X {
 
         ProcedureStep{"ENG 1 On",              STEP,  1000, "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                        "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 2 On",              STEP, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                        "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 1 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
-        ProcedureStep{"Await ENG 2 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        ProcedureStep{"Await ENG 1 Avail",     PROC,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
+        ProcedureStep{"Await ENG 2 Avail",     PROC,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
         ProcedureStep{"ENG 3 On",              STEP,  1000, "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                        "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 4 On",              STEP, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                        "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"Await ENG 1 Avail",     EXON,  2000,  "",                                                        "(L:A32NX_ENGINE_STATE:1) 1 =="},
+        ProcedureStep{"Await ENG 2 Avail",     EXON,  2000,  "",                                                        "(L:A32NX_ENGINE_STATE:2) 1 =="},
         ProcedureStep{"Await ENG 3 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:3) 1 =="},
         ProcedureStep{"Await ENG 4 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:4) 1 =="},
 
@@ -205,7 +207,6 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"ATC ALT RPTG On",       STEP, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                            "1 (>L:A32NX_SWITCH_ATC_ALT)"},
         ProcedureStep{"TCAS TRAFFIC Abv",      STEP, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",              "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"Autobrake RTO",         STEP,  200,  "(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==",                      "1 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
-        ProcedureStep{"Autobrake RTO",         STEP, 2000,  "(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==",           "0 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
         ProcedureStep{"TERR ON ND Capt. On",   STEP, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                        "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
 
         ProcedureStep{"T.O. Config",           STEP, 2000,  "",                                                         "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
