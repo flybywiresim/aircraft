@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSimVar, MathUtils, AircraftType } from '@flybywiresim/fbw-sdk';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
@@ -79,7 +79,7 @@ export const PushbackMap = () => {
         'number',
         250,
     );
-    const turnIndicatorTuningDefault = airframe === AircraftType.A320_251N ? 1.35 : 1.35; // determined by testing
+    const turnIndicatorTuningDefault = airframe === AircraftType.A380_842 ? 1.35 : 1.35; // determined by testing
 
     // Reducer state for pushback
     const {
@@ -218,9 +218,15 @@ export const PushbackMap = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
-    const mapConfigPath = airframe === AircraftType.A320_251N
-        ? '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/'
-        : '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A380/EFB/';
+    const mapConfigPath = useMemo(() => {
+        switch (airframe) {
+        case AircraftType.A380_842:
+            return '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A380/EFB/';
+        case AircraftType.A320_251N:
+        default:
+            return '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/';
+        }
+    }, [airframe]);
 
     return (
         <>

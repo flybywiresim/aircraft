@@ -130,7 +130,7 @@ export const FlightWidget = () => {
                 <h1 className="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
                 <h1>
                     {simbriefDataLoaded ? `${(airline.length > 0 ? airline : '') + flightNum} | ` : ''}
-                    {airframe === AircraftType.A320_251N ? 'A320-251N' : 'A380-842'}
+                    {airframe === AircraftType.A380_842 ? 'A380-842' : 'A320-251N'}
                 </h1>
             </div>
             <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">
