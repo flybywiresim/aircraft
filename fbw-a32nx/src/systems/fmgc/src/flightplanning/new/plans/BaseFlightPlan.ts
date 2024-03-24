@@ -826,6 +826,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         if (index > 0) {
             const previousElement = this.elementAt(index - 1);
+            const [prevSegment, prevIndexInSegment] = this.segmentPositionForIndex(index - 1);
             const nextElement = this.elementAt(index + 1);
 
             // Also clear hold if we clear leg before hold
@@ -839,7 +840,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 }
 
                 if (previousElement.isXI()) {
-                    segment.allLegs.splice(indexInSegment - 1, 1);
+                    prevSegment.allLegs.splice(prevIndexInSegment, 1);
                 }
             } else {
                 segment.allLegs.splice(indexInSegment, numElementsToDelete);
