@@ -153,7 +153,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"ENG 2 On",             STEP, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                         "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"Await ENG 2 Avail",    PROC,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 == ||"},
         ProcedureStep{"ENG 1 On",             STEP,  2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                        "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 2 Avail",    COND,  2000,  "",                                                         "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 1 == (L:A32NX_ENGINE_STATE:2) 1 == &&"},
+        ProcedureStep{"Await ENG 2 Avail",    EXON,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
         ProcedureStep{"Await ENG 1 Avail",    COND,  5000,  "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
         // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    STEP, 3000,  "",                                                          "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "

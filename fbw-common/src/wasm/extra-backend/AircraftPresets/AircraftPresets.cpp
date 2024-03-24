@@ -138,8 +138,10 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // convenience tmp
     const ProcedureStep* currentStepPtr = (*currentProcedure)[currentStep];
 
-    // expedite mode is active and the current step is not a required step
-    if (aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::PROC) {
+    // Skip this step if expedite mode is active and the current step is not a required step
+    // or expedite mode is not active and the current step is an expedite only step
+    if ((aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::PROC) ||
+        (!aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::EXON)) {
       currentStep++;
       return true;
     }
