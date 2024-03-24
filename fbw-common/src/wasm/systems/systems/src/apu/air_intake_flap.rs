@@ -42,7 +42,7 @@ impl AirIntakeFlap {
         &mut self,
         context: &UpdateContext,
         controller: &impl ControllerSignal<AirIntakeFlapSignal>,
-        apu_quick_mode: bool,
+        aircraft_preset_quick_mode: bool,
     ) {
         if !self.is_powered {
             self.is_moving = false;
@@ -52,7 +52,7 @@ impl AirIntakeFlap {
                     if { self.open_amount < Ratio::new::<percent>(100.) } =>
                 {
                     self.open_amount += Ratio::new::<percent>(
-                        self.get_flap_change_for_delta(context, apu_quick_mode)
+                        self.get_flap_change_for_delta(context, aircraft_preset_quick_mode)
                             .min(100. - self.open_amount.get::<percent>()),
                     );
 
@@ -63,7 +63,7 @@ impl AirIntakeFlap {
                     if { self.open_amount > Ratio::new::<percent>(0.) } =>
                 {
                     self.open_amount -= Ratio::new::<percent>(
-                        self.get_flap_change_for_delta(context, apu_quick_mode)
+                        self.get_flap_change_for_delta(context, aircraft_preset_quick_mode)
                             .min(self.open_amount.get::<percent>()),
                     );
 
@@ -76,8 +76,12 @@ impl AirIntakeFlap {
         }
     }
 
-    fn get_flap_change_for_delta(&self, context: &UpdateContext, apu_quick_mode: bool) -> f64 {
-        if apu_quick_mode {
+    fn get_flap_change_for_delta(
+        &self,
+        context: &UpdateContext,
+        aircraft_preset_quick_mode: bool,
+    ) -> f64 {
+        if aircraft_preset_quick_mode {
             100.
         } else {
             100. * (context.delta_as_secs_f64() / self.travel_time.as_secs_f64())
