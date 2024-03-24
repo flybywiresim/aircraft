@@ -105,7 +105,6 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       currentDelay       = 0;
       currentStep        = 0;
       loadingIsActive    = true;
-      aircraftPresetQuickMode->setAndWriteToSim(aircraftPresetExpedite->getAsBool() ? 1 : 0);
       progressAircraftPreset->setAndWriteToSim(0);
       LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
       return true;
@@ -115,6 +114,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // during a running procedure. We only allow "0" as a signal to interrupt the
     // current procedure
     loadAircraftPresetRequest->setAsInt64(currentProcedureID);
+
+    // update if the user wants to expedite the loading
+    aircraftPresetQuickMode->setAndWriteToSim(aircraftPresetExpedite->getAsBool() ? 1 : 0);
 
     // check if all procedure steps are done and the procedure is finished
     if (currentStep >= currentProcedure->size()) {
