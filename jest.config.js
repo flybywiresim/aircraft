@@ -16,7 +16,7 @@ module.exports = {
         }
     },
     // disable fmsv2 tests until they are fixed
-    modulePathIgnorePatterns: ["fbw-a380x/src/systems/fmgc/src/flightplanning"],
+    modulePathIgnorePatterns: ["fbw-a32nx/src/systems/fmgc/src/flightplanning", "fbw-a380x/src/systems/fmgc/src/flightplanning"],
     moduleNameMapper: {
         '@flybywiresim/fbw-sdk' : '<rootDir>/fbw-common/src/systems/index.ts',
     }
