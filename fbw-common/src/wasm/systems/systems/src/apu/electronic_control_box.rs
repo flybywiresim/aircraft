@@ -64,7 +64,7 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     on_ground: bool,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
-    apu_quick_mode: bool,
+    aircraft_preset_quick_mode: bool,
 
     constants: PhantomData<C>,
 }
@@ -117,7 +117,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             engines_on: false,
             on_ground: false,
             inlet_pressure: Pressure::new::<bar>(0.94),
-            apu_quick_mode: false,
+            aircraft_preset_quick_mode: false,
 
             constants: PhantomData,
         }
@@ -176,11 +176,16 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine, apu_quick_mode: bool) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        turbine: &dyn Turbine,
+        aircraft_preset_quick_mode: bool,
+    ) {
         self.update_air_intake_state(context);
         self.update_fuel_used(context);
 
-        self.apu_quick_mode = apu_quick_mode;
+        self.aircraft_preset_quick_mode = aircraft_preset_quick_mode;
         self.n2 = turbine.n2();
         self.n = turbine.n();
         self.egt = turbine.egt();
@@ -376,9 +381,9 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         let cool_down_required: bool;
         // this allows the Aircraft Presets to immediately power off the aircraft
         // without waiting for the APU to cool down
-        if self.apu_quick_mode {
+        if self.aircraft_preset_quick_mode {
             cool_down_required = false;
-            println!("apu/electronic_control_box.rs: APU Quick Mode Shutdown\n");
+            println!("apu/electronic_control_box.rs: Aircraft Preset Quick Mode is active. APU cooldown is not skipped.");
         } else {
             cool_down_required = self
                 .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)

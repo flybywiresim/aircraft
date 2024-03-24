@@ -104,9 +104,9 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"BAT2 Off",              1280, false, 100,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
         ProcedureStep{"BAT1 Off",              1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
 
-        ProcedureStep{"APU QUICK MODE ON",     1003, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",         "1 (>L:A32NX_APU_QUICK_MODE)"},
+        ProcedureStep{"APU QUICK MODE ON",     1003, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",         "1 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"AC BUS Off Check",      1300, true,  2000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
-        ProcedureStep{"APU QUICK MODE OFF",    1001, false, 0,    "(L:A32NX_APU_QUICK_MODE) 0 ==",                        "0 (>L:A32NX_APU_QUICK_MODE)"},
+        ProcedureStep{"APU QUICK MODE OFF",    1001, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 0 ==",                        "0 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
 
         ProcedureStep{"CVR Test Reset",        1117, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
         ProcedureStep{"APU Fire Test Reset",   1037, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
@@ -128,11 +128,11 @@ class AircraftPresetProcedures_A32NX {
         // next step will keep a slgitht delay as the A32NX otherwise often did not start up the ENG2 in step 3010
         ProcedureStep{"Cockpit Door Locked",     2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)", true},
 
-        ProcedureStep{"ADIRS QUICK MODE ON",     2070, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==", "1 (>L:A32NX_ADIRS_QUICK_MODE)"},
+        ProcedureStep{"ADIRS QUICK MODE ON",     2070, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==", "1 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"Await ADIRS 1 Alignment", 2150, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 2 Alignment", 2160, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
         ProcedureStep{"Await ADIRS 3 Alignment", 2170, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
-        ProcedureStep{"ADIRS QUICK MODE OFF",    2071, false, 0,    "(L:A32NX_ADIRS_QUICK_MODE) 0 ==",              "0 (>L:A32NX_ADIRS_QUICK_MODE)"},
+        ProcedureStep{"ADIRS QUICK MODE OFF",    2071, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 0 ==",              "0 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
       },
 
       .PUSHBACK_CONFIG_OFF = {
@@ -152,13 +152,13 @@ class AircraftPresetProcedures_A32NX {
                                                                   "(L:A32NX_ENGINE_STATE:2) 1 == && ",                "2 (>K:TURBINE_IGNITION_SWITCH_SET2) "
                                                                                                                       "2 (>K:TURBINE_IGNITION_SWITCH_SET1)"},
 
-        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"ENG 2 On",             3010, false, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"Await ENG 2 Avail",    3020, true,  2000,  "",                                                 "(L:A32NX_ENGINE_STATE:2) 1 =="},
-        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE ON",  3012, false, 0,     "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",     "1 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"ENG 1 On",             3030, false, 2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE OFF", 3013, false, 0,      "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 0 ==",                 "0 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"Await ENG 1 Avail",    3040, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:1) 1 =="},
         // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    3050, false, 3000,  "",                                                 "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
@@ -204,10 +204,10 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"Rudder Trim Reset",     3200, false, 2000, "(A:RUDDER TRIM, Radians) 0 ==",               "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Spoiler Disarm",        3190, false, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",               "0 (>K:SPOILERS_ARM_SET)"},
 
-        ProcedureStep{"FADEC QUICK MODE ON",   3012, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",       "1 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE ON",   3012, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE) 0 ==",       "1 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"ENG 1 Off",             3220, false, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",         "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             3230, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",         "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_FADEC_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_FADEC_QUICK_MODE)"},
+        ProcedureStep{"FADEC QUICK MODE OFF",  3013, false, 0,    "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 0 ==",                    "0 (>L:A32NX_AIRCRAFT_PRESET_QUICK_MODE)"},
         ProcedureStep{"ENG 1 N1 <3%",          3240, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:1) 3 <"},
         ProcedureStep{"ENG 2 N1 <3%",          3250, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:2) 3 <"},
       },

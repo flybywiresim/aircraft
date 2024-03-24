@@ -353,7 +353,7 @@ class FadecSimData_A32NX {
     airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 
-    fadecQuickMode = dm->make_named_var("A32NX_FADEC_QUICK_MODE", UNITS.Number, AUTO_READ);
+    fadecQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
     fadecQuickMode->set(0);
 
     // reset LVars to 0

@@ -47,6 +47,10 @@ class AircraftPresets : public Module {
   // the expedited mode of the preset load. If the default value of 0 causes issues, it can be increased.
   NamedVariablePtr aircraftPresetExpediteDelay{};
 
+  // "<prefix>AIRCRAFT_PRESET_QUICK_MODE" is the LVAR that is used to set the quick mode of the preset load
+  // to skip tell the systems to execute quickly (instant APU, ENG,ADIRS, etc.)
+  NamedVariablePtr aircraftPresetQuickMode{};
+
   // Sim-vars
   AircraftVariablePtr simOnGround{};
 

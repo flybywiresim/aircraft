@@ -51,6 +51,8 @@ bool AircraftPresets::initialize() {
   aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpediteDelay =
       dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetQuickMode = dataManager->make_named_var("AIRCRAFT_PRESET_QUICK_MODE", UNITS.Bool, UpdateMode::NO_AUTO_UPDATE);
+  aircraftPresetQuickMode->setAndWriteToSim(0);  // reset to 0 on startup
 
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
@@ -105,6 +107,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       currentDelay       = 0;
       currentStep        = 0;
       loadingIsActive    = true;
+      aircraftPresetQuickMode->setAndWriteToSim(aircraftPresetExpedite->getAsBool() ? 1 : 0);
       progressAircraftPreset->setAndWriteToSim(0);
       progressAircraftPresetId->setAndWriteToSim(0);
       LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
@@ -122,6 +125,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       progressAircraftPreset->setAndWriteToSim(0);
       progressAircraftPresetId->setAndWriteToSim(0);
       loadAircraftPresetRequest->set(0);
+      aircraftPresetQuickMode->setAndWriteToSim(0);
       loadingIsActive = false;
       return true;
     }
@@ -195,6 +199,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
   } else if (loadingIsActive) {
     // request lvar has been set to 0 while we were executing a procedure ==> cancel loading
     LOG_INFO("AircraftPresets:update() Aircraft Preset " + std::to_string(currentProcedureID) + " loading cancelled!");
+    aircraftPresetQuickMode->setAndWriteToSim(0);
     loadingIsActive = false;
   }
 
