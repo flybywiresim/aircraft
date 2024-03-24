@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Coordinates } from 'msfs-geo';
 
 export type EfisSide = 'L' | 'R'
 

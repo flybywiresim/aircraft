@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<svg id="First_Class" data-name="First Class" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0400bb;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #fff;
+        stroke-linejoin: round;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="FirstClass_Lines_TuckedShelf">
+    <path id="Seat_1" data-name="Seat 1" class="cls-1" d="m12.26,49.48h13.09v-8.72c0-8.9-5.38-13.72-13.09-18.28v27Z"/>
+    <polygon id="Seat_1-2" data-name="Seat 1" class="cls-1" points="37.49 33.36 37.49 49.48 59.74 49.48 59.74 22.48 12.26 22.48 12.26 33.36 37.49 33.36"/>
+    <line class="cls-2" x1="55.66" y1="33.36" x2="55.66" y2="49.52"/>
+    <line class="cls-2" x1="37.49" y1="33.36" x2="59.74" y2="33.36"/>
+  </g>
+</svg>

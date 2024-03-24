@@ -4,11 +4,6 @@ class A32NX_Core {
     constructor() {
         this.modules = [
             {
-                name: 'ADIRS',
-                module: new A32NX_ADIRS(),
-                updateInterval: 100,
-            },
-            {
                 name: 'BaroSelector',
                 module: new A32NX_BaroSelector(),
                 updateInterval: 300,
@@ -52,7 +47,7 @@ class A32NX_Core {
                 name: 'Speeds',
                 module: new A32NX_Speeds(),
                 updateInterval: 500,
-            }
+            },
         ];
         this.moduleThrottlers = {};
         for (const moduleDefinition of this.modules) {
@@ -65,8 +60,8 @@ class A32NX_Core {
 
     init(startTime) {
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(startTime);
-        this.modules.forEach(moduleDefinition => {
-            if (typeof moduleDefinition.module.init === "function") {
+        this.modules.forEach((moduleDefinition) => {
+            if (typeof moduleDefinition.module.init === 'function') {
                 moduleDefinition.module.init();
             }
         });
@@ -87,7 +82,7 @@ class A32NX_Core {
         this.tipsManager.update(deltaTime);
 
         let updatedModules = 0;
-        this.modules.forEach(moduleDefinition => {
+        this.modules.forEach((moduleDefinition) => {
             const moduleDeltaTime = this.moduleThrottlers[moduleDefinition.name].canUpdate(deltaTime);
 
             if (moduleDeltaTime !== -1) {

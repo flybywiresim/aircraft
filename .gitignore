@@ -52,7 +52,6 @@
 /fbw-a32nx/src/systems/instruments/aceBundles
 /fbw-a32nx/src/systems/instruments/buildSrc/custom/*
 
-/fbw-a32nx/src/localization/flypad/downloaded/*.json
 /fbw-a32nx/src/localization/msfs/downloaded/*.locPak
 /fbw-a32nx/src/systems/instruments/src/EFB/dist
 /fbw-a32nx/src/systems/instruments/src/EFB/web/
@@ -71,8 +70,10 @@
 !/fbw-a380x/src/
 /fbw-a380x/out
 /fbw-a380x/src/systems/instruments/aceBundles
+/fbw-a380x/src/localization/msfs/downloaded/*.locPak
 
 !/fbw-common/**
+/fbw-common/src/systems/instruments/src/EFB/Localization/data/downloaded/*.json
 
 /fbw-ingamepanels-checklist-fix/*
 !/fbw-ingamepanels-checklist-fix/README.md

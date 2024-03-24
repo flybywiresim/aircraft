@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '@datalink/common';
+import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '../../../common/src';
 import { Atc } from '../ATC';
 
 export class UplinkMessageMonitoring {

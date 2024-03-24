@@ -1,6 +1,0 @@
-// Override our default settings just for this directory
-{
-  "ignorePatterns": [
-    "web/**"
-  ]
-}

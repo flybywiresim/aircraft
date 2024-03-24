@@ -1,8 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes, WeatherMessage } from '@datalink/common';
 import { Metar } from '@microsoft/msfs-sdk';
+import { AtsuStatusCodes, WeatherMessage } from '../../../common/src';
 
 export class MsfsConnector {
     public static async receiveMsfsMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {

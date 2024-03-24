@@ -6,7 +6,7 @@ export default new TaskOfTasks("all", [
     // A32NX Task
     new TaskOfTasks("a32nx", [
         // Prepare the out folder and any other pre tasks.
-        // Currently, these can be run in parallel but in the future, we may need to run them in sequence if there are any dependencies.
+        // Currently, these can be run in parallel, but in the future, we may need to run them in sequence if there are any dependencies.
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", "npm run build-a32nx:copy-base-files"),
             new TaskOfTasks("localization", [
@@ -158,7 +158,10 @@ export default new TaskOfTasks("all", [
                 "npm run build-a380x:copy-base-files",
                 // temporary until folder exists
                 "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/"
-            ])
+            ]),
+            new TaskOfTasks("localization", [
+                new ExecTask("locPak-translation", "npm run build-a380x:locPak-translation")
+            ], true),
         ], true),
 
         // Group all typescript and react build tasks together.

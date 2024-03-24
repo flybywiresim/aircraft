@@ -8,7 +8,7 @@ import {
     AtsuTimestamp,
     UplinkMonitor,
     UplinkMessageInterpretation,
-} from '@datalink/common';
+} from '../../../common/src';
 import { Atc } from '../ATC';
 
 export class UplinkMessageStateMachine {

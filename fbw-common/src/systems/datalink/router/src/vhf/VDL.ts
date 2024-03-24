@@ -1,11 +1,11 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { AtsuMessage, AtsuMessageSerializationFormat } from '@datalink/common';
+import { AtsuMessage, AtsuMessageSerializationFormat } from '../../../common/src';
 import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';
+import { AtsuFlightPhase } from '../../../common/src/types/AtsuFlightPhase';
 
 interface NPCPlane {
     name: string,
@@ -86,7 +86,7 @@ export class Vdl {
         }).catch(console.error);
     }
 
-    public simulateTransmissionTimes(flightPhase: FmgcFlightPhase) {
+    public simulateTransmissionTimes(flightPhase: AtsuFlightPhase) {
         this.updatePresentPosition();
         this.vhf3.simulateDatarates(flightPhase).then(() => this.updateRemoteAircrafts().then(() => {
             // check if now VHF connection is available

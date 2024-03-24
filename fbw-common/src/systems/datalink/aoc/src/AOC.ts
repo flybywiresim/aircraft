@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EventBus } from '@microsoft/msfs-sdk';
 import {
     AtsuStatusCodes,
     AtsuMessageDirection,
@@ -8,8 +9,7 @@ import {
     WeatherMessage,
     AtisType,
     AtsuTimestamp,
-} from '@datalink/common';
-import { EventBus } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 

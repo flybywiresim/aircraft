@@ -12,7 +12,7 @@ export enum AircraftType {
  * @returns {string} - the aircraft type (a32nx, a380x, other)
  */
 export function getAircraftType(): string {
-    const aircraftType :AircraftType = SimVar.GetSimVarValue('L:A32NX_AIRCRAFT_TYPE', 'enum');
+    const aircraftType: AircraftType = SimVar.GetSimVarValue('L:A32NX_AIRCRAFT_TYPE', 'enum');
     let aircraft: string;
 
     switch (aircraftType) {

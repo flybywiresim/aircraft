@@ -1,7 +1,6 @@
-import { Arinc429Word, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, NXDataStore, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
-import { RadioAutoCallOutFlags } from '../../../../../fbw-a32nx/src/systems/shared/src/AutoCallOuts';
 
 /** The default (Airbus basic configuration) radio altitude auto call outs. */
 const DEFAULT_RADIO_AUTO_CALL_OUTS = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.OneThousand | RadioAutoCallOutFlags.FourHundred

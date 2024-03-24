@@ -7,7 +7,7 @@ import {
     AtsuMessage,
     FreetextMessage,
     WeatherMessage,
-} from '@datalink/common';
+} from '../../../common/src';
 
 export interface AocFmsMessages {
     aocResetData: boolean;
