@@ -92,34 +92,22 @@ class CDUAvailableDeparturesPage {
             }
         }
 
+        // TODO This is the same thing 3 times in a row?
+
         if (selectedSid) {
             selectedSidCell = selectedSid.ident;
-            selectedSidCellColor = planColor;
+            selectedSidCellColor = selectedColour;
 
             if (selectedTransition) {
                 selectedTransCell = selectedTransition.ident;
-                selectedTransCellColor = planColor;
-            } else {
+                selectedTransCellColor = selectedColour;
+            } else if (availableTransitions.length === 0 || selectedTransition === null) {
                 selectedTransCell = "NONE";
+                selectedTransCellColor = selectedColour;
             }
-        }
-
-        if (availableSids.length === 0 || selectedSid === null) {
+        } else if (availableSids.length === 0 || selectedSid === null) {
             selectedSidCell = "NONE";
             selectedSidCellColor = selectedColour;
-        } else if (selectedSid) {
-            selectedSidCell = selectedSid.ident;
-            selectedSidCellColor = selectedColour;
-        }
-
-        if (selectedSid || availableSids.length === 0) {
-            if (availableTransitions.length === 0 || selectedTransition === null) {
-                selectedTransCell = "NONE";
-                selectedTransCellColor = selectedColour;
-            } else if (selectedTransition) {
-                selectedTransCell = selectedTransition.ident;
-                selectedTransCellColor = selectedColour;
-            }
         }
 
         // --- render the rows ---
