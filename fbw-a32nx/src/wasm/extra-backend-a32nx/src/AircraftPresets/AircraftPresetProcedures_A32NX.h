@@ -20,14 +20,14 @@ class AircraftPresetProcedures_A32NX {
 
       .POWERED_CONFIG_ON {
         // SOP: PRELIMINARY COCKPIT PREPARATION
-        ProcedureStep{"BAT1 On",                  STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"BAT2 On",                  STEP, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"BAT1 On",                  STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                   "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
+        ProcedureStep{"BAT2 On",                  STEP, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                   "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
 
         ProcedureStep{"EXT PWR On",               STEP, 3000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) "
                                                               "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
                                                               "(L:A32NX_ENGINE_STATE:1) 1 == || "
                                                               "(L:A32NX_ENGINE_STATE:2) 1 == || "
-                                                              "(A:EXTERNAL POWER ON:1, BOOL) ||",                     "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+                                                              "(A:EXTERNAL POWER ON:1, BOOL) ||",                       "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
 
         // if no Ext Pwr is available we start the APU here with a bat only fire test
         ProcedureStep{"APU Fire Test On",         PROC, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     "1 (>L:A32NX_FIRE_TEST_APU)"},
@@ -175,8 +175,8 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"Await Slats 1+F",      3110, true,  1000,  "",                                                 "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 >= "
                                                                                                                       "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 >= && "},
 
-        ProcedureStep{"T.O Config",           PROC, 200,   "",                                                          "1 (>L:A32NX_BTN_TOCONFIG)"},
-        ProcedureStep{"T.O Config",           PROC, 2000,  "",                                                          "0 (>L:A32NX_BTN_TOCONFIG)"},
+        ProcedureStep{"T.O Config",           STEP, 200,   "",                                                          "1 (>L:A32NX_BTN_TOCONFIG)"},
+        ProcedureStep{"T.O Config",           STEP, 2000,  "",                                                          "0 (>L:A32NX_BTN_TOCONFIG)"},
       },
 
       .TAXI_CONFIG_OFF = {
