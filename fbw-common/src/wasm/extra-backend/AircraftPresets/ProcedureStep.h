@@ -12,12 +12,14 @@
  * @enum STEP: Normal procedure step, which is required to be executed even in expedited mode
  * @enum NOEX: Normal Procedure step, which must not be expedited
  * @enum PROC: Procedure step, which is not required to be executed in expedited mode and will not be expedited
+ * @enum EXON: Expedited procedure step, which is only executed in expedited mode
  * @enum COND: Conditional procedure step, waits for a certain state to be set
  */
 enum StepType {
   STEP,
   NOEX,
   PROC,
+  EXON,
   COND,
 };
 
