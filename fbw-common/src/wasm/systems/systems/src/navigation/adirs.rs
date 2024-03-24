@@ -354,12 +354,12 @@ impl SimulationElement for AdirsSimulatorData {
 pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
-    adirs_align_quick_mode_id: VariableIdentifier,
+    aircraft_preset_quick_mode_id: VariableIdentifier,
     uses_gps_as_primary_id: VariableIdentifier,
 
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
-    adirs_align_quick_mode: bool,
+    aircraft_preset_quick_mode: bool,
     simulator_data: AdirsSimulatorData,
 }
 impl AirDataInertialReferenceSystem {
@@ -377,7 +377,7 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
             configured_align_time_id: context
                 .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
-            adirs_align_quick_mode_id: context
+            aircraft_preset_quick_mode_id: context
                 .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
             uses_gps_as_primary_id: context
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
@@ -388,7 +388,7 @@ impl AirDataInertialReferenceSystem {
                 AirDataInertialReferenceUnit::new(context, 3, vmo, mmo),
             ],
             configured_align_time: AlignTime::Realistic,
-            adirs_align_quick_mode: false,
+            aircraft_preset_quick_mode: false,
             simulator_data: AdirsSimulatorData::new(context),
         }
     }
@@ -400,15 +400,21 @@ impl AirDataInertialReferenceSystem {
     ) {
         // adirs_quick_mode is set by the Aircraft Presets to allow expedited presets without
         // changing the alignment time setting
-        let align_time = if self.adirs_align_quick_mode {
+        let align_time = if self.aircraft_preset_quick_mode {
             AlignTime::Instant
         } else {
             self.configured_align_time
         };
         let simulator_data = self.simulator_data;
-        self.adirus
-            .iter_mut()
-            .for_each(|adiru| adiru.update(context, overhead, align_time, simulator_data));
+        self.adirus.iter_mut().for_each(|adiru| {
+            adiru.update(
+                context,
+                overhead,
+                align_time,
+                self.aircraft_preset_quick_mode,
+                simulator_data,
+            )
+        });
     }
 
     fn remaining_align_duration(&self) -> Duration {
@@ -443,7 +449,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.configured_align_time = reader.read(&self.configured_align_time_id);
-        self.adirs_align_quick_mode = reader.read(&self.adirs_align_quick_mode_id);
+        self.aircraft_preset_quick_mode = reader.read(&self.aircraft_preset_quick_mode_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -553,11 +559,23 @@ impl AirDataInertialReferenceUnit {
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         align_time: AlignTime,
+        aircraft_preset_quick_mode: bool,
         simulator_data: AdirsSimulatorData,
     ) {
-        self.adr.update(context, overhead, simulator_data);
-        self.ir
-            .update(context, &self.adr, overhead, align_time, simulator_data);
+        self.adr.update(
+            context,
+            overhead,
+            aircraft_preset_quick_mode,
+            simulator_data,
+        );
+        self.ir.update(
+            context,
+            &self.adr,
+            overhead,
+            align_time,
+            aircraft_preset_quick_mode,
+            simulator_data,
+        );
 
         self.update_discrete_outputs();
     }
@@ -876,6 +894,7 @@ struct AirDataReference {
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
+    const INITIALISATION_QUICK_DURATION: Duration = Duration::from_secs(2);
     const BARO_CORRECTION_1_HPA: &'static str = "BARO_CORRECTION_1_HPA";
     const BARO_CORRECTION_1_INHG: &'static str = "BARO_CORRECTION_1_INHG";
     const BARO_CORRECTION_2_HPA: &'static str = "BARO_CORRECTION_2_HPA";
@@ -962,10 +981,15 @@ impl AirDataReference {
         &mut self,
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
+        aircraft_preset_quick_mode: bool,
         simulator_data: AdirsSimulatorData,
     ) {
         self.is_on = overhead.adr_is_on(self.number);
-        self.update_remaining_initialisation_duration(context, overhead);
+        self.update_remaining_initialisation_duration(
+            context,
+            aircraft_preset_quick_mode,
+            overhead,
+        );
         self.update_values(context, simulator_data);
         self.update_discrete_word_1();
     }
@@ -973,11 +997,17 @@ impl AirDataReference {
     fn update_remaining_initialisation_duration(
         &mut self,
         context: &UpdateContext,
+        aircraft_preset_quick_mode: bool,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
     ) {
+        let initialisation_duration: Duration = if aircraft_preset_quick_mode {
+            Self::INITIALISATION_QUICK_DURATION
+        } else {
+            Self::INITIALISATION_DURATION
+        };
         self.remaining_initialisation_duration = remaining_initialisation_duration(
             context,
-            Self::INITIALISATION_DURATION,
+            initialisation_duration,
             overhead.mode_of(self.number),
             self.remaining_initialisation_duration,
         );
@@ -1289,6 +1319,7 @@ impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
+    const ATTITUDE_INITIALISATION_QUICK_DURATION: Duration = Duration::from_secs(2);
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
@@ -1368,12 +1399,17 @@ impl InertialReference {
         true_airspeed_source: &impl TrueAirspeedSource,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         configured_align_time: AlignTime,
+        aircraft_preset_quick_mode: bool,
         simulator_data: AdirsSimulatorData,
     ) {
         self.is_on = overhead.ir_is_on(self.number);
 
         self.update_fault_flash_duration(context, overhead);
-        self.update_remaining_attitude_align_duration(context, overhead);
+        self.update_remaining_attitude_align_duration(
+            context,
+            overhead,
+            aircraft_preset_quick_mode,
+        );
         self.update_remaining_align_duration(
             context,
             overhead,
@@ -1409,10 +1445,16 @@ impl InertialReference {
         &mut self,
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
+        aircraft_preset_quick_mode: bool,
     ) {
+        let initialisation_duration: Duration = if aircraft_preset_quick_mode {
+            Self::ATTITUDE_INITIALISATION_QUICK_DURATION
+        } else {
+            Self::ATTITUDE_INITIALISATION_DURATION
+        };
         self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
             context,
-            Self::ATTITUDE_INITIALISATION_DURATION,
+            initialisation_duration,
             overhead.mode_of(self.number),
             self.remaining_attitude_initialisation_duration,
         );
