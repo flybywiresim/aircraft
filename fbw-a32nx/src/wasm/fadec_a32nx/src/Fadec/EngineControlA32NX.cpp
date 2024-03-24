@@ -55,38 +55,35 @@ void EngineControl_A32NX::update() {
 
   generateIdleParameters(pressureAltitude, mach, ambientTemperature, ambientPressure);
 
-  double simCN1;
-  double simN1;
   double simN1highest;
-  double simN2;
-  double engineTimer;
 
   for (int engine = 1; engine <= 2; engine++) {
     const int engineIdx = engine - 1;
 
-    const int engineIgniter = static_cast<int>(simData.simVarsDataPtr->data().engineIgniter[engineIdx]);  // 0: crank, 1:norm, 2: ign
-    bool      engineStarter = static_cast<bool>(simData.simVarsDataPtr->data().engineStarter[engineIdx]);
-    simCN1                  = simData.correctedN1DataPtr[engineIdx]->data().correctedN1;
-    simN1                   = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
-    simN2                   = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
+    double simCN1 = simData.correctedN1DataPtr[engineIdx]->data().correctedN1;
+    double simN1  = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
+    double simN2  = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
 
-    const double engineFuelValveOpen      = simData.simVarsDataPtr->data().engineFuelValveOpen[engineIdx];
-    const double engineStarterPressurized = simData.engineStarterPressurized[engineIdx]->get();
+    double       engineTimer   = simData.engineTimer[engineIdx]->get();
+    const int    engineIgniter = static_cast<int>(simData.simVarsDataPtr->data().engineIgniter[engineIdx]);  // 0: crank, 1:norm, 2: ign
+    bool         engineStarter = static_cast<bool>(simData.simVarsDataPtr->data().engineStarter[engineIdx]);
+    const double engineStarterPressurized   = simData.engineStarterPressurized[engineIdx]->get();
+    const double engineFuelValveOpen        = simData.simVarsDataPtr->data().engineFuelValveOpen[engineIdx];
+    const bool   engineFuelValveFullyClosed = engineFuelValveOpen == 0;
+    const bool   engineFuelValveFullyOpen   = engineFuelValveOpen == 1;
 
     // simulates delay to start valve open through fuel valve travel time
-    const bool engineMasterTurnedOn  = (prevEngineMasterPos[engineIdx] < 1 && engineFuelValveOpen >= 1);
-    const bool engineMasterTurnedOff = (prevEngineMasterPos[engineIdx] == 1 && engineFuelValveOpen < 1);
-
-    engineTimer = simData.engineTimer[engineIdx]->get();
+    const bool engineMasterTurnedOn  = (prevEngineMasterPos[engineIdx] < 1 && engineFuelValveFullyOpen);
+    const bool engineMasterTurnedOff = (prevEngineMasterPos[engineIdx] > 0 && engineFuelValveFullyClosed);
 
     // starts engines if Engine Master is turned on and Starter is pressurized
     // or the engine is still spinning fast enough
-    if (!engineStarter && engineFuelValveOpen == 1 && (engineStarterPressurized || simN2 >= 20)) {
+    if (!engineStarter && engineFuelValveFullyOpen && (engineStarterPressurized || simN2 >= 20)) {
       simData.setStarterHeldEvent[engineIdx]->trigger(1);
       engineStarter = true;
     }
     // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 20%
-    else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && !engineStarterPressurized && simN2 < 20))) {
+    else if (engineStarter && (engineFuelValveFullyClosed || (engineFuelValveFullyOpen && !engineStarterPressurized && simN2 < 20))) {
       simData.setStarterHeldEvent[engineIdx]->trigger(0);
       simData.setStarterEvent[engineIdx]->trigger(0);
       engineStarter = false;
@@ -459,9 +456,9 @@ void EngineControl_A32NX::engineStartProcedure(int                     engine,
   }
 
   // Quick Start for expedited engine start for Aircraft Presets
-  if (simData.fadecQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 < idleN2) {
+  if (simData.aircraftPresetQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 < idleN2) {
     LOG_INFO("Fadec::EngineControl_A32NX::engineStartProcedure() - Quick Start");
-    simN2 = idleN2;
+    simN2                                                     = idleN2;
     simData.correctedN2DataPtr[engineIdx]->data().correctedN2 = idleN2;
     simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
     simData.engineN2[engineIdx]->set(idleN2);
@@ -520,7 +517,7 @@ void EngineControl_A32NX::engineShutdownProcedure(int    engine,              //
   const int engineIdx = engine - 1;
 
   // Quick Shutdown for expedited engine shutdown for Aircraft Presets
-  if (simData.fadecQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 > 0.0) {
+  if (simData.aircraftPresetQuickMode->getAsBool() && simData.correctedN2DataPtr[engineIdx]->data().correctedN2 > 0.0) {
     LOG_INFO("Fadec::EngineControl_A32NX::engineShutdownProcedure() - Quick Shutdown");
     simData.correctedN2DataPtr[engineIdx]->data().correctedN2 = 0;
     simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
