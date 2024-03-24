@@ -19,6 +19,10 @@ class AircraftPresetProcedures_A32NX {
       // @formatter:off
 
       .POWERED_CONFIG_ON {
+        //WORKAROUND for intermittent HOT AIR PB Fault when using expedited mode
+        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==",           "0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
+        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) 1 ==",               "1 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
+
         // SOP: PRELIMINARY COCKPIT PREPARATION
         ProcedureStep{"BAT1 On",                  STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                   "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
         ProcedureStep{"BAT2 On",                  STEP, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                   "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
@@ -147,8 +151,9 @@ class AircraftPresetProcedures_A32NX {
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET1)"},
 
         ProcedureStep{"ENG 2 On",             STEP, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                         "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 2 Avail",    COND,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
-        ProcedureStep{"ENG 1 On",             STEP, 2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                         "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"Await ENG 2 Avail",    PROC,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 == ||"},
+        ProcedureStep{"ENG 1 On",             STEP,  2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                        "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
+        ProcedureStep{"Await ENG 2 Avail",    COND,  2000,  "",                                                         "(L:A32NX_AIRCRAFT_PRESET_QUICK_MODE) 1 == (L:A32NX_ENGINE_STATE:2) 1 == &&"},
         ProcedureStep{"Await ENG 1 Avail",    COND,  5000,  "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
         // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    STEP, 3000,  "",                                                          "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
