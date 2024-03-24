@@ -50,6 +50,7 @@ import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {
@@ -1789,13 +1790,29 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                     break;
                 }
 
-                const xiToXf = lastLegInFirst.isXI() && element.isXF();
+                const xiToXf = lastLegInFirst.isXI() && (element.isXF() && element.type !== LegType.IF);
 
-                // TODO geometry shits the bed for CI -> IF -> XF, but stringing them is correct
                 if (xiToXf) {
                     if (LnavConfig.VERBOSE_FPM_LOG) {
                         console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
                     }
+
+                    // Convert TF to CF
+                    if (element.type === LegType.TF) {
+                        const prevElement = second.allLegs[i - 1];
+                        if (!prevElement || prevElement.isDiscontinuity === true) {
+                            throw new Error('[FMS/FPM] TF leg without a preceding leg');
+                        } else if (!prevElement.terminationWaypoint()) {
+                            throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+                        }
+
+                        const track = bearingTo(prevElement.terminationWaypoint().location, element.terminationWaypoint().location);
+                        element.type = LegType.CF;
+                        element.definition.magneticCourse = track;
+                        // Get correct ident/annotation for CF leg
+                        [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, element.annotation);
+                    }
+
                     cutBefore = i;
                     break;
                 }
