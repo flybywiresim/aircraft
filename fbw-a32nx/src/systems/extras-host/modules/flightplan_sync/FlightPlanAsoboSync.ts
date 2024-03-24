@@ -119,57 +119,61 @@ export class FlightPlanAsoboSync {
         await Wait.awaitDelay(3000);
 
         Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
-
         const rpcClient = new FlightPlanRpcClient<A320FlightPlanPerformanceData>(this.bus, new A320FlightPlanPerformanceData());
 
-        const pub = this.bus.getPublisher<FlightPlanEvents>();
-        pub.pub('flightPlanManager.syncRequest', undefined, true);
+        try {
+            const pub = this.bus.getPublisher<FlightPlanEvents>();
+            pub.pub('flightPlanManager.syncRequest', undefined, true);
 
-        // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
-        // currently the rpc client waits 5 seconds before it sends the sync request
-        while (!rpcClient.hasActive && !rpcClient.hasUplink) {
-            await Wait.awaitDelay(2000);
-        }
-
-        const data = await Coherent.call('GET_FLIGHTPLAN') as any;
-        console.log('LOADED FP', data);
-
-        const isDirectTo = data.isDirectTo;
-
-        if (!isDirectTo) {
-            if (data.waypoints.length === 0) {
-                return;
+            // TODO this needs to wait until the remote client has been initialized with the empty flight plans from the main instance
+            // currently the rpc client waits 5 seconds before it sends the sync request
+            while (!rpcClient.hasActive && !rpcClient.hasUplink) {
+                await Wait.awaitDelay(2000);
             }
-            const destIndex = data.waypoints.length - 1;
-            if (!ICAO.isFacility(data.waypoints[0].icao) || !ICAO.isFacility(data.waypoints[destIndex].icao)) {
-                return;
-            }
-            console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
-            await rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
 
-            await rpcClient.setPerformanceData('cruiseFlightLevel', data.cruisingAltitude / 100, FlightPlanIndex.Uplink);
+            const data = await Coherent.call('GET_FLIGHTPLAN') as any;
+            console.log('LOADED FP', data);
 
-            // set route
-            const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
-            // Find out first approach waypoint, - 1 to skip destination
-            const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
-            const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
+            const isDirectTo = data.isDirectTo;
 
-            for (let i = 1; i <= enroute.length; i++) {
-                const wpt = enroute[i - 1];
-                if (wpt.icao.trim() !== '') {
-                    console.log('adding wp loaded', i, wpt);
-                    const wptMapped = this.mapFacilityToWaypoint(wpt);
-                    console.log('adding wp mapped', i, wptMapped);
-                    // eslint-disable-next-line no-await-in-loop
-                    await rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
+            if (!isDirectTo) {
+                if (data.waypoints.length === 0) {
+                    return;
                 }
-            }
+                const destIndex = data.waypoints.length - 1;
+                if (!ICAO.isFacility(data.waypoints[0].icao) || !ICAO.isFacility(data.waypoints[destIndex].icao)) {
+                    return;
+                }
+                console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
+                await rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
 
-            console.log('finishing uplink');
-            await rpcClient.uplinkInsert();
+                await rpcClient.setPerformanceData('cruiseFlightLevel', data.cruisingAltitude / 100, FlightPlanIndex.Uplink);
+
+                // set route
+                const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
+                // Find out first approach waypoint, - 1 to skip destination
+                const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
+                const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
+
+                for (let i = 1; i <= enroute.length; i++) {
+                    const wpt = enroute[i - 1];
+                    if (wpt.icao.trim() !== '') {
+                        console.log('adding wp loaded', i, wpt);
+                        const wptMapped = this.mapFacilityToWaypoint(wpt);
+                        console.log('adding wp mapped', i, wptMapped);
+                        // eslint-disable-next-line no-await-in-loop
+                        await rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
+                    }
+                }
+
+                console.log('finishing uplink');
+                await rpcClient.uplinkInsert();
+            }
+        } catch (e) {
+            console.error('Error in loading FlightPlan from MSFS', e);
+        } finally {
+            rpcClient.destroy();
         }
-        rpcClient.destroy();
     }
 
     private async syncFlightPlanToGame(): Promise<void> {
@@ -212,12 +216,14 @@ export class FlightPlanAsoboSync {
                     let departureRw = 0;
                     const originRwIdent = this.procedureDetails.originRunway;
                     for (const runway of originFacility.runways) {
-                        departureRw = 0;
+                        let runwayPairIndex = 0;
                         for (const designation of runway.designation.split('-')) {
+                            const designatorChar = runwayPairIndex === 0 ? runway.designatorCharPrimary : runway.designatorCharSecondary;
+                            runwayPairIndex++;
                             console.log('ORIGIN RUNWAY', this.procedureDetails.originRunway);
                             console.log(designation);
                             if (designation === FlightPlanAsoboSync.extractRunwayNumber(originRwIdent)
-                                    && (runway.designatorCharSecondary === 0 || runway.designatorCharSecondary === this.mapRunwayDesignator(originRwIdent[originRwIdent.length - 1]))) {
+                                    && (designatorChar === 0 || designatorChar === this.mapRunwayDesignator(originRwIdent[originRwIdent.length - 1]))) {
                                 console.log(`Runway parent ${originRw} is matching with actual index ${departureRw}. Is`, runway);
                                 await Coherent.call('SET_ORIGIN_RUNWAY_INDEX', originRw);
                                 await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', departureRw);
@@ -245,13 +251,18 @@ export class FlightPlanAsoboSync {
 
                     const airportFacility = await this.facilityLoaderCustom.getFacility(FacilityType.Airport, `A      ${this.destinationAirport.substring(0, 4)} `);
                     console.log('ARRIVAL', airportFacility);
+
                     for (const runway of airportFacility.runways) {
+                        let runwayPairIndex = 0;
                         for (const designation of runway.designation.split('-')) {
+                            const designatorChar = runwayPairIndex === 0 ? runway.designatorCharPrimary : runway.designatorCharSecondary;
+                            runwayPairIndex++;
+
                             console.log(destinationRunwayIdent);
                             console.log(designation);
                             if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)
-                                    && (runway.designatorCharSecondary === 0
-                                            || runway.designatorCharSecondary === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1]))) {
+                                    && (designatorChar === 0
+                                            || designatorChar === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1]))) {
                                 console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is`, runway);
                                 const arrivalIndex = airportFacility.arrivals
                                     .findIndex((arrival) => arrival.name === this.procedureDetails.arrivalIdent);
