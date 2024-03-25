@@ -468,6 +468,7 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
     simData.engineN1[engineIdx]->set(0.0);
     simData.engineN2[engineIdx]->set(0.0);
     simData.engineN3[engineIdx]->set(0.0);
+    simData.engineEgt[engineIdx]->set(ambientTemperature);
     simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
     // simData.engineState[engineIdx]->set(OFF);
   }
