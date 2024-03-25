@@ -3,10 +3,21 @@ use std::error::Error;
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
-use systems_wasm::aspects::{MsfsAspectBuilder, ObjectWrite, VariablesToObject};
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 pub(super) fn reversers(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    // We recreate a long accel including the reverser accel that we pass to systems (else MSFS acceleration is not consistent with ingame acceleration when we modify plane velocity)
+    builder.map_many(
+        ExecuteOn::PreTick,
+        vec![
+            Variable::aircraft("ACCELERATION BODY Z", "Feet per second squared", 0),
+            Variable::aspect("REVERSER_DELTA_ACCEL"),
+        ],
+        |values| values[0] + values[1],
+        Variable::aspect("ACCELERATION_BODY_Z_WITH_REVERSER"),
+    );
+
     builder.variables_to_object(Box::new(ReverserThrust {
         velocity_z: 0.,
         angular_acc_y: 0.,
