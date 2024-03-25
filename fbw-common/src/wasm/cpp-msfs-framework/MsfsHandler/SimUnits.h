@@ -29,7 +29,7 @@ class SimUnits {
  public:
   // Selected commonly used units
 
-  const SimUnit None{""};  // special case for no unit (e.g. in conjunction with a data type)
+  const SimUnit None{""};  // special case for no unit (e.g., in conjunction with a data type)
   const SimUnit Bool{"Bool"};
   const SimUnit Celsius{"Celsius"};
   const SimUnit Feet{"Feet"};
