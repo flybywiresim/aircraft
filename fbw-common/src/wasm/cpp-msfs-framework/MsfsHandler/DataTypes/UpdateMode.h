@@ -14,18 +14,14 @@
  * @note The values are bit flags and can be combined using the bitwise OR operator.
  */
 enum UpdateMode {
-  // clang-format off
-
   // No automatic updates (default)
-  NO_AUTO_UPDATE = 0, // 0x00
+  NO_AUTO_UPDATE = 0,  // 0x00
   // Automatic read every tick
-  AUTO_READ = 1,      // 0x01
+  AUTO_READ = 1,  // 0x01
   // Automatic write every tick
-  AUTO_WRITE = 2,     // 0x10
+  AUTO_WRITE = 2,  // 0x10
   // Automatic read and write every tick
-  AUTO_READ_WRITE = 3 // 0x11
-
-  // clang-format on
+  AUTO_READ_WRITE = 3  // 0x11
 };
 namespace ManagedDataObject {}  // namespace ManagedDataObject
 

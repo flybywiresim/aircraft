@@ -116,8 +116,8 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   // with different expected values via SimUnits.
   const std::string uniqueName{varName + ":" + unit.name};
 
-  // Check if variable already exists
-  // Check which update method and frequency to use - if two variables are the same
+  // Check if variable already exists.
+  // Check which update method and frequency to use - if two variables are the same,
   // then use the update method and frequency of the automated one with faster
   // update frequency
   const auto pair = variables.find(uniqueName);
@@ -233,7 +233,6 @@ KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const
   return id;
 }
 
-// FIXME: Double check if this is correct
 bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
   const auto eventPair = keyEventCallbacks.find(keyEventId);
   if (eventPair != keyEventCallbacks.end()) {
