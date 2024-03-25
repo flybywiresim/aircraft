@@ -79,6 +79,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
             'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
             'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
+            'process.env.AIRCRAFT_PREFIX': JSON.stringify(process.env.AIRCRAFT_PREFIX),
         }),
         postCss(instrumentName, instrumentFolder),
     ];

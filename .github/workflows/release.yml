@@ -15,6 +15,7 @@ jobs:
       STABLE_PRE_RELEASE_TAG: assets/stable
       STABLE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable
+      AIRCRAFT_PREFIX: a32nx
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -25,6 +26,7 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
+          echo AIRCRAFT_PREFIX=\"${{ secrets.AIRCRAFT_PREFIX }}\" >> fbw-a32nx/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env

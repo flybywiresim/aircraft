@@ -61,7 +61,7 @@ export const AboutPage = () => {
 
     useEffect(() => {
         AircraftVersionChecker.getBuildInfo(
-            airframe === AircraftType.A380_842 ? 'a380x' : 'a32nx',
+            process.env.AIRCRAFT_PREFIX,
         ).then((info) => setBuildInfo(info));
     }, [airframe]);
 
