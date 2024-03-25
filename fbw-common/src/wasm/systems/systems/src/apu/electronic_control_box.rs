@@ -64,7 +64,6 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     on_ground: bool,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
-
     /// This is set by the Aircraft Presets to facilitate quick startup or shutdown
     /// of the aircraft.
     /// In the context of the ecb this means that the APU cooldown is skipped.
