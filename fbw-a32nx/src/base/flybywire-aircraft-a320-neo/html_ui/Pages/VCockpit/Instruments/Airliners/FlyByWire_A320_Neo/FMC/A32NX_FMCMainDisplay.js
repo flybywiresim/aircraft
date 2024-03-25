@@ -2406,7 +2406,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
                 break;
             case 1: // NotYetImplemented
-                this.setScratchpadMessage(NXSystemMessages.notYetImplemented);
+                this.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
                 break;
             case 2: // FormatError
                 this.setScratchpadMessage(NXSystemMessages.formatError);
@@ -2517,15 +2517,20 @@ class FMCMainDisplay extends BaseAirliners {
                         }
                     }
                 }).catch((err) => {
-                if (err instanceof McduMessage) {
-                    this.setScratchpadMessage(err);
-                } else if (err) {
-                    console.error(err);
+                    if (err.type) {
+                        this.showFmsErrorMessage(err.type)
+                    } else if (err instanceof McduMessage) {
+                        this.setScratchpadMessage(err);
+                    } else if (err) {
+                        console.error(err);
+                    }
+                    return callback(false);
                 }
-                return callback(false);
-            });
+            );
         } catch (err) {
-            if (err instanceof McduMessage) {
+            if (err.type) {
+                this.showFmsErrorMessage(err.type)
+            } else if (err instanceof McduMessage) {
                 this.setScratchpadMessage(err);
             } else {
                 console.error(err);
