@@ -105,10 +105,12 @@ export class FlightPlanAsoboSync {
                 pub.pub('flightPlanManager.syncRequest', undefined, true);
             }
         }));
-        NXDataStore.getAndSubscribe('FP_SYNC', (_, val) => {
+        NXDataStore.getAndSubscribe('FP_SYNC', async (_, val) => {
             if (val !== 'NONE') {
+                this.subs.forEach((sub) => sub.pause());
+                await this.loadFlightPlanFromGame();
+                await Wait.awaitDelay(3000);
                 this.subs.forEach((sub) => sub.resume());
-                this.loadFlightPlanFromGame();
             } else {
                 this.subs.forEach((sub) => sub.pause());
             }
@@ -276,7 +278,7 @@ export class FlightPlanAsoboSync {
                                 console.log('APPROACH TYPE', approachType);
                                 console.log('RUNWAY DESIGNATOR', this.mapRunwayDesignator(runway.designatorCharSecondary));
                                 console.log('RUNWAY DESIGNATION', designation);
-                                const apoprachIndex = this.findApproachIndexByRunwayAndApproachType(airportFacility.approaches, runway, designation, approachType);
+                                const apoprachIndex = this.findApproachIndexByRunwayAndApproachType(airportFacility.approaches, runway, runwayPairIndex === 0, designation, approachType);
 
                                 const approachEnrouteTransitionIndex = airportFacility.approaches
                                     .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
@@ -310,13 +312,19 @@ export class FlightPlanAsoboSync {
         }
     }
 
-    private findApproachIndexByRunwayAndApproachType(approaches: readonly ApproachProcedure[], runway: AirportRunway, designation: string, approachType: MSApproachType): number {
+    private findApproachIndexByRunwayAndApproachType(
+        approaches: readonly ApproachProcedure[],
+        runway: AirportRunway,
+        isRunwayPrimary: boolean,
+        designation: string,
+        approachType: MSApproachType,
+    ): number {
         return approaches
-            .findIndex((approach) => approach.runwayNumber.toFixed(0) === designation
+            .findIndex((approach) => (approach.runwayNumber.toFixed(0) === designation
             // L/R etc...
-            && approach.runwayDesignator === runway.designatorCharSecondary
+            && approach.runwayDesignator === isRunwayPrimary ? runway.designatorCharPrimary : runway.designatorCharSecondary
             && approach.approachType as unknown as MSApproachType === approachType
-        && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1]));
+        && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1])));
     }
 
     // TODO this is a copy from Mapping.ts of MSFS backend but reversed
