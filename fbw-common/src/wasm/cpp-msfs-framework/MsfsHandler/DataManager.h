@@ -85,7 +85,7 @@ class DataManager {
   std::map<SIMCONNECT_DATA_REQUEST_ID, SimObjectBasePtr> simObjects{};
 
   // A map of all registered events.
-  // Map over the event id to quickly find the event - make creating an event a bit less efficient.
+  // Map over the event id to quickly find the event.
   std::map<SIMCONNECT_CLIENT_EVENT_ID, ClientEventPtr> clientEvents{};
 
   // Map of callback vectors to be called when a key event is triggered in the sim.
@@ -177,8 +177,8 @@ class DataManager {
    * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
    * can be used to store and retrieve custom numeric data from the sim.<p/>
    *
-   * OBS: A prefix will be added to the variable name depending on aircraft type.
-   * E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
+   * OBS: If defined at Module creation time a prefix will be added to the variable name depending
+   * on aircraft type. E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
    *
    * @param varName Name of the variable in the sim
    * @param unit optional SimUnit of the variable (default=Number)
