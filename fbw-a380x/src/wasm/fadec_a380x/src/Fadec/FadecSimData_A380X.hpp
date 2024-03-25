@@ -292,6 +292,7 @@ class FadecSimData_A380X {
     engineCorrectedN1DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
+    simVarsDataPtr->setSkipChangeCheck(true);  // we don't need to check for changes as this basically always changes
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
