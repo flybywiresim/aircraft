@@ -523,8 +523,9 @@ void EngineControl_A32NX::engineShutdownProcedure(int    engine,              //
     simData.correctedN2DataPtr[engineIdx]->writeDataToSim();
     simData.correctedN1DataPtr[engineIdx]->data().correctedN1 = 0;
     simData.correctedN1DataPtr[engineIdx]->writeDataToSim();
-    simData.engineN1[engineIdx]->set(0.0);
-    simData.engineN2[engineIdx]->set(0.0);
+    simData.engineN1[engineIdx]->set(0);
+    simData.engineN2[engineIdx]->set(0);
+    simData.engineEgt[engineIdx]->set(ambientTemperature);
     simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
     return;
   }
