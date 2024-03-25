@@ -180,13 +180,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         }
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        turbine: &dyn Turbine,
-        aircraft_preset_quick_mode: bool,
-    ) {
-        self.aircraft_preset_quick_mode = aircraft_preset_quick_mode;
+    pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
+        self.aircraft_preset_quick_mode = context.aircraft_preset_quick_mode();
 
         self.update_air_intake_state(context);
         self.update_fuel_used(context);

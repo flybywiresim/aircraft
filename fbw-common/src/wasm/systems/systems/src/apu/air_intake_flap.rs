@@ -42,7 +42,6 @@ impl AirIntakeFlap {
         &mut self,
         context: &UpdateContext,
         controller: &impl ControllerSignal<AirIntakeFlapSignal>,
-        aircraft_preset_quick_mode: bool,
     ) {
         if !self.is_powered {
             self.is_moving = false;
@@ -52,7 +51,7 @@ impl AirIntakeFlap {
                     if { self.open_amount < Ratio::new::<percent>(100.) } =>
                 {
                     self.open_amount += Ratio::new::<percent>(
-                        self.get_flap_change_for_delta(context, aircraft_preset_quick_mode)
+                        self.get_flap_change_for_delta(context)
                             .min(100. - self.open_amount.get::<percent>()),
                     );
 
@@ -63,7 +62,7 @@ impl AirIntakeFlap {
                     if { self.open_amount > Ratio::new::<percent>(0.) } =>
                 {
                     self.open_amount -= Ratio::new::<percent>(
-                        self.get_flap_change_for_delta(context, aircraft_preset_quick_mode)
+                        self.get_flap_change_for_delta(context)
                             .min(self.open_amount.get::<percent>()),
                     );
 
@@ -76,12 +75,8 @@ impl AirIntakeFlap {
         }
     }
 
-    fn get_flap_change_for_delta(
-        &self,
-        context: &UpdateContext,
-        aircraft_preset_quick_mode: bool,
-    ) -> f64 {
-        if aircraft_preset_quick_mode {
+    fn get_flap_change_for_delta(&self, context: &UpdateContext) -> f64 {
+        if context.aircraft_preset_quick_mode() {
             100.
         } else {
             100. * (context.delta_as_secs_f64() / self.travel_time.as_secs_f64())
@@ -190,7 +185,7 @@ mod air_intake_flap_tests {
             // In the real aircraft this update would happen before power distribution.
             // Updating before power distribution would require two runs to be executed.
             // For testing purposes this doesn't matter, and therefore we don't do it.
-            self.flap.update(context, &self.controller, false);
+            self.flap.update(context, &self.controller);
         }
     }
     impl SimulationElement for TestAircraft {
