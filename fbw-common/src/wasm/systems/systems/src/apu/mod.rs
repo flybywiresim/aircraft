@@ -12,8 +12,7 @@ use crate::{
         LgciuWeightOnWheels,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
 use std::time::Duration;
@@ -271,8 +270,6 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize> Simulat
 
         visitor.visit(self);
     }
-
-    fn read(&mut self, _reader: &mut SimulatorReader) {}
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
