@@ -53,7 +53,6 @@ impl Turbine for ShutdownAps3200Turbine {
         _: bool,
         _: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
-        _: bool,
     ) -> Box<dyn Turbine> {
         self.egt = calculate_towards_ambient_egt(self.egt, context);
 
@@ -201,10 +200,9 @@ impl Turbine for Starting {
         _: bool,
         _: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
-        aircraft_preset_quick_mode: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
-        if aircraft_preset_quick_mode {
+        if context.aircraft_preset_quick_mode() {
             self.n = Ratio::new::<percent>(100.);
             println!("apu/apu3200.rs: Aircraft Preset Quick Mode is active, setting N to 100%.");
         } else {
@@ -399,7 +397,6 @@ impl Turbine for Running {
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
-        _: bool,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
 
@@ -535,10 +532,9 @@ impl Turbine for Stopping {
         _: bool,
         _: bool,
         _: &dyn ControllerSignal<TurbineSignal>,
-        aircraft_preset_quick_mode: bool,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
-        if aircraft_preset_quick_mode {
+        if context.aircraft_preset_quick_mode() {
             self.n = Ratio::new::<percent>(0.);
             println!("apu/apu3200.rs: Aircraft Preset Quick Mode is active, setting N to 0%.");
         } else {

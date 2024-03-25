@@ -12,7 +12,7 @@ use crate::{
         LgciuWeightOnWheels,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
     },
 };
@@ -103,7 +103,6 @@ pub enum TurbineSignal {
 
 pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize> {
     apu_flap_open_percentage_id: VariableIdentifier,
-    aircraft_preset_quick_mode_id: VariableIdentifier,
 
     turbine: Option<Box<dyn Turbine>>,
     generators: [T; N],
@@ -111,11 +110,6 @@ pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants
     start_motor: U,
     air_intake_flap: AirIntakeFlap,
     fuel_pressure_switch: FuelPressureSwitch,
-
-    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
-    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
-    /// after using Bleed Air.
-    aircraft_preset_quick_mode: bool,
 }
 impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
     AuxiliaryPowerUnit<T, U, C, N>
@@ -131,8 +125,6 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         AuxiliaryPowerUnit {
             apu_flap_open_percentage_id: context
                 .get_identifier("APU_FLAP_OPEN_PERCENTAGE".to_owned()),
-            aircraft_preset_quick_mode_id: context
-                .get_identifier("AIRCRAFT_PRESET_QUICK_MODE".to_owned()),
 
             turbine: Some(turbine),
             generators,
@@ -140,8 +132,6 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
             start_motor,
             air_intake_flap: AirIntakeFlap::new(air_intake_flap_powered_by),
             fuel_pressure_switch: FuelPressureSwitch::new(),
-
-            aircraft_preset_quick_mode: false,
         }
     }
 
@@ -163,8 +153,7 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         bleed_air_valve.update_open_amount::<ApuBleedAirValveSignal, Self>(self);
         self.ecb
             .update_bleed_air_valve_state(context, bleed_air_valve);
-        self.air_intake_flap
-            .update(context, &self.ecb, self.aircraft_preset_quick_mode);
+        self.air_intake_flap.update(context, &self.ecb);
         self.ecb.update_air_intake_flap_state(&self.air_intake_flap);
 
         if let Some(turbine) = self.turbine.take() {
@@ -173,14 +162,9 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
                 bleed_air_valve.is_open(),
                 apu_gen_is_used,
                 &self.ecb,
-                self.aircraft_preset_quick_mode,
             );
 
-            self.ecb.update(
-                context,
-                updated_turbine.as_ref(),
-                self.aircraft_preset_quick_mode,
-            );
+            self.ecb.update(context, updated_turbine.as_ref());
 
             self.turbine = Some(updated_turbine);
         }
@@ -286,9 +270,7 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize> Simulat
         visitor.visit(self);
     }
 
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.aircraft_preset_quick_mode = reader.read(&self.aircraft_preset_quick_mode_id);
-    }
+    fn read(&mut self, _reader: &mut SimulatorReader) {}
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
@@ -305,7 +287,6 @@ pub trait Turbine {
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
-        aircraft_preset_quick_mode: bool,
     ) -> Box<dyn Turbine>;
     fn n(&self) -> Ratio;
     fn n2(&self) -> Ratio {
@@ -476,7 +457,6 @@ mod tests {
             _: bool,
             _: bool,
             _: &dyn ControllerSignal<TurbineSignal>,
-            _: bool,
         ) -> Box<dyn Turbine> {
             self
         }
