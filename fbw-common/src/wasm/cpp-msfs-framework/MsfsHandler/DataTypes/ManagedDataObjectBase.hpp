@@ -50,7 +50,7 @@ class ManagedDataObjectBase : public DataObjectBase {
  protected:
   /**
    * Flag to indicate if the check for data changes should be skipped to save performance when the
-   * check is not required.
+   * check is not required. The changedFlag will be set to true every time the variable is read from the sim.
    */
   bool skipChangeCheckFlag = false;
 
