@@ -112,6 +112,9 @@ pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants
     air_intake_flap: AirIntakeFlap,
     fuel_pressure_switch: FuelPressureSwitch,
 
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
+    /// after using Bleed Air.
     aircraft_preset_quick_mode: bool,
 }
 impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
@@ -128,8 +131,6 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         AuxiliaryPowerUnit {
             apu_flap_open_percentage_id: context
                 .get_identifier("APU_FLAP_OPEN_PERCENTAGE".to_owned()),
-            // set by the Aircraft Presets to immediately power off the aircraft without waiting
-            // for the APU to cool down
             aircraft_preset_quick_mode_id: context
                 .get_identifier("AIRCRAFT_PRESET_QUICK_MODE".to_owned()),
 

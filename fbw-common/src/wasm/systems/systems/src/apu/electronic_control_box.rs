@@ -64,6 +64,10 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     on_ground: bool,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
+
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown
+    /// of the aircraft.
+    /// In the context of the ecb this means that the APU cooldown is skipped.
     aircraft_preset_quick_mode: bool,
 
     constants: PhantomData<C>,
@@ -182,10 +186,11 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         turbine: &dyn Turbine,
         aircraft_preset_quick_mode: bool,
     ) {
+        self.aircraft_preset_quick_mode = aircraft_preset_quick_mode;
+
         self.update_air_intake_state(context);
         self.update_fuel_used(context);
 
-        self.aircraft_preset_quick_mode = aircraft_preset_quick_mode;
         self.n2 = turbine.n2();
         self.n = turbine.n();
         self.egt = turbine.egt();
@@ -377,7 +382,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     /// # Returns
     ///
     /// * `bool` - True if a cooldown is required, false otherwise.
-    fn cooldown_required(&self) -> bool {
+    fn is_cooldown_required(&self) -> bool {
         let cool_down_required: bool;
         // this allows the Aircraft Presets to immediately power off the aircraft
         // without waiting for the APU to cool down
@@ -453,7 +458,7 @@ impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C
             || self.is_emergency_shutdown()
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
-                && !self.cooldown_required())
+                && !self.is_cooldown_required())
         {
             Some(TurbineSignal::Stop)
         } else if self.start_motor_is_powered
