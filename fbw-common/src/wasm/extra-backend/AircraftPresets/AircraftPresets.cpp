@@ -277,7 +277,7 @@ void AircraftPresets::executeAction(const ProcedureStep* currentStepPtr) {
 }
 
 void AircraftPresets::finishLoading() {
-  LOG_INFO("AircraftPresets:update() Aircraft Preset " + std::to_string(currentProcedureID) + " loading cancelled!");
+  LOG_INFO("AircraftPresets:update() Aircraft Preset " + std::to_string(currentProcedureID) + " loading finished or cancelled!");
   loadAircraftPresetRequest->set(0);
   progressAircraftPreset->setAndWriteToSim(0);
   aircraftPresetQuickMode->setAndWriteToSim(0);
