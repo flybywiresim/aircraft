@@ -394,6 +394,8 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
     simData.engineN3[engineIdx]->set(idleN3);
     simData.engineN1[engineIdx]->set(idleN1);
+    simData.engineFF[engineIdx]->set(idleFF);
+    simData.engineEgt[engineIdx]->set(idleEGT);
     simData.engineState[engineIdx]->set(ON);
     return;
   }
@@ -468,9 +470,10 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
     simData.engineN1[engineIdx]->set(0.0);
     simData.engineN2[engineIdx]->set(0.0);
     simData.engineN3[engineIdx]->set(0.0);
+    simData.engineFF[engineIdx]->set(0.0);
     simData.engineEgt[engineIdx]->set(ambientTemperature);
     simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
-    // simData.engineState[engineIdx]->set(OFF);
+    return;
   }
   // delay to simulate the delay between master-switch setting and actual engine shutdown
   else if (engineTimer < 1.8) {
