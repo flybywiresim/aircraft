@@ -225,7 +225,7 @@ export class FlightPlanAsoboSync {
                             console.log('ORIGIN RUNWAY', this.procedureDetails.originRunway);
                             console.log(designation);
                             if (designation === FlightPlanAsoboSync.extractRunwayNumber(originRwIdent)
-                                    && (designatorChar === 0 || designatorChar === this.mapRunwayDesignator(originRwIdent[originRwIdent.length - 1]))) {
+                                    && (designatorChar === RunwayDesignatorChar.None || designatorChar === this.mapRunwayDesignator(originRwIdent[originRwIdent.length - 1]))) {
                                 console.log(`Runway parent ${originRw} is matching with actual index ${departureRw}. Is`, runway);
                                 await Coherent.call('SET_ORIGIN_RUNWAY_INDEX', originRw);
                                 await Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', departureRw);
@@ -263,7 +263,7 @@ export class FlightPlanAsoboSync {
                             console.log(destinationRunwayIdent);
                             console.log(designation);
                             if (designation === FlightPlanAsoboSync.extractRunwayNumber(destinationRunwayIdent)
-                                    && (designatorChar === 0
+                                    && (designatorChar === RunwayDesignatorChar.None
                                             || designatorChar === this.mapRunwayDesignator(destinationRunwayIdent[destinationRunwayIdent.length - 1]))) {
                                 console.log(`Runway is matching with actual index ${destinationRunwayIndex}. Is`, runway);
                                 const arrivalIndex = airportFacility.arrivals
@@ -322,7 +322,7 @@ export class FlightPlanAsoboSync {
         return approaches
             .findIndex((approach) => (approach.runwayNumber.toFixed(0) === designation
             // L/R etc...
-            && approach.runwayDesignator === isRunwayPrimary ? runway.designatorCharPrimary : runway.designatorCharSecondary
+            && approach.runwayDesignator === (isRunwayPrimary ? runway.designatorCharPrimary : runway.designatorCharSecondary)
             && approach.approachType as unknown as MSApproachType === approachType
         && (!approach.approachSuffix || approach.approachSuffix === this.procedureDetails.approachIdent[this.procedureDetails.approachIdent.length - 1])));
     }
@@ -373,7 +373,7 @@ export class FlightPlanAsoboSync {
         case 'W':
             return RunwayDesignatorChar.W;
         default:
-            return RunwayDesignatorChar.L;
+            return RunwayDesignatorChar.None;
         }
     }
 
