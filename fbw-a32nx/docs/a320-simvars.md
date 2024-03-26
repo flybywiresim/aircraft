@@ -1238,12 +1238,28 @@
     - Number (0.0..1.0)
     - While loading a preset this will contain the percentage of the total progress of loading
 
+- A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE
+  - Bool
+  - When set to true the loading process will be expedited and the loading will be done as fast as possible
+
 - A32NX_PUSHBACK_SYSTEM_ENABLED
     - Bool
     - Read/Write
     - 0 when pushback system is completely disabled, 1 when system is enabled
     - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
     - This prevents conflicts with other pushback add-ons
+
+- A32NX_PUSHBACK_SPD_FACTOR
+  - Number -1.0..1.0
+  - Read/Write
+  - Speed factor for pushback
+  - 0.0 is stopped, 1.0 is full speed forward, -1.0 is full speed backward
+
+- A32NX_PUSHBACK_HDG_FACTOR
+  - Number -1.0..1.0
+  - Read/Write
+  - Turn factor for pushback
+  - -1.0 is full left, 0.0 is straight, 1.0 is full right
 
 - A32NX_DEVELOPER_STATE
     - Bool
