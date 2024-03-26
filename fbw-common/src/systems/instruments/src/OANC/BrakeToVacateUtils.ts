@@ -81,6 +81,7 @@ export class BrakeToVacateUtils {
     }
 
     selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
+        console.warn(exit, feature);
         const thrLoc = this.btvThresholdFeature.geometry.coordinates as Position;
         const exitLoc1 = feature.geometry.coordinates[0] as Position;
         const exitLoc2 = feature.geometry.coordinates[feature.geometry.coordinates.length - 1] as Position;
@@ -170,28 +171,30 @@ export class BrakeToVacateUtils {
     }
 
     updateRemainingDistances(pos: Position) {
-        if (!this.btvExitPosition || this.btvExitPosition.length === 0 || !this.btvOppositeThresholdPosition) {
-            return;
-        }
-
         const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
-        if (fwcFlightPhase < 5 || fwcFlightPhase >= 7 && fwcFlightPhase < 10) {
-            const exitDistance = pointDistance(
-                pos[0],
-                pos[1],
-                this.btvExitPosition[0],
-                this.btvExitPosition[1],
-            );
 
-            const rwyEndDistance = pointDistance(
-                pos[0],
-                pos[1],
-                this.btvOppositeThresholdPosition[0],
-                this.btvOppositeThresholdPosition[1],
-            );
+        if (fwcFlightPhase < 5 || (fwcFlightPhase >= 7 && fwcFlightPhase < 10)) {
+            if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
+                const rwyEndDistance = pointDistance(
+                    pos[0],
+                    pos[1],
+                    this.btvOppositeThresholdPosition[0],
+                    this.btvOppositeThresholdPosition[1],
+                );
 
-            SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, exitDistance);
-            SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, rwyEndDistance);
+                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, rwyEndDistance);
+            }
+
+            if (this.btvExitPosition && this.btvExitPosition.length > 0) {
+                const exitDistance = pointDistance(
+                    pos[0],
+                    pos[1],
+                    this.btvExitPosition[0],
+                    this.btvExitPosition[1],
+                );
+
+                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, exitDistance);
+            }
         }
     }
 }

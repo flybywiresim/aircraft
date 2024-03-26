@@ -27,7 +27,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
     private readonly runwayBearing = ConsumerSubject.create<number | null>(null, null);
 
     private readonly btvFmsDisagree = MappedSubject.create(
-        ([btv, fms, exit]) => btv && !exit && btv !== fms,
+        ([btv, fms, exit]) => fms && btv && !exit && btv !== fms,
         this.runwayIdent,
         this.fmsRwyIdent,
         this.exitIdent,
