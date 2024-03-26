@@ -50,6 +50,7 @@ import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
 
 export enum FlightPlanQueuedOperation {
@@ -702,7 +703,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get originDeparture(): Departure {
-        return this.departureSegment.originDeparture;
+        return this.departureSegment.procedure;
     }
 
     async setDeparture(databaseId: string | undefined) {
@@ -826,6 +827,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         if (index > 0) {
             const previousElement = this.elementAt(index - 1);
+            const [prevSegment, prevIndexInSegment] = this.segmentPositionForIndex(index - 1);
             const nextElement = this.elementAt(index + 1);
 
             // Also clear hold if we clear leg before hold
@@ -839,7 +841,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 }
 
                 if (previousElement.isXI()) {
-                    segment.allLegs.splice(indexInSegment - 1, 1);
+                    prevSegment.allLegs.splice(prevIndexInSegment, 1);
                 }
             } else {
                 segment.allLegs.splice(indexInSegment, numElementsToDelete);
@@ -1788,13 +1790,29 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                     break;
                 }
 
-                const xiToXf = lastLegInFirst.isXI() && element.isXF();
+                const xiToXf = lastLegInFirst.isXI() && (element.isXF() && element.type !== LegType.IF);
 
-                // TODO geometry shits the bed for CI -> IF -> XF, but stringing them is correct
                 if (xiToXf) {
                     if (LnavConfig.VERBOSE_FPM_LOG) {
                         console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
                     }
+
+                    // Convert TF to CF
+                    if (element.type === LegType.TF) {
+                        const prevElement = second.allLegs[i - 1];
+                        if (!prevElement || prevElement.isDiscontinuity === true) {
+                            throw new Error('[FMS/FPM] TF leg without a preceding leg');
+                        } else if (!prevElement.terminationWaypoint()) {
+                            throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+                        }
+
+                        const track = bearingTo(prevElement.terminationWaypoint().location, element.terminationWaypoint().location);
+                        element.type = LegType.CF;
+                        element.definition.magneticCourse = track;
+                        // Get correct ident/annotation for CF leg
+                        [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, element.annotation);
+                    }
+
                     cutBefore = i;
                     break;
                 }
@@ -2236,6 +2254,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             performanceData: this instanceof FlightPlan ? this.performanceData.serialize() : undefined,
 
+            destinationAirport: this.destinationSegment?.destinationAirport?.ident ?? '',
+
+            originAirport: this.originSegment?.originAirport?.ident ?? '',
+            originRunway: this.originRunway?.ident ?? '',
+            destinationRunway: this.destinationRunway?.ident ?? '',
+
             segments: {
                 originSegment: this.originSegment.serialize(),
                 departureRunwayTransitionSegment: this.departureRunwayTransitionSegment.serialize(),
@@ -2299,6 +2323,11 @@ export interface SerializedFlightPlan {
     fixInfo: readonly FixInfoEntry[],
 
     performanceData?: SerializedFlightPlanPerformanceData,
+
+    originAirport: string,
+    originRunway: string,
+    destinationAirport: string,
+    destinationRunway: string,
 
     segments: {
         originSegment: SerializedFlightPlanSegment,

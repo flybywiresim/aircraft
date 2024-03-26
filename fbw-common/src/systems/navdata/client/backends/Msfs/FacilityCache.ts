@@ -105,14 +105,6 @@ export class FacilityCache {
         Coherent.on('SendNdb', this.receiveFacility.bind(this));
         Coherent.on('SendVor', this.receiveFacility.bind(this));
         Coherent.on('NearestSearchCompleted', this.receiveNearestSearchResults.bind(this));
-
-        setInterval(() => {
-            console.log(
-                '--MSFS Facility Cache--',
-                `Cached facilities: ${this.facilityCache.size}/${FacilityCache.cacheSize}`,
-                `Cached airways: ${this.airwayIcaoCache.size}`,
-            );
-        }, 60000);
     }
 
     public async startNearestSearchSession<T extends SupportedFacilitySearchType>(type: T): Promise<FacilitySearchTypeToSessionClass[T]> {
@@ -131,8 +123,6 @@ export class FacilityCache {
         const toFetch = [];
         const fetched = new Map<string, FacilityType<T>>();
 
-        console.log('total to fetch', icaos.length);
-
         for (const icao of icaos) {
             const key = FacilityCache.key(icao, loadType);
             const cached = this.facilityCache.get(key);
@@ -147,12 +137,8 @@ export class FacilityCache {
         if (toFetch.length > 0) {
             const results: boolean[] = await Coherent.call(LoadCall[loadType], toFetch);
             const successfulIcaos = toFetch.filter((_, i) => results[i]);
-            console.log('fetch results', toFetch.map((icao, i) => `${icao}: ${results[i]}`));
             if (successfulIcaos.length === 0) {
                 return fetched;
-            }
-            if (successfulIcaos.length < toFetch.length) {
-                console.error('Failed to fetch:', toFetch.filter((a) => successfulIcaos.findIndex((v) => v === a) === -1));
             }
 
             // there were at least some results...
@@ -169,14 +155,10 @@ export class FacilityCache {
                             fetched.set(icao, facility);
                         } else {
                             allSuccess = false;
-                            if (elapsedTime >= timeout) {
-                                console.warn('Failed to get successful result', icao);
-                            }
                         }
                     });
 
                     if (allSuccess || elapsedTime >= timeout) {
-                        console.log('Got all results in', elapsedTime);
                         clearInterval(interval);
                         resolve(fetched);
                     }

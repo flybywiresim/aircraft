@@ -316,7 +316,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     initVariables(resetTakeoffData = true) {
         this.costIndex = undefined;
-        // this.isCostIndexSet = false;
         this.maxCruiseFL = 390;
         this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
@@ -580,12 +579,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (flightPhaseManagerDelta !== -1) {
             this.flightPhaseManager.shouldActivateNextPhase(flightPhaseManagerDelta);
         }
-        // this._checkFlightPlan--;
-        // if (this._checkFlightPlan <= 0) {
-        //     this._checkFlightPlan = 120;
-        //     this.flightPlanManager.updateFlightPlan();
-        //     this.flightPlanManager.updateCurrentApproach();
-        // }
 
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.checkSpeedLimit();
@@ -739,12 +732,6 @@ class FMCMainDisplay extends BaseAirliners {
 
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
-
-                // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-                /* if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
-                    this._cruiseFlightLevel = this.cruiseFlightLevel;
-                    this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this._cruiseFlightLevel * 100));
-                } */
 
                 break;
             }
@@ -1571,33 +1558,6 @@ class FMCMainDisplay extends BaseAirliners {
             profilePoint.climbAltitude = currentClbConstraint;
             profilePoint.descentAltitude = Math.max(destinationElevation, currentDesConstraint);
             previousSpeedConstraint = currentSpeedConstraint;
-
-            // TODO to be replaced with bbk vnav
-            // set some data for LNAV to use for coarse predictions while we lack vnav
-            // if (wp.additionalData.constraintType === 1 /* CLB */) {
-            //     wp.additionalData.predictedSpeed = Math.min(profilePoint.climbSpeed, this.managedSpeedClimb);
-            //     if (this.climbSpeedLimitAlt && profilePoint.climbAltitude < this.climbSpeedLimitAlt) {
-            //         wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.climbSpeedLimit);
-            //     }
-            //     wp.additionalData.predictedAltitude = Math.min(profilePoint.climbAltitude, this._cruiseFlightLevel * 100);
-            // } else if (wp.additionalData.constraintType === 2 /* DES */) {
-            //     wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.getManagedDescentSpeed());
-            //     if (this.descentSpeedLimitAlt && profilePoint.climbAltitude < this.descentSpeedLimitAlt) {
-            //         wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.descentSpeedLimit);
-            //     }
-            //     wp.additionalData.predictedAltitude = Math.min(profilePoint.descentAltitude, this._cruiseFlightLevel * 100); ;
-            // } else {
-            //     wp.additionalData.predictedSpeed = this.managedSpeedCruise;
-            //     wp.additionalData.predictedAltitude = this._cruiseFlightLevel * 100;
-            // }
-            // // small hack to ensure the terminal procedures and transitions to/from enroute look nice despite lack of altitude predictions
-            // if (index <= this.flightPlanManager.getEnRouteWaypointsFirstIndex(FlightPlans.Active)) {
-            //     wp.additionalData.predictedAltitude = Math.min(originElevation + 10000, wp.additionalData.predictedAltitude);
-            //     wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
-            // } else if (index >= this.flightPlanManager.getEnRouteWaypointsLastIndex(FlightPlans.Active)) {
-            //     wp.additionalData.predictedAltitude = Math.min(destinationElevation + 10000, wp.additionalData.predictedAltitude);
-            //     wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
-            // }
         }
     }
 
@@ -1941,8 +1901,6 @@ class FMCMainDisplay extends BaseAirliners {
     setCruiseFlightLevelAndTemperature(input) {
         if (input === FMCMainDisplay.clrValue) {
             this.flightPlanService.setPerformanceData('cruiseFlightLevel', undefined);
-            // this.cruiseFlightLevel = undefined;
-            // this._cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
             return true;
         }
@@ -1986,7 +1944,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                    // this.isCostIndexSet = true;
                     this.costIndex = value;
                     this.updateManagedSpeeds();
                     return true;
@@ -2449,7 +2406,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
                 break;
             case 1: // NotYetImplemented
-                this.setScratchpadMessage(NXSystemMessages.notYetImplemented);
+                this.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
                 break;
             case 2: // FormatError
                 this.setScratchpadMessage(NXSystemMessages.formatError);
@@ -2560,15 +2517,20 @@ class FMCMainDisplay extends BaseAirliners {
                         }
                     }
                 }).catch((err) => {
-                if (err instanceof McduMessage) {
-                    this.setScratchpadMessage(err);
-                } else if (err) {
-                    console.error(err);
+                    if (err.type) {
+                        this.showFmsErrorMessage(err.type)
+                    } else if (err instanceof McduMessage) {
+                        this.setScratchpadMessage(err);
+                    } else if (err) {
+                        console.error(err);
+                    }
+                    return callback(false);
                 }
-                return callback(false);
-            });
+            );
         } catch (err) {
-            if (err instanceof McduMessage) {
+            if (err.type) {
+                this.showFmsErrorMessage(err.type)
+            } else if (err instanceof McduMessage) {
                 this.setScratchpadMessage(err);
             } else {
                 console.error(err);
@@ -3965,7 +3927,6 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = null;
-            // SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
             return true;
         }
 

@@ -53,7 +53,7 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onRightInput[0] = () => {
-                CDUAvailableArrivalsPage.ShowPage(mcdu, leg, 0, false, forPlan, inAlternate);
+                CDUAvailableArrivalsPage.ShowPage(mcdu, targetPlan.destinationAirport, 0, false, forPlan, inAlternate);
             };
         } else if (isDeparture || isPpos || isFrom) {
             arrivalFixInfoCell = "FIX INFO>";

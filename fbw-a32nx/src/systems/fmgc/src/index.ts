@@ -7,6 +7,7 @@ import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { FlightPlanRpcServer } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcServer';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -35,6 +36,7 @@ export {
     RunwayUtils,
     ApproachType,
     FlightPlanService,
+    FlightPlanRpcServer,
     A320FlightPlanPerformanceData,
     NavigationDatabase,
     NavigationDatabaseBackend,

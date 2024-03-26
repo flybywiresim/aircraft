@@ -15,15 +15,16 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
 
     allLegs: FlightPlanElement[] = []
 
-    get procedure(): ProcedureTransition | undefined {
+    get procedure() {
         return this.departureEnrouteTransition;
     }
 
-    private departureEnrouteTransition: ProcedureTransition | undefined = undefined
+    // The departure enroute transition. If undefined, no departure enroute transition is set. If null, NO TRANS was explicitly selected.
+    private departureEnrouteTransition: ProcedureTransition | undefined | null
 
-    setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (databaseId === undefined) {
-            this.departureEnrouteTransition = undefined;
+    setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined || databaseId === null) {
+            this.departureEnrouteTransition = databaseId === undefined ? undefined : null;
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;
