@@ -7,31 +7,51 @@
 #include <string>
 
 /**
- * @brief The type of a procedure step.
+ * @brief The type of a procedure step as a combination of flags.
  *
- * @enum STEP: Normal procedure step, which is required to be executed even in expedited mode
- * @enum NOEX: Normal Procedure step, which must not be expedited
- * @enum PROC: Procedure step, which is not required to be executed in expedited mode and will not be expedited
- * @enum EXON: Expedited procedure step, which is only executed in expedited mode
- * @enum COND: Conditional procedure step, waits for a certain state to be set
+ * The flags are:
+ * @enum ACTION: The step is an action step
+ * @enum CONDITION: The step is a conditional step
+ * @enum NORMAL_MODE: The step is not expedited
+ * @enum EXPEDITED_MODE: The step is expedited
+ * @enum EXPEDITED_DELAY: The step is expedited and the delay should be respected
+ *
+ * The convenience flags are:
+ * @enum STEP: Action step in normal and expedited mode
+ * @enum PROC: Action step only executed in normal mode - skipped in expedited mode
+ * @enum NOEX: Action step in normal and expedited mode, delay is respected even in expedited mode
+ * @enum EXON: Action step only executed in expedited mode - skipped in normal mode
+ * @enum COND: Conditional step, runs in normal and expedited mode
+ * @enum NCON: Conditional step, runs in normal mode only
+ * @enum ECON: Conditional step, runs in expedited mode only
  */
 enum StepType {
-  STEP,
-  NOEX,
-  PROC,
-  EXON,
-  COND,
+  ACTION          = 0b00001,
+  CONDITION       = 0b00010,
+  NORMAL_MODE     = 0b00100,  // runs in normal mode
+  EXPEDITED_MODE  = 0b01000,  // runs in expedited mode
+  EXPEDITED_DELAY = 0b10000,  // Respect the delay after the step even in expedited mode
+
+  // convenience flags for the most common combinations
+  STEP = ACTION | NORMAL_MODE | EXPEDITED_MODE,  // Action step in normal and expedited mode
+  PROC = ACTION | NORMAL_MODE,                   // Action step only executed in normal mode - skipped in expedited mode
+  NOEX = STEP | EXPEDITED_DELAY,                 // Action step in normal and expedited mode, delay is respected even in expedited mode
+  EXON = ACTION | EXPEDITED_MODE,                // Action step only executed in expedited mode - skipped in normal mode
+
+  COND = CONDITION | NORMAL_MODE | EXPEDITED_MODE,  // Conditional step, runs in normal and expedited mode
+  NCON = CONDITION | NORMAL_MODE,                   // Conditional step, runs in normal mode only
+  ECON = CONDITION | EXPEDITED_MODE,                // Conditional step, runs in expedited mode only
 };
 
 /**
  * A procedure step is a single step in a procedure.
  *
  * @field description A description of the step
- * @field type The type of the step (STEP, NOEX, PROC, COND)
+ * @field type The type of the step as a combination of flags - @see StepType
  * @field delayAfter Time to delay next step of execution of action - will be skipped if expected state is already set
- * @field expectedStateCheckCode Check if desired state is already set so the action can be skipped
- * @field actionCode Calculator code to achieve the desired state. If it is a conditional this calculator code needs to eval to true or
- *        false
+ * @field expectedStateCheckCode Check if desired state is already set so the action can be skipped. If it is a conditional step
+ *         this code needs to eval to true or false. The procedure only continues if the code evals to true.
+ * @field actionCode Calculator code to achieve the desired state.
  * @field noExpedite If true, the step will not be expedited even if expedite is set (default: false)
  */
 struct ProcedureStep {

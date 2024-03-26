@@ -115,8 +115,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // current procedure
     loadAircraftPresetRequest->setAsInt64(currentProcedureID);
 
-    // update if the user wants to expedite the loading
-    aircraftPresetQuickMode->setAndWriteToSim(aircraftPresetExpedite->getAsBool() ? 1 : 0);
+    // check if the user wants to expedite the loading
+    const bool expeditedMode = aircraftPresetExpedite->getAsBool();
+    aircraftPresetQuickMode->setAndWriteToSim(expeditedMode ? 1 : 0);
 
     // check if all procedure steps are done and the procedure is finished
     if (currentStep >= currentProcedure->size()) {
@@ -140,8 +141,11 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
     // Skip this step if expedite mode is active and the current step is not a required step
     // or expedite mode is not active, and the current step is an expedited only step
-    if ((aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::PROC) ||
-        (!aircraftPresetExpedite->getAsBool() && currentStepPtr->type == StepType::EXON)) {
+    if ((expeditedMode && currentStepPtr->type == StepType::PROC)      // skip PROC action steps in expedited mode
+        || (!expeditedMode && currentStepPtr->type == StepType::EXON)  // skip EXON action steps in normal mode
+        || (expeditedMode && currentStepPtr->type == StepType::NCON)   // skip NCON condition steps in expedited mode
+        || (!expeditedMode && currentStepPtr->type == StepType::ECON)  // skip ECON condition steps in normal mode
+    ) {
       currentStep++;
       return true;
     }
@@ -155,9 +159,10 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     PCSTRINGZ svalue = nullptr;
 
     // check if the current step is a condition step and check the condition
-    if (currentStepPtr->type == StepType::COND) {
+    // it has already been checked above if a condition step should be skipped so we only check for the condition flag here
+    if (currentStepPtr->type & StepType::CONDITION) {
       updateProgress(currentStepPtr);
-      execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
+      execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
                " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
       if (!helper::Math::almostEqual(0.0, fvalue)) {
@@ -167,8 +172,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
-    // allow execution of the procedure without a delay if expedite is set
-    if (aircraftPresetExpedite->getAsBool() && !(currentStepPtr->type == StepType::NOEX)) {
+    // Remove the delay if the step is expedited and the delay can be ignored.
+    // This adds a general expedited delay to each step to generally slow down the process.
+    if (expeditedMode && !(currentStepPtr->type & StepType::EXPEDITED_DELAY)) {
       currentDelay = currentLoadingTime + aircraftPresetExpediteDelay->get();
     }
 

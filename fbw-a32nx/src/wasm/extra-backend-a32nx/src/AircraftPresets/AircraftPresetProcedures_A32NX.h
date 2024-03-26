@@ -19,9 +19,6 @@ class AircraftPresetProcedures_A32NX {
       // @formatter:off
 
       .POWERED_CONFIG_ON {
-        //WORKAROUND for intermittent HOT AIR PB Fault when using expedited mode
-        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==",           "0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
-        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) 1 ==",               "1 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
 
         // SOP: PRELIMINARY COCKPIT PREPARATION
         ProcedureStep{"BAT1 On",                  STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                   "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
@@ -40,7 +37,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"APU Start On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
                                                               "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",            "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
 
-        ProcedureStep{"Await AC BUS ON",          COND,  2000, "",                                                      "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
+        ProcedureStep{"Await AC BUS ON",          COND,  2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                    ""},
 
         // SOP: COCKPIT PREPARATION
         ProcedureStep{"Crew Oxy On",              STEP, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                         "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
@@ -62,11 +59,11 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"NO SMOKING Auto",          STEP, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==",   "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
         ProcedureStep{"EMER EXT Lt Arm",          STEP, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",    "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
 
-        // For the fire tests the FWC needs to be initialized
-        // The correct variables to wait for are: A32NX_FWS_FWC_1_NORMAL and A32NX_FWS_FWC_2_NORMAL. But
-        // as these are only on Exp this first iteration uses A32NX_FWC_FLIGHT_PHASE which also work on>
-        // master and is equivalent for this specific purpose. Will be changed when the FWC is on master.
-        ProcedureStep{"Await FWC Init",           COND, 5000, "",                                                       "(L:A32NX_FWC_FLIGHT_PHASE)"},
+        // For the fire tests, the FWC needs to be initialized
+        // The correct variables to wait for are: A32NX_FWS_FWC_1_NORMAL and A32NX_FWS_FWC_2_NORMAL.
+        // Alternatively, A32NX_FWC_FLIGHT_PHASE can be used  for this specific purpose.
+        ProcedureStep{"Await FWC Init",           COND, 5000, "(L:A32NX_FWC_FLIGHT_PHASE)",                             ""},
+        // do not skip delay in expedited mode as the initialization would fail (cause unknown)
         ProcedureStep{"Waiting...",               NOEX, 1000, "(L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)",                "1 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"},
 
         // APU fire test
@@ -86,9 +83,17 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"ENG 2 Fire Test On",       PROC, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)",          "1 (>L:A32NX_FIRE_TEST_ENG2)"},
         ProcedureStep{"ENG 2 Fire Test Off",      PROC, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)",          "0 (>L:A32NX_FIRE_TEST_ENG2) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)"},
 
-        ProcedureStep{"Await APU Avail",          COND,  2000, "",                                                      "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
+        ProcedureStep{"Await APU Avail",          COND,  2000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
+                                                               "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",           ""},
         ProcedureStep{"APU Bleed On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                              "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
+                                                              "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
+
+        // To allow slats/flaps to retract in expedited mode when engines were running before and slats/flaps were out
+        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 ==",              "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
+
+        //WORKAROUND for intermittent HOT AIR PB Fault when using expedited mode
+        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==",           "0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
+        ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) 1 ==",               "1 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
       },
 
       .POWERED_CONFIG_OFF = {
@@ -107,7 +112,8 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"EXT PWR Off",           STEP, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                           "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
         ProcedureStep{"BAT2 Off",              STEP, 100,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",                 "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
         ProcedureStep{"BAT1 Off",              STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",                 "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"AC BUS Off Check",      COND, 2000, "",                                                          "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+        ProcedureStep{"AC BUS Off Check",      COND, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !",                      ""},
+
         ProcedureStep{"CVR Test Reset",        STEP, 0,    "",                                                          "0 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
         ProcedureStep{"APU Fire Test Reset",   STEP, 0,    "",                                                          "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
         ProcedureStep{"ENG 1 Fire Test Reset", STEP, 0,    "",                                                          "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
@@ -125,12 +131,12 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"FUEL VALVE 10 On",        STEP, 500,  "(A:FUELSYSTEM VALVE SWITCH:10, Bool)",                    "10 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"FUEL PUMP 3 On",          STEP, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",                      "3 (>K:FUELSYSTEM_PUMP_ON)"},
         ProcedureStep{"FUEL PUMP 6 On",          STEP, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",                      "6 (>K:FUELSYSTEM_PUMP_ON)"},
-        // next step will keep a slgitht delay as the A32NX otherwise often did not start up the ENG2 in step 3010
+        // Step will keep a delay as the A32NX otherwise often did not start up the ENG2 - reason unknown but likely some nondeterministic delay
         ProcedureStep{"Cockpit Door Locked",     NOEX, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",                      "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
-        ProcedureStep{"Await ADIRS 1 Alignment", COND, 2000, "",                                                        "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 2 Alignment", COND, 2000, "",                                                        "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 3 Alignment", COND, 2000, "",                                                        "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"Await ADIRS 1 Alignment", COND, 2000, "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 ==",                      ""},
+        ProcedureStep{"Await ADIRS 2 Alignment", COND, 2000, "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 ==",                      ""},
+        ProcedureStep{"Await ADIRS 3 Alignment", COND, 2000, "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 ==",                      ""},
       },
 
       .PUSHBACK_CONFIG_OFF = {
@@ -151,14 +157,17 @@ class AircraftPresetProcedures_A32NX {
                                                                                                                         "2 (>K:TURBINE_IGNITION_SWITCH_SET1)"},
 
         ProcedureStep{"ENG 2 On",             STEP, 60000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                         "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 2 Avail",    PROC,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 == ||"},
+        // in normal mode, we wait for the engine 2 to be available at this point
+        ProcedureStep{"Await ENG 2 Avail",    NCON,  2000,  "(L:A32NX_ENGINE_STATE:2) 1 ==",                            ""},
         ProcedureStep{"ENG 1 On",             STEP,  2000,  "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                        "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 2 Avail",    EXON,  2000,  "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
-        ProcedureStep{"Await ENG 1 Avail",    COND,  5000,  "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
+        // in expedited mode, we wait for the engine 2 to be available at this point
+        ProcedureStep{"Await ENG 2 Avail",    ECON,  2000,  "(L:A32NX_ENGINE_STATE:2) 1 ==",                            ""},
+        ProcedureStep{"Await ENG 1 Avail",    COND,  5000,  "(L:A32NX_ENGINE_STATE:1) 1 ==",                            ""},
         // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",    STEP, 3000,  "",                                                          "1 (>K:TURBINE_IGNITION_SWITCH_SET1) "
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET2) "},
 
+        ProcedureStep{"Yellow Elec Pump Off", STEP, 1000,  "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 1 ==",                 "1 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
         ProcedureStep{"APU Bleed Off",        STEP, 2000,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",               "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",       STEP, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",                "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
         ProcedureStep{"Spoiler Arm",          STEP, 2000,  "(L:A32NX_SPOILERS_ARMED) 1 ==",                             "1 (>K:SPOILERS_ARM_SET)"},
@@ -200,8 +209,8 @@ class AircraftPresetProcedures_A32NX {
 
         ProcedureStep{"ENG 1 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",                       "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",                       "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-        ProcedureStep{"ENG 1 N1 <3%",          COND,  1000, "",                                                         "(L:A32NX_ENGINE_N1:1) 3 <"},
-        ProcedureStep{"ENG 2 N1 <3%",          COND,  1000, "",                                                         "(L:A32NX_ENGINE_N1:2) 3 <"},
+        ProcedureStep{"ENG 1 N1 <3%",          COND,  1000, "(L:A32NX_ENGINE_N1:1) 3 <",                                ""},
+        ProcedureStep{"ENG 2 N1 <3%",          COND,  1000, "(L:A32NX_ENGINE_N1:2) 3 <",                                ""},
       },
 
       .TAKEOFF_CONFIG_ON = {
@@ -210,7 +219,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"WX Radar Mode",     STEP, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==",                        "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
         // SOP: BEFORE TAKEOFF
         ProcedureStep{"TCAS Switch TA/RA", STEP, 2000, "(L:A32NX_SWITCH_TCAS_POSITION) 2 ==",                           "2 (>L:A32NX_SWITCH_TCAS_POSITION)"},
-        // unfortunately strobe 3-way switch control is weird, so we have to use a workaround and turn it off first
+        // unfortunately, strobe 3-way switch control is weird, so we have to use a workaround and turn it off first
         ProcedureStep{"Strobe On"  ,       STEP, 50,   "(L:LIGHTING_STROBE_0) 0 ==",                                    "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
         ProcedureStep{"Strobe On",         STEP, 1000, "(L:LIGHTING_STROBE_0) 0 ==",                                    "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
         ProcedureStep{"Cabin Ready",       STEP, 1000, "",                                                              "1 (>L:A32NX_CABIN_READY)"},
@@ -224,7 +233,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"LL Lt L Off",       STEP, 0,    "(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &&",   "2 (>L:LIGHTING_LANDING_2) 1 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
         ProcedureStep{"LL Lt R Off",       STEP, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&",   "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
         ProcedureStep{"NOSE Lt Takeoff",   STEP, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                              "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-        // unfortunately strobe 3-way switch control is weird, so we have to use a workaround and turn it off first
+        // unfortunately, strobe 3-way switch control is weird, so we have to use a workaround and turn it off first
         ProcedureStep{"Strobe Auto",       STEP, 50,   "(L:LIGHTING_STROBE_0) 0 == (L:LIGHTING_STROBE_0) 1 == ||",      "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
         ProcedureStep{"Strobe Auto",       STEP, 1000, "(L:A32NX_ENGINE_STATE:1) 0 == (L:A32NX_ENGINE_STATE:2) 0 == && "
                                                        "(L:LIGHTING_STROBE_0) 1 == || ",                                "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},

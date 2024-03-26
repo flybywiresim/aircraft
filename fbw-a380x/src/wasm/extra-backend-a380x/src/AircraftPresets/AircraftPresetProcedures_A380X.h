@@ -17,6 +17,15 @@
 class AircraftPresetProcedures_A380X {
  public:
   const inline static PresetProceduresDefinition aircraftProcedureDefinition{
+
+  // ProcedureStep definition:
+  // ProcedureStep{"Name", Type, Delay, Condition, Action}
+  // Type: STEP, EXON, EXOFF, COND, PROC
+  // Delay: Delay in milliseconds
+  // Condition: Condition to check before executing the action to potentially skip the step if the condition is already
+  //            true or if it is a COND step the actual condition to check and wait for it to be true
+  // Action: Action to execute to achieve the desired state
+
   // clang-format off
       // @formatter:off
 
@@ -42,7 +51,7 @@ class AircraftPresetProcedures_A380X {
                                                               "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",          "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
         ProcedureStep{"APU Start On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
                                                               "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",            "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
-        ProcedureStep{"Await AC BUS ON",          COND,  2000, "",                                                      "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
+        ProcedureStep{"Await AC BUS ON",          COND, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     ""},
 
         // SOP: COCKPIT PREPARATION
         ProcedureStep{"Crew Oxy On",              STEP, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                         "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
@@ -61,9 +70,14 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"NO SMOKING Auto",          STEP, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==",   "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
         ProcedureStep{"EMER EXT Lt Arm",          STEP, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",    "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
 
-        ProcedureStep{"Await APU Avail",          COND, 2000, "",                                                       "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
+        ProcedureStep{"Await APU Avail",          COND, 2000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
+                                                              "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",            ""},
         ProcedureStep{"APU Bleed On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                              "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
+                                                              "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
+
+        // To allow slats/flaps to retract in expedited mode when engines were running before and slats/flaps were out
+        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 ==",              "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
+
       },
 
       .POWERED_CONFIG_OFF = {
@@ -87,7 +101,7 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"BAT2 Off",              STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",                 "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
         ProcedureStep{"BAT ESS Off",           STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==",               "0 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
         ProcedureStep{"BAT1 Off",              STEP, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",                 "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"AC BUS Off Check",      COND,  2000, "",                                                         "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+        ProcedureStep{"AC BUS Off Check",      COND, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !",                      ""},
         ProcedureStep{"ENG 1 Fire Test Reset", STEP, 0,    "",                                                          "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
         ProcedureStep{"FWC Init Reset",        STEP, 0,    "",                                                          "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
       },
@@ -126,9 +140,9 @@ class AircraftPresetProcedures_A380X {
 
         ProcedureStep{"Cockpit Door Locked",         STEP, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",                  "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
 
-        ProcedureStep{"Await ADIRS 1 Alignment",     COND,  2000, "",                                                   "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 2 Alignment",     COND,  2000, "",                                                   "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
-        ProcedureStep{"Await ADIRS 3 Alignment",     COND,  2000, "",                                                   "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
+        ProcedureStep{"Await ADIRS 1 Alignment",     COND,  2000, "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 ==",                 ""},
+        ProcedureStep{"Await ADIRS 2 Alignment",     COND,  2000, "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 ==",                 ""},
+        ProcedureStep{"Await ADIRS 3 Alignment",     COND,  2000, "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 ==",                 ""},
       },
 
       .PUSHBACK_CONFIG_OFF = {
@@ -172,14 +186,16 @@ class AircraftPresetProcedures_A380X {
 
         ProcedureStep{"ENG 1 On",              STEP,  1000, "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                        "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 2 On",              STEP, 20000, "(A:FUELSYSTEM VALVE OPEN:2, Bool)",                        "2 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 1 Avail",     PROC,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:1) 1 =="},
-        ProcedureStep{"Await ENG 2 Avail",     PROC,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:2) 1 =="},
+        // in normal mode, we wait for the engine 1+2 to be available at this point
+        ProcedureStep{"Await ENG 1 Avail",     NCON,  2000, "(L:A32NX_ENGINE_STATE:1) 1 ==",                            ""},
+        ProcedureStep{"Await ENG 2 Avail",     NCON,  2000, "(L:A32NX_ENGINE_STATE:2) 1 ==",                            ""},
         ProcedureStep{"ENG 3 On",              STEP,  1000, "(A:FUELSYSTEM VALVE OPEN:3, Bool)",                        "3 (>K:FUELSYSTEM_VALVE_OPEN)"},
         ProcedureStep{"ENG 4 On",              STEP, 20000, "(A:FUELSYSTEM VALVE OPEN:4, Bool)",                        "4 (>K:FUELSYSTEM_VALVE_OPEN)"},
-        ProcedureStep{"Await ENG 1 Avail",     EXON,  2000,  "",                                                        "(L:A32NX_ENGINE_STATE:1) 1 =="},
-        ProcedureStep{"Await ENG 2 Avail",     EXON,  2000,  "",                                                        "(L:A32NX_ENGINE_STATE:2) 1 =="},
-        ProcedureStep{"Await ENG 3 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:3) 1 =="},
-        ProcedureStep{"Await ENG 4 Avail",     COND,  2000, "",                                                         "(L:A32NX_ENGINE_STATE:4) 1 =="},
+        // in expedited mode, we wait for the engine 1+2 to be available at this point
+        ProcedureStep{"Await ENG 1 Avail",     ECON,  2000, "(L:A32NX_ENGINE_STATE:1) 1 ==",                            ""},
+        ProcedureStep{"Await ENG 2 Avail",     ECON,  2000, "(L:A32NX_ENGINE_STATE:2) 1 ==",                            ""},
+        ProcedureStep{"Await ENG 3 Avail",     COND,  2000, "(L:A32NX_ENGINE_STATE:3) 1 ==",                            ""},
+        ProcedureStep{"Await ENG 4 Avail",     COND,  2000, "(L:A32NX_ENGINE_STATE:4) 1 ==",                            ""},
 
 //        // SOP: AFTER START
         ProcedureStep{"ENG MODE SEL Norm",     STEP, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1, Number) 1 == "
@@ -191,6 +207,7 @@ class AircraftPresetProcedures_A380X {
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET3) "
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET4)"},
 
+        ProcedureStep{"Yellow Elec Pump Off",  STEP, 1000,  "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 1 ==",                 "1 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
         ProcedureStep{"APU Bleed Off",         STEP, 1500,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",              "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",        STEP, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",               "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
 
@@ -234,10 +251,10 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"ENG 3 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:3, Bool) !",                       "3 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",                       "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 1 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",                       "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-        ProcedureStep{"ENG 4 N1 <3%",          COND,  500, "",                                                          "(L:A32NX_ENGINE_N1:4) 3 <"},
-        ProcedureStep{"ENG 3 N1 <3%",          COND,  500, "",                                                          "(L:A32NX_ENGINE_N1:3) 3 <"},
-        ProcedureStep{"ENG 2 N1 <3%",          COND,  500, "",                                                          "(L:A32NX_ENGINE_N1:2) 3 <"},
-        ProcedureStep{"ENG 1 N1 <3%",          COND,  500, "",                                                          "(L:A32NX_ENGINE_N1:1) 3 <"},
+        ProcedureStep{"ENG 4 N1 <3%",          COND,  500, "(L:A32NX_ENGINE_N1:4) 3 <",                                 ""},
+        ProcedureStep{"ENG 3 N1 <3%",          COND,  500, "(L:A32NX_ENGINE_N1:3) 3 <",                                 ""},
+        ProcedureStep{"ENG 2 N1 <3%",          COND,  500, "(L:A32NX_ENGINE_N1:2) 3 <",                                 ""},
+        ProcedureStep{"ENG 1 N1 <3%",          COND,  500, "(L:A32NX_ENGINE_N1:1) 3 <",                                 ""},
       },
 
       .TAKEOFF_CONFIG_ON = {
