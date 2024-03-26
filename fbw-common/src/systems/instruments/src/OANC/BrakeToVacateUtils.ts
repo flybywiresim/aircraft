@@ -53,10 +53,6 @@ export class BrakeToVacateUtils {
     selectRunwayFromOans(runway: string, centerlineFeature: Feature<Geometry, AmdbProperties>, thresholdFeature: Feature<Geometry, AmdbProperties>) {
         this.clearSelection();
 
-        // Derive LDA from geometry (as long as we don't have a proper database)
-        const lda = thresholdFeature.properties?.lda ?? 0;
-        const heading = thresholdFeature.properties?.brngmag ?? 0;
-
         // Select opposite threshold location
         const thrLoc = thresholdFeature.geometry.coordinates as Position;
         const firstEl = centerlineFeature.geometry.coordinates[0] as Position;
@@ -68,6 +64,16 @@ export class BrakeToVacateUtils {
         } else {
             this.btvOppositeThresholdPosition = lastEl;
         }
+
+        // Derive LDA from geometry (as long as we don't have a proper database)
+        let lda: number = 0;
+        if (thresholdFeature.properties?.lda > 0) {
+            lda = thresholdFeature.properties?.lda;
+        } else {
+            lda = (dist1 > dist2 ? dist1 : dist2);
+        }
+
+        const heading = thresholdFeature.properties?.brngmag ?? 0;
 
         this.btvThresholdFeature = thresholdFeature;
         this.btvRunwayLda.set(lda);
