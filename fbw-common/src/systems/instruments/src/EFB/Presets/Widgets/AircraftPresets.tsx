@@ -2,31 +2,42 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { t } from '../../Localization/translation';
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-import { StepDescription } from './Procedures';
+import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
+
+import { useViewListenerEvent } from '../../Utils/listener';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
     // use the LVAR A32NX_AIRCRAFT_PRESET_LOAD to signal the backend that the user
     // requests a preset to be loaded.
     // The backend will reset the LVAR to 0 when done.
-    // As long as the LVAR is 1 the backend is still applying the preset.
+    // As long as the LVAR is >0, the backend is still applying the preset.
     // If the LVAR is set to 0 before the backend is finished, applying, the preset
     // will be stopped by the backend.
-    // The progress while loading an aircraft preset can be read from
-    // the LVAR A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS.
-    // The current step ID can be read via A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID
-    // and then use the StepDescription from './Procedures' to get the string.
+    // A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE is a LVAR to expedite the loading of the preset
+    // by skipping the delay between steps.
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
-    const [loadPresetProgress] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS', 'number', 100);
-    const [loadPresetCurrentId] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID', 'number', 100);
+    const [loadPresetsExpedite, setLoadPresetsExpedite] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE', 'number', 250);
+
     const { showModal } = useModals();
+
+    // State to store the loading progress and the current step description
+    const [loadPresetProgress, setLoadPresetProgress] = useState(0);
+    const [currentStepDescription, setCurrentStepDescription] = useState('');
+
+    // Callback function to update the loading progress from the WASM module
+    const onProgressUpdateFromWasm = (data: string) => {
+        const [progressPercentage, currentStep] = data.split(';');
+        setLoadPresetProgress(parseFloat(progressPercentage));
+        setCurrentStepDescription(currentStep);
+    };
+
+    // Register the callback function to receive the loading progress from the WASM module
+    useViewListenerEvent('JS_LISTENER_COMM_BUS', 'AIRCRAFT_PRESET_WASM_CALLBACK', onProgressUpdateFromWasm);
 
     // These need to align with the IDs in the Presets C++ WASM.
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h
@@ -64,7 +75,7 @@ export const AircraftPresets = () => {
                                 {t('Presets.AircraftStates.CurrentProcedureStep')}
                                 :
                                 {' '}
-                                {StepDescription.get(loadPresetCurrentId)}
+                                {currentStepDescription}
                             </span>
                             <div
                                 className="h-1/2 bg-theme-highlight"
@@ -88,7 +99,7 @@ export const AircraftPresets = () => {
                 )}
             </div>
 
-            <ScrollableContainer innerClassName="space-y-4" height={52}>
+            <ScrollableContainer innerClassName="space-y-4" height={42}>
                 {AircraftPresetsList.map(({ index, name }) => (
                     <div
                         key={index}
@@ -99,6 +110,15 @@ export const AircraftPresets = () => {
                     </div>
                 ))}
             </ScrollableContainer>
+
+            <div className="mt-14 rounded-md border-2 border-theme-accent px-4 py-1">
+                <div className="flex h-10 flex-row items-center">
+                    <div className="pr-3">
+                        {t('Presets.AircraftStates.ExpediteLoading')}
+                    </div>
+                    <Toggle value={!!loadPresetsExpedite} onToggle={(value) => (setLoadPresetsExpedite(value ? 1 : 0))} />
+                </div>
+            </div>
         </div>
     );
 };

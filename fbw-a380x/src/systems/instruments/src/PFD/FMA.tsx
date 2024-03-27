@@ -242,16 +242,22 @@ class A2Cell extends DisplayComponent<{ bus:EventBus }> {
                 this.text.set('');
                 break;
             case 1:
-                this.text.set('BRK LO ');
+                this.text.set('BTV ');
                 break;
             case 2:
-                this.text.set('BRK MED ');
+                this.text.set('BRK LO ');
                 break;
             case 3:
-                // MAX will be shown in 3rd row
-                this.text.set('');
+                this.text.set('BRK 2 ');
+                break;
+            case 4:
+                this.text.set('BRK 3 ');
+                break;
+            case 5:
+                this.text.set('BRK HI ');
                 break;
             default:
+                this.text.set('');
                 break;
             }
         });
@@ -431,15 +437,27 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             if (this.autoBrakeActive) {
                 switch (this.autoBrakeMode) {
                 case 1:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BTV</text>';
                     this.displayModeChangedPath();
                     break;
                 case 2:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
                     this.displayModeChangedPath();
                     break;
                 case 3:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK 2 </text>';
+                    this.displayModeChangedPath();
+                    break;
+                case 4:
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK 3 </text>';
+                    this.displayModeChangedPath();
+                    break;
+                case 5:
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK HI </text>';
+                    this.displayModeChangedPath();
+                    break;
+                case 6:
+                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK RTO</text>';
                     this.displayModeChangedPath();
                     break;
                 default:
@@ -538,8 +556,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     }
 
     private handleAutobrakeMode() {
-        if (this.autobrakeMode === 3 && !this.AB3Message) {
-            this.textSub.set('BRK MAX');
+        if (this.autobrakeMode === 6 && !this.AB3Message) {
+            this.textSub.set('BRK RTO');
             this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
         } else {
             this.textSub.set('');
