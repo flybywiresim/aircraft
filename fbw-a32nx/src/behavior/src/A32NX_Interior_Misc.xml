@@ -13,6 +13,7 @@
     -->
     <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
         <DefaultTemplateParameters>
+            <PART_ID>SWITCH_MP#DCDU_SIDE#_DIM</PART_ID>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
             <BRT_DIM_INVERT_ANIM>1</BRT_DIM_INVERT_ANIM>
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
