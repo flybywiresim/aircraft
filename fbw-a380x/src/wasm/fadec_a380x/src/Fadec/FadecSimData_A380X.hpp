@@ -264,6 +264,7 @@ class FadecSimData_A380X {
     oilPsiDataPtr[E3] = dm->make_datadefinition_var<OilPsiData>("GENERAL ENG OIL PRESSURE 3", oilPsiE3DataDef, NO_AUTO_UPDATE);
     oilPsiDataPtr[E4] = dm->make_datadefinition_var<OilPsiData>("GENERAL ENG OIL PRESSURE 4", oilPsiE4DataDef, NO_AUTO_UPDATE);
 
+    // TURB ENG CN2 is used as a proxy for N3 as the sim does not have a direct N3 value
     engineCorrectedN3DataPtr[E1] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 1", engine1CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E2] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 2", engine2CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E3] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 3", engine3CN3DataDef, NO_AUTO_UPDATE);
