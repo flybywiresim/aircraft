@@ -26,6 +26,7 @@ export const ThirdPartyOptionsPage = () => {
 
     const [overrideSimbriefUserID, setOverrideSimbriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [overrideSimbriefDisplay, setOverrideSimbriefDisplay] = useState(overrideSimbriefUserID);
+    const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
     const getSimbriefUserData = async (value: string): Promise<any> => {
         const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -152,6 +153,10 @@ export const ThirdPartyOptionsPage = () => {
                             </div>
                         </SettingItem>
                     </TooltipWrapper>
+
+                    <SettingItem name={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}>
+                        <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
+                    </SettingItem>
 
                     <SettingItem name={t('Settings.ThirdPartyOptions.GsxFuelEnabled')}>
                         <Toggle
