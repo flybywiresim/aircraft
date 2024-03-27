@@ -1,3 +1,4 @@
+use nalgebra::distance_squared;
 use systems::{
     hydraulic::brake_circuit::AutobrakeDecelerationGovernor,
     overhead::PressSingleSignalButton,
@@ -663,6 +664,7 @@ struct BtvDecelScheduler {
     dev_exit_distance_to_touchdown_id: VariableIdentifier,
     runway_length_id: VariableIdentifier,
     distance_to_exit_id: VariableIdentifier,
+    rot_estimation_id: VariableIdentifier,
 
     ground_speed_id: VariableIdentifier,
 
@@ -701,6 +703,7 @@ impl BtvDecelScheduler {
             runway_length_id: context.get_identifier("OANS_RWY_LENGTH".to_owned()),
             distance_to_exit_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_EXIT".to_owned()),
+            rot_estimation_id: context.get_identifier("OANS_BTV_ROT".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
@@ -902,14 +905,27 @@ impl BtvDecelScheduler {
     fn is_armed(&self) -> bool {
         self.state != BTVState::Disabled
     }
+
+    fn rot_estimation_for_distance(&self) -> Duration {
+        let distance = if self.is_oans_fallback_mode() {
+            self.fallback_distance_to_exit_from_touchdown
+        } else {
+            self.oans_distance_to_exit
+        };
+
+        if distance.get::<meter>() > 0. {
+            Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.))
+        } else {
+            Duration::default()
+        }
+    }
 }
 impl SimulationElement for BtvDecelScheduler {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            &self.dev_exit_distance_to_touchdown_id,
-            self.fallback_distance_to_exit_from_touchdown.get::<meter>(),
+            &self.rot_estimation_id,
+            self.rot_estimation_for_distance().as_secs(),
         );
-        writer.write(&self.runway_length_id, self.runway_length.get::<meter>());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
