@@ -130,7 +130,7 @@ type CondUnitProps = {
 
 const CondUnit = ({ title, trimAirValve, cabinTemp, trimTemp, x, y, offset, hotAir } : CondUnitProps) => {
     const rotateTemp = offset + (trimAirValve * 86 / 100);
-    const overheat = trimTemp > 80;
+    const overheat = trimTemp > 176; // Overheat indicator at 80C, temperature is given in F
 
     return (
         <SvgGroup x={x} y={y}>
