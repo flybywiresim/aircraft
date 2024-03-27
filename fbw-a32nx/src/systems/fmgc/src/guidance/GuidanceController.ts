@@ -189,6 +189,13 @@ export class GuidanceController {
             return;
         }
 
+        const { index: focusedWpIndex } = this.efisInterface.planCentre;
+
+        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
+            this.lastFocusedWpIndex = focusedWpIndex;
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
+        }
+
         this.focusedWaypointCoordinates.lat = termination.lat;
         this.focusedWaypointCoordinates.long = termination.long;
 
@@ -578,9 +585,8 @@ export class GuidanceController {
         // FIXME HAX
         const matchingGeometryLeg = this.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate).legs.get(focusedWpIndex);
 
-        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
-            this.lastFocusedWpIndex = focusedWpIndex;
-            this.lastEfisInterfaceVersion = this.efisInterface.version;
+        if (!matchingGeometryLeg.terminationWaypoint) {
+            return null;
         }
 
         if ('lat' in matchingGeometryLeg.terminationWaypoint) {
