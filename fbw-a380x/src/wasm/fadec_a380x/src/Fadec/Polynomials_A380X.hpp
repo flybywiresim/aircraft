@@ -26,13 +26,13 @@ class Polynomial_A380X {
    * @return The calculated N3 value in percent.
    */
   static double startN3(double currentSimN3, double previousN3, double idleN3) {
-    // Normalize the current N3 percentage by scaling it with the idle N2
+    // Normalize the current N3 percentage by scaling it with the idle N3
     // percentage and a constant factor.
     // The constant factor 60.0 is likely derived from empirical data or a mathematical model of the
     // engine's behavior.
     double normalizedN3 = currentSimN3 * 60.0 / idleN3;
 
-    // Coefficients for the polynomial used to calculate the N2 percentage.
+    // Coefficients for the polynomial used to calculate the N3 percentage.
     constexpr double coefficients[16] = {
         4.03649879e+00,   // coefficient for x^0
         -9.41981960e-01,  // coefficient for x^1
@@ -434,7 +434,7 @@ class Polynomial_A380X {
   }
 
   /**
-   * @brief Calculates the Oil Pressure (PSI) based on simulated N2 value.
+   * @brief Calculates the Oil Pressure (PSI) based on simulated N3 value.
    *        Real-life modeled polynomials - Oil Pressure (PSI)
    *
    * @param simN3 The simulated N3 value in percent.
