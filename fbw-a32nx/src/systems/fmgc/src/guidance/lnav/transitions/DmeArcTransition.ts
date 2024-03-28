@@ -18,8 +18,10 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { CDLeg } from '../legs/CD';
 
-export type DmeArcTransitionPreviousLeg = AFLeg /* | CDLeg */ | CFLeg | CILeg | DFLeg | TFLeg; /* | VILeg | VDLeg */
+export type DmeArcTransitionPreviousLeg = AFLeg | CDLeg | CFLeg | CILeg | DFLeg | FDLeg | TFLeg; /* | VILeg | VDLeg */
 export type DmeArcTransitionNextLeg = AFLeg | CALeg | CFLeg /* | FALeg | FMLeg */ | TFLeg;
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
@@ -147,13 +149,13 @@ export class DmeArcTransition extends Transition {
 
                     turnCentre = placeBearingDistance(
                         this.ftp,
-                        Avionics.Utils.clampAngle(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
+                        MathUtils.clampAngle(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
                         this.radius,
                     );
 
                     this.itp = placeBearingDistance(
                         turnCentre,
-                        Avionics.Utils.clampAngle(this.previousLeg.outboundCourse - turnSign * 90),
+                        MathUtils.clampAngle(this.previousLeg.outboundCourse - turnSign * 90),
                         this.radius,
                     );
                 }
@@ -268,10 +270,10 @@ export class DmeArcTransition extends Transition {
 
         const [inbound, outbound] = turningPoints;
 
-        const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
+        const inBearingAc = bearingTo(inbound, ppos);
         const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, inBearingAc));
 
-        const outBearingAc = Avionics.Utils.computeGreatCircleHeading(outbound, ppos);
+        const outBearingAc = bearingTo(outbound, ppos);
         const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.inboundCourse, outBearingAc));
 
         return inHeadingAc <= 90 && outHeadingAc >= 90;

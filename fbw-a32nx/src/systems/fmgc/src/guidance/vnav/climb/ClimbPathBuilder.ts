@@ -3,6 +3,7 @@ import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedP
 import { ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
@@ -18,11 +19,11 @@ export class ClimbPathBuilder {
      * @returns
      */
     computeClimbPath(
-        profile: BaseGeometryProfile, climbStrategy: ClimbStrategy, speedProfile: SpeedProfile, windProfile: HeadwindProfile, targetAltitude: Feet,
+        profile: BaseGeometryProfile, config: AircraftConfig, climbStrategy: ClimbStrategy, speedProfile: SpeedProfile, windProfile: HeadwindProfile, targetAltitude: Feet,
     ) {
         const { fcuVerticalMode, fcuArmedVerticalMode } = this.computationParametersObserver.get();
 
-        this.addClimbSteps(profile, climbStrategy, speedProfile, windProfile, targetAltitude, VerticalCheckpointReason.TopOfClimb);
+        this.addClimbSteps(profile, config, climbStrategy, speedProfile, windProfile, targetAltitude, VerticalCheckpointReason.TopOfClimb);
 
         if (this.shouldAddFcuAltAsCheckpoint(fcuVerticalMode, fcuArmedVerticalMode)) {
             this.addFcuAltitudeAsCheckpoint(profile);
@@ -35,6 +36,7 @@ export class ClimbPathBuilder {
 
     private addClimbSteps(
         profile: BaseGeometryProfile,
+        config: AircraftConfig,
         climbStrategy: ClimbStrategy,
         speedProfile: SpeedProfile,
         windProfile: HeadwindProfile,
@@ -90,11 +92,11 @@ export class ClimbPathBuilder {
                 if (profile.lastCheckpoint.distanceFromStart < constraintDistanceFromStart) {
                     profile.lastCheckpoint.reason = VerticalCheckpointReason.LevelOffForClimbConstraint;
 
-                    this.addLevelSegmentSteps(profile, speedProfile, constraintDistanceFromStart);
+                    this.addLevelSegmentSteps(profile, config, speedProfile, constraintDistanceFromStart);
                 }
             } else if (Math.abs(profile.lastCheckpoint.altitude - constraintAltitude) < 250) {
                 // Continue in level flight to the next constraint
-                this.addLevelSegmentSteps(profile, speedProfile, constraintDistanceFromStart);
+                this.addLevelSegmentSteps(profile, config, speedProfile, constraintDistanceFromStart);
             }
         }
 
@@ -219,7 +221,7 @@ export class ClimbPathBuilder {
         this.addCheckpointFromStep(profile, step, reason);
     }
 
-    private addLevelSegmentSteps(profile: BaseGeometryProfile, speedProfile: SpeedProfile, toDistanceFromStart: NauticalMiles): void {
+    private addLevelSegmentSteps(profile: BaseGeometryProfile, config: AircraftConfig, speedProfile: SpeedProfile, toDistanceFromStart: NauticalMiles): void {
         // The only reason we have to build this iteratively is because there could be speed constraints along the way
         const altitude = profile.lastCheckpoint.altitude;
 
@@ -234,7 +236,7 @@ export class ClimbPathBuilder {
             const speedTarget = speedProfile.getTarget(profile.lastCheckpoint.distanceFromStart, altitude, ManagedSpeedType.Climb);
 
             if (speedTarget > currentSpeed) {
-                const step = this.computeLevelFlightAccelerationStep(altitude, currentSpeed, speedTarget, profile.lastCheckpoint.remainingFuelOnBoard);
+                const step = this.computeLevelFlightAccelerationStep(config, altitude, currentSpeed, speedTarget, profile.lastCheckpoint.remainingFuelOnBoard);
 
                 // We could not accelerate in time
                 if (profile.lastCheckpoint.distanceFromStart + step.distanceTraveled > speedConstraint.distanceFromStart) {
@@ -252,6 +254,7 @@ export class ClimbPathBuilder {
 
             // Compute step after accelerating to next constraint
             const levelStepToConstraint = this.computeLevelFlightSegmentPrediction(
+                config,
                 speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
                 altitude,
                 profile.lastCheckpoint.speed,
@@ -266,7 +269,7 @@ export class ClimbPathBuilder {
         const speedTarget = speedProfile.getTarget(profile.lastCheckpoint.distanceFromStart, altitude, ManagedSpeedType.Climb);
 
         if (speedTarget > currentSpeed) {
-            const accelerationStep = this.computeLevelFlightAccelerationStep(altitude, currentSpeed, speedTarget, profile.lastCheckpoint.remainingFuelOnBoard);
+            const accelerationStep = this.computeLevelFlightAccelerationStep(config, altitude, currentSpeed, speedTarget, profile.lastCheckpoint.remainingFuelOnBoard);
 
             // We could not accelerate in time
             if (profile.lastCheckpoint.distanceFromStart + accelerationStep.distanceTraveled > toDistanceFromStart) {
@@ -282,6 +285,7 @@ export class ClimbPathBuilder {
         }
 
         const levelStepToConstraint = this.computeLevelFlightSegmentPrediction(
+            config,
             toDistanceFromStart - profile.lastCheckpoint.distanceFromStart,
             altitude,
             profile.lastCheckpoint.speed,
@@ -291,10 +295,11 @@ export class ClimbPathBuilder {
         this.addCheckpointFromStep(profile, levelStepToConstraint, VerticalCheckpointReason.AltitudeConstraint);
     }
 
-    private computeLevelFlightSegmentPrediction(stepSize: Feet, altitude: Feet, initialSpeed: Knots, fuelWeight: number): StepResults {
+    private computeLevelFlightSegmentPrediction(config: AircraftConfig, stepSize: Feet, altitude: Feet, initialSpeed: Knots, fuelWeight: number): StepResults {
         const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
         return Predictions.levelFlightStep(
+            config,
             altitude,
             stepSize,
             initialSpeed,
@@ -307,10 +312,11 @@ export class ClimbPathBuilder {
         );
     }
 
-    private computeLevelFlightAccelerationStep(altitude: Feet, initialSpeed: Knots, speedTarget: Knots, fuelWeight: number): StepResults {
+    private computeLevelFlightAccelerationStep(config: AircraftConfig, altitude: Feet, initialSpeed: Knots, speedTarget: Knots, fuelWeight: number): StepResults {
         const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
         return Predictions.speedChangeStep(
+            config,
             0,
             altitude,
             initialSpeed,

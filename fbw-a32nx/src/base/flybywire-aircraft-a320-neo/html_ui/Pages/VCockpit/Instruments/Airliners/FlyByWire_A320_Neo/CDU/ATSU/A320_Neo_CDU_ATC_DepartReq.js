@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAtcDepartReq {
     static CreateDataBlock() {
         return {
@@ -41,21 +45,27 @@ class CDUAtcDepartReq {
                 store.callsign = mcdu.atsu.flightNumber();
             }
         }
+
+        const activePlan = mcdu.flightPlanService.active;
+
         if (store.firstCall && store.from === "") {
-            if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-                store.from = mcdu.flightPlanManager.getOrigin().ident;
+            if (activePlan.originAirport) {
+                store.from = activePlan.originAirport.ident;
             }
         }
+
         if (store.firstCall && store.to === "") {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                store.to = mcdu.flightPlanManager.getDestination().ident;
+            if (activePlan.destinationAirport) {
+                store.to = activePlan.destinationAirport.ident;
             }
         }
+
         if (store.firstCall && store.station === "") {
             if (mcdu.atsu.currentStation() !== "") {
                 store.station = mcdu.atsu.currentStation();
             }
         }
+
         store.firstCall = false;
 
         let flightNo = "--------";

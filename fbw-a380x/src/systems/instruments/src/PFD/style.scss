@@ -4,7 +4,7 @@
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -121,6 +121,10 @@
 
 .FontSmallest {
   font-size: 4.5px;
+}
+
+.FontTinyToSmallest {
+  font-size: 4.3px;
 }
 
 .FontTiny {

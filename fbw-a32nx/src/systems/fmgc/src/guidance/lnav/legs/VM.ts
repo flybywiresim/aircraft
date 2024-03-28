@@ -9,11 +9,13 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { placeBearingDistance } from 'msfs-geo';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
  */
-const VM_LEG_SIZE = 321;
+const VM_LEG_SIZE = 32;
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg extends Leg {
@@ -28,7 +30,7 @@ export class VMLeg extends Leg {
         this.segment = segment;
     }
 
-    get terminationWaypoint(): WayPoint {
+    get terminationWaypoint(): Waypoint {
         return undefined;
     }
 
@@ -43,11 +45,10 @@ export class VMLeg extends Leg {
     }
 
     getPathEndPoint(): Coordinates | undefined {
-        return Avionics.Utils.bearingDistanceToCoordinates(
+        return placeBearingDistance(
+            this.getPathStartPoint(),
             this.heading,
             VM_LEG_SIZE,
-            this.getPathStartPoint().lat,
-            this.getPathStartPoint().long,
         );
     }
 
@@ -102,6 +103,10 @@ export class VMLeg extends Leg {
 
     getDistanceToGo(_ppos: LatLongData): NauticalMiles {
         return undefined;
+    }
+
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles | undefined {
+        return this.outboundGuidable?.getAlongTrackDistanceToGo(ppos, trueTrack);
     }
 
     isAbeam(_ppos: LatLongAlt): boolean {

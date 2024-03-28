@@ -12,9 +12,10 @@ import { DescentStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descen
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
-import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/guidance/lnav/legs';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, MathUtils } from '@flybywiresim/fbw-sdk';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
+import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 
 export class DescentPathBuilder {
     private geometricPathBuilder: GeometricPathBuilder;
@@ -24,13 +25,15 @@ export class DescentPathBuilder {
     constructor(
         private computationParametersObserver: VerticalProfileComputationParametersObserver,
         private atmosphericConditions: AtmosphericConditions,
+        private readonly acConfig: AircraftConfig,
     ) {
         this.geometricPathBuilder = new GeometricPathBuilder(
             computationParametersObserver,
             atmosphericConditions,
+            this.acConfig,
         );
 
-        this.idleDescentStrategy = new IdleDescentStrategy(computationParametersObserver, atmosphericConditions);
+        this.idleDescentStrategy = new IdleDescentStrategy(computationParametersObserver, atmosphericConditions, this.acConfig);
     }
 
     computeManagedDescentPath(
@@ -197,17 +200,7 @@ export class DescentPathBuilder {
     }
 
     isConstraintBelowCruisingAltitude(constraint: AltitudeConstraint, finalCruiseAltitude: Feet): boolean {
-        if (constraint.type === AltitudeConstraintType.at) {
-            return constraint.altitude1 <= finalCruiseAltitude;
-        } if (constraint.type === AltitudeConstraintType.atOrAbove) {
-            return constraint.altitude1 <= finalCruiseAltitude;
-        } if (constraint.type === AltitudeConstraintType.atOrBelow) {
-            return true;
-        } if (constraint.type === AltitudeConstraintType.range) {
-            return constraint.altitude2 <= finalCruiseAltitude;
-        }
-
-        return true;
+        return ConstraintUtils.minimumAltitude(constraint) <= finalCruiseAltitude;
     }
 
     private* speedConstraintGenerator(constraints: MaxSpeedConstraint[], sequence: TemporaryCheckpointSequence): Generator<MaxSpeedConstraint> {
@@ -260,36 +253,44 @@ export class GeometricPathPlanner {
 
 function evaluateAltitudeConstraint(constraint: AltitudeConstraint, altitude: Feet, tol: number): [boolean, Feet] {
     // Even though in the MCDU constraints count as met if within 250 ft, we use 10 ft here for the initial path construction.
-    switch (constraint.type) {
-    case AltitudeConstraintType.at:
+    switch (constraint.altitudeDescriptor) {
+    case AltitudeDescriptor.AtAlt1:
+    case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtAlt1AngleAlt2:
         return [isAltitudeConstraintMet(constraint, altitude, tol), MathUtils.clamp(altitude, constraint.altitude1, constraint.altitude1)];
-    case AltitudeConstraintType.atOrAbove:
-        return [isAtOrAboveAltitudeConstraintMet(constraint, altitude, tol), Math.max(altitude, constraint.altitude1)];
-    case AltitudeConstraintType.atOrBelow:
-        return [isAtOrBelowAltitudeConstraintMet(constraint, altitude, tol), Math.min(altitude, constraint.altitude1)];
-    case AltitudeConstraintType.range:
-        return [isRangeAltitudeConstraintMet(constraint, altitude, tol), MathUtils.clamp(altitude, constraint.altitude2, constraint.altitude1)];
+    case AltitudeDescriptor.AtOrAboveAlt1:
+    case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+        return [isAltitudeConstraintMet(constraint, altitude, tol), Math.max(altitude, constraint.altitude1)];
+    case AltitudeDescriptor.AtOrBelowAlt1:
+    case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+        return [isAltitudeConstraintMet(constraint, altitude, tol), Math.min(altitude, constraint.altitude1)];
+    case AltitudeDescriptor.BetweenAlt1Alt2:
+        return [isAltitudeConstraintMet(constraint, altitude, tol), MathUtils.clamp(altitude, constraint.altitude2, constraint.altitude1)];
+    case AltitudeDescriptor.AtOrAboveAlt2:
+        return [isAltitudeConstraintMet(constraint, altitude, tol), Math.max(altitude, constraint.altitude2)];
     default:
-        console.error('[FMS/VNAV] Invalid altitude constraint type');
         return [true, altitude];
     }
 }
 
-const isAtAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude: Feet, tol: Feet = 250) => Math.abs(altitude - constraint.altitude1) < tol;
-const isAtOrAboveAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude: Feet, tol: Feet = 250) => (altitude - constraint.altitude1) > -tol;
-const isAtOrBelowAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude: Feet, tol: Feet = 250) => (altitude - constraint.altitude1) < tol;
-const isRangeAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude: Feet, tol: Feet = 250) => (altitude - constraint.altitude2) > -tol
-    && (altitude - constraint.altitude1) < tol;
 export const isAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude: Feet, tol: Feet = 250) => {
-    switch (constraint.type) {
-    case AltitudeConstraintType.at:
-        return isAtAltitudeConstraintMet(constraint, altitude, tol);
-    case AltitudeConstraintType.atOrAbove:
-        return isAtOrAboveAltitudeConstraintMet(constraint, altitude, tol);
-    case AltitudeConstraintType.atOrBelow:
-        return isAtOrBelowAltitudeConstraintMet(constraint, altitude, tol);
-    case AltitudeConstraintType.range:
-        return isRangeAltitudeConstraintMet(constraint, altitude, tol);
+    switch (constraint.altitudeDescriptor) {
+    case AltitudeDescriptor.AtAlt1:
+    case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtAlt1AngleAlt2:
+        return Math.abs(altitude - constraint.altitude1) < tol;
+    case AltitudeDescriptor.AtOrAboveAlt1:
+    case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+        return (altitude - constraint.altitude1) > -tol;
+    case AltitudeDescriptor.AtOrBelowAlt1:
+    case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+        return (altitude - constraint.altitude1) < tol;
+    case AltitudeDescriptor.BetweenAlt1Alt2:
+        return (altitude - constraint.altitude2) > -tol && (altitude - constraint.altitude1) < tol;
+    case AltitudeDescriptor.AtOrAboveAlt2:
+        return (altitude - constraint.altitude2) > -tol;
     default:
         return true;
     }

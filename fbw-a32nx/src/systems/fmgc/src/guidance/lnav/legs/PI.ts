@@ -1,4 +1,6 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -10,9 +12,9 @@ import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
-import { bearingTo, distanceTo, smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingIntersection, smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { Fix, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 
 interface Segment {
     itp?: Coordinates,
@@ -49,7 +51,7 @@ export class PILeg extends Leg {
     private debugPoints: PathVector[] = [];
 
     constructor(
-        public fix: WayPoint,
+        public fix: Fix,
         private nextLeg: CFLeg,
         public metadata: LegMetadata,
         public segment: SegmentType,
@@ -72,7 +74,7 @@ export class PILeg extends Leg {
 
         this.debugPoints.length = 0;
 
-        const turn1Sign = this.fix.turnDirection === TurnDirection.Left ? 1 : -1;
+        const turn1Sign = this.metadata.flightPlanLegDefinition.turnDirection === TurnDirection.Left ? 1 : -1;
         const turn2Sign = -1 * turn1Sign;
 
         const gsMs = gs / 1.94384;
@@ -80,41 +82,32 @@ export class PILeg extends Leg {
 
         const minStraightDist = this.radius * 2;
 
-        const brgToCf = Avionics.Utils.computeGreatCircleHeading(
-            this.fix.infos.coordinates,
-            this.nextLeg.fix.infos.coordinates,
-        );
+        const brgToCf = bearingTo(this.fix.location, this.nextLeg.fix.location);
 
-        const distToCf = Avionics.Utils.computeGreatCircleDistance(
-            this.fix.infos.coordinates,
-            this.nextLeg.fix.infos.coordinates,
-        );
+        const distToCf = distanceTo(this.fix.location, this.nextLeg.fix.location);
 
         const cfInverseCrs = (this.nextLeg.course + 180) % 360;
-        this.outbound.course = this.fix.additionalData.course;
+        this.outbound.course = this.metadata.flightPlanLegDefinition.magneticCourse; // TODO true ?
 
-        this.straight.itp = this.fix.infos.coordinates;
+        this.straight.itp = this.fix.location;
         this.straight.course = cfInverseCrs;
 
         let tp: Coordinates;
-        if (Math.abs(Avionics.Utils.diffAngle(cfInverseCrs, brgToCf)) < 90 && distToCf > minStraightDist) {
-            tp = this.nextLeg.fix.infos.coordinates;
+        if (Math.abs(MathUtils.diffAngle(cfInverseCrs, brgToCf)) < 90 && distToCf > minStraightDist) {
+            tp = this.nextLeg.fix.location;
         } else {
             // find an intercept on the CF at min dist
             [tp] = smallCircleGreatCircleIntersection(
-                this.fix.infos.coordinates,
+                this.fix.location,
                 minStraightDist,
-                this.nextLeg.fix.infos.coordinates,
+                this.nextLeg.fix.location,
                 cfInverseCrs,
-            ).filter((p) => Math.abs(Avionics.Utils.diffAngle(cfInverseCrs, bearingTo(this.nextLeg.fix.infos.coordinates, p))) < 90);
+            ).filter((p) => Math.abs(MathUtils.diffAngle(cfInverseCrs, bearingTo(this.nextLeg.fix.location, p))) < 90);
 
-            this.straight.course = Avionics.Utils.computeGreatCircleHeading(
-                this.fix.infos.coordinates,
-                tp,
-            );
+            this.straight.course = bearingTo(this.fix.location, tp);
         }
 
-        this.turn1.sweepAngle = turn1Sign * Math.abs(Avionics.Utils.diffAngle(this.straight.course, this.outbound.course));
+        this.turn1.sweepAngle = turn1Sign * Math.abs(MathUtils.diffAngle(this.straight.course, this.outbound.course));
         const tpT1FtpDist = this.radius * Math.tan(Math.abs(this.turn1.sweepAngle) * Math.PI / 360);
         this.turn1.ftp = Avionics.Utils.bearingDistanceToCoordinates(
             this.outbound.course,
@@ -137,10 +130,7 @@ export class PILeg extends Leg {
         this.turn1.length = Math.abs(this.turn1.sweepAngle / 180 * this.radius);
 
         this.straight.ftp = this.turn1.itp;
-        this.straight.length = Avionics.Utils.computeGreatCircleDistance(
-            this.fix.infos.coordinates,
-            this.turn1.itp,
-        );
+        this.straight.length = distanceTo(this.fix.location, this.turn1.itp);
 
         if (LnavConfig.DEBUG_PREDICTED_PATH) {
             this.debugPoints.push({
@@ -172,7 +162,7 @@ export class PILeg extends Leg {
             });
         }
 
-        const theta = Math.abs(Avionics.Utils.diffAngle(this.outbound.course, (this.nextLeg.course + 180) % 360)) * Math.PI / 180;
+        const theta = Math.abs(MathUtils.diffAngle(this.outbound.course, (this.nextLeg.course + 180) % 360)) * Math.PI / 180;
         this.outbound.length = this.radius * (1 / Math.tan(theta / 2));
         this.outbound.itp = this.turn1.ftp;
 
@@ -223,20 +213,14 @@ export class PILeg extends Leg {
         }
 
         this.intercept.itp = this.turn2.ftp;
-        this.intercept.ftp = A32NX_Util.greatCircleIntersection(
+        this.intercept.ftp = placeBearingIntersection(
             this.turn2.ftp,
             (this.outbound.course + 180) % 360,
             tp,
             cfInverseCrs,
-        );
-        this.intercept.length = Avionics.Utils.computeGreatCircleDistance(
-            this.intercept.itp,
-            this.intercept.ftp,
-        );
-        this.intercept.course = Avionics.Utils.computeGreatCircleHeading(
-            this.intercept.itp,
-            this.intercept.ftp,
-        );
+        )[0];
+        this.intercept.length = distanceTo(this.intercept.itp, this.intercept.ftp);
+        this.intercept.course = bearingTo(this.intercept.itp, this.intercept.ftp);
 
         this.isComputed = true;
     }
@@ -262,11 +246,11 @@ export class PILeg extends Leg {
         }
 
         const maxExcursion = distanceTo(
-            this.fix.infos.coordinates,
+            this.fix.location,
             this.turn2.arcCentre,
         ) + this.radius;
 
-        return maxExcursion > this.fix.additionalData.distance;
+        return maxExcursion > this.metadata.flightPlanLegDefinition.length;
     }
 
     getDistanceToGo(ppos: Coordinates): NauticalMiles {
@@ -304,7 +288,7 @@ export class PILeg extends Leg {
     }
 
     private radCurrentSegment(tas: Knots, gs: Knots): [NauticalMiles, Degrees] {
-        const turn1Sign = this.fix.turnDirection === TurnDirection.Left ? 1 : -1;
+        const turn1Sign = this.metadata.flightPlanLegDefinition.turnDirection === TurnDirection.Left ? 1 : -1;
         const turn2Sign = -1 * turn1Sign;
 
         let currentBank;
@@ -372,14 +356,14 @@ export class PILeg extends Leg {
     }
 
     getPathStartPoint(): Coordinates {
-        return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.infos.coordinates;
+        return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.location;
     }
 
     getPathEndPoint(): Coordinates {
         return this.intercept.ftp;
     }
 
-    get terminationWaypoint(): WayPoint | Coordinates {
+    get terminationWaypoint(): Waypoint | Coordinates {
         return this.intercept.ftp;
     }
 
@@ -399,7 +383,7 @@ export class PILeg extends Leg {
         return [
             {
                 type: PathVectorType.Line,
-                startPoint: this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.infos.coordinates,
+                startPoint: this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.location,
                 endPoint: this.turn1.itp,
             },
             {

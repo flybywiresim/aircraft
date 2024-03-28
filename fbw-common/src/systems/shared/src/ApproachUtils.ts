@@ -1,7 +1,7 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { RunwayUtils } from '@flybywiresim/fbw-sdk';
+import { RunwayUtils, Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV
@@ -30,113 +30,73 @@ export class ApproachUtils {
         };
     }
 
-    public static parseApproach(approach: RawApproach): ApproachNameComponents | undefined {
-        const type = ApproachUtils.approachTypeString(approach.approachType);
-        const runway = RunwayUtils.runwayString(approach.runwayNumber, approach.runwayDesignator);
-        const designator = approach.approachSuffix;
-        return {
-            type,
-            runway,
-            designator,
-        };
+    public static parseApproach(approach: Approach): ApproachNameComponents | undefined {
+        const type = ApproachUtils.approachTypeString(approach.type);
+        const runway = RunwayUtils.runwayString(approach.runwayIdent);
+        const designator = approach.multipleIndicator;
+
+        return { type, runway, designator };
     }
 
-    private static formatShortApproachName(arg0: ApproachNameComponents | string | RawApproach): string {
-        let appr: ApproachNameComponents;
-        if (typeof arg0 === 'string') {
-            appr = ApproachUtils.parseApproachName(arg0);
-        } else if ('finalLegs' in arg0) {
-            appr = ApproachUtils.parseApproach(arg0);
-        } else {
-            appr = arg0;
-        }
+    private static formatShortApproachName(approach: Approach): string {
+        const appr = ApproachUtils.parseApproach(approach);
 
         if (!appr) {
-            return typeof arg0 === 'string' ? arg0 : '';
+            return '';
         }
 
-        const runway = Avionics.Utils.formatRunway(appr.runway);
+        const runway = appr.runway;
         const suffix = appr.designator ? `${runway.length > 2 ? '' : '-'}${appr.designator}` : '';
+
         return `${appr.type.replace('RNAV', 'RNV')}${runway}${suffix}`;
     }
 
     public static shortApproachName: {
         /**
          * Format an approach name in short format (max 7 chars)
-         * @param name approach name from the nav database
+         * @param approach An msfs-navdata approach object
          * @returns An approach name in short format (e.g. RNV23LY)
          */
-        (name: string): string;
-        /**
-         * Format an approach name in short format (max 7 chars)
-         * @param components Components of the approach name from {@link ApproachUtils.parseApproachName}
-         * @returns An approach name in short format (e.g. RNV23LY)
-         */
-        (components: ApproachNameComponents): string;
-        /**
-         * Format an approach name in short format (max 7 chars)
-         * @param approach A JS_Approach approach object
-         * @returns An approach name in short format (e.g. RNV23LY)
-         */
-        (approach: RawApproach): string;
+        (approach: Approach): string;
     } = ApproachUtils.formatShortApproachName;
 
-    private static formatLongApproachName(arg0: ApproachNameComponents | string | RawApproach): string {
-        let appr: ApproachNameComponents;
-        if (typeof arg0 === 'string') {
-            appr = ApproachUtils.parseApproachName(arg0);
-        } else if ('finalLegs' in arg0) {
-            appr = ApproachUtils.parseApproach(arg0);
-        } else {
-            appr = arg0;
-        }
-
-        const runway = Avionics.Utils.formatRunway(appr.runway);
+    private static formatLongApproachName(approach: Approach): string {
+        const appr = ApproachUtils.parseApproach(approach);
+        const runway = appr.runway;
         const suffix = appr.designator ? `-${appr.designator}` : '';
+
         return `${appr.type}${runway}${suffix}`;
     }
 
     public static longApproachName: {
-        /**
+        /*
          * Format an approach name in long format (max 9 chars)
-         * @param name approach name from the nav database
+         * @param approach an msfs-navdata approach object
          * @returns An approach name in long format (e.g. RNAV23L-Y)
          */
-        (name: string): string;
-        /**
-         * Format an approach name in long format (max 9 chars)
-         * @param components Components of the approach name from {@link ApproachUtils.parseApproachName}
-         * @returns An approach name in long format (e.g. RNAV23L-Y)
-         */
-        (components: ApproachNameComponents): string;
-        /**
-         * Format an approach name in long format (max 9 chars)
-         * @param approach A JS_Approach approach object
-         * @returns An approach name in long format (e.g. RNAV23L-Y)
-         */
-        (approach: RawApproach): string;
+        (approach: Approach): string;
     } = ApproachUtils.formatLongApproachName;
 
     public static approachTypeString(type: ApproachType): string {
         switch (type) {
-        case ApproachType.APPROACH_TYPE_GPS:
+        case ApproachType.Gps:
             return 'GPS';
-        case ApproachType.APPROACH_TYPE_ILS:
+        case ApproachType.Ils:
             return 'ILS';
-        case ApproachType.APPROACH_TYPE_LDA:
+        case ApproachType.Lda:
             return 'LDA';
-        case ApproachType.APPROACH_TYPE_LOCALIZER:
-        case ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE:
+        case ApproachType.Loc:
+        case ApproachType.LocBackcourse:
             return 'LOC';
-        case ApproachType.APPROACH_TYPE_NDB:
-        case ApproachType.APPROACH_TYPE_NDBDME:
+        case ApproachType.Ndb:
+        case ApproachType.NdbDme:
             return 'NDB';
-        case ApproachType.APPROACH_TYPE_RNAV:
+        case ApproachType.Rnav:
             return 'RNAV';
-        case ApproachType.APPROACH_TYPE_SDF:
+        case ApproachType.Sdf:
             return 'SDF';
-        case ApproachType.APPROACH_TYPE_VOR:
-        case ApproachType.APPROACH_TYPE_VORDME:
+        case ApproachType.Vor:
+        case ApproachType.VorDme:
             return 'VOR';
         default:
             return '';
