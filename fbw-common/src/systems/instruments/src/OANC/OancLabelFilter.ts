@@ -28,9 +28,9 @@ export type OancLabelFilter = RunwayBtvSelectionLabelFilter | NoneLabelFilter | 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string): boolean {
-    if (label.style === LabelStyle.FmsSelectedRunwayEnd) {
+    if (label.style === LabelStyle.FmsSelectedRunwayEnd && label.text) {
         return label.text.includes(fmsDepRunway?.substring(2)) || label.text.includes(fmsLdgRunway?.substring(2));
-    } if (label.style === LabelStyle.BtvSelectedRunwayArrow) {
+    } if (label.style === LabelStyle.BtvSelectedRunwayArrow && label.text) {
         return label.text.includes(btvSelectedRunway?.substring(2));
     }
 

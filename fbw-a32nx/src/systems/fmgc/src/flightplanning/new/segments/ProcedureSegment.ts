@@ -9,7 +9,7 @@ import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegm
  * A flight plan segment representing a procedure
  */
 export abstract class ProcedureSegment<T extends { ident: string }> extends FlightPlanSegment {
-    abstract get procedure(): T | undefined
+    abstract get procedure(): T | undefined | null
 
     /**
      * Sets the procedure object for this segment using an ident or `undefined`. Passing the latter should set the procedure as
@@ -18,7 +18,7 @@ export abstract class ProcedureSegment<T extends { ident: string }> extends Flig
      * @param skipUpdateLegs whether or not to skip updating the segment legs based on the provided identifier. Passing `true` should only be
      * used to reconstruct procedure segments from a serialised flight plan
      */
-    abstract setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void>
+    abstract setProcedure(ident: string | undefined | null, skipUpdateLegs?: boolean): Promise<void>
 
     /**
      * Sets the contents of this procedure segment using a serialized flight plan segment. **Note:** the segment may require

@@ -48,7 +48,7 @@ export function procedureLegIdentAndAnnotation(procedureLeg: FlightPlanLegDefini
     case LegType.FC:
     case LegType.FD:
     case LegType.VD:
-        const targetFix = procedureLeg.waypoint ?? procedureLeg.recommendedNavaid;
+        const targetFix = legType === LegType.FC ? procedureLeg.waypoint : procedureLeg.recommendedNavaid;
 
         return [
             `${targetFix.ident.substring(0, 3)}/${Math.round(procedureLeg.length).toString().padStart(2, '0')}`,

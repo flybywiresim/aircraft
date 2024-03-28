@@ -478,7 +478,7 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     updateDebugInformation() {
-        if (!this.acConfig.vnavConfig.DEBUG_GUIDANCE) {
+        if (!VnavConfig.DEBUG_GUIDANCE) {
             return;
         }
 

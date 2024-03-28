@@ -25,7 +25,7 @@ export class FlightPlanSynchronization {
             const leg = flightPlan.maybeElementAt(idx);
 
             if (leg?.isDiscontinuity === false) {
-                // TODO port over (fms-v2)
+                // TODO connect to VNAV
                 return {
                     ident: leg.ident ?? '',
                     altitude: 0,
@@ -41,7 +41,7 @@ export class FlightPlanSynchronization {
         const activeLeg = flightPlan.activeLeg;
 
         if (activeLeg?.isDiscontinuity === false) {
-            // TODO port over (fms-v2)
+            // TODO connect to VNAV
             return {
                 ident: activeLeg?.ident ?? '',
                 altitude: 0,
@@ -57,7 +57,7 @@ export class FlightPlanSynchronization {
             const leg = flightPlan.maybeElementAt(idx);
 
             if (leg?.isDiscontinuity === false) {
-                // TODO port over (fms-v2)
+                // TODO connect to VNAV
                 return {
                     ident: leg.ident,
                     altitude: 0,
@@ -75,7 +75,7 @@ export class FlightPlanSynchronization {
 
             // Note that the destination leg index must not necessarily be an airport or a runway, just the last leg of the flight plan (excluding missed approach legs)
             if (leg?.isDiscontinuity === false && idx === flightPlan.destinationLegIndex) {
-                // TODO port over (fms-v2)
+                // TOO connect to VNAV
                 return {
                     ident: leg.ident,
                     altitude: 0,

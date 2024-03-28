@@ -154,6 +154,7 @@ export enum RouteType {
 }
 
 export enum RunwayDesignatorChar {
+    None = 0,
     L = 1,
     R = 2,
     C = 3,

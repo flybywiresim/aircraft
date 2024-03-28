@@ -645,12 +645,12 @@ class CDUFlightPlanPage {
             }
         }
 
-        const mrpTarget = scrollWindow[1] ? scrollWindow[1] : scrollWindow[0];
-        if (mrpTarget) {
-            const mrpIndex = CDUFlightPlanPage.findAppropriateMrpCentre(mcdu.flightPlan(targetPlan.index, mrpTarget.inAlternate), mrpTarget.fpIndex)
-            mcdu.efisInterface.setPlanCentre(targetPlan.index, mrpIndex, mrpTarget.inAlternate);
-        } else {
-            mcdu.efisInterface.setPlanCentre(targetPlan.index, first + offset, false);
+        for (let i = 0; i < waypointsAndMarkers.length; i++) {
+            const { wp, inAlternate, fpIndex } = waypointsAndMarkers[(offset + i + 1) % waypointsAndMarkers.length];
+            if (wp) {
+                mcdu.efisInterface.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
+                break;
+            }
         }
 
         mcdu.efisInterface.setAlternateLegVisible(scrollWindow.some(row => row.inAlternate), forPlan);
@@ -663,7 +663,7 @@ class CDUFlightPlanPage {
         let firstWp = scrollWindow.length;
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
-            const { marker: cMarker, holdResumeExit: cHold, speedConstraint: cSpd, altitudeConstraint: cAlt, ident: cIdent } = scrollWindow[rowI];
+            const { marker: cMarker, holdResumeExit: cHold, spdColor: cSpdColor, altColor: cAltColor, speedConstraint: cSpd, altitudeConstraint: cAlt, ident: cIdent } = scrollWindow[rowI];
             let spdRpt = false;
             let altRpt = false;
             let showFix = true;
@@ -676,17 +676,17 @@ class CDUFlightPlanPage {
                 scrollText[(rowI * 2) + 1] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
             } else if (!cMarker) { // Waypoint
                 if (rowI > 0) {
-                    const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
+                    const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt } = scrollWindow[rowI - 1];
                     if (!pMarker && !pPwp && !pHold) {
                         firstWp = Math.min(firstWp, rowI);
                         if (rowI === firstWp) {
                             showNm = true;
                         }
-                        if (cSpd !== Speed.NoPrediction && cSpd === pSpd) {
+                        if (cSpd !== Speed.NoPrediction && cSpdColor !== "magenta" && cSpd === pSpd) {
                             spdRpt = true;
                         }
 
-                        if (cAlt !== Altitude.NoPrediction && cAlt === pAlt) {
+                        if (cAlt !== Altitude.NoPrediction && cAltColor !== "magenta" && cAlt === pAlt) {
                             altRpt = true;
                         }
                     // If previous row is a marker, clear all headers unless it's a speed limit
@@ -734,7 +734,7 @@ class CDUFlightPlanPage {
             }
             let destTimeCell = "----";
             let destDistCell = "----";
-            let destEFOBCell = "-----";
+            let destEFOBCell = "---.-";
 
             if (targetPlan.destinationAirport) {
                 if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
@@ -837,7 +837,7 @@ class CDUFlightPlanPage {
 
         let insertDiscontinuity = true;
         if (element.isDiscontinuity === false) {
-            if (element.isHX() || fpIndex <= targetPlan.activeLegIndex) {
+            if (element.isHX() || (!forAlternate && fpIndex <= targetPlan.activeLegIndex)) {
                 insertDiscontinuity = false;
             } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
                 insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
@@ -871,7 +871,7 @@ class CDUFlightPlanPage {
         }
 
         // TODO maybe move this to FMS logic ?
-        if (forPlan === Fmgc.FlightPlanIndex.Active && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
+        if (forPlan === Fmgc.FlightPlanIndex.Active && !forAlternate && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
             // 22-72-00:67
             // Stop clearing TO or FROM waypoints when NAV is engaged
             if (mcdu.navModeEngaged()) {
@@ -919,14 +919,6 @@ class CDUFlightPlanPage {
         }
 
         return true;
-    }
-
-    static findAppropriateMrpCentre(plan, fromIndex) {
-        if (!plan) {
-            return -1;
-        }
-
-        return plan.allLegs.findIndex((leg, index) => index >= fromIndex && leg.isDiscontinuity === false && !leg.isVectors());
     }
 }
 

@@ -6,34 +6,25 @@
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export interface FlightPlanPerformanceData {
-    /** in knots */
     v1: number;
 
-    /** in knots */
     vr: number;
 
-    /** in knots */
     v2: number;
 
-    /** in feet */
     databaseTransitionAltitude: number,
 
-    /** as flight level */
     databaseTransitionLevel: number,
 
-    /** in feet */
     pilotTransitionAltitude: number,
 
-    /** as flight level */
     pilotTransitionLevel: number,
 
-    /** in feet */
-    get transitionAltitude(): number | undefined;
+    get transitionAltitude(): AltitudeValue;
 
     get transitionAltitudeIsFromDatabase(): boolean;
 
-    /** as flight level */
-    get transitionLevel(): number | undefined;
+    get transitionLevel(): AltitudeValue;
 
     get transitionLevelIsFromDatabase(): boolean;
 
@@ -46,100 +37,94 @@ export interface FlightPlanPerformanceData {
     /**
      * THR RED pilot entry
      */
-    pilotThrustReductionAltitude: number;
+    pilotThrustReductionAltitude: AltitudeValue;
 
     /**
-     * THR RED from NAV database, in feet
+     * THR RED from NAV database
      */
-    defaultThrustReductionAltitude: number;
+    defaultThrustReductionAltitude: AltitudeValue;
 
-    /** in feet */
-    get thrustReductionAltitude(): number | undefined;
+    get thrustReductionAltitude(): AltitudeValue;
 
     get thrustReductionAltitudeIsPilotEntered(): boolean;
 
     // ACC
 
     /**
-     * ACC pilot entry, in feet
+     * ACC pilot entry
      */
-    pilotAccelerationAltitude: number;
+    pilotAccelerationAltitude: AltitudeValue;
 
     /**
-     * ACC from NAV database, in feet
+     * ACC from NAV database
      */
-    defaultAccelerationAltitude: number;
+    defaultAccelerationAltitude: AltitudeValue;
 
-    /** in feet */
-    get accelerationAltitude(): number | undefined;
+    get accelerationAltitude(): AltitudeValue;
 
     get accelerationAltitudeIsPilotEntered(): boolean;
 
     // EO ACC
 
     /**
-     * EO ACC pilot entry, in feet
+     * EO ACC pilot entry
      */
-    pilotEngineOutAccelerationAltitude: number;
+    pilotEngineOutAccelerationAltitude: AltitudeValue;
 
     /**
-     * EO ACC from NAV database, in feet
+     * EO ACC from NAV database
      */
-    defaultEngineOutAccelerationAltitude: number;
+    defaultEngineOutAccelerationAltitude: AltitudeValue;
 
-    /** in feet */
-    get engineOutAccelerationAltitude(): number | undefined;
+    get engineOutAccelerationAltitude(): AltitudeValue;
 
     get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
     // MISSED THR RED
 
     /**
-     * Missed THR RED pilot entry, in feet
+     * Missed THR RED pilot entry
      */
-    pilotMissedThrustReductionAltitude: number;
+    pilotMissedThrustReductionAltitude: AltitudeValue;
 
     /**
-     * Missed THR RED from NAV database, in feet
+     * Missed THR RED from NAV database
      */
-    defaultMissedThrustReductionAltitude: number;
+    defaultMissedThrustReductionAltitude: AltitudeValue;
 
-    /** in feet */
-    get missedThrustReductionAltitude(): number | undefined;
+    get missedThrustReductionAltitude(): AltitudeValue;
 
     get missedThrustReductionAltitudeIsPilotEntered(): boolean;
 
     // MISSED ACC
 
     /**
-     * Missed ACC pilot entry, in feet
+     * Missed ACC pilot entry
      */
-    pilotMissedAccelerationAltitude: number;
+    pilotMissedAccelerationAltitude: AltitudeValue;
 
     /**
-     * Missed ACC from NAV database, in feet
+     * Missed ACC from NAV database
      */
-    defaultMissedAccelerationAltitude: number;
+    defaultMissedAccelerationAltitude: AltitudeValue;
 
-    /** in feet */
-    get missedAccelerationAltitude(): number | undefined;
+    get missedAccelerationAltitude(): AltitudeValue;
 
     get missedAccelerationAltitudeIsPilotEntered(): boolean;
 
     // MISSED EO ACC
 
     /**
-     * Missed EO ACC pilot entry, in feet
+     * Missed EO ACC pilot entry
      */
-    pilotMissedEngineOutAccelerationAltitude: number;
+    pilotMissedEngineOutAccelerationAltitude: AltitudeValue;
 
     /**
-     * Missed EO ACC from NAV database, in feet
+     * Missed EO ACC from NAV database
      */
-    defaultMissedEngineOutAccelerationAltitude: number;
+    defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
 
-    /** in feet */
-    get missedEngineOutAccelerationAltitude(): number | undefined;
+    get missedEngineOutAccelerationAltitude(): AltitudeValue;
 
     get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
@@ -147,6 +132,12 @@ export interface FlightPlanPerformanceData {
 }
 
 export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>
+
+type VSpeedValue = number | undefined;
+
+type AltitudeValue = Feet | undefined;
+
+type CostIndexValue = number | undefined;
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 
@@ -189,44 +180,44 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     }
 
     /**
-     * Cruise FL, as flight level (i.e. hundres of feet)
+     * Cruise FL
      */
-    cruiseFlightLevel: number = undefined;
+    cruiseFlightLevel: AltitudeValue = undefined;
 
     /**
      * Cost index
      */
-    costIndex: number = undefined;
+    costIndex: CostIndexValue = undefined;
 
     /**
-     * V1 speed, in knots
+     * V1 speed
      */
-    v1: number = undefined;
+    v1: VSpeedValue = undefined;
 
     /**
-     * VR speed, in knots
+     * VR speed
      */
-    vr: number = undefined;
+    vr: VSpeedValue = undefined;
 
     /**
-     * V2 speed, in knots
+     * V2 speed
      */
-    v2: number = undefined;
+    v2: VSpeedValue = undefined;
 
     // THR RED
 
     /**
-     * THR RED pilot entry, in feet
+     * THR RED pilot entry
      */
-    pilotThrustReductionAltitude: number = undefined;
+    pilotThrustReductionAltitude: AltitudeValue = undefined;
 
     /**
-     * THR RED from NAV database, in feet
+     * THR RED from NAV database
      */
-    defaultThrustReductionAltitude: number = undefined;
+    defaultThrustReductionAltitude: AltitudeValue = undefined;
 
     /**
-     * THR RED from pilot if entered, otherwise from database, in feet
+     * THR RED from pilot if entered, otherwise from database
      */
     get thrustReductionAltitude() {
         const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
@@ -243,14 +234,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     // ACC
 
     /**
-     * ACC pilot entry, in feet
+     * ACC pilot entry
      */
-    pilotAccelerationAltitude: number = undefined;
+    pilotAccelerationAltitude: AltitudeValue = undefined;
 
     /**
-     * ACC from NAV database, in feet
+     * ACC from NAV database
      */
-    defaultAccelerationAltitude: number = undefined;
+    defaultAccelerationAltitude: AltitudeValue = undefined;
 
     /**
      * ACC from pilot if entered, otherwise from database
@@ -270,14 +261,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     // EO ACC
 
     /**
-     * EO ACC pilot entry, in feet
+     * EO ACC pilot entry
      */
-    pilotEngineOutAccelerationAltitude: number = undefined;
+    pilotEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
     /**
-     * EO ACC from NAV database, in feet
+     * EO ACC from NAV database
      */
-    defaultEngineOutAccelerationAltitude: number = undefined;
+    defaultEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
     /**
      * EO ACC from pilot if entered, otherwise from database
@@ -297,14 +288,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     // MISSED THR RED
 
     /**
-     * Missed THR RED pilot entry, in feet
+     * Missed THR RED pilot entry
      */
-    pilotMissedThrustReductionAltitude: number = undefined;
+    pilotMissedThrustReductionAltitude: AltitudeValue = undefined;
 
     /**
-     * Missed THR RED from NAV database, in feet
+     * Missed THR RED from NAV database
      */
-    defaultMissedThrustReductionAltitude: number = undefined;
+    defaultMissedThrustReductionAltitude: AltitudeValue = undefined;
 
     /**
      * Missed THR RED from pilot if entered, otherwise from database
@@ -324,14 +315,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     // MISSED ACC
 
     /**
-     * Missed ACC pilot entry, in feet
+     * Missed ACC pilot entry
      */
-    pilotMissedAccelerationAltitude: number = undefined;
+    pilotMissedAccelerationAltitude: AltitudeValue = undefined;
 
     /**
-     * Missed ACC from NAV database, in feet
+     * Missed ACC from NAV database
      */
-    defaultMissedAccelerationAltitude: number = undefined;
+    defaultMissedAccelerationAltitude: AltitudeValue = undefined;
 
     /**
      * Missed ACC from pilot if entered, otherwise from database
@@ -351,14 +342,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     // MISSED EO ACC
 
     /**
-     * Missed EO ACC pilot entry, in feet
+     * Missed EO ACC pilot entry
      */
-    pilotMissedEngineOutAccelerationAltitude: number = undefined;
+    pilotMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
     /**
-     * Missed EO ACC from NAV database, in feet
+     * Missed EO ACC from NAV database
      */
-    defaultMissedEngineOutAccelerationAltitude: number = undefined;
+    defaultMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
     /**
      * Missed EO ACC from pilot if entered, otherwise from database
@@ -376,14 +367,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     }
 
     /**
-     * TRANS ALT from NAV database, in feet
+     * TRANS ALT from NAV database
      */
-    databaseTransitionAltitude: number = undefined;
+    databaseTransitionAltitude: AltitudeValue = undefined;
 
     /**
-     * TRANS ALT from pilot entry, in feet
+     * TRANS ALT from pilot entry
      */
-    pilotTransitionAltitude: number = undefined;
+    pilotTransitionAltitude: AltitudeValue = undefined;
 
     /**
      * TRANS ALT from pilot if entered, otherwise from database
@@ -401,14 +392,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     }
 
     /**
-     * TRANS LVL from NAV database, as flight level (i.e. hundreds of feet)
+     * TRANS LVL from NAV database
      */
-    databaseTransitionLevel: number = undefined;
+    databaseTransitionLevel: AltitudeValue = undefined;
 
     /**
-     * TRANS LVL from pilot entry, as flight level (i.e. hundreds of feet)
+     * TRANS LVL from pilot entry
      */
-    pilotTransitionLevel: number = undefined;
+    pilotTransitionLevel: AltitudeValue = undefined;
 
     /**
      * TRANS LVL from pilot if entered, otherwise from database

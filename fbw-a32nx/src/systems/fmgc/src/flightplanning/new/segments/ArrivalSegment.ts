@@ -16,17 +16,20 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
     allLegs: FlightPlanElement[] = []
 
-    public get procedure(): Arrival | undefined {
+    public get procedure() {
         return this.arrival;
     }
 
-    private arrival: Arrival | undefined
+    /**
+     * The arrival procedure. If it's `undefined`, it means that no arrival is set. If it's `null`, it means that the "NO STAR" is explicitly selected.
+     */
+    private arrival: Arrival | undefined | null
 
-    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean) {
+    async setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean) {
         const oldArrivalName = this.arrival?.ident;
 
-        if (databaseId === undefined) {
-            this.arrival = undefined;
+        if (databaseId === undefined || databaseId === null) {
+            this.arrival = databaseId === undefined ? undefined : null;
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;

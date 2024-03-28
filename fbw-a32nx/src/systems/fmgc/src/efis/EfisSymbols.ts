@@ -12,7 +12,7 @@ import {
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { NauticalMiles, bearingTo, distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
@@ -134,18 +134,9 @@ export class EfisSymbols<T extends number> {
         }
 
         // FIXME map reference is also computed in GuidanceController, share?
-        let planCentre = plan?.maybeElementAt(planCentreIndex);
+        const planCentre = plan?.maybeElementAt(planCentreIndex);
 
-        // Only if we have a planCentre, check if it is a disco. If we don't have a centre at all, don't bother checking anyhthing
-        if (planCentre && planCentre.isDiscontinuity === true) {
-            planCentre = plan?.elementAt(Math.max(0, (planCentreIndex - 1)));
-        }
-
-        if (planCentre?.isDiscontinuity === true) {
-            throw new Error('bruh');
-        }
-
-        const termination = planCentre?.terminationWaypoint()?.location;
+        const termination = this.guidanceController.focusedWaypointCoordinates;
 
         const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
         if (efisInterfaceChanged) {
@@ -217,7 +208,7 @@ export class EfisSymbols<T extends number> {
             // eslint-disable-next-line no-loop-func
             const upsertSymbol = (symbol: NdSymbol): void => {
                 if (DEBUG) {
-                    // console.time(`upsert symbol ${symbol.databaseId}`);
+                    console.time(`upsert symbol ${symbol.databaseId}`);
                 }
                 // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
                 const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
@@ -655,7 +646,7 @@ export class EfisSymbols<T extends number> {
 
         const airports: [Airport | undefined, Runway | undefined][] = [
             // The alternate origin airport symbol is not shown as it is the same as the primary destination
-            [!isAlternate ? flightPlan.originAirport : undefined, flightPlan.originRunway],
+            [flightPlan.originAirport, flightPlan.originRunway],
             [flightPlan.destinationAirport, flightPlan.destinationRunway],
         ];
 

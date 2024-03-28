@@ -15,17 +15,18 @@ import { NavigationDatabaseService } from '../NavigationDatabaseService';
 export class DepartureSegment extends ProcedureSegment<Departure> {
     class = SegmentClass.Departure
 
-    get procedure(): Departure | undefined {
+    get procedure() {
         return this.originDeparture;
     }
 
-    originDeparture: Departure
+    // The departure procedure. If undefined, no departure is set. If null, NO SID was explicitly selected.
+    private originDeparture: Departure | undefined | null
 
     allLegs: FlightPlanLeg[] = []
 
-    async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        if (databaseId === undefined) {
-            this.originDeparture = undefined;
+    async setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
+        if (databaseId === undefined || databaseId === null) {
+            this.originDeparture = databaseId === undefined ? undefined : null;
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;

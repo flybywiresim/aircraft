@@ -261,7 +261,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus, this.fmsDataStore);
+    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
@@ -499,7 +499,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 const thresholdFeature = this.data.features.filter((it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text);
                 this.btvUtils.selectRunwayFromOans(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
             });
-        } if (label.style === LabelStyle.Taxiway) {
+        } if (label.style === LabelStyle.Taxiway && label.associatedFeature.properties.feattype === FeatureType.ExitLine) {
             element.addEventListener('click', () => {
                 this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
             });

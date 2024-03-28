@@ -98,15 +98,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     async setAlternateDestinationAirport(icao: string | undefined) {
-        // TODO setting both airport and runway here means we fetch the airport's approaches twice from the DB
-        // TODO optimize
+        await this.deleteAlternateFlightPlan();
         await this.alternateFlightPlan.setDestinationAirport(icao);
-        // Reset procedures because they don't make sense anymore for the new alternate
-        await this.alternateFlightPlan.setDestinationRunway(undefined);
-        await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
-        await this.alternateFlightPlan.setArrival(undefined);
-        await this.alternateFlightPlan.setApproach(undefined);
-        await this.alternateFlightPlan.setApproachVia(undefined);
 
         if (this.alternateFlightPlan.originAirport) {
             this.alternateFlightPlan.availableOriginRunways = await loadAllRunways(this.alternateFlightPlan.originAirport);
@@ -118,12 +111,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         await this.alternateFlightPlan.flushOperationQueue();
     }
 
-    deleteAlternateFlightPlan() {
-        this.setAlternateDestinationAirport(undefined);
-
-        this.alternateFlightPlan.setOriginRunway(undefined);
-        this.alternateFlightPlan.setDeparture(undefined);
-        this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
+    async deleteAlternateFlightPlan() {
+        await this.alternateFlightPlan.setOriginRunway(undefined);
+        await this.alternateFlightPlan.setDeparture(undefined);
+        await this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
+        await this.alternateFlightPlan.setDestinationRunway(undefined);
+        await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
+        await this.alternateFlightPlan.setArrival(undefined);
+        await this.alternateFlightPlan.setApproach(undefined);
+        await this.alternateFlightPlan.setApproachVia(undefined);
+        await this.alternateFlightPlan.setDestinationAirport(undefined);
 
         this.alternateFlightPlan.allLegs.length = 0;
 
@@ -476,7 +473,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
      *
      * The union type in the signature is to work around https://github.com/microsoft/TypeScript/issues/28662.
      */
-    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k] | null, notify = true) {
+    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k], notify = true) {
         this.performanceData[key] = value;
 
         if (notify) {

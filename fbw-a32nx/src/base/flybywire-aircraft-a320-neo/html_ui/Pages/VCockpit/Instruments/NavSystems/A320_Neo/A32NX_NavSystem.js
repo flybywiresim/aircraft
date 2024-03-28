@@ -40,10 +40,6 @@ class NavSystem extends BaseInstrument {
         this.accumulatedDeltaTime = 0;
         this.navDatabaseBackend = Fmgc.NavigationDatabaseBackend.Msfs;
     }
-    // TODO: DEPRECATE
-    // get flightPlanManager() {
-    //     return this.currFlightPlanManager;
-    // }
     get instrumentAlias() {
         return null;
     }
@@ -55,14 +51,12 @@ class NavSystem extends BaseInstrument {
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
 
-        // FIXME all this stuff should not go in NavSystem... or stuff like the FCU should stop using NavSystem
-        // this.currFlightPlanManager = new Fmgc.FlightPlanManager(this); // TODO: DEPRECATE
-        // this.currFlightPlan = new Fmgc.ManagedFlightPlan(); // TODO: DEPRECATE
-
         if (this.nodeName.includes('CDU')) {
             this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
+            const bus = new Fmgc.EventBus();
+            this.currFlightPlanService = new Fmgc.FlightPlanService(bus, new Fmgc.A320FlightPlanPerformanceData());
+            this.rpcServer = new Fmgc.FlightPlanRpcServer(bus, this.currFlightPlanService);
 
-            this.currFlightPlanService = new Fmgc.FlightPlanService(new Fmgc.EventBus(), new Fmgc.A320FlightPlanPerformanceData());
             this.currFlightPlanService.createFlightPlans();
 
             this.currNavigationDatabaseService = Fmgc.NavigationDatabaseService;
