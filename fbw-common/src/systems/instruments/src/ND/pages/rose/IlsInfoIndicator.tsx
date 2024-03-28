@@ -7,7 +7,7 @@ import { Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 import { GenericFlightManagementBusEvents } from '../../types/GenericFlightManagementBusEvents';
-import { Layer } from '../../Layer';
+import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 
 export interface IlsInfoIndicatorProps {
     bus: EventBus,

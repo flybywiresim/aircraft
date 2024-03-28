@@ -1,8 +1,9 @@
 import pkce from '@navigraph/pkce';
+import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '../amdb';
 import { AirportInfo, AuthType, NavigraphAirportCharts, NavigraphChart, NavigraphSubscriptionStatus } from './types';
 import { NXDataStore } from '../persistence';
 
-const NAVIGRAPH_API_SCOPES = 'openid charts offline_access';
+const NAVIGRAPH_API_SCOPES = 'openid charts amdb offline_access';
 
 const NAVIGRAPH_DEFAULT_AUTH_STATE = {
     code: '',
@@ -55,9 +56,11 @@ export class NavigraphClient {
             this.pkce = pkce();
 
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
+            const deviceCode = NXDataStore.get('NAVIGRAPH_DEVICE_CODE');
 
             if (token) {
                 this.refreshToken = token;
+                this.deviceCode = deviceCode || undefined;
                 this.getToken();
             }
         }
@@ -89,6 +92,7 @@ export class NavigraphClient {
                 this.auth.qrLink = json.verification_uri_complete;
                 this.auth.interval = json.interval;
                 this.deviceCode = json.device_code;
+                NXDataStore.set('NAVIGRAPH_DEVICE_CODE', this.deviceCode);
             }
         } catch (_) {
             console.log('Unable to Authorize Device. #NV101');
@@ -205,7 +209,7 @@ export class NavigraphClient {
         return Promise.reject();
     }
 
-    public async amdbCall(query: string): Promise<string> {
+    public async amdbCall(query: string, recurseCount = 0): Promise<string> {
         const callResp = await fetch(`https://amdb.api.navigraph.com/v1/${query}`,
             {
                 headers: {
@@ -219,10 +223,10 @@ export class NavigraphClient {
         }
 
         // Unauthorized
-        if (callResp.status === 401) {
+        if (callResp.status === 401 && recurseCount === 0) {
             await this.getToken();
 
-            return this.amdbCall(query);
+            return this.amdbCall(query, recurseCount + 1);
         }
 
         return Promise.reject();
@@ -306,6 +310,37 @@ export class NavigraphClient {
         }
 
         return null;
+    }
+
+    public async searchAmdbAirports(queryString: string): Promise<AmdbAirportSearchResponse> {
+        let query = 'search';
+
+        query += `?q=${queryString}`;
+
+        const response = await this.amdbCall(query);
+
+        return JSON.parse(response);
+    }
+
+    public async getAmdbData(
+        icao: string,
+        includeFeatureTypes?: FeatureTypeString[],
+        excludeFeatureTypes?: FeatureTypeString[],
+        projection = AmdbProjection.ArpAzeq,
+    ): Promise<AmdbResponse> {
+        let query = icao;
+
+        const excludeString = excludeFeatureTypes ? excludeFeatureTypes.join(',') : '';
+        const includeString = includeFeatureTypes ? includeFeatureTypes.join(',') : '';
+
+        query += `?projection=${projection}`;
+        query += '&format=geojson';
+        query += `&exclude=${excludeString}`;
+        query += `&include=${includeString}`;
+
+        const response = await this.amdbCall(query);
+
+        return JSON.parse(response);
     }
 
     public get hasToken(): boolean {
