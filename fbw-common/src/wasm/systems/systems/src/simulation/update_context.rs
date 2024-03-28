@@ -290,7 +290,10 @@ impl UpdateContext {
     pub(crate) const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
     pub(crate) const ACCEL_BODY_X_KEY: &'static str = "ACCELERATION BODY X";
     pub(crate) const ACCEL_BODY_Y_KEY: &'static str = "ACCELERATION BODY Y";
-    pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
+
+    // Acceleration that includes the reverser acceleration added by our systems to msfs
+    pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION_BODY_Z_WITH_REVERSER";
+
     pub(crate) const WIND_VELOCITY_X_KEY: &'static str = "AMBIENT WIND X";
     pub(crate) const WIND_VELOCITY_Y_KEY: &'static str = "AMBIENT WIND Y";
     pub(crate) const WIND_VELOCITY_Z_KEY: &'static str = "AMBIENT WIND Z";
@@ -457,7 +460,7 @@ impl UpdateContext {
             local_vertical_speed_id: context.get_identifier("VELOCITY BODY Y".to_owned()),
             accel_body_x_id: context.get_identifier("ACCELERATION BODY X".to_owned()),
             accel_body_y_id: context.get_identifier("ACCELERATION BODY Y".to_owned()),
-            accel_body_z_id: context.get_identifier("ACCELERATION BODY Z".to_owned()),
+            accel_body_z_id: context.get_identifier("ACCELERATION_BODY_Z_WITH_REVERSER".to_owned()),
             wind_velocity_x_id: context.get_identifier("AMBIENT WIND X".to_owned()),
             wind_velocity_y_id: context.get_identifier("AMBIENT WIND Y".to_owned()),
             wind_velocity_z_id: context.get_identifier("AMBIENT WIND Z".to_owned()),
