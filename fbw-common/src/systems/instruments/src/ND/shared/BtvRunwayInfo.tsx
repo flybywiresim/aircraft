@@ -2,29 +2,30 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, Subject, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { FmsOansData } from 'instruments/src/OANC';
+import { FmsOansData, FmsOansDataArinc429 } from 'instruments/src/OANC';
+import { Arinc429Word, ArincEventBus } from '@shared/index';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
-export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
+export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     private readonly fmsRwyIdent = ConsumerSubject.create<string | null>(null, null);
 
     private readonly runwayIdent = ConsumerSubject.create<string | null>(null, null);
 
-    private readonly runwayLength = ConsumerSubject.create<number | null>(null, null);
+    private readonly runwayLength = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
     private readonly exitIdent = ConsumerSubject.create<string | null>(null, null);
 
-    private readonly exitDistance = ConsumerSubject.create<number | null>(null, null);
+    private readonly exitDistance = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
     private readonly runwayInfoString = MappedSubject.create(
-        ([ident, length]) => ((ident && length) ? `${ident.substring(2).padStart(5, '\xa0')}${length.toFixed(0).padStart(6, '\xa0')}` : ''),
+        ([ident, length]) => ((ident && length.isNormalOperation()) ? `${ident.substring(2).padStart(5, '\xa0')}${length.value.toFixed(0).padStart(6, '\xa0')}` : ''),
         this.runwayIdent,
         this.runwayLength,
     );
 
-    private readonly runwayBearing = ConsumerSubject.create<number | null>(null, null);
+    private readonly runwayBearing = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
     private readonly btvFmsDisagree = MappedSubject.create(
         ([btv, fms, exit]) => fms && btv && !exit && btv !== fms,
@@ -34,19 +35,19 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
     );
 
     private readonly exitInfoString = MappedSubject.create(
-        ([ident, dist]) => ((ident && dist) ? `${ident.padStart(4, '\xa0')}${dist.toFixed(0).padStart(6, '\xa0')}` : ''),
+        ([ident, dist]) => ((ident && dist.isNormalOperation()) ? `${ident.padStart(4, '\xa0')}${dist.value.toFixed(0).padStart(6, '\xa0')}` : ''),
         this.exitIdent,
         this.exitDistance,
     );
 
     private readonly rot = Subject.create<string | null>(null);
 
-    private readonly turnaroundMaxRev = ConsumerSubject.create(null, 0);
+    private readonly turnaroundMaxRev = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
-    private readonly turnaroundIdleRev = ConsumerSubject.create(null, 0);
+    private readonly turnaroundIdleRev = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
     private readonly turnaroundString = MappedSubject.create(
-        ([idle, max]) => ((idle > 0 && max > 0) ? `${max.toFixed(0).padStart(3, '\xa0')}'/${idle.toFixed(0).padStart(3, '\xa0')}'` : ''),
+        ([idle, max]) => ((idle.isNormalOperation() && max.isNormalOperation()) ? `${max.value.toFixed(0).padStart(3, '\xa0')}'/${idle.value.toFixed(0).padStart(3, '\xa0')}'` : ''),
         this.turnaroundIdleRev,
         this.turnaroundMaxRev,
     );
@@ -54,21 +55,26 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<FmsOansData>();
+        const sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData>();
 
         this.fmsRwyIdent.setConsumer(sub.on('fmsLandingRunway'));
         this.runwayIdent.setConsumer(sub.on('oansSelectedLandingRunway'));
+        this.runwayLength.setConsumer(sub.on('oansSelectedLandingRunwayLength').withArinc429Precision(1));
+        this.runwayBearing.setConsumer(sub.on('oansSelectedLandingRunwayBearing').withArinc429Precision(1));
         this.exitIdent.setConsumer(sub.on('oansSelectedExit'));
-        this.exitDistance.setConsumer(sub.on('oansRequestedStoppingDistance'));
-        this.runwayLength.setConsumer(sub.on('oansSelectedLandingRunwayLength'));
-        this.runwayBearing.setConsumer(sub.on('oansSelectedLandingRunwayBearing'));
+        this.exitDistance.setConsumer(sub.on('oansRequestedStoppingDistance').withArinc429Precision(1));
 
-        sub.on('btvRot').whenChanged().handle((it) => {
-            this.rot.set(it > 0 ? it.toFixed(0).padStart(4, '\xa0') : '');
+        this.runwayLength.sub((b) => {
+            console.warn(b);
+            console.log(`${this.runwayIdent.get().substring(2).padStart(5, '\xa0')}${this.runwayLength.get().value.toFixed(0).padStart(6, '\xa0')}`);
         });
 
-        this.turnaroundIdleRev.setConsumer(sub.on('btvTurnAroundIdleReverse'));
-        this.turnaroundMaxRev.setConsumer(sub.on('btvTurnAroundMaxReverse'));
+        sub.on('btvRot').whenChanged().handle((it) => {
+            this.rot.set(it.isNormalOperation() ? it.value.toFixed(0).padStart(4, '\xa0') : '');
+        });
+
+        this.turnaroundIdleRev.setConsumer(sub.on('btvTurnAroundIdleReverse').withArinc429Precision(1));
+        this.turnaroundMaxRev.setConsumer(sub.on('btvTurnAroundMaxReverse').withArinc429Precision(1));
     }
 
     render(): VNode | null {
@@ -80,7 +86,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: EventBus }> {
                         <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
                         <text x={205} y={0} class="Cyan FontSmallest">M</text>
                         <text x={225} y={0} class="White FontSmallest">-</text>
-                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing.map((it) => it?.toFixed(0))}</text>
+                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing.map((it) => it?.value.toFixed(0))}</text>
                         <text x={283} y={0} class="Cyan FontSmallest">°</text>
                     </Layer>
                 </g>

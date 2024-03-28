@@ -2,20 +2,40 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, MathUtils, Subject } from '@microsoft/msfs-sdk';
 import { AmdbProperties } from '@shared/amdb';
 import { Feature, FeatureCollection, Geometry, Position, featureCollection } from '@turf/turf';
+import { Arinc429SignStatusMatrix, Arinc429Word } from 'index-no-react';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
-import { FmsDataStore } from 'instruments/src/OANC/OancControlPanelUtils';
 import { pointDistance } from 'instruments/src/OANC/OancMapUtils';
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
  */
 export class BrakeToVacateUtils {
-    constructor(private readonly bus: EventBus, private readonly fmsDataStore: FmsDataStore) {
+    constructor(private readonly bus: EventBus) {
+        this.remaininingDistToExit.sub((v) => {
+            if (v < 0) {
+                Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', 0, Arinc429SignStatusMatrix.NoComputedData);
+            } else {
+                Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', v, Arinc429SignStatusMatrix.NormalOperation);
+            }
+        });
 
+        this.remaininingDistToRwyEnd.sub((v) => {
+            if (v < 0) {
+                Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', 0, Arinc429SignStatusMatrix.NoComputedData);
+            } else {
+                Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', v, Arinc429SignStatusMatrix.NormalOperation);
+            }
+        });
+
+        this.clearSelection();
     }
+
+    private readonly remaininingDistToExit = Subject.create<number>(0);
+
+    private readonly remaininingDistToRwyEnd = Subject.create<number>(0);
 
     readonly btvRunway = Subject.create<string | null>(null);
 
@@ -82,12 +102,11 @@ export class BrakeToVacateUtils {
 
         const pub = this.bus.getPublisher<FmsOansData>();
         pub.pub('oansSelectedLandingRunway', runway, true);
-        pub.pub('oansSelectedLandingRunwayBearing', heading, true);
-        SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, lda);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', lda, Arinc429SignStatusMatrix.NormalOperation);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', heading, Arinc429SignStatusMatrix.NormalOperation);
     }
 
     selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
-        console.warn(exit, feature);
         const thrLoc = this.btvThresholdFeature.geometry.coordinates as Position;
         const exitLoc1 = feature.geometry.coordinates[0] as Position;
         const exitLoc2 = feature.geometry.coordinates[feature.geometry.coordinates.length - 1] as Position;
@@ -108,7 +127,7 @@ export class BrakeToVacateUtils {
         );
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
-        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, exitDistance);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', exitDistance, Arinc429SignStatusMatrix.NormalOperation);
 
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/${exit}`, true);
 
@@ -134,15 +153,16 @@ export class BrakeToVacateUtils {
 
         const pub = this.bus.getPublisher<FmsOansData>();
         pub.pub('oansSelectedLandingRunway', runway, true);
-        pub.pub('oansSelectedLandingRunwayBearing', heading, true);
-        SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, lda);
+
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', lda, Arinc429SignStatusMatrix.NormalOperation);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', heading, Arinc429SignStatusMatrix.NormalOperation);
     }
 
     selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
         this.btvExitPosition = btvExitPosition;
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
-        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, reqStoppingDistance);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', reqStoppingDistance, Arinc429SignStatusMatrix.NormalOperation);
 
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/MANUAL`, true);
 
@@ -163,44 +183,41 @@ export class BrakeToVacateUtils {
 
         const pub = this.bus.getPublisher<FmsOansData>();
         pub.pub('oansSelectedLandingRunway', null, true);
-        pub.pub('oansSelectedLandingRunwayBearing', null, true);
         pub.pub('oansSelectedExit', null, true);
         pub.pub('ndBtvMessage', '', true);
-        SimVar.SetSimVarValue('L:A32NX_OANS_RWY_LENGTH', SimVarValueType.Meters, 0);
-        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Meters, -1);
-        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, -1);
-        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, -1);
 
-        SimVar.SetSimVarValue('L:A32NX_BTV_ROT', SimVarValueType.Number, -1);
-        SimVar.SetSimVarValue('L:A32NX_BTV_TURNAROUND_IDLE_REV', SimVarValueType.Number, -1);
-        SimVar.SetSimVarValue('L:A32NX_BTV_TURNAROUND_MAX_REV', SimVarValueType.Number, -1);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', 0, Arinc429SignStatusMatrix.NoComputedData);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', 0, Arinc429SignStatusMatrix.NoComputedData);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', 0, Arinc429SignStatusMatrix.NoComputedData);
+        this.remaininingDistToExit.set(-1);
+        this.remaininingDistToRwyEnd.set(-1);
+
+        Arinc429Word.toSimVarValue('L:A32NX_BTV_ROT', 0, Arinc429SignStatusMatrix.NoComputedData);
+        Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_IDLE_REV', 0, Arinc429SignStatusMatrix.NoComputedData);
+        Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_MAX_REV', 0, Arinc429SignStatusMatrix.NoComputedData);
     }
 
     updateRemainingDistances(pos: Position) {
-        const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
+        if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
+            const rwyEndDistance = pointDistance(
+                pos[0],
+                pos[1],
+                this.btvOppositeThresholdPosition[0],
+                this.btvOppositeThresholdPosition[1],
+            );
 
-        if (fwcFlightPhase < 5 || (fwcFlightPhase >= 7 && fwcFlightPhase < 10)) {
-            if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
-                const rwyEndDistance = pointDistance(
-                    pos[0],
-                    pos[1],
-                    this.btvOppositeThresholdPosition[0],
-                    this.btvOppositeThresholdPosition[1],
-                );
+            this.remaininingDistToRwyEnd.set(MathUtils.round(rwyEndDistance, 0.1));
+        }
 
-                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END', SimVarValueType.Meters, rwyEndDistance);
-            }
+        if (this.btvExitPosition && this.btvExitPosition.length > 0) {
+            const exitDistance = pointDistance(
+                pos[0],
+                pos[1],
+                this.btvExitPosition[0],
+                this.btvExitPosition[1],
+            );
 
-            if (this.btvExitPosition && this.btvExitPosition.length > 0) {
-                const exitDistance = pointDistance(
-                    pos[0],
-                    pos[1],
-                    this.btvExitPosition[0],
-                    this.btvExitPosition[1],
-                );
-
-                SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT', SimVarValueType.Meters, exitDistance);
-            }
+            this.remaininingDistToExit.set(MathUtils.round(exitDistance, 0.1));
         }
     }
 }

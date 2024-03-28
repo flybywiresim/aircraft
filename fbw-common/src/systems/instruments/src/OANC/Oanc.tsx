@@ -261,7 +261,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus, this.fmsDataStore);
+    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {

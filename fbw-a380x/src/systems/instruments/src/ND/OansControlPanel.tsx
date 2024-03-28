@@ -10,7 +10,7 @@ import {
 import { BrakeToVacateUtils, ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents, globalToAirportCoordinates } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide, FeatureType, FeatureTypeString, MathUtils, MsfsBackend, Runway } from '@flybywiresim/fbw-sdk';
 
-import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
+import { FmsOansData, FmsOansDataArinc429 } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
 import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
 import { DropdownMenu } from './UI/DropdownMenu';
@@ -103,7 +103,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private landingRunwayNavdata: Runway | undefined;
 
-    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus, this.fmsDataStore);
+    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
 
     private readonly airportDatabase = Subject.create('SXT59027250AA04');
 
@@ -172,7 +172,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             }
         }, true);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansDataArinc429 & AdirsSimVars>();
 
         sub.on('latitude').whenChanged().handle((value) => {
             this.pposLatWord.setWord(value);
@@ -224,13 +224,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
             ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
 
-            if (this.arpCoordinates && ppos.lat) {
+            if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
                 const localPpos = globalToAirportCoordinates(this.arpCoordinates, ppos);
                 this.btvUtils.updateRemainingDistances(localPpos);
             }
         });
 
-        sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it));
+        sub.on('oansRequestedStoppingDistance').whenChanged().handle((it) => this.reqStoppingDistance.set(it.isNormalOperation() ? it.value : 0));
 
         this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
     }
@@ -528,13 +528,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     dataHandlerDuringValidation={async (val) => {
-                                                        SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val);
+                                                        if (this.navigraphAvailable.get() === false) {
+                                                            SimVar.SetSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', SimVarValueType.Number, val);
 
-                                                        if (val && this.landingRunwayNavdata && this.arpCoordinates) {
-                                                            const exitLocation = placeBearingDistance(this.landingRunwayNavdata.thresholdLocation, this.landingRunwayNavdata.bearing, val / MathUtils.METRES_TO_NAUTICAL_MILES);
-                                                            const localExitPos = globalToAirportCoordinates(this.arpCoordinates, exitLocation);
+                                                            if (val && this.landingRunwayNavdata && this.arpCoordinates) {
+                                                                const exitLocation = placeBearingDistance(this.landingRunwayNavdata.thresholdLocation, this.landingRunwayNavdata.bearing, val / MathUtils.METRES_TO_NAUTICAL_MILES);
+                                                                const localExitPos = globalToAirportCoordinates(this.arpCoordinates, exitLocation);
 
-                                                            this.btvUtils.selectExitFromManualEntry(val, localExitPos);
+                                                                this.btvUtils.selectExitFromManualEntry(val, localExitPos);
+                                                            }
                                                         }
                                                     }}
                                                     value={this.reqStoppingDistance}
