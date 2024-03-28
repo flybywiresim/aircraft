@@ -179,7 +179,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                 if (ii.legs[ii.legs.length - 1]?.waypoint?.databaseId === it.legs[0]?.waypoint?.databaseId) {
                                     oneStarIsMatching = true;
                                 }
-                                oneStarIsMatching = false;
                             });
                             return oneStarIsMatching;
                         }

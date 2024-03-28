@@ -63,12 +63,6 @@ export {
     DataManager,
     EventBus,
     a320EfisRangeSettings,
-    WaypointFactory,
-    WaypointEntryUtils,
-    SimBriefUplinkAdapter,
-    CoRouteUplinkAdapter,
-    DataManager,
-    EventBus,
     A320AircraftConfig,
     A380AircraftConfig,
 };

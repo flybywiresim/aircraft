@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
@@ -13,7 +13,6 @@ import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
-import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
