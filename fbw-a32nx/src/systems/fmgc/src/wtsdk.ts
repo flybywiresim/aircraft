@@ -22,15 +22,6 @@
  * SOFTWARE.
  */
 
-import { DirectTo } from './flightplanning/DirectTo';
-import { FlightPlanManager } from './flightplanning/FlightPlanManager';
-import { FlightPlanSegment, SegmentType } from './flightplanning/FlightPlanSegment';
-import { getSegmentedFlightPlan } from './flightplanning/SegmentedFlightPlan';
-import { GPS } from './flightplanning/GPS';
-import { LegsProcedure } from './flightplanning/LegsProcedure';
-import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
-import { ProcedureDetails } from './flightplanning/ProcedureDetails';
-import { RawDataMapper } from './flightplanning/RawDataMapper';
-import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
+import { SegmentType } from './flightplanning/FlightPlanSegment';
 
-export { DirectTo, FlightPlanAsoboSync, FlightPlanManager, FlightPlanSegment, SegmentType, getSegmentedFlightPlan, GPS, LegsProcedure, ManagedFlightPlan, ProcedureDetails, RawDataMapper };
+export { SegmentType };

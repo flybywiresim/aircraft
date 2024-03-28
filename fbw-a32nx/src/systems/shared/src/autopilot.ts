@@ -1,4 +1,4 @@
-import { ControlLaw } from '../../fmgc/src/guidance/ControlLaws';
+import { ControlLaw } from '@fmgc/guidance/ControlLaws';
 
 enum LateralMode {
     NONE = 0,

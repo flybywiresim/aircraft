@@ -7,87 +7,15 @@ import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
-
-export enum AltitudeConstraintType {
-    at,
-    atOrAbove,
-    atOrBelow,
-    range,
-}
-
-// TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)
-export enum SpeedConstraintType {
-    at,
-    atOrAbove,
-    atOrBelow,
-}
-
-export interface AltitudeConstraint {
-    type: AltitudeConstraintType,
-    altitude1: Feet,
-    altitude2: Feet | undefined,
-}
-
-export interface SpeedConstraint {
-    type: SpeedConstraintType,
-    speed: Knots,
-}
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
+import { MissedApproachSegment } from '@fmgc/flightplanning/new/segments/MissedApproachSegment';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export type PathAngleConstraint = Degrees;
 
 export abstract class FXLeg extends Leg {
     from: WayPoint;
-}
-
-export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {
-    if (wp.legAltitudeDescription && wp.legAltitude1) {
-        const ac: Partial<AltitudeConstraint> = {};
-        ac.altitude1 = wp.legAltitude1;
-        ac.altitude2 = undefined;
-        switch (wp.legAltitudeDescription) {
-        case 1:
-        case 6:
-            ac.type = AltitudeConstraintType.at;
-            break;
-        case 2:
-            ac.type = AltitudeConstraintType.atOrAbove;
-            break;
-        case 3:
-            ac.type = AltitudeConstraintType.atOrBelow;
-            break;
-        case 4:
-        case 7:
-            ac.type = AltitudeConstraintType.range;
-            ac.altitude2 = wp.legAltitude2;
-            break;
-        default:
-            break;
-        }
-        return ac as AltitudeConstraint;
-    }
-    return undefined;
-}
-
-export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | undefined {
-    if (wp.speedConstraint) {
-        const sc: Partial<SpeedConstraint> = {};
-        sc.type = SpeedConstraintType.atOrBelow;
-        sc.speed = wp.speedConstraint;
-        return sc as SpeedConstraint;
-    }
-    return undefined;
-}
-
-export function getPathAngleConstraintFromWaypoint(wp: WayPoint): PathAngleConstraint | undefined {
-    return wp.additionalData.verticalAngle;
-}
-
-export function waypointToLocation(wp: WayPoint): LatLongData {
-    const loc: LatLongData = {
-        lat: wp.infos.coordinates.lat,
-        long: wp.infos.coordinates.long,
-    };
-    return loc;
 }
 
 export function isHold(leg: Leg): boolean {
@@ -102,6 +30,10 @@ export function isCourseReversalLeg(leg: Leg): boolean {
  * Geometry and vertical constraints applicable to a leg
  */
 export interface LegMetadata {
+    /**
+     * Definition of the originating flight plan leg
+     */
+    flightPlanLegDefinition: FlightPlanLegDefinition,
 
     /**
      * Turn direction constraint applicable to this leg
@@ -134,6 +66,11 @@ export interface LegMetadata {
     isOverfly?: boolean,
 
     /**
+     * Whether the leg is in the missed approach segment
+     */
+    isInMissedApproach?: boolean,
+
+    /**
      * Lateral offset applicable to this leg. -ve if left offset, +ve if right offset.
      *
      * This also applies if this is the first or last leg considered "offset" in the FMS, even if the transition onto the offset path skips the leg.
@@ -141,16 +78,25 @@ export interface LegMetadata {
     offset?: NauticalMiles,
 }
 
-export function legMetadataFromMsfsWaypoint(waypoint: WayPoint): LegMetadata {
-    const altitudeConstraint = getAltitudeConstraintFromWaypoint(waypoint);
-    const speedConstraint = getSpeedConstraintFromWaypoint(waypoint);
-    const pathAngleConstraint = getPathAngleConstraintFromWaypoint(waypoint);
+export function legMetadataFromFlightPlanLeg(leg: FlightPlanLeg): LegMetadata {
+    const altitudeConstraint = leg.altitudeConstraint;
+    const speedConstraint = leg.speedConstraint;
+    const pathAngleConstraint = leg.definition?.verticalAngle;
+
+    let turnDirection = TurnDirection.Either;
+    if (leg.definition.turnDirection === 'L') {
+        turnDirection = TurnDirection.Left;
+    } else if (leg.definition.turnDirection === 'R') {
+        turnDirection = TurnDirection.Right;
+    }
 
     return {
-        turnDirection: waypoint.turnDirection,
+        flightPlanLegDefinition: leg.definition,
+        turnDirection,
         altitudeConstraint,
         speedConstraint,
         pathAngleConstraint,
-        isOverfly: waypoint.additionalData.overfly,
+        isOverfly: leg.definition.overfly,
+        isInMissedApproach: leg.segment instanceof MissedApproachSegment,
     };
 }
