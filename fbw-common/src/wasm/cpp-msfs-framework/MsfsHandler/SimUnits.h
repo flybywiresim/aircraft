@@ -29,7 +29,7 @@ class SimUnits {
  public:
   // Selected commonly used units
 
-  const SimUnit None{""};  // special case for no unit (e.g. in conjunction with a data type)
+  const SimUnit None{""};  // special case for no unit (e.g., in conjunction with a data type)
   const SimUnit Bool{"Bool"};
   const SimUnit Celsius{"Celsius"};
   const SimUnit Feet{"Feet"};
@@ -38,6 +38,7 @@ class SimUnits {
   const SimUnit FeetSecSquared{"feet per second squared"};
   const SimUnit FootPounds{"Foot pounds"};
   const SimUnit Gallons{"Gallons"};
+  const SimUnit Gph{"Gallons per hour"};
   const SimUnit Hours{"Hours"};
   const SimUnit Mach{"Mach"};
   const SimUnit Millibars{"Millibars"};
