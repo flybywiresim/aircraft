@@ -219,7 +219,7 @@ devDependencies:
     version: 27.5.2
   '@types/react':
     specifier: ~17.0.11
-    version: 17.0.71
+    version: 17.0.11
   '@types/react-dom':
     specifier: ~17.0.8
     version: 17.0.25
@@ -2928,7 +2928,7 @@ packages:
   /@types/hoist-non-react-statics@3.3.5:
     resolution: {integrity: sha512-SbcrWzkKBw2cdwRTwQAswfpB9g9LJWfjtUeW/jvNwbhC8cpmmNYVePa+ncbUe0rGTQ7G3Ff6mYUN2VMfLVr+Sg==}
     dependencies:
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -2986,20 +2986,20 @@ packages:
   /@types/react-canvas-draw@1.2.3:
     resolution: {integrity: sha512-0Y89n63EwSFEN1cITPtq6F99SGDwhXWbbxcdw2WghoyIl4TwLCmv2Igm6B0+c8ArN6I0LFpuHdjpg7pPOsydtw==}
     dependencies:
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
     dev: false
 
   /@types/react-dom@17.0.25:
     resolution: {integrity: sha512-urx7A7UxkZQmThYA4So0NelOVjx3V4rNFVJwp0WZlbIK5eM4rNJDiN3R/E9ix0MBh6kAEojk/9YL+Te6D9zHNA==}
     dependencies:
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
     dev: true
 
   /@types/react-redux@7.1.32:
     resolution: {integrity: sha512-YJYV0M27cyHHJIacaRsZRx5OETzK8KWjEGnix7UH3ngItYo4It0MUBzU6WNwqnwhbrPw5wx9KXluuoTZ85Gg7A==}
     dependencies:
       '@types/hoist-non-react-statics': 3.3.5
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
       hoist-non-react-statics: 3.3.2
       redux: 4.2.1
     dev: false
@@ -3008,7 +3008,7 @@ packages:
     resolution: {integrity: sha512-Go0vxZSigXTyXx8xPkGiBrrc3YbBs82KE14WENMLS6TSUKcRFSmYVbL19zFOnNFqJhqrPqEs2h5eUpJhSRrwZw==}
     dependencies:
       '@types/history': 5.0.0
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
       '@types/react-router': 5.1.20
     dev: true
 
@@ -3016,11 +3016,11 @@ packages:
     resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 17.0.71
+      '@types/react': 17.0.11
     dev: true
 
-  /@types/react@17.0.71:
-    resolution: {integrity: sha512-lfqOu9mp16nmaGRrS8deS2Taqhd5Ih0o92Te5Ws6I1py4ytHBcXLqh0YIqVsViqwVI5f+haiFM6hju814BzcmA==}
+  /@types/react@17.0.11:
+    resolution: {integrity: sha512-yFRQbD+whVonItSk7ZzP/L+gPTJVBkL/7shLEF+i9GC/1cV3JmUxEQz6+9ylhUpWSDuqo1N9qEvqS6vTj4USUA==}
     dependencies:
       '@types/prop-types': 15.7.11
       '@types/scheduler': 0.16.8

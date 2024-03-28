@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { Viewer } from '@flybywiresim/fbw-sdk';
+import { getPdfImageUrl } from './LocalFilesPage';
 import { t } from '../../../Localization/translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
@@ -33,7 +34,7 @@ export const LocalFileChartUI = () => {
         { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
         { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.images, ...charts.pdfs] },
     ]);
-    const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+    const { searchQuery, isFullScreen, selectedTabIndex, currentPage, chartName, pagesViewable } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     const updateSearchStatus = async () => {
         setIcaoAndNameDisagree(true);
@@ -80,8 +81,16 @@ export const LocalFileChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: chartName.light, dark: chartName.dark } }));
-    }, [chartName]);
+        if (pagesViewable > 1) {
+            getPdfImageUrl(chartName.light, currentPage)
+                .then((url) => {
+                    dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: url, dark: url } }));
+                })
+                .catch((error) => {
+                    console.error(`Error: ${error}`);
+                });
+        }
+    }, [currentPage]);
 
     const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
         const pdfs: LocalFileChart[] = [];

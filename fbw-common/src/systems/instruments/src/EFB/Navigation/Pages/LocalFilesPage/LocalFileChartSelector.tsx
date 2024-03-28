@@ -19,7 +19,7 @@ import {
 } from '../../../Store/features/navigationPage';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
-import { getImageUrl, getPdfUrl } from './LocalFilesPage';
+import { getImageUrl, getPdfImageUrl } from './LocalFilesPage';
 
 export type LocalFileChart = {
     fileName: string;
@@ -67,7 +67,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     const getChartResourceUrl = async (chart: LocalFileChart): Promise<string> => {
         try {
             if (chart.type === 'PDF') {
-                return await getPdfUrl(chart.fileName, 1);
+                return await getPdfImageUrl(chart.fileName, 1);
             }
             return await getImageUrl(chart.fileName);
         } catch (err) {
@@ -92,7 +92,8 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         try {
             const url = await getChartResourceUrl(chart);
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartDimensions: { width: undefined, height: undefined } }));
-            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: url, dark: url } }));
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: chart.fileName, dark: chart.fileName } }));
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: url, dark: url } }));
             dispatch(setBoundingBox(undefined));
             const pagesViewable = await getPagesViewable(chart);
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));

@@ -203,5 +203,8 @@
     "use-long-press": "^1.1.2",
     "uuid": "^9.0.0",
     "ws": "^7.4.5"
+  },
+  "overrides": {
+    "@types/react": "17.0.11"
   }
 }

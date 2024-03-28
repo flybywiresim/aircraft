@@ -142,6 +142,7 @@ export const PinnedChartUI = () => {
         ALL: { alias: t('NavigationAndCharts.All'), provider: 'ALL' },
         [ChartProvider.LOCAL_FILES]: { alias: t('NavigationAndCharts.LocalFiles.Title'), provider: ChartProvider.LOCAL_FILES },
         [ChartProvider.NAVIGRAPH]: { alias: t('NavigationAndCharts.Navigraph.Title'), provider: ChartProvider.NAVIGRAPH },
+        [ChartProvider.CHARTFOX]: { alias: t('NavigationAndCharts.ChartFox.Title'), provider: ChartProvider.CHARTFOX },
     };
 
     const filterTabs: { tag: string, alias: string }[] = {
@@ -156,6 +157,14 @@ export const PinnedChartUI = () => {
             { tag: 'TAXI', alias: 'TAXI' },
             { tag: 'SID', alias: 'SID' },
             { tag: 'REF', alias: 'REF' },
+            { tag: 'ALL', alias: 'ALL' },
+        ],
+        [ChartProvider.CHARTFOX]: [
+            { tag: 'GEN', alias: 'GEN' },
+            { tag: 'GND', alias: 'GND' },
+            { tag: 'SID', alias: 'SID' },
+            { tag: 'STAR', alias: 'STAR' },
+            { tag: 'APP', alias: 'APP' },
             { tag: 'ALL', alias: 'ALL' },
         ],
     }[selectedProvider] ?? [];
@@ -186,7 +195,7 @@ export const PinnedChartUI = () => {
             return pinnedChart.tag === filterItem.tag;
         }
 
-        if (provider === ChartProvider.NAVIGRAPH) {
+        if (provider === ChartProvider.NAVIGRAPH || provider === ChartProvider.CHARTFOX) {
             if (filterItem.tag === 'ALL') {
                 return true;
             }
