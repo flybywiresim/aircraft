@@ -8,6 +8,15 @@ const DeparturePagination = Object.freeze(
     }
 );
 
+const Labels = Object.freeze(
+    {
+        NO_SID: "NO SID",
+        NO_TRANS: "NO TRANS",
+        NO_VIA: "NO VIA",
+        NO_STAR: "NO STAR",
+    }
+);
+
 class CDUAvailableDeparturesPage {
     static ShowPage(mcdu, airport, pageCurrent = -1, sidSelection = false, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
         mcdu.clearDisplay();
@@ -53,7 +62,7 @@ class CDUAvailableDeparturesPage {
 
         // NO SID/NO TRANS option is available at the end of the list when non-zero options
         if (availableSids.length > 0) {
-            availableSids.push("NO SID");
+            availableSids.push(Labels.NO_SID);
         }
 
         let selectedSidPage = -1;
@@ -66,7 +75,7 @@ class CDUAvailableDeparturesPage {
         const selectedRunwayPage = selectedRunway ? Math.floor((availableRunways.findIndex((runway) => runway.ident === selectedRunway.ident)) / DeparturePagination.DEPT_PAGE) : -1;
 
         if (availableTransitions.length > 0) {
-            availableTransitions.unshift("NO TRANS");
+            availableTransitions.unshift(Labels.NO_TRANS);
         }
 
         // --- render the top part of the page ---
@@ -83,40 +92,22 @@ class CDUAvailableDeparturesPage {
             }
         }
 
+        // TODO This is the same thing 3 times in a row?
+
         if (selectedSid) {
             selectedSidCell = selectedSid.ident;
-            selectedSidCellColor = planColor;
+            selectedSidCellColor = selectedColour;
 
             if (selectedTransition) {
                 selectedTransCell = selectedTransition.ident;
-                selectedTransCellColor = planColor;
-            } else {
+                selectedTransCellColor = selectedColour;
+            } else if (availableTransitions.length === 0 || selectedTransition === null) {
                 selectedTransCell = "NONE";
+                selectedTransCellColor = selectedColour;
             }
-        }
-
-        if (availableSids.length === 0) {
+        } else if (availableSids.length === 0 || selectedSid === null) {
             selectedSidCell = "NONE";
             selectedSidCellColor = selectedColour;
-        /*} else if (selectedSidIndex === -2) {
-            selectedSidCell = "NO SID";
-            selectedSidCellColor = selectedColour;
-        */} else if (selectedSid) {
-            selectedSidCell = selectedSid.ident;
-            selectedSidCellColor = selectedColour;
-        }
-
-        if (selectedSid || availableSids.length === 0) {
-            if (availableTransitions.length === 0) {
-                selectedTransCell = "NONE";
-                selectedTransCellColor = selectedColour;
-            /*} else if (selectedTransitionIndex === -2) {
-                selectedTransCell = "NO TRANS";
-                selectedTransCellColor = selectedColour;
-            */} else if (selectedTransition) {
-                selectedTransCell = selectedTransition.ident;
-                selectedTransCellColor = selectedColour;
-            }
         }
 
         // --- render the rows ---
@@ -133,19 +124,24 @@ class CDUAvailableDeparturesPage {
                 const runway = availableRunways[index];
                 if (runway) {
                     const selected = selectedRunway && selectedRunway.ident === runway.ident;
+                    const color = selected && !editingTmpy ? "green" : "cyan";
+
                     const hasIls = runway.lsFrequencyChannel > 0; // TODO what if not ILS
-                    rows[2 * i] = [`${selected ? "{green}{sp}" : "{cyan}{"}${runway.ident.substring(2).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
+                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${runway.ident.substring(2).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
                     const ilsText = hasIls ? `${runway.lsIdent.padStart(6)}/${runway.lsFrequencyChannel.toFixed(2)}` : '';
-                    rows[2 * i + 1] = [`${selected ? "{green}" : "{cyan}"}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(runway.magneticBearing), 3)}${ilsText}{end}`];
-                    mcdu.onLeftInput[i + 1] = async () => {
-                        try {
-                            await mcdu.flightPlanService.setOriginRunway(runway.ident, forPlan, inAlternate);
-                        } catch (e) {
-                            console.error(e);
-                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                        }
-                        CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                    };
+                    rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(runway.magneticBearing), 3)}${ilsText}{end}`];
+                    // Clicking the already selected runway is a no-op
+                    if (!selected) {
+                        mcdu.onLeftInput[i + 1] = async () => {
+                            try {
+                                await mcdu.flightPlanService.setOriginRunway(runway.ident, forPlan, inAlternate);
+                            } catch (e) {
+                                console.error(e);
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            }
+                            CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                        };
+                    }
                 }
             }
         } else {
@@ -158,25 +154,27 @@ class CDUAvailableDeparturesPage {
             for (let i = 0; i < DeparturePagination.DEPT_PAGE; i++) {
                 const sid = availableSids[pageCurrent * DeparturePagination.DEPT_PAGE + i];
                 if (sid) {
-                    const selected = sid !== "NO SID" && selectedSid && selectedSid.databaseId === sid.databaseId;
-                    rows[2 * i] = [`${selected ? "{green}{sp}" : "{cyan}{"}${typeof sid === 'string' ? sid : sid.ident}{end}`];
-                    mcdu.onLeftInput[1 + i] = async () => {
-                        try {
-                            if (sid === "NO SID") {
-                                // TODO we need to remember this explicit selection somehow
-                                await mcdu.flightPlanService.setDepartureProcedure(undefined, forPlan, inAlternate);
-                            } else {
-                                /*const transitionRunway = targetPlan.availableOriginRunways.find((it) => it.ident === runwayTransitionIdent);
-                                await mcdu.flightPlanService.setOriginRunway(transitionRunway.ident);*/
-                                await mcdu.flightPlanService.setDepartureProcedure(sid.databaseId, forPlan, inAlternate);
-                            }
-                        } catch (e) {
-                            console.error(e);
-                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                        }
+                    const selected = (sid === Labels.NO_SID && selectedSid === null) || (selectedSid && selectedSid.databaseId === sid.databaseId);
+                    const color = selected && !editingTmpy ? "green" : "cyan";
 
-                        CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                    };
+                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${typeof sid === 'string' ? sid : sid.ident}{end}`];
+                    // Clicking the already selected SID is a no-op
+                    if (!selected) {
+                        mcdu.onLeftInput[1 + i] = async () => {
+                            try {
+                                if (sid === Labels.NO_SID) {
+                                    await mcdu.flightPlanService.setDepartureProcedure(null, forPlan, inAlternate);
+                                } else {
+                                    await mcdu.flightPlanService.setDepartureProcedure(sid.databaseId, forPlan, inAlternate);
+                               }
+                            } catch (e) {
+                                console.error(e);
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            }
+
+                            CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
+                        };
+                    }
                 }
             }
 
@@ -187,17 +185,26 @@ class CDUAvailableDeparturesPage {
                 for (let i = 0; i < DeparturePagination.DEPT_PAGE; i++) {
                     const trans = availableTransitions[transPage * DeparturePagination.DEPT_PAGE + i];
                     if (trans) {
-                        const selected = trans !== "NO TRANS" && selectedTransition && selectedTransition.ident === trans.ident;
-                        rows[2 * i][1] = `${selected ? "{green}" : "{cyan}"}${typeof trans === 'string' ? trans : trans.ident}${selected ? " " : "}"}{end}`;
-                        mcdu.onRightInput[i + 1] = async () => {
-                            try {
-                                await mcdu.flightPlanService.setDepartureEnrouteTransition(trans.databaseId, forPlan, inAlternate);
-                            } catch (e) {
-                                console.error(e);
-                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                            }
-                            CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                        };
+                        const selected = (trans === Labels.NO_TRANS && selectedTransition === null) || (selectedTransition && selectedTransition.ident === trans.ident);
+                        const color = selected && !editingTmpy ? "green" : "cyan";
+
+                        rows[2 * i][1] = `{${color}}${typeof trans === 'string' ? trans : trans.ident}${selected ? " " : "}"}{end}`;
+                        // Clicking the already selected transition is a no-op
+                        if (!selected) {
+                            mcdu.onRightInput[i + 1] = async () => {
+                                try {
+                                    if (trans === Labels.NO_TRANS) {
+                                        await mcdu.flightPlanService.setDepartureEnrouteTransition(null, forPlan, inAlternate);
+                                    } else {
+                                        await mcdu.flightPlanService.setDepartureEnrouteTransition(trans.databaseId, forPlan, inAlternate);
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                    mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                }
+                                CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
+                            };
+                        }
                     }
                 }
             }
@@ -262,8 +269,8 @@ class CDUAvailableDeparturesPage {
 
         mcdu.setTemplate([
             ["{sp}DEPARTURES {small}FROM{end} {green}" + airport.ident + "{sp}{sp}{sp}"],
-            ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
-            [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
+            ["{sp}RWY", "TRANS{sp}", "SID"],
+            [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "{sp}[color]" + selectedSidCellColor],
             sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "AVAILABLE RUNWAYS\xa0"],
             rows[0],
             rows[1],

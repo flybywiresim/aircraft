@@ -181,49 +181,13 @@ export class GuidanceController {
             return; // TODO secondary
         }
 
-        // PLAN mode center
-        const { fpIndex: focusedWpFpIndex, index: focusedWpIndex, inAlternate: focusedWpInAlternate } = this.efisInterface.planCentre;
+        const termination = this.findPlanCentreCoordinates();
 
-        if (!this.flightPlanService.has(focusedWpFpIndex)) {
-            return;
-        }
-
-        const plan = focusedWpInAlternate ? this.flightPlanService.get(focusedWpFpIndex).alternateFlightPlan : this.flightPlanService.get(focusedWpFpIndex);
-
-        if (!plan.hasElement(focusedWpIndex)) {
-            return;
-        }
-
-        const matchingLeg = plan.elementAt(focusedWpIndex);
-
-        if (!matchingLeg || matchingLeg.isDiscontinuity === true) {
-            return;
-        }
-
-        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate)) {
-            return;
-        }
-
-        // FIXME HAX
-        const matchingGeometryLeg = this.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate).legs.get(focusedWpIndex);
-
-        if (!matchingGeometryLeg?.terminationWaypoint) {
+        if (!termination) {
             // throw new Error('[FMS/MRP] Could not find matching geometry leg');
             SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees', SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'));
             SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees', SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'));
             return;
-        }
-
-        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
-            this.lastFocusedWpIndex = focusedWpIndex;
-            this.lastEfisInterfaceVersion = this.efisInterface.version;
-        }
-
-        let termination: Coordinates;
-        if ('lat' in matchingGeometryLeg.terminationWaypoint) {
-            termination = matchingGeometryLeg.terminationWaypoint;
-        } else {
-            termination = matchingGeometryLeg.terminationWaypoint.location;
         }
 
         this.focusedWaypointCoordinates.lat = termination.lat;
@@ -587,5 +551,44 @@ export class GuidanceController {
 
     get lastCrosstrackError(): NauticalMiles {
         return this.lnavDriver.lastXTE;
+    }
+
+    private findPlanCentreCoordinates(): Coordinates | null {
+        // PLAN mode center
+        const { fpIndex: focusedWpFpIndex, index: focusedWpIndex, inAlternate: focusedWpInAlternate } = this.efisInterface.planCentre;
+
+        if (!this.flightPlanService.has(focusedWpFpIndex)) {
+            return null;
+        }
+
+        const plan = focusedWpInAlternate ? this.flightPlanService.get(focusedWpFpIndex).alternateFlightPlan : this.flightPlanService.get(focusedWpFpIndex);
+
+        if (!plan.hasElement(focusedWpIndex)) {
+            return null;
+        }
+
+        const matchingLeg = plan.elementAt(focusedWpIndex);
+
+        if (!matchingLeg || matchingLeg.isDiscontinuity === true) {
+            return null;
+        }
+
+        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate)) {
+            return null;
+        }
+
+        // FIXME HAX
+        const matchingGeometryLeg = this.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate).legs.get(focusedWpIndex);
+
+        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
+            this.lastFocusedWpIndex = focusedWpIndex;
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
+        }
+
+        if ('lat' in matchingGeometryLeg.terminationWaypoint) {
+            return matchingGeometryLeg.terminationWaypoint;
+        }
+
+        return matchingGeometryLeg.terminationWaypoint.location;
     }
 }

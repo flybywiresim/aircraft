@@ -15,6 +15,7 @@
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
+  - [Autobrakes](#autobrakes)
 
 ## Uncategorized
 
@@ -96,7 +97,7 @@
 
 - A380X_OVHD_ELEC_BAT_SELECTOR_KNOB
     - Number
-    - The position of the battery display knob from left to right 
+    - The position of the battery display knob from left to right
     - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
     - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
         - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
@@ -140,6 +141,10 @@
     - Temperature of trim air coming out of the ducts in the cabin and cockpit
     - {id}
         - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_COND_PURS_SEL_TEMPERATURE
+    - Degree Celsius
+    - Temperature selected by the crew using the FAP (Flight Attendant Panel). For us, this is selected in the EFB.
 
 - A32NX_COND_PACK_{id}_IS_OPERATING
     - Bool
@@ -702,3 +707,38 @@
 - A380X_SOUND_COCKPIT_WINDOW_RATIO
     - Number
     - Ratio between 0-1 of the cockpit windows being physically open
+
+## Autobrakes
+
+- A32NX_AUTOBRAKES_SELECTED_MODE
+    - Number
+    - Indicates position of the autobrake selection knob
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Indicates actual armed mode of autobrake system
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+        | RTO    | 6      |
+
+- A32NX_AUTOBRAKES_DISARM_KNOB_REQ
+    - Boolean
+    - True when autobrake knob solenoid resets knob position to DISARM
+
+- A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
+    - Boolean
+    - RTO autobrake button is pressed

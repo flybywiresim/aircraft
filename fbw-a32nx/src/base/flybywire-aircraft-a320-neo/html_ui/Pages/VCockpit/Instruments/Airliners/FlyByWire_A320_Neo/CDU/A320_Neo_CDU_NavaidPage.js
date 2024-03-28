@@ -72,7 +72,6 @@ class CDUNavaidPage {
 
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             mcdu.getOrSelectNavaidsByIdent(value, res => {
-                debugger;
                 if (res) {
                     CDUNavaidPage.ShowPage(mcdu, res, returnPage);
                 } else {
