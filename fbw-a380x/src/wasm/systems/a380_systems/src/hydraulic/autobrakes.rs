@@ -703,7 +703,7 @@ impl BtvDecelScheduler {
             runway_length_id: context.get_identifier("OANS_RWY_LENGTH".to_owned()),
             distance_to_exit_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_EXIT".to_owned()),
-            rot_estimation_id: context.get_identifier("OANS_BTV_ROT".to_owned()),
+            rot_estimation_id: context.get_identifier("BTV_ROT".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
@@ -913,7 +913,10 @@ impl BtvDecelScheduler {
             self.oans_distance_to_exit
         };
 
-        if distance.get::<meter>() > 0. {
+        // Only showing ROT when a distance is available and BTV not currently braking
+        if distance.get::<meter>() > 0. && self.state == BTVState::Disabled
+            || self.state == BTVState::Armed
+        {
             Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.))
         } else {
             Duration::default()
