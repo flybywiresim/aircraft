@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getAircraftType } from '@flybywiresim/fbw-sdk';
 import { RootState, store } from '../store';
 
 interface ChecklistTrackingItem {
@@ -20,59 +21,33 @@ interface ChecklistState {
     selectedChecklistIndex: number;
 }
 
-const initialState: ChecklistState = {
+// FIXME: use the correct getAircraftType function once PR #8500 is merged
+const initialState: ChecklistState = getAircraftType() === 'a32nx' ? {
     selectedChecklistIndex: 0,
     checklists: [
-        {
-            name: 'Cockpit Preparation',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Before Start',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'After Start',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Taxi',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Line-Up',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Approach',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Landing',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'After Landing',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Parking',
-            items: [],
-            markedCompleted: false,
-        },
-        {
-            name: 'Securing Aircraft',
-            items: [],
-            markedCompleted: false,
-        },
+        { name: 'Cockpit Preparation', items: [], markedCompleted: false },
+        { name: 'Before Start', items: [], markedCompleted: false },
+        { name: 'After Start', items: [], markedCompleted: false },
+        { name: 'Taxi', items: [], markedCompleted: false },
+        { name: 'Line-Up', items: [], markedCompleted: false },
+        { name: 'Approach', items: [], markedCompleted: false },
+        { name: 'Landing', items: [], markedCompleted: false },
+        { name: 'After Landing', items: [], markedCompleted: false },
+        { name: 'Parking', items: [], markedCompleted: false },
+        { name: 'Securing Aircraft', items: [], markedCompleted: false },
+    ],
+} : {
+    selectedChecklistIndex: 0,
+    checklists: [
+        { name: 'Before Start', items: [], markedCompleted: false },
+        { name: 'After Start', items: [], markedCompleted: false },
+        { name: 'Before Takeoff', items: [], markedCompleted: false },
+        { name: 'After Takeoff', items: [], markedCompleted: false },
+        { name: 'Approach', items: [], markedCompleted: false },
+        { name: 'Landing', items: [], markedCompleted: false },
+        { name: 'After Landing', items: [], markedCompleted: false },
+        { name: 'Parking', items: [], markedCompleted: false },
+        { name: 'Securing Aircraft', items: [], markedCompleted: false },
     ],
 };
 

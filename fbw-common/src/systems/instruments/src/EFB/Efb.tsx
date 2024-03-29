@@ -33,8 +33,7 @@ import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
-import { CHECKLISTS } from './Checklists/Lists';
+import { ChecklistDefinition, Checklists, getAircraftChecklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
@@ -49,13 +48,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -71,7 +70,7 @@ export enum PowerStates {
 
 interface PowerContextInterface {
     powerState: PowerStates,
-    setPowerState: (PowerState) => void
+    setPowerState: (PowerState: any) => void
 }
 
 export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
@@ -85,9 +84,10 @@ interface BatteryStatus {
 export const usePower = () => React.useContext(PowerContext);
 
 // this returns either `A380_842` or `A320_251N` depending on the aircraft
-export const getAirframeType = () => new URL(
-    document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'),
-).searchParams.get('Airframe');
+export function getAirframeType() {
+    return new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'))
+        .searchParams.get('Airframe');
+}
 
 export const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
@@ -200,7 +200,7 @@ export const Efb = () => {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
             const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
-
+            const CHECKLISTS:ChecklistDefinition[] = getAircraftChecklists();
             if (checklistItemsEmpty) {
                 CHECKLISTS.forEach((checklist, index) => {
                     dispatch(setChecklistItems({
@@ -243,7 +243,6 @@ export const Efb = () => {
 
     useInterval(() => {
         if (!autoFillChecklists) return;
-
         setAutomaticItemStates();
     }, 1000);
 
@@ -368,7 +367,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
+        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
             <div className="max-w-4xl">
                 <ErrorIcon />
                 <div className="mt-6 space-y-12">
@@ -388,7 +387,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                     )}
 
                     <div
-                        className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100"
+                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                         onClick={resetErrorBoundary}
                     >
                         <h2 className="text-center font-bold text-current">Reset Display</h2>
