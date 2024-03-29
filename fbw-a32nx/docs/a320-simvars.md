@@ -1640,6 +1640,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Knots>
     - The computed airspeed (CAS).
 
+- A32NX_ADIRS_ADR_{number}_MAX_AIRSPEED
+    - Arinc429Word<Knots>
+    - The max allowable airspeed (CAS), considering VMO and MMO.
+
 - A32NX_ADIRS_ADR_{number}_MACH
     - Arinc429Word<Mach>
     - The Mach number (M).

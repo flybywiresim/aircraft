@@ -366,7 +366,7 @@ impl AirDataInertialReferenceSystem {
     // TODO this is an FMS thing, nothing to do with ADIRUs
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             remaining_alignment_time_id: context
                 .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
@@ -376,9 +376,9 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
             adirus: [
-                AirDataInertialReferenceUnit::new(context, 1),
-                AirDataInertialReferenceUnit::new(context, 2),
-                AirDataInertialReferenceUnit::new(context, 3),
+                AirDataInertialReferenceUnit::new(context, 1, vmo, mmo),
+                AirDataInertialReferenceUnit::new(context, 2, vmo, mmo),
+                AirDataInertialReferenceUnit::new(context, 3, vmo, mmo),
             ],
             configured_align_time: AlignTime::Realistic,
             simulator_data: AdirsSimulatorData::new(context),
@@ -516,10 +516,10 @@ struct AirDataInertialReferenceUnit {
     low_speed_warning_4_260kts: bool,
 }
 impl AirDataInertialReferenceUnit {
-    fn new(context: &mut InitContext, number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             state_id: context.get_identifier(Self::state_id(number)),
-            adr: AirDataReference::new(context, number),
+            adr: AirDataReference::new(context, number, vmo, mmo),
             ir: InertialReference::new(context, number),
 
             low_speed_warning_1_104kts: false,
@@ -791,6 +791,8 @@ trait TrueAirspeedSource {
 
 struct AirDataReference {
     number: usize,
+    vmo: Velocity,
+    mmo: MachNumber,
     is_on: bool,
 
     /// label 234
@@ -808,7 +810,11 @@ struct AirDataReference {
     baro_corrected_altitude_1: AdirsData<Length>,
     /// baro corrected altitude for the fo's side
     baro_corrected_altitude_2: AdirsData<Length>,
+    /// label 206, computed airpseed in knots, NCD below 30 knots.
     computed_airspeed: AdirsData<Velocity>,
+    /// label 207, max allowable airspeed in knots (considering both VMO and MMO).
+    max_airspeed: AdirsData<Velocity>,
+    /// label 205, computed mach number, NCD below mach 0.1.
     mach: AdirsData<MachNumber>,
     barometric_vertical_speed: AdirsData<f64>,
     true_airspeed: AdirsData<Velocity>,
@@ -829,6 +835,7 @@ impl AirDataReference {
     const BARO_CORRECTED_ALTITUDE_1: &'static str = "BARO_CORRECTED_ALTITUDE_1";
     const BARO_CORRECTED_ALTITUDE_2: &'static str = "BARO_CORRECTED_ALTITUDE_2";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
+    const MAX_AIRSPEED: &'static str = "MAX_AIRSPEED";
     const MACH: &'static str = "MACH";
     const BAROMETRIC_VERTICAL_SPEED: &'static str = "BAROMETRIC_VERTICAL_SPEED";
     const TRUE_AIRSPEED: &'static str = "TRUE_AIRSPEED";
@@ -840,9 +847,11 @@ impl AirDataReference {
     const MINIMUM_MACH: f64 = 0.1;
     const MINIMUM_CAS_FOR_AOA: f64 = 60.;
 
-    fn new(context: &mut InitContext, number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             number,
+            vmo,
+            mmo,
             is_on: true,
 
             baro_correction_1_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_1_HPA),
@@ -874,6 +883,7 @@ impl AirDataReference {
                 Self::BARO_CORRECTED_ALTITUDE_2,
             ),
             computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
+            max_airspeed: AdirsData::new_adr(context, number, Self::MAX_AIRSPEED),
             mach: AdirsData::new_adr(context, number, Self::MACH),
             barometric_vertical_speed: AdirsData::new_adr(
                 context,
@@ -934,6 +944,7 @@ impl AirDataReference {
             self.baro_corrected_altitude_2.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
             self.computed_airspeed.set_failure_warning();
+            self.max_airspeed.set_failure_warning();
             self.true_airspeed.set_failure_warning();
             self.mach.set_failure_warning();
             self.total_air_temperature.set_failure_warning();
@@ -978,6 +989,11 @@ impl AirDataReference {
             self.computed_airspeed.normal_above_threshold_ncd_otherwise(
                 Velocity::new::<knot>(Self::MINIMUM_CAS),
                 computed_airspeed,
+            );
+
+            self.max_airspeed.set_value(
+                self.calculate_max_airspeed(context),
+                SignStatus::NormalOperation,
             );
 
             // If mach is below 0.1, output as 0 with SSM = NCD
@@ -1037,6 +1053,19 @@ impl AirDataReference {
             self.corrected_average_static_pressure.ssm(),
         )
     }
+
+    fn calculate_max_airspeed(&self, context: &UpdateContext) -> Velocity {
+        let delta = context.ambient_pressure().get::<hectopascal>() / 1013.25;
+        // standard formula to convert mach number to CAS
+        let mmo_cas = Velocity::new::<knot>(
+            1479.1
+                * ((delta * ((0.2 * f64::from(self.mmo).powi(2) + 1.).powf(3.5) - 1.) + 1.)
+                    .powf(1. / 3.5)
+                    - 1.)
+                    .sqrt(),
+        );
+        self.vmo.min(mmo_cas)
+    }
 }
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
@@ -1059,6 +1088,7 @@ impl SimulationElement for AirDataReference {
         self.baro_corrected_altitude_1.write_to(writer);
         self.baro_corrected_altitude_2.write_to(writer);
         self.computed_airspeed.write_to(writer);
+        self.max_airspeed.write_to(writer);
         self.mach.write_to(writer);
         self.barometric_vertical_speed.write_to(writer);
         self.true_airspeed.write_to(writer);
@@ -1876,7 +1906,11 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                adirs: AirDataInertialReferenceSystem::new(context),
+                adirs: AirDataInertialReferenceSystem::new(
+                    context,
+                    Velocity::new::<knot>(340.),
+                    MachNumber(0.82),
+                ),
                 overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             }
         }
@@ -2207,6 +2241,14 @@ mod tests {
             ))
         }
 
+        fn max_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::MAX_AIRSPEED,
+            ))
+        }
+
         fn mach(&mut self, adiru_number: usize) -> Arinc429Word<MachNumber> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
@@ -2505,6 +2547,7 @@ mod tests {
                 !self.computed_airspeed(adiru_number).is_failure_warning(),
                 valid
             );
+            assert_eq!(!self.max_airspeed(adiru_number).is_failure_warning(), valid);
             assert_eq!(!self.mach(adiru_number).is_failure_warning(), valid);
             assert_eq!(
                 !self
