@@ -247,17 +247,15 @@
         "Button": "3rd Party Options"
       },
       "AuthenticateWithChartFox": "Authenticate with ChartFox",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
       "LoadingMsg": "Loading",
       "NoAirportSelected": "No Airport Selected",
       "ResetChartFoxAuthentication": "Reset ChartFox Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
       "Title": "ChartFox",
       "EstablishingConnection": "Establishing Connection",
       "FailedToEstablishConnection": "Failed to Establish Connection.",
       "ConnectionRequiredForPdf": "Connection is required for PDF charts.",
-      "Retry": "Retry"
+      "Retry": "Retry",
+      "ContinueInBrowser": "Continue login in the browser window"
     },
     "PinnedCharts": {
       "Delete": "Delete",
@@ -625,6 +623,13 @@
         "LoginPage": {
           "Title": "Navigraph Account Login"
         }
+      },
+      "ChartFoxLogin": {
+        "SettingTitle": "ChartFox Login",
+        "Connected": "Connected",
+        "LogIn": "Log In",
+        "LogOut": "Log Out",
+        "ContinueInBrowser": "Continue login in the browser window"
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to",

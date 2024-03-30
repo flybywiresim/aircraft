@@ -5,8 +5,8 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { ClientState, Viewer } from '@flybywiresim/fbw-sdk';
-import { emptyChartFoxCharts, ChartFoxAirportCharts, useChartFox } from '../../../Apis/ChartFox/ChartFox';
+import { ClientState, Viewer, ChartFoxAirportCharts, emptyChartFoxCharts } from '@flybywiresim/fbw-sdk';
+import { useChartFox } from '../../../Apis/ChartFox/ChartFox';
 
 import { t } from '../../../Localization/translation';
 import { ChartFoxChartSelector, OrganizedChart } from './ChartFoxChartSelector';
@@ -18,14 +18,15 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartFoxChartViewer } from './ChartFoxChartViewer';
 
-export const getPdfImageUrl = async (url: string, pageNumber: number): Promise<string> => {
+export const getPdfInfo = async (url: string, pageNumber: number): Promise<{imageUrl: string, numPages: number}> => {
     const id = 'loading-file';
     try {
         toast.loading(t('NavigationAndCharts.LoadingPdf'), { toastId: id, pauseOnFocusLoss: false });
-        const objectURL = await Viewer.getImageUrlFromPdfUrl(url, pageNumber);
+        const imageUrl = await Viewer.getImageUrlFromPdfUrl(url, pageNumber);
+        const numPages = await Viewer.getPDFPageCountFromUrl(url);
         toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
         toast.dismiss(id);
-        return objectURL;
+        return { imageUrl, numPages };
     } catch (err) {
         toast.dismiss(id);
         toast.error(t('NavigationAndCharts.LoadingPdfFailed'), { autoClose: 1000 });
@@ -36,7 +37,7 @@ export const getPdfImageUrl = async (url: string, pageNumber: number): Promise<s
 export const ChartFoxChartUI = () => {
     const dispatch = useAppDispatch();
 
-    const chartFox = useChartFox();
+    const { client } = useChartFox();
 
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
@@ -59,7 +60,7 @@ export const ChartFoxChartUI = () => {
         { name: 'APP', charts: charts.approach },
     ]);
 
-    const { isFullScreen, searchQuery, chartId, selectedTabIndex, currentPage, pagesViewable } = useAppSelector((state) => state.navigationTab[NavigationTab.CHARTFOX]);
+    const { isFullScreen, searchQuery, chartId, selectedTabIndex, currentPage } = useAppSelector((state) => state.navigationTab[NavigationTab.CHARTFOX]);
 
     useEffect(() => {
         setOrganizedCharts([
@@ -68,29 +69,32 @@ export const ChartFoxChartUI = () => {
             { name: 'SID', charts: charts.departure, bundleRunways: charts.departure.some((chart) => chart.runways.length > 0) },
             { name: 'STAR', charts: charts.arrival, bundleRunways: charts.arrival.some((chart) => chart.runways.length > 0) },
             { name: 'APP', charts: charts.approach, bundleRunways: charts.approach.some((chart) => chart.runways.length > 0) },
-            // { name: 'ALL', charts: charts.reference.concat(charts.airport, charts.departure, charts.arrival, charts.approach) },
         ]);
     }, [charts]);
 
     const fetchCharts = async () => {
-        const { sourceUrl, sourceUrlType } = await chartFox.getChart(chartId);
-        let url = sourceUrl;
+        const { sourceUrl, sourceUrlType } = await client.getChart(chartId);
+        let imageUrl = sourceUrl;
         let numPages = 1;
         // For PDFs, chartName will be the original PDF link. This will be needed for pagination later.
         // We also want to make sure chartName.fileType is set so we know if it's a PDF even if there
         // is no client connection.
         dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartName: { light: sourceUrl, dark: sourceUrl, fileType: sourceUrlType } }));
-        // TODO: should chartLinks be unset here? If not, and getting the PDF fails, the prev chart fill stay up.
+        setChartListDisagrees(true);
         if (sourceUrlType === ChartFileType.Pdf) {
             if (!ClientState.getInstance().isConnected()) {
                 return;
             }
-            url = await getPdfImageUrl(sourceUrl, pagesViewable > 1 ? currentPage : 1);
-            numPages = await Viewer.getPDFPageCountFromUrl(sourceUrl);
+            try {
+                ({ imageUrl, numPages } = await getPdfInfo(sourceUrl, currentPage));
+            } catch (_) {
+                return;
+            }
         }
+        setChartListDisagrees(false);
         dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, pagesViewable: numPages }));
         // For PDFs, chartLinks will be URIs to the converted image data for the current page.
-        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: url, dark: url, fileType: sourceUrlType } }));
+        dispatch(editTabProperty({ tab: NavigationTab.CHARTFOX, chartLinks: { light: imageUrl, dark: imageUrl, fileType: sourceUrlType } }));
     };
 
     useEffect(() => {
@@ -110,7 +114,7 @@ export const ChartFoxChartUI = () => {
 
         setIcaoAndNameDisagree(true);
         setChartListDisagrees(true);
-        const chartIndex = await chartFox.getChartIndex(newValue);
+        const chartIndex = await client.getChartIndex(newValue);
         setStatusBarInfo(chartIndex?.name || t('NavigationAndCharts.ChartFox.AirportDoesNotExist'));
         if (chartIndex?.groupedCharts) {
             setCharts(chartIndex.groupedCharts);

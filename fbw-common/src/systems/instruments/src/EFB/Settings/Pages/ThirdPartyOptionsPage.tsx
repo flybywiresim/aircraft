@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { ChartFoxStatus, NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { IconTrash } from '@tabler/icons';
+import { useChartFox } from 'instruments/src/EFB/Apis/ChartFox/ChartFox';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { FullscreenSettingsPage, SettingItem, SettingsPage } from '../Settings';
 import { t } from '../../Localization/translation';
@@ -15,6 +16,61 @@ import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 // @ts-ignore
 import NavigraphIcon from '../../Assets/navigraph-logo-alone.svg';
+
+const ChartFoxSettingContent = () => {
+    const { client, status } = useChartFox();
+
+    const handleLogout = () => {
+        client.deAuthenticate();
+    };
+
+    const handleLogin = () => {
+        client.authenticate();
+    };
+
+    if (status === ChartFoxStatus.Pending) {
+        return (
+            <>
+                <span className="py-2.5 pr-4">
+                    {t('Settings.ThirdPartyOptions.ChartFoxLogin.ContinueInBrowser')}
+                </span>
+
+                <button
+                    type="button"
+                    className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                    py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                    onClick={handleLogout}
+                >
+                    {t('Settings.ThirdPartyOptions.ChartFoxLogin.LogOut')}
+                </button>
+            </>
+        );
+    }
+
+    if (status === ChartFoxStatus.LoggedOut) {
+        return (
+            <button
+                type="button"
+                className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                onClick={handleLogin}
+            >
+                {t('Settings.ThirdPartyOptions.ChartFoxLogin.LogIn')}
+            </button>
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+            py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+            onClick={handleLogout}
+        >
+            {t('Settings.ThirdPartyOptions.ChartFoxLogin.LogOut')}
+        </button>
+    );
+};
 
 export const ThirdPartyOptionsPage = () => {
     const history = useHistory();
@@ -152,6 +208,10 @@ export const ThirdPartyOptionsPage = () => {
                             </div>
                         </SettingItem>
                     </TooltipWrapper>
+
+                    <SettingItem name={t('Settings.ThirdPartyOptions.ChartFoxLogin.SettingTitle')}>
+                        <ChartFoxSettingContent />
+                    </SettingItem>
 
                     <SettingItem name={t('Settings.ThirdPartyOptions.GsxFuelEnabled')}>
                         <Toggle

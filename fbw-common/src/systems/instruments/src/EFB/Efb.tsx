@@ -4,14 +4,14 @@
 import React, { useEffect, useState } from 'react';
 import {
     useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
-    SentryConsentState, SENTRY_CONSENT_KEY,
+    ChartFoxClient, SentryConsentState, SENTRY_CONSENT_KEY,
     FailureDefinition,
+    ChartFoxStatus,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { ChartFoxClient } from 'instruments/src/EFB/Apis/ChartFox/ChartFox';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
@@ -100,7 +100,12 @@ export const Efb = () => {
     const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const [navigraph] = useState(() => new NavigraphClient());
-    const [chartFox] = useState(() => new ChartFoxClient());
+
+    const [chartFoxStatus, setChartFoxStatus] = useState(ChartFoxStatus.LoggedOut);
+    const handleChartFoxUpdate = ({ status }) => {
+        setChartFoxStatus(status);
+    };
+    const [chartFoxClient] = useState(() => new ChartFoxClient({ onUpdate: handleChartFoxUpdate }));
 
     const dispatch = useAppDispatch();
 
@@ -318,7 +323,7 @@ export const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                <ChartFoxContext.Provider value={chartFox}>
+                <ChartFoxContext.Provider value={{ client: chartFoxClient, status: chartFoxStatus }}>
                     <ModalContainer />
                     <PowerContext.Provider value={{ powerState, setPowerState }}>
                         <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>

@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
-import { ChartFoxGroupedChart } from '../../../Apis/ChartFox/ChartFox';
+import { ChartFoxGroupedChart } from '@flybywiresim/fbw-sdk';
 import { t } from '../../../Localization/translation';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import {
