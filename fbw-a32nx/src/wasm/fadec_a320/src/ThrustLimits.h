@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cmath>
+
+#include "Tables.h"
 #include "SimVars.h"
 #include "common.h"
 

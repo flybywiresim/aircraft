@@ -4184,7 +4184,6 @@ impl A320AutobrakeController {
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
                         && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
             }
-            _ => false,
         }
     }
 
@@ -4214,7 +4213,6 @@ impl A320AutobrakeController {
                 self.deceleration_governor.time_engaged().as_secs_f64(),
             ),
             AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
-            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
         })
     }
 

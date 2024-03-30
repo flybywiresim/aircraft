@@ -15,6 +15,8 @@ import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
 
+// TODO move this whole thing to InstrumentBackplane and GameStateProvider
+
 class A32NX_PFD extends BaseInstrument {
     private bus: ArincEventBus;
 
@@ -75,7 +77,7 @@ class A32NX_PFD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
-        this.dmcPublisher.init();
+        this.dmcPublisher.startPublish();
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 

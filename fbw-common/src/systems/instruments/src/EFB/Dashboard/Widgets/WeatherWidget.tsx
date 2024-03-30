@@ -122,7 +122,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     };
 
     async function getMetar(icao: string, source: string): Promise<void> {
-        if (icao.length !== 4 || icao === '----') {
+        if (icao.length !== 4 || !(/^[a-z]{4}$/i.test(icao))) {
             setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
             dispatch(setMetar(MetarParserTypeProp));
             return Promise.resolve();
