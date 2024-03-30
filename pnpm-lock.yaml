@@ -187,6 +187,9 @@ devDependencies:
   '@flybywiresim/igniter':
     specifier: ^1.2.3
     version: 1.2.3
+  '@flybywiresim/remote-bridge-types':
+    specifier: ^0.1.0-alpha.1
+    version: 0.1.0-alpha.1
   '@flybywiresim/rnp':
     specifier: ^2.1.0
     version: 2.1.0
@@ -2200,6 +2203,10 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
     dev: false
+
+  /@flybywiresim/remote-bridge-types@0.1.0-alpha.1:
+    resolution: {integrity: sha512-+YKzrfOwKMrkmIzHAHrx9KVYpypS5Nc7vCbtKWgwJVIcOVT/xU/esTTTk9Pkg5PUH0k/LOaZCj04PTd/XM6o0w==}
+    dev: true
 
   /@flybywiresim/rnp@2.1.0:
     resolution: {integrity: sha512-dC5i/iSg/1UpUFC4lw+6JxpBPIu4eaRA6zamWElMf6mGhTDdOKDshpyA57FjHn8/3NLmHgn+P/K1XH+UIs7kQQ==}

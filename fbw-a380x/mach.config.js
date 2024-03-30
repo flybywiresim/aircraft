@@ -41,8 +41,8 @@ module.exports = {
         msfsAvionicsInstrument('ND', [768, 1024], true),
         msfsAvionicsInstrument('Clock', [512, 512], false),
 
-        reactInstrument('BAT'),
-        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
+        reactInstrument('BAT', [], [256, 128], false),
+        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html'], [1430, 1000], true),
         reactInstrument('EWD', [], [768, 1024], true),
         reactInstrument('MFD', [], [768, 1024], false),
         reactInstrument('OIT', [], [1024, 768], false),

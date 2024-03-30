@@ -170,6 +170,7 @@ export class RemoteClient {
             this.sendMessage(this.createSigninMessage());
 
             // TODO we should probably really only do this when asked to
+            // @ts-ignore
             this.aircraftDataUpdateInterval = setInterval(() => {
                 this.sendMessage(this.createAircraftStatusMessage());
             }, 5_000);

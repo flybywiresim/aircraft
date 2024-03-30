@@ -101,6 +101,7 @@
     "@flybywiresim/fragmenter": "^0.7.0",
     "@flybywiresim/igniter": "^1.2.3",
     "@flybywiresim/rnp": "^2.1.0",
+    "@flybywiresim/remote-bridge-types": "^0.1.0-alpha.1",
     "@navigraph/pkce": "^1.0.0",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^15.1.0",
