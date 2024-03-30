@@ -22,6 +22,7 @@ interface ChecklistState {
 }
 
 // FIXME: use the correct getAircraftType function once PR #8500 is merged
+// TODO: Find a way to initialize the checklist state with the actual aircraft checklists
 const initialState: ChecklistState = getAircraftType() === 'a32nx' ? {
     selectedChecklistIndex: 0,
     checklists: [

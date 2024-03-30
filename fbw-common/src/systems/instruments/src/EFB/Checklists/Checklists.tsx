@@ -5,10 +5,10 @@
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
-import { getAirframeType, PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
+import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
+import { getAircraftChecklists } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
-import { CHECKLISTS_A32NX } from './Lists_A32NX';
-import { CHECKLISTS_A380X } from './Lists_A380X';
+
 import {
     areAllChecklistItemsCompleted,
     setChecklistCompletion,
@@ -17,18 +17,7 @@ import {
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
 
-// FIXME: use the correct getAircraftType function once PR #8500 is merged
-export function getAircraftChecklists() {
-    switch (getAirframeType()) {
-    case 'A320_251N': return CHECKLISTS_A32NX;
-    case 'A380_842': return CHECKLISTS_A380X;
-    default:
-        console.error('Unknown aircraft type for checklists');
-        return [];
-    }
-}
-
-const aircraftChecklists = getAircraftChecklists();
+const aircraftChecklists: ChecklistDefinition[] = getAircraftChecklists();
 
 /**
  * @brief Checklist item types.

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
-import { getAircraftType, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
+import { getAircraftChecklists } from '@flybywiresim/checklists';
 import {
     areAllChecklistItemsCompleted,
     setChecklistCompletion,
@@ -11,11 +12,8 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { ChecklistDefinition, ChecklistItemType } from './Checklists';
-import { CHECKLISTS_A32NX } from './Lists_A32NX';
-import { CHECKLISTS_A380X } from './Lists_A380X';
 
-// FIXME: use the correct getAircraftType function once PR #8500 is merged
-const aircraftChecklists:ChecklistDefinition[] = getAircraftType() === 'a32nx' ? CHECKLISTS_A32NX : CHECKLISTS_A380X;
+const aircraftChecklists:ChecklistDefinition[] = getAircraftChecklists();
 
 export const CompletionButton = () => {
     const dispatch = useAppDispatch();

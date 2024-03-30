@@ -14,6 +14,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
+import { getAircraftChecklists } from '@flybywiresim/checklists';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -33,7 +34,7 @@ import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { ChecklistDefinition, Checklists, getAircraftChecklists, setAutomaticItemStates } from './Checklists/Checklists';
+import { ChecklistDefinition, Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
