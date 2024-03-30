@@ -17,6 +17,8 @@ constexpr double PI = 3.14159265358979323846;
 
 class MsfsHandler;
 
+using DataDefVector = std::vector<DataDefinition>;
+
 /**
  * This module is responsible for the pushback process.
  *
@@ -36,38 +38,62 @@ class Pushback : public Module {
   DataManager* dataManager = nullptr;
 
   // Used to smoothen acceleration and deceleration
-  InertialDampener inertialDampener{0.0, 0.15, 0.1};
+  InertialDampener speedDampener{0.0, 0.15, 0.1};
+  InertialDampener turnDampener{0.0, 0.01, 0.001};
 
   // LVARs
-  NamedVariablePtr pushbackSystemEnabled;
-  NamedVariablePtr parkingBrakeEngaged;
-  NamedVariablePtr tugCommandedHeadingFactor;
   NamedVariablePtr tugCommandedSpeedFactor;
-  // debug purposes - send as LVARs for debugging to the flyPad
-  NamedVariablePtr tugCommandedHeading;
-  NamedVariablePtr tugCommandedSpeed;
-  NamedVariablePtr tugInertiaSpeed;
-  NamedVariablePtr updateDelta;
-  NamedVariablePtr rotXOut;
+  NamedVariablePtr tugCommandedHeadingFactor;
 
-  // Sim-vars
-  AircraftVariablePtr simOnGround;
-  AircraftVariablePtr pushbackAttached;
-  AircraftVariablePtr aircraftHeading;
-  AircraftVariablePtr windVelBodyZ;
+  // Base data structure for PushbackBaseInfo
+  struct PushbackBaseInfo {
+    FLOAT64 pushbackSystemEnabled;
+    FLOAT64 parkingBrakeEngaged;
+    FLOAT64 simOnGround;
+    FLOAT64 pushbackAttached;
+    FLOAT64 aircraftHeading;
+    FLOAT64 windVelBodyZ;
+  };
+  DataDefinitionVariablePtr<PushbackBaseInfo> pushbackBaseInfoPtr;
 
   // Data structure for PushbackDataID
   struct PushbackData {
-    [[maybe_unused]] FLOAT64 pushbackWait;
-    [[maybe_unused]] FLOAT64 velBodyZ;
-    [[maybe_unused]] FLOAT64 rotVelBodyY;
-    [[maybe_unused]] FLOAT64 rotAccelBodyX;
+    FLOAT64 pushbackWait;
+    FLOAT64 velBodyX;
+    FLOAT64 velBodyY;
+    FLOAT64 velBodyZ;
+    FLOAT64 rotVelBodyX;
+    FLOAT64 rotVelBodyY;
+    FLOAT64 rotVelBodyZ;
+    FLOAT64 rotAccelBodyX;
+    FLOAT64 rotAccelBodyY;
+    FLOAT64 rotAccelBodyZ;
   };
-  std::shared_ptr<DataDefinitionVariable<PushbackData>> pushbackData;
+  DataDefinitionVariablePtr<PushbackData> pushbackDataPtr;
 
   // Events
   ClientEventPtr tugHeadingEvent;
   ClientEventPtr tugSpeedEvent;
+
+  // debug purposes - send LVARs for debugging to the flyPad
+  NamedVariablePtr pushbackDebug;
+  struct PushbackDebug {
+    FLOAT64 updateDelta;
+    FLOAT64 tugCommandedSpeed;
+    FLOAT64 tugCommandedHeading;
+    FLOAT64 tugInertiaSpeed;
+    FLOAT64 rotXOut;
+  };
+  DataDefinitionVariablePtr<PushbackDebug> pushbackDebugPtr;
+
+  // Profiler for measuring the update time
+  //  SimpleProfiler profiler{"Pushback::update", 120};
+
+ protected:
+  // Aircraft configuration as LVARs
+  NamedVariablePtr aircraftParkingBrakeFactor;
+  NamedVariablePtr aircraftSpeedFactor;
+  NamedVariablePtr aircraftTurnSpeedFactor;
 
  public:
   Pushback() = delete;
@@ -84,6 +110,24 @@ class Pushback : public Module {
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
 
+ protected:
+  /**
+   * @brief Returns the park brake factor for slowing down when the parking brake is engaged.
+   * @return The park brake factor.
+   */
+  virtual constexpr int getParkBrakeFactor() const = 0;  // slow down when parking brake is engaged by this factor
+
+  /**
+   * @brief Returns the speed factor for the pushback for the aircraft
+   * @return the speed factor
+   */
+  virtual constexpr FLOAT64 getSpeedFactor() const = 0;  // ft/sec for "VELOCITY BODY Z"
+
+  /**
+   * @brief Returns the turn speed factor for the pushback for the aircraft
+   * @return the turn speed factor
+   */
+  virtual constexpr FLOAT64 getTurnSpeedFactor() const = 0;  // ft/sec for "ROTATION VELOCITY BODY Y"
 };
 
 #endif  // FLYBYWIRE_PUSHBACK_H

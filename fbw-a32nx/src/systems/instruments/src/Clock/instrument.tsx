@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
-import { ClockSimvarPublisher } from './shared/ClockSimvarPublisher';
-import { ClockRoot } from './Clock';
+import { ClockRoot, ClockSimvarPublisher } from '@flybywiresim/clock';
 
 // eslint-disable-next-line camelcase
 class A32NX_Clock extends BaseInstrument {

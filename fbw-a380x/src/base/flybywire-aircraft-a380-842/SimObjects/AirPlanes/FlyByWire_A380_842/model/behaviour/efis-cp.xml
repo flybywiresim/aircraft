@@ -173,8 +173,8 @@
             <!-- Baro Unit -->
             <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</NODE_ID>
-                <ANIM_NAME_KNOB>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1_KNOB</ANIM_NAME_KNOB>
-                <ANIM_NAME_PUSHPULL>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1_PUSHPULL</ANIM_NAME_PUSHPULL>
+                <ANIM_NAME_KNOB>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSHPULL>PUSH_KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_PUSHPULL>
             </UseTemplate>
 
             <!-- Baro Value -->

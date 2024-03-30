@@ -26,16 +26,8 @@ export class KeyInterceptor {
         console.log('KeyInterceptor: Created');
     }
 
-    public connectedCallback(): void {
-        // empty
-    }
-
     public startPublish(): void {
         console.log('KeyInterceptor: startPublish()');
-    }
-
-    public update(): void {
-        // empty
     }
 
     private registerIntercepts() {
@@ -70,7 +62,7 @@ export class KeyInterceptor {
             dialog.showPopUp(
                 'Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
-                           Engine Auto Start is not supported by the A32NX.<br/>
+                           Engine Auto Start is not supported by the A380X.<br/>
                            <br/>
                            Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
                            <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?
@@ -92,7 +84,7 @@ export class KeyInterceptor {
             dialog.showPopUp(
                 'Shift+Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
-                               Engine Auto Shutdown is not supported by the A32NX.<br/>
+                               Engine Auto Shutdown is not supported by the A380X.<br/>
                                <br/>
                                Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
                                <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?

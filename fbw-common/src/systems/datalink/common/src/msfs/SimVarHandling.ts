@@ -1,9 +1,9 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcMessageButtonBusMessages } from '@datalink/atc';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
+import { AtcMessageButtonBusMessages } from '../../../atc/src';
 import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
 
 interface SimVars {

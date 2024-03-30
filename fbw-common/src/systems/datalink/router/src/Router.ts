@@ -1,6 +1,8 @@
 //  Copyright (c) 2021, 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import {
     DatalinkModeCode,
     DatalinkStatusCode,
@@ -14,9 +16,7 @@ import {
     TafMessage,
     WeatherMessage,
     FreetextMessage,
-} from '@datalink/common';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { EventBus } from '@microsoft/msfs-sdk';
+} from '../../common/src';
 import { MsfsConnector } from './msfs/MsfsConnector';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';

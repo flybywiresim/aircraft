@@ -1,4 +1,5 @@
-export { FailuresConsumer } from './failures-consumer';
-export { FailuresOrchestrator } from './failures-orchestrator';
-export type { Failure } from './failures-orchestrator';
-export { A320Failure } from './a320';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+export { A320Failure, A320FailureDefinitions } from './a320';

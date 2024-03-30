@@ -1,4 +1,4 @@
-import { Atc } from '@datalink/atc';
+import { Atc } from '../../../atc/src';
 import { coordinateToString, timestampToString } from './Convert';
 import { InputValidation } from './InputValidation';
 import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';

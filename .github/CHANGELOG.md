@@ -43,9 +43,40 @@
 1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
-1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mi
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
 1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
 1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
+1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
+1. [FCU] Fixed SPD display in MACH mode to include decimal - @budzique (Joe Jackson)
+1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
+1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
+1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
+1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+1. [ND] Fixed manual/RMP tuning flags for ADFs - @tracernz (Mike)
+1. [EFCS] Freeze rudder trim when below 200 ft RA - @aguther (Andreas Guther)
+1. [AP] Tuning of Autoland especially in Crosswind situations - @aguther (Andreas Guther)
+1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
+1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
+1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
+1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+1. [MCDU] Make dest fuel amber instead of alternate if below min fuel in FUEL PRED page - @BravoMike99 (bruno_pt99)
+1. [AP] Add NAV on GA capability - @lukecologne (luke)
+1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
+1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
+1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
+1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
+1. [FCU] Disabled QFE mode - @tracernz (Mike)
+1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
+1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
+1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
+1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
+1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
+2. [FAC] Improve sideslip estimation - @lukecologne (luke)
 
 ## 0.11.0
 

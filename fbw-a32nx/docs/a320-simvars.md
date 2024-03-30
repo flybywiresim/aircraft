@@ -598,6 +598,13 @@
         - ELEC_IDG_1
         - ELEC_IDG_2
 
+- A32NX_OVHD_{name}_PB_IS_DISC
+    - Bool
+    - True when the idg is disconnected
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
@@ -1247,6 +1254,13 @@
       | 12    | Twenty                    |
       | 13    | Ten                       |
       | 14    | Five                      |
+
+- A32NX_LANDING_{ID}_POSITION
+    - Percent
+    - Current position of the landing light animation
+    - {ID}
+        - 2 | LEFT
+        - 3 | RIGHT
 
 ## Model/XML Interface
 
@@ -3042,6 +3056,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - High Pressure warning in the right wing anti ice valve
     - Bool
 
+- A32NX_BUTTON_OVHD_ANTI_ICE_ENG_1_POSITION:
+    - Indicates whether the overhead ENG ANTI ICE button is illuminated for engine 1
+    - Bool
+
+- A32NX_BUTTON_OVHD_ANTI_ICE_ENG_2_POSITION:
+    - Indicates whether the overhead ENG ANTI ICE button is illuminated for engine 2
+    - Bool
 ## Autoflight (ATA 22)
 
 - - A32NX_FAC_{number}_PUSHBUTTON_PRESSED

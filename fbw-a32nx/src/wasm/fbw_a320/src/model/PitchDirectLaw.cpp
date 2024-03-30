@@ -58,6 +58,4 @@ PitchDirectLaw::PitchDirectLaw():
 {
 }
 
-PitchDirectLaw::~PitchDirectLaw()
-{
-}
+PitchDirectLaw::~PitchDirectLaw() = default;

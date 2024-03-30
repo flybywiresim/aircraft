@@ -92,6 +92,12 @@
   font-size: 400px;
 }
 
+:root #PreSelBaroValue {
+  font-family: Digital;
+  text-anchor: end;
+  letter-spacing: 0px;
+}
+
 :root line {
   stroke: var(--main-display-colour);
   stroke-width: 5;

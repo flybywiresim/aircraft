@@ -21,12 +21,8 @@ class A380SecComputer final
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_MATLABFunction_A380SecComputer_k_T {
+  struct rtDW_MATLABFunction_A380SecComputer_c_T {
     real_T timeSinceCondition;
-    boolean_T output;
-  };
-
-  struct rtDW_MATLABFunction_A380SecComputer_km_T {
     boolean_T output;
   };
 
@@ -48,9 +44,9 @@ class A380SecComputer final
     real_T fo_roll_stick_pos;
     real_T elevator_1_pos_deg;
     real_T elevator_2_pos_deg;
+    real_T monotonic_time;
     real_T elevator_3_pos_deg;
     real_T ths_pos_deg;
-    real_T monotonic_time;
     real_T left_aileron_1_pos_deg;
     real_T left_aileron_2_pos_deg;
     real_T right_aileron_1_pos_deg;
@@ -661,6 +657,8 @@ class A380SecComputer final
     boolean_T rudder_trim_reset_pressed;
     boolean_T pitch_trim_up_pressed;
     boolean_T pitch_trim_down_pressed;
+    boolean_T rat_deployed;
+    boolean_T rat_contactor_closed;
     boolean_T green_low_pressure;
     boolean_T yellow_low_pressure;
     boolean_T slew_on;
@@ -678,6 +676,9 @@ class A380SecComputer final
     real_T pY_e;
     boolean_T Delay_DSTATE_c;
     boolean_T Delay1_DSTATE;
+    boolean_T Delay_DSTATE_d;
+    boolean_T Memory_PreviousInput;
+    boolean_T Memory_PreviousInput_n;
     boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
@@ -685,14 +686,14 @@ class A380SecComputer final
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_k;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_mf;
+    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_ek;
     rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_j2;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_A380SecComputer_km_T sf_MATLABFunction_br;
-    rtDW_MATLABFunction_A380SecComputer_km_T sf_MATLABFunction_jg;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_gf;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_cj;
+    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_g2;
+    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_bd;
+    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_mg;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_cd;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_p0;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_c;
@@ -771,10 +772,15 @@ class A380SecComputer final
     real_T BitfromLabel9_bit_m;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit_d;
+    real_T BitfromLabel3_bit_id;
+    real_T BitfromLabel4_bit_m;
+    real_T BitfromLabel_bit_k;
+    real_T BitfromLabel6_bit_a;
+    real_T BitfromLabel5_bit_j;
+    real_T CompareToConstant_const;
     real_T CompareToConstant1_const;
+    real_T CompareToConstant1_const_p;
     real_T CompareToConstant1_const_d;
-    real_T HysteresisNode2_highTrigger;
-    real_T HysteresisNode3_highTrigger;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterGenericVariableTs1_lo;
@@ -791,8 +797,6 @@ class A380SecComputer final
     real_T RateLimiterGenericVariableTs_lo_f;
     real_T RateLimiterGenericVariableTs1_lo_c;
     real_T RateLimiterGenericVariableTs2_lo_k;
-    real_T HysteresisNode2_lowTrigger;
-    real_T HysteresisNode3_lowTrigger;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay;
@@ -814,16 +818,25 @@ class A380SecComputer final
     real_T RateLimiterGenericVariableTs1_up_a;
     real_T RateLimiterGenericVariableTs2_up_l;
     SignStatusMatrix EnumeratedConstant1_Value;
+    boolean_T SRFlipFlop1_initial_condition;
+    boolean_T SRFlipFlop_initial_condition;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge_j;
-    int8_T CompareToConstant_const;
+    boolean_T PulseNode1_isRisingEdge_m;
+    boolean_T PulseNode2_isRisingEdge;
+    int8_T CompareToConstant2_const;
+    int8_T CompareToConstant5_const;
+    int8_T CompareToConstant3_const;
+    int8_T CompareToConstant4_const;
+    int8_T CompareToConstant_const_l;
     int8_T CompareToConstant_const_f;
-    int8_T CompareToConstant1_const_p;
+    int8_T CompareToConstant1_const_p2;
     int8_T CompareToConstant_const_fl;
+    int8_T CompareToConstant2_const_f;
     int8_T CompareToConstant_const_fs;
     int8_T CompareToConstant1_const_c;
     sec_outputs out_Y0;
@@ -837,6 +850,9 @@ class A380SecComputer final
     real_T Constant1_Value_f;
     real_T Constant2_Value_l;
     real_T Constant3_Value;
+    real_T Gain_Gain;
+    real_T Saturation_UpperSat;
+    real_T Saturation_LowerSat;
     real_T Constant10_Value;
     real_T Constant11_Value;
     real_T Constant12_Value;
@@ -852,13 +868,13 @@ class A380SecComputer final
     real_T Constant9_Value_n;
     real_T Constant_Value;
     real_T Constant_Value_p;
-    real_T Saturation_UpperSat;
-    real_T Saturation_LowerSat;
+    real_T Saturation_UpperSat_d;
+    real_T Saturation_LowerSat_h;
     real_T Constant1_Value_p;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Constant_Value_c;
-    real_T Gain_Gain;
+    real_T Gain_Gain_e;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;
     real_T Saturation1_UpperSat_o;
@@ -877,8 +893,12 @@ class A380SecComputer final
     real32_T Gain4_Gain;
     boolean_T Constant1_Value_b;
     boolean_T Constant_Value_ad;
+    boolean_T Constant_Value_b;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
+    boolean_T Delay_InitialCondition_d;
+    boolean_T Logic_table[16];
+    boolean_T Logic_table_i[16];
     boolean_T Constant7_Value_h;
     boolean_T reset_Value;
     boolean_T Constant1_Value_f3;
@@ -923,12 +943,9 @@ class A380SecComputer final
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380SecComputer_o_T *localDW);
   static void A380SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380SecComputer_MATLABFunction_c(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
-  static void A380SecComputer_MATLABFunction_js_Reset(rtDW_MATLABFunction_A380SecComputer_k_T *localDW);
-  static void A380SecComputer_MATLABFunction_cj(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_k_T *localDW);
-  static void A380SecComputer_MATLABFunction_j2_Reset(rtDW_MATLABFunction_A380SecComputer_km_T *localDW);
-  static void A380SecComputer_MATLABFunction_j(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T
-    *rty_y, rtDW_MATLABFunction_A380SecComputer_km_T *localDW);
+  static void A380SecComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
+  static void A380SecComputer_MATLABFunction_m(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
   static void A380SecComputer_MATLABFunction_f_Reset(rtDW_MATLABFunction_A380SecComputer_b_T *localDW);
   static void A380SecComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_A380SecComputer_b_T *localDW);

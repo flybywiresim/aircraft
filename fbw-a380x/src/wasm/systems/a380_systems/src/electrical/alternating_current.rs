@@ -3,19 +3,19 @@ use super::{
     A380ElectricalOverheadPanel,
 };
 use systems::accept_iterable;
-use systems::apu::ApuGenerator;
-use systems::electrical::ElectricalElement;
-use systems::simulation::InitContext;
+use systems::shared::AdirsDiscreteOutputs;
 use systems::{
+    apu::ApuGenerator,
     electrical::{
-        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, Electricity,
-        EmergencyGenerator, EngineGenerator, ExternalPowerSource, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, ElectricalElement,
+        Electricity, EmergencyGenerator, ExternalPowerSource, TransformerRectifier,
+        VariableFrequencyGenerator,
     },
-    shared::{
-        AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineCorrectedN2, EngineFirePushButtons,
-    },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    engine::Engine,
+    shared::{AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineFirePushButtons},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
+use uom::si::{f64::Power, power::kilowatt};
 
 pub(super) struct A380AlternatingCurrentElectrical {
     main_power_sources: A380MainPowerSources,
@@ -75,7 +75,8 @@ impl A380AlternatingCurrentElectrical {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.main_power_sources.update(
             context,
@@ -85,6 +86,7 @@ impl A380AlternatingCurrentElectrical {
             apu,
             engine_fire_push_buttons,
             engines,
+            adirs,
         );
 
         self.main_power_sources
@@ -206,6 +208,10 @@ impl A380AlternatingCurrentElectrical {
         self.main_power_sources.gen_contactor_open(number)
     }
 
+    pub fn gen_drive_connected(&self, number: usize) -> bool {
+        self.main_power_sources.gen_drive_connected(number)
+    }
+
     pub fn emergency_generator_contactor_is_closed(&self) -> bool {
         self.emergency_gen_contactor.is_closed()
     }
@@ -275,7 +281,7 @@ impl SimulationElement for A380AlternatingCurrentElectrical {
 }
 
 struct A380MainPowerSources {
-    engine_gens: [EngineGenerator; 4],
+    engine_gens: [VariableFrequencyGenerator; 4],
     engine_generator_contactors: [Contactor; 4],
     bus_tie_contactors: [Contactor; 6],
     // FCOM: BTC7
@@ -376,7 +382,14 @@ impl A380MainPowerSources {
 
     fn new(context: &mut InitContext) -> Self {
         A380MainPowerSources {
-            engine_gens: [1, 2, 3, 4].map(|i| EngineGenerator::new(context, i)),
+            engine_gens: [1, 2, 3, 4].map(|i| {
+                VariableFrequencyGenerator::new(
+                    context,
+                    i,
+                    Power::new::<kilowatt>(150.),
+                    360.0..=800.0,
+                )
+            }),
             engine_generator_contactors: [1, 2, 3, 4]
                 .map(|id| Contactor::new(context, &format!("990XU{id}"))),
             bus_tie_contactors: [1, 2, 3, 4, 5, 6]
@@ -396,7 +409,8 @@ impl A380MainPowerSources {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         for (gen, engine) in self.engine_gens.iter_mut().zip(engines) {
             gen.update(context, engine, overhead, engine_fire_push_buttons);
@@ -411,7 +425,7 @@ impl A380MainPowerSources {
             electricity.supplied_by(ext_pwr);
         }
 
-        let powered_by = self.calc_ac_sources(context, ext_pwrs, overhead, apu);
+        let powered_by = self.calc_ac_sources(ext_pwrs, overhead, apu, adirs);
 
         // Configure contactors
         for (i, (&power_source, (gen_contactor, ext_pwr_contactor))) in powered_by
@@ -530,20 +544,11 @@ impl A380MainPowerSources {
 
     fn calc_ac_sources(
         &self,
-        context: &UpdateContext,
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> [Option<ACBusPowerSource>; 4] {
-        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
-        let apu_gen_available = [1, 2].map(|id| {
-            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
-        });
-        let apu_gen_available = [
-            apu_gen_available[0],
-            apu_gen_available[1] && (context.is_on_ground() || !apu_gen_available[0]),
-        ];
-
         let gen_available: Vec<_> = self
             .engine_gens
             .iter()
@@ -556,6 +561,23 @@ impl A380MainPowerSources {
                 overhead.external_power_is_on(i + 1) && ext_pwr.output_within_normal_parameters()
             })
             .collect();
+
+        let apu_gen_available = [1, 2].map(|id| {
+            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
+        });
+
+        // TODO: should really be "low speed warning 1" in the A380
+        let in_flight = adirs.low_speed_warning_2_54kts(1) || adirs.low_speed_warning_2_54kts(3);
+        let apu_gen_available = if !in_flight {
+            apu_gen_available
+        } else {
+            let left_gens = gen_available[0] as u32 + gen_available[1] as u32;
+            let right_gens = gen_available[2] as u32 + gen_available[3] as u32;
+            [
+                apu_gen_available[0] && (left_gens <= right_gens || !apu_gen_available[1]),
+                apu_gen_available[1] && (left_gens > right_gens || !apu_gen_available[0]),
+            ]
+        };
 
         let priority_table = if ext_pwr_available.iter().all(|v| !v)
             && gen_available.iter().filter(|&a| *a).count() == 1
@@ -610,6 +632,10 @@ impl A380MainPowerSources {
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
         self.engine_generator_contactors[number - 1].is_open()
+    }
+
+    fn gen_drive_connected(&self, number: usize) -> bool {
+        self.engine_gens[number - 1].is_drive_connected()
     }
 }
 impl SimulationElement for A380MainPowerSources {

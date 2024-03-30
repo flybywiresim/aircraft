@@ -124,7 +124,7 @@ clang++ \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_mvZvttxs.cpp" \
+  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
@@ -156,6 +156,11 @@ wasm-ld \
   --export malloc \
   --export free \
   --export __wasm_call_ctors \
+  --export mallinfo \
+  --export mchunkit_begin \
+  --export mchunkit_next \
+  --export get_pages_state \
+  --export mark_decommit_pages \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \

@@ -61,7 +61,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentGndFltService, 15),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
-    .with_engines(2)?
+    .with_engine_anti_ice(2)?
+    .with_wing_anti_ice()?
     .with_failures(vec![
         (
             21_000,
@@ -302,6 +303,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 18)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -412,11 +414,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         builder.copy(
             Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
             Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
-        );
-
-        builder.copy(
-            Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
-            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
         builder.map(

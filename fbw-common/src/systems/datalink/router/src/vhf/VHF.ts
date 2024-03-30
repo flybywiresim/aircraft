@@ -1,11 +1,11 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { ATC } from '@flybywiresim/api-client';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { DatalinkModeCode, DatalinkStatusCode } from '../../../common/src';
 import { DatalinkConfiguration, DatalinkProviders, MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
+import { AtsuFlightPhase } from '../../../common/src/types/AtsuFlightPhase';
+import { NXDataStore } from '../../../../shared/src/persistence';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -145,15 +145,15 @@ export class Vhf {
         return 10.0 * Math.log10((4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0);
     }
 
-    private estimateDatarate(type: DatalinkProviders, distance: number, flightPhase: FmgcFlightPhase, airport: Airport): void {
+    private estimateDatarate(type: DatalinkProviders, distance: number, flightPhase: AtsuFlightPhase, airport: Airport): void {
         const maximumFreespaceLoss = SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * (this.frequencyOverlap[type]) - MaximumDampingDB;
         let freespaceLoss = this.freespacePathLoss(DatalinkConfiguration[type], distance);
 
         // simulate the influence of buildings
-        if (flightPhase === FmgcFlightPhase.Preflight || flightPhase === FmgcFlightPhase.Done) {
+        if (flightPhase === AtsuFlightPhase.Preflight || flightPhase === AtsuFlightPhase.Done) {
             // assume that buildings are close the aircraft -> add a loss of 30 dB to simulate the influence of buildings
             freespaceLoss += 30;
-        } else if (flightPhase === FmgcFlightPhase.Takeoff || flightPhase === FmgcFlightPhase.GoAround || flightPhase === FmgcFlightPhase.Approach) {
+        } else if (flightPhase === AtsuFlightPhase.Takeoff || flightPhase === AtsuFlightPhase.GoAround || flightPhase === AtsuFlightPhase.Approach) {
             // assume that high buildings are in the vicinity of the aircraft -> add a loss of 15 dB to simulate the influence of buildings
             freespaceLoss += 15;
         }
@@ -175,7 +175,7 @@ export class Vhf {
         }
     }
 
-    private async updateRelevantAirports(flightPhase: FmgcFlightPhase): Promise<void> {
+    private async updateRelevantAirports(flightPhase: AtsuFlightPhase): Promise<void> {
         // use a simple line of sight algorithm to calculate the maximum distance
         // it ignores the topolography, but simulates the earth curvature
         // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
@@ -199,7 +199,7 @@ export class Vhf {
 
         // get all airports
         return new Promise((resolve) => {
-            SimVar.GetSimVarArrayValues(requestBatch, (airports) => {
+            SimVar.GetSimVarArrayValues(requestBatch, (airports: any[]) => {
                 airports.forEach((fetched) => {
                     // format: 'TYPE(one char) ICAO '
                     const icao = fetched[0].substr(2).trim();
@@ -288,7 +288,7 @@ export class Vhf {
      * @param flightPhase Actual flight phase to simulate the building based interferences
      * @returns A promise to provide the possibilty to run it in sequence
      */
-    public async simulateDatarates(flightPhase: FmgcFlightPhase): Promise<void> {
+    public async simulateDatarates(flightPhase: AtsuFlightPhase): Promise<void> {
         this.updatePresentPosition();
 
         return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports(flightPhase).then(() => {

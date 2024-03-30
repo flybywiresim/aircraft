@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
 import { NXLogicConfirmNode, NXLogicClockNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -223,7 +223,6 @@ const PseudoFWC: React.FC = () => {
     const [dmcSwitchingKnob] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 500);
     const [ndXfrKnob] = useSimVar('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'bool', 500);
     const [gpwsFlaps3] = useSimVar('L:A32NX_GPWS_FLAPS3', 'bool', 500);
-    const [manLandingElevation] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 500);
     const [ATTKnob] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 500);
     const [AIRKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 500);
 
@@ -637,17 +636,6 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000230': // MAN LANDING ELEVATION
-        {
-            flightPhaseInhib: [],
-            simVarIsActive: manLandingElevation > 0,
-            whichCodeToReturn: [0],
-            codesToReturn: ['000023001'],
-            memoInhibit: false,
-            failure: 0,
-            sysPage: -1,
-            side: 'RIGHT',
-        },
         '0000250': // FUEL X FEED
         {
             flightPhaseInhib: [],
@@ -789,7 +777,6 @@ const PseudoFWC: React.FC = () => {
         landingLight3Retracted,
         ldgmemo,
         leftOuterInnerValve,
-        manLandingElevation,
         ndXfrKnob,
         noSmoking,
         noSmokingSwitchPosition,

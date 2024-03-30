@@ -32,16 +32,11 @@ class Math {
    * @param a - positive or negative angle
    * @param b - positive or negative angle
    */
-  static double angleAdd(double a, double b) {
-    double r = a + b;
-    while (r > 360.0) {
-      r -= 360.0;
-    }
-    while (r < 0.0) {
-      r += 360.0;
-    }
-    return r;
-  };
+ static double angleAdd(double a, double b) {
+  double r = a + b;
+  r = fmod(fmod(r, 360.0) + 360.0, 360.0);
+  return r;
+}
 
   /**
    * Returns the signum (sign) of the given value.

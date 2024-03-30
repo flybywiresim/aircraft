@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429WordData, EfisNdMode, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
+import { Arinc429Register, Arinc429WordData, EfisNdMode } from '@flybywiresim/fbw-sdk';
 
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
@@ -13,12 +14,13 @@ import { NDSimvars } from '../../NDSimvarPublisher';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 
-export interface PlanModePageProps extends ComponentProps {
+export interface PlanModePageProps<T extends number> extends ComponentProps {
     bus: EventBus,
+    rangeValues: T[],
     aircraftTrueHeading: Subscribable<Arinc429WordData>,
 }
 
-export class PlanModePage extends NDPage<PlanModePageProps> {
+export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>> {
     public isVisible = Subject.create(false);
 
     private readonly controlPublisher = this.props.bus.getPublisher<NDControlEvents>();
@@ -125,7 +127,7 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
     private handleScaleMap() {
         if (this.isVisible.get()) {
             const rangeSetting = this.mapRangeSub.get();
-            const range = efisRangeSettings[rangeSetting];
+            const range = this.props.rangeValues[rangeSetting];
 
             this.controlPublisher.pub('set_map_efis_mode', EfisNdMode.PLAN);
             this.controlPublisher.pub('set_map_pixel_radius', 250);

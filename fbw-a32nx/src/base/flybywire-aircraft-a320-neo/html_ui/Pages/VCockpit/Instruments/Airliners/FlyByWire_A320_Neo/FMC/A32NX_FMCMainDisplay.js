@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -14,6 +18,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = undefined;
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
+        this.recMaxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
         this.perfTOTemp = undefined;
@@ -65,6 +70,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = undefined;
         this._minDestFob = undefined;
         this._minDestFobEntered = undefined;
+        this._isBelowMinDestFob = undefined;
         this._defaultRouteFinalTime = undefined;
         this._fuelPredDone = undefined;
         this._fuelPlanningPhase = undefined;
@@ -224,9 +230,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, Fmgc.a320EfisRangeSettings, this);
         this.navigation = new Fmgc.Navigation(this.flightPlanManager, this.facilityLoader);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController, this.navigation.getNavaidTuner());
+        this.efisSymbols = new Fmgc.EfisSymbols(
+            this.flightPlanManager,
+            this.guidanceController,
+            this.navigation.getNavaidTuner(),
+            Fmgc.a320EfisRangeSettings,
+        );
 
         Fmgc.initFmgcLoop(this, this.flightPlanManager);
 
@@ -346,6 +357,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
+        this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
         this.resetCoroute();
         this._overridenFlapApproachSpeed = NaN;
@@ -403,6 +415,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = false;
         this._minDestFob = 0;
         this._minDestFobEntered = false;
+        this._isBelowMinDestFob = false;
         this._defaultRouteFinalTime = 45;
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
@@ -632,6 +645,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateMinimums();
             this.updateIlsCourse();
             this.updatePerfPageAltPredictions();
+            this.checkEFOBBelowMin();
         }
 
         this.A32NXCore.update();
@@ -654,7 +668,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
-
         this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
@@ -2180,7 +2193,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
-                if (value < this._minDestFob) {
+                if (value < this._routeAltFuelWeight + this.getRouteFinalFuelWeight()) {
                     this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
@@ -4266,29 +4279,47 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     checkEFOBBelowMin() {
+        if (this._fuelPredDone) {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
-        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
 
-        if (EFOBBelMin < this._minDestFob) {
-            if (this.isAnEngineOn()) {
-                setTimeout(() => {
-                    this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === true;
-                    }, () => {
-                        this._EfobBelowMinClr = true;
-                    });
-                }, 180000);
+        if (this._minDestFob) {
+            // round & only use 100kgs precision since thats how it is displayed in fuel pred
+            const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
+            const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+            if (!this._isBelowMinDestFob) {
+                if (destEfob < roundedMinDestFob) {
+                    this._isBelowMinDestFob = true;
+                    // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
+                    if (this.isAnEngineOn()) {
+                        setTimeout(() => {
+                            this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                                return this._EfobBelowMinClr === true;
+                            }, () => {
+                                this._EfobBelowMinClr = true;
+                            });
+                        }, 120000);
+                    } else {
+                        this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                            return this._EfobBelowMinClr === true;
+                        }, () => {
+                            this._EfobBelowMinClr = true;
+                        });
+                    }
+                }
             } else {
-                this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                    return this._EfobBelowMinClr === true;
-                }, () => {
-                    this._EfobBelowMinClr = true;
-                });
+                // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
+                if (roundedMinDestFob) {
+                    if (destEfob - roundedMinDestFob >= 0.3) {
+                        this._isBelowMinDestFob = false;
+                        this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
+                    }
+                }
             }
         }
     }
+}
 
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
@@ -4569,7 +4600,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isPdFormat(s) {
-        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
+        const pd = s.match(/^([^\/]+)\/([\-\+]?[0-9]{1,3}(\.[0-9])?)$/);
         return pd !== null && this.isPlaceFormat(pd[1]);
     }
 
@@ -4902,7 +4933,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: can this be an util?
     getMaxFlCorrected(fl = this.getMaxFL()) {
-        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
+        return fl >= this.recMaxCruiseFL ? this.recMaxCruiseFL : fl;
     }
 
     // only used by trySetMinDestFob

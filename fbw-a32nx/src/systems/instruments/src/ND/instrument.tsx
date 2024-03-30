@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { a320EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -105,8 +105,6 @@ class NDInstrument implements FsInstrument {
     private doInit(): void {
         this.backplane.init();
 
-        this.dmcPublisher.init();
-
         this.adirsValueProvider.start();
 
         const sub = this.bus.getSubscriber<NDSimvars>();
@@ -123,7 +121,11 @@ class NDInstrument implements FsInstrument {
 
         FSComponent.render(
             <DisplayUnit bus={this.bus} brightness={this.displayBrightness} powered={this.displayPowered} failed={this.displayFailed} normDmc={getDisplayIndex()}>
-                <NDComponent bus={this.bus} side={this.efisSide} />
+                <NDComponent
+                    bus={this.bus}
+                    side={this.efisSide}
+                    rangeValues={a320EfisRangeSettings}
+                />
             </DisplayUnit>,
             document.getElementById('INSTRUMENT_CONTENT'),
         );
@@ -173,18 +175,5 @@ class A32NX_ND extends FsBaseInstrument<NDInstrument> {
         return 'A32NX_ND';
     }
 }
-
-// Hack to support tspan SVG elements, which FSComponent does not recognise as SVG
-
-const original = document.createElement.bind(document);
-
-const extraSvgTags = ['tspan'];
-
-document.createElement = ((tagName, options) => {
-    if (extraSvgTags.includes(tagName)) {
-        return document.createElementNS('http://www.w3.org/2000/svg', tagName, options);
-    }
-    return original(tagName, options);
-}) as any;
 
 registerInstrument('a32nx-nd', A32NX_ND);

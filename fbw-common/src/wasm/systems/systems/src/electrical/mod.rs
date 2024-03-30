@@ -35,7 +35,8 @@ pub use battery_charge_limiter::BatteryChargeLimiter;
 pub use battery_charge_rectifier_unit::BatteryChargeRectifierUnit;
 pub use emergency_generator::EmergencyGenerator;
 pub use engine_generator::{
-    EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+    EngineGenerator, IntegratedDriveGenerator, VariableFrequencyGenerator,
+    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
 };
 pub use external_power_source::ExternalPowerSource;
 use fxhash::{FxHashMap, FxHashSet};
@@ -417,8 +418,9 @@ impl Electricity {
     /// Takes the output supplied by the given source of electricity, such that
     /// it can then [flow](`Self::flow()`) through the electrical system.
     /// ```rust
-    /// # use systems::{shared::ElectricalBusType, electrical::{Contactor, ElectricalBus, Electricity, EngineGenerator},
+    /// # use systems::{shared::ElectricalBusType, electrical::{Contactor, ElectricalBus, Electricity, IntegratedDriveGenerator},
     /// # simulation::{InitContext, VariableRegistry, VariableIdentifier}};
+    /// # use uom::si::{f64::Power, power::kilowatt};
     /// # struct SomeVariableRegistry {}
     /// # impl VariableRegistry for SomeVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
@@ -428,7 +430,7 @@ impl Electricity {
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
     /// # let mut context = InitContext::new(Default::default(), &mut electricity, &mut registry);
-    /// let generator = EngineGenerator::new(&mut context, 1);
+    /// let generator = IntegratedDriveGenerator::new(&mut context, 1, Power::new::<kilowatt>(90.), 390.0..=410.0);
     /// let contactor = Contactor::new(&mut context, "TEST");
     ///
     /// electricity.supplied_by(&generator);

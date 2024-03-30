@@ -54,18 +54,24 @@
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
         <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
         <Component ID="LIGHTING">
-            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>2</ID>
-                <ANIM_NAME>l_opening_landing_light</ANIM_NAME>
-                <ANIM_LAG>12</ANIM_LAG>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>3</ID>
-                <ANIM_NAME>r_opening_landing_light</ANIM_NAME>
-                <ANIM_LAG>12</ANIM_LAG>
-            </UseTemplate>
+            <Component ID="LANDING_LIGHT_LEFT">
+                <UseTemplate Name="FBW_LIGHTING_Exterior_Retractable_Light_Template">
+                    <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                    <ID>2</ID>
+                    <ANIM_NAME>l_opening_landing_light</ANIM_NAME>
+                    <ANIM_LAG>12</ANIM_LAG>
+                    <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</FAILURE>
+                </UseTemplate>
+            </Component>
+            <Component ID="LANDING_LIGHT_RIGHT">
+                <UseTemplate Name="FBW_LIGHTING_Exterior_Retractable_Light_Template">
+                    <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                    <ID>3</ID>
+                    <ANIM_NAME>r_opening_landing_light</ANIM_NAME>
+                    <ANIM_LAG>12</ANIM_LAG>
+                    <FAILURE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</FAILURE>
+                </UseTemplate>
+            </Component>
         </Component>
         <Component ID="HANDLING">
             <UseTemplate Name="FBW_HANDLING_Elevator_Template">

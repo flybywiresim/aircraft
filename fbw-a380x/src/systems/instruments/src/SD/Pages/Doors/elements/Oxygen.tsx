@@ -13,21 +13,21 @@ const Oxygen: React.FC<Position & SdacActive & OnGround> = ({ x, y, active, onGr
     const cabinOxygenPbAuto = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'boolean', 500);
 
     return (
-        <>
+        <g transform={`translate(${x} ${y})`}>
             <g id="crewOxygen">
-                <text x={x} y={y} className={`F22 EndAlign ${!active || !crewOxygenPbAuto ? 'AmberFill' : 'White'}`}>CKPT</text>
-                <text x={x + 88} y={y} className={`F25 EndAlign ${ckptPressureAmber ? 'AmberFill' : 'Green'}`}>{!active ? 'XX' : crewOxygenPressure}</text>
-                <text x={x + 94} y={y} className="F22 Cyan">PSI</text>
-                <text x={x + 130} y={y + 40} className={`${!active || !crewOxygenPbAuto ? 'F22 AmberFill EndAlign' : 'Hide'}`}>REGUL PR LO</text>
+                <text x={0} y={0} className={`F22 EndAlign LS1 ${!active || !crewOxygenPbAuto ? 'AmberFill' : 'White'}`}>CKPT</text>
+                <text x={86} y={0} className={`F25 EndAlign ${ckptPressureAmber ? 'Amber' : 'Green'} LS1`}>{!active ? 'XX' : crewOxygenPressure}</text>
+                <text x={91} y={0} className='F22 Cyan LS1'>PSI</text>
+                <text x={-30} y={26} className={`F22 Amber ${!active || !crewOxygenPbAuto ? '' : 'Hide'}`}>REGUL PR LO</text>
             </g>
-            <path className="White SW2" d={`M${x - 24},${y + 60} l 124,0`} />
+            <path className="White SW2 StrokeRound" d="M-26,57 l 122,0" />
             <g id="cabinOxygen">
-                <text x={x + 14} y={y + 125} className={`F22 EndAlign ${!active || !cabinOxygenPbAuto ? 'AmberFill' : 'White'}`}>CABIN</text>
-                <text x={x + 88} y={y + 125} className={`F25 EndAlign ${cabinPressureAmber ? 'AmberFill' : 'Green'}`}>{!active ? 'XX' : cabinOxygenPressure}</text>
-                <text x={x + 94} y={y + 125} className="F22 Cyan">PSI</text>
-                <text x={x + 130} y={y + 165} className={`${!active || !cabinOxygenPbAuto ? 'F22 AmberFill EndAlign' : 'Hide'}`}>REGUL PR LO</text>
+                <text x={15} y={124} className={`F22 EndAlign ${!active || !cabinOxygenPbAuto ? 'Amber' : 'White'} LS1`}>CABIN</text>
+                <text x={86} y={124} className={`F26 EndAlign ${cabinPressureAmber ? 'Amber' : 'Green'}`}>{!active ? 'XX' : cabinOxygenPressure}</text>
+                <text x={91} y={124} className='F22 Cyan LS1'>PSI</text>
+                <text x={-30} y={150} className={`F22 Amber ${!active || !cabinOxygenPbAuto ? '' : 'Hide'}`}>REGUL PR LO</text>
             </g>
-        </>
+        </g>
     );
 };
 

@@ -109,4 +109,8 @@ impl Engine for LeapEngine {
     fn net_thrust(&self) -> Mass {
         self.net_thrust
     }
+
+    fn gearbox_speed(&self) -> AngularVelocity {
+        self.n2_speed
+    }
 }

@@ -11,6 +11,7 @@ use systems::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         ValueKnob,
     },
+    payload::NumberOfPassengers,
     pneumatic::PneumaticContainer,
     shared::{
         update_iterator::MaxStepLoop, CabinSimulation, CargoDoorLocked, ControllerSignal,
@@ -29,7 +30,9 @@ use uom::si::{
     volume::cubic_meter, volume_rate::liter_per_second,
 };
 
-use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
+use crate::{
+    avionics_data_communication_network::CoreProcessingInputOutputModuleShared, payload::A380Pax,
+};
 
 use self::{
     cpiom_b::CoreProcessingInputOutputModuleB,
@@ -98,6 +101,7 @@ impl A380AirConditioning {
         cpiom_b: &impl CoreProcessingInputOutputModuleShared,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
+        number_of_passengers: &impl NumberOfPassengers,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
@@ -118,7 +122,6 @@ impl A380AirConditioning {
             cpiom,
             &engines,
             lgciu,
-            self.a380_cabin.number_of_passengers(),
             pneumatic,
             &self.a380_air_conditioning_system,
         );
@@ -145,6 +148,7 @@ impl A380AirConditioning {
                 &context.with_delta(cur_time_step),
                 &self.a380_air_conditioning_system,
                 lgciu,
+                number_of_passengers,
                 &self.a380_pressurization_system,
             );
             self.cpiom_b.update_cpcs(
@@ -246,11 +250,14 @@ impl A380Cabin {
         context: &UpdateContext,
         air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
         lgciu: [&impl LgciuWeightOnWheels; 2],
+        number_of_passengers: &impl NumberOfPassengers,
         pressurization: &A380PressurizationSystem,
     ) {
         let lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
+
+        self.update_number_of_passengers(number_of_passengers);
 
         self.cabin_air_simulation.update(
             context,
@@ -268,18 +275,40 @@ impl A380Cabin {
         self.fwd_door_is_open as u8 + self.rear_door_is_open as u8
     }
 
-    fn number_of_passengers(&self) -> usize {
-        self.number_of_passengers
-            .iter()
-            .map(|pax| *pax as usize)
-            .sum()
-    }
-
-    #[cfg(test)]
-    fn set_number_of_passengers(&mut self, number_of_passengers: usize) {
-        let pax_per_zone = (number_of_passengers / (self.number_of_passengers.len() - 1)) as u8;
-        self.number_of_passengers = [pax_per_zone; 18];
-        self.number_of_passengers[0] = 2;
+    fn update_number_of_passengers(&mut self, number_of_passengers: &impl NumberOfPassengers) {
+        for (zone_id, pax) in self.number_of_passengers.iter_mut().enumerate() {
+            *pax = match zone_id {
+                0 => 2,
+                1 => number_of_passengers.number_of_passengers(A380Pax::MainFwdA.into()),
+                2 => number_of_passengers.number_of_passengers(A380Pax::MainFwdB.into()),
+                3 => {
+                    number_of_passengers.number_of_passengers(A380Pax::MainMid1A.into())
+                        + number_of_passengers.number_of_passengers(A380Pax::MainMid1B.into()) / 2
+                }
+                4 => {
+                    number_of_passengers.number_of_passengers(A380Pax::MainMid1C.into())
+                        + number_of_passengers.number_of_passengers(A380Pax::MainMid1B.into()) / 2
+                }
+                5 => {
+                    number_of_passengers.number_of_passengers(A380Pax::MainMid2A.into())
+                        + number_of_passengers.number_of_passengers(A380Pax::MainMid2B.into()) / 2
+                }
+                6 => {
+                    number_of_passengers.number_of_passengers(A380Pax::MainMid2C.into())
+                        + number_of_passengers.number_of_passengers(A380Pax::MainMid2B.into()) / 2
+                }
+                7 => number_of_passengers.number_of_passengers(A380Pax::MainAftA.into()),
+                8 => number_of_passengers.number_of_passengers(A380Pax::MainAftB.into()),
+                9 => number_of_passengers.number_of_passengers(A380Pax::UpperFwd.into()) / 2,
+                10 => number_of_passengers.number_of_passengers(A380Pax::UpperFwd.into()) / 2,
+                11 => number_of_passengers.number_of_passengers(A380Pax::UpperMidA.into()) / 2,
+                12 => number_of_passengers.number_of_passengers(A380Pax::UpperMidA.into()) / 2,
+                13 => number_of_passengers.number_of_passengers(A380Pax::UpperMidB.into()) / 2,
+                14 => number_of_passengers.number_of_passengers(A380Pax::UpperMidB.into()) / 2,
+                15 => number_of_passengers.number_of_passengers(A380Pax::UpperAft.into()),
+                _ => 0,
+            } as u8
+        }
     }
 }
 
@@ -673,6 +702,8 @@ impl SimulationElement for A380AirConditioningSystem {
 
 struct A380AirConditioningSystemOverhead {
     flow_selector_id: VariableIdentifier,
+    purs_sel_temp_id: VariableIdentifier,
+    purs_sel_temperature: ThermodynamicTemperature,
 
     // Air panel
     flow_selector: OverheadFlowSelector,
@@ -695,6 +726,8 @@ impl A380AirConditioningSystemOverhead {
         Self {
             flow_selector_id: context
                 .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
+            purs_sel_temp_id: context.get_identifier("COND_PURS_SEL_TEMPERATURE".to_owned()),
+            purs_sel_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
 
             // Air panel
             flow_selector: OverheadFlowSelector::Norm,
@@ -704,7 +737,7 @@ impl A380AirConditioningSystemOverhead {
             ],
             temperature_selectors: [
                 ValueKnob::new_with_value(context, "COND_CKPT_SELECTOR", 150.),
-                ValueKnob::new_with_value(context, "COND_CABIN_SELECTOR", 150.),
+                ValueKnob::new_with_value(context, "COND_CABIN_SELECTOR", 200.),
             ],
             ram_air_pb: OnOffPushButton::new_off(context, "COND_RAM_AIR"),
             pack_pbs: [
@@ -739,13 +772,19 @@ impl A380AirConditioningSystemOverhead {
 impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
     fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
         // The A380 has 16 cabin zones but only one knob
-        let knob = if zone_id > 0 {
-            &self.temperature_selectors[1]
+        let knob_value = if zone_id > 0 {
+            // We modify the cabin value to account for multiple rotations and for the "dead band" of the purser selection
+            &self.temperature_selectors[1].value() % 400. - 50.
         } else {
-            &self.temperature_selectors[0]
+            self.temperature_selectors[0].value()
         };
-        // Map from knob range 0-300 to 18-30 degrees C
-        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
+        if zone_id > 0 && !(0. ..=300.).contains(&knob_value) {
+            // The knob is in PURS SEL
+            self.purs_sel_temperature
+        } else {
+            // Map from knob range 0-300 to 18-30 degrees C
+            ThermodynamicTemperature::new::<degree_celsius>(knob_value * 0.04 + 18.)
+        }
     }
 
     fn selected_cargo_temperature(&self, zone_id: ZoneType) -> ThermodynamicTemperature {
@@ -796,7 +835,9 @@ impl SimulationElement for A380AirConditioningSystemOverhead {
             2 => OverheadFlowSelector::Norm,
             3 => OverheadFlowSelector::Hi,
             _ => panic!("Overhead flow selector position not recognized."),
-        }
+        };
+
+        self.purs_sel_temperature = reader.read(&self.purs_sel_temp_id);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1019,6 +1060,7 @@ impl SimulationElement for A380PressurizationOverheadPanel {
 mod tests {
     use self::local_controllers::outflow_valve_control_module::CpcsShared;
     use super::*;
+    use fxhash::FxHashMap;
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::PackFlow,
@@ -1100,18 +1142,25 @@ mod tests {
     }
 
     struct TestAdcn {
-        cpiom_b: [CoreProcessingInputOutputModule; 4],
+        cpiom_b: FxHashMap<&'static str, CoreProcessingInputOutputModule>,
     }
     impl TestAdcn {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                cpiom_b: [
-                    ("B1", ElectricalBusType::DirectCurrent(1)),
-                    ("B2", ElectricalBusType::DirectCurrentEssential),
-                    ("B3", ElectricalBusType::DirectCurrentEssential),
-                    ("B4", ElectricalBusType::DirectCurrent(2)),
-                ]
-                .map(|(name, bus)| CoreProcessingInputOutputModule::new(context, name, bus)),
+                cpiom_b: FxHashMap::from_iter(
+                    [
+                        ("B1", ElectricalBusType::DirectCurrent(1)),
+                        ("B2", ElectricalBusType::DirectCurrentEssential),
+                        ("B3", ElectricalBusType::DirectCurrentEssential),
+                        ("B4", ElectricalBusType::DirectCurrent(2)),
+                    ]
+                    .map(|(name, bus)| {
+                        (
+                            name,
+                            CoreProcessingInputOutputModule::new(context, name, bus, vec![]),
+                        )
+                    }),
+                ),
             }
         }
     }
@@ -1121,15 +1170,14 @@ mod tests {
             cpiom: &str,
         ) -> &CoreProcessingInputOutputModule {
             // If the string is not found this will panic
-            self.cpiom_b
-                .iter()
-                .find(|&module| module.name() == cpiom)
-                .unwrap()
+            self.cpiom_b.get(cpiom).unwrap()
         }
     }
     impl SimulationElement for TestAdcn {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            accept_iterable!(self.cpiom_b, visitor);
+            for cpiom in self.cpiom_b.values_mut() {
+                cpiom.accept(visitor);
+            }
             visitor.visit(self);
         }
     }
@@ -1170,6 +1218,26 @@ mod tests {
     impl EngineFirePushButtons for TestEngineFirePushButtons {
         fn is_released(&self, engine_number: usize) -> bool {
             self.is_released[engine_number - 1]
+        }
+    }
+
+    struct TestPayload {
+        number_of_passengers: u32,
+    }
+    impl TestPayload {
+        fn new() -> Self {
+            Self {
+                number_of_passengers: 0,
+            }
+        }
+
+        fn update_number_of_passengers(&mut self, number_of_passengers: u32) {
+            self.number_of_passengers = number_of_passengers;
+        }
+    }
+    impl NumberOfPassengers for TestPayload {
+        fn number_of_passengers(&self, _ps: usize) -> i8 {
+            (self.number_of_passengers / 15).try_into().unwrap()
         }
     }
 
@@ -1644,6 +1712,7 @@ mod tests {
         engine_3: TestEngine,
         engine_4: TestEngine,
         engine_fire_push_buttons: TestEngineFirePushButtons,
+        payload: TestPayload,
         pneumatic: TestPneumatic,
         pneumatic_overhead: TestPneumaticOverhead,
         pressurization_overhead: A380PressurizationOverheadPanel,
@@ -1687,6 +1756,7 @@ mod tests {
                 engine_3: TestEngine::new(Ratio::default()),
                 engine_4: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
+                payload: TestPayload::new(),
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
@@ -1833,6 +1903,11 @@ mod tests {
             self.powered_ac_source_4.unpower();
         }
 
+        fn update_number_of_passengers(&mut self, number_of_passengers: u32) {
+            self.payload
+                .update_number_of_passengers(number_of_passengers);
+        }
+
         fn set_pressure_based_on_vs(&mut self, alt_diff: Length) {
             // We find the atmospheric pressure that would give us the desired v/s
             let init_pressure_ratio: f64 =
@@ -1897,6 +1972,7 @@ mod tests {
                     &self.engine_4,
                 ],
                 &self.engine_fire_push_buttons,
+                &self.payload,
                 &self.pneumatic,
                 &self.pneumatic_overhead,
                 &self.pressurization_overhead,
@@ -2283,7 +2359,7 @@ mod tests {
         fn command_selected_temperature(mut self, temperature: ThermodynamicTemperature) -> Self {
             let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
             self.write_by_name("OVHD_COND_CKPT_SELECTOR_KNOB", knob_value);
-            self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value);
+            self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value + 50.);
             self
         }
 
@@ -2291,8 +2367,21 @@ mod tests {
             mut self,
             temperature: ThermodynamicTemperature,
         ) -> Self {
-            let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
+            let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04 + 50.;
             self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value);
+            self
+        }
+
+        fn command_cabin_knob_in_purs_sel(mut self) -> Self {
+            self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", -50.);
+            self
+        }
+
+        fn command_purs_sel_temperature(mut self, temperature: ThermodynamicTemperature) -> Self {
+            self.write_by_name(
+                "COND_PURS_SEL_TEMPERATURE",
+                temperature.get::<degree_celsius>(),
+            );
             self
         }
 
@@ -2324,12 +2413,9 @@ mod tests {
             self
         }
 
-        fn command_number_of_passengers(mut self, number_of_passengers: usize) -> Self {
-            self.command(|a| {
-                a.a380_cabin_air
-                    .a380_cabin
-                    .set_number_of_passengers(number_of_passengers)
-            });
+        fn command_number_of_passengers(mut self, number_of_passengers: u32) -> Self {
+            self.write_by_name("FMS_PAX_NUMBER", number_of_passengers);
+            self.command(|a| a.update_number_of_passengers(number_of_passengers));
             self
         }
 
@@ -2480,6 +2566,30 @@ mod tests {
 
         fn measured_temperature(&mut self) -> ThermodynamicTemperature {
             self.read_by_name("COND_MAIN_DECK_1_TEMP")
+        }
+
+        fn measured_temperature_by_zone(&mut self) -> Vec<ThermodynamicTemperature> {
+            [
+                "CKPT",
+                "MAIN_DECK_1",
+                "MAIN_DECK_2",
+                "MAIN_DECK_3",
+                "MAIN_DECK_4",
+                "MAIN_DECK_5",
+                "MAIN_DECK_6",
+                "MAIN_DECK_7",
+                "MAIN_DECK_8",
+                "UPPER_DECK_1",
+                "UPPER_DECK_2",
+                "UPPER_DECK_3",
+                "UPPER_DECK_4",
+                "UPPER_DECK_5",
+                "UPPER_DECK_6",
+                "UPPER_DECK_7",
+            ]
+            .iter()
+            .map(|zone_id| self.read_by_name(&format!("COND_{}_TEMP", zone_id)))
+            .collect()
         }
 
         fn fwd_cargo_measured_temperature(&mut self) -> ThermodynamicTemperature {
@@ -3668,12 +3778,12 @@ mod tests {
                 test_bed.command_pack_flow_selector_position(2);
                 test_bed = test_bed.iterate(100);
                 let flow_zero_pax = test_bed.pack_flow();
-
-                assert!(test_bed.pack_flow() < initial_flow);
+                // When number of pax is 0, the flow is adjusted for max number of passengers
+                assert!(test_bed.pack_flow() > initial_flow);
 
                 test_bed = test_bed.command_number_of_passengers(400).iterate(100);
                 assert!(test_bed.pack_flow() < initial_flow);
-                assert!(test_bed.pack_flow() > flow_zero_pax);
+                assert!(test_bed.pack_flow() < flow_zero_pax);
             }
 
             #[test]
@@ -4078,6 +4188,52 @@ mod tests {
                     .iterate(1000);
 
                 assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+            }
+
+            #[test]
+            fn system_gets_to_temperature_in_all_zones() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        20.,
+                    ))
+                    .iterate(1000);
+
+                for id in 0..A380_ZONE_IDS.len() {
+                    assert!(
+                        (test_bed.measured_temperature_by_zone()[id].get::<degree_celsius>() - 20.)
+                            .abs()
+                            < 1.
+                    );
+                }
+            }
+
+            #[test]
+            fn cabin_temperature_targets_purser() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .command_cabin_knob_in_purs_sel()
+                    .command_purs_sel_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        20.,
+                    ))
+                    .iterate(1000);
+
+                for id in 1..A380_ZONE_IDS.len() {
+                    assert!(
+                        (test_bed.measured_temperature_by_zone()[id].get::<degree_celsius>() - 20.)
+                            .abs()
+                            < 1.
+                    );
+                }
+                assert!(
+                    (test_bed.measured_temperature_by_zone()[0].get::<degree_celsius>() - 24.)
+                        .abs()
+                        < 1.
+                );
             }
 
             #[test]

@@ -13,7 +13,7 @@ import {
     WeatherMessage,
     AtisMessage,
     AtisType,
-} from '@datalink/common';
+} from '../../../common/src';
 
 /**
  * Defines the NXApi connector for the AOC system

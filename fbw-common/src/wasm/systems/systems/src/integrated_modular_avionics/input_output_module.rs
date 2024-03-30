@@ -1,3 +1,8 @@
+use super::{
+    avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
+    AvionicsDataCommunicationNetworkEndpoint, AvionicsDataCommunicationNetworkMessageData,
+    AvionicsDataCommunicationNetworkMessageIdentifier,
+};
 use crate::{
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -5,6 +10,7 @@ use crate::{
         Write,
     },
 };
+use std::{cell::RefCell, rc::Rc};
 
 pub struct InputOutputModule {
     power_supply: ElectricalBusType,
@@ -12,21 +18,50 @@ pub struct InputOutputModule {
     available_id: VariableIdentifier,
     failure_indication_id: VariableIdentifier,
     failure_indication: bool,
+    connected_switches: Vec<Rc<RefCell<AvionicsFullDuplexSwitch>>>,
 }
 
 impl InputOutputModule {
-    pub fn new(context: &mut InitContext, name: &str, power_supply: ElectricalBusType) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        name: &str,
+        power_supply: ElectricalBusType,
+        connected_switches: Vec<Rc<RefCell<AvionicsFullDuplexSwitch>>>,
+    ) -> Self {
         Self {
             power_supply,
             is_powered: false,
             available_id: context.get_identifier(format!("IOM_{}_AVAIL", name)),
             failure_indication_id: context.get_identifier(format!("IOM_{}_FAILURE", name)),
             failure_indication: false,
+            connected_switches,
         }
     }
 
     pub fn is_available(&self) -> bool {
         self.is_powered & !self.failure_indication
+    }
+}
+
+impl AvionicsDataCommunicationNetworkEndpoint for InputOutputModule {
+    fn recv_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+    ) -> Option<AvionicsDataCommunicationNetworkMessageData> {
+        // TODO: check if there is a newer message on the other networks
+        self.connected_switches
+            .iter()
+            .find_map(|switch| switch.borrow().recv_value(id))
+    }
+
+    fn send_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+        value: AvionicsDataCommunicationNetworkMessageData,
+    ) {
+        for switch in &self.connected_switches {
+            switch.borrow_mut().send_value(id, value.clone());
+        }
     }
 }
 

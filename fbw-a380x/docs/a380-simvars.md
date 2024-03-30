@@ -7,23 +7,25 @@
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
-  - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
-  - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
+  - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
+  - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
+  - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
+  - [Autobrakes](#autobrakes)
 
 ## Uncategorized
 
 - A380X_OVHD_ANN_LT_POSITION
     - Enum
     - Represents the state of the ANN LT switch
-    - State    | Value
-      -------- | ----
-      TEST     | 0
-      BRT      | 1
-      DIM      | 2
+    - | State | Value |
+      |-------|-------|
+      | TEST  | 0     |
+      | BRT   | 1     |
+      | DIM   | 2     |
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -79,9 +81,34 @@
         - ELEC_IDG_3
         - ELEC_IDG_4
 
+- A32NX_OVHD_{name}_PB_IS_DISC
+    - Bool
+    - True when the idg is disconnected
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+        - ELEC_IDG_3
+        - ELEC_IDG_4
+
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
+
+- A380X_OVHD_ELEC_BAT_SELECTOR_KNOB
+    - Number
+    - The position of the battery display knob from left to right
+    - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
+    - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
+        - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
+
+- A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
+    - Degrees
+    - Angular position of left nose wheel (in wheel axis not steering)
+
+- A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
+    - Degrees
+    - Angular position of right nose wheel (in wheel axis not steering)
+
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
@@ -113,6 +140,10 @@
     - Temperature of trim air coming out of the ducts in the cabin and cockpit
     - {id}
         - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_COND_PURS_SEL_TEMPERATURE
+    - Degree Celsius
+    - Temperature selected by the crew using the FAP (Flight Attendant Panel). For us, this is selected in the EFB.
 
 - A32NX_COND_PACK_{id}_IS_OPERATING
     - Bool
@@ -471,7 +502,7 @@
         - 3
         - 4
 
-## Indicating/Recording ATA 31
+## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
   - Bool
@@ -525,29 +556,29 @@
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
 
-## ECAM Control Panel ATA 34
+## ECAM Control Panel ATA 31
 
 - A380X_ECAM_CP_SELECTED_PAGE
     - Enum
     - Currently requested page on the ECAM CP
-    - State    | Value
-      -------- | ----
-      ENG      | 0
-      BLEED    | 1
-      PRESS    | 2
-      EL/AC    | 3
-      FUEL     | 4
-      HYD      | 5
-      C/B      | 6
-      APU      | 7
-      COND     | 8
-      DOOR     | 9
-      EL/DC    | 10
-      WHEEL    | 11
-      F/CTL    | 12
-      VIDEO    | 13
+    - | State | Value |
+      |-------|-------|
+      | ENG   | 0     |
+      | BLEED | 1     |
+      | PRESS | 2     |
+      | EL/AC | 3     |
+      | FUEL  | 4     |
+      | HYD   | 5     |
+      | C/B   | 6     |
+      | APU   | 7     |
+      | COND  | 8     |
+      | DOOR  | 9     |
+      | EL/DC | 10    |
+      | WHEEL | 11    |
+      | F/CTL | 12    |
+      | VIDEO | 13    |
 
-## EFIS Control Panel ATA 34
+## EFIS Control Panel ATA 31
 
 - A380X_EFIS_{side}_LS_BUTTON_IS_ON
     - Boolean
@@ -568,20 +599,20 @@
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WPT      | 0
-      VORD     | 1
-      NDB      | 2
+    - | State | Value |
+      |-------|-------|
+      | WPT   | 0     |
+      | VORD  | 1     |
+      | NDB   | 2     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WX       | 0
-      TERR     | 1
+    - | State | Value |
+      |-------|-------|
+      | WX    | 0     |
+      | TERR  | 1     |
 
 - A380X_EFIS_{side}_ARPT_BUTTON_IS_ON
     - Boolean
@@ -591,6 +622,11 @@
 - A380X_EFIS_{side}_TRAF_BUTTON_IS_ON
     - Boolean
     - Whether the TRAF button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_BARO_PRESELECTED
+    - Number (hPa or inHg)
+    - Pre-selected QNH when in STD mode
     - {side} = L or R
 
 ## Bleed Air ATA 36
@@ -629,6 +665,16 @@
   - Bool
   - Indicates if a specific IOM system is available
 
+## Auxiliary Power Unit ATA 49
+
+- A32NX_APU_N2
+  - `Arinc429Word<Percent>`
+  - The APU's N2 rotations per minute in percentage of the maximum RPM
+
+- A32NX_APU_FUEL_USED
+  - `Arinc429Word<Mass>`
+  - The APU fuel used, in kilograms
+
 ## Hydraulics
 
 - A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_IS_AUTO
@@ -651,3 +697,38 @@
 - A380X_SOUND_COCKPIT_WINDOW_RATIO
     - Number
     - Ratio between 0-1 of the cockpit windows being physically open
+
+## Autobrakes
+
+- A32NX_AUTOBRAKES_SELECTED_MODE
+    - Number
+    - Indicates position of the autobrake selection knob
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Indicates actual armed mode of autobrake system
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+        | RTO    | 6      |
+
+- A32NX_AUTOBRAKES_DISARM_KNOB_REQ
+    - Boolean
+    - True when autobrake knob solenoid resets knob position to DISARM
+
+- A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
+    - Boolean
+    - RTO autobrake button is pressed

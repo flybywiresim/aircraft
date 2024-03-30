@@ -50,6 +50,8 @@ if (!filePrefixArg) {
     process.exit(1);
 }
 
+object.version = filePrefixArg + '-' + object.version;
+
 const write = (file) => writeFileSync(file, JSON.stringify(object, null, 4));
 
 write(`${filePrefixArg}_build_info.json`);

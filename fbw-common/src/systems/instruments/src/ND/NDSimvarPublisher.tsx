@@ -10,6 +10,7 @@ export type NDSimvars = GenericAdirsEvents & GenericSwitchingPanelEvents & {
     selectedWaypointLat: Degrees;
     selectedWaypointLong: Degrees;
     selectedHeading: Degrees;
+    showSelectedHeading: boolean;
     pposLat: Degrees;
     pposLong: Degrees;
     absoluteTime: Seconds;

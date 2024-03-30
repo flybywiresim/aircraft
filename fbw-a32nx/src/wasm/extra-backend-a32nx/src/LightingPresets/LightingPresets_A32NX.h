@@ -12,10 +12,10 @@ class MsfsHandler;
 // Struct to hold all relevant light levels for the A32NX
 struct LightingValues_A32NX {
   // EFB
-  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
+  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS 0..100
   // OVHD
   FLOAT64 cabinLightLevel;         // 7 (0, 50, 100)
-  FLOAT64 ovhdIntegralLightLevel;  // 86
+  FLOAT64 ovhdIntegralLightLevel;  // 86 (0..100)
   // Glareshield
   FLOAT64 glareshieldIntegralLightLevel;  // 84
   FLOAT64 glareshieldLcdLightLevel;       // 87
@@ -31,10 +31,10 @@ struct LightingValues_A32NX {
   FLOAT64 wxTerrainBrtFoLevel;   // 95
   FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
   // ISIS display has automatic brightness adjustment.
-  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
-  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
-  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
-  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
+  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0..100
+  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0..100
+  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.5..8.0
+  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.5..8.0
   // Pedestal
   FLOAT64 ecamUpperLightLevel;         // 92
   FLOAT64 ecamLowerLightLevel;         // 93
@@ -104,7 +104,11 @@ class LightingPresets_A32NX : public LightingPresets {
    */
   explicit LightingPresets_A32NX(MsfsHandler& msfsHandler) : LightingPresets(msfsHandler) {}
 
-  bool initialize() override;
+  /**
+   * Initializes the aircraft specific variables.
+   * @return true if successful, false otherwise.
+   */
+  bool initialize_aircraft() override;
 
   /**
    * Produces a string with the current settings and their values.
@@ -115,7 +119,7 @@ class LightingPresets_A32NX : public LightingPresets {
  private:
   void readFromAircraft() override;
   void applyToAircraft() override;
-  bool calculateIntermediateValues() override;
+  bool calculateIntermediateValues(FLOAT64 stepSize) override;
   void loadFromIni(const mINI::INIStructure& ini, const std::string& iniSectionName) override;
   void saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const override;
 
