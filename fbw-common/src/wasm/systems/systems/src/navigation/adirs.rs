@@ -3123,6 +3123,8 @@ mod tests {
     mod adr {
         use ntest::{assert_false, assert_true};
 
+        use crate::shared::InternationalStandardAtmosphere;
+
         use super::*;
 
         #[rstest]
@@ -3339,7 +3341,7 @@ mod tests {
         #[case(3)]
         fn max_airspeed_is_provided_at_sea_level(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
             test_bed.run();
 
             assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() > 330.);
@@ -3353,8 +3355,9 @@ mod tests {
             use ntest::assert_true;
 
             let mut test_bed = all_adirus_aligned_test_bed();
-            // FL390
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.773));
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
+                Length::new::<foot>(39_000.),
+            ));
             test_bed.run();
 
             assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() < 300.);
@@ -3364,12 +3367,12 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn overspeed_warning_is_inactive_at_low_speed_at_sea_level(#[case] adiru_number: usize) {
+        fn overspeed_warning_is_inactive_at_normal_speed_at_sea_level(#[case] adiru_number: usize) {
             // check a value that's below VMO, but above MMO at higher altitudes
             let velocity = Velocity::new::<knot>(330.);
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_indicated_airspeed(velocity);
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
             test_bed.run();
 
             let discrete_word_flags =
@@ -3383,13 +3386,15 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn overspeed_warning_is_inactive_at_low_speed_at_high_level(#[case] adiru_number: usize) {
-            // 235 knots CAS is about mach 0.7 at FL350 in ISA conditions
-            let velocity = Velocity::new::<knot>(235.);
+        fn overspeed_warning_is_inactive_at_normal_speed_at_high_level(
+            #[case] adiru_number: usize,
+        ) {
+            let fl390_pressure =
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
+            let velocity = MachNumber(0.78).to_cas(fl390_pressure);
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_indicated_airspeed(velocity);
-            // FL390
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.773));
+            test_bed.set_ambient_pressure(fl390_pressure);
             test_bed.run();
 
             let discrete_word_flags =
@@ -3407,7 +3412,7 @@ mod tests {
             let velocity = Velocity::new::<knot>(400.);
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_indicated_airspeed(velocity);
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
             test_bed.run();
 
             let discrete_word_flags =
@@ -3422,12 +3427,13 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn overspeed_warning_is_active_above_mmo(#[case] adiru_number: usize) {
-            // 310 knots CAS is about mach 0.9 at FL350 in ISA conditions, which is above MMO, but below VMO
-            let velocity = Velocity::new::<knot>(310.);
+            let fl390_pressure =
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
+            // This speed will be above MMO, but below VMO, so we ensure MMO gets tested.
+            let velocity = MachNumber(0.9).to_cas(fl390_pressure);
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_indicated_airspeed(velocity);
-            // FL390
-            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.773));
+            test_bed.set_ambient_pressure(fl390_pressure);
             test_bed.run();
 
             let discrete_word_flags =
