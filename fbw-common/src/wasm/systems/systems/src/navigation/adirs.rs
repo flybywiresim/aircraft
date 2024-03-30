@@ -869,7 +869,7 @@ impl AirDataReference {
     const STATIC_AIR_TEMPERATURE: &'static str = "STATIC_AIR_TEMPERATURE";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "ANGLE_OF_ATTACK";
-    const DISCRETE_WORD_1: &'static str = "DISCETE_WORD_1";
+    const DISCRETE_WORD_1: &'static str = "DISCRETE_WORD_1";
 
     const MINIMUM_TAS: f64 = 60.;
     const MINIMUM_CAS: f64 = 30.;
