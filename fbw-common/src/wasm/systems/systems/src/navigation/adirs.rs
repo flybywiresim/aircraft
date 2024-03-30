@@ -3029,6 +3029,8 @@ mod tests {
     }
 
     mod adr {
+        use ntest::{assert_false, assert_true};
+
         use super::*;
 
         #[rstest]
@@ -3239,6 +3241,32 @@ mod tests {
             );
         }
 
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn max_airspeed_is_provided_at_sea_level(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
+            test_bed.run();
+
+            assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() > 330.);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn max_airspeed_is_limited_by_mmo(#[case] adiru_number: usize) {
+            use ntest::assert_true;
+
+            let mut test_bed = all_adirus_aligned_test_bed();
+            // FL390
+            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.773));
+            test_bed.run();
+
+            assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() < 300.);
+        }
         #[rstest]
         #[case(1)]
         #[case(2)]
