@@ -792,25 +792,25 @@ trait TrueAirspeedSource {
 bitflags! {
     #[derive(Default)]
     struct AdrDiscrete1Flags: u32 {
-        const ICING_DETECTOR_HEAT = 0b0000000000000000001;
-        const PITOT_HEAT = 0b0000000000000000010;
-        const ADR_STATUS_FAIL = 0b0000000000000000100;
-        const RIGHT_STATIC_HEAT = 0b0000000000000001000;
-        const LEFT_STATIC_HEAT = 0b0000000000000010000;
-        const TAT_HEAT = 0b0000000000000100000;
-        const AOA_1_SENSOR_HEAT = 0b0000000000001000000;
-        const AOA_2_SENSOR_HEAT = 0b0000000000010000000;
-        const OVERSPEED_WARNING = 0b0000000000100000000;
+        const ICING_DETECTOR_HEAT = 1;
+        const PITOT_HEAT = 1 << 1;
+        const ADR_STATUS_FAIL = 1 << 2;
+        const RIGHT_STATIC_HEAT = 1 << 3;
+        const LEFT_STATIC_HEAT = 1 << 4;
+        const TAT_HEAT = 1 << 5;
+        const AOA_1_SENSOR_HEAT = 1 << 6;
+        const AOA_2_SENSOR_HEAT = 1 << 7;
+        const OVERSPEED_WARNING = 1 << 8;
         // spare bit
-        const AOA_AVERAGE_UNIQUE = 0b0000000010000000000;
-        const VMO_MMO_1 = 0b0000000100000000000;
-        const VMO_MMO_2 = 0b0000001000000000000;
-        const VMO_MMO_3 = 0b0000010000000000000;
-        const VMO_MMO_4 = 0b0000100000000000000;
-        const ALTERNATE_SSEC_A = 0b0001000000000000000;
-        const ALTERNATE_SSEC_B = 0b0010000000000000000;
-        const BARO_PORT_A = 0b0100000000000000000;
-        const ZERO_MACH_SSEC = 0b1000000000000000000;
+        const AOA_AVERAGE_UNIQUE = 1 << 10;
+        const VMO_MMO_1 = 1 << 11;
+        const VMO_MMO_2 = 1 << 12;
+        const VMO_MMO_3 = 1 << 13;
+        const VMO_MMO_4 = 1 << 14;
+        const ALTERNATE_SSEC_A = 1 << 15;
+        const ALTERNATE_SSEC_B = 1 << 16;
+        const BARO_PORT_A = 1 << 17;
+        const ZERO_MACH_SSEC = 1 << 18;
     }
 }
 
@@ -1060,7 +1060,7 @@ impl AirDataReference {
     }
 
     fn update_discrete_word_1(&mut self) {
-        let mut discrete_word: AdrDiscrete1Flags = AdrDiscrete1Flags::default();
+        let mut discrete_word = AdrDiscrete1Flags::default();
 
         if self.is_on {
             // FIXME implement icing detector heat
