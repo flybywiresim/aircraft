@@ -4,9 +4,8 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { ScrollableContainer } from '@flybywiresim/flypad';
-import { getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistDefinition, getAircraftChecklists } from '@flybywiresim/checklists';
 import { useAppSelector } from '../Store/store';
-import { ChecklistDefinition } from './Checklists';
 import { ChecklistItemComponent } from './ChecklistItemComponent';
 import { CompletionButton } from './CompletionButton';
 

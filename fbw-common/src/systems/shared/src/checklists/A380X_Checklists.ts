@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChecklistDefinition, ChecklistItemType } from '../../../../instruments/src/EFB/Checklists/Checklists';
+import { ChecklistDefinition, ChecklistItemType } from '@flybywiresim/checklists';
 import {
     checkA380XBatOff,
     checkA380XEnginesOff,
@@ -24,7 +24,7 @@ import {
     checkSignsOff,
     checkSignsOn,
     checkSpoilerArmed,
-} from '../../../../instruments/src/EFB/Checklists/CheckItemStates';
+} from '../../../instruments/src/EFB/Checklists/CheckItemStates';
 
 export const beforeStartChecklistA380X: ChecklistDefinition = {
     name: 'BEFORE START',

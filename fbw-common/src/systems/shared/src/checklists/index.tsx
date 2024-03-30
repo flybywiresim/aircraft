@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,8 +14,7 @@ import {
     parkingChecklistA32NX,
     securingAircraftChecklistA32NX,
     taxiChecklistA32NX,
-} from './Lists_A32NX/A32NX_Checklists';
-import { ChecklistDefinition } from '../../../instruments/src/EFB/Checklists/Checklists';
+} from './A32NX_Checklists';
 import {
     afterLandingChecklistA380X,
     afterStartChecklistA380X,
@@ -25,7 +25,51 @@ import {
     landingChecklistA380X,
     parkingChecklistA380X,
     securingAircraftChecklistA380X,
-} from './Lists_A380X/A380X_Checklists';
+} from './A380X_Checklists';
+
+/**
+ * @brief Checklist item types.
+ *
+ * @item A checklist item - this is considered the default type if no type is given.
+ * @line A line break (above/below the line).
+ * @sublistheader A sublist header.
+ * @sublistitem A sublist item
+ */
+export enum ChecklistItemType {
+    ITEM,
+    LINE,
+    SUBLISTHEADER,
+    SUBLISTITEM
+}
+
+/**
+ * @brief Checklist item definition.
+ *
+ * @type Type of the item @see ChecklistItemType. If not defined, the default type is assumed to be ITEM.
+ * @item The item to be checked.
+ * @action An optional string to grammatically correctly describe the action to perform for the item.
+ *         If not defined, the result string will be used.
+ * @result The result string of the item check.
+ * @condition An optional condition to check if the item is completed. If the condition returns true, the item is considered completed.
+ */
+export interface ChecklistItem {
+    type?: ChecklistItemType;
+    item: string;
+    action?: string;
+    result: string;
+    condition?: () => boolean;
+}
+
+/**
+ * @brief Checklist definition.
+ *
+ * @name Name of the checklist.
+ * @items The items in the checklist.
+ */
+export interface ChecklistDefinition {
+    name: string;
+    items: ChecklistItem[];
+}
 
 export const CHECKLISTS_A32NX: ChecklistDefinition[] = [
     cockpitPreparationChecklistA32NX,

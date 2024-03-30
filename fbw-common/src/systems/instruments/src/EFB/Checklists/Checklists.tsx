@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '../../../../shared/src/checklists';
 import { ChecklistPage } from './ChecklistsPage';
 
 import {
@@ -18,50 +18,6 @@ import {
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
 
 const aircraftChecklists: ChecklistDefinition[] = getAircraftChecklists();
-
-/**
- * @brief Checklist item types.
- *
- * @item A checklist item - this is considered the default type if no type is given.
- * @line A line break (above/below the line).
- * @sublistheader A sublist header.
- * @sublistitem A sublist item
- */
-export enum ChecklistItemType {
-    ITEM,
-    LINE,
-    SUBLISTHEADER,
-    SUBLISTITEM
-}
-
-/**
- * @brief Checklist item definition.
- *
- * @type Type of the item @see ChecklistItemType. If not defined, the default type is assumed to be ITEM.
- * @item The item to be checked.
- * @action An optional string to grammatically correctly describe the action to perform for the item.
- *         If not defined, the result string will be used.
- * @result The result string of the item check.
- * @condition An optional condition to check if the item is completed. If the condition returns true, the item is considered completed.
- */
-export interface ChecklistItem {
-    type?: ChecklistItemType;
-    item: string;
-    action?: string;
-    result: string;
-    condition?: () => boolean;
-}
-
-/**
- * @brief Checklist definition.
- *
- * @name Name of the checklist.
- * @items The items in the checklist.
- */
-export interface ChecklistDefinition {
-    name: string;
-    items: ChecklistItem[];
-}
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.

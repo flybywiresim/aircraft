@@ -4,14 +4,14 @@
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
-import { getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistDefinition, ChecklistItemType } from '@flybywiresim/checklists';
+import { getAircraftChecklists } from '../../../../shared/src/checklists';
 import {
     areAllChecklistItemsCompleted,
     setChecklistCompletion,
     setChecklistItemCompletion,
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
-import { ChecklistDefinition, ChecklistItemType } from './Checklists';
 
 const aircraftChecklists:ChecklistDefinition[] = getAircraftChecklists();
 

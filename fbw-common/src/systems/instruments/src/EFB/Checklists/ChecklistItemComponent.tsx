@@ -6,7 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { CheckLg, Link45deg } from 'react-bootstrap-icons';
-import { ChecklistItem, ChecklistItemType, getRelevantChecklistIndices } from './Checklists';
+import { ChecklistItem, ChecklistItemType } from '@flybywiresim/checklists';
+import { getRelevantChecklistIndices } from './Checklists';
 import { setChecklistCompletion, setChecklistItemCompletion } from '../Store/features/checklists';
 
 interface ChecklistItemComponentProps {
