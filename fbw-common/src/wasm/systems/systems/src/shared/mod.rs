@@ -841,7 +841,7 @@ impl MachNumber {
         Velocity::new::<knot>(
             1479.1
                 * ((MachNumber::delta(air_pressure)
-                    * ((0.2 * f64::from(self.0).powi(2) + 1.).powf(3.5) - 1.)
+                    * ((0.2 * self.0.powi(2) + 1.).powf(3.5) - 1.)
                     + 1.)
                     .powf(1. / 3.5)
                     - 1.)
@@ -851,12 +851,12 @@ impl MachNumber {
 
     /// Convert the mach number to an equivalent airspeed for a given atmospheric pressure.
     pub fn to_eas(self, air_pressure: Pressure) -> Velocity {
-        Velocity::new::<knot>(661.4786 * f64::from(self.0) * MachNumber::delta(air_pressure).sqrt())
+        Velocity::new::<knot>(661.4786 * self.0 * MachNumber::delta(air_pressure).sqrt())
     }
 
     /// Convert the mach number to a true airspeed for a given temperature.
     pub fn to_tas(self, temperature: ThermodynamicTemperature) -> Velocity {
-        Velocity::new::<knot>(661.4786 * f64::from(self.0) * MachNumber::theta(temperature).sqrt())
+        Velocity::new::<knot>(661.4786 * self.0 * MachNumber::theta(temperature).sqrt())
     }
 
     /// Convert a calibrated airspeed in a given atmosphere to a mach number
