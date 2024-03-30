@@ -1220,6 +1220,7 @@ export class PseudoFWC {
         this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
         const activeCpc = this.cpc1DiscreteWord.bitValueOr(11, false) ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
+        const activeCpcNumber = activeCpc === this.cpc1DiscreteWord ? 1 : 2;
 
         this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
         this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
@@ -1245,7 +1246,7 @@ export class PseudoFWC {
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
         const manOutflowValueOpenPercentage = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent');
-        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE').valueOr(manOutflowValueOpenPercentage));
+        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_OUTFLOW_VALVE_OPEN_PERCENTAGE`).valueOr(manOutflowValueOpenPercentage));
         this.outflowValveNotOpenOutput.set(
             this.outflowValveNotOpenSetReset.write(this.outflowValveNotOpen.write((this.outflowValveOpenAmount.get() < 85) && [8, 9, 10].includes(this.fwcFlightPhase.get()), deltaTime),
                 this.outflowValveOpenAmount.get() > 95 || this.outflowValveResetCondition.write(this.fwcFlightPhase.get() === 1, deltaTime)),
@@ -1257,7 +1258,7 @@ export class PseudoFWC {
             || (this.safetyValveNotClosedAir.read() && this.fwcFlightPhase.get() === 6));
 
         const manCabinDeltaPressure = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'percent');
-        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue('L:A32NX_PRESS_CABIN_DELTA_PRESSURE').valueOr(manCabinDeltaPressure));
+        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`).valueOr(manCabinDeltaPressure));
 
         /* OTHER STUFF */
 

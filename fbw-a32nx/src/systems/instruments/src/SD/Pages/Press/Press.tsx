@@ -17,6 +17,8 @@ export const PressPage: FC = () => {
     const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
     const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
+    const activeCpcNumber = cpc1DiscreteWord.getBitValueOr(11, false) ? 1 : 2;
+
     const cpc1SysFault = cpc1DiscreteWord.isFailureWarning();
     const cpc2SysFault = cpc2DiscreteWord.isFailureWarning();
 
@@ -24,11 +26,11 @@ export const PressPage: FC = () => {
     const cpc1SysVisible = (autoMode && cpc1DiscreteWord.getBitValueOr(11, false)) || cpc1SysFault;
     const cpc2SysVisible = (autoMode && cpc2DiscreteWord.getBitValueOr(11, false)) || cpc2SysFault;
 
-    const arincCabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
+    const arincCabinAlt = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_ALTITUDE`, 500);
     const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
     const cabinAlt = arincCabinAlt.isNormalOperation() ? arincCabinAlt.value : manCabinAlt;
 
-    const arincDeltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 500);
+    const arincDeltaPsi = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`, 500);
     const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'psi', 500);
     const deltaPsi = arincDeltaPsi.isNormalOperation() ? arincDeltaPsi.value : manDeltaPsi;
 
@@ -121,7 +123,7 @@ export const PressPage: FC = () => {
             </g>
 
             {/* Vertical speed gauge  */}
-            <CabinVerticalSpeedComponent vsx={275} y={y} radius={radius} />
+            <CabinVerticalSpeedComponent vsx={275} y={y} radius={radius} activeCpc={activeCpcNumber} />
 
             {/* Cabin altitude gauge */}
             <g id="CaIndicator">
@@ -244,7 +246,7 @@ export const PressPage: FC = () => {
 
             {/* Outflow valve */}
             <g id="OutflowValve">
-                <OutflowValveComponent flightPhase={flightPhase} />
+                <OutflowValveComponent flightPhase={flightPhase} activeCpc={activeCpcNumber} />
                 <circle className="WhiteCircle" cx={448} cy={425} r={3} />
             </g>
 
@@ -260,11 +262,12 @@ export const PressPage: FC = () => {
 type CabinVerticalSpeedComponentType = {
     vsx: number,
     y: number,
-    radius: number
+    radius: number,
+    activeCpc: number,
 }
 
-const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius }) => {
-    const arincCabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
+const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius, activeCpc }) => {
+    const arincCabinVs = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpc}_CABIN_VS`, 500);
     const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
     const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 
@@ -307,7 +310,8 @@ const PressureComponent = () => {
     const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
     const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
 
-    const cpcLandingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 500);
+    const activeCpcNumber = cpcDiscreteWordToUse === cpc1DiscreteWord ? 1 : 2;
+    const cpcLandingElevation = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_LANDING_ELEVATION`, 500);
     const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
 
     let landingElevation;
@@ -396,14 +400,15 @@ const PackComponent: FC<PackComponentType> = ({ id, x, y }) => {
 
 type OutflowValveComponentType = {
     flightPhase : number,
+    activeCpc: number,
 }
 
-const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase }) => {
+const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase, activeCpc }) => {
     const ofx = 448;
     const ofy = 425;
     const ofradius = 72;
 
-    const arincOutflowValueOpenPercentage = useArinc429Var('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 500);
+    const arincOutflowValueOpenPercentage = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpc}_OUTFLOW_VALVE_OPEN_PERCENTAGE`, 500);
     const [manOutflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
     const outflowValueOpenPercentage = arincOutflowValueOpenPercentage.isNormalOperation() ? arincOutflowValueOpenPercentage.value : manOutflowValueOpenPercentage;
 

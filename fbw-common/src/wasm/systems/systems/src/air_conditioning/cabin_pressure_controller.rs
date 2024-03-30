@@ -18,7 +18,7 @@ use super::{
     PressurizationOverheadShared,
 };
 
-use std::{marker::PhantomData, time::Duration};
+use std::{fmt::Display, marker::PhantomData, time::Duration};
 use uom::si::{
     f64::*,
     length::{foot, meter},
@@ -31,6 +31,15 @@ use uom::si::{
 pub enum CpcId {
     Cpc1,
     Cpc2,
+}
+
+impl Display for CpcId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Cpc1 => write!(f, "1"),
+            Self::Cpc2 => write!(f, "2"),
+        }
+    }
 }
 
 pub struct CabinPressureController<C: PressurizationConstants> {
@@ -91,15 +100,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
     pub fn new(context: &mut InitContext, id: CpcId) -> Self {
         Self {
-            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
-            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_altitude_id: context.get_identifier(format!("PRESS_CPC_{}_CABIN_ALTITUDE", id)),
+            cabin_vs_id: context.get_identifier(format!("PRESS_CPC_{}_CABIN_VS", id)),
             cabin_delta_pressure_id: context
-                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+                .get_identifier(format!("PRESS_CPC_{}_CABIN_DELTA_PRESSURE", id)),
             outflow_valve_open_percentage_id: context
-                .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+                .get_identifier(format!("PRESS_CPC_{}_OUTFLOW_VALVE_OPEN_PERCENTAGE", id)),
+            landing_elevation_id: context
+                .get_identifier(format!("PRESS_CPC_{}_LANDING_ELEVATION", id)),
             safety_valve_open_percentage_id: context
                 .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
-            landing_elevation_id: context.get_identifier("PRESS_LANDING_ELEVATION".to_owned()),
 
             auto_landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
@@ -672,31 +682,29 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
             SignStatus::NormalOperation
         };
 
-        if self.is_active {
-            // Safety valve open percentage is not sent by the CPC in real life
-            writer.write(
-                &self.safety_valve_open_percentage_id,
-                self.safety_valve_open_amount,
-            );
+        // Safety valve open percentage is not sent by the CPC in real life
+        writer.write(
+            &self.safety_valve_open_percentage_id,
+            self.safety_valve_open_amount,
+        );
 
-            writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
-            writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
-            writer.write_arinc429(
-                &self.outflow_valve_open_percentage_id,
-                self.outflow_valve_open_amount_out(),
-                ssm,
-            );
-            writer.write_arinc429(
-                &self.cabin_vs_id,
-                self.cabin_vertical_speed_out().get::<foot_per_minute>(),
-                ssm,
-            );
-            writer.write_arinc429(
-                &self.landing_elevation_id,
-                self.landing_elevation_out(),
-                ssm,
-            );
-        }
+        writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
+        writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
+        writer.write_arinc429(
+            &self.outflow_valve_open_percentage_id,
+            self.outflow_valve_open_amount_out(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.cabin_vs_id,
+            self.cabin_vertical_speed_out().get::<foot_per_minute>(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.landing_elevation_id,
+            self.landing_elevation_out(),
+            ssm,
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {

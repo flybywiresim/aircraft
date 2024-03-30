@@ -124,8 +124,10 @@ export const PressureComponent = () => {
 
     const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
 
+    const activeCpcNumber = cpcDiscreteWordToUse === cpc1DiscreteWord ? 1 : 2;
+
     const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
-    const cpcLandingElevation = useArinc429Var('L:A32NX_PRESS_LANDING_ELEVATION', 500);
+    const cpcLandingElevation = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_LANDING_ELEVATION`, 500);
     const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
 
     let landingElevation;
@@ -142,15 +144,15 @@ export const PressureComponent = () => {
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
 
-    const arincCabinAlt = useArinc429Var('L:A32NX_PRESS_CABIN_ALTITUDE', 500);
+    const arincCabinAlt = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_ALTITUDE`, 500);
     const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'foot', 500);
     const cabinAlt = arincCabinAlt.isNormalOperation() ? arincCabinAlt.value : manCabinAlt;
 
-    const arincDeltaPsi = useArinc429Var('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 500);
+    const arincDeltaPsi = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`, 500);
     const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'psi', 500);
     const deltaPsi = arincDeltaPsi.isNormalOperation() ? arincDeltaPsi.value : manDeltaPsi;
 
-    const arincCabinVs = useArinc429Var('L:A32NX_PRESS_CABIN_VS', 500);
+    const arincCabinVs = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_VS`, 500);
     const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
     const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 

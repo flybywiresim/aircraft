@@ -2790,16 +2790,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Analog signal sent by the manual partition of CPC1. True when FWC condition for "EXCESS CAB ALT" is met.
 
-- A32NX_PRESS_CABIN_ALTITUDE
+- A32NX_PRESS_CPC_{number}_CABIN_ALTITUDE
     - Arinc429Word<Feet>
+    - Number 1 or 2
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
 
 - A32NX_PRESS_MAN_CABIN_ALTITUDE
     - Feet
     - As above, but analog system transmitted by the manual partition of CPC1
 
-- A32NX_PRESS_CABIN_DELTA_PRESSURE
+- A32NX_PRESS_CPC_{number}_CABIN_DELTA_PRESSURE
     - Arinc429Word<PSI>
+    - Number 1 or 2
     - The difference in pressure between the cabin interior and the exterior air.
       Positive when cabin pressure is higher than external pressure.
 
@@ -2807,20 +2809,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - PSI
     - As above, but analog system transmitted by the manual partition of CPC1
 
-- A32NX_PRESS_CABIN_VS
+- A32NX_PRESS_CPC_{number}_CABIN_VS
     - Arinc429Word<FPM>
+    - Number 1 or 2
     - Rate of pressurization or depressurization of the cabin expressed as altitude change
 
 - A32NX_PRESS_MAN_CABIN_VS
     - FPM
     - As above, but analog system transmitted by the manual partition of CPC1
 
-- A32NX_PRESS_ACTIVE_CPC_SYS
-    - Number [0, 1, 2]
-    - Indicates which cabin pressure controller is active. 0 indicates neither is active.
-
-- A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE
+- A32NX_PRESS_CPC_{number}_OUTFLOW_VALVE_OPEN_PERCENTAGE
     - Arinc429Word<Percent>
+    - Number 1 or 2
     - Percent open of the cabin pressure outflow valve
 
 - A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE
@@ -2831,8 +2831,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Percent open of the cabin pressure safety valves
 
-- A32NX_PRESS_LANDING_ELEVATION
+- A32NX_PRESS_CPC_{number}_LANDING_ELEVATION
     - Arinc429Word<Feet>
+    - Number 1 or 2
     - Target landing elevation used by the pressurization system
 
 - A32NX_PRESS_EXCESS_CAB_ALT
