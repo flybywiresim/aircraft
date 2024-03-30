@@ -766,7 +766,8 @@ impl InternationalStandardAtmosphere {
     const GROUND_PRESSURE_PASCAL: f64 = 101325.;
     const GROUND_TEMPERATURE_KELVIN: f64 = 288.15;
 
-    fn ground_pressure() -> Pressure {
+    /// The sea level pressure on a standard day
+    pub fn ground_pressure() -> Pressure {
         Pressure::new::<pascal>(Self::GROUND_PRESSURE_PASCAL)
     }
 
@@ -791,6 +792,11 @@ impl InternationalStandardAtmosphere {
                 ))
                 - Self::GROUND_TEMPERATURE_KELVIN,
         ) / (-Self::TEMPERATURE_LAPSE_RATE)
+    }
+
+    /// The sea level temperature on a standard day
+    pub fn ground_temperature() -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(Self::GROUND_TEMPERATURE_KELVIN)
     }
 
     pub fn temperature_at_altitude(altitude: Length) -> ThermodynamicTemperature {
