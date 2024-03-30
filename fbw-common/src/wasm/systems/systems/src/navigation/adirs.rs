@@ -810,7 +810,7 @@ struct AirDataReference {
     baro_corrected_altitude_1: AdirsData<Length>,
     /// baro corrected altitude for the fo's side
     baro_corrected_altitude_2: AdirsData<Length>,
-    /// label 206, computed airpseed in knots, NCD below 30 knots.
+    /// label 206, computed airspeed in knots, NCD below 30 knots.
     computed_airspeed: AdirsData<Velocity>,
     /// label 207, max allowable airspeed in knots (considering both VMO and MMO).
     max_airspeed: AdirsData<Velocity>,
