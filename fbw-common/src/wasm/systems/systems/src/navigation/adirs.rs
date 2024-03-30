@@ -1055,16 +1055,11 @@ impl AirDataReference {
     }
 
     fn calculate_max_airspeed(&self, context: &UpdateContext) -> Velocity {
-        let delta = context.ambient_pressure().get::<hectopascal>() / 1013.25;
-        // standard formula to convert mach number to CAS
-        let mmo_cas = Velocity::new::<knot>(
-            1479.1
-                * ((delta * ((0.2 * f64::from(self.mmo).powi(2) + 1.).powf(3.5) - 1.) + 1.)
-                    .powf(1. / 3.5)
-                    - 1.)
-                    .sqrt(),
-        );
-        self.vmo.min(mmo_cas)
+        if self.is_valid() {
+            self.vmo.min(self.mmo.to_cas(context.ambient_pressure()))
+        } else {
+            self.vmo
+        }
     }
 }
 impl TrueAirspeedSource for AirDataReference {
