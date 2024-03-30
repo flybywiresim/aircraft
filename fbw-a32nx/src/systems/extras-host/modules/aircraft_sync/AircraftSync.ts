@@ -7,17 +7,23 @@ import { EventBus } from '@microsoft/msfs-sdk';
 /**
  * This class is used to check the airframe of the aircraft and set the LVar
  */
-export class AirframeCheck {
+export class AircraftSync {
+    public xmlConfig: Document
+
     constructor(private readonly bus: EventBus) {
-        console.log('AirframeCheck: Created');
+        console.log('AircraftSync: Created');
     }
 
     public connectedCallback(): void {
         // empty
     }
 
+    public parseXMLConfig(xmlConfig: Document): void {
+        this.xmlConfig = xmlConfig;
+    }
+
     public startPublish(): void {
-        console.log('AirframeCheck: startPublish()');
+        console.log('AicraftSync: startPublish()');
 
         const airframe = new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
         let aircraftType: AircraftType;

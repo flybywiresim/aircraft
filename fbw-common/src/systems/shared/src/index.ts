@@ -14,7 +14,7 @@ export * from './MathUtils';
 export * from './PathVector';
 export * from './RunwayUtils';
 export * from './UpdateThrottler';
-export * from './aircraftTypeCheck';
+export * from './AircraftTypeCheck';
 export * from './arinc429';
 export * from './array';
 export * from './ata';
