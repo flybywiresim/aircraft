@@ -17,8 +17,10 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
 
     if (overrideSimbriefID) {
         simbriefApiParams.append('userid', overrideSimbriefID);
-    } else {
+    } else if (navigraphUsername) {
         simbriefApiParams.append('username', navigraphUsername);
+    } else {
+        throw new Error('No username or id supplied!');
     }
 
     simbriefApiParams.append('json', '1');
@@ -36,13 +38,13 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
 
     simbriefApiUrl.search = simbriefApiParams.toString();
 
-    return fetch(simbriefApiUrl.toString(), getRequestData)
-        .then((res) => {
-            if (!res.ok) {
-                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
-            }
-            return res.json().then((json) => simbriefDataParser(json));
-        });
+    const res = await fetch(simbriefApiUrl.toString(), getRequestData);
+
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json.fetch.status);
+    }
+    return simbriefDataParser(json);
 };
 
 const simbriefDataParser = (simbriefJson: any): ISimbriefData => {

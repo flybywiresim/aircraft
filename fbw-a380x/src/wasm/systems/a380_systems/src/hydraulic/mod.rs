@@ -2,7 +2,6 @@ use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
-    acceleration::meter_per_second_squared,
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
@@ -21,10 +20,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
-        brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
-            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
-        },
+        brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
@@ -51,13 +47,13 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        AdirsMeasurementOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked,
+        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
         LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
     },
 };
@@ -68,6 +64,8 @@ mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
+pub mod autobrakes;
+use autobrakes::A380AutobrakeController;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -1920,11 +1918,11 @@ impl A380Hydraulic {
         context: &UpdateContext,
         engines: [&impl Engine; 4],
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         reservoir_pneumatics: &impl ReservoirAirPressure,
-        adirs: &impl AdirsDiscreteOutputs,
+        adirs: &(impl AdirsDiscreteOutputs + AdirsMeasurementOutputs),
     ) {
         self.core_hydraulic_updater.update(context);
 
@@ -1936,6 +1934,7 @@ impl A380Hydraulic {
             lgcius.lgciu2(),
             engines[0],
             engines[1],
+            adirs,
         );
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -2195,12 +2194,16 @@ impl A380Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        adirs: &impl AdirsMeasurementOutputs,
     ) {
+        self.gear_system_gravity_extension_controller
+            .update(context);
+
         self.aileron_system_controller.update();
 
         self.elevator_system_controller.update();
@@ -2229,6 +2232,9 @@ impl A380Hydraulic {
             autobrake_panel,
             engine1,
             engine2,
+            adirs,
+            self.left_spoilers.ground_spoilers_are_requested()
+                && self.right_spoilers.ground_spoilers_are_requested(),
         );
 
         self.pushback_tug.update(context);
@@ -3136,6 +3142,8 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 }
 
 use std::fmt::Display;
+
+use self::autobrakes::A380AutobrakePanel;
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum A380EngineDrivenPumpId {
     Edp1a,
@@ -3902,8 +3910,10 @@ impl A380HydraulicBrakeSteerComputerUnit {
         }
     }
 
-    fn allow_autobrake_arming(&self) -> bool {
-        self.anti_skid_activated && self.normal_brakes_available
+    fn allow_autobrake_arming(&self, adirs: &impl AdirsMeasurementOutputs) -> bool {
+        self.anti_skid_activated
+            && self.normal_brakes_available
+            && (adirs.is_fully_aligned(1) || adirs.is_fully_aligned(2) || adirs.is_fully_aligned(3))
     }
 
     fn update_normal_braking_availability(&mut self, normal_braking_circuit_pressure: Pressure) {
@@ -3957,9 +3967,11 @@ impl A380HydraulicBrakeSteerComputerUnit {
         alternate_circuit: &BrakeCircuit,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
-        autobrake_panel: &AutobrakePanel,
+        autobrake_panel: &A380AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        adirs: &impl AdirsMeasurementOutputs,
+        placeholder_ground_spoilers_out: bool,
     ) {
         self.update_steering_demands(lgciu1, engine1, engine2);
 
@@ -3969,11 +3981,12 @@ impl A380HydraulicBrakeSteerComputerUnit {
         self.autobrake_controller.update(
             context,
             autobrake_panel,
-            self.allow_autobrake_arming(),
+            self.allow_autobrake_arming(adirs),
             self.left_brake_pilot_input,
             self.right_brake_pilot_input,
             lgciu1,
             lgciu2,
+            placeholder_ground_spoilers_out,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -4265,275 +4278,6 @@ impl SimulationElement for A380BrakingForce {
 
         self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
         self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
-    }
-}
-
-/// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
-/// that we expect for the plane
-pub struct A380AutobrakeController {
-    armed_mode_id: VariableIdentifier,
-    armed_mode_id_set: VariableIdentifier,
-    decel_light_id: VariableIdentifier,
-    active_id: VariableIdentifier,
-    ground_spoilers_out_sec1_id: VariableIdentifier,
-    ground_spoilers_out_sec2_id: VariableIdentifier,
-    ground_spoilers_out_sec3_id: VariableIdentifier,
-    external_disarm_event_id: VariableIdentifier,
-
-    deceleration_governor: AutobrakeDecelerationGovernor,
-
-    target: Acceleration,
-    mode: AutobrakeMode,
-
-    arming_is_allowed_by_bcu: bool,
-    left_brake_pedal_input: Ratio,
-    right_brake_pedal_input: Ratio,
-
-    ground_spoilers_are_deployed: bool,
-    last_ground_spoilers_are_deployed: bool,
-
-    should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
-    should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
-
-    external_disarm_event: bool,
-}
-impl A380AutobrakeController {
-    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
-
-    // Dynamic decel target map versus time for any mode that needs it
-    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 4.5];
-
-    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
-
-    const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
-    const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
-
-    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
-    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
-
-    fn new(context: &mut InitContext) -> A380AutobrakeController {
-        A380AutobrakeController {
-            armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
-            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
-            decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
-            active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
-            ground_spoilers_out_sec1_id: context
-                .get_identifier("SEC_1_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec2_id: context
-                .get_identifier("SEC_2_GROUND_SPOILER_OUT".to_owned()),
-            ground_spoilers_out_sec3_id: context
-                .get_identifier("SEC_3_GROUND_SPOILER_OUT".to_owned()),
-            external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
-
-            deceleration_governor: AutobrakeDecelerationGovernor::new(),
-            target: Acceleration::new::<meter_per_second_squared>(0.),
-            mode: AutobrakeMode::NONE,
-            arming_is_allowed_by_bcu: context.is_in_flight(),
-            left_brake_pedal_input: Ratio::new::<percent>(0.),
-            right_brake_pedal_input: Ratio::new::<percent>(0.),
-            ground_spoilers_are_deployed: false,
-            last_ground_spoilers_are_deployed: false,
-            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
-                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            )
-            .starting_as(context.is_in_flight(), false),
-            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
-                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            )
-            .starting_as(context.is_in_flight()),
-            external_disarm_event: false,
-        }
-    }
-
-    fn spoilers_retracted_during_this_update(&self) -> bool {
-        !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
-    }
-
-    fn brake_output(&self) -> Ratio {
-        Ratio::new::<ratio>(self.deceleration_governor.output())
-    }
-
-    fn determine_mode(
-        &mut self,
-        context: &UpdateContext,
-        autobrake_panel: &AutobrakePanel,
-    ) -> AutobrakeMode {
-        if self.should_disarm(context) {
-            AutobrakeMode::NONE
-        } else {
-            match autobrake_panel.pressed_mode() {
-                Some(mode) if self.mode == mode => AutobrakeMode::NONE,
-                Some(mode)
-                    if mode != AutobrakeMode::MAX
-                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
-                {
-                    mode
-                }
-                Some(_) | None => self.mode,
-            }
-        }
-    }
-
-    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm(context)
-    }
-
-    fn is_armed(&self) -> bool {
-        self.mode != AutobrakeMode::NONE
-    }
-
-    fn is_decelerating(&self) -> bool {
-        match self.mode {
-            AutobrakeMode::NONE => false,
-            AutobrakeMode::LOW | AutobrakeMode::MED => {
-                self.deceleration_demanded()
-                    && self
-                        .deceleration_governor
-                        .is_on_target(Ratio::new::<percent>(
-                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
-                        ))
-            }
-            _ => {
-                self.deceleration_demanded()
-                    && self.deceleration_governor.decelerating_at_or_above_rate(
-                        Acceleration::new::<meter_per_second_squared>(
-                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
-                        ),
-                    )
-            }
-        }
-    }
-
-    fn deceleration_demanded(&self) -> bool {
-        self.deceleration_governor.is_engaged()
-            && self.target.get::<meter_per_second_squared>() < 0.
-    }
-
-    fn should_disarm_due_to_pedal_input(&self) -> bool {
-        match self.mode {
-            AutobrakeMode::NONE => false,
-            AutobrakeMode::LOW | AutobrakeMode::MED => {
-                self.left_brake_pedal_input > Ratio::new::<percent>(53.)
-                    || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
-                    || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
-                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
-            }
-            AutobrakeMode::MAX => {
-                self.left_brake_pedal_input > Ratio::new::<percent>(77.)
-                    || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
-                    || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
-                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
-            }
-            _ => false,
-        }
-    }
-
-    fn should_disarm(&self, context: &UpdateContext) -> bool {
-        // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
-        // an unintended disarm is not happening
-        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
-            || self.spoilers_retracted_during_this_update()
-            || self.should_disarm_after_time_in_flight.output()
-            || self.external_disarm_event
-            || (self.mode == AutobrakeMode::MAX
-                && self.should_reject_max_mode_after_time_in_flight.output())
-    }
-
-    fn calculate_target(&mut self) -> Acceleration {
-        Acceleration::new::<meter_per_second_squared>(match self.mode {
-            AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
-            AutobrakeMode::LOW => interpolation(
-                &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
-                &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
-                self.deceleration_governor.time_engaged().as_secs_f64(),
-            ),
-            AutobrakeMode::MED => interpolation(
-                &Self::MED_MODE_DECEL_PROFILE_TIME_S,
-                &Self::MED_MODE_DECEL_PROFILE_ACCEL_MS2,
-                self.deceleration_governor.time_engaged().as_secs_f64(),
-            ),
-            AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
-            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
-        })
-    }
-
-    fn update_input_conditions(
-        &mut self,
-        context: &UpdateContext,
-        allow_arming: bool,
-        pedal_input_left: Ratio,
-        pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
-    ) {
-        let in_flight_lgciu1 =
-            !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
-        let in_flight_lgciu2 =
-            !lgciu2.right_gear_compressed(false) && !lgciu2.left_gear_compressed(false);
-
-        self.should_disarm_after_time_in_flight
-            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
-        self.should_reject_max_mode_after_time_in_flight
-            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
-
-        self.arming_is_allowed_by_bcu = allow_arming;
-        self.left_brake_pedal_input = pedal_input_left;
-        self.right_brake_pedal_input = pedal_input_right;
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        autobrake_panel: &AutobrakePanel,
-        allow_arming: bool,
-        pedal_input_left: Ratio,
-        pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
-    ) {
-        self.update_input_conditions(
-            context,
-            allow_arming,
-            pedal_input_left,
-            pedal_input_right,
-            lgciu1,
-            lgciu2,
-        );
-        self.mode = self.determine_mode(context, autobrake_panel);
-
-        self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor(context));
-
-        self.target = self.calculate_target();
-        self.deceleration_governor.update(context, self.target);
-    }
-}
-impl SimulationElement for A380AutobrakeController {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.armed_mode_id, self.mode as u8 as f64);
-        writer.write(&self.armed_mode_id_set, -1.);
-        writer.write(&self.decel_light_id, self.is_decelerating());
-        writer.write(&self.active_id, self.deceleration_demanded());
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
-        let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
-        let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = sec_1_gnd_splrs_out
-            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out)
-            || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
-        self.external_disarm_event = reader.read(&self.external_disarm_event_id);
-
-        // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
-        if readed_mode >= 0.0 {
-            self.mode = readed_mode.into();
-        }
     }
 }
 
@@ -6531,6 +6275,11 @@ impl SpoilerGroup {
     fn positions(&self) -> &[f64; 8] {
         &self.spoiler_positions
     }
+
+    fn ground_spoilers_are_requested(&self) -> bool {
+        self.hydraulic_controllers[0].requested_position() > Ratio::new::<ratio>(0.1)
+            && self.hydraulic_controllers[1].requested_position() > Ratio::new::<ratio>(0.1)
+    }
 }
 impl SimulationElement for SpoilerGroup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6615,19 +6364,59 @@ impl ElectroHydrostaticPowered for SpoilerController {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum A380GravityExtensionSwitchPosition {
+    Reset = 0,
+    Off = 1,
+    Extension = 2,
+}
+impl From<f64> for A380GravityExtensionSwitchPosition {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => A380GravityExtensionSwitchPosition::Reset,
+            1 => A380GravityExtensionSwitchPosition::Off,
+            2 => A380GravityExtensionSwitchPosition::Extension,
+            _ => A380GravityExtensionSwitchPosition::Off,
+        }
+    }
+}
+
 struct A380GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
+
+    switch_position: A380GravityExtensionSwitchPosition,
 
     handle_angle: Angle,
 }
 impl A380GravityExtension {
+    const PLACEHOLDER_SPEED_TO_ROTATE_HANDLE_DEG_S: f64 = 50.;
+    const PLACEHOLDER_SPEED_TO_RESET_HANDLE_DEG_S: f64 = 200.;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_gravity_extension_handle_position_id: context
-                .get_identifier("GRAVITYGEAR_ROTATE_PCT".to_owned()),
+                .get_identifier("LG_GRVTY_SWITCH_POS".to_owned()),
+
+            switch_position: A380GravityExtensionSwitchPosition::Off,
 
             handle_angle: Angle::default(),
         }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        let angle_change: Angle = match self.switch_position {
+            A380GravityExtensionSwitchPosition::Reset => Angle::new::<degree>(
+                -Self::PLACEHOLDER_SPEED_TO_RESET_HANDLE_DEG_S * context.delta_as_secs_f64(),
+            ),
+            A380GravityExtensionSwitchPosition::Extension => Angle::new::<degree>(
+                Self::PLACEHOLDER_SPEED_TO_ROTATE_HANDLE_DEG_S * context.delta_as_secs_f64(),
+            ),
+            A380GravityExtensionSwitchPosition::Off => Angle::default(),
+        };
+
+        self.handle_angle = (self.handle_angle + angle_change)
+            .min(Angle::new::<degree>(360. * 3.))
+            .max(Angle::default());
     }
 }
 impl GearGravityExtension for A380GravityExtension {
@@ -6637,11 +6426,8 @@ impl GearGravityExtension for A380GravityExtension {
 }
 impl SimulationElement for A380GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let handle_percent: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
-
-        self.handle_angle = Angle::new::<degree>(handle_percent * 3.6)
-            .max(Angle::new::<degree>(0.))
-            .min(Angle::new::<degree>(360. * 3.));
+        let switch_position: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
+        self.switch_position = switch_position.into();
     }
 }
 
@@ -6691,6 +6477,8 @@ mod tests {
     mod a380_hydraulics {
         use super::*;
         use rstest::rstest;
+
+        use autobrakes::A380AutobrakeMode;
         use systems::{
             electrical::{
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
@@ -6700,7 +6488,10 @@ mod tests {
             failures::FailureType,
             hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
+            shared::{
+                arinc429::{Arinc429Word, SignStatus},
+                EmergencyElectricalState, LgciuId, PotentialOrigin,
+            },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -6714,13 +6505,24 @@ mod tests {
             ratio::{percent, ratio},
         };
 
-        #[derive(Default)]
         struct A380TestAdirus {
             airspeed: Velocity,
+            any_aligned: bool,
         }
         impl A380TestAdirus {
+            fn default() -> Self {
+                Self {
+                    airspeed: Velocity::default(),
+                    any_aligned: true,
+                }
+            }
+
             fn update(&mut self, context: &UpdateContext) {
-                self.airspeed = context.true_airspeed()
+                self.airspeed = context.true_airspeed();
+            }
+
+            fn set_aligned(&mut self, is_aligned: bool) {
+                self.any_aligned = is_aligned;
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
@@ -6738,6 +6540,30 @@ mod tests {
 
             fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 260.
+            }
+        }
+        impl AdirsMeasurementOutputs for A380TestAdirus {
+            fn is_fully_aligned(&self, _: usize) -> bool {
+                self.any_aligned
+            }
+
+            fn latitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+            }
+            fn longitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+            }
+            fn heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+            }
+            fn true_heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+            }
+            fn vertical_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+            }
+            fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
+                Arinc429Word::new(Length::default(), SignStatus::NormalOperation)
             }
         }
 
@@ -6808,7 +6634,7 @@ mod tests {
             engine_4: TrentEngine,
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
-            autobrake_panel: AutobrakePanel,
+            autobrake_panel: A380AutobrakePanel,
             engine_fire_overhead: EngineFireOverheadPanel<4>,
 
             landing_gear: LandingGear,
@@ -6857,7 +6683,7 @@ mod tests {
                     engine_4: TrentEngine::new(context, 4),
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
-                    autobrake_panel: AutobrakePanel::new(context),
+                    autobrake_panel: A380AutobrakePanel::new(context),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
                     landing_gear: LandingGear::new(context),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
@@ -6917,6 +6743,10 @@ mod tests {
                     is_dc_hot_1_powered: true,
                     is_dc_hot_2_powered: true,
                 }
+            }
+
+            fn set_adirs_alignement(&mut self, is_aligned: bool) {
+                self.adirus.set_aligned(is_aligned)
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
@@ -7182,6 +7012,10 @@ mod tests {
                 self
             }
 
+            fn set_adirs_not_aligned(&mut self) {
+                self.command(|a| a.set_adirs_alignement(false));
+            }
+
             fn is_green_edp_commanded_on(&self) -> bool {
                 self.query(|a| a.is_green_edp_commanded_on())
             }
@@ -7270,7 +7104,7 @@ mod tests {
                 self.read_by_name("HYD_GREEN_RESERVOIR_LEVEL")
             }
 
-            fn autobrake_mode(&mut self) -> AutobrakeMode {
+            fn autobrake_mode(&mut self) -> A380AutobrakeMode {
                 ReadByName::<A380HydraulicsTestBed, f64>::read_by_name(
                     self,
                     "AUTOBRAKES_ARMED_MODE",
@@ -7452,6 +7286,11 @@ mod tests {
                     .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
+            }
+
+            fn adirs_not_aligned(mut self) -> Self {
+                self.set_adirs_not_aligned();
+                self
             }
 
             fn sim_not_ready(mut self) -> Self {
@@ -7830,44 +7669,35 @@ mod tests {
                 self
             }
 
-            fn set_autobrake_disarmed_with_set_variable(mut self) -> Self {
-                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 0);
-                self
-            }
-
-            fn set_autobrake_low_with_set_variable(mut self) -> Self {
-                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 1);
-                self
-            }
-
-            fn set_autobrake_med_with_set_variable(mut self) -> Self {
-                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 2);
-                self
-            }
-
-            fn set_autobrake_max_with_set_variable(mut self) -> Self {
-                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 3);
+            fn set_autobrake_btv(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 1.);
                 self
             }
 
             fn set_autobrake_low(mut self) -> Self {
-                self.write_by_name("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", true);
-                self = self.run_one_tick();
-                self.write_by_name("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", false);
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 2.);
                 self
             }
 
-            fn set_autobrake_med(mut self) -> Self {
-                self.write_by_name("OVHD_AUTOBRK_MED_ON_IS_PRESSED", true);
-                self = self.run_one_tick();
-                self.write_by_name("OVHD_AUTOBRK_MED_ON_IS_PRESSED", false);
+            fn set_autobrake_l2(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 3.);
                 self
             }
 
-            fn set_autobrake_max(mut self) -> Self {
-                self.write_by_name("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", true);
+            fn set_autobrake_l3(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 4.);
+                self
+            }
+
+            fn set_autobrake_high(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_SELECTED_MODE", 5.);
+                self
+            }
+
+            fn set_autobrake_rto(mut self) -> Self {
+                self.write_by_name("OVHD_AUTOBRK_RTO_ARM_IS_PRESSED", true);
                 self = self.run_one_tick();
-                self.write_by_name("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", false);
+                self.write_by_name("OVHD_AUTOBRK_RTO_ARM_IS_PRESSED", false);
                 self
             }
 
@@ -7882,16 +7712,14 @@ mod tests {
             }
 
             fn set_deploy_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", true);
-                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", true);
-                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", true);
+                self = self.set_right_spoilers_out();
+                self = self.set_left_spoilers_out();
                 self
             }
 
             fn set_retract_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", false);
-                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", false);
-                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", false);
+                self = self.set_right_spoilers_in();
+                self = self.set_left_spoilers_in();
                 self
             }
 
@@ -8127,7 +7955,7 @@ mod tests {
                 self
             }
 
-            fn _set_right_spoilers_in(mut self) -> Self {
+            fn set_right_spoilers_in(mut self) -> Self {
                 self = self._set_right_spoiler_in(1);
                 self = self._set_right_spoiler_in(2);
                 self = self._set_right_spoiler_in(3);
@@ -8151,7 +7979,7 @@ mod tests {
                 self
             }
 
-            fn _set_left_spoilers_in(mut self) -> Self {
+            fn set_left_spoilers_in(mut self) -> Self {
                 self = self._set_left_spoiler_in(1);
                 self = self._set_left_spoiler_in(2);
                 self = self._set_left_spoiler_in(3);
@@ -8220,13 +8048,13 @@ mod tests {
                 self
             }
 
-            fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
-                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", number_of_turns as f64 * 100.);
+            fn activate_emergency_gear_extension(mut self) -> Self {
+                self.write_by_name("LG_GRVTY_SWITCH_POS", 2.);
                 self
             }
 
             fn stow_emergency_gear_extension(mut self) -> Self {
-                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", 0.);
+                self.write_by_name("LG_GRVTY_SWITCH_POS", 0.);
                 self
             }
         }
@@ -9521,70 +9349,43 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_arms_in_flight_lo_or_med() {
+        fn autobrakes_arms_in_flight_btv_to_hi() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+
+            test_bed = test_bed
+                .set_autobrake_btv()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::BTV);
 
             test_bed = test_bed
                 .set_autobrake_low()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::LOW);
 
             test_bed = test_bed
-                .set_autobrake_med()
+                .set_autobrake_l2()
                 .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
-        }
-
-        #[test]
-        fn autobrakes_arming_according_to_set_variable() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .set_park_brake(false)
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
-
-            // set autobrake to LOW
             test_bed = test_bed
-                .set_autobrake_low_with_set_variable()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
 
-            // using the set variable again is still resulting in LOW
-            // and not disarming
-            test_bed = test_bed
-                .set_autobrake_low_with_set_variable()
-                .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
-            // set autobrake to MED
             test_bed = test_bed
-                .set_autobrake_med_with_set_variable()
+                .set_autobrake_high()
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
 
-            // set autobrake to MAX
-            test_bed = test_bed
-                .set_autobrake_max_with_set_variable()
-                .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
-
-            // set autobrake to DISARMED
-            test_bed = test_bed
-                .set_autobrake_disarmed_with_set_variable()
-                .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::HIGH);
         }
 
         #[test]
@@ -9596,25 +9397,25 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
-                .set_autobrake_med()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             // sim is not ready --> no disarm
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             // sim is now ready --> disarm expected
             test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -9625,43 +9426,36 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
-                .set_autobrake_med()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
-        fn autobrakes_max_wont_arm_in_flight() {
+        fn autobrakes_rto_wont_arm_in_flight() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
-
-            // using the set variable should also not work
-            test_bed = test_bed
-                .set_autobrake_max_with_set_variable()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -9674,17 +9468,17 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_right_brake(Ratio::new::<percent>(100.))
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
         }
 
         #[test]
@@ -9698,16 +9492,16 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9726,29 +9520,29 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_retract_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
         }
 
         #[test]
         // Should disable with one pedal > 61° over max range of 79.4° thus 77%
-        fn autobrakes_max_disengage_at_77_on_one_pedal_input() {
+        fn autobrakes_rto_disengage_at_77_on_one_pedal_input() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -9758,16 +9552,16 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9777,7 +9571,7 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9787,14 +9581,14 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
         }
 
         #[test]
         // Should disable with one pedals > 42° over max range of 79.4° thus 52%
-        fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
+        fn autobrakes_l3_disengage_at_52_on_one_pedal_input() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -9804,16 +9598,16 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_med()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9823,7 +9617,7 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
@@ -9833,13 +9627,13 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
         }
 
         #[test]
-        fn autobrakes_max_disarm_after_10s_in_flight() {
+        fn autobrakes_rto_disarm_after_10s_in_flight() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -9849,18 +9643,18 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             test_bed = test_bed
-                .set_autobrake_max()
+                .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -9871,18 +9665,41 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             test_bed = test_bed
-                .set_autobrake_med_with_set_variable()
+                .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+        }
+
+        #[test]
+        fn autobrakes_disarm_if_no_adirs() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_l3()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+
+            test_bed = test_bed
+                .adirs_not_aligned()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10400,24 +10217,7 @@ mod tests {
         }
 
         #[test]
-        fn emergency_gear_extension_at_2_turns_open_doors() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .turn_emergency_gear_extension_n_turns(1)
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.is_all_doors_really_up());
-
-            test_bed = test_bed
-                .turn_emergency_gear_extension_n_turns(2)
-                .run_waiting_for(Duration::from_secs_f64(25.));
-
-            assert!(test_bed.is_all_doors_really_down());
-        }
-
-        #[test]
-        fn emergency_gear_extension_at_3_turns_release_gear() {
+        fn emergency_gear_extension_release_gear() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -10429,8 +10229,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_green_ed_pump(false)
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(35.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
 
             assert!(test_bed.is_all_doors_really_down());
             assert!(test_bed.is_all_gears_really_down());
@@ -10492,8 +10292,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_gear_lever_down()
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
@@ -10533,8 +10333,8 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
 
             test_bed = test_bed
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .activate_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(70.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 

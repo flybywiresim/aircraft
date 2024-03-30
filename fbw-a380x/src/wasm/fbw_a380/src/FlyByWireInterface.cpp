@@ -32,11 +32,11 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  bool success = simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
-                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
-                                     idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+  bool success = simConnectInterface.connect(
+      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, secDisabled, facDisabled,
+      throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(), idMaximumSimulationRate->get(),
+      limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
     std::cout << "WASM: Request data failed!" << std::endl;
@@ -73,6 +73,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
+  // get sim data
+  SimData simData = simConnectInterface.getSimData();
+
   // update performance monitoring
   result &= updatePerformanceMonitoring(sampleTime);
 
@@ -86,10 +89,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= handleFcuInitialization(calculatedSampleTime);
 
   // do not process laws in pause or slew
-  if (simConnectInterface.getSimData().slew_on) {
+  if (simData.slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
+  } else if (pauseDetected || simData.cameraState >= 10.0 || !idIsReady->get() || simData.simulationTime < 2) {
     return result;
   }
 
@@ -154,11 +157,14 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update FO side with FO Sync ON
   result &= updateFoSide(calculatedSampleTime);
 
-  // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  // do not further process when active pause is on
+  if (!simConnectInterface.isSimInActivePause()) {
+    // update flight data recorder
+    flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+  }
 
   // if default AP is on -> disconnect it
-  if (simConnectInterface.getSimData().autopilot_master_on) {
+  if (simData.autopilot_master_on) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::AUTOPILOT_OFF);
   }
 
@@ -267,7 +273,7 @@ void FlyByWireInterface::loadConfiguration() {
   // create mapping for 3D animation position
   std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
-  mappingTable3d.emplace_back(0.0, 25.0);
+  mappingTable3d.emplace_back(0.0, 0.0);
   mappingTable3d.emplace_back(25.0, 50.0);
   mappingTable3d.emplace_back(35.0, 75.0);
   mappingTable3d.emplace_back(45.0, 100.0);
@@ -756,9 +762,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idUpperRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_UPPER_RUDDER_DEFLECTION");
   idLowerRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_LOWER_RUDDER_DEFLECTION");
 
-  idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+  idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_108PH_BUS_IS_POWERED");
   idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
   idElecDc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_1_BUS_IS_POWERED");
+  idRatContactorClosed = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_5XE_IS_CLOSED");
+  idRatPosition = std::make_unique<LocalVariable>("A32NX_RAT_STOW_POSITION");
 
   idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
@@ -1265,6 +1273,11 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
   SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
@@ -1368,6 +1381,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.rat_deployed = primIndex == 0 ? idRatPosition->get() > 0.9 : false;
+  prims[primIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = primIndex == 0 ? idRatContactorClosed->get() : false;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
@@ -1383,9 +1398,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
   prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
@@ -1485,6 +1500,11 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 }
 
 bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
@@ -1585,6 +1605,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimReset;
   secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
   secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
+  secs[secIndex].modelInputs.in.discrete_inputs.rat_deployed = secIndex == 0 ? idRatPosition->get() > 0.9 : false;
+  secs[secIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = secIndex == 0 ? idRatContactorClosed->get() : false;
   secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
@@ -1592,9 +1614,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
   secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
-  secs[secIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
   secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
   secs[secIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
   secs[secIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
@@ -1745,6 +1767,11 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 // }
 
 bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInputRudderTrim trimInput = simConnectInterface.getSimInputRudderTrim();

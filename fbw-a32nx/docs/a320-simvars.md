@@ -1255,6 +1255,13 @@
       | 13    | Ten                       |
       | 14    | Five                      |
 
+- A32NX_LANDING_{ID}_POSITION
+    - Percent
+    - Current position of the landing light animation
+    - {ID}
+        - 2 | LEFT
+        - 3 | RIGHT
+
 ## Model/XML Interface
 
 These variables are the interface between the 3D model and the systems/code.

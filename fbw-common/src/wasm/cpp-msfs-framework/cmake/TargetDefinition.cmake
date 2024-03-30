@@ -13,7 +13,7 @@ macro(add_wasm_library)
     endforeach()
 
     # wasm-ld general flags
-    set(CMAKE_WASM_LINKER_FLAGS --no-entry --allow-undefined --export __wasm_call_ctors --export-dynamic --export malloc --export free --export-table --gc-sections -lc++ -lc++abi -L${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi -lc ${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a)
+    set(CMAKE_WASM_LINKER_FLAGS --no-entry --allow-undefined --export __wasm_call_ctors --export-dynamic --export malloc --export free --export mallinfo --export mchunkit_begin --export mchunkit_next --export get_pages_state --export mark_decommit_pages --export-table --gc-sections -lc++ -lc++abi -L${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi -lc ${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a)
 
     # wasm build options for debug and release
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")

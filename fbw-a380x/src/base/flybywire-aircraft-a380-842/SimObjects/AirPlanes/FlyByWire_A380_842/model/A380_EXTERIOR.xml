@@ -166,11 +166,6 @@
                 <ID>0</ID>
                 <ANIM_NAME>door_passenger</ANIM_NAME>
             </UseTemplate>
-            <!-- PAX DOOR REAR -->
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>3</ID>
-                <ANIM_NAME>door_rear</ANIM_NAME>
-            </UseTemplate>
         </Component>
 
         <Template Name="FBW_Control_Surface_Template">
@@ -412,6 +407,20 @@
                 <ANIM_EVENT_EFFECT_NAME_5>CAM_FLAPS05</ANIM_EVENT_EFFECT_NAME_5>
                 <NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
                 <DIRECTION_5>Both</DIRECTION_5>
+            </UseTemplate>
+        </Component>
+		
+        <!-- PAX DOOR M4L -->
+
+        <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <ANIM_NAME>ANIM_DOOR_M4L</ANIM_NAME>
+                <ANIM_LAG>20</ANIM_LAG>
+                <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>9</ID>
+                <ANIM_NAME>door_rear</ANIM_NAME>
             </UseTemplate>
         </Component>
 
