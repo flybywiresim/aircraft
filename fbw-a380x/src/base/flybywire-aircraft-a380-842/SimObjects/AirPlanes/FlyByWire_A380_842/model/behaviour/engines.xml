@@ -39,7 +39,7 @@
             <BLURRED4_NODE_ID_COUNT>2</BLURRED4_NODE_ID_COUNT>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Anim">
-            <!-- 3856 is the rated 100% N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
+            <!-- 385 is used for best visual appearance of the engine blur -->
             <ANIM_CODE>0.01 385 (L:A32NX_ENGINE_N1:#ID#, Percent) * *</ANIM_CODE>
 			<ANIM_LENGTH>360</ANIM_LENGTH>
 			<ANIM_LAG>0</ANIM_LAG>
