@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
+/* eslint-disable no-underscore-dangle */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
@@ -143,9 +144,9 @@ export class AircraftGithubVersionChecker {
         }
         await fetch(`/VFS/config/${aircraft}/${variant}/airframe.json`).then((response) => {
             response.json().then((json) => {
-                this.airframeInfo = ({ variant: json.variant });
+                this.airframeInfo = ({ variant: json._variant });
             }).catch((error) => {
-                console.error('Failed to read build info: ', error);
+                console.error('Failed to read airframe info: ', error);
             });
         });
         return this.airframeInfo;
