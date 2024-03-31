@@ -242,10 +242,11 @@ export const Efb = () => {
         }
     }, [ac1BusIsPowered, powerState, autoLoadLightingPresetEnabled]);
 
-    useInterval(() => {
-        if (!autoFillChecklists) return;
-        setAutomaticItemStates();
-    }, 1000);
+    // TODO
+    // useInterval(() => {
+    //     if (!autoFillChecklists) return;
+    //     setAutomaticItemStates();
+    // }, 1000);
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;

@@ -1,8 +1,7 @@
 {
-  "//": "A380X Checklist =================================================",
-  "checklists:": {
-    "beforeStartChecklistA380X": {
-      "//": "beforeStartChecklistA380X =================================================",
+  "checklists": [
+    {
+      // beforeStartChecklistA380X =================================================",
       "name": "BEFORE START",
       "items": [
         {
@@ -65,8 +64,8 @@
         }
       ]
     },
-    "afterStartChecklistA380X": {
-      "//": "afterStartChecklistA380X =================================================",
+    {
+      // afterStartChecklistA380X =================================================",
       "name": "AFTER START",
       "items": [
         {
@@ -95,8 +94,8 @@
         }
       ]
     },
-    "beforeTakeoffChecklistA380X": {
-      "//": "beforeTakeoffChecklistA380X =================================================",
+    {
+      // beforeTakeoffChecklistA380X =================================================",
       "name": "BEFORE TAKEOFF",
       "items": [
         {
@@ -168,8 +167,8 @@
         }
       ]
     },
-    "afterTakeoffChecklistA380X": {
-      "//": "afterTakeoffChecklistA380X =================================================",
+    {
+      // afterTakeoffChecklistA380X =================================================",
       "name": "AFTER TAKEOFF / CLIMB",
       "items": [
         {
@@ -208,8 +207,8 @@
         }
       ]
     },
-    "approachChecklistA380X": {
-      "//": "approachChecklistA380X =================================================",
+    {
+      // approachChecklistA380X =================================================",
       "name": "APPROACH",
       "items": [
         {
@@ -253,8 +252,8 @@
         }
       ]
     },
-    "landingChecklistA380X": {
-      "//": "landingChecklistA380X =================================================",
+    {
+      // landingChecklistA380X =================================================",
       "name": "LANDING",
       "items": [
         {
@@ -291,8 +290,8 @@
         }
       ]
     },
-    "afterLandingChecklistA380X": {
-      "//": "afterLandingChecklistA380X =================================================",
+    {
+      // afterLandingChecklistA380X =================================================",
       "name": "AFTER LANDING",
       "items": [
         {
@@ -318,8 +317,8 @@
         }
       ]
     },
-    "parkingChecklistA380X": {
-      "//": "parkingChecklistA380X =================================================",
+    {
+      // parkingChecklistA380X =================================================",
       "name": "PARKING",
       "items": [
         {
@@ -351,8 +350,8 @@
         }
       ]
     },
-    "securingAircraftChecklistA380X": {
-      "//": "securingAircraftChecklistA380X =================================================",
+    {
+      // securingAircraftChecklistA380X =================================================",
       "name": "SECURING AIRCRAFT",
       "items": [
         {
@@ -386,5 +385,5 @@
         }
       ]
     }
-  }
+  ]
 }

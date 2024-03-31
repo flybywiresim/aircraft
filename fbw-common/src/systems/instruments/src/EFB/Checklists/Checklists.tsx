@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistItemType } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
 
 import {
@@ -16,12 +16,7 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
-import { ChecklistReader } from '../../../../shared/src/checklists/ChecklistReader';
-
-const checklistReader = new ChecklistReader();
-checklistReader.readChecklist();
-
-const aircraftChecklists: ChecklistDefinition[] = getAircraftChecklists();
+import { ChecklistJsonDefinition, ChecklistReader } from '../../../../shared/src/checklists/ChecklistReader';
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
@@ -62,7 +57,11 @@ export const getRelevantChecklistIndices = () => {
  *
  * This is called every 1s from EFB.tsx and every time the selected checklist index changes.
  */
-export const setAutomaticItemStates = () => {
+export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefinition[]) => {
+    if (aircraftChecklists.length === 0) {
+        return;
+    }
+
     const checklists = (store.getState() as RootState).trackingChecklists.checklists;
 
     // leave completed checklists alone - as otherwise they would be reset everytime an item becomes uncompleted
@@ -80,7 +79,8 @@ export const setAutomaticItemStates = () => {
                     isCompleted = true;
                 } else if (clItem.condition) {
                     // if the item has a condition, check if it is completed
-                    isCompleted = clItem.condition();
+                    // TODO
+                    // isCompleted = clItem.condition();
                 } else {
                     // ignore items without a condition
                     return;
@@ -102,6 +102,17 @@ export const setAutomaticItemStates = () => {
  * @brief The flyPad's Checklists page component.
  */
 export const Checklists = () => {
+    const checklistReader = new ChecklistReader();
+    const [checklistRead, setChecklistRead] = useState<boolean>(false);
+    const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
+
+    useEffect(() => {
+        checklistReader.readChecklist().then((result) => {
+            setAircraftChecklists(result);
+            setChecklistRead(true);
+        });
+    }, [!checklistRead]);
+
     const dispatch = useAppDispatch();
 
     const handleClick = (index: number) => {
@@ -141,12 +152,16 @@ export const Checklists = () => {
 
     useEffect(() => {
         if (!autoFillChecklists) return;
-        setAutomaticItemStates();
+        setAutomaticItemStates(aircraftChecklists);
     }, [selectedChecklistIndex]);
 
     const { showModal } = useModals();
 
     const handleResetConfirmation = () => {
+        if (aircraftChecklists.length === 0) {
+            return;
+        }
+
         showModal(
             <PromptModal
                 title={t('Checklists.ChecklistResetWarning')}
@@ -157,7 +172,11 @@ export const Checklists = () => {
                             if (autoFillChecklists && aircraftChecklists[clIndex].items[itemIdx].condition) {
                                 return;
                             }
-                            dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
+                            dispatch(setChecklistItemCompletion({
+                                checklistIndex: clIndex,
+                                itemIndex: itemIdx,
+                                completionValue: false,
+                            }));
                         });
                         dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
                     });
@@ -165,16 +184,27 @@ export const Checklists = () => {
             />,
         );
     };
-
     const handleResetChecklist = () => {
+        if (aircraftChecklists.length === 0) {
+            return;
+        }
         checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
             if (autoFillChecklists && aircraftChecklists[selectedChecklistIndex].items[itemIdx].condition) {
                 return;
             }
-            dispatch(setChecklistItemCompletion({ checklistIndex: selectedChecklistIndex, itemIndex: itemIdx, completionValue: false }));
+            dispatch(setChecklistItemCompletion({
+                checklistIndex: selectedChecklistIndex,
+                itemIndex: itemIdx,
+                completionValue: false,
+            }));
         });
         dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
     };
+    if (aircraftChecklists.length === 0) {
+        return (
+            <></>
+        );
+    }
 
     return (
         <>
@@ -191,6 +221,7 @@ export const Checklists = () => {
                                 {!!autoFillChecklists && firstRelevantUnmarkedIdx === index && (
                                     <Link45deg size={24} />
                                 )}
+                                {' '}
                                 {cl.name}
                             </div>
                         ))}
