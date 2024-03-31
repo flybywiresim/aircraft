@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, useSimVar, AircraftType } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, useSimVar, AircraftInfo } from '@flybywiresim/fbw-sdk';
 import { t } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore
@@ -49,7 +49,6 @@ export const AboutPage = () => {
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
 
     // Callback function to set sBuildVersion from the community panel
     const onSetPlayerData = (data: CommunityPanelPlayerData) => {
@@ -61,9 +60,9 @@ export const AboutPage = () => {
 
     useEffect(() => {
         AircraftVersionChecker.getBuildInfo(
-            process.env.AIRCRAFT_PREFIX,
+            process.env.AIRCRAFT_PROJECT_PREFIX,
         ).then((info) => setBuildInfo(info));
-    }, [airframe]);
+    }, [process.env.AIRCRAFT_PROJECT_PREFIX]);
 
     return (
         <SettingsPage name={t('Settings.About.Title')}>

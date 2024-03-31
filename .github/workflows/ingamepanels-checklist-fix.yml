@@ -21,7 +21,7 @@ jobs:
       FBW_PRODUCTION_BUILD: 1
       MASTER_ZIP_NAME: ingamepanels-checklist-fix-master.zip
       BUILD_DIR_NAME: master
-      AIRCRAFT_PREFIX: a32nx
+      AIRCRAFT_PROJECT_PREFIX: a32nx
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
-          echo AIRCRAFT_PREFIX=${{ env.AIRCRAFT_PREFIX }} >> .env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> .env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build In-Game Panels Checklist Fix
