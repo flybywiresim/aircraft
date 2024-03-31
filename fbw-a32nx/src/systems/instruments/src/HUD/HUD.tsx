@@ -117,7 +117,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                 brightness={this.displayBrightness}
                 normDmc={getDisplayIndex()}
             >
-                <svg class="hud-svg" version="1.1" viewBox="0 0 1024 768" xmlns="http://www.w3.org/2000/svg">
+                <svg class="hud-svg" version="1.1" viewBox="0 0 1280 1024" xmlns="http://www.w3.org/2000/svg">
                     <Horizon
                         bus={this.props.bus}
                         instrument={this.props.instrument}
