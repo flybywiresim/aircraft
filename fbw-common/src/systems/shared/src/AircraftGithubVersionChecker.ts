@@ -25,6 +25,14 @@ export interface BuildInfo {
 }
 
 /**
+ * Contains the ${aircraft}_{atc_id}_aircraft.json file's information in a structured way.
+ */
+export interface AircraftInfo {
+    variant: string;
+
+}
+
+/**
  * Structure of the version info.
  */
 export interface VersionInfoData {
@@ -58,6 +66,8 @@ export class AircraftGithubVersionChecker {
     private static newestExpCommit: CommitInfo;
 
     private static buildInfo: BuildInfo;
+
+    private static aircraftInfo: AircraftInfo;
 
     /**
      * Checks if the aircraft version is outdated and shows a popup if it is.
@@ -125,6 +135,20 @@ export class AircraftGithubVersionChecker {
             });
         });
         return this.buildInfo;
+    }
+
+    public static async getAircraftInfo(aircraft: string): Promise<AircraftInfo> {
+        if (this.aircraftInfo) {
+            return this.aircraftInfo;
+        }
+        await fetch(`/VFS/${aircraft}/aircraft.json`).then((response) => {
+            response.json().then((json) => {
+                this.aircraftInfo = ({ variant: json.variant });
+            }).catch((error) => {
+                console.error('Failed to read build info: ', error);
+            });
+        });
+        return this.aircraftInfo;
     }
 
     /**
