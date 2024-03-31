@@ -1,4 +1,4 @@
-export * from './AircraftVersionChecker';
+export * from './AircraftGithubVersionChecker';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
 export * from './Arinc429RegisterSubject';
