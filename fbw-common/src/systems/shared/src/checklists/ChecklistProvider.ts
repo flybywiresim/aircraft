@@ -97,7 +97,7 @@ export class ChecklistProvider {
             return false;
         }
 
-        if (object.condition !== undefined && typeof object.condition !== 'string') {
+        if (object.condition !== undefined && typeof object.condition !== 'object') {
             console.warn('Error in ChecklistItem definition: invalid condition: ', object);
             return false;
         }

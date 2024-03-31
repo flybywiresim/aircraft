@@ -78,13 +78,13 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
                 if (clItem.type !== undefined && (clItem.type === ChecklistItemType.LINE || clItem.type === ChecklistItemType.SUBLISTHEADER)) {
                     isCompleted = true;
                 } else if (clItem.condition && clItem.condition.length > 0) {
-                    // if the item has a condition, check if it is completed
-                    // TODO: use RPN to check if a checklist item can automatically completed
-                    // isCompleted = clItem.condition();
-
-                    // FIXME: DO NOT USE EVAL - FIND A BETTER WAY
-                    // eslint-disable-next-line no-eval
-                    isCompleted = eval(clItem.condition);
+                    isCompleted = true;
+                    clItem.condition.forEach((c, _) => {
+                        // one failing result and the conditions fail
+                        if (SimVar.GetSimVarValue(c.varName, 'Number') !== c.result) {
+                            isCompleted = false;
+                        }
+                    });
                 } else {
                     // ignore items without a condition
                     return;

@@ -35,18 +35,36 @@
         {
           "item": "PARK BRK",
           "result": "ON",
-          // "condition": "(L:A32NX_PARK_BRAKE_LEVER_POS) 1 =="
-          "condition": "!!SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool')"
+          "condition": [
+            {
+              varName: "L:A32NX_PARK_BRAKE_LEVER_POS",
+              result: 1
+            },
+          ],
         },
         {
           "item": "SIGNS",
           "result": "ON",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "ADIRS NAV",
-          "result": "ON",
-          "condition": ""
+          "action": "SET TO NAV",
+          "result": "NAV",
+          "condition": [
+            {
+              varName: "L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB",
+              result: 1
+            },
+            {
+              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
+              result: 1
+            },
+            {
+              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
+              result: 1
+            },
+          ]
         },
         {
           "type": "ChecklistItemType.LINE",
@@ -61,7 +79,7 @@
         {
           "item": "BEACON",
           "result": "ON",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -81,7 +99,7 @@
         {
           "item": "RUDDER TRIM",
           "result": "NEUTRAL",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "PITCH TRIM",
@@ -123,14 +141,14 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SPLRS",
           "action": "ARM",
           "result": "ARMED",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -141,7 +159,7 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "AUTO BRK",
           "result": "RTO",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -175,12 +193,12 @@
         {
           "item": "LDG GEAR",
           "result": "UP",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "FLAPS",
           "result": "0",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "PACKS 1+2",
@@ -189,7 +207,7 @@
         {
           "item": "APU MASTER",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.LINE",
@@ -199,12 +217,12 @@
         {
           "item": "LANDING LIGHTS",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "BARO REF STD",
           "result": "SET (BOTH)",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -249,7 +267,7 @@
         {
           "item": "SEAT BELTS",
           "result": "ON",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -270,13 +288,13 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "LDG GEAR",
           "result": "DOWN",
-          "condition": ""
+          // "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -287,7 +305,7 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SPLRs",
           "result": "ARM",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -303,18 +321,18 @@
           "item": "SPLRS",
           "action": "DISARM",
           "result": "DISARMED",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "FLAPS",
           "result": "0",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "APU",
           "action": "START",
           "result": "STARTED",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -337,17 +355,17 @@
         {
           "item": "ALL ENGs OFF",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "FUEL PMPs",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "SEAT BELTS",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         }
       ]
     },
@@ -358,22 +376,22 @@
         {
           "item": "ADIRS",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "OXYGEN",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "SIGNS",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "APU",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         },
         {
           "item": "LAPTOPS",
@@ -382,7 +400,7 @@
         {
           "item": "BATTERIES",
           "result": "OFF",
-          "condition": ""
+          // "condition": ""
         }
       ]
     }

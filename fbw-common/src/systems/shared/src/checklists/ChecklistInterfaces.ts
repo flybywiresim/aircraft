@@ -17,20 +17,32 @@ export enum ChecklistItemType {
 }
 
 /**
+ * The ConditionType interface represents a condition and its associated result.
+ *
+ * @field condition - SimVar or LVar name which will be read as Number
+ * @field result - the desired result for the SimVar/LVar for the condition to be true
+ */
+export interface ConditionType {
+    varName: string;
+    result: number;
+}
+
+/**
  * Interface for an item in a checklist.
  *
  * @field item - The text description of the checklist item.
  * @field result - The string for the expected result for the checklist item.
  * @field type - optional - The type of the checklist item (See {@link ChecklistItemType}).
  * @field action - option - The string for the action to be performed (if not defined the result string is used).
- * @field condition - optional - Reverse Polish Notation to check if the item can be auto completed.
+ * @field condition - optional - list of pairs of SimVar or LVar names and desired results - all need to evaluate
+ *                               to true for the condition to be true.
  */
 export interface ChecklistItem {
     item: string;
     result: string;
     type?: ChecklistItemType;
     action?: string;
-    condition?: string;
+    condition?: ConditionType[];
 }
 
 /**
