@@ -1,3 +1,14 @@
+// Checklist for the A380X
+//
+// type?: string;                 // one of ITEM, LINE, SUBLISTHEADER, SUBLISTITEM
+// item: string;                  // checklist item
+// action?: string;               // the string shown before the item is completed
+// result: string;                // the string shown when the item is completed
+// condition?: ConditionType[];
+//    varName: string;            // the name of the SimVar or LVar to evaluate
+//    result: number;             // the numerical result to be compared to using the operation defined in comp
+//    comp?: string;              // one of NE !=, LT <, LE <=, EQ ==, GE >=, GT > | default = EQ if not defined
+//
 {
   "checklists": [
     {
@@ -45,7 +56,22 @@
         {
           "item": "SIGNS",
           "result": "ON",
-          // "condition": ""
+          "condition": [
+            {
+              varName: "CABIN SEATBELTS ALERT SWITCH",
+              result: 1
+            },
+            {
+              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION",
+              result: 2,
+              comp: "NE"
+            },
+            {
+              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION",
+              result: 2,
+              comp: "NE"
+            },
+          ]
         },
         {
           "item": "ADIRS NAV",
@@ -58,16 +84,16 @@
             },
             {
               varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 1
+              result: 1,
             },
             {
               varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 1
+              result: 1,
             },
           ]
         },
         {
-          "type": "ChecklistItemType.LINE",
+          "type": "LINE",
           "item": "",
           "result": ""
         },
@@ -79,7 +105,12 @@
         {
           "item": "BEACON",
           "result": "ON",
-          // "condition": ""
+          "condition": [
+            {
+              varName: "LIGHT BEACON",
+              result: 1
+            },
+          ]
         }
       ]
     },
@@ -133,42 +164,42 @@
           "result": "CHECKED"
         },
         {
-          "type": "ChecklistItemType.SUBLISTHEADER",
+          "type": "SUBLISTHEADER",
           "item": "T.O",
           "result": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "SPLRS",
           "action": "ARM",
           "result": "ARMED",
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "FLAPS",
           "result": "T.O"
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "AUTO BRK",
           "result": "RTO",
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "T.O CONFIG",
           "action": "TEST",
           "result": "TESTED"
         },
         {
-          "type": "ChecklistItemType.LINE",
+          "type": "LINE",
           "item": "",
           "result": ""
         },
@@ -210,7 +241,7 @@
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.LINE",
+          "type": "LINE",
           "item": "",
           "result": ""
         },
@@ -280,29 +311,29 @@
           "result": "SPEED/OFF"
         },
         {
-          "type": "ChecklistItemType.SUBLISTHEADER",
+          "type": "SUBLISTHEADER",
           "item": "LDG",
           "result": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "LDG GEAR",
           "result": "DOWN",
           // "condition": ""
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "FLAPS",
           "result": "LDG"
         },
         {
-          "type": "ChecklistItemType.SUBLISTITEM",
+          "type": "SUBLISTITEM",
           "item": "SPLRs",
           "result": "ARM",
           // "condition": ""

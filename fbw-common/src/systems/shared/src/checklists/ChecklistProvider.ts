@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { getAircraftType } from '@flybywiresim/fbw-sdk';
+import { ConditionType, getAircraftType } from '@flybywiresim/fbw-sdk';
 import JSON5 from 'json5';
 import { ChecklistJsonDefinition, ChecklistItem } from './ChecklistInterfaces';
 
@@ -49,9 +49,8 @@ export class ChecklistProvider {
     }
 
     private processChecklistJson(rawData: string) {
-        let json: any;
         try {
-            json = JSON5.parse(rawData);
+            const json = JSON5.parse(rawData);
             this.processChecklists(json);
         } catch (error) {
             this.handleJsonParseError(error);
@@ -60,18 +59,18 @@ export class ChecklistProvider {
 
     private processChecklists(json: any) {
         const checklists:ChecklistJsonDefinition[] = json.checklists;
-        checklists.forEach((cl, _) => {
+        checklists.forEach((checklist, _) => {
             const checklistItems = [];
-            const items:ChecklistItem[] = cl.items;
-            items.forEach((item, _) => {
-                if (this.isValidChecklistItem(item)) {
-                    checklistItems.push(item);
+            const items:ChecklistItem[] = checklist.items;
+            items.forEach((checklistItem, _) => {
+                if (this.isValidChecklistItem(checklistItem)) {
+                    checklistItems.push(checklistItem);
                     return;
                 }
-                console.warn(`Invalid checklist in list ${cl.name}: `, item);
+                console.warn(`Invalid checklist in list ${checklist.name}: `, checklistItem);
             });
             this.checklists.push({
-                name: cl.name,
+                name: checklist.name,
                 items: checklistItems,
             });
         });
@@ -81,33 +80,52 @@ export class ChecklistProvider {
         console.error(`Failed to parse ${this.configFilename} checklists as JSON5: `, error);
     }
 
-    private isValidChecklistItem(object: any): object is ChecklistItem {
-        if (object.item === undefined || typeof object.item !== 'string') {
-            console.warn('Error in ChecklistItem definition: missing or invalid item: ', object);
+    /**
+     * Smoke testing a json checklist item for correct definition
+     *      *
+     * @param checklistItem the json checklist item to check
+     */
+    private isValidChecklistItem(checklistItem: any): checklistItem is ChecklistItem {
+        if (checklistItem.item === undefined || typeof checklistItem.item !== 'string') {
+            console.warn('Error in ChecklistItem definition: missing or invalid item: ', checklistItem);
             return false;
         }
 
-        if (object.result === undefined || typeof object.result !== 'string') {
-            console.warn('Error in ChecklistItem definition: missing or invalid result: ', object);
+        if (checklistItem.result === undefined || typeof checklistItem.result !== 'string') {
+            console.warn('Error in ChecklistItem definition: missing or invalid result: ', checklistItem);
             return false;
         }
 
-        if (object.action !== undefined && typeof object.action !== 'string') {
-            console.warn('Error in ChecklistItem definition: invalid action: ', object);
+        if (checklistItem.action !== undefined && typeof checklistItem.action !== 'string') {
+            console.warn('Error in ChecklistItem definition: invalid action: ', checklistItem);
             return false;
         }
 
-        if (object.condition !== undefined && typeof object.condition !== 'object') {
-            console.warn('Error in ChecklistItem definition: invalid condition: ', object);
-            return false;
+        if (checklistItem.condition !== undefined && typeof checklistItem.condition !== 'object') {
+            const condition: ConditionType[] = checklistItem.condition;
+            return condition.every((c) => {
+                if (c.varName === undefined
+                   || c.result === undefined
+                   || (c.comp !== undefined
+                       && c.comp !== 'NE'
+                       && c.comp !== 'LT'
+                       && c.comp !== 'LE'
+                       && c.comp !== 'EQ'
+                       && c.comp !== 'GE'
+                       && c.comp !== 'GT')) {
+                    console.warn('Error in ChecklistItem definition: invalid condition: ', condition);
+                    return false;
+                }
+                return true;
+            });
         }
 
-        if (object.type !== undefined && typeof object.type !== 'string'
-            && object.type !== 'ITEM'
-            && object.type !== 'LINE'
-            && object.type !== 'SUBLISTHEADER'
-            && object.type !== 'SUBLISTITEM') {
-            console.warn('Error in ChecklistItem definition: invalid type: ', object);
+        if (checklistItem.type !== undefined && typeof checklistItem.type !== 'string'
+            && checklistItem.type !== 'ITEM'
+            && checklistItem.type !== 'LINE'
+            && checklistItem.type !== 'SUBLISTHEADER'
+            && checklistItem.type !== 'SUBLISTITEM') {
+            console.warn('Error in ChecklistItem definition: invalid type: ', checklistItem);
             return false;
         }
 

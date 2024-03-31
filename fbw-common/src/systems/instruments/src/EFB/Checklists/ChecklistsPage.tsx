@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable max-len */
 import React from 'react';
 import { ScrollableContainer } from '@flybywiresim/flypad';
 import { ChecklistJsonDefinition } from '@flybywiresim/checklists';

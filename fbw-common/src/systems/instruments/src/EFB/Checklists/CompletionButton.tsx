@@ -4,7 +4,7 @@
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
-import { ChecklistItemType, ChecklistJsonDefinition } from '@flybywiresim/checklists';
+import { ChecklistJsonDefinition } from '@flybywiresim/checklists';
 
 import {
     areAllChecklistItemsCompleted,
@@ -27,7 +27,7 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
         const checklistItem = acl[selectedChecklistIndex].items[index];
         // skip line items
-        if (checklistItem.type !== undefined && checklistItem.type === ChecklistItemType.LINE) {
+        if (checklistItem.type !== undefined && checklistItem.type === 'LINE') {
             return false;
         }
         // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { ChecklistItemType, ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
+import { ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
 import {
     areAllChecklistItemsCompleted,
@@ -75,14 +75,22 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
                 let isCompleted: boolean = false;
 
                 // if the item is a line or subheader, mark it as completed as these do not have a relevant completion state
-                if (clItem.type !== undefined && (clItem.type === ChecklistItemType.LINE || clItem.type === ChecklistItemType.SUBLISTHEADER)) {
+                if (clItem.type !== undefined && (clItem.type === 'LINE' || clItem.type === 'SUBLISTHEADER')) {
                     isCompleted = true;
                 } else if (clItem.condition && clItem.condition.length > 0) {
-                    isCompleted = true;
-                    clItem.condition.forEach((c, _) => {
-                        // one failing result and the conditions fail
-                        if (SimVar.GetSimVarValue(c.varName, 'Number') !== c.result) {
-                            isCompleted = false;
+                    isCompleted = clItem.condition.every((c) => {
+                        let comp: string = c.comp;
+                        if (comp === undefined) comp = 'EQ';
+                        switch (comp) {
+                        case 'NE': return SimVar.GetSimVarValue(c.varName, 'Number') !== c.result;
+                        case 'LT': return SimVar.GetSimVarValue(c.varName, 'Number') < c.result;
+                        case 'LE': return SimVar.GetSimVarValue(c.varName, 'Number') <= c.result;
+                        case 'EQ': return SimVar.GetSimVarValue(c.varName, 'Number') === c.result;
+                        case 'GE': return SimVar.GetSimVarValue(c.varName, 'Number') >= c.result;
+                        case 'GT': return SimVar.GetSimVarValue(c.varName, 'Number') > c.result;
+                        default:
+                            console.warn('Unknown EqualityType: ', comp);
+                            return false;
                         }
                     });
                 } else {
@@ -223,6 +231,8 @@ export const Checklists = () => {
                                 {!!autoFillChecklists && firstRelevantUnmarkedIdx === index && (
                                     <Link45deg size={24} />
                                 )}
+                                {' '}
+                                {' '}
                                 {' '}
                                 {cl.name}
                             </div>

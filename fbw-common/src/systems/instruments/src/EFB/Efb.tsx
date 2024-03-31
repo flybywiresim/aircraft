@@ -230,7 +230,7 @@ export const Efb = () => {
 
     // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore
     // a result cannot be provided right away.
-    // TODO:Is there no better way to get the lists into React??
+    // TODO: Is there no better way to get the lists into React??
     const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
     useEffect(() => {
         checklistReader.readChecklist().then((result) => {

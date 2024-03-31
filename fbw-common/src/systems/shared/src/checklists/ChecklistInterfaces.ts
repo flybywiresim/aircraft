@@ -2,25 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
- * Enumeration for item types in a checklist.
- *
- * ITEM - Represents a normal checklist item.
- * LINE - Represents a line break in the checklist (for down to the line /below the line parts).
- * SUBLISTHEADER - Represents a header for a sublist in the checklist.
- * SUBLISTITEM - Represents an item inside a sublist in the checklist.
- */
-export enum ChecklistItemType {
-    ITEM,
-    LINE,
-    SUBLISTHEADER,
-    SUBLISTITEM
-}
-
-/**
  * The ConditionType interface represents a condition and its associated result.
  *
  * @field condition - SimVar or LVar name which will be read as Number
  * @field result - the desired result for the SimVar/LVar for the condition to be true
+ * @field comp - comparator to compare the var with the result (one of NE, LT, LE, EQ, GE, GT)
  *
  * @exmaple
  * ```json
@@ -33,6 +19,7 @@ export enum ChecklistItemType {
 export interface ConditionType {
     varName: string;
     result: number;
+    comp?: string;
 }
 
 /**
@@ -40,7 +27,7 @@ export interface ConditionType {
  *
  * @field item - The text description of the checklist item. This is the default and can be omitted.
  * @field result - The string for the expected result for the checklist item.
- * @field type - optional - The type of the checklist item (See {@link ChecklistItemType}).
+ * @field type - optional - The type of the checklist item.
  * @field action - option - The string for the action to be performed (if not defined the result string is used).
  * @field condition - optional - list of SimVar or LVar names and desired results pairs - all need to evaluate
  *                               to true for the condition to be true.
@@ -71,7 +58,7 @@ export interface ConditionType {
 export interface ChecklistItem {
     item: string;
     result: string;
-    type?: ChecklistItemType;
+    type?: string;
     action?: string;
     condition?: ConditionType[];
 }

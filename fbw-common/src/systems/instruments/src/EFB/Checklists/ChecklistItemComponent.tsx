@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { CheckLg, Link45deg } from 'react-bootstrap-icons';
-import { ChecklistItem, ChecklistItemType } from '@flybywiresim/checklists';
+import { ChecklistItem } from '@flybywiresim/checklists';
 import { getRelevantChecklistIndices } from './Checklists';
 import { setChecklistCompletion, setChecklistItemCompletion } from '../Store/features/checklists';
 
@@ -36,11 +36,11 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
     const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
     // convenience variables to make the JSX more readable
-    const isLine = item.type !== undefined && item.type === ChecklistItemType.LINE;
-    const isListItem = item.type === undefined || item.type === ChecklistItemType.ITEM;
-    const isSublistItem = item.type !== undefined && item.type === ChecklistItemType.SUBLISTITEM;
+    const isLine = item.type !== undefined && item.type === 'LINE';
+    const isListItem = item.type === undefined || item.type === 'ITEM';
+    const isSublistItem = item.type !== undefined && item.type === 'SUBLISTITEM';
     const isAnyItemType = isListItem || isSublistItem;
-    const isSubListHeader = item.type !== undefined && item.type === ChecklistItemType.SUBLISTHEADER;
+    const isSubListHeader = item.type !== undefined && item.type === 'SUBLISTHEADER';
 
     let color = 'text-theme-text';
     if (isItemCompleted && !isLine) {
@@ -63,9 +63,8 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
     const autoCheckable = selectedChecklistIndex >= firstRelevantUnmarkedIdx && autoFillChecklists;
 
     const handleChecklistItemClick = () => {
-        if (isLine) { // lines are not clickable
-            return;
-        }
+        if (isLine) return; // lines are not clickable
+
         if (item.condition && autoCheckable) {
             setAutoItemTouches((old) => old + 1);
             setChecklistShake(true);
