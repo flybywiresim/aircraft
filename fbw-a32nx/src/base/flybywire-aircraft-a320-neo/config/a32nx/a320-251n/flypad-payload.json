@@ -1,0 +1,54 @@
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "_type": 1,
+    "chartLimits": {
+        "weight": {
+            "min": 35000,
+            "max": 80000,
+            "lines": 9,
+            "scale": 5000,
+            "values": [
+                80,
+                70,
+                60,
+                50,
+                40
+            ]
+        },
+        "cg": {
+            "angleRad": 0.014025,
+            "min": 12,
+            "max": 47,
+            "overlap": 32,
+            "highlight": 5,
+            "lines": 35,
+            "scale": 1,
+            "values": [
+                15,
+                20,
+                25,
+                30,
+                35,
+                40
+            ]
+        },
+        "labels": {
+            "mtow": {
+                "x1": 0.65,
+                "x2": 0.22,
+                "y": 0.02
+            },
+            "mlw": {
+                "x1": 0.65,
+                "x2": 0.22,
+                "y": 0.22
+            },
+            "mzfw": {
+                "x1": 0.65,
+                "x2": 0.22,
+                "y": 0.29
+            }
+        }
+    }
+}

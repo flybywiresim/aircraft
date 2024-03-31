@@ -1,0 +1,13 @@
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "_throttleAxisOptions": [
+        1,
+        2
+    ],
+    "_pushback": {
+        "turnIndicatorTuningDefault": 1.35,
+        "aircraftWheelBase": 12.64,
+        "aircraftLengthMeter": 37.57
+    }
+}
