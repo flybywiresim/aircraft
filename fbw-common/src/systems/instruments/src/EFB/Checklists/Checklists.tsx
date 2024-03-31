@@ -18,6 +18,8 @@ import {
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
 import { ChecklistJsonDefinition, ChecklistReader } from '../../../../shared/src/checklists/ChecklistReader';
 
+const checklistReader = new ChecklistReader();
+
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
  */
@@ -102,16 +104,12 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
  * @brief The flyPad's Checklists page component.
  */
 export const Checklists = () => {
-    const checklistReader = new ChecklistReader();
-    const [checklistRead, setChecklistRead] = useState<boolean>(false);
     const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
-
     useEffect(() => {
         checklistReader.readChecklist().then((result) => {
             setAircraftChecklists(result);
-            setChecklistRead(true);
         });
-    }, [!checklistRead]);
+    }, [aircraftChecklists.length === 0]);
 
     const dispatch = useAppDispatch();
 
