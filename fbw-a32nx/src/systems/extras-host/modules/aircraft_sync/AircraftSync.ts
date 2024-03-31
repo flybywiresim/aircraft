@@ -10,7 +10,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 export class AircraftSync {
     public xmlConfig: Document
 
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly aircraftProjectPrefix: string, private readonly bus: EventBus) {
         console.log('AircraftSync: Created');
     }
 
@@ -22,6 +22,8 @@ export class AircraftSync {
         this.xmlConfig = xmlConfig;
     }
 
+    // TODO: Remove this sync when VFS config is done.
+    // Replace with new function for commbus implementation to sync VFS markup config to WASM
     public startPublish(): void {
         console.log('AicraftSync: startPublish()');
 
@@ -33,10 +35,8 @@ export class AircraftSync {
             aircraftType = AircraftType.A380_842;
             break;
         case 'A320_251N':
-            aircraftType = AircraftType.A320_251N;
-            break;
         default:
-            aircraftType = AircraftType.Unknown;
+            aircraftType = AircraftType.A320_251N;
             break;
         }
 

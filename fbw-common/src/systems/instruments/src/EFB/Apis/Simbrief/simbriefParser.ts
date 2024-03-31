@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AircraftVersionChecker, getAircraftType } from '@flybywiresim/fbw-sdk';
+import { AircraftGithubVersionChecker } from '@flybywiresim/fbw-sdk';
 import { ISimbriefData } from './simbriefInterface';
 
 const SIMBRIEF_BASE_URL = 'https://www.simbrief.com/api/xml.fetcher.php';
@@ -30,7 +30,7 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X) then
     // this try/catch could be removed, but it doesn't hurt to have it here even then as an extra safety measure
     try {
-        const versionInfo = await AircraftVersionChecker.getBuildInfo(getAircraftType());
+        const versionInfo = await AircraftGithubVersionChecker.getBuildInfo(process.env.AIRCRAFT_PROJECT_PREFIX);
         simbriefApiParams.append('client', `fbw-${versionInfo.version}`);
     } catch (e) {
         console.error('Error getting build info', e);

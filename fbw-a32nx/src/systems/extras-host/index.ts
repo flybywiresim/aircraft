@@ -63,9 +63,9 @@ class ExtrasHost extends BaseInstrument {
         this.notificationManager = new NotificationManager();
 
         this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-        this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
-        this.aircraftSync = new AircraftSync(this.bus);
+        this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+        this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }

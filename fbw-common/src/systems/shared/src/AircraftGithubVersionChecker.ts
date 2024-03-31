@@ -40,7 +40,7 @@ export enum KnowBranchNames {
  *  Provides functions to the check the version of the aircraft against the
  *  published GitHub version
  */
-export class AircraftVersionChecker {
+export class AircraftGithubVersionChecker {
     private static notification: NotificationManager;
 
     private static versionChecked = false;
@@ -59,7 +59,7 @@ export class AircraftVersionChecker {
      * @returns true if the aircraft version has been checked, false if no check has been commenced.
      */
     public static async checkVersion(aircraft: string): Promise<boolean> {
-        console.log('Checking aircraft version');
+        console.log(`Checking aircraft version for A/C project: ${aircraft}`);
 
         this.notification = new NotificationManager();
 
@@ -80,9 +80,9 @@ export class AircraftVersionChecker {
             const versionInfo = this.getVersionInfo(this.buildInfo.version);
             if (this.checkOutdated(versionInfo)) {
                 this.setOutdatedVersionFlag(true);
-                console.log('Aircraft version outdated');
+                console.log(`Aircraft ${aircraft} - version outdated`);
             } else {
-                console.log('Aircraft version ok');
+                console.log(`Aircraft ${aircraft} - version ok`);
             }
             this.versionChecked = true;
         } catch (error) {
@@ -152,7 +152,7 @@ export class AircraftVersionChecker {
         this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
         this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'master');
         this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
-        this.buildInfo = await AircraftVersionChecker.getBuildInfo(aircraft);
+        this.buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
     }
 
     /**
