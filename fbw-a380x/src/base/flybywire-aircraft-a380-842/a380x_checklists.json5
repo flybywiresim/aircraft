@@ -35,17 +35,18 @@
         {
           "item": "PARK BRK",
           "result": "ON",
-          "condition": "checkParkingBrakeOn"
+          // "condition": "(L:A32NX_PARK_BRAKE_LEVER_POS) 1 =="
+          "condition": "!!SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool')"
         },
         {
           "item": "SIGNS",
           "result": "ON",
-          "condition": "checkSignsOn"
+          "condition": ""
         },
         {
           "item": "ADIRS NAV",
           "result": "ON",
-          "condition": "checkAdirsNav"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.LINE",
@@ -60,7 +61,7 @@
         {
           "item": "BEACON",
           "result": "ON",
-          "condition": "checkBeaconOn"
+          "condition": ""
         }
       ]
     },
@@ -80,7 +81,7 @@
         {
           "item": "RUDDER TRIM",
           "result": "NEUTRAL",
-          "condition": "checkRudderTrimReset"
+          "condition": ""
         },
         {
           "item": "PITCH TRIM",
@@ -122,14 +123,14 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
-          "condition": "checkSignsOn"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SPLRS",
           "action": "ARM",
           "result": "ARMED",
-          "condition": "checkSpoilerArmed"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -140,7 +141,7 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "AUTO BRK",
           "result": "RTO",
-          "condition": "checkAutobrakeRTOArmed"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -174,12 +175,12 @@
         {
           "item": "LDG GEAR",
           "result": "UP",
-          "condition": "checkA380XLdgGearUp"
+          "condition": ""
         },
         {
           "item": "FLAPS",
           "result": "0",
-          "condition": "checkFlapsUp"
+          "condition": ""
         },
         {
           "item": "PACKS 1+2",
@@ -188,7 +189,7 @@
         {
           "item": "APU MASTER",
           "result": "OFF",
-          "condition": "checkAPUMasterOff"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.LINE",
@@ -198,12 +199,12 @@
         {
           "item": "LANDING LIGHTS",
           "result": "OFF",
-          "condition": "checkLandingLightsOff"
+          "condition": ""
         },
         {
           "item": "BARO REF STD",
           "result": "SET (BOTH)",
-          "condition": "checkBaroStd"
+          "condition": ""
         }
       ]
     },
@@ -248,7 +249,7 @@
         {
           "item": "SEAT BELTS",
           "result": "ON",
-          "condition": "checkSeatBeltsOn"
+          "condition": ""
         }
       ]
     },
@@ -269,13 +270,13 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SIGNS",
           "result": "ON",
-          "condition": "checkSignsOn"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "LDG GEAR",
           "result": "DOWN",
-          "condition": "checkA380XLdgGearDown"
+          "condition": ""
         },
         {
           "type": "ChecklistItemType.SUBLISTITEM",
@@ -286,7 +287,7 @@
           "type": "ChecklistItemType.SUBLISTITEM",
           "item": "SPLRs",
           "result": "ARM",
-          "condition": "checkSpoilerArmed"
+          "condition": ""
         }
       ]
     },
@@ -302,18 +303,18 @@
           "item": "SPLRS",
           "action": "DISARM",
           "result": "DISARMED",
-          "condition": "!checkSpoilerArmed"
+          "condition": ""
         },
         {
           "item": "FLAPS",
           "result": "0",
-          "condition": "checkFlapsUp"
+          "condition": ""
         },
         {
           "item": "APU",
           "action": "START",
           "result": "STARTED",
-          "condition": "checkAPUStarted"
+          "condition": ""
         }
       ]
     },
@@ -336,17 +337,17 @@
         {
           "item": "ALL ENGs OFF",
           "result": "OFF",
-          "condition": "checkA380XEnginesOff"
+          "condition": ""
         },
         {
           "item": "FUEL PMPs",
           "result": "OFF",
-          "condition": "checkA380XFuelPumpsOff"
+          "condition": ""
         },
         {
           "item": "SEAT BELTS",
           "result": "OFF",
-          "condition": "!checkSeatBeltsOn"
+          "condition": ""
         }
       ]
     },
@@ -357,22 +358,22 @@
         {
           "item": "ADIRS",
           "result": "OFF",
-          "condition": "checkAdirsOff"
+          "condition": ""
         },
         {
           "item": "OXYGEN",
           "result": "OFF",
-          "condition": "checkOxygenOff"
+          "condition": ""
         },
         {
           "item": "SIGNS",
           "result": "OFF",
-          "condition": "checkSignsOff"
+          "condition": ""
         },
         {
           "item": "APU",
           "result": "OFF",
-          "condition": "checkAPUMasterOff"
+          "condition": ""
         },
         {
           "item": "LAPTOPS",
@@ -381,7 +382,7 @@
         {
           "item": "BATTERIES",
           "result": "OFF",
-          "condition": "checkA380XBatOff"
+          "condition": ""
         }
       ]
     }
