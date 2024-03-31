@@ -20,6 +20,8 @@ const checklistReader = ChecklistProvider.getInstance();
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
+ *
+ * TODO: make flight phases a part of the checklist data definitions
  */
 export const getRelevantChecklistIndices = () => {
     const relevantChecklistIndices: number[] = [];
@@ -58,9 +60,7 @@ export const getRelevantChecklistIndices = () => {
  * This is called every 1s from EFB.tsx and every time the selected checklist index changes.
  */
 export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefinition[]) => {
-    if (aircraftChecklists.length === 0) {
-        return;
-    }
+    if (aircraftChecklists.length === 0) return;
 
     const checklists = (store.getState() as RootState).trackingChecklists.checklists;
 
@@ -77,9 +77,9 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
                 // if the item is a line or subheader, mark it as completed as these do not have a relevant completion state
                 if (clItem.type !== undefined && (clItem.type === ChecklistItemType.LINE || clItem.type === ChecklistItemType.SUBLISTHEADER)) {
                     isCompleted = true;
-                } else if (clItem.condition) {
+                } else if (clItem.condition.length > 0) {
                     // if the item has a condition, check if it is completed
-                    // TODO
+                    // TODO: use RPN to check if a checklist item can automatically completed
                     // isCompleted = clItem.condition();
                 } else {
                     // ignore items without a condition
@@ -102,6 +102,9 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
  * @brief The flyPad's Checklists page component.
  */
 export const Checklists = () => {
+    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore
+    // a result cannot be provided right away.
+    // TODO:Is there no better way to get the lists into React??
     const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
     useEffect(() => {
         checklistReader.readChecklist().then((result) => {
@@ -109,18 +112,29 @@ export const Checklists = () => {
         });
     }, [aircraftChecklists.length === 0]);
 
-    const dispatch = useAppDispatch();
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
-    const handleClick = (index: number) => {
-        dispatch(setSelectedChecklistIndex(index));
-    };
+    const dispatch = useAppDispatch();
+    const { showModal } = useModals();
 
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
-
-    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    useEffect(() => {
+        if (!autoFillChecklists) return;
+        setAutomaticItemStates(aircraftChecklists);
+    }, [selectedChecklistIndex]);
 
     const relevantChecklistIndices = getRelevantChecklistIndices();
     const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
+
+    /**
+     * Handles the click event for a checklist item.
+     *
+     * @param {number} index - The index of the checklist item being clicked.
+     * @returns {void}
+     */
+    const handleClick = (index: number): void => {
+        dispatch(setSelectedChecklistIndex(index));
+    };
 
     /**
      * @brief Get the css/tailwind class name for the checklist tab-button
@@ -130,34 +144,20 @@ export const Checklists = () => {
         const isChecklistCompleted = areAllChecklistItemsCompleted(index);
         const isMarkedCompleted = checklists[index].markedCompleted;
         const isSelected = index === selectedChecklistIndex;
-
         if (isSelected && isChecklistCompleted) {
             return isMarkedCompleted ? 'bg-utility-green font-bold text-theme-body' : 'bg-utility-amber font-bold text-theme-body';
         }
-
         if (isSelected) {
             return 'bg-theme-highlight font-bold text-theme-body';
         }
-
         if (isChecklistCompleted) {
             return isMarkedCompleted ? 'bg-theme-body border-2 border-utility-green font-bold text-utility-green hover:text-theme-body hover:bg-utility-green' : 'bg-theme-body border-2 border-utility-amber font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
         }
-
         return 'bg-theme-accent border-2 border-theme-accent font-bold text-theme-text hover:bg-theme-highlight hover:text-theme-body';
     };
 
-    useEffect(() => {
-        if (!autoFillChecklists) return;
-        setAutomaticItemStates(aircraftChecklists);
-    }, [selectedChecklistIndex]);
-
-    const { showModal } = useModals();
-
     const handleResetConfirmation = () => {
-        if (aircraftChecklists.length === 0) {
-            return;
-        }
-
+        if (aircraftChecklists.length === 0) return;
         showModal(
             <PromptModal
                 title={t('Checklists.ChecklistResetWarning')}
@@ -180,10 +180,9 @@ export const Checklists = () => {
             />,
         );
     };
+
     const handleResetChecklist = () => {
-        if (aircraftChecklists.length === 0) {
-            return;
-        }
+        if (aircraftChecklists.length === 0) return;
         checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
             if (autoFillChecklists && aircraftChecklists[selectedChecklistIndex].items[itemIdx].condition) {
                 return;
@@ -196,6 +195,9 @@ export const Checklists = () => {
         });
         dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
     };
+
+    // aircraftChecklists are retrieved asynchronous there it is possible for aircraftChecklists to be empty. No point
+    // in rendering then.
     if (aircraftChecklists.length === 0) {
         return (
             <></>

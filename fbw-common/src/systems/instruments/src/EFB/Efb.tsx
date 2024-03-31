@@ -225,9 +225,12 @@ export const Efb = () => {
     // ======================
     // CHECKLISTS
     // ======================
-    // TODO
+    // ChecklistProvider is a singleton that reads the checklists from aircraft specific json and provides it as data structure
     const checklistReader = ChecklistProvider.getInstance();
 
+    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore
+    // a result cannot be provided right away.
+    // TODO:Is there no better way to get the lists into React??
     const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
     useEffect(() => {
         checklistReader.readChecklist().then((result) => {
@@ -235,11 +238,7 @@ export const Efb = () => {
         });
     }, [aircraftChecklists.length === 0]);
 
-    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    useInterval(() => {
-        if (!autoFillChecklists && aircraftChecklists.length === 0) return;
-        setAutomaticItemStates(aircraftChecklists);
-    }, 1000);
+    // initialize the reducer store for the checklists state
     const { checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
         if (aircraftChecklists.length === 0) return;
@@ -258,6 +257,16 @@ export const Efb = () => {
             }
         }
     }, [powerState]);
+
+    // If the user has activated the autofill of checklists, setAutomaticItemStates will retrieve current aircraft states
+    // where appropriate and set checklists items to "completed" automatically
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    useInterval(() => {
+        if (!autoFillChecklists && aircraftChecklists.length === 0) return;
+        setAutomaticItemStates(aircraftChecklists);
+    }, 1000);
+
+    // ===================================
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
