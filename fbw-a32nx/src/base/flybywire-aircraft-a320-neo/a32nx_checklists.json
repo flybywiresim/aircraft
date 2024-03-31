@@ -1,0 +1,90 @@
+{
+    "cockpitPreparationChecklistA32NX": {
+        "name": "COCKPIT PREPARATION",
+        "items": [
+            { "item": "GEAR PINS & COVERS", "action": "REMOVE", "result": "REMOVED" },
+            { "item": "FUEL QUANTITY", "result": "_____ KG/LB" },
+            { "item": "SEAT BELTS", "result": "ON", "condition": "checkSeatBeltsOn()" },
+            { "item": "ADIRS", "result": "NAV", "condition": "checkAdirsNav()" },
+            { "item": "BARO REF", "result": "_____ (BOTH)" }
+        ]
+    },
+    "beforeStartChecklistA32NX": {
+        "name": "BEFORE START",
+        "items": [
+            { "item": "PARKING BRAKE", "result": "AS RQRD" },
+            { "item": "T.O SPEEDS & THRUST", "result": "_____ (BOTH)" },
+            { "item": "WINDOWS", "result": "CLOSED (BOTH)" },
+            { "item": "BEACON", "result": "ON", "condition": "checkBeaconOn()" }
+        ]
+    },
+    "afterStartChecklistA32NX": {
+        "name": "AFTER START",
+        "items": [
+            { "item": "ANTI ICE", "result": "AS RQRD" },
+            { "item": "ECAM STATUS", "action": "CHECK", "result": "CHECKED" },
+            { "item": "PITCH TRIM", "result": "_____%"},
+            { "item": "RUDDER TRIM", "result": "NEUTRAL", "condition": "checkRudderTrimReset()" }
+        ]
+    },
+    "taxiChecklistA32NX": {
+        "name": "TAXI",
+        "items": [
+            { "item": "FLIGHT CONTROL", "result": "CHECKED (BOTH)" },
+            { "item": "FLAPS SETTING", "result": "CONF _____ (BOTH)" },
+            { "item": "RADAR & PRED W/S", "result": "ON & AUTO", "condition": "checkWxOnPredWsAuto()" },
+            { "item": "ENG MODE SEL", "result": "AS RQRD" },
+            { "item": "ECAM MEMO", "result": "TO NO BLUE" },
+            { "item": "CABIN", "result": "READY" }
+        ]
+    },
+    "lineUpChecklistA32NX": {
+        "name": "LINE-UP",
+        "items": [
+            { "item": "T.O. RWY", "result": "_____(BOTH)" },
+            { "item": "TCAS", "result": "AS RQRD" },
+            { "item": "PACKS 1 & 2", "result": "AS RQRD" }
+        ]
+    },
+    "approachChecklistA32NX": {
+        "name": "APPROACH",
+        "items": [
+            { "item": "BARO REF", "result": "_____SET (BOTH)" },
+            { "item": "SEAT BELTS", "result": "ON", "condition": "checkSeatBeltsOn()" },
+            { "item": "MINIMUM", "result": "AS RQRD" },
+            { "item": "AUTO BRAKE", "result": "AS RQRD" },
+            { "item": "ENG MODE SEL", "result": "AS RQRD" }
+        ]
+    },
+    "landingChecklistA32NX": {
+        "name": "LANDING",
+        "items": [
+            { "item": "ECAM MEMO", "result": "LDG NO BLUE" },
+            { "item": "CABIN", "result": "READY" }
+        ]
+    },
+    "afterLandingChecklistA32NX": {
+        "name": "AFTER LANDING",
+        "items": [
+            { "item": "RADAR & PRED W/S", "result": "OFF", "condition": "checkWxOffPredWsOff()" }
+        ]
+    },
+    "parkingChecklistA32NX": {
+        "name": "PARKING",
+        "items": [
+            { "item": "PARK BRK or CHOCKS", "result": "SET" },
+            { "item": "ENGINES", "result": "OFF", "condition": "checkA32NXEnginesOff()" },
+            { "item": "WING LIGHTS", "result": "OFF", "condition": "checkWingLtOff()" },
+            { "item": "FUEL PUMPS", "result": "OFF", "condition": "checkA32NXFuelPumpsOff()" },
+            { "item": "YELLOW ELEC PUMP", "result": "OFF", "condition": "checkYellowEPumpOff()" }
+        ]
+    },
+    "securingAircraftChecklistA32NX": {
+        "name": "SECURING AIRCRAFT",
+        "items": [
+            { "item": "OXYGEN", "result": "OFF", "condition": "checkOxygenOff()" },
+            { "item": "EMER EXIT LT", "result": "OFF", "condition": "checkEmerExtLtOff()" },
+            { "item": "BATTERIES", "result": "OFF", "condition": "checkA32NXBatOff()" }
+        ]
+    }
+}

@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChecklistDefinition } from '@flybywiresim/checklists';
+import { ChecklistDefinition } from './index';
 import {
     checkA32NXBatOff,
     checkA32NXEnginesOff,
@@ -14,7 +14,7 @@ import {
     checkWxOffPredWsOff,
     checkWxOnPredWsAuto,
     checkYellowEPumpOff,
-} from '../../../instruments/src/EFB/Checklists/CheckItemStates';
+} from './CheckItemStates';
 
 export const cockpitPreparationChecklistA32NX: ChecklistDefinition = {
     name: 'COCKPIT PREPARATION',

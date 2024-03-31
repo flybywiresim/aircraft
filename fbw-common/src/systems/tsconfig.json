@@ -20,7 +20,7 @@
       "@typings/*": ["../typings/*"],
       "@flybywiresim/fbw-sdk": ["./index.ts"],
       "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
-      "@flybywiresim/checklists": ["./shared/src/checklists/index.tsx"],
+      "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"],
     }
   }
 }

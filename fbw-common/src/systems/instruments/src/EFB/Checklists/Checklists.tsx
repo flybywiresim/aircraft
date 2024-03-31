@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '../../../../shared/src/checklists';
+import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
 
 import {
@@ -16,6 +16,10 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
+import { ChecklistReader } from '../../../../shared/src/checklists/ChecklistReader';
+
+const checklistReader = new ChecklistReader();
+checklistReader.readChecklist();
 
 const aircraftChecklists: ChecklistDefinition[] = getAircraftChecklists();
 

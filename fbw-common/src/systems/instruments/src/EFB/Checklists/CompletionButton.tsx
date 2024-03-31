@@ -4,8 +4,8 @@
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
-import { ChecklistDefinition, ChecklistItemType } from '@flybywiresim/checklists';
-import { getAircraftChecklists } from '../../../../shared/src/checklists';
+import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '@flybywiresim/checklists';
+
 import {
     areAllChecklistItemsCompleted,
     setChecklistCompletion,
