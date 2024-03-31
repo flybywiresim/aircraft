@@ -6,9 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { ChecklistItemType } from '@flybywiresim/checklists';
+import { ChecklistItemType, ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
-
 import {
     areAllChecklistItemsCompleted,
     setChecklistCompletion,
@@ -16,9 +15,8 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
-import { ChecklistJsonDefinition, ChecklistReader } from '../../../../shared/src/checklists/ChecklistReader';
 
-const checklistReader = new ChecklistReader();
+const checklistReader = ChecklistProvider.getInstance();
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
@@ -242,7 +240,7 @@ export const Checklists = () => {
                     </button>
                 </div>
 
-                <ChecklistPage />
+                <ChecklistPage acl={aircraftChecklists} />
             </div>
         </>
     );

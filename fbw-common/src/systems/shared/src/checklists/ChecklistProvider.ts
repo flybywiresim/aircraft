@@ -3,35 +3,26 @@
 
 import { getAircraftType } from '@flybywiresim/fbw-sdk';
 import JSON5 from 'json5';
+import { ChecklistJsonDefinition, ChecklistItem } from './ChecklistInterfaces';
 
-enum ChecklistItemType {
-    ITEM,
-    LINE,
-    SUBLISTHEADER,
-    SUBLISTITEM
-}
-
-interface ChecklistItem {
-    item: string;
-    result: string;
-    type?: ChecklistItemType;
-    action?: string;
-    condition?: string;
-}
-
-export interface ChecklistJsonDefinition {
-    name: string;
-    items: ChecklistItem[];
-}
-
-export class ChecklistReader {
+/**
+ * @brief ChecklistReader is a singleton class that reads checklist data from a JSON file.
+ *
+ * Get the singleton instance via getInstance()
+ */
+export class ChecklistProvider {
     private readonly configFilename: string;
+
+    private static instance:ChecklistProvider = undefined;
 
     private checklists: ChecklistJsonDefinition[] = [];
 
-    constructor() {
-        const aircraft = getAircraftType();
-        this.configFilename = `/VFS/${aircraft}_checklists.json5`;
+    public static getInstance():ChecklistProvider {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new ChecklistProvider();
+        return this.instance;
     }
 
     public async readChecklist(): Promise<ChecklistJsonDefinition[]> {
@@ -51,6 +42,11 @@ export class ChecklistReader {
     // =============================================================================================
     // Private methods
     // =============================================================================================
+
+    private constructor() {
+        const aircraft = getAircraftType();
+        this.configFilename = `/VFS/${aircraft}_checklists.json5`;
+    }
 
     private processChecklistJson(rawData: string) {
         let json: any;

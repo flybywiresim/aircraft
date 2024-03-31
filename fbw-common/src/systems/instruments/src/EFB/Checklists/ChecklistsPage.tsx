@@ -4,20 +4,21 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { ScrollableContainer } from '@flybywiresim/flypad';
-import { ChecklistDefinition, getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistJsonDefinition } from '@flybywiresim/checklists';
 import { useAppSelector } from '../Store/store';
 import { ChecklistItemComponent } from './ChecklistItemComponent';
 import { CompletionButton } from './CompletionButton';
 
-const CHECKLISTS:ChecklistDefinition[] = getAircraftChecklists();
+interface ChecklistPageProps {
+    acl: ChecklistJsonDefinition[];
+}
 
-export const ChecklistPage = () => {
+export const ChecklistPage = ({ acl }: ChecklistPageProps) => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
-
     return (
         <div className="flex w-full flex-col justify-between overflow-visible rounded-lg border-2 border-theme-accent p-8">
             <ScrollableContainer innerClassName="space-y-4" height={46}>
-                {CHECKLISTS[selectedChecklistIndex].items.map((it, index) => (
+                {acl[selectedChecklistIndex].items.map((it, index) => (
                     <ChecklistItemComponent
                         key={it.item}
                         item={it}
@@ -26,7 +27,7 @@ export const ChecklistPage = () => {
                 ))}
             </ScrollableContainer>
 
-            <CompletionButton />
+            <CompletionButton acl={acl} />
         </div>
     );
 };

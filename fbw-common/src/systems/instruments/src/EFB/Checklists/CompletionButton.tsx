@@ -4,7 +4,7 @@
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
-import { ChecklistDefinition, ChecklistItemType, getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistItemType, ChecklistJsonDefinition } from '@flybywiresim/checklists';
 
 import {
     areAllChecklistItemsCompleted,
@@ -13,9 +13,11 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 
-const aircraftChecklists:ChecklistDefinition[] = getAircraftChecklists();
+interface CompletionButtonProps {
+    acl: ChecklistJsonDefinition[];
+}
 
-export const CompletionButton = () => {
+export const CompletionButton = ({ acl }: CompletionButtonProps) => {
     const dispatch = useAppDispatch();
 
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
@@ -23,7 +25,7 @@ export const CompletionButton = () => {
     const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
-        const checklistItem = aircraftChecklists[selectedChecklistIndex].items[index];
+        const checklistItem = acl[selectedChecklistIndex].items[index];
         // skip line items
         if (checklistItem.type !== undefined && checklistItem.type === ChecklistItemType.LINE) {
             return false;
@@ -39,7 +41,7 @@ export const CompletionButton = () => {
         setCompleteItemVar(false);
     }, []);
 
-    // allows the completion button to be used via LVar - if the  LVar is set to true, the button will be clicked,
+    // allows the completion button to be used via LVar - if the LVar is set to true, the button will be clicked,
     // and the LVar will be reset to false
     useEffect(() => {
         if (completeItemVar) {

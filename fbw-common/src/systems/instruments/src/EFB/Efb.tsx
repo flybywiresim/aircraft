@@ -14,7 +14,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
-import { ChecklistDefinition, getAircraftChecklists } from '@flybywiresim/checklists';
+import { ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -193,26 +193,6 @@ export const Efb = () => {
         }
     }, [batteryLevel, powerState]);
 
-    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const { checklists } = useAppSelector((state) => state.trackingChecklists);
-
-    useEffect(() => {
-        if (powerState === PowerStates.SHUTOFF) {
-            dispatch(clearEfbState());
-        } else if (powerState === PowerStates.LOADED) {
-            const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
-            const CHECKLISTS:ChecklistDefinition[] = getAircraftChecklists();
-            if (checklistItemsEmpty) {
-                CHECKLISTS.forEach((checklist, index) => {
-                    dispatch(setChecklistItems({
-                        checklistIndex: index,
-                        itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
-                    }));
-                });
-            }
-        }
-    }, [powerState]);
-
     // Automatically load a lighting preset
     useEffect(() => {
         if (ac1BusIsPowered && powerState === PowerStates.LOADED && autoLoadLightingPresetEnabled) {
@@ -242,11 +222,42 @@ export const Efb = () => {
         }
     }, [ac1BusIsPowered, powerState, autoLoadLightingPresetEnabled]);
 
+    // ======================
+    // CHECKLISTS
+    // ======================
     // TODO
-    // useInterval(() => {
-    //     if (!autoFillChecklists) return;
-    //     setAutomaticItemStates();
-    // }, 1000);
+    const checklistReader = ChecklistProvider.getInstance();
+
+    const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
+    useEffect(() => {
+        checklistReader.readChecklist().then((result) => {
+            setAircraftChecklists(result);
+        });
+    }, [aircraftChecklists.length === 0]);
+
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    useInterval(() => {
+        if (!autoFillChecklists && aircraftChecklists.length === 0) return;
+        setAutomaticItemStates(aircraftChecklists);
+    }, 1000);
+    const { checklists } = useAppSelector((state) => state.trackingChecklists);
+    useEffect(() => {
+        if (aircraftChecklists.length === 0) return;
+
+        if (powerState === PowerStates.SHUTOFF) {
+            dispatch(clearEfbState());
+        } else if (powerState === PowerStates.LOADED) {
+            const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
+            if (checklistItemsEmpty) {
+                aircraftChecklists.forEach((checklist, index) => {
+                    dispatch(setChecklistItems({
+                        checklistIndex: index,
+                        itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
+                    }));
+                });
+            }
+        }
+    }, [powerState]);
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
