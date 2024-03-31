@@ -16,6 +16,7 @@ jobs:
       STABLE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable
       AIRCRAFT_PROJECT_PREFIX: a32nx
+      AIRCRAFT_VARIANT: a320-251n
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -26,7 +27,8 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
-          echo AIRCRAFT_PROJECT_PREFIX=\"${{ secrets.AIRCRAFT_PROJECT_PREFIX }}\" >> fbw-a32nx/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a32nx/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a32nx/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env

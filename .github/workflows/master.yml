@@ -23,6 +23,7 @@ jobs:
       VMASTER_PRE_RELEASE_TAG: vmaster
       BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
+      AIRCRAFT_VARIANT: a320-251n
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -36,6 +37,7 @@ jobs:
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
           echo AIRCRAFT_PROJECT_PREFIX=\"${{ env.AIRCRAFT_PROJECT_PREFIX }}\" >> fbw-a32nx/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a32nx/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
@@ -103,6 +105,7 @@ jobs:
       VMASTER_PRE_RELEASE_TAG: vmaster
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
+      AIRCRAFT_VARIANT: a380-842
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -116,6 +119,7 @@ jobs:
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
           echo AIRCRAFT_PROJECT_PREFIX=\"${{ env.AIRCRAFT_PROJECT_PREFIX }}\" >> fbw-a380x/.env
+          echo AIRCRAFT_VARIANT=\"${{ env.AIRCRAFT_VARIANT }}\" >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
