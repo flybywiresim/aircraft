@@ -1,5 +1,5 @@
 import { Wait } from '@microsoft/msfs-sdk';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ClientState, NXDataStore, SimBridgeClientState } from '@flybywiresim/fbw-sdk';
 import { protocolV0 } from '@flybywiresim/remote-bridge-types';
 import { Base64 } from 'js-base64';
 
@@ -80,7 +80,14 @@ export class RemoteClient {
         this.clientName = options.clientName;
         this.fileDownloadBasePath = options.fileDownloadBasePath;
 
-        this.attemptConnect();
+        ClientState.getInstance().simBridgeConnectionState.sub((state) => {
+            if (state === SimBridgeClientState.CONNECTED) {
+                this.attemptConnect();
+            } else if (this.ws) {
+                this.ws.close();
+            }
+        });
+
         this.fetchInstrumentsMetadata(options.instrumentsMetadataFile).then((metadata) => this.instruments = metadata);
     }
 
@@ -109,6 +116,13 @@ export class RemoteClient {
     }
 
     private attemptConnect(): void {
+        const simBridgeClientState = ClientState.getInstance().getSimBridgeClientState();
+
+        if (simBridgeClientState !== SimBridgeClientState.CONNECTED) {
+            console.log(`[RemoteClient](attemptConnect) Not attempting to connect, as SimBridge client is in state "${simBridgeClientState}"`);
+            return;
+        }
+
         this.connectionAttemptCount++;
 
         console.log(`[RemoteClient](attemptConnect) Attempting to connect (${this.url}). attempt #${this.connectionAttemptCount}`);
