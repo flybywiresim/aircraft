@@ -307,10 +307,11 @@ const PressureComponent = () => {
     const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
     const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
-    const cpcDiscreteWordToUse = cpc1DiscreteWord.getBitValueOr(11, false) ? cpc1DiscreteWord : cpc2DiscreteWord;
+    const activeCpcNumber = cpc1DiscreteWord.getBitValueOr(11, false) ? 1 : 2;
+    const cpcDiscreteWordToUse = activeCpcNumber === 1 ? cpc1DiscreteWord : cpc2DiscreteWord;
+
     const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
 
-    const activeCpcNumber = cpcDiscreteWordToUse === cpc1DiscreteWord ? 1 : 2;
     const cpcLandingElevation = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_LANDING_ELEVATION`, 500);
     const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
 

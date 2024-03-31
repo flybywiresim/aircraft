@@ -1219,8 +1219,8 @@ export class PseudoFWC {
         this.cpc1DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
         this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
-        const activeCpc = this.cpc1DiscreteWord.bitValueOr(11, false) ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
-        const activeCpcNumber = activeCpc === this.cpc1DiscreteWord ? 1 : 2;
+        const activeCpcNumber = this.cpc1DiscreteWord.bitValueOr(11, false) ? 1 : 2;
+        const activeCpc = activeCpcNumber === 1 ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
 
         this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
         this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
