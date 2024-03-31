@@ -6,6 +6,7 @@ export * from './ArincConsumer';
 export * from './ArincEventBus';
 export * from './ArincEventBusSubscriber';
 export * from './AutoCallOuts';
+export * from './checklists';
 export * from './Constants';
 export * from './FbwAircraftSentryClient';
 export * from './FmMessages';
