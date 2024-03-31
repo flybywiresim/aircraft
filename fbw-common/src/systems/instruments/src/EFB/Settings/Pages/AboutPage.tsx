@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, useSessionStorage, AircraftGithubVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, useSimVar, AircraftInfo } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSessionStorage, AircraftGithubVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, AircraftInfo } from '@flybywiresim/fbw-sdk';
 import { t } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore

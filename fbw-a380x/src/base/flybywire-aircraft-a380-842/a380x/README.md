@@ -6,10 +6,10 @@ flyPad and other components to other aircraft.
 
 Currently, there is config and hardcoded values spreadout across the repo, sometimes in various configuration (.json, .h, .toml, etc.) files.
 
-The solution to this takes on (at the moment) the form of a VFS stored .json markup file ``<aircraft_prefix>/aircraft.json`` that has a format that currently is being decided and iterated upon.
+The solution to this takes on (at the moment) the form of a VFS stored .json markup file ``<env.AIRCRAFT_PROJECT_PREFIX>/aircraft.json`` that has a format that currently is being decided and iterated upon.
 
 This will (eventually) allow for deep, per-livery/tail number configuration i.e. dynamic passenger seating configurations and cargo loading by providing an override file (based on ATC ID/tailnumber),
-i.e. ``<aircraft_prefix>/<tail_num>-aircraft.json``
+i.e. ``<env.AIRCRAFT_PROJECT_PREFIX>/<tail_num>-aircraft.json``
 
 This consists of several components and will be expanded upon in stages to facilitate and aid our code review and refactoring processes.
 
