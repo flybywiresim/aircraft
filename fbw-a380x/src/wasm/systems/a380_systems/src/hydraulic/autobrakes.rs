@@ -3,6 +3,7 @@ use systems::{
     hydraulic::brake_circuit::AutobrakeDecelerationGovernor,
     overhead::PressSingleSignalButton,
     shared::{
+        arinc429::{Arinc429Word, SignStatus},
         interpolation, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, LgciuInterface,
     },
@@ -668,11 +669,11 @@ struct BtvDecelScheduler {
 
     ground_speed_id: VariableIdentifier,
 
-    runway_length: Length,
+    runway_length: Arinc429Word<Length>,
 
     rolling_distance: Length,
-    fallback_distance_to_exit_from_touchdown: Length,
-    oans_distance_to_exit: Length,
+    fallback_distance_to_exit_from_touchdown: Arinc429Word<Length>,
+    oans_distance_to_exit: Arinc429Word<Length>,
 
     spoilers_active: bool,
 
@@ -707,10 +708,13 @@ impl BtvDecelScheduler {
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
-            runway_length: Length::default(),
+            runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
             rolling_distance: Length::default(),
-            fallback_distance_to_exit_from_touchdown: Length::default(),
-            oans_distance_to_exit: Length::default(),
+            fallback_distance_to_exit_from_touchdown: Arinc429Word::new(
+                Length::default(),
+                SignStatus::NoComputedData,
+            ),
+            oans_distance_to_exit: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
 
             spoilers_active: false,
             ground_speed: Velocity::default(),
@@ -760,9 +764,9 @@ impl BtvDecelScheduler {
 
     fn braking_distance_remaining(&self) -> Length {
         let distance_remaining_raw = if self.is_oans_fallback_mode() {
-            self.fallback_distance_to_exit_from_touchdown - self.rolling_distance
+            self.fallback_distance_to_exit_from_touchdown.value() - self.rolling_distance
         } else {
-            self.oans_distance_to_exit
+            self.oans_distance_to_exit.value()
         };
 
         let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV);
@@ -803,9 +807,12 @@ impl BtvDecelScheduler {
     }
 
     fn arming_authorized(&self) -> bool {
-        self.runway_length.get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
-            && (self.oans_distance_to_exit.get::<meter>() > -1.
-                || self.fallback_distance_to_exit_from_touchdown.get::<meter>() > -1.)
+        self.runway_length.is_normal_operation()
+            && self.runway_length.value().get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
+            && (self.oans_distance_to_exit.is_normal_operation()
+                || self
+                    .fallback_distance_to_exit_from_touchdown
+                    .is_normal_operation())
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
@@ -899,50 +906,49 @@ impl BtvDecelScheduler {
     }
 
     fn is_oans_fallback_mode(&self) -> bool {
-        self.oans_distance_to_exit.get::<meter>() < 0.
+        !self.oans_distance_to_exit.is_normal_operation()
     }
 
     fn is_armed(&self) -> bool {
         self.state != BTVState::Disabled
     }
 
-    fn rot_estimation_for_distance(&self) -> Duration {
+    fn rot_estimation_for_distance(&self) -> Arinc429Word<u64> {
         let distance = if self.is_oans_fallback_mode() {
-            self.fallback_distance_to_exit_from_touchdown
+            self.fallback_distance_to_exit_from_touchdown.value()
         } else {
-            self.oans_distance_to_exit
+            self.oans_distance_to_exit.value()
         };
 
         // Only showing ROT when a distance is available and BTV not currently braking
         if distance.get::<meter>() > 0. && self.state == BTVState::Disabled
             || self.state == BTVState::Armed
         {
-            Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.))
+            let rot_duration =
+                Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.));
+            Arinc429Word::new(rot_duration.as_secs(), SignStatus::NormalOperation)
         } else {
-            Duration::default()
+            Arinc429Word::new(0, SignStatus::NormalOperation)
         }
     }
 }
 impl SimulationElement for BtvDecelScheduler {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.rot_estimation_id,
-            self.rot_estimation_for_distance().as_secs(),
-        );
+        let rot_arinc = self.rot_estimation_for_distance();
+
+        writer.write_arinc429(&self.rot_estimation_id, rot_arinc.value(), rot_arinc.ssm());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let fallback_raw_exit_distance_meters =
-            reader.read_f64(&self.dev_exit_distance_to_touchdown_id);
         self.fallback_distance_to_exit_from_touchdown =
-            Length::new::<meter>(fallback_raw_exit_distance_meters);
+            reader.read_arinc429(&self.dev_exit_distance_to_touchdown_id);
 
-        let runway_length_meters = reader.read_f64(&self.runway_length_id);
-        self.runway_length = Length::new::<meter>(runway_length_meters);
+        self.runway_length = reader.read_arinc429(&self.runway_length_id);
 
-        let raw_oans_distance_to_exit = reader.read_f64(&self.distance_to_exit_id);
-        self.oans_distance_to_exit = Length::new::<meter>(raw_oans_distance_to_exit);
+        self.oans_distance_to_exit = reader.read_arinc429(&self.distance_to_exit_id);
 
         self.ground_speed = reader.read(&self.ground_speed_id);
+
+        println!("READ rwy dist {:.0}/{:?}  oansexit {:.0}/{:?}  fallback dist {:.0}/{:?}",);
     }
 }
