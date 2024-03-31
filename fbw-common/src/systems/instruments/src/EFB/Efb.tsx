@@ -238,7 +238,7 @@ export const Efb = () => {
         });
     }, [aircraftChecklists.length === 0]);
 
-    // initialize the reducer store for the checklists state
+    // initialize the reducer store for the checklists' state
     const { checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
         if (aircraftChecklists.length === 0) return;
