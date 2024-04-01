@@ -1,7 +1,9 @@
 import { A380Failure } from '@flybywiresim/failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
+
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
-import {Arinc429Word, ArincEventBus, FailuresConsumer} from '@flybywiresim/fbw-sdk';
+import { LinearDeviationIndicator } from 'instruments/src/PFD/LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -138,6 +140,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
+                    <LinearDeviationIndicator bus={this.props.bus} />
 
                     <MachNumber bus={this.props.bus} />
                     <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
