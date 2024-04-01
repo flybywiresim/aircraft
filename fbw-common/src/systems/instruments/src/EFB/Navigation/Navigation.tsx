@@ -17,6 +17,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { ChartFoxPage } from './Pages/ChartFoxPage/ChartFoxPage';
 import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 // import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
@@ -36,11 +37,12 @@ import {
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
+import { LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
     { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'ChartFox', alias: '', component: <ChartFoxPage />, associatedTab: NavigationTab.CHARTFOX },
     { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
@@ -50,8 +52,9 @@ export const Navigation = () => {
 
     if (navigationTabs) {
         navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
-        navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
-        navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
+        navigationTabs[1].alias = t('NavigationAndCharts.ChartFox.Title');
+        navigationTabs[2].alias = t('NavigationAndCharts.LocalFiles.Title');
+        navigationTabs[3].alias = t('NavigationAndCharts.PinnedCharts.Title');
     }
 
     return (
@@ -94,7 +97,6 @@ export const ChartViewer = () => {
         isFullScreen,
         chartDimensions,
         chartLinks,
-        chartId,
         pagesViewable,
         currentPage,
         chartPosition,
@@ -190,22 +192,10 @@ export const ChartViewer = () => {
         }
     }, [chartRef, chartDimensions]);
 
-    useEffect(() => {
-        if (pagesViewable > 1) {
-            getPdfUrl(chartId, currentPage)
-                .then((url) => {
-                    dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
-                })
-                .catch((error) => {
-                    console.error(`Error: ${error}`);
-                });
-        }
-    }, [currentPage]);
-
     const transformRef = useRef<ReactZoomPanPinchRef>(null);
     const planeRef = useRef(null);
 
-    if (!chartLinks.light || !chartLinks.dark) {
+    if (provider !== ChartProvider.CHARTFOX && (!chartLinks.light || !chartLinks.dark)) {
         return (
             <div
                 className={`relative flex items-center justify-center rounded-lg bg-theme-accent ${!isFullScreen && 'ml-6 rounded-l-none'}`}

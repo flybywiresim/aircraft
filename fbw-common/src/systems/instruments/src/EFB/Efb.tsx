@@ -4,8 +4,9 @@
 import React, { useEffect, useState } from 'react';
 import {
     useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
-    SentryConsentState, SENTRY_CONSENT_KEY,
+    ChartFoxClient, SentryConsentState, SENTRY_CONSENT_KEY,
     FailureDefinition,
+    ChartFoxStatus,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
@@ -14,12 +15,13 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
+import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
 import { FbwLogo } from './UtilComponents/FbwLogo';
-import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { NavigraphContext } from './Apis/Navigraph/Navigraph';
+import { ChartFoxContext } from './Apis/ChartFox/ChartFox';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -98,6 +100,12 @@ export const Efb = () => {
     const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const [navigraph] = useState(() => new NavigraphClient());
+
+    const [chartFoxStatus, setChartFoxStatus] = useState(ChartFoxStatus.LoggedOut);
+    const handleChartFoxUpdate = ({ status }) => {
+        setChartFoxStatus(status);
+    };
+    const [chartFoxClient] = useState(() => new ChartFoxClient({ onUpdate: handleChartFoxUpdate }));
 
     const dispatch = useAppDispatch();
 
@@ -315,43 +323,45 @@ export const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                <ModalContainer />
-                <PowerContext.Provider value={{ powerState, setPowerState }}>
-                    <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
-                        <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
+                <ChartFoxContext.Provider value={{ client: chartFoxClient, status: chartFoxStatus }}>
+                    <ModalContainer />
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                        <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
+                            <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
 
-                        <ToastContainer
-                            position="top-center"
-                            draggableDirection="y"
-                            limit={2}
-                        />
-                        <StatusBar
-                            batteryLevel={batteryLevel.level}
-                            isCharging={dc2BusIsPowered === 1}
-                        />
-                        <div className="flex flex-row">
-                            <ToolBar />
-                            <div className="h-screen w-screen pr-6 pt-14">
-                                <Switch>
-                                    <Route exact path="/">
-                                        <Redirect to="/dashboard" />
-                                    </Route>
-                                    <Route path="/dashboard" component={Dashboard} />
-                                    <Route path="/dispatch" component={Dispatch} />
-                                    <Route path="/ground" component={Ground} />
-                                    <Route path="/performance" component={Performance} />
-                                    <Route path="/navigation" component={Navigation} />
-                                    <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
-                                    <Route path="/checklists" component={Checklists} />
-                                    <Route path="/presets" component={Presets} />
-                                    <Route path="/settings" component={Settings} />
-                                    <Route path="/settings/flypad" component={FlyPadPage} />
-                                </Switch>
+                            <ToastContainer
+                                position="top-center"
+                                draggableDirection="y"
+                                limit={2}
+                            />
+                            <StatusBar
+                                batteryLevel={batteryLevel.level}
+                                isCharging={dc2BusIsPowered === 1}
+                            />
+                            <div className="flex flex-row">
+                                <ToolBar />
+                                <div className="h-screen w-screen pr-6 pt-14">
+                                    <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
+                                        <Route path="/dashboard" component={Dashboard} />
+                                        <Route path="/dispatch" component={Dispatch} />
+                                        <Route path="/ground" component={Ground} />
+                                        <Route path="/performance" component={Performance} />
+                                        <Route path="/navigation" component={Navigation} />
+                                        <Route path="/atc" component={ATC} />
+                                        <Route path="/failures" component={Failures} />
+                                        <Route path="/checklists" component={Checklists} />
+                                        <Route path="/presets" component={Presets} />
+                                        <Route path="/settings" component={Settings} />
+                                        <Route path="/settings/flypad" component={FlyPadPage} />
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </PowerContext.Provider>
+                    </PowerContext.Provider>
+                </ChartFoxContext.Provider>
             </NavigraphContext.Provider>
         );
     default:

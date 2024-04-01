@@ -15,7 +15,7 @@ enum ConnectionState {
     ESTABLISHED,
 }
 
-export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
+export const getPdfImageUrl = async (fileName: string, pageNumber: number): Promise<string> => {
     const id = 'loading-file';
     try {
         toast.loading(t('NavigationAndCharts.LoadingPdf'), { toastId: id, pauseOnFocusLoss: false });

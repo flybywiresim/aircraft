@@ -61,6 +61,60 @@ export class Viewer {
     }
 
     /**
+     * Used to retrieve a streamable image of specified page within a given PDF URL
+     * @param url required field, URL link to the pdf
+     * @param pageNumber required field, The page of the PDF file
+     * @returns a Blob
+     */
+    public static async getPDFPageFromUrl(url: string, pageNumber: number): Promise<Blob> {
+        if (!ClientState.getInstance().isConnected()) {
+            throw new Error('SimBridge is not connected.');
+        }
+        if (url || pageNumber) {
+            const encodedUrl = encodeURIComponent(url);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/pdf/fromUrl?encodedUrl=${encodedUrl}&pagenumber=${pageNumber}`);
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error(`SimBridge Error: ${response.status}`);
+        }
+        throw new Error('File name or page number missing');
+    }
+
+    /**
+     * Used to retrieve a URL to the rendered image of the PDF page at the specified URL.
+     * It internally calls getPDFPageFromUrl and then calls createObjectURL().
+     * @see https://developer.mozilla.org/en-US/docs/web/api/url/createobjecturl
+     * @param url required field, URL link to the pdf
+     * @param pageNumber required field, The page of the PDF file
+     * @returns url to the image (object blob) of the PDF page
+     */
+    public static async getImageUrlFromPdfUrl(url: string, pageNumber: number): Promise<string> {
+        const blob = await Viewer.getPDFPageFromUrl(url, pageNumber);
+        return URL.createObjectURL(blob);
+    }
+
+    /**
+     * Retrieve the number of pages within a PDF file at the specified URL
+     * @param url required field, URL link to the pdf
+     * @returns A number
+     */
+    public static async getPDFPageCountFromUrl(url: string): Promise<number> {
+        if (!ClientState.getInstance().isConnected()) {
+            throw new Error('SimBridge is not connected.');
+        }
+        if (url) {
+            const encodedUrl = encodeURIComponent(url);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/pdf/fromUrl/numpages?encodedUrl=${encodedUrl}`);
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(`SimBridge Error: ${response.status}`);
+        }
+        throw new Error('File name or page number missing');
+    }
+
+    /**
      * Used to retrieve a list of filenames within the PDF folder
      * @returns an Array of strings
      */
