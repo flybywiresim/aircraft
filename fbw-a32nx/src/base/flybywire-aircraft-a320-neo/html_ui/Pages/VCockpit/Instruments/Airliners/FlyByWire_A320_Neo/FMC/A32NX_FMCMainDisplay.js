@@ -4476,8 +4476,6 @@ class FMCMainDisplay extends BaseAirliners {
      */
     isPdFormat(s) {
         return Fmgc.WaypointEntryUtils.isPdFormat(s);
-        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
-        return pd !== null && this.isPlaceFormat(pd[1]);
     }
 
     /**
