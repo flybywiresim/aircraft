@@ -210,9 +210,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
                     this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
                     const oppositeThreshold = placeBearingDistance(this.landingRunwayNavdata.thresholdLocation, this.landingRunwayNavdata.bearing, this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES);
+                    const localThr = globalToAirportCoordinates(this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
                     const localOppThr = globalToAirportCoordinates(this.arpCoordinates, oppositeThreshold);
 
-                    this.btvUtils.selectRunwayFromNavdata(it, this.landingRunwayNavdata.length, this.landingRunwayNavdata.bearing, localOppThr);
+                    this.btvUtils.selectRunwayFromNavdata(it, this.landingRunwayNavdata.length, this.landingRunwayNavdata.bearing, localThr, localOppThr);
                 }
             }
         });

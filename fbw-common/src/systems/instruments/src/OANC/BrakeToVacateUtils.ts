@@ -48,6 +48,9 @@ export class BrakeToVacateUtils {
     /** Selected threshold, used for exit distance calculation */
     private btvThresholdFeature: Feature<Geometry, AmdbProperties>;
 
+    /** Threshold, used for runway end distance calculation */
+    private btvThresholdPosition: Position;
+
     /** Opposite threshold, used for runway end distance calculation */
     private btvOppositeThresholdPosition: Position;
 
@@ -75,6 +78,7 @@ export class BrakeToVacateUtils {
 
         // Select opposite threshold location
         const thrLoc = thresholdFeature.geometry.coordinates as Position;
+        this.btvThresholdPosition = thrLoc;
         const firstEl = centerlineFeature.geometry.coordinates[0] as Position;
         const dist1 = pointDistance(thrLoc[0], thrLoc[1], firstEl[0], firstEl[1]);
         const lastEl = centerlineFeature.geometry.coordinates[centerlineFeature.geometry.coordinates.length - 1] as Position;
@@ -143,9 +147,10 @@ export class BrakeToVacateUtils {
         this.btvExit.set(exit);
     }
 
-    selectRunwayFromNavdata(runway: string, lda: number, heading: number, btvOppositeThresholdPosition: Position) {
+    selectRunwayFromNavdata(runway: string, lda: number, heading: number, btvThresholdPosition: Position, btvOppositeThresholdPosition: Position) {
         this.clearSelection();
 
+        this.btvThresholdPosition = btvThresholdPosition;
         this.btvOppositeThresholdPosition = btvOppositeThresholdPosition;
         this.btvRunwayLda.set(lda);
         this.btvRunwayHeading.set(heading);
@@ -172,6 +177,8 @@ export class BrakeToVacateUtils {
 
     clearSelection() {
         this.btvThresholdFeature = undefined;
+        this.btvThresholdPosition = [];
+        this.btvOppositeThresholdPosition = [];
         this.btvRunwayLda.set(null);
         this.btvRunwayHeading.set(null);
         this.btvRunway.set(null);
@@ -198,26 +205,42 @@ export class BrakeToVacateUtils {
     }
 
     updateRemainingDistances(pos: Position) {
-        if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
-            const rwyEndDistance = pointDistance(
-                pos[0],
-                pos[1],
-                this.btvOppositeThresholdPosition[0],
-                this.btvOppositeThresholdPosition[1],
-            );
+        if (this.btvThresholdPosition && this.btvThresholdPosition.length > 0) {
+            if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
+                const rwyEndDistanceFromThreshold = pointDistance(
+                    this.btvThresholdPosition[0],
+                    this.btvThresholdPosition[1],
+                    this.btvOppositeThresholdPosition[0],
+                    this.btvOppositeThresholdPosition[1],
+                );
 
-            this.remaininingDistToRwyEnd.set(MathUtils.round(rwyEndDistance, 0.1));
-        }
+                const rwyEndDistance = pointDistance(
+                    pos[0],
+                    pos[1],
+                    this.btvOppositeThresholdPosition[0],
+                    this.btvOppositeThresholdPosition[1],
+                );
 
-        if (this.btvExitPosition && this.btvExitPosition.length > 0) {
-            const exitDistance = pointDistance(
-                pos[0],
-                pos[1],
-                this.btvExitPosition[0],
-                this.btvExitPosition[1],
-            );
+                this.remaininingDistToRwyEnd.set(MathUtils.round(Math.min(rwyEndDistanceFromThreshold, rwyEndDistance), 0.1));
+            }
 
-            this.remaininingDistToExit.set(MathUtils.round(exitDistance, 0.1));
+            if (this.btvExitPosition && this.btvExitPosition.length > 0) {
+                const exitDistanceFromThreshold = pointDistance(
+                    this.btvThresholdPosition[0],
+                    this.btvThresholdPosition[1],
+                    this.btvExitPosition[0],
+                    this.btvExitPosition[1],
+                );
+
+                const exitDistance = pointDistance(
+                    pos[0],
+                    pos[1],
+                    this.btvExitPosition[0],
+                    this.btvExitPosition[1],
+                );
+
+                this.remaininingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromThreshold, exitDistance), 0.1));
+            }
         }
     }
 }
