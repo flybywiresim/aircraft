@@ -9,6 +9,8 @@
 //    result: number;             // the numerical result to be compared to using the operation defined in comp
 //    comp?: string;              // one of NE !=, LT <, LE <=, EQ ==, GE >=, GT > | default = EQ if not defined
 //
+// OBS: It is not recommended to override these default checklists yet as they are still being improved and the format
+//      off the default checklists might change. Any overriding will break when the format changes.
 {
   "checklists": [
     {

@@ -257,7 +257,9 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red bg-theme-body font-bold text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
+                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red
+                                   bg-theme-body font-bold text-utility-red transition duration-100
+                                   hover:bg-utility-red hover:text-theme-body"
                         onClick={handleResetAllConfirmation}
                     >
                         {t('Checklists.ResetAll')}
@@ -265,7 +267,9 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red bg-theme-body font-bold text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
+                        className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red
+                                   bg-theme-body font-bold text-utility-red transition duration-100
+                                   hover:bg-utility-red hover:text-theme-body"
                         onClick={handleResetChecklist}
                     >
                         {t('Checklists.ResetChecklist')}

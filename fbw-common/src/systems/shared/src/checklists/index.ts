@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './ChecklistInterfaces';
-export { ChecklistProvider } from './ChecklistProvider';
+export * from './ChecklistProvider';

@@ -57,7 +57,7 @@ export class ChecklistProvider {
     private constructor() {
         // TODO: adapt to the new unified configuration (PR #8599)
         const aircraft = getAircraftType();
-        this.configFilename = `/VFS/${aircraft}_checklists.json5`;
+        this.configFilename = `/VFS/config/${aircraft}_checklists.json5`;
     }
 
     /**
