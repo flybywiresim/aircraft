@@ -781,7 +781,7 @@ class CDUFlightPlanPage {
                 if (offset >= Math.max(destinationAirportOffset, alternateAirportOffset) && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
                     // Go back to top of flight plan page to show origin airport.
                     offset = 0;
-                } else if (offset >= destinationAirportOffset) {
+                } else if (offset >= destinationAirportOffset && offset < alternateAirportOffset) {
                     offset = alternateAirportOffset;
                 } else {
                     offset = destinationAirportOffset;
