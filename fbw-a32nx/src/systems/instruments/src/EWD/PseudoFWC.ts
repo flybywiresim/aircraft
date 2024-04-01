@@ -1923,6 +1923,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400220: { // OVERSPEED FLAPS 3
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1934,6 +1935,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400230: { // OVERSPEED FLAPS 2
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1946,6 +1948,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400235: { // OVERSPEED FLAPS 1+F
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1958,6 +1961,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400240: { // OVERSPEED FLAPS 1
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1970,6 +1974,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
