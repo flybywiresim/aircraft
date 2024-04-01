@@ -7,7 +7,6 @@
 
 ## 0.12.0
 
-1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
 1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
@@ -78,6 +77,7 @@
 1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
 2. [FAC] Improve sideslip estimation - @lukecologne (luke)
+1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
 
 ## 0.11.0
 
