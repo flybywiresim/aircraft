@@ -171,32 +171,6 @@ export class GuidanceController {
         this.updateEfisApproachMessage();
     }
 
-    private lastFocusedWpIndex = -1;
-
-    private lastEfisInterfaceVersion = -1;
-
-    // FIXME only considers the case where F-PLN is shown on the MCDU
-    private updateMrpState() {
-        if (!this.flightPlanService.hasActive) {
-            return; // TODO secondary
-        }
-
-        const termination = this.findPlanCentreCoordinates();
-
-        if (!termination) {
-            // throw new Error('[FMS/MRP] Could not find matching geometry leg');
-            SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees', SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'));
-            SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees', SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'));
-            return;
-        }
-
-        this.focusedWaypointCoordinates.lat = termination.lat;
-        this.focusedWaypointCoordinates.long = termination.long;
-
-        SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees', this.focusedWaypointCoordinates.lat);
-        SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees', this.focusedWaypointCoordinates.long);
-    }
-
     private updateMapPartlyDisplayed() {
         if (this.efisStateForSide.L.dataLimitReached || this.efisStateForSide.L.legsCulled) {
             SimVar.SetSimVarValue('L:A32NX_EFIS_L_MAP_PARTLY_DISPLAYED', 'boolean', true);
@@ -288,7 +262,7 @@ export class GuidanceController {
     constructor(
         fmgc: Fmgc,
         private readonly flightPlanService: FlightPlanService,
-        private efisInterface: EfisInterface,
+        private efisInterfaces: Record<EfisSide, EfisInterface>,
         private readonly efisNDRangeValues: number[],
         private readonly acConfig: AircraftConfig,
     ) {
@@ -300,7 +274,7 @@ export class GuidanceController {
         this.lnavDriver = new LnavDriver(flightPlanService, this, acConfig);
         this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, acConfig);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
-        this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterface);
+        this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterfaces);
     }
 
     init() {
@@ -397,13 +371,6 @@ export class GuidanceController {
             this.updateEfisIdent();
         } catch (e) {
             console.error('[FMS] Error during LNAV update. See exception below.');
-            console.error(e);
-        }
-
-        try {
-            this.updateMrpState();
-        } catch (e) {
-            console.error('[FMS] Error during map state computation. See exception below.');
             console.error(e);
         }
 
@@ -551,44 +518,5 @@ export class GuidanceController {
 
     get lastCrosstrackError(): NauticalMiles {
         return this.lnavDriver.lastXTE;
-    }
-
-    private findPlanCentreCoordinates(): Coordinates | null {
-        // PLAN mode center
-        const { fpIndex: focusedWpFpIndex, index: focusedWpIndex, inAlternate: focusedWpInAlternate } = this.efisInterface.planCentre;
-
-        if (!this.flightPlanService.has(focusedWpFpIndex)) {
-            return null;
-        }
-
-        const plan = focusedWpInAlternate ? this.flightPlanService.get(focusedWpFpIndex).alternateFlightPlan : this.flightPlanService.get(focusedWpFpIndex);
-
-        if (!plan.hasElement(focusedWpIndex)) {
-            return null;
-        }
-
-        const matchingLeg = plan.elementAt(focusedWpIndex);
-
-        if (!matchingLeg || matchingLeg.isDiscontinuity === true) {
-            return null;
-        }
-
-        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate)) {
-            return null;
-        }
-
-        // FIXME HAX
-        const matchingGeometryLeg = this.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate).legs.get(focusedWpIndex);
-
-        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
-            this.lastFocusedWpIndex = focusedWpIndex;
-            this.lastEfisInterfaceVersion = this.efisInterface.version;
-        }
-
-        if ('lat' in matchingGeometryLeg.terminationWaypoint) {
-            return matchingGeometryLeg.terminationWaypoint;
-        }
-
-        return matchingGeometryLeg.terminationWaypoint.location;
     }
 }

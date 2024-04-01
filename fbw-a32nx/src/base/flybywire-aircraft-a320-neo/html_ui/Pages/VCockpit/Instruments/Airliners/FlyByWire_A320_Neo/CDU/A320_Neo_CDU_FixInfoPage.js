@@ -24,8 +24,8 @@ class CDUFixInfoPage {
                     return scratchpadCallback();
                 }
             }
-            if (mcdu.isPlaceFormat(value)) {
-                mcdu.parsePlace(value).then((runway) => {
+            if (Fmgc.WaypointEntryUtils.isPlaceFormat(value)) {
+                Fmgc.WaypointEntryUtils.parsePlace(mcdu, value).then((runway) => {
                     mcdu.flightPlanService.setFixInfoEntry(page, {
                         fix: runway,
                         radii: [],

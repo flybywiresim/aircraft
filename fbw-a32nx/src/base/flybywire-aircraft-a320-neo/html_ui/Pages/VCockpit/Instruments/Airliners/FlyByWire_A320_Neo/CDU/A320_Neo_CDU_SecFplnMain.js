@@ -3,9 +3,11 @@ class CDUSecFplnMain {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'FMGC';
 
-        mcdu.efisInterface.setSecRelatedPageOpen(true);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
         mcdu.onUnload = () => {
-            mcdu.efisInterface.setSecRelatedPageOpen(false);
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
         }
 
         mcdu.onLeftInput[0] = () => {

@@ -12,7 +12,14 @@ export class EfisInterface {
 
     private isSecRelatedPageOpen: boolean = false;
 
-    private visibleLegs: Record<FlightPlanIndex, number> = {
+    private visibleLegsInPlanMode: Record<FlightPlanIndex, number> = {
+        [FlightPlanIndex.Active]: 0,
+        [FlightPlanIndex.Temporary]: 0,
+        [FlightPlanIndex.FirstSecondary]: 0,
+        [FlightPlanIndex.Uplink]: 0,
+    }
+
+    private visibleLegsInArcMode: Record<FlightPlanIndex, number> = {
         [FlightPlanIndex.Active]: 0,
         [FlightPlanIndex.Temporary]: 0,
         [FlightPlanIndex.FirstSecondary]: 0,
@@ -44,26 +51,44 @@ export class EfisInterface {
         }
     }
 
-    setAlternateLegVisible(visible: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisible = (this.visibleLegs[planIndex] & FlightPlanComponents.Alternate) > 0;
-        if (visible !== wasPreviouslyVisible) {
-            this.visibleLegs[planIndex] ^= FlightPlanComponents.Alternate;
+    setAlternateLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
+        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Alternate) > 0;
+        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
+            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.Alternate;
+            this.version++;
+        }
+
+        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Alternate) > 0;
+        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
+            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.Alternate;
             this.version++;
         }
     }
 
-    setMissedLegVisible(visible: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisible = (this.visibleLegs[planIndex] & FlightPlanComponents.Missed) > 0;
-        if (visible !== wasPreviouslyVisible) {
-            this.visibleLegs[planIndex] ^= FlightPlanComponents.Missed;
+    setMissedLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
+        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Missed) > 0;
+        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
+            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.Missed;
+            this.version++;
+        }
+
+        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Missed) > 0;
+        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
+            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.Missed;
             this.version++;
         }
     }
 
-    setAlternateMissedLegVisible(visible: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisible = (this.visibleLegs[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
-        if (visible !== wasPreviouslyVisible) {
-            this.visibleLegs[planIndex] ^= FlightPlanComponents.AlternateMissed;
+    setAlternateMissedLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
+        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
+        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
+            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.AlternateMissed;
+            this.version++;
+        }
+
+        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
+        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
+            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.AlternateMissed;
             this.version++;
         }
     }
@@ -72,28 +97,34 @@ export class EfisInterface {
         return this.isSecRelatedPageOpen;
     }
 
-    shouldTransmitAlternate(planIndex: FlightPlanIndex): boolean {
+    shouldTransmitAlternate(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
         if (planIndex === FlightPlanIndex.FirstSecondary) {
             return this.isSecRelatedPageOpen;
         }
 
-        return (this.visibleLegs[planIndex] & FlightPlanComponents.Alternate) > 0;
+        return isArcVsPlanMode
+            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Alternate) > 0
+            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Alternate) > 0;
     }
 
-    shouldTransmitMissed(planIndex: FlightPlanIndex): boolean {
+    shouldTransmitMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
         if (planIndex === FlightPlanIndex.FirstSecondary) {
             return this.isSecRelatedPageOpen;
         }
 
-        return (this.visibleLegs[planIndex] & FlightPlanComponents.Missed) > 0;
+        return isArcVsPlanMode
+            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Missed) > 0
+            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Missed) > 0;
     }
 
-    shouldTransmitAlternateMissed(planIndex: FlightPlanIndex): boolean {
+    shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
         if (planIndex === FlightPlanIndex.FirstSecondary) {
             return this.isSecRelatedPageOpen;
         }
 
-        return (this.visibleLegs[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
+        return isArcVsPlanMode
+            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0
+            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
     }
 }
 

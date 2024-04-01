@@ -16,4 +16,6 @@ export interface GenericFmsEvents {
     toWptEta: number;
     apprMessage0: number;
     apprMessage1: number;
+    mrpLat: number,
+    mrpLong: number,
 }

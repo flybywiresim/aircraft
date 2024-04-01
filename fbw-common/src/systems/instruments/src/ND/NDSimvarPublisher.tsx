@@ -7,8 +7,6 @@ export type NDSimvars = GenericAdirsEvents & GenericSwitchingPanelEvents & {
     potentiometerCaptain: number;
     potentiometerFo: number;
     ilsCourse: number;
-    selectedWaypointLat: Degrees;
-    selectedWaypointLong: Degrees;
     selectedHeading: Degrees;
     showSelectedHeading: boolean;
     pposLat: Degrees;

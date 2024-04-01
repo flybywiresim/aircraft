@@ -1,6 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -219,20 +220,14 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new Fmgc.DataManager(this);
 
-        this.efisInterface = new Fmgc.EfisInterface();
-        this.guidanceController = new Fmgc.GuidanceController(
-            this,
-            this.currFlightPlanService,
-            this.efisInterface,
-            Fmgc.a320EfisRangeSettings,
-            Fmgc.A320AircraftConfig
-            );
+        this.efisInterfaces = { L: new Fmgc.EfisInterface('L'), R: new Fmgc.EfisInterface('R') };
+        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings);
         this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(
             this.guidanceController,
             this.currFlightPlanService,
             this.navigation.getNavaidTuner(),
-            this.efisInterface,
+            this.efisInterfaces,
             Fmgc.a320EfisRangeSettings,
         );
 
@@ -2678,7 +2673,7 @@ class FMCMainDisplay extends BaseAirliners {
      *   -1 = unknown
      */
     async waypointType(mcdu, waypoint) {
-        if (mcdu.isLatLonFormat(waypoint)) {
+        if (Fmgc.WaypointEntryUtils.isLatLonFormat(waypoint)) {
             return [0, null];
         }
 
@@ -4304,190 +4299,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     routeFinalEntered() {
         return this._rteFinalWeightEntered || this._rteFinalTimeEntered;
-    }
-
-    /**
-     * Check if a place is the correct format for a runway
-     * @param {string} s
-     * @returns true if valid runway format
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isRunwayFormat}
-     */
-    isRunwayFormat(s) {
-        return Fmgc.WaypointEntryUtils.isRunwayFormat(s);
-        return s.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/) !== null;
-    }
-
-    /**
-     * Check if a place is the correct format for a latitude/longitude
-     * @param {string} s
-     * @returns true if valid lat/lon format
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isLatLonFormat}
-     */
-    isLatLonFormat(s) {
-        return Fmgc.WaypointEntryUtils.isLatLonFormat(s);
-        return s.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null;
-    }
-
-    /**
-     * Parse a lat/lon string into a position
-     * @param {string} place
-     * @throws {McduMessage}
-     * @returns {LatLongAlt}
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.parseLatLon}
-     */
-    parseLatLon(place) {
-        return Fmgc.WaypointEntryUtils.parseLatLon(place);
-        const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
-        if (latlon !== null) {
-            const latB = (latlon[1] || "") + (latlon[3] || "");
-            const lonB = (latlon[4] || "") + (latlon[6] || "");
-            const latDdigits = latlon[2].length === 4 ? 3 : 4;
-            const latD = parseInt(latlon[2].substring(0, latlon[2].length - latDdigits));
-            const latM = parseFloat(latlon[2].substring(latlon[2].length - latDdigits));
-            const lonDdigits = latlon[5].length === 4 ? 3 : 4;
-            const lonD = parseInt(latlon[5].substring(0, latlon[5].length - lonDdigits));
-            const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDdigits));
-            if (latB.length !== 1 || lonB.length !== 1 || !isFinite(latM) || !isFinite(lonM)) {
-                throw NXSystemMessages.formatError;
-            }
-            if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
-                throw NXSystemMessages.entryOutOfRange;
-            }
-            const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
-            const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
-            return new LatLongAlt(lat, lon);
-        }
-        throw NXSystemMessages.formatError;
-    }
-
-    /**
-     * Check if a place is the correct format
-     * @param {string} s
-     * @returns true if valid place format
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPlaceFormat}
-     */
-    isPlaceFormat(s) {
-        return Fmgc.WaypointEntryUtils.isPlaceFormat(s);
-        return s.match(/^[A-Z0-9]{2,7}$/) !== null || this.isRunwayFormat(s);
-    }
-
-    /**
-     * Parse a place string into a position
-     * @param {string} place
-     * @throws {McduMessage}
-     * @returns {WayPoint}
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePlace}
-     */
-    async parsePlace(place) {
-        return Fmgc.WaypointEntryUtils.parsePlace(this, place);
-        if (this.isRunwayFormat(place)) {
-            return Fmgc.WaypointEntryUtils.parseRunway(place);
-        }
-
-        return new Promise((resolve, reject) => {
-            this.getOrSelectWaypointByIdent(place, (waypoint) => {
-                if (waypoint) {
-                    return resolve(waypoint);
-                } else {
-                    return reject(NXSystemMessages.notInDatabase);
-                }
-            });
-        });
-    }
-
-    /**
-     * Check if a string is a valid place-bearing/place-bearing format
-     * @param {string} s
-     * @returns true if valid place format
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbxFormat}
-     */
-    isPbxFormat(s) {
-        return Fmgc.WaypointEntryUtils.isPbxFormat(s);
-        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
-    }
-
-    /**
-     * Parse a place-bearing/place-bearing string
-     * @param {string} s place-bearing/place-bearing
-     * @throws {McduMessage}
-     * @returns {[WayPoint, number, WayPoint, number]} place and true bearing * 2
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbx}
-     */
-    async parsePbx(s) {
-        return Fmgc.WaypointEntryUtils.parsePbx(this, s);
-        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        if (pbx === null) {
-            throw NXSystemMessages.formatError;
-        }
-        const brg1 = parseInt(pbx[2]);
-        const brg2 = parseInt(pbx[4]);
-        if (brg1 > 360 || brg2 > 360) {
-            throw NXSystemMessages.entryOutOfRange;
-        }
-        const place1 = await this.parsePlace(pbx[1]);
-        const magVar1 = A32NX_Util.getRadialMagVar(place1);
-        const place2 = await this.parsePlace(pbx[3]);
-        const magVar2 = A32NX_Util.getRadialMagVar(place2);
-
-        return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
-    }
-
-    /**
-     * Check if string is in place/bearing/distance format
-     * @param {String} s
-     * @returns true if pbd
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbdFormat}
-     */
-    isPbdFormat(s) {
-        return Fmgc.WaypointEntryUtils.isPbdFormat(s);
-        const pbd = s.match(/^([^\/]+)\/([0-9]{1,3})\/([0-9]{1,3}(\.[0-9])?)$/);
-        return pbd !== null && this.isPlaceFormat(pbd[1]);
-    }
-
-    /**
-     * Split PBD format into components
-     * @param {String} s PBD format string
-     * @returns [{string} place, {number} bearing, {number} distance]
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.splitPbd}
-     */
-    splitPbd(s) {
-        return Fmgc.WaypointEntryUtils.splitPbd(s);
-        let [place, brg, dist] = s.split("/");
-        brg = parseInt(brg);
-        dist = parseFloat(dist);
-        return [place, brg, dist];
-    }
-
-    /**
-     * @param {string} s
-     * @returns [wp: WayPoint, trueBearing: number, dist: number]
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbd}
-     */
-    async parsePbd(s) {
-        return Fmgc.WaypointEntryUtils.parsePbd(this, s);
-        const [place, brg, dist] = this.splitPbd(s);
-        if (brg > 360 || dist > 999.9) {
-            throw NXSystemMessages.entryOutOfRange;
-        }
-        if (this.isPlaceFormat(place)) {
-            const wp = await this.parsePlace(place);
-            const magVar = A32NX_Util.getRadialMagVar(wp);
-            return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
-        }
-        throw NXSystemMessages.formatError;
-    }
-
-    /**
-     *
-     * @param {string} s
-     * @returns {boolean} true if valid place/bearing format
-     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbFormat}
-     */
-    isPdFormat(s) {
-        return Fmgc.WaypointEntryUtils.isPdFormat(s);
-        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
-        return pd !== null && this.isPlaceFormat(pd[1]);
     }
 
     /**

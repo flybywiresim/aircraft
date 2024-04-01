@@ -179,6 +179,7 @@ export class VnavDriver implements GuidanceComponent {
             this.lastParameters = null;
             this.oldLegs.clear();
             this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
+            this.previousManagedDescentSpeedTarget = undefined;
         }
     }
 

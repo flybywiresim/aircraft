@@ -237,12 +237,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
     }
 
-    // TODO this is wrong and we need to redo all this
-    // we wanna end up with:
-    // - revise point
-    // - disco
-    // - destination airport
-    // - complete alternate routing
     async enableAltn(atIndex: number, cruiseLevel: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
@@ -254,9 +248,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             this.removeRange(atIndex + 1, this.legCount);
         }
 
-        await this.setDestinationAirport(this.alternateDestinationAirport.ident);
-        await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
         // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
+        await this.destinationSegment.setDestinationIcao(this.alternateDestinationAirport.ident);
+        await this.destinationSegment.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
         await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
         await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
         await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
@@ -268,8 +262,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             + this.alternateFlightPlan.departureEnrouteTransitionSegment.legCount
             + this.alternateFlightPlan.enrouteSegment.legCount;
         const alternateLegsToInsert = this.alternateFlightPlan.allLegs.slice(0, alternateLastEnrouteIndex).map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
-
-        // TODO add the destination again - don't know if the origin leg of the altn is counted here
 
         if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity === false && alternateLegsToInsert[0]?.isDiscontinuity === false) {
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
