@@ -2673,7 +2673,7 @@ class FMCMainDisplay extends BaseAirliners {
      *   -1 = unknown
      */
     async waypointType(mcdu, waypoint) {
-        if (mcdu.isLatLonFormat(waypoint)) {
+        if (Fmgc.WaypointEntryUtils.isLatLonFormat(waypoint)) {
             return [0, null];
         }
 

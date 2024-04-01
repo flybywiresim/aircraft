@@ -92,9 +92,9 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isLatLonFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                 try {
-                    const coordinates = mcdu.parseLatLon(value);
+                    const coordinates = Fmgc.WaypointEntryUtils.parseLatLon(value);
                     mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                         ident: _inProgressData.ident,
                         type: StoredWaypointType.LatLon,
@@ -129,9 +129,9 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isPbdFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isPbdFormat(value)) {
                 try {
-                    mcdu.parsePbd(value).then(([place, bearing, distance]) => {
+                    Fmgc.WaypointEntryUtils.parsePbd(mcdu, value).then(([place, bearing, distance]) => {
                         mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                             ident: _inProgressData.ident,
                             type: StoredWaypointType.Pbd,
@@ -169,9 +169,9 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isPbxFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isPbxFormat(value)) {
                 try {
-                    mcdu.parsePbx(value).then(([place1, bearing1, place2, bearing2]) => {
+                    Fmgc.WaypointEntryUtils.parsePbx(mcdu, value).then(([place1, bearing1, place2, bearing2]) => {
                         mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                             ident: _inProgressData.ident,
                             type: StoredWaypointType.Pbx,
