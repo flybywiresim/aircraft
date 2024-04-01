@@ -2,7 +2,6 @@ import { ConsumerSubject, DisplayComponent, FSComponent, VNode } from '@microsof
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { BrakingWarningsSimVars } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
-// import { Arinc429Values } from './shared/ArincValueProvider';
 
 interface AttitudeIndicatorWarningsProps {
     bus: ArincEventBus;

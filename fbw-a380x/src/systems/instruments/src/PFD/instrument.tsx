@@ -1,7 +1,9 @@
-import { Clock, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
 import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
+import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -14,6 +16,8 @@ class A380X_PFD extends BaseInstrument {
     private readonly bus = new ArincEventBus();
 
     private readonly backplane = new InstrumentBackplane();
+
+    private readonly stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
 
     private readonly clock = new Clock(this.bus);
 
@@ -29,6 +33,8 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly dmcPublisher = new DmcPublisher(this.bus);
 
+    private readonly fmsDataPublisher = new FmsDataPublisher(this.bus, this.stateSubject);
+
     private readonly brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
 
     constructor() {
@@ -41,6 +47,7 @@ class A380X_PFD extends BaseInstrument {
         this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
         this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
         this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
+        this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);
         this.backplane.addPublisher('BrakingWarnings', this.brakingWarningsPublisher);
     }
 

@@ -5,13 +5,6 @@
   100% {opacity: 1;}
 }
 
-@keyframes pulsing {
-  0% {opacity: 0;}
-  50% {opacity: 0;}
-  51% {opacity: 1;}
-  100% {opacity: 1;}
-}
-
 @mixin GenericPulsingStroke($color, $name) {
   @keyframes #{$name} {
     0% {stroke: scale-color($color, $lightness: -50%);}
