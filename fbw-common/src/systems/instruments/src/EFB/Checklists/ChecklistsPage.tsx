@@ -9,15 +9,15 @@ import { ChecklistItemComponent } from './ChecklistItemComponent';
 import { CompletionButton } from './CompletionButton';
 
 interface ChecklistPageProps {
-    acl: ChecklistJsonDefinition[];
+    allChecklists: ChecklistJsonDefinition[];
 }
 
-export const ChecklistPage = ({ acl }: ChecklistPageProps) => {
+export const ChecklistPage = ({ allChecklists }: ChecklistPageProps) => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
     return (
         <div className="flex w-full flex-col justify-between overflow-visible rounded-lg border-2 border-theme-accent p-8">
             <ScrollableContainer innerClassName="space-y-4" height={46}>
-                {acl[selectedChecklistIndex].items.map((it, index) => (
+                {allChecklists[selectedChecklistIndex].items.map((it, index) => (
                     <ChecklistItemComponent
                         key={it.item}
                         item={it}
@@ -26,7 +26,7 @@ export const ChecklistPage = ({ acl }: ChecklistPageProps) => {
                 ))}
             </ScrollableContainer>
 
-            <CompletionButton acl={acl} />
+            <CompletionButton allChecklists={allChecklists} />
         </div>
     );
 };

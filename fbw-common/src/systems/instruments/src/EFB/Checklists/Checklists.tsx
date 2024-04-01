@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
@@ -16,6 +15,8 @@ import {
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
 
+// ChecklistProvider is a singleton that reads the checklists from aircraft-specific json and
+// provides it as a data structure
 const checklistReader = ChecklistProvider.getInstance();
 
 /**
@@ -60,15 +61,15 @@ export const getRelevantChecklistIndices = () => {
  * This is called every 1s from EFB.tsx and every time the selected checklist index changes.
  */
 export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefinition[]) => {
-    if (aircraftChecklists.length === 0) return;
+    if (aircraftChecklists.length === 0) return; // in case the checklists are not loaded yet
 
     const checklists = (store.getState() as RootState).trackingChecklists.checklists;
 
-    // leave completed checklists alone - as otherwise they would be reset everytime an item becomes uncompleted
-    // iterate over all non-completed checklists and check all auto-checkable items
     checklists
         .forEach((cl, currentChecklistIdx) => {
-            if (cl.markedCompleted) return; // do not use filter as it would mess up the index sync between the two arrays
+            // leave completed checklists alone - as otherwise they would be reset everytime an item becomes uncompleted
+            // iterate over all non-completed checklists and check all auto-checkable items
+            if (cl.markedCompleted) return;
 
             // check all items in the current checklist if they are auto completed
             aircraftChecklists[currentChecklistIdx].items.forEach((clItem, itemIdx) => {
@@ -77,6 +78,7 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
                 // if the item is a line or subheader, mark it as completed as these do not have a relevant completion state
                 if (clItem.type !== undefined && (clItem.type === 'LINE' || clItem.type === 'SUBLISTHEADER')) {
                     isCompleted = true;
+                // if the item has a condition, check if it is fulfilled
                 } else if (clItem.condition && clItem.condition.length > 0) {
                     isCompleted = clItem.condition.every((c) => {
                         let comp: string = c.comp;
@@ -93,8 +95,8 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
                             return false;
                         }
                     });
+                // ignore items and subitems without a condition
                 } else {
-                    // ignore items without a condition
                     return;
                 }
 
@@ -133,24 +135,24 @@ export const Checklists = () => {
     useEffect(() => {
         if (!autoFillChecklists) return;
         setAutomaticItemStates(aircraftChecklists);
-    }, [selectedChecklistIndex]);
+    }, [selectedChecklistIndex, autoFillChecklists]);
 
     const relevantChecklistIndices = getRelevantChecklistIndices();
-    const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
+    const firstRelevantUnmarkedIdx = checklists.findIndex(
+        (cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted,
+    );
 
     /**
-     * Handles the click event for a checklist item.
-     *
-     * @param {number} index - The index of the checklist item being clicked.
-     * @returns {void}
+     * @brief Handles the click event for a checklist item.
+     * @param index - The index of the checklist item being clicked.
      */
-    const handleClick = (index: number): void => {
+    const handleClick = (index: number) => {
         dispatch(setSelectedChecklistIndex(index));
     };
 
     /**
      * @brief Get the css/tailwind class name for the checklist tab-button
-     * @param index
+     * @param index - The index of the checklist tab.
      */
     const getTabClassName = (index: number) => {
         const isChecklistCompleted = areAllChecklistItemsCompleted(index);
@@ -163,13 +165,21 @@ export const Checklists = () => {
             return 'bg-theme-highlight font-bold text-theme-body';
         }
         if (isChecklistCompleted) {
-            return isMarkedCompleted ? 'bg-theme-body border-2 border-utility-green font-bold text-utility-green hover:text-theme-body hover:bg-utility-green' : 'bg-theme-body border-2 border-utility-amber font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
+            return isMarkedCompleted ? 'bg-theme-body border-2 border-utility-green font-bold text-utility-green '
+                + 'hover:text-theme-body hover:bg-utility-green' : 'bg-theme-body border-2 border-utility-amber '
+                + 'font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
         }
         return 'bg-theme-accent border-2 border-theme-accent font-bold text-theme-text hover:bg-theme-highlight hover:text-theme-body';
     };
 
-    const handleResetConfirmation = () => {
-        if (aircraftChecklists.length === 0) return;
+    /**
+     * @brief Function to handle the confirmation to reset all checklists.
+     * This function displays a confirmation modal with a warning message and a confirmation button.
+     * If the user confirms the reset, it will set the completion value for all checklist items and checklists
+     * to false.
+     */
+    const handleResetAllConfirmation = () => {
+        if (aircraftChecklists.length === 0) return; // in case the checklists are not loaded yet
         showModal(
             <PromptModal
                 title={t('Checklists.ChecklistResetWarning')}
@@ -193,6 +203,12 @@ export const Checklists = () => {
         );
     };
 
+    /**
+     * @brief Handles the reset of a single checklist.
+     *
+     * This function sets the completion of each checklist item to false and the completion
+     * of the entire checklist to false.
+     */
     const handleResetChecklist = () => {
         if (aircraftChecklists.length === 0) return;
         checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
@@ -208,8 +224,8 @@ export const Checklists = () => {
         dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
     };
 
-    // aircraftChecklists are retrieved asynchronous there it is possible for aircraftChecklists to be empty. No point
-    // in rendering then.
+    // aircraftChecklists are retrieved asynchronous there it is possible for aircraftChecklists to be empty.
+    // No point in rendering in this case.
     if (aircraftChecklists.length === 0) {
         return (
             <></>
@@ -242,7 +258,7 @@ export const Checklists = () => {
                     <button
                         type="button"
                         className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red bg-theme-body font-bold text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
-                        onClick={handleResetConfirmation}
+                        onClick={handleResetAllConfirmation}
                     >
                         {t('Checklists.ResetAll')}
                     </button>
@@ -256,7 +272,7 @@ export const Checklists = () => {
                     </button>
                 </div>
 
-                <ChecklistPage acl={aircraftChecklists} />
+                <ChecklistPage allChecklists={aircraftChecklists} />
             </div>
         </>
     );

@@ -17,23 +17,17 @@ interface ChecklistItemComponentProps {
 
 export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) => {
     const dispatch = useAppDispatch();
+    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
+
     const [checklistShake, setChecklistShake] = useState(false);
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
+
     const isItemCompleted = checklists[selectedChecklistIndex].items[index]?.completed;
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item) => {
-        if (autoFillChecklists) {
-            return !item.completed && !item.hasCondition;
-        }
+        if (autoFillChecklists) return !item.completed && !item.hasCondition;
         return !item.completed;
     });
-
-    const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items
-        .slice(firstIncompleteIdx)
-        .some((item) => item.completed && (autoFillChecklists ? !item.hasCondition : true));
-
-    const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
     // convenience variables to make the JSX more readable
     const isLine = item.type !== undefined && item.type === 'LINE';
@@ -42,6 +36,11 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
     const isAnyItemType = isListItem || isSublistItem;
     const isSubListHeader = item.type !== undefined && item.type === 'SUBLISTHEADER';
 
+    const itemCheckedAfterIncompleteItems = checklists[selectedChecklistIndex].items
+        .slice(firstIncompleteIdx)
+        .some((item) => item.completed && (autoFillChecklists ? !item.hasCondition : true));
+    const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncompleteItems;
+
     let color = 'text-theme-text';
     if (isItemCompleted && !isLine) {
         color = 'text-utility-green';
@@ -49,22 +48,25 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
         color = 'text-utility-red';
     }
 
+    // If the user interacts with an auto complete item 3 times in a row, show a toast message
+    // to point out that autofill is enabled and the item cannot be interacted with.
     const [autoItemTouches, setAutoItemTouches] = useState(0);
-
     useEffect(() => {
-        if (autoItemTouches === 5) {
-            toast.info('You cannot interact with this item because you have enabled the autofill checklist option in the Realism settings page.');
+        if (autoItemTouches === 3) {
+            toast.info('You cannot interact with this item because you have enabled the '
+                             + 'autofill checklist option in the Realism settings page.');
             setAutoItemTouches(0);
         }
     }, [autoItemTouches]);
 
-    const relevantChecklistIndices = getRelevantChecklistIndices();
+    const relevantChecklistIndices = getRelevantChecklistIndices(); // relevant for the current flight phase
     const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
     const autoCheckable = selectedChecklistIndex >= firstRelevantUnmarkedIdx && autoFillChecklists;
 
     const handleChecklistItemClick = () => {
         if (isLine) return; // lines are not clickable
 
+        // If the item is auto-checkable and the user tries to interact with it, shake the checklist
         if (item.condition && autoCheckable) {
             setAutoItemTouches((old) => old + 1);
             setChecklistShake(true);
@@ -74,17 +76,22 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
             return;
         }
 
+        // toggle completion of the item in the reducer state
         dispatch(setChecklistItemCompletion({
             checklistIndex: selectedChecklistIndex,
             itemIndex: index,
             completionValue: !isItemCompleted,
         }));
 
+        // if the item was completed, uncomplete the checklist in the reducer state
         if (isItemCompleted) {
             dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
         }
     };
 
+    // if the item definition has an action, use that when the item is incomplete
+    // otherwise, use the result string
+    // example: action="CHECK" result="CHECKED"
     let actionResultString = item.result;
     if (!isItemCompleted && item.action !== undefined) {
         actionResultString = item.action;

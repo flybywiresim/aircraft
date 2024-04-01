@@ -225,7 +225,9 @@ export const Efb = () => {
     // ======================
     // CHECKLISTS
     // ======================
-    // ChecklistProvider is a singleton that reads the checklists from aircraft specific json and provides it as data structure
+
+    // ChecklistProvider is a singleton that reads the checklists from aircraft-specific json and
+    // provides it as a data structure
     const checklistReader = ChecklistProvider.getInstance();
 
     // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore

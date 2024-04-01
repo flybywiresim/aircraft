@@ -3,7 +3,7 @@
 
 import { ConditionType, getAircraftType } from '@flybywiresim/fbw-sdk';
 import JSON5 from 'json5';
-import { ChecklistJsonDefinition, ChecklistItem } from './ChecklistInterfaces';
+import { ChecklistItem, ChecklistJsonDefinition } from './ChecklistInterfaces';
 
 /**
  * @brief ChecklistReader is a singleton class that reads checklist data from a JSON file.
@@ -17,14 +17,25 @@ export class ChecklistProvider {
 
     private checklists: ChecklistJsonDefinition[] = [];
 
+    /**
+     * Returns the singleton instance of the ChecklistProvider class.
+     *
+     * @returns {ChecklistProvider} The ChecklistProvider instance.
+     */
     public static getInstance():ChecklistProvider {
-        if (this.instance) {
-            return this.instance;
-        }
+        if (this.instance) return this.instance;
         this.instance = new ChecklistProvider();
         return this.instance;
     }
 
+    /**
+     * Reads the checklist from a JSON file.
+     *
+     * The checklist is read and processed only once and cached for subsequent calls.
+     *
+     * @return {Promise<ChecklistJsonDefinition[]>} A promise that resolves with an array of ChecklistJsonDefinition
+     *                                              objects representing the checklists.
+     */
     public async readChecklist(): Promise<ChecklistJsonDefinition[]> {
         if (this.checklists.length > 0) {
             return this.checklists;
@@ -44,21 +55,36 @@ export class ChecklistProvider {
     // =============================================================================================
 
     private constructor() {
+        // TODO: adapt to the new unified configuration (PR #8599)
         const aircraft = getAircraftType();
         this.configFilename = `/VFS/${aircraft}_checklists.json5`;
     }
 
+    /**
+     * Process the checklist JSON5 data and issue a warning if the JSON5 data is invalid.
+     *
+     * @param {string} rawData - The raw JSON data to process.
+     */
     private processChecklistJson(rawData: string) {
         try {
             const json = JSON5.parse(rawData);
             this.processChecklists(json);
         } catch (error) {
-            this.handleJsonParseError(error);
+            console.error(`Failed to parse ${this.configFilename} checklists as JSON5: `, error);
         }
     }
 
+    /**
+     * Processes the checklists from the given JSON object.
+     *
+     * The checklists are processed and added to the checklists-array.
+     * Invalid checklists are logged as warnings and ignored..
+     *
+     * @param {any} json - The JSON object containing the checklists.
+     */
     private processChecklists(json: any) {
         const checklists:ChecklistJsonDefinition[] = json.checklists;
+        // check each checklist's items for validity and add valid checklists to the checklist's array
         checklists.forEach((checklist, _) => {
             const checklistItems = [];
             const items:ChecklistItem[] = checklist.items;
@@ -74,10 +100,6 @@ export class ChecklistProvider {
                 items: checklistItems,
             });
         });
-    }
-
-    private handleJsonParseError(error: Error) {
-        console.error(`Failed to parse ${this.configFilename} checklists as JSON5: `, error);
     }
 
     /**

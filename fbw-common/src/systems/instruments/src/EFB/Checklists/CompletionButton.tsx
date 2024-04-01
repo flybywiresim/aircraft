@@ -14,22 +14,20 @@ import {
 } from '../Store/features/checklists';
 
 interface CompletionButtonProps {
-    acl: ChecklistJsonDefinition[];
+    allChecklists: ChecklistJsonDefinition[];
 }
 
-export const CompletionButton = ({ acl }: CompletionButtonProps) => {
+export const CompletionButton = ({ allChecklists }: CompletionButtonProps) => {
     const dispatch = useAppDispatch();
 
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
+
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
-        const checklistItem = acl[selectedChecklistIndex].items[index];
+        const checklistItem = allChecklists[selectedChecklistIndex].items[index];
         // skip line items
-        if (checklistItem.type !== undefined && checklistItem.type === 'LINE') {
-            return false;
-        }
+        if (checklistItem.type !== undefined && checklistItem.type === 'LINE') return false;
         // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.
         if (autoFillChecklists) {
             return !item.completed && !checklistItem.condition;
@@ -37,16 +35,15 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
         return !item.completed;
     });
 
+    // allows the completion button to be used via LVar - if the LVar is set to true, the button will be clicked,
+    // and the LVar will be reset to false. This can be used, for example, to trigger completion from a hardware button.
+    const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
     useEffect(() => {
         setCompleteItemVar(false);
     }, []);
-
-    // allows the completion button to be used via LVar - if the LVar is set to true, the button will be clicked,
-    // and the LVar will be reset to false
     useEffect(() => {
         if (completeItemVar) {
             setCompleteItemVar(false);
-
             if (checklists[selectedChecklistIndex].markedCompleted && selectedChecklistIndex < checklists.length - 1) {
                 dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
             } else if (firstIncompleteIdx !== -1) {
@@ -61,6 +58,8 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
         }
     }, [completeItemVar]);
 
+    // If the checklist is already marked as completed, show a button to proceed to the next checklist or
+    // a message if it's the last checklist.
     if (checklists[selectedChecklistIndex].markedCompleted) {
         if (selectedChecklistIndex < checklists.length - 1) {
             return (
@@ -87,6 +86,7 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
         );
     }
 
+    // If there are incomplete items in the checklist, show a button to mark the first incomplete item as complete.
     if (firstIncompleteIdx !== -1) {
         return (
             <div
@@ -106,6 +106,7 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
         );
     }
 
+    // If all items in the checklist are complete, show a button to mark the checklist as complete.
     if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
         return (
             <div
@@ -121,6 +122,7 @@ export const CompletionButton = ({ acl }: CompletionButtonProps) => {
         );
     }
 
+    // If there are remaining autofill checklist items that have not yet been completed, show a message.
     return (
         <div
             className="flex w-full items-center justify-center rounded-md border-2 border-utility-green

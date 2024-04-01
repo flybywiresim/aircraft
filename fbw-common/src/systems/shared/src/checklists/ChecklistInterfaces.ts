@@ -12,7 +12,8 @@
  * ```json
  * {
  *   varName: "L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB",
- *   result: 1
+ *   result: 1,
+ *   comp: "EQ"
  * },
  * ```
  */
