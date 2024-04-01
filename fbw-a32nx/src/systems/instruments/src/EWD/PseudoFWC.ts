@@ -567,6 +567,10 @@ export class PseudoFWC {
 
     private readonly height2Failed = Subject.create(false);
 
+    private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
+
+    private readonly overspeedWarning = Subject.create(false);
+
     private readonly flapsIndex = Subject.create(0);
 
     /** ENGINE AND THROTTLE */
@@ -1049,6 +1053,21 @@ export class PseudoFWC {
         const height2: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
         this.height1Failed.set(height1.isFailureWarning());
         this.height2Failed.set(height2.isFailureWarning());
+        // overspeed
+        const adr3Cas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
+        const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
+        let overspeedWarning = this.adr3OverspeedWarning.write(
+            adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && adr3Cas.value > (adr3MaxCas.value + 8),
+            this.aircraftOnGround.get() || !(adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) || adr3Cas.value < (adr3MaxCas.value + 4),
+        );
+        const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
+        const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
+        if (!(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) || !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())) {
+            const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
+            overspeedWarning ||= adr3Discrete1.getBitValueOr(9, false);
+        }
+        overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
+        this.overspeedWarning.set(overspeedWarning);
 
         /* LANDING GEAR AND LIGHTS */
 
@@ -1881,6 +1900,17 @@ export class PseudoFWC {
             side: 'LEFT',
         },
         // 34 - NAVIGATION & SURVEILLANCE
+        3400170: { // OVER SPEED VMO/MMO
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: this.overspeedWarning,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['340017001', '340017002'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+            cancel: false,
+        },
         3400210: { // OVERSPEED FLAPS FULL
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
             simVarIsActive: MappedSubject
