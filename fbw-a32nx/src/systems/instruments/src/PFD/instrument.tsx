@@ -7,6 +7,7 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -18,101 +19,102 @@ import './style.scss';
 // TODO move this whole thing to InstrumentBackplane and GameStateProvider
 
 class A32NX_PFD extends BaseInstrument {
-  private bus: ArincEventBus;
+    private bus: ArincEventBus;
 
-  private simVarPublisher: PFDSimvarPublisher;
+    private simVarPublisher: PFDSimvarPublisher;
 
-  private readonly hEventPublisher;
+    private readonly hEventPublisher;
 
-  private readonly arincProvider: ArincValueProvider;
+    private readonly arincProvider: ArincValueProvider;
 
-  private readonly simplaneValueProvider: SimplaneValueProvider;
+    private readonly simplaneValueProvider: SimplaneValueProvider;
 
-  private readonly clock: Clock;
+    private readonly clock: Clock;
 
-  private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
+    private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
-  private readonly dmcPublisher: DmcPublisher;
+    private readonly dmcPublisher: DmcPublisher;
 
-  private fmsDataPublisher: FmsDataPublisher;
+    private fmsDataPublisher: FmsDataPublisher;
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
+    private readonly brakingWarningsPublisher: BrakingWarningsPublisher;
 
-  constructor() {
-    super();
-    this.bus = new ArincEventBus();
-    this.simVarPublisher = new PFDSimvarPublisher(this.bus);
-    this.hEventPublisher = new HEventPublisher(this.bus);
-    this.arincProvider = new ArincValueProvider(this.bus);
-    this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
-    this.clock = new Clock(this.bus);
-    this.dmcPublisher = new DmcPublisher(this.bus);
-  }
+    /**
+     * "mainmenu" = 0
+     * "loading" = 1
+     * "briefing" = 2
+     * "ingame" = 3
+     */
+    private gameState = 0;
 
-  get templateID(): string {
-    return 'A32NX_PFD';
-  }
+    constructor() {
+        super();
+        this.bus = new ArincEventBus();
+        this.simVarPublisher = new PFDSimvarPublisher(this.bus);
+        this.hEventPublisher = new HEventPublisher(this.bus);
+        this.arincProvider = new ArincValueProvider(this.bus);
+        this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
+        this.clock = new Clock(this.bus);
+        this.dmcPublisher = new DmcPublisher(this.bus);
+        this.brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
+    }
 
-  public getDeltaTime() {
-    return this.deltaTime;
-  }
+    get templateID(): string {
+        return 'A32NX_PFD';
+    }
 
-  public onInteractionEvent(args: string[]): void {
-    this.hEventPublisher.dispatchHEvent(args[0]);
-  }
+    public getDeltaTime() {
+        return this.deltaTime;
+    }
 
-  public connectedCallback(): void {
-    super.connectedCallback();
+    public onInteractionEvent(args: string[]): void {
+        this.hEventPublisher.dispatchHEvent(args[0]);
+    }
 
-    this.adirsValueProvider = new AdirsValueProvider(
-      this.bus,
-      this.simVarPublisher,
-      getDisplayIndex() === 1 ? 'L' : 'R',
-    );
+    public connectedCallback(): void {
+        super.connectedCallback();
 
-    const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
-    this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
+        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, getDisplayIndex() === 1 ? 'L' : 'R');
 
-    this.arincProvider.init();
-    this.clock.init();
-    this.dmcPublisher.startPublish();
+        const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
-    FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        this.arincProvider.init();
+        this.clock.init();
+        this.dmcPublisher.startPublish();
 
-    // Remove "instrument didn't load" text
-    document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
-  }
+        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
-  /**
+        // Remove "instrument didn't load" text
+        document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
+    }
+
+    /**
    * A callback called when the instrument gets a frame update.
    */
-  public Update(): void {
-    super.Update();
+    public Update(): void {
+        super.Update();
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.simVarPublisher.startPublish();
-        this.hEventPublisher.startPublish();
-        this.adirsValueProvider.start();
-        this.dmcPublisher.startPublish();
-        this.fmsDataPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    } else {
-      this.simVarPublisher.onUpdate();
-      this.simplaneValueProvider.onUpdate();
-      this.clock.onUpdate();
-      this.dmcPublisher.onUpdate();
-      this.fmsDataPublisher.onUpdate();
+        if (this.gameState !== 3) {
+            const gamestate = this.getGameState();
+            if (gamestate === 3) {
+                this.simVarPublisher.startPublish();
+                this.hEventPublisher.startPublish();
+                this.adirsValueProvider.start();
+                this.dmcPublisher.startPublish();
+                this.fmsDataPublisher.startPublish();
+                this.brakingWarningsPublisher.startPublish();
+            }
+            this.gameState = gamestate;
+        } else {
+            this.simVarPublisher.onUpdate();
+            this.simplaneValueProvider.onUpdate();
+            this.clock.onUpdate();
+            this.dmcPublisher.onUpdate();
+            this.fmsDataPublisher.onUpdate();
+            this.brakingWarningsPublisher.onUpdate();
+        }
     }
-  }
 }
 
 registerInstrument('a32nx-pfd', A32NX_PFD);
