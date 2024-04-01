@@ -70,7 +70,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 <text
                     x="69"
                     y="71.7"
-                    class="FontLargest Red MiddleAlign Blink9Seconds TextOutline"
+                    class="FontIntermediate Red MiddleAlign Blink9Seconds TextOutline"
                     style={{ display: this.rwyTooShortSubject.map((it) => (it ? 'block' : 'none')) }}
                 >
                     RWY TOO SHORT
