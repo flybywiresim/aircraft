@@ -1,12 +1,11 @@
-import { Clock, FSComponent, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
-
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
-import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
 
@@ -39,7 +38,6 @@ class A380X_PFD extends BaseInstrument {
         this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
         this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
         this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
-
     }
 
     get templateID(): string {
