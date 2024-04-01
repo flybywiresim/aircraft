@@ -15,7 +15,7 @@ import { placeBearingDistance } from 'msfs-geo';
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
  */
-const VM_LEG_SIZE = 32;
+const VM_LEG_SIZE = 512;
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg extends Leg {

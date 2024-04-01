@@ -557,14 +557,11 @@
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:FO_SLIDING_WINDOW) ! (&gt;L:FO_SLIDING_WINDOW)
-                    <!--
                     (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
                         (L:FO_SLIDING_WINDOW) ! (&gt;L:FO_SLIDING_WINDOW)
                     } els{
                         0 (&gt;L:FO_SLIDING_WINDOW)
                     }
-                    -->
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>Open or Close FO Sliding Window</TOOLTIPID>
             </UseTemplate>
@@ -580,14 +577,11 @@
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:CPT_SLIDING_WINDOW) ! (&gt;L:CPT_SLIDING_WINDOW)
-                    <!--
-                    (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
+                    (A:IS CAMERA RAY INTERSECT WITH NODE:1, Bool) 0 == (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; and if{
                         (L:CPT_SLIDING_WINDOW) ! (&gt;L:CPT_SLIDING_WINDOW)
                     } els{
                         0 (&gt;L:CPT_SLIDING_WINDOW)
                     }
-                    -->
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>Open or Close CPT Sliding Window</TOOLTIPID>
             </UseTemplate>
@@ -744,7 +738,7 @@
                 <TOOLTIPID>Open or Close Landing Gear Pins Compartment</TOOLTIPID>
             </UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M4L -->
 
         <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
@@ -20,12 +20,12 @@ export class EfisVectors {
 
     private lastFpVersions = new Map<number, number>();
 
-    private lastEfisInterfaceVersion = undefined;
+    private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
 
     constructor(
         private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
-        private efisInterface: EfisInterface,
+        private efisInterfaces: Record<EfisSide, EfisInterface>,
     ) {
     }
 
@@ -38,13 +38,23 @@ export class EfisVectors {
     public update(deltaTime: number): void {
         this.updateTimer += deltaTime;
 
-        if (this.updateTimer >= UPDATE_TIMER || this.efisInterface.version !== this.lastEfisInterfaceVersion) {
-            this.lastEfisInterfaceVersion = this.efisInterface.version;
+        if (this.updateTimer >= UPDATE_TIMER) {
+            this.updateSide('L', true);
+            this.updateSide('R', true);
             this.updateTimer = 0;
+        } else {
+            this.updateSide('L');
+            this.updateSide('R');
+        }
+    }
 
-            this.tryProcessFlightPlan(FlightPlanIndex.Active, true);
-            this.tryProcessFlightPlan(FlightPlanIndex.Temporary, true);
-            this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, true);
+    private updateSide(side: EfisSide, force = false): void {
+        if (force || this.lastEfisInterfaceVersions[side] !== this.efisInterfaces[side].version) {
+            this.lastEfisInterfaceVersions[side] = this.efisInterfaces[side].version;
+
+            this.tryProcessFlightPlan(FlightPlanIndex.Active, side, true);
+            this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side, true);
+            this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side, true);
 
             const activeFlightPlanVectors = this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
 
@@ -52,16 +62,14 @@ export class EfisVectors {
                 .filter((vector) => EfisVectors.isVectorReasonable(vector));
 
             if (visibleActiveFlightPlanVectors.length !== activeFlightPlanVectors.length) {
-                this.guidanceController.efisStateForSide.L.legsCulled = true;
-                this.guidanceController.efisStateForSide.R.legsCulled = true;
+                this.guidanceController.efisStateForSide[side].legsCulled = true;
             } else {
-                this.guidanceController.efisStateForSide.L.legsCulled = false;
-                this.guidanceController.efisStateForSide.R.legsCulled = false;
+                this.guidanceController.efisStateForSide[side].legsCulled = false;
             }
         } else {
-            this.tryProcessFlightPlan(FlightPlanIndex.Active);
-            this.tryProcessFlightPlan(FlightPlanIndex.Temporary);
-            this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary);
+            this.tryProcessFlightPlan(FlightPlanIndex.Active, side);
+            this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side);
+            this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side);
         }
     }
 
@@ -78,7 +86,7 @@ export class EfisVectors {
         return length <= 5_000;
     }
 
-    private tryProcessFlightPlan(planIndex: FlightPlanIndex, force = false) {
+    private tryProcessFlightPlan(planIndex: FlightPlanIndex, side: EfisSide, force = false) {
         const planExists = this.flightPlanService.has(planIndex);
 
         if (!planExists) {
@@ -86,16 +94,16 @@ export class EfisVectors {
 
             switch (planIndex) {
             case FlightPlanIndex.Active:
-                this.transmitGroup([], EfisVectorsGroup.ACTIVE);
-                this.transmitGroup([], EfisVectorsGroup.DASHED);
-                this.transmitGroup([], EfisVectorsGroup.MISSED);
-                this.transmitGroup([], EfisVectorsGroup.ALTERNATE);
+                this.transmit([], EfisVectorsGroup.ACTIVE, side);
+                this.transmit([], EfisVectorsGroup.DASHED, side);
+                this.transmit([], EfisVectorsGroup.MISSED, side);
+                this.transmit([], EfisVectorsGroup.ALTERNATE, side);
                 break;
             case FlightPlanIndex.Temporary:
-                this.transmitGroup([], EfisVectorsGroup.TEMPORARY);
+                this.transmit([], EfisVectorsGroup.TEMPORARY, side);
                 break;
             default:
-                this.transmitGroup([], EfisVectorsGroup.SECONDARY);
+                this.transmit([], EfisVectorsGroup.SECONDARY, side);
                 break;
             }
             return;
@@ -118,36 +126,39 @@ export class EfisVectors {
             const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
 
             if (transmitActive) {
-                this.transmitFlightPlan(plan, EfisVectorsGroup.ACTIVE, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
-                this.transmitGroup([], EfisVectorsGroup.DASHED);
+                this.transmitFlightPlan(plan, side, EfisVectorsGroup.ACTIVE, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
+                this.transmit([], EfisVectorsGroup.DASHED, side);
             } else {
-                this.transmitGroup([], EfisVectorsGroup.ACTIVE);
-                this.transmitFlightPlan(plan, EfisVectorsGroup.DASHED, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
+                this.transmit([], EfisVectorsGroup.ACTIVE, side);
+                this.transmitFlightPlan(plan, side, EfisVectorsGroup.DASHED, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
             }
             break;
         case FlightPlanIndex.Temporary:
-            this.transmitFlightPlan(plan, EfisVectorsGroup.TEMPORARY);
+            this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
             break;
         default:
-            if (this.efisInterface.shouldTransmitSecondary()) {
-                this.transmitFlightPlan(plan, EfisVectorsGroup.SECONDARY);
+            if (this.efisInterfaces[side].shouldTransmitSecondary()) {
+                this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
             } else {
-                this.transmitGroup([], EfisVectorsGroup.SECONDARY);
+                this.transmit([], EfisVectorsGroup.SECONDARY, side);
             }
             break;
         }
     }
 
-    private transmitFlightPlan(plan: ReadonlyFlightPlan, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
+    private transmitFlightPlan(plan: ReadonlyFlightPlan, side: EfisSide, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
+        const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
+        const isArcVsPlanMode = mode === EfisNdMode.ARC;
+
         if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
-            this.transmitGroup([], mainGroup);
+            this.transmit([], mainGroup, side);
 
             if (missedApproachGroup !== mainGroup) {
-                this.transmitGroup([], missedApproachGroup);
+                this.transmit([], missedApproachGroup, side);
             }
 
             if (alternateGroup !== mainGroup) {
-                this.transmitGroup([], alternateGroup);
+                this.transmit([], alternateGroup, side);
             }
 
             return;
@@ -161,7 +172,7 @@ export class EfisVectors {
 
         // ACTIVE missed
 
-        const transmitMissed = this.efisInterface.shouldTransmitMissed(plan.index);
+        const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isArcVsPlanMode);
 
         if (transmitMissed) {
             const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
@@ -169,17 +180,17 @@ export class EfisVectors {
             if (missedApproachGroup === mainGroup) {
                 vectors.push(...missedVectors);
             } else {
-                this.transmitGroup(missedVectors, missedApproachGroup);
+                this.transmit(missedVectors, missedApproachGroup, side);
             }
         } else if (missedApproachGroup !== mainGroup) {
-            this.transmitGroup([], missedApproachGroup);
+            this.transmit([], missedApproachGroup, side);
         }
 
-        this.transmitGroup(vectors, mainGroup);
+        this.transmit(vectors, mainGroup, side);
 
         // ALTN
 
-        const transmitAlternate = this.efisInterface.shouldTransmitAlternate(plan.index);
+        const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isArcVsPlanMode);
 
         if (transmitAlternate) {
             const alternateGeometry = this.guidanceController.getGeometryForFlightPlan(plan.index, true);
@@ -189,7 +200,7 @@ export class EfisVectors {
 
                 // ALTN missed
 
-                const transmitAlternateMissed = this.efisInterface.shouldTransmitAlternateMissed(plan.index);
+                const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(plan.index, isArcVsPlanMode);
 
                 if (transmitAlternateMissed) {
                     const missedVectors = alternateGeometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
@@ -200,19 +211,14 @@ export class EfisVectors {
                 if (alternateGroup === mainGroup) {
                     vectors.push(...alternateVectors);
                 } else {
-                    this.transmitGroup(alternateVectors, alternateGroup);
+                    this.transmit(alternateVectors, alternateGroup, side);
                 }
             } else if (alternateGroup !== mainGroup) {
-                this.transmitGroup([], alternateGroup);
+                this.transmit([], alternateGroup, side);
             }
         } else if (alternateGroup !== mainGroup) {
-            this.transmitGroup([], alternateGroup);
+            this.transmit([], alternateGroup, side);
         }
-    }
-
-    private transmitGroup(vectors: PathVector[], group: EfisVectorsGroup): void {
-        this.transmit(vectors, group, 'L');
-        this.transmit(vectors, group, 'R');
     }
 
     private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {

@@ -6,11 +6,11 @@ import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, Co
 
 import { Arinc429Register, Arinc429WordData, EfisNdMode } from '@flybywiresim/fbw-sdk';
 
+import { GenericFmsEvents } from 'instruments/src/ND/types/GenericFmsEvents';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
-import { NDSimvars } from '../../NDSimvarPublisher';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 
@@ -25,7 +25,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
     private readonly controlPublisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    private readonly subs = this.props.bus.getSubscriber<NDControlEvents & NDSimvars & GenericAdirsEvents>();
+    private readonly subs = this.props.bus.getSubscriber<NDControlEvents & GenericAdirsEvents & GenericFmsEvents>();
 
     private readonly pposLatSub = ConsumerSubject.create(this.subs.on('latitude').whenChanged(), -1);
 
@@ -41,9 +41,9 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
     private readonly mapRangeRadiusSub = ConsumerSubject.create(this.subs.on('set_map_range_radius').whenChanged(), -1);
 
-    private readonly selectedWaypointLatSub = ConsumerSubject.create(this.subs.on('selectedWaypointLat').whenChanged(), -1);
+    private readonly selectedWaypointLatSub = ConsumerSubject.create(this.subs.on('mrpLat').whenChanged(), -1);
 
-    private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('selectedWaypointLong').whenChanged(), -1);
+    private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('mrpLong').whenChanged(), -1);
 
     private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(), -1);
 

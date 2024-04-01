@@ -265,7 +265,9 @@ export class WaypointEntryUtils {
      * @param s
      */
     static isPdFormat(s: string) {
-        const pd = s.match(/^([^/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
+        // bad rule - regex is easier to read with explicit escape
+        // eslint-disable-next-line no-useless-escape
+        const pd = s.match(/^([^\/]+)\/([\-\+]?[0-9]{1,3}(\.[0-9])?)$/);
 
         return pd !== null && this.isPlaceFormat(pd[1]);
     }
