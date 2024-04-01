@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChecklistJsonDefinition, getAircraftType } from '@flybywiresim/fbw-sdk';
+import { ChecklistJsonDefinition } from '@flybywiresim/fbw-sdk';
 import { RootState, store } from '../store';
 
 interface ChecklistTrackingItem {
@@ -22,37 +22,10 @@ interface ChecklistState {
     selectedChecklistIndex: number;
 }
 
-// FIXME: use the correct getAircraftType function once PR #8500 is merged
-// TODO: Find a way to initialize the checklist state with the actual aircraft checklists
-const initialState: ChecklistState = getAircraftType() === 'a32nx' ? {
+const initialState: ChecklistState = {
     aircraftChecklists: [],
     selectedChecklistIndex: 0,
-    checklists: [
-        { name: 'Cockpit Preparation', items: [], markedCompleted: false },
-        { name: 'Before Start', items: [], markedCompleted: false },
-        { name: 'After Start', items: [], markedCompleted: false },
-        { name: 'Taxi', items: [], markedCompleted: false },
-        { name: 'Line-Up', items: [], markedCompleted: false },
-        { name: 'Approach', items: [], markedCompleted: false },
-        { name: 'Landing', items: [], markedCompleted: false },
-        { name: 'After Landing', items: [], markedCompleted: false },
-        { name: 'Parking', items: [], markedCompleted: false },
-        { name: 'Securing Aircraft', items: [], markedCompleted: false },
-    ],
-} : {
-    aircraftChecklists: [],
-    selectedChecklistIndex: 0,
-    checklists: [
-        { name: 'Before Start', items: [], markedCompleted: false },
-        { name: 'After Start', items: [], markedCompleted: false },
-        { name: 'Before Takeoff', items: [], markedCompleted: false },
-        { name: 'After Takeoff', items: [], markedCompleted: false },
-        { name: 'Approach', items: [], markedCompleted: false },
-        { name: 'Landing', items: [], markedCompleted: false },
-        { name: 'After Landing', items: [], markedCompleted: false },
-        { name: 'Parking', items: [], markedCompleted: false },
-        { name: 'Securing Aircraft', items: [], markedCompleted: false },
-    ],
+    checklists: [],
 };
 
 export const checklistsSlice = createSlice({
@@ -62,8 +35,8 @@ export const checklistsSlice = createSlice({
         setAircraftChecklists: (state, action: PayloadAction<ChecklistJsonDefinition[]>) => {
             state.aircraftChecklists = action.payload;
         },
-        setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistTrackingItem[]}>) => {
-            state.checklists[action.payload.checklistIndex].items = action.payload.itemArr;
+        addTrackingChecklists: (state, action: PayloadAction<{checklistName:string, checklistIndex: number, itemArr: ChecklistTrackingItem[]}>) => {
+            state.checklists.push({ name: action.payload.checklistName, items: action.payload.itemArr, markedCompleted: false });
         },
         setChecklistItemCompletion: (state, action: PayloadAction<{checklistIndex: number, itemIndex: number, completionValue: boolean}>) => {
             state.checklists[action.payload.checklistIndex].items[action.payload.itemIndex].completed = action.payload.completionValue;
@@ -91,5 +64,5 @@ export const getChecklistCompletion = (checklistIndex: number): number => {
  */
 export const areAllChecklistItemsCompleted = (checklistIndex: number): boolean => getChecklistCompletion(checklistIndex) === 1;
 
-export const { setAircraftChecklists, setChecklistItems, setChecklistItemCompletion, setSelectedChecklistIndex, setChecklistCompletion } = checklistsSlice.actions;
+export const { setAircraftChecklists, addTrackingChecklists, setChecklistItemCompletion, setSelectedChecklistIndex, setChecklistCompletion } = checklistsSlice.actions;
 export default checklistsSlice.reducer;

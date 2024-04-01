@@ -41,7 +41,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
-import { setAircraftChecklists, setChecklistItems } from './Store/features/checklists';
+import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 import './Assets/Efb.scss';
@@ -236,12 +236,14 @@ export const Efb = () => {
     // provides it as a data structure.
     // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS, it is asynchronous,
     // and therefore a result cannot be provided right away.
+    // The effect is used to read the checklists once and store them in the redux store.
     const { checklists, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
         ChecklistProvider.getInstance().readChecklist().then((result) => {
+            console.log('Aircraft checklists loaded:', result);
             dispatch(setAircraftChecklists(result));
         });
-    }, [aircraftChecklists]);
+    }, []);
 
     // initialize the reducer store for the checklists' state
     useEffect(() => {
@@ -253,8 +255,11 @@ export const Efb = () => {
             const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
             if (checklistItemsEmpty) {
                 console.log('Initializing aircraft checklists');
+                // for each aircraft checklist, create a tracking checklist,
+                // add it to the store and create its tracking items
                 aircraftChecklists.forEach((checklist, index) => {
-                    dispatch(setChecklistItems({
+                    dispatch(addTrackingChecklists({
+                        checklistName: checklist.name,
                         checklistIndex: index,
                         itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
                     }));
