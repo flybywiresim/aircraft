@@ -17,7 +17,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     f64::*,
-    length::meter,
+    length::{foot, meter},
     ratio::{percent, ratio},
     velocity::{knot, meter_per_second},
 };
@@ -583,7 +583,7 @@ struct AutobrakeRunwayOverrunProtection {
 
     ground_speed: Velocity,
 
-    distance_to_runway_end: Length,
+    distance_to_runway_end: Arinc429Word<Length>,
 
     is_engaged: bool,
 }
@@ -602,17 +602,21 @@ impl AutobrakeRunwayOverrunProtection {
 
             ground_speed: Velocity::default(),
 
-            distance_to_runway_end: Length::default(),
+            distance_to_runway_end: Arinc429Word::new(
+                Length::default(),
+                SignStatus::NoComputedData,
+            ),
 
             is_engaged: false,
         }
     }
 
     fn update(&mut self, is_any_autobrake_active: bool) {
-        if is_any_autobrake_active
+        if self.distance_to_runway_end.is_normal_operation()
+            && is_any_autobrake_active
             && self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_ROP
         {
-            if self.distance_to_taxi_speed_at_max_braking() >= self.distance_to_runway_end {
+            if self.distance_to_taxi_speed_at_max_braking() >= self.distance_to_runway_end.value() {
                 self.is_engaged = true;
             }
         } else {
@@ -640,12 +644,13 @@ impl SimulationElement for AutobrakeRunwayOverrunProtection {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let distance_to_runway_end_meters = reader.read_f64(&self.distance_to_runway_end_id);
-        self.distance_to_runway_end = if distance_to_runway_end_meters > 0. {
-            Length::new::<meter>(distance_to_runway_end_meters)
-        } else {
-            Length::new::<meter>(10000.)
-        };
+        let raw_feet_runway_end_arinc: Arinc429Word<f64> =
+            reader.read_arinc429(&self.distance_to_runway_end_id);
+
+        self.distance_to_runway_end = Arinc429Word::new(
+            Length::new::<meter>(raw_feet_runway_end_arinc.value()),
+            raw_feet_runway_end_arinc.ssm(),
+        );
 
         self.ground_speed = reader.read(&self.ground_speed_id);
     }
@@ -940,15 +945,30 @@ impl SimulationElement for BtvDecelScheduler {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.fallback_distance_to_exit_from_touchdown =
+        let raw_feet_fallback_length_arinc: Arinc429Word<f64> =
             reader.read_arinc429(&self.dev_exit_distance_to_touchdown_id);
 
-        self.runway_length = reader.read_arinc429(&self.runway_length_id);
+        self.fallback_distance_to_exit_from_touchdown = Arinc429Word::new(
+            Length::new::<meter>(raw_feet_fallback_length_arinc.value()),
+            raw_feet_fallback_length_arinc.ssm(),
+        );
 
-        self.oans_distance_to_exit = reader.read_arinc429(&self.distance_to_exit_id);
+        let raw_feet_runway_length_arinc: Arinc429Word<f64> =
+            reader.read_arinc429(&self.runway_length_id);
+
+        self.runway_length = Arinc429Word::new(
+            Length::new::<meter>(raw_feet_runway_length_arinc.value()),
+            raw_feet_runway_length_arinc.ssm(),
+        );
+
+        let raw_feet_exit_length_arinc: Arinc429Word<f64> =
+            reader.read_arinc429(&self.distance_to_exit_id);
+
+        self.oans_distance_to_exit = Arinc429Word::new(
+            Length::new::<meter>(raw_feet_exit_length_arinc.value()),
+            raw_feet_exit_length_arinc.ssm(),
+        );
 
         self.ground_speed = reader.read(&self.ground_speed_id);
-
-        println!("READ rwy dist {:.0}/{:?}  oansexit {:.0}/{:?}  fallback dist {:.0}/{:?}",);
     }
 }
