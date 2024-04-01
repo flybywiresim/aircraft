@@ -3,21 +3,16 @@
 
 import React from 'react';
 import { ScrollableContainer } from '@flybywiresim/flypad';
-import { ChecklistJsonDefinition } from '@flybywiresim/checklists';
 import { useAppSelector } from '../Store/store';
 import { ChecklistItemComponent } from './ChecklistItemComponent';
 import { CompletionButton } from './CompletionButton';
 
-interface ChecklistPageProps {
-    allChecklists: ChecklistJsonDefinition[];
-}
-
-export const ChecklistPage = ({ allChecklists }: ChecklistPageProps) => {
-    const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
+export const ChecklistPage = () => {
+    const { selectedChecklistIndex, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
     return (
         <div className="flex w-full flex-col justify-between overflow-visible rounded-lg border-2 border-theme-accent p-8">
             <ScrollableContainer innerClassName="space-y-4" height={46}>
-                {allChecklists[selectedChecklistIndex].items.map((it, index) => (
+                {aircraftChecklists[selectedChecklistIndex].items.map((it, index) => (
                     <ChecklistItemComponent
                         key={it.item}
                         item={it}
@@ -26,7 +21,7 @@ export const ChecklistPage = ({ allChecklists }: ChecklistPageProps) => {
                 ))}
             </ScrollableContainer>
 
-            <CompletionButton allChecklists={allChecklists} />
+            <CompletionButton />
         </div>
     );
 };

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getAircraftType } from '@flybywiresim/fbw-sdk';
+import { ChecklistJsonDefinition, getAircraftType } from '@flybywiresim/fbw-sdk';
 import { RootState, store } from '../store';
 
 interface ChecklistTrackingItem {
@@ -17,6 +17,7 @@ export interface TrackingChecklist {
 }
 
 interface ChecklistState {
+    aircraftChecklists: ChecklistJsonDefinition[];
     checklists: TrackingChecklist[];
     selectedChecklistIndex: number;
 }
@@ -24,6 +25,7 @@ interface ChecklistState {
 // FIXME: use the correct getAircraftType function once PR #8500 is merged
 // TODO: Find a way to initialize the checklist state with the actual aircraft checklists
 const initialState: ChecklistState = getAircraftType() === 'a32nx' ? {
+    aircraftChecklists: [],
     selectedChecklistIndex: 0,
     checklists: [
         { name: 'Cockpit Preparation', items: [], markedCompleted: false },
@@ -38,6 +40,7 @@ const initialState: ChecklistState = getAircraftType() === 'a32nx' ? {
         { name: 'Securing Aircraft', items: [], markedCompleted: false },
     ],
 } : {
+    aircraftChecklists: [],
     selectedChecklistIndex: 0,
     checklists: [
         { name: 'Before Start', items: [], markedCompleted: false },
@@ -56,6 +59,9 @@ export const checklistsSlice = createSlice({
     name: 'checklists',
     initialState,
     reducers: {
+        setAircraftChecklists: (state, action: PayloadAction<ChecklistJsonDefinition[]>) => {
+            state.aircraftChecklists = action.payload;
+        },
         setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistTrackingItem[]}>) => {
             state.checklists[action.payload.checklistIndex].items = action.payload.itemArr;
         },
@@ -85,5 +91,5 @@ export const getChecklistCompletion = (checklistIndex: number): number => {
  */
 export const areAllChecklistItemsCompleted = (checklistIndex: number): boolean => getChecklistCompletion(checklistIndex) === 1;
 
-export const { setChecklistItems, setChecklistItemCompletion, setSelectedChecklistIndex, setChecklistCompletion } = checklistsSlice.actions;
+export const { setAircraftChecklists, setChecklistItems, setChecklistItemCompletion, setSelectedChecklistIndex, setChecklistCompletion } = checklistsSlice.actions;
 export default checklistsSlice.reducer;

@@ -40,6 +40,7 @@ export class ChecklistProvider {
         if (this.checklists.length > 0) {
             return this.checklists;
         }
+
         await fetch(this.configFilename).then((response) => {
             response.text().then((rawData) => {
                 this.processChecklistJson(rawData);

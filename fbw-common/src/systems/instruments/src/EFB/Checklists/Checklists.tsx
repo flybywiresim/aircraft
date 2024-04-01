@@ -1,11 +1,11 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
-import { ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
+import { ChecklistJsonDefinition } from '@flybywiresim/checklists';
 import { ChecklistPage } from './ChecklistsPage';
 import {
     areAllChecklistItemsCompleted,
@@ -14,10 +14,6 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
-
-// ChecklistProvider is a singleton that reads the checklists from aircraft-specific json and
-// provides it as a data structure
-const checklistReader = ChecklistProvider.getInstance();
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
@@ -61,8 +57,6 @@ export const getRelevantChecklistIndices = () => {
  * This is called every 1s from EFB.tsx and every time the selected checklist index changes.
  */
 export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefinition[]) => {
-    if (aircraftChecklists.length === 0) return; // in case the checklists are not loaded yet
-
     const checklists = (store.getState() as RootState).trackingChecklists.checklists;
 
     checklists
@@ -116,22 +110,13 @@ export const setAutomaticItemStates = (aircraftChecklists: ChecklistJsonDefiniti
  * @brief The flyPad's Checklists page component.
  */
 export const Checklists = () => {
-    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore
-    // a result cannot be provided right away.
-    // TODO:Is there no better way to get the lists into React??
-    const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
-    useEffect(() => {
-        checklistReader.readChecklist().then((result) => {
-            setAircraftChecklists(result);
-        });
-    }, [aircraftChecklists.length === 0]);
+    const { selectedChecklistIndex, checklists, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
 
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
     const dispatch = useAppDispatch();
     const { showModal } = useModals();
 
-    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
         if (!autoFillChecklists) return;
         setAutomaticItemStates(aircraftChecklists);
@@ -179,7 +164,6 @@ export const Checklists = () => {
      * to false.
      */
     const handleResetAllConfirmation = () => {
-        if (aircraftChecklists.length === 0) return; // in case the checklists are not loaded yet
         showModal(
             <PromptModal
                 title={t('Checklists.ChecklistResetWarning')}
@@ -210,7 +194,6 @@ export const Checklists = () => {
      * of the entire checklist to false.
      */
     const handleResetChecklist = () => {
-        if (aircraftChecklists.length === 0) return;
         checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
             if (autoFillChecklists && aircraftChecklists[selectedChecklistIndex].items[itemIdx].condition) {
                 return;
@@ -276,7 +259,7 @@ export const Checklists = () => {
                     </button>
                 </div>
 
-                <ChecklistPage allChecklists={aircraftChecklists} />
+                <ChecklistPage />
             </div>
         </>
     );

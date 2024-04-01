@@ -3,9 +3,15 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-    useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
-    SentryConsentState, SENTRY_CONSENT_KEY,
     FailureDefinition,
+    NavigraphClient,
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+    useInteractionEvent,
+    useInterval,
+    usePersistentNumberProperty,
+    usePersistentProperty,
+    useSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
@@ -14,7 +20,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
-import { ChecklistJsonDefinition, ChecklistProvider } from '@flybywiresim/checklists';
+import { ChecklistProvider } from '@flybywiresim/checklists';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -35,7 +41,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
-import { setChecklistItems } from './Store/features/checklists';
+import { setAircraftChecklists, setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 import './Assets/Efb.scss';
@@ -227,29 +233,26 @@ export const Efb = () => {
     // ======================
 
     // ChecklistProvider is a singleton that reads the checklists from aircraft-specific json and
-    // provides it as a data structure
-    const checklistReader = ChecklistProvider.getInstance();
-
-    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS it is asynchronous and therefore
-    // a result cannot be provided right away.
-    // TODO: Is there no better way to get the lists into React??
-    const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
+    // provides it as a data structure.
+    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS, it is asynchronous,
+    // and therefore a result cannot be provided right away.
+    const { checklists, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
-        checklistReader.readChecklist().then((result) => {
-            setAircraftChecklists(result);
+        ChecklistProvider.getInstance().readChecklist().then((result) => {
+            dispatch(setAircraftChecklists(result));
         });
-    }, [aircraftChecklists.length === 0]);
+    }, [aircraftChecklists]);
 
     // initialize the reducer store for the checklists' state
-    const { checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
-        if (aircraftChecklists.length === 0) return;
+        if (aircraftChecklists.length === 0) return; // wait for the aircraft checklists to be loaded
 
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
             const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
             if (checklistItemsEmpty) {
+                console.log('Initializing aircraft checklists');
                 aircraftChecklists.forEach((checklist, index) => {
                     dispatch(setChecklistItems({
                         checklistIndex: index,
