@@ -1,6 +1,7 @@
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -28,6 +29,8 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly dmcPublisher = new DmcPublisher(this.bus);
 
+    private readonly brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
+
     constructor() {
         super();
 
@@ -38,6 +41,7 @@ class A380X_PFD extends BaseInstrument {
         this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
         this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
         this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
+        this.backplane.addPublisher('BrakingWarnings', this.brakingWarningsPublisher);
     }
 
     get templateID(): string {
