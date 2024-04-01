@@ -98,13 +98,14 @@ export class ChecklistProvider {
             this.checklists.push({
                 name: checklist.name,
                 items: checklistItems,
+                flightphase: checklist.flightphase,
             });
         });
     }
 
     /**
-     * Smoke testing a json checklist item for correct definition
-     *      *
+     * Verifying a json checklist item for correct definition
+     *
      * @param checklistItem the json checklist item to check
      */
     private isValidChecklistItem(checklistItem: any): checklistItem is ChecklistItem {

@@ -68,10 +68,12 @@ export interface ChecklistItem {
  * Interface for JSON definition of a checklist.
  *
  * @field name - The name of the checklist.
+ * @field flightPhase - The flight phase for which the checklist is applicable.
  * @field items - The array of checklist items in the checklist.
  * Each item follows the structure defined in {@link ChecklistItem}.
  */
 export interface ChecklistJsonDefinition {
     name: string;
+    flightphase: number;
     items: ChecklistItem[];
 }

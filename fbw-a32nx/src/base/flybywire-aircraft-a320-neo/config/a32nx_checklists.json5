@@ -1,13 +1,34 @@
 // Checklist for the A32NX
 //
-// type?: string;                 // one of ITEM, LINE, SUBLISTHEADER, SUBLISTITEM
-// item: string;                  // checklist item
-// action?: string;               // the string shown before the item is completed
-// result: string;                // the string shown when the item is completed
-// condition?: ConditionType[];
-//    varName: string;            // the name of the SimVar or LVar to evaluate
-//    result: number;             // the numerical result to be compared to using the operation defined in comp
-//    comp?: string;              // one of NE !=, LT <, LE <=, EQ ==, GE >=, GT > | default = EQ if not defined
+// Checklist
+//   name: string;                  // the name of the checklist
+//   items: ChecklistItem[];        // the list of items in the checklist
+//   flightphase: number;           // the flight phase this checklist is relevant for
+//
+// Checklist Item
+//   type?: string;                 // one of ITEM, LINE, SUBLISTHEADER, SUBLISTITEM
+//   item: string;                  // checklist item
+//   action?: string;               // the string shown before the item is completed
+//   result: string;                // the string shown when the item is completed
+//   condition?: ConditionType[];
+//      varName: string;            // the name of the SimVar or LVar to evaluate
+//      result: number;             // the numerical result to be compared to using the operation defined in comp
+//      comp?: string;              // one of NE !=, LT <, LE <=, EQ ==, GE >=, GT > | default = EQ if not defined
+//
+// | Value  | Flight Phase     |
+// |--------|------------------|
+// | 0      |                  |
+// | 1      | ELEC PWR         |
+// | 2      | 1ST ENG STARTED  |
+// | 3      | 1ST ENG TO PWR   |
+// | 4      | 80 kt            |
+// | 5      | LIFTOFF          |
+// | 6      | 1500ft (in clb)  |
+// | 7      | 800 ft (in desc) |
+// | 8      | TOUCHDOWN        |
+// | 9      | 80 kt            |
+// | 10     | 2nd ENG SHUTDOWN |
+// | &gt; 1 | 5 MIN AFTER      |
 //
 // OBS: It is not recommended to override these default checklists yet as they are still being improved and the format
 //      off the default checklists might change. Any overriding will break when the format changes.
@@ -16,6 +37,7 @@
     {
       // cockpitPreparationChecklistA32NX ====================================
       "name": "COCKPIT PREPARATION",
+      "flightphase": 1,
       "items": [
         {
           "item": "GEAR PINS & COVERS",
@@ -63,6 +85,7 @@
     {
       // beforeStartChecklistA32NX ====================================
       "name": "BEFORE START",
+      "flightphase": 1,
       "items": [
         {
           "item": "PARKING BRAKE",
@@ -92,6 +115,7 @@
     {
       // afterStartChecklistA32NX ====================================
       "name": "AFTER START",
+      "flightphase": 2,
       "items": [
         {
           "item": "ANTI ICE",
@@ -121,6 +145,7 @@
     {
       // taxiChecklistA32NX ====================================
       "name": "TAXI",
+      "flightphase": 2,
       "items": [
         {
           "item": "FLIGHT CONTROL",
@@ -162,6 +187,7 @@
     {
       // lineUpChecklistA32NX ====================================
       "name": "LINE-UP",
+      "flightphase": 2,
       "items": [
         {
           "item": "T.O. RWY",
@@ -180,6 +206,7 @@
     {
       // approachChecklistA32NX ====================================
       "name": "APPROACH",
+      "flightphase": 6,
       "items": [
         {
           "item": "BARO REF",
@@ -212,6 +239,7 @@
     {
       // landingChecklistA32NX ====================================
       "name": "LANDING",
+      "flightphase": 7,
       "items": [
         {
           "item": "ECAM MEMO",
@@ -226,6 +254,7 @@
     {
       // afterLandingChecklistA32NX ====================================
       "name": "AFTER LANDING",
+      "flightphase": 9,
       "items": [
         {
           "item": "RADAR & PRED W/S",
@@ -246,6 +275,7 @@
     {
       // parkingChecklistA32NX ====================================
       "name": "PARKING",
+      "flightphase": 10,
       "items": [
         {
           "item": "PARK BRK or CHOCKS",
@@ -322,6 +352,7 @@
     {
       // securingAircraftChecklistA32NX ====================================
       "name": "SECURING AIRCRAFT",
+      "flightphase": 10,
       "items": [
         {
           "item": "OXYGEN",
