@@ -1,4 +1,4 @@
-export const calculateHorizonOffsetFromPitch = (pitch: number) => pitch * 29.48;
+export const calculateHorizonOffsetFromPitch = (pitch: number) => pitch * 1024 / 28;
 // if (pitch > -5 && pitch <= 20) {
 //     return pitch * 1.8 * 16.34722222222222;
 // } if (pitch > 20 && pitch <= 30) {

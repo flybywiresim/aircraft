@@ -54,15 +54,15 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         const tickLength = 7;
         let textRef = FSComponent.createRef<SVGTextElement>();
 
-        result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} transform="translate(0 0)" />);
+        result.ticks.push(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} transform="translate(0 0)" />);
 
         result.labels.push(
             <text
                 id="HeadingLabel"
                 class="Green MiddleAlign FontSmallest"
                 ref={textRef}
-                x="512"
-                y="410"
+                x="640"
+                y="540"
                 transform={`translate(${0} 0)`}
             >
                 360
@@ -77,8 +77,8 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             const dX = this.props.distanceSpacing / this.props.valueSpacing * headingOffset;
 
             // if (headingOffset % 10 === 0) {
-            result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
-            result.ticks.unshift(<path class="NormalStroke Green" d={`m512 384v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
+            result.ticks.push(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+            result.ticks.unshift(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             // } else {
             //     result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
             //     result.ticks.unshift(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
@@ -92,8 +92,8 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                         id="HeadingLabel"
                         class="Green MiddleAlign FontSmallest"
                         ref={textRef}
-                        x="512"
-                        y="410"
+                        x="640"
+                        y="540"
                         style={`transform: translate3d(${-dX}px, 0px, 0px)`}
                     >
                         {headingOffset}
@@ -107,8 +107,8 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                         id="HeadingLabel"
                         class="Green MiddleAlign FontSmallest"
                         ref={textRef}
-                        x="512"
-                        y="410"
+                        x="640"
+                        y="540"
                         style={`transform: translate3d(${dX}px, 0px, 0px)`}
                     >
                         {(360 - headingOffset)}

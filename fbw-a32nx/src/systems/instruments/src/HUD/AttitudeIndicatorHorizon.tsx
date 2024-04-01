@@ -18,9 +18,10 @@ import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './HUD';
 
 const DisplayRange = 35;
-const DistanceSpacing = 147.02;
+const DistanceSpacing = 182.86;
 const ValueSpacing = 5;
 
+// FIXME check HDG/TRACK mode is engaged? yOffset?
 class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: boolean, yOffset: Subscribable<number> }> {
     private isActive = false;
 
@@ -36,8 +37,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     private readonly visibilitySub = MappedSubject.create(([heading, attitude, fdActive, selectedHeading]) => {
         const headingDelta = getSmallestAngle(selectedHeading, heading.value);
-        const offset = headingDelta * DistanceSpacing / ValueSpacing;
-        const inRange = Math.abs(offset) <= DisplayRange + 10;
+        const inRange = Math.abs(headingDelta) <= DisplayRange / 2;
         return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange;
     }, this.heading, this.attitude, this.fdActive, this.selectedHeading);
 
@@ -47,7 +47,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
             const offset = headingDelta * DistanceSpacing / ValueSpacing;
 
-            return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
+            return `transform: translate3d(${offset}px, 0px, 0px)`;
         }
         return '';
     }, this.heading, this.selectedHeading, this.props.yOffset, this.visibilitySub)
@@ -70,8 +70,8 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
     render(): VNode {
         return (
             <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} visibility={this.visibilitySub.map((v) => (v ? 'inherit' : 'hidden'))}>
-                <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
-                <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+                <path class="ThickOutline" d="m 630,490 h 20 l -10,21z" />
+                <path class="ThickStroke Green" d="m 630,490 h 20 l -10,21z" />
             </g>
         );
     }
@@ -104,7 +104,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 147.3}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
@@ -116,7 +116,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 512 384)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 512)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
@@ -134,15 +134,12 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         return (
             <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
                 <g id="PitchGroup" ref={this.pitchGroupRef} class="NormalStroke Green">
-
-                    {/* If you're wondering why some paths have an "h0" appended, it's to work around a
-                rendering bug in webkit, where paths with only one line is rendered blurry. */}
                     <PitchScale bus={this.props.bus} />
 
                     <TailstrikeIndicator bus={this.props.bus} />
 
                     {/* horizon */}
-                    <path d="m0 384h1024h0" class="NormalStroke Green" />
+                    <path d="m64.4 512h1241.77" class="NormalStroke Green" />
 
                     <HorizontalTape
                         type="headingTape"
@@ -152,11 +149,12 @@ export class Horizon extends DisplayComponent<HorizonProps> {
                         distanceSpacing={DistanceSpacing}
                         yOffset={Subject.create(0)}
                     />
+
+                    <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
                 </g>
 
                 <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
-                <RisingGround bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} />
-                <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
+
                 <RadioAltAndDH bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} attExcessive={this.props.isAttExcessive} />
             </g>
         );
@@ -166,13 +164,12 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private tailStrike = FSComponent.createRef<SVGPathElement>();
 
-    private needsUpdate = false;
-
     private tailStrikeConditions = {
         altitude: new Arinc429Word(0),
         speed: 0,
-        tla1: 0,
-        tla2: 0,
+        pitch: 0,
+        flightPhase: 0,
+        GAtimer: 0,
     }
 
     onAfterRender(node: VNode): void {
@@ -182,43 +179,57 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
         sub.on('chosenRa').handle((ra) => {
             this.tailStrikeConditions.altitude = ra;
-            this.needsUpdate = true;
         });
 
-        sub.on('tla1').whenChanged().handle((tla) => {
-            this.tailStrikeConditions.tla1 = tla;
-            this.needsUpdate = true;
-        });
-        sub.on('tla2').whenChanged().handle((tla) => {
-            this.tailStrikeConditions.tla2 = tla;
-            this.needsUpdate = true;
+        sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
+            this.tailStrikeConditions.flightPhase = fp;
+            if (fp === 6) {
+                this.tailStrikeConditions.GAtimer = 1;
+            }
         });
 
         sub.on('speedAr').whenChanged().handle((speed) => {
             this.tailStrikeConditions.speed = speed.value;
-            this.needsUpdate = true;
         });
 
-        sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
+        sub.on('pitchAr').whenChanged().handle((pitch) => {
+            if (pitch.isNormalOperation()) {
+                if (pitch.value > 10.7) {
+                    this.tailStrike.instance.classList.add('BlinkInfinite');
+                } else {
+                    this.tailStrike.instance.classList.remove('BlinkInfinite');
+                }
+            }
+        });
+
+        sub.on('realTime').atFrequency(1).handle(this.hideShow.bind(this));
     }
 
     private hideShow(_time: number) {
-        if (this.needsUpdate) {
-            this.needsUpdate = false;
-            if (this.tailStrikeConditions.altitude.value > 400 || this.tailStrikeConditions.speed < 50 || this.tailStrikeConditions.tla1 >= 35 || this.tailStrikeConditions.tla2 >= 35) {
+        if (this.tailStrikeConditions.GAtimer !== 0) {
+            this.tailStrikeConditions.GAtimer += 1;
+            if (this.tailStrikeConditions.GAtimer >= 5) {
+                this.tailStrikeConditions.GAtimer = 0;
                 this.tailStrike.instance.style.display = 'none';
-            } else {
-                this.tailStrike.instance.style.display = 'inline';
             }
+        }
+        if (this.tailStrikeConditions.altitude.value > 400 || this.tailStrikeConditions.speed < 50) {
+            this.tailStrike.instance.style.display = 'none';
+        } else if (this.tailStrikeConditions.flightPhase === 5) {
+            this.tailStrike.instance.style.display = 'inline';
         }
     }
 
     render(): VNode {
+        // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
+        // FIXME: further fine tune.
         return (
-            <path ref={this.tailStrike} id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" class="NormalStroke Amber" />
+            <path ref={this.tailStrike} id="TailstrikeWarning" d="m 650.4,62.08 h 8.09 L 640,84.11 621.51,62.08 h 8.09 l 10.4,12.39 z" class="NormalStroke Green" />
         );
     }
 }
+
+// FIXME move to FPV
 
 class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
     private daRaGroup = FSComponent.createRef<SVGGElement>();
@@ -440,8 +451,6 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private determineSlideSlip() {
         const multiplier = 100;
-        const currentValueAtPrecision = Math.round(this.roll.value * multiplier) / multiplier;
-        const verticalOffset = calculateVerticalOffsetFromRoll(currentValueAtPrecision);
         let offset = 0;
 
         let betaTargetActive = false;
@@ -465,65 +474,21 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             offset = Math.round(-accInG * 15 / 0.3 * multiplier) / multiplier;
         }
 
-        this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
-        this.classNameSub.set(betaTargetActive ? 'Cyan' : 'Yellow');
+        this.classNameSub.set(betaTargetActive ? 'Green Fill' : 'Green');
         this.slideSlip.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
     }
 
     render(): VNode {
         return (
-            <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Yellow CornerRound">
-                <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
+            <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Green CornerRound">
+                <path d="M 640.18,154.11 l -10,21.89 h 20z" />
                 <path
                     id="SideSlipIndicator"
                     ref={this.slideSlip}
                     class={this.classNameSub}
-                    d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
+                    d="m 629,177.85 -8,16.15 38,0.07 -8,-16.22z"
                 />
-                <text id="SIFailText" ref={this.siFailFlag} x="72.315376" y="48.116844" class="FontSmall Red Blink9Seconds EndAlign">SI</text>
-            </g>
-        );
-    }
-}
-
-class RisingGround extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number> }> {
-    private radioAlt: Arinc429WordData = new Arinc429Word(0);
-
-    private lastPitch: Arinc429WordData = new Arinc429Word(0);
-
-    private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
-
-    private setOffset() {
-        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? 200 : 0.1 * this.props.filteredRadioAltitude.get();
-
-        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(this.lastPitch.value + targetPitch) - 31.563, 0), -63.093);
-        this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
-    }
-
-    onAfterRender(node: VNode): void {
-        super.onAfterRender(node);
-
-        const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-        sub.on('pitchAr').handle((pitch) => {
-            this.lastPitch = pitch;
-        });
-
-        sub.on('chosenRa').handle((p) => {
-            this.radioAlt = p;
-            this.setOffset();
-        });
-
-        this.props.filteredRadioAltitude.sub((_fra) => {
-            this.setOffset();
-        });
-    }
-
-    render(): VNode {
-        return (
-            <g ref={this.horizonGroundRectangle} id="HorizonGroundRectangle">
-                <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalOutline EarthFill" />
-                <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalStroke White" />
+                <text id="SIFailText" ref={this.siFailFlag} x="633.99" y="189.97" class="FontSmall Green Blink9Seconds EndAlign">SI</text>
             </g>
         );
     }
@@ -533,25 +498,25 @@ class PitchScale extends DisplayComponent<{ bus: ArincEventBus }> {
     render(): VNode {
         const result = [] as SVGTextElement[];
 
-        for (let i = 0; i < 6; i++) {
-            result.push(<path d={`M 411.5,${236.28 - i * 147.72} H 356 v 11`} />);
-            result.push(<path d={`M 612.5,${236.28 - i * 147.72} H 668 v 11`} />);
+        for (let i = 1; i < 7; i++) {
+            result.push(<path d={`M 518.26,${512 - i * 182.857} h -71.1 v 11`} />);
+            result.push(<path d={`M 761.74,${512 - i * 182.857} h 71.1 v 11`} />);
         }
 
-        for (let i = 0; i < 4; i++) {
-            // negative Pitch, right dot lines
+        for (let i = 1; i < 5; i++) {
+            // negative pitch, right dotted lines
             result.push(
-                <path d={`m 621.5,${531.72 + i * 147.72} h -9`} />,
-                <path d={`m 636.5,${531.72 + i * 147.72} h -8`} />,
-                <path d={`m 651.5,${531.72 + i * 147.72} h -8`} />,
-                <path d={`m 668,${519.72 + i * 147.72} v 12 h -9.5`} />,
+                <path d={`m 761.74,${512 + i * 182.857} h 12`} />,
+                <path d={`m 781.44,${512 + i * 182.857} h 12`} />,
+                <path d={`m 801.14,${512 + i * 182.857} h 12`} />,
+                <path d={`m 820.84,${512 + i * 182.857} h 12 v -11 `} />,
             );
-            // negative Pitch, left dot lines
+            // negative pitch, left dotted lines
             result.push(
-                <path d={`m 402.5,${531.72 + i * 147.72} h 9`} />,
-                <path d={`m 387.5,${531.72 + i * 147.72} h 8`} />,
-                <path d={`m 372.5,${531.72 + i * 147.72} h 8`} />,
-                <path d={`m 356,${519.72 + i * 147.72} v 12 h 9.5`} />,
+                <path d={`m 518.26,${512 + i * 182.857} h -12`} />,
+                <path d={`m 498.56,${512 + i * 182.857} h -12`} />,
+                <path d={`m 478.86,${512 + i * 182.857} h -12`} />,
+                <path d={`m 459.16,${512 + i * 182.857} h -12 v -11`} />,
             );
         }
 
@@ -561,8 +526,8 @@ class PitchScale extends DisplayComponent<{ bus: ArincEventBus }> {
             }
             const value:number = i * 5;
             const str: string = value.toString();
-            result.push(<text class="FontSmall Green Fill EndAlign CentralAlign" x="348" y={384 - i * 147.72 + 8.35}>{str}</text>);
-            result.push(<text class="FontSmall Green Fill StartAlign CentralAlign" x="676" y={384 - i * 147.72 + 8.35}>{str}</text>);
+            result.push(<text class="FontSmall Green Fill EndAlign" x="445" y={512 - i * 182.857 + 8.35}>{str}</text>);
+            result.push(<text class="FontSmall Green Fill StartAlign" x="835" y={512 - i * 182.857 + 8.35}>{str}</text>);
         }
 
         return (
