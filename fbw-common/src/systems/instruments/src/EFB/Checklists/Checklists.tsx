@@ -21,32 +21,34 @@ import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store
  * TODO: make flight phases a part of the checklist data definitions
  */
 export const getRelevantChecklistIndices = () => {
-    const relevantChecklistIndices: number[] = [];
+    const { aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
+
+    // | Value | Flight Phase     |
+    // |-------|------------------|
+    // | 0     |                  |
+    // | 1     | ELEC PWR         |
+    // | 2     | 1ST ENG STARTED  |
+    // | 3     | 1ST ENG TO PWR   |
+    // | 4     | 80 kt            |
+    // | 5     | LIFTOFF          |
+    // | 6     | 1500ft (in clb)  |
+    // | 7     | 800 ft (in desc) |
+    // | 8     | TOUCHDOWN        |
+    // | 9     | 80 kt            |
+    // | 10    | 2nd ENG SHUTDOWN |
+    // | => 1  | 5 MIN AFTER      |
+    // |--------------------------|
     const flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
-    // TODO: Check if the flight phases are correct for both aircraft types
-    switch (flightPhase) {
-    case 1:
-    case 2:
-        // Cockpit Preparation, Before Start, After Start, Taxi, Line-Up
-        relevantChecklistIndices.push(0, 1, 2, 3, 4);
-        break;
-    case 6:
-    case 7:
-        // Approach, Landing
-        relevantChecklistIndices.push(5, 6);
-        break;
-    case 8:
-        // After Landing
-        relevantChecklistIndices.push(7);
-        break;
-    case 9:
-    case 10:
-        // After Landing, Parking, Securing Aircraft
-        relevantChecklistIndices.push(7, 8, 9);
-        break;
-    default:
-    }
+    const relevantChecklistIndices: number[] = [];
+
+    // iterate over all checklists and check if they are relevant for the current flight phase
+    aircraftChecklists.forEach((cl, clIndex) => {
+        // check if the checklist is relevant for the current flight phase
+        if (cl.flightphase && cl.flightphase === flightPhase) {
+            relevantChecklistIndices.push(clIndex);
+        }
+    });
 
     return relevantChecklistIndices;
 };
