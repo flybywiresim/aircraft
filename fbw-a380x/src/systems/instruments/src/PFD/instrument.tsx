@@ -1,5 +1,5 @@
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
 import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
@@ -17,8 +17,6 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly backplane = new InstrumentBackplane();
 
-    private readonly stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
-
     private readonly clock = new Clock(this.bus);
 
     private readonly hEventPublisher= new HEventPublisher(this.bus);
@@ -33,12 +31,16 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly dmcPublisher = new DmcPublisher(this.bus);
 
-    private readonly fmsDataPublisher = new FmsDataPublisher(this.bus, this.stateSubject);
+    private readonly fmsDataPublisher: FmsDataPublisher;
 
     private readonly brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
 
     constructor() {
         super();
+
+        const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
+        const stateSubject = Subject.create<'L' | 'R'>(side);
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
         this.backplane.addInstrument('Clock', this.clock);
         this.backplane.addPublisher('HEvent', this.hEventPublisher);

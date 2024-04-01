@@ -45,16 +45,16 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 </text>
                 <text
                     x="69"
-                    y="71.7"
-                    class="FontLargest Red MiddleAlign Blink9Seconds TextOutline"
+                    y="70.25"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{ display: this.maxReverseMaxBrakingSubject.map((it) => (it ? 'block' : 'none')) }}
                 >
                     MAX BRAKING
                 </text>
                 <text
                     x="69"
-                    y="79"
-                    class="FontLargest Red MiddleAlign Blink9Seconds TextOutline"
+                    y="78"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{ display: this.maxReverseMaxBrakingSubject.map((it) => (it ? 'block' : 'none')) }}
                 >
                     MAX REVERSE
