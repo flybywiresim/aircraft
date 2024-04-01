@@ -7,6 +7,7 @@
 
 ## 0.12.0
 
+1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
 1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
