@@ -130,7 +130,7 @@ export const SimOptionsPage = () => {
                                     onChange={(event) => {
                                         // Error on empty string
                                         if (event === '') {
-                                            toast.error(t('Settings.SimOptions.SimbridgeEmptyAddress));
+                                            toast.error(t('Settings.SimOptions.SimbridgeEmptyAddress'));
                                             // Reset to previous value
                                             setSimbridgeIp(simbridgeIp);
                                             return;
