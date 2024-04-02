@@ -487,6 +487,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     rightMidPercent={(Math.max(rightMidGal * FUEL_GALLONS_TO_KG, 0) / MID_TANK_MAX_KG) * 100}
                     rightOuterPercent={(Math.max(rightOuterGal * FUEL_GALLONS_TO_KG, 0) / OUTER_TANK_MAX_KG) * 100}
                     trimPercent={(Math.max(trimGal * FUEL_GALLONS_TO_KG, 0) / TRIM_TANK_MAX_KG) * 100}
+                    enableDynamic={!eng1Running && !eng2Running && !eng3Running && !eng4Running || refuelStartedByUser}
                 />
             </div>
 
