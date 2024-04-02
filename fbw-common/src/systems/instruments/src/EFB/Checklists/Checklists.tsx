@@ -207,14 +207,6 @@ export const Checklists = () => {
         dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
     };
 
-    // aircraftChecklists are retrieved asynchronous there it is possible for aircraftChecklists to be empty.
-    // No point in rendering in this case.
-    if (aircraftChecklists.length === 0) {
-        return (
-            <></>
-        );
-    }
-
     return (
         <>
             <h1 className="mb-4 font-bold">{t('Checklists.Title')}</h1>

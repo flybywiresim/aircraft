@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+    ChecklistJsonDefinition,
     FailureDefinition,
     NavigraphClient,
     SENTRY_CONSENT_KEY,
@@ -20,7 +21,6 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
-import { ChecklistProvider } from '@flybywiresim/checklists';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -96,7 +96,11 @@ export function getAirframeType() {
         .searchParams.get('Airframe');
 }
 
-export const Efb = () => {
+interface EfbProps {
+    aircraftChecklistsProp: ChecklistJsonDefinition[],
+}
+
+export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
@@ -107,6 +111,9 @@ export const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
+
+    // Set the aircraft checklists in the redux store, so they can be accessed by the checklist components
+    dispatch(setAircraftChecklists(aircraftChecklistsProp));
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
@@ -237,18 +244,10 @@ export const Efb = () => {
     // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS, it is asynchronous,
     // and therefore a result cannot be provided right away.
     // The effect is used to read the checklists once and store them in the redux store.
-    const { checklists, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
-    useEffect(() => {
-        ChecklistProvider.getInstance().readChecklist().then((result) => {
-            console.log('Aircraft checklists loaded:', result);
-            dispatch(setAircraftChecklists(result));
-        });
-    }, []);
 
     // initialize the reducer store for the checklists' state
+    const { checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
-        if (aircraftChecklists.length === 0) return; // wait for the aircraft checklists to be loaded
-
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
@@ -257,7 +256,7 @@ export const Efb = () => {
                 console.log('Initializing aircraft checklists');
                 // for each aircraft checklist, create a tracking checklist,
                 // add it to the store and create its tracking items
-                aircraftChecklists.forEach((checklist, index) => {
+                aircraftChecklistsProp.forEach((checklist, index) => {
                     dispatch(addTrackingChecklists({
                         checklistName: checklist.name,
                         checklistIndex: index,
@@ -272,8 +271,7 @@ export const Efb = () => {
     // where appropriate and set checklists items to "completed" automatically
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
     useInterval(() => {
-        if (!autoFillChecklists && aircraftChecklists.length === 0) return;
-        setAutomaticItemStates(aircraftChecklists);
+        setAutomaticItemStates(aircraftChecklistsProp);
     }, 1000);
 
     // ===================================
@@ -432,9 +430,10 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
 
 export interface EfbInstrumentProps {
     failures: FailureDefinition[],
+    aircraftChecklists: ChecklistJsonDefinition[],
 }
 
-export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
+export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraftChecklists }) => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
     useEffect(
@@ -449,7 +448,7 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
                 <Router>
                     <ModalProvider>
                         <Provider store={store}>
-                            <Efb />
+                            <Efb aircraftChecklistsProp={aircraftChecklists} />
                         </Provider>
                     </ModalProvider>
                 </Router>
