@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
-import { setPayloadImported, t, useAppDispatch, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card, A380SeatOutlineBg, A380SeatOutlineUpperBg } from '@flybywiresim/flypad';
+import { setPayloadImported, setDisplayPaxMainDeck, t, useAppDispatch, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card, A380SeatOutlineBg, A380SeatOutlineUpperBg, useAppSelector } from '@flybywiresim/flypad';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
@@ -48,6 +48,7 @@ export const A380Payload: React.FC<A380Props> = ({
     setBoardingRate,
 }) => {
     const { showModal } = useModals();
+    const dispatch = useAppDispatch();
 
     const [mainFwdA] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 509);
     const [mainFwdB] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 521);
@@ -151,7 +152,8 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const [displayZfw, setDisplayZfw] = useState(true);
-    const [displayPaxMainDeck, setDisplayPaxMainDeck] = useState(true);
+
+    const displayPaxMainDeck = useAppSelector((state) => state.payload.displayPaxMainDeck);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -167,8 +169,6 @@ export const A380Payload: React.FC<A380Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
-
-    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (simbriefDataLoaded === true && payloadImported === false) {
@@ -535,15 +535,15 @@ export const A380Payload: React.FC<A380Props> = ({
                             <SelectGroup>
                                 <SelectItem
                                     selected={displayPaxMainDeck}
-                                    onSelect={() => setDisplayPaxMainDeck(true)}
+                                    onSelect={() => dispatch(setDisplayPaxMainDeck(true))}
                                 >
-                                    Main
+                                    {t('Ground.Payload.SelectItem.MainDeck')}
                                 </SelectItem>
                                 <SelectItem
                                     selected={!displayPaxMainDeck}
-                                    onSelect={() => setDisplayPaxMainDeck(false)}
+                                    onSelect={() => dispatch(setDisplayPaxMainDeck(false))}
                                 >
-                                    Upper
+                                    {t('Ground.Payload.SelectItem.UpperDeck')}
                                 </SelectItem>
                             </SelectGroup>
                         </div>

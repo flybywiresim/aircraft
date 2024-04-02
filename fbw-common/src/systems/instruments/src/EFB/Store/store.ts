@@ -19,6 +19,7 @@ import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
 import tooltipReducer from './features/tooltip';
 import pushbackReducer from './features/pushback';
+import payloadReducer from './features/payload';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -39,6 +40,7 @@ const combinedReducer = combineReducers({
     failuresPage: failuresPageReducer,
     tooltip: tooltipReducer,
     pushback: pushbackReducer,
+    payload: payloadReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
