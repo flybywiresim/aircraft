@@ -110,6 +110,7 @@ base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
   false,
   false,
   false,
+  false,
   0.0,
   0.0,
   false,
@@ -811,6 +812,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       },
 
       {
+        false,
+        false,
         false,
         false,
         false,
@@ -2610,6 +2613,7 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       false,
       false,
       false,
+      false,
       0.0,
       0.0,
       false,
@@ -3447,6 +3451,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   false,
 
   false,
+
+  true,
 
   false,
 

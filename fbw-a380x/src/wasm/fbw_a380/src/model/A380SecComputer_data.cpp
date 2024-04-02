@@ -181,10 +181,6 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   1.0,
 
-  3700.0,
-
-  3700.0,
-
   -1.0,
 
   -30.0,
@@ -216,10 +212,6 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   -30.0,
 
   -30.0,
-
-  2900.0,
-
-  2900.0,
 
   0.5,
 
@@ -323,6 +315,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
       },
 
       {
+        false,
+        false,
         false,
         false,
         false,
@@ -1929,6 +1923,7 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
       false,
       false,
       false,
+      false,
       0.0,
       0.0,
       false,
@@ -2299,6 +2294,7 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
     false,
     false,
     false,
+    false,
     0.0,
     0.0,
     false,
@@ -2429,6 +2425,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   false,
 
   false,
+
+  true,
 
   false,
 

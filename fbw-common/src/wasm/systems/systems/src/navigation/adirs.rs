@@ -366,7 +366,7 @@ impl AirDataInertialReferenceSystem {
     // TODO this is an FMS thing, nothing to do with ADIRUs
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             remaining_alignment_time_id: context
                 .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
@@ -376,9 +376,9 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
             adirus: [
-                AirDataInertialReferenceUnit::new(context, 1),
-                AirDataInertialReferenceUnit::new(context, 2),
-                AirDataInertialReferenceUnit::new(context, 3),
+                AirDataInertialReferenceUnit::new(context, 1, vmo, mmo),
+                AirDataInertialReferenceUnit::new(context, 2, vmo, mmo),
+                AirDataInertialReferenceUnit::new(context, 3, vmo, mmo),
             ],
             configured_align_time: AlignTime::Realistic,
             simulator_data: AdirsSimulatorData::new(context),
@@ -516,10 +516,10 @@ struct AirDataInertialReferenceUnit {
     low_speed_warning_4_260kts: bool,
 }
 impl AirDataInertialReferenceUnit {
-    fn new(context: &mut InitContext, number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             state_id: context.get_identifier(Self::state_id(number)),
-            adr: AirDataReference::new(context, number),
+            adr: AirDataReference::new(context, number, vmo, mmo),
             ir: InertialReference::new(context, number),
 
             low_speed_warning_1_104kts: false,
@@ -789,9 +789,37 @@ trait TrueAirspeedSource {
     fn true_airspeed(&self) -> Arinc429Word<Velocity>;
 }
 
+bitflags! {
+    #[derive(Default)]
+    struct AdrDiscrete1Flags: u32 {
+        const ICING_DETECTOR_HEAT = 1;
+        const PITOT_HEAT = 1 << 1;
+        const ADR_STATUS_FAIL = 1 << 2;
+        const RIGHT_STATIC_HEAT = 1 << 3;
+        const LEFT_STATIC_HEAT = 1 << 4;
+        const TAT_HEAT = 1 << 5;
+        const AOA_1_SENSOR_HEAT = 1 << 6;
+        const AOA_2_SENSOR_HEAT = 1 << 7;
+        const OVERSPEED_WARNING = 1 << 8;
+        // spare bit
+        const AOA_AVERAGE_UNIQUE = 1 << 10;
+        const VMO_MMO_1 = 1 << 11;
+        const VMO_MMO_2 = 1 << 12;
+        const VMO_MMO_3 = 1 << 13;
+        const VMO_MMO_4 = 1 << 14;
+        const ALTERNATE_SSEC_A = 1 << 15;
+        const ALTERNATE_SSEC_B = 1 << 16;
+        const BARO_PORT_A = 1 << 17;
+        const ZERO_MACH_SSEC = 1 << 18;
+    }
+}
+
 struct AirDataReference {
     number: usize,
+    vmo: Velocity,
+    mmo: MachNumber,
     is_on: bool,
+    is_overspeed: bool,
 
     /// label 234
     baro_correction_1_hpa: AdirsData<Pressure>,
@@ -808,13 +836,18 @@ struct AirDataReference {
     baro_corrected_altitude_1: AdirsData<Length>,
     /// baro corrected altitude for the fo's side
     baro_corrected_altitude_2: AdirsData<Length>,
+    /// label 206, computed airspeed in knots, NCD below 30 knots.
     computed_airspeed: AdirsData<Velocity>,
+    /// label 207, max allowable airspeed in knots (considering both VMO and MMO).
+    max_airspeed: AdirsData<Velocity>,
+    /// label 205, computed mach number, NCD below mach 0.1.
     mach: AdirsData<MachNumber>,
     barometric_vertical_speed: AdirsData<f64>,
     true_airspeed: AdirsData<Velocity>,
     static_air_temperature: AdirsData<ThermodynamicTemperature>,
     total_air_temperature: AdirsData<ThermodynamicTemperature>,
     angle_of_attack: AdirsData<Angle>,
+    discrete_word_1: AdirsData<u32>,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -829,21 +862,27 @@ impl AirDataReference {
     const BARO_CORRECTED_ALTITUDE_1: &'static str = "BARO_CORRECTED_ALTITUDE_1";
     const BARO_CORRECTED_ALTITUDE_2: &'static str = "BARO_CORRECTED_ALTITUDE_2";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
+    const MAX_AIRSPEED: &'static str = "MAX_AIRSPEED";
     const MACH: &'static str = "MACH";
     const BAROMETRIC_VERTICAL_SPEED: &'static str = "BAROMETRIC_VERTICAL_SPEED";
     const TRUE_AIRSPEED: &'static str = "TRUE_AIRSPEED";
     const STATIC_AIR_TEMPERATURE: &'static str = "STATIC_AIR_TEMPERATURE";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "ANGLE_OF_ATTACK";
+    const DISCRETE_WORD_1: &'static str = "DISCRETE_WORD_1";
+
     const MINIMUM_TAS: f64 = 60.;
     const MINIMUM_CAS: f64 = 30.;
     const MINIMUM_MACH: f64 = 0.1;
     const MINIMUM_CAS_FOR_AOA: f64 = 60.;
 
-    fn new(context: &mut InitContext, number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
             number,
+            vmo,
+            mmo,
             is_on: true,
+            is_overspeed: false,
 
             baro_correction_1_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_1_HPA),
             baro_correction_1_inhg: AdirsData::new_adr(
@@ -874,6 +913,7 @@ impl AirDataReference {
                 Self::BARO_CORRECTED_ALTITUDE_2,
             ),
             computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
+            max_airspeed: AdirsData::new_adr(context, number, Self::MAX_AIRSPEED),
             mach: AdirsData::new_adr(context, number, Self::MACH),
             barometric_vertical_speed: AdirsData::new_adr(
                 context,
@@ -888,6 +928,7 @@ impl AirDataReference {
             ),
             total_air_temperature: AdirsData::new_adr(context, number, Self::TOTAL_AIR_TEMPERATURE),
             angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
+            discrete_word_1: AdirsData::new_adr(context, number, Self::DISCRETE_WORD_1),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -903,6 +944,7 @@ impl AirDataReference {
         self.is_on = overhead.adr_is_on(self.number);
         self.update_remaining_initialisation_duration(context, overhead);
         self.update_values(context, simulator_data);
+        self.update_discrete_word_1();
     }
 
     fn update_remaining_initialisation_duration(
@@ -934,11 +976,13 @@ impl AirDataReference {
             self.baro_corrected_altitude_2.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
             self.computed_airspeed.set_failure_warning();
+            self.max_airspeed.set_failure_warning();
             self.true_airspeed.set_failure_warning();
             self.mach.set_failure_warning();
             self.total_air_temperature.set_failure_warning();
             self.static_air_temperature.set_failure_warning();
             self.angle_of_attack.set_failure_warning();
+            self.is_overspeed = false;
         } else {
             // If it is on and initialized, output normal values.
             self.baro_correction_1_hpa
@@ -980,6 +1024,13 @@ impl AirDataReference {
                 computed_airspeed,
             );
 
+            let max_airspeed = self.calculate_max_airspeed(context);
+            self.max_airspeed
+                .set_value(max_airspeed, SignStatus::NormalOperation);
+
+            self.is_overspeed = computed_airspeed
+                > (max_airspeed + Velocity::new::<knot>(if self.is_overspeed { 4. } else { 8. }));
+
             // If mach is below 0.1, output as 0 with SSM = NCD
             self.mach.normal_above_threshold_ncd_otherwise(
                 MachNumber::from(Self::MINIMUM_MACH),
@@ -1006,6 +1057,44 @@ impl AirDataReference {
             self.static_air_temperature
                 .set_normal_operation_value(context.ambient_temperature());
         }
+    }
+
+    fn update_discrete_word_1(&mut self) {
+        let mut discrete_word = AdrDiscrete1Flags::default();
+
+        if self.is_on {
+            // FIXME implement icing detector heat
+            // FIXME implement pitot heat
+
+            if !self.is_valid() {
+                discrete_word |= AdrDiscrete1Flags::ADR_STATUS_FAIL;
+            }
+
+            // FIXME implement right static heat
+            // FIXME implement left static heat
+            // FIXME implement TAT heat
+            // FIXME implement NO1 AOA sensor heat
+            // FIXME implement NO2 AOA sensor heat
+
+            if self.is_overspeed {
+                discrete_word |= AdrDiscrete1Flags::OVERSPEED_WARNING;
+            }
+
+            // FIXME implement AOA average/unique status
+            // FIXME implement VMO/MMO bits 1-4
+            // FIXME implement alternate SSEC A/B
+            // FIXME implement baro port A
+            // FIXME implement zero mach ssec
+        }
+
+        self.discrete_word_1.set_value(
+            discrete_word.bits(),
+            if self.is_on {
+                SignStatus::NormalOperation
+            } else {
+                SignStatus::FailureWarning
+            },
+        );
     }
 
     fn is_initialised(&self) -> bool {
@@ -1037,6 +1126,14 @@ impl AirDataReference {
             self.corrected_average_static_pressure.ssm(),
         )
     }
+
+    fn calculate_max_airspeed(&self, context: &UpdateContext) -> Velocity {
+        if self.is_valid() {
+            self.vmo.min(self.mmo.to_cas(context.ambient_pressure()))
+        } else {
+            self.vmo
+        }
+    }
 }
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
@@ -1059,12 +1156,14 @@ impl SimulationElement for AirDataReference {
         self.baro_corrected_altitude_1.write_to(writer);
         self.baro_corrected_altitude_2.write_to(writer);
         self.computed_airspeed.write_to(writer);
+        self.max_airspeed.write_to(writer);
         self.mach.write_to(writer);
         self.barometric_vertical_speed.write_to(writer);
         self.true_airspeed.write_to(writer);
         self.static_air_temperature.write_to(writer);
         self.total_air_temperature.write_to(writer);
         self.angle_of_attack.write_to(writer);
+        self.discrete_word_1.write_to(writer);
     }
 }
 
@@ -1876,7 +1975,11 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                adirs: AirDataInertialReferenceSystem::new(context),
+                adirs: AirDataInertialReferenceSystem::new(
+                    context,
+                    Velocity::new::<knot>(340.),
+                    MachNumber(0.82),
+                ),
                 overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             }
         }
@@ -2207,6 +2310,14 @@ mod tests {
             ))
         }
 
+        fn max_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::MAX_AIRSPEED,
+            ))
+        }
+
         fn mach(&mut self, adiru_number: usize) -> Arinc429Word<MachNumber> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
@@ -2262,6 +2373,14 @@ mod tests {
                 OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::ANGLE_OF_ATTACK,
+            ))
+        }
+
+        fn adr_discrete_word_1(&mut self, adiru_number: usize) -> Arinc429Word<u32> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::DISCRETE_WORD_1,
             ))
         }
 
@@ -2505,6 +2624,7 @@ mod tests {
                 !self.computed_airspeed(adiru_number).is_failure_warning(),
                 valid
             );
+            assert_eq!(!self.max_airspeed(adiru_number).is_failure_warning(), valid);
             assert_eq!(!self.mach(adiru_number).is_failure_warning(), valid);
             assert_eq!(
                 !self
@@ -2530,6 +2650,16 @@ mod tests {
             );
             assert_eq!(
                 !self.angle_of_attack(adiru_number).is_failure_warning(),
+                valid
+            );
+
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(self.adr_discrete_word_1(adiru_number).value());
+            assert_eq!(
+                !(discrete_word_flags
+                    .unwrap()
+                    .contains(AdrDiscrete1Flags::ADR_STATUS_FAIL)
+                    || self.adr_discrete_word_1(adiru_number).is_failure_warning()),
                 valid
             );
         }
@@ -2991,6 +3121,10 @@ mod tests {
     }
 
     mod adr {
+        use ntest::{assert_false, assert_true};
+
+        use crate::shared::InternationalStandardAtmosphere;
+
         use super::*;
 
         #[rstest]
@@ -3199,6 +3333,114 @@ mod tests {
                 test_bed.computed_airspeed(adiru_number).ssm(),
                 SignStatus::NoComputedData
             );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn max_airspeed_is_provided_at_sea_level(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
+            test_bed.run();
+
+            assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() > 330.);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn max_airspeed_is_limited_by_mmo(#[case] adiru_number: usize) {
+            use ntest::assert_true;
+
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
+                Length::new::<foot>(39_000.),
+            ));
+            test_bed.run();
+
+            assert_true!(test_bed.max_airspeed(adiru_number).value().get::<knot>() < 300.);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn overspeed_warning_is_inactive_at_normal_speed_at_sea_level(#[case] adiru_number: usize) {
+            // check a value that's below VMO, but above MMO at higher altitudes
+            let velocity = Velocity::new::<knot>(330.);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
+            test_bed.run();
+
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1(adiru_number).value());
+            assert_false!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn overspeed_warning_is_inactive_at_normal_speed_at_high_level(
+            #[case] adiru_number: usize,
+        ) {
+            let fl390_pressure =
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
+            let velocity = MachNumber(0.78).to_cas(fl390_pressure);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(fl390_pressure);
+            test_bed.run();
+
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1(adiru_number).value());
+            assert_false!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn overspeed_warning_is_active_above_vmo(#[case] adiru_number: usize) {
+            let velocity = Velocity::new::<knot>(400.);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
+            test_bed.run();
+
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1(adiru_number).value());
+            assert_true!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn overspeed_warning_is_active_above_mmo(#[case] adiru_number: usize) {
+            let fl390_pressure =
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
+            // This speed will be above MMO, but below VMO, so we ensure MMO gets tested.
+            let velocity = MachNumber(0.9).to_cas(fl390_pressure);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(fl390_pressure);
+            test_bed.run();
+
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1(adiru_number).value());
+            assert_true!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
         }
 
         #[rstest]
