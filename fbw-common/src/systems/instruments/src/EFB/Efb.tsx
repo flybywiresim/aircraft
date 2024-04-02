@@ -271,6 +271,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     // where appropriate and set checklists items to "completed" automatically
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
     useInterval(() => {
+        if (!autoFillChecklists) return;
         setAutomaticItemStates(aircraftChecklistsProp);
     }, 1000);
 
