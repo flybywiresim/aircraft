@@ -10,7 +10,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { EfisSide, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 export enum FmcOperatingModes {
     Master,
@@ -195,5 +195,5 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
      * @param planDisplayLegIndex Leg index within flight plan to be centered
      * @param planDisplayInAltn If leg to be centered belongs to alternate flight plan
      */
-    updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean): void;
+    updateEfisPlanCentre(side: EfisSide, planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean): void;
 }

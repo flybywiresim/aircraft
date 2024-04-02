@@ -12,7 +12,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { DatabaseItem, Fix, NXDataStore, UpdateThrottler, Waypoint, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, EfisSide, Fix, NXDataStore, UpdateThrottler, Waypoint, a380EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
@@ -79,7 +79,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     private fmsUpdateThrottler = new UpdateThrottler(250);
 
-    private efisInterface = new EfisInterface(this.instance === FmcIndex.FmcB ? 'R' : 'L'); // Ignore FMC-C for now
+    private efisInterfaces = { L: new EfisInterface('L'), R: new EfisInterface('R') };
 
     #guidanceController: GuidanceController;
 
@@ -136,8 +136,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
         this.flightPlanService.createFlightPlans();
-        this.#guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface, a380EfisRangeSettings, A380AircraftConfig);
-        this.efisSymbols = new EfisSymbols(this.#guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface, a380EfisRangeSettings);
+        this.#guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterfaces, a380EfisRangeSettings, A380AircraftConfig);
+        this.efisSymbols = new EfisSymbols(this.#guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterfaces, a380EfisRangeSettings);
 
         this.navaidTuner.init();
         this.efisSymbols.init();
@@ -870,7 +870,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
-    updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
+    updateEfisPlanCentre(side: EfisSide, planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
         const numLinesPerPage = this.flightPlanService.hasTemporary ? 7 : 8;
         // How many pseudo waypoints?
         // eslint-disable-next-line max-len
@@ -878,21 +878,29 @@ export class FlightManagementComputer implements FmcInterface {
         const flightPlan = this.flightPlanService.get(planDisplayForPlan);
 
         // Update ND map center
-        this.efisInterface.setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
-        this.efisInterface.setMissedLegVisible(
+        this.efisInterfaces[side].setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
+        this.efisInterfaces[side].setMissedLegVisible(
+            (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= flightPlan.firstMissedApproachLegIndex,
             (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
             >= flightPlan.firstMissedApproachLegIndex,
             planDisplayForPlan,
         );
-        this.efisInterface.setAlternateLegVisible(planDisplayInAltn
+        this.efisInterfaces[side].setAlternateLegVisible(planDisplayInAltn
+            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
+            planDisplayInAltn
             || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
             >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
         planDisplayForPlan);
-        this.efisInterface.setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
+        this.efisInterfaces[side].setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
+            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
+            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
+            (planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
             || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
             >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
         planDisplayForPlan);
-        this.efisInterface.setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
+        this.efisInterfaces[side].setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
     }
 
     handleFcuAltKnobPushPull(distanceToDestination: number): void {
