@@ -4,6 +4,7 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { FlightPathDirector } from './FlightPathDirector';
@@ -150,22 +151,9 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     render(): VNode {
         return (
             <>
-                <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
+                <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Green MiddleAlign" x="640" y="512">ATT</text>
                 <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
-                    {/* <SidestickIndicator bus={this.props.bus} /> */}
-                    <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-
-                    <g style={this.fdVisibilitySub}>
-                        <FDYawBar bus={this.props.bus} />
-                        {/* <FlightDirector bus={this.props.bus} /> */}
-                    </g>
-
-                    <path class="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-                    <path class="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-                    <g class="NormalOutline">
-                        <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
-                        <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
-                    </g>
+                    <FDYawBar bus={this.props.bus} />
                     <AircraftReference bus={this.props.bus} />
                     <FlightPathVector bus={this.props.bus} />
                     <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
@@ -182,6 +170,8 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
 
     private radioAltitude = new Arinc429Word(0);
 
+    private pitch = 0;
+
     private visibilityAirSub = Subject.create('hidden');
 
     private visibilityGroundSub = Subject.create('hidden');
@@ -191,11 +181,16 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
 
         const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
 
+        sub.on('pitchAr').whenChanged().handle((pitch) => {
+            if (pitch.isNormalOperation()) {
+                this.pitch = pitch.value;
+            }
+        });
+
         sub.on('chosenRa').handle((ra) => {
             this.radioAltitude = ra;
             if (ra.value > 100) {
-                // FIXME tailstrike margin
-                if (this.declutterMode === 0 || this.declutterMode === 1 || this.declutterMode === 2) {
+                if (this.declutterMode === 0 || this.declutterMode === 1 || (this.declutterMode === 2 && this.pitch > 10.7)) {
                     this.visibilityAirSub.set('display:inline');
                 }
             } else {
@@ -215,12 +210,12 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
             }
         });
 
-        sub.on('declutterMode').handle((mode) => {
+        sub.on('declutterMode').whenChanged().handle((mode) => {
             this.declutterMode = mode;
         });
 
         sub.on('activeLateralMode').whenChanged().handle((lm) => {
-            if ((lm === 34 || (lm === 40 && this.radioAltitude.value < 50)) && this.fdActive) {
+            if ((lm === LateralMode.ROLL_OUT || (lm === LateralMode.RWY && this.radioAltitude.value < 50)) && this.fdActive) {
                 this.visibilityGroundSub.set('display:inline');
             } else {
                 this.visibilityGroundSub.set('display:none');
@@ -232,12 +227,12 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
         return (
             <>
                 <g id="AircraftReference" class="NormalStroke Green" style={this.visibilityAirSub}>
-                    <path d="m 465.5,236.6 h 33.3 v 5.9" />
-                    <path d="m 511.7,239.7 h 7.1 v -6 h -7.1 z" />
-                    <path d="m 530.9,242.5 v -5.8 h 33.3" />
+                    <path d="m 600,336.52  v -7.38 h -41.63" />
+                    <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
+                    <path d="m 680,336.52 v -7.38 h 41.63" />
                 </g>
                 <g id="AircraftReferenceOnGround" class="NormalStroke Green" style={this.visibilityGroundSub}>
-                    <path d="m 503.5,283.37305 18,0.17677 -9,15.45018 z" />
+                    <path d="m 630,391.28 h 20 L 640,410 Z" />
                 </g>
             </>
         );
