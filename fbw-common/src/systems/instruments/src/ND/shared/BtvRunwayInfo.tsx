@@ -64,11 +64,6 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
         this.exitIdent.setConsumer(sub.on('oansSelectedExit'));
         this.exitDistance.setConsumer(sub.on('oansRequestedStoppingDistance').withArinc429Precision(1));
 
-        this.runwayLength.sub((b) => {
-            console.warn(b);
-            console.log(`${this.runwayIdent.get().substring(2).padStart(5, '\xa0')}${this.runwayLength.get().value.toFixed(0).padStart(6, '\xa0')}`);
-        });
-
         sub.on('btvRot').whenChanged().handle((it) => {
             this.rot.set(it.isNormalOperation() ? it.value.toFixed(0).padStart(4, '\xa0') : '');
         });

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-    ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, SubscribableArrayEventType,
+    ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, NodeReference, SimVarValueType, Subject, Subscribable, SubscribableArrayEventType,
     UnitType, VNode, Wait,
 } from '@microsoft/msfs-sdk';
 import {
@@ -239,11 +239,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     public readonly projectedPpos: Position = [0, 0];
 
+    private readonly aircraftOnGround = Subject.create(true);
+
     private readonly planeTrueHeading = Subject.create(0);
 
     private readonly mapHeading = Subject.create(0);
 
     public readonly interpolatedMapHeading = Subject.create(0);
+
+    public readonly previousZoomLevelIndex: Subject<number> = Subject.create(this.props.zoomValues.length - 1);
 
     public readonly zoomLevelIndex: Subject<number> = Subject.create(this.props.zoomValues.length - 1);
 
@@ -264,14 +268,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
 
     // eslint-disable-next-line arrow-body-style
-    public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
-        return aircraftWithinAirport || overlayNDMode === EfisNdMode.ARC;
-    }, this.overlayNDModeSub, this.aircraftWithinAirport);
+    public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftOnGround, aircraftWithinAirport]) => {
+        return (aircraftOnGround && aircraftWithinAirport) || overlayNDMode === EfisNdMode.ARC;
+    }, this.overlayNDModeSub, this.aircraftOnGround, this.aircraftWithinAirport);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly showAircraft = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
-        return aircraftWithinAirport || overlayNDMode === EfisNdMode.ARC;
-    }, this.overlayNDModeSub, this.aircraftWithinAirport);
+    private readonly showAircraft = this.usingPposAsReference.map((it) => it);
 
     private readonly aircraftX = Subject.create(0);
 
@@ -746,6 +748,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         this.updatePosition();
 
+        this.aircraftOnGround.set(![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)));
+
         if (this.usingPposAsReference.get() || !this.arpCoordinates) {
             this.referencePos.lat = this.ppos.lat;
             this.referencePos.long = this.ppos.long;
@@ -834,6 +838,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.aircraftX.set(384);
         this.aircraftY.set(384);
         this.aircraftRotation.set(this.planeTrueHeading.get() - mapCurrentHeading);
+
+        // FIXME Use this to update pan offset when zooming
+        /* if (this.previousZoomLevelIndex.get() !== this.zoomLevelIndex.get()) {
+            // In PLAN mode, re-pan to zoom in to center of screen
+            this.panOffsetX.set(this.panOffsetX.get() / this.zoomLevelScales[this.previousZoomLevelIndex.get()] * this.zoomLevelScales[this.zoomLevelIndex.get()]);
+            this.panOffsetY.set(this.panOffsetY.get() / this.zoomLevelScales[this.previousZoomLevelIndex.get()] * this.zoomLevelScales[this.zoomLevelIndex.get()]);
+
+            this.previousZoomLevelIndex.set(this.zoomLevelIndex.get());
+        } */
 
         // Reflow labels if necessary
         if (this.lastLayerDrawnIndex > this.layerCanvasRefs.length - 1) {

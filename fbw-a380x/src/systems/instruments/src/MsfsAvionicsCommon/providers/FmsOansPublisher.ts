@@ -102,7 +102,6 @@ export class FmsOansArincProvider implements Instrument {
         const subscriber = this.bus.getSubscriber<FmsOansData>();
 
         subscriber.on('oansSelectedLandingRunwayLengthRaw').whenChanged().handle((w) => {
-            console.log('arinc', new Arinc429Word(w));
             publisher.pub('oansSelectedLandingRunwayLength', new Arinc429Word(w));
         });
 
