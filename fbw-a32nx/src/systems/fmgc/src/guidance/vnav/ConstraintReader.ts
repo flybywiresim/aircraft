@@ -84,7 +84,7 @@ export class ConstraintReader {
                     });
                 } else {
                     // We've already passed the waypoint
-                    leg.cruiseStep = undefined; // TODO fms-v2: sync this
+                    plan.removeCruiseStep(i);
                     SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', true);
                 }
             }
