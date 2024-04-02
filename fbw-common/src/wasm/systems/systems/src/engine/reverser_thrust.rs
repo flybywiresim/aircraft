@@ -1,5 +1,5 @@
 use uom::si::{
-    acceleration::meter_per_second_squared,
+    acceleration::{foot_per_second_squared, meter_per_second_squared},
     angular_acceleration::radian_per_second_squared,
     f64::*,
     force::newton,
@@ -65,10 +65,12 @@ impl ReverserThrust {
 pub struct ReverserForce {
     reverser_delta_speed_id: VariableIdentifier,
     reverser_angular_accel_id: VariableIdentifier,
+    reverser_delta_accel_id: VariableIdentifier,
 
     reversers: [ReverserThrust; 2],
 
     plane_delta_speed_due_to_reverse_thrust: Velocity,
+    plane_delta_acceleration_due_to_reverse_thrust: Acceleration,
 
     dissimetry_acceleration: AngularAcceleration,
 }
@@ -80,9 +82,11 @@ impl ReverserForce {
             reverser_delta_speed_id: context.get_identifier("REVERSER_DELTA_SPEED".to_owned()),
             reverser_angular_accel_id: context
                 .get_identifier("REVERSER_ANGULAR_ACCELERATION".to_owned()),
+            reverser_delta_accel_id: context.get_identifier("REVERSER_DELTA_ACCEL".to_owned()),
 
             reversers: [ReverserThrust::new(); 2],
             plane_delta_speed_due_to_reverse_thrust: Velocity::default(),
+            plane_delta_acceleration_due_to_reverse_thrust: Acceleration::default(),
             dissimetry_acceleration: AngularAcceleration::default(),
         }
     }
@@ -99,14 +103,17 @@ impl ReverserForce {
 
         let total_force = self.reversers[0].current_thrust() + self.reversers[1].current_thrust();
 
-        let acceleration = if context.total_weight().get::<kilogram>() > 0. {
-            -total_force / context.total_weight()
-        } else {
-            Acceleration::default()
-        };
+        self.plane_delta_acceleration_due_to_reverse_thrust =
+            if context.total_weight().get::<kilogram>() > 0. {
+                -total_force / context.total_weight()
+            } else {
+                Acceleration::default()
+            };
 
         self.plane_delta_speed_due_to_reverse_thrust = Velocity::new::<meter_per_second>(
-            acceleration.get::<meter_per_second_squared>() * context.delta_as_secs_f64(),
+            self.plane_delta_acceleration_due_to_reverse_thrust
+                .get::<meter_per_second_squared>()
+                * context.delta_as_secs_f64(),
         );
 
         let total_dissimetry =
@@ -137,6 +144,12 @@ impl SimulationElement for ReverserForce {
             &self.reverser_angular_accel_id,
             self.dissimetry_acceleration
                 .get::<radian_per_second_squared>(),
+        );
+
+        writer.write(
+            &self.reverser_delta_accel_id,
+            self.plane_delta_acceleration_due_to_reverse_thrust
+                .get::<foot_per_second_squared>(),
         );
     }
 }
