@@ -10,7 +10,7 @@ import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/F
 import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { HUDSimvarPublisher, HUDSimvars } from './shared/HUDSimvarPublisher';
+import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
@@ -19,6 +19,8 @@ class A32NX_HUD extends BaseInstrument {
     private bus: ArincEventBus;
 
     private simVarPublisher: HUDSimvarPublisher;
+
+    private symbolPublisher: HUDSymbolsPublisher;
 
     private readonly hEventPublisher;
 
@@ -46,6 +48,7 @@ class A32NX_HUD extends BaseInstrument {
         super();
         this.bus = new ArincEventBus();
         this.simVarPublisher = new HUDSimvarPublisher(this.bus);
+        this.symbolPublisher = new HUDSymbolsPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -93,6 +96,7 @@ class A32NX_HUD extends BaseInstrument {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.simVarPublisher.startPublish();
+                this.symbolPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
                 this.dmcPublisher.startPublish();
@@ -101,6 +105,7 @@ class A32NX_HUD extends BaseInstrument {
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
+            this.symbolPublisher.onUpdate();
             this.simplaneValueProvider.onUpdate();
             this.clock.onUpdate();
             this.dmcPublisher.onUpdate();

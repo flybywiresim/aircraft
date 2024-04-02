@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { BasePublisher, EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
+import { ArincEventBus, HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import {
     AdirsSimVarDefinitions,
@@ -486,5 +486,21 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
 
     public constructor(bus: ArincEventBus) {
         super(HUDSimvarPublisher.simvars, bus);
+    }
+}
+
+export interface HUDSymbolData {
+    symbol: HUDSyntheticRunway,
+}
+
+export class HUDSymbolsPublisher extends BasePublisher<HUDSymbolData> {
+    private readonly events: GenericDataListenerSync[] = [];
+
+    constructor(bus: EventBus) {
+        super(bus);
+
+        this.events.push(new GenericDataListenerSync((ev, data) => {
+            this.publish('symbol', data);
+        }, 'A32NX_EFIS_HUD_SYMBOLS'));
     }
 }

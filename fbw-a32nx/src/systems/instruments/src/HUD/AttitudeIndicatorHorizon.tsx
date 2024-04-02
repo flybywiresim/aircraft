@@ -5,6 +5,7 @@
 import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
+import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
@@ -134,6 +135,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         return (
             <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
                 <g id="PitchGroup" ref={this.pitchGroupRef} class="NormalStroke Green">
+                    <SyntheticRunway bus={this.props.bus} />
                     <PitchScale bus={this.props.bus} />
 
                     <TailstrikeIndicator bus={this.props.bus} />
