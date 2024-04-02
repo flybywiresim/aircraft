@@ -1,3 +1,4 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
@@ -23,14 +24,6 @@ export interface BuildInfo {
     eventName: string;
     prettyReleaseName: string;
     version: string;
-}
-
-/**
- * Contains the ${aircraft}_{atc_id}_aircraft.json file's information in a structured way.
- */
-export interface AirframeInfo {
-    variant: string;
-
 }
 
 /**
@@ -67,8 +60,6 @@ export class AircraftGithubVersionChecker {
     private static newestExpCommit: CommitInfo;
 
     private static buildInfo: BuildInfo;
-
-    private static airframeInfo: AirframeInfo;
 
     /**
      * Checks if the aircraft version is outdated and shows a popup if it is.
@@ -136,20 +127,6 @@ export class AircraftGithubVersionChecker {
             });
         });
         return this.buildInfo;
-    }
-
-    public static async getAirframeInfo(aircraft: string, variant: string): Promise<AirframeInfo> {
-        if (this.airframeInfo) {
-            return this.airframeInfo;
-        }
-        await fetch(`/VFS/config/${aircraft}/${variant}/airframe.json`).then((response) => {
-            response.json().then((json) => {
-                this.airframeInfo = ({ variant: json._variant });
-            }).catch((error) => {
-                console.error('Failed to read airframe info: ', error);
-            });
-        });
-        return this.airframeInfo;
     }
 
     /**

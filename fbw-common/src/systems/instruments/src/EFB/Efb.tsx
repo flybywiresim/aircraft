@@ -6,6 +6,7 @@ import {
     useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
     SentryConsentState, SENTRY_CONSENT_KEY,
     FailureDefinition,
+    UniversalConfigProvider,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
@@ -14,6 +15,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
+import { setAirframeInfo, setCabinInfo, setFlypadPayloadInfo } from '@flybywiresim/flypad';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -95,6 +97,24 @@ const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        // Reinject on power cycle
+        UniversalConfigProvider.fetchAirframeInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => dispatch(setAirframeInfo(info)));
+
+        UniversalConfigProvider.fetchFlypadPayloadInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => dispatch(setFlypadPayloadInfo(info)));
+
+        UniversalConfigProvider.fetchCabinInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => dispatch(setCabinInfo(info)));
+    }, [powerState]);
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({

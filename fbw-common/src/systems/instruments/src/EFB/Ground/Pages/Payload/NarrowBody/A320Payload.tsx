@@ -11,27 +11,13 @@ import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadEle
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-import Loadsheet from './a20nv55.json';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
+import { PayloadProps } from '../PayloadPage';
 
-interface A320Props {
-    simbriefUnits: string,
-    simbriefBagWeight: number,
-    simbriefPaxWeight: number,
-    simbriefPax: number,
-    simbriefBag: number,
-    simbriefFreight: number,
-    simbriefDataLoaded: boolean,
-    payloadImported: boolean,
-    massUnitForDisplay: string,
-    isOnGround: boolean,
-
-    boardingStarted: boolean,
-    boardingRate: string,
-    setBoardingStarted: (boardingStarted: any) => void,
-    setBoardingRate: (boardingRate: any) => void,
-}
-export const A320Payload: React.FC<A320Props> = ({
+export const A320Payload: React.FC<PayloadProps> = ({
+    airframeInfo,
+    payloadInfo,
+    cabinInfo,
     simbriefUnits,
     simbriefBagWeight,
     simbriefPaxWeight,
@@ -49,29 +35,29 @@ export const A320Payload: React.FC<A320Props> = ({
 }) => {
     const { showModal } = useModals();
 
-    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 509);
-    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 541);
-    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity, 569);
-    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity, 593);
+    const [aFlags] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}`, cabinInfo.seatMap[0].capacity, 509);
+    const [bFlags] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}`, cabinInfo.seatMap[1].capacity, 541);
+    const [cFlags] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}`, cabinInfo.seatMap[2].capacity, 569);
+    const [dFlags] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}`, cabinInfo.seatMap[3].capacity, 593);
 
-    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity, 379);
-    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 421);
-    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 457);
-    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 499);
+    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}_DESIRED`, cabinInfo.seatMap[0].capacity, 379);
+    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}_DESIRED`, cabinInfo.seatMap[1].capacity, 421);
+    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}_DESIRED`, cabinInfo.seatMap[2].capacity, 457);
+    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}_DESIRED`, cabinInfo.seatMap[3].capacity, 499);
 
     const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
     const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
     const setDesiredFlags = useMemo(() => [setAFlagsDesired, setBFlagsDesired, setCFlagsDesired, setDFlagsDesired], []);
 
-    const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 719);
-    const [aftCont] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 743);
-    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 769);
-    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}`, 'Number', 797);
+    const [fwdBag] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}`, 'Number', 719);
+    const [aftCont] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}`, 'Number', 743);
+    const [aftBag] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}`, 'Number', 769);
+    const [aftBulk] = useSimVar(`L:${cabinInfo.cargoMap[3].simVar}`, 'Number', 797);
 
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 619);
-    const [aftContDesired, setAftContDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 631);
-    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 641);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}_DESIRED`, 'Number', 677);
+    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}_DESIRED`, 'Number', 619);
+    const [aftContDesired, setAftContDesired] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}_DESIRED`, 'Number', 631);
+    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}_DESIRED`, 'Number', 641);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${cabinInfo.cargoMap[3].simVar}_DESIRED`, 'Number', 677);
 
     const cargo = useMemo(() => [fwdBag, aftCont, aftBag, aftBulk], [fwdBag, aftCont, aftBag, aftBulk]);
     const cargoDesired = useMemo(() => [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired]);
@@ -83,8 +69,8 @@ export const A320Payload: React.FC<A320Props> = ({
 
     const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
 
-    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
+    const [seatMap] = useState<PaxStationInfo[]>(cabinInfo.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(cabinInfo.cargoMap);
 
     const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
     const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
@@ -364,10 +350,10 @@ export const A320Payload: React.FC<A320Props> = ({
     // Init
     useEffect(() => {
         if (paxWeight === 0) {
-            setPaxWeight(Math.round(Loadsheet.specs.pax.defaultPaxWeight));
+            setPaxWeight(Math.round(cabinInfo.defaultPaxWeight));
         }
         if (paxBagWeight === 0) {
-            setPaxBagWeight(Math.round(Loadsheet.specs.pax.defaultBagWeight));
+            setPaxBagWeight(Math.round(cabinInfo.defaultBagWeight));
         }
     }, []);
 
@@ -470,6 +456,7 @@ export const A320Payload: React.FC<A320Props> = ({
         return [base, primary, secondary];
     }, [theme]);
 
+    if (airframeInfo === null) return (<></>);
     return (
         <div>
             <div className="h-content-section-reduced relative">
@@ -486,7 +473,7 @@ export const A320Payload: React.FC<A320Props> = ({
                         <div className="flex w-full flex-row">
                             <Card className="col-1 w-full" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                                 <PayloadInputTable
-                                    loadsheet={Loadsheet}
+                                    airframeInfo={airframeInfo}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
                                     displayZfw={displayZfw}
@@ -515,12 +502,12 @@ export const A320Payload: React.FC<A320Props> = ({
                                 <div className="flex flex-row items-center justify-start">
                                     <MiscParamsInput
                                         disable={gsxInProgress() || boardingStarted}
-                                        minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
-                                        maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
-                                        defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}
-                                        minBagWeight={Math.round(Loadsheet.specs.pax.minBagWeight)}
-                                        maxBagWeight={Math.round(Loadsheet.specs.pax.maxBagWeight)}
-                                        defaultBagWeight={Math.round(Loadsheet.specs.pax.defaultBagWeight)}
+                                        minPaxWeight={Math.round(cabinInfo.minPaxWeight)}
+                                        maxPaxWeight={Math.round(cabinInfo.maxPaxWeight)}
+                                        defaultPaxWeight={Math.round(cabinInfo.defaultPaxWeight)}
+                                        minBagWeight={Math.round(cabinInfo.minBagWeight)}
+                                        maxBagWeight={Math.round(cabinInfo.maxBagWeight)}
+                                        defaultBagWeight={Math.round(cabinInfo.defaultBagWeight)}
                                         paxWeight={paxWeight}
                                         bagWeight={paxBagWeight}
                                         massUnitForDisplay={massUnitForDisplay}
@@ -605,8 +592,8 @@ export const A320Payload: React.FC<A320Props> = ({
                         <ChartWidget
                             width={525}
                             height={511}
-                            envelope={Loadsheet.chart.performanceEnvelope}
-                            limits={Loadsheet.chart.chartLimits}
+                            envelope={airframeInfo.designLimits.performanceEnvelope}
+                            limits={payloadInfo.chartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

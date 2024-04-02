@@ -3,7 +3,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const payloadInitialState: {displayPaxMainDeck: boolean} = { displayPaxMainDeck: false };
+export const payloadInitialState: {displayPaxMainDeck: boolean} = { displayPaxMainDeck: true };
 
 export const payloadSlice = createSlice({
     name: 'payload',

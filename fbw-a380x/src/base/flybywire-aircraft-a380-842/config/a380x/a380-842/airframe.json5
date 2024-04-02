@@ -1,4 +1,12 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is the base airframe configuration file for A380-842
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+// =======================================================================================
+// Last updated: 2 April 2024
 {
+    // Last updated: 2 April 2024
     "configMajorVersion": 0,
     "configMinorVersion": 1,
     "_variant": "A380-842",

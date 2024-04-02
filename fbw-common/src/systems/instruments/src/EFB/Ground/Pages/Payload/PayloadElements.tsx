@@ -4,7 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { ArrowLeftRight, BoxArrowRight, BriefcaseFill, CaretDownFill, PersonFill, Shuffle, StopCircleFill } from 'react-bootstrap-icons';
-import { Units } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, Units } from '@flybywiresim/fbw-sdk';
 import { ProgressBar, t, TooltipWrapper, SimpleInput } from '@flybywiresim/flypad';
 import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
 
@@ -244,7 +244,7 @@ export const PayloadPercentUnitDisplay: React.FC<{value: number}> = ({ value }) 
 };
 
 interface PayloadInputTableProps {
-    loadsheet: Loadsheet,
+    airframeInfo: AirframeInfo,
     emptyWeight: number,
     massUnitForDisplay: string,
     displayZfw: boolean,
@@ -273,7 +273,7 @@ interface PayloadInputTableProps {
 
 export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
     {
-        loadsheet, emptyWeight, massUnitForDisplay,
+        airframeInfo, emptyWeight, massUnitForDisplay,
         BoardingInProgress,
         displayZfw,
         totalPax, totalPaxDesired, maxPax,
@@ -284,172 +284,176 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = (
         processZfw, processGw,
         setDisplayZfw,
     },
-) => (
-    <table className="w-full table-fixed">
-        <thead className="mx-2 w-full border-b px-8">
-            <tr className="py-2">
-                <th scope="col" className="text-md w-2/5 px-4 py-2 text-left font-medium">
-                    {' '}
-                </th>
-                <th scope="col" className="text-md w-1/2 px-4 py-2 text-left font-medium">
-                    {t('Ground.Payload.Planned')}
-                </th>
-                <th scope="col" className="text-md w-1/4 px-4 py-2 text-left font-medium">
-                    {t('Ground.Payload.Current')}
-                </th>
-            </tr>
-        </thead>
+) => {
+    if (airframeInfo == null) return (<></>);
+    return (
+        <table className="w-full table-fixed">
+            <thead className="mx-2 w-full border-b px-8">
+                <tr className="py-2">
+                    <th scope="col" className="text-md w-2/5 px-4 py-2 text-left font-medium">
+                        {' '}
+                    </th>
+                    <th scope="col" className="text-md w-1/2 px-4 py-2 text-left font-medium">
+                        {t('Ground.Payload.Planned')}
+                    </th>
+                    <th scope="col" className="text-md w-1/4 px-4 py-2 text-left font-medium">
+                        {t('Ground.Payload.Current')}
+                    </th>
+                </tr>
+            </thead>
 
-        <tbody>
-            <tr className="h-2" />
-            <tr>
-                <td className="text-md whitespace-nowrap px-4 font-light">
-                    {t('Ground.Payload.Passengers')}
-                </td>
-                <td className="mx-8">
-                    <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                        <div className="text-md whitespace-nowrap px-4 font-light">
-                            <PayloadValueInput
-                                min={0}
-                                max={maxPax > 0 ? maxPax : 999}
-                                value={totalPaxDesired}
-                                onBlur={(x) => {
-                                    if (!Number.isNaN(parseInt(x) || parseInt(x) === 0)) {
-                                        setTargetPax(parseInt(x));
-                                        setTargetCargo(parseInt(x), 0);
-                                    }
-                                }}
-                                unit="PAX"
-                                disabled={BoardingInProgress}
-                            />
-                        </div>
-                    </TooltipWrapper>
-                </td>
-                <td className="text-md w-20 whitespace-nowrap px-4 font-mono font-light">
-                    <PayloadValueUnitDisplay value={totalPax} padTo={3} unit="PAX" />
-                </td>
-            </tr>
-
-            <tr>
-                <td className="text-md whitespace-nowrap px-4 font-light">
-                    {t('Ground.Payload.Cargo')}
-                </td>
-                <td>
-                    <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${Units.kilogramToUser(maxCargo).toFixed(0)} ${massUnitForDisplay}`}>
-                        <div className="text-md whitespace-nowrap px-4 font-light">
-                            <PayloadValueInput
-                                min={0}
-                                max={maxCargo > 0 ? Math.round(Units.kilogramToUser(maxCargo)) : 99999}
-                                value={Units.kilogramToUser(totalCargoDesired)}
-                                onBlur={(x) => {
-                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
-                                        setTargetCargo(0, Units.userToKilogram(parseInt(x)));
-                                    }
-                                }}
-                                unit={massUnitForDisplay}
-                                disabled={BoardingInProgress}
-                            />
-                        </div>
-                    </TooltipWrapper>
-                </td>
-                <td className="text-md w-20 whitespace-nowrap px-4 font-mono font-light">
-                    <PayloadValueUnitDisplay value={Units.kilogramToUser(totalCargo)} padTo={5} unit={massUnitForDisplay} />
-                </td>
-            </tr>
-
-            <tr>
-                <td className="text-md whitespace-nowrap px-4 font-light">
-                    {displayZfw ? t('Ground.Payload.ZFW') : t('Ground.Payload.GW')}
-                </td>
-                <td>
-                    {(displayZfw
-                        ? (
-                            <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(loadsheet.specs.weights.maxZfw).toFixed(0)} ${massUnitForDisplay}`}>
-                                <div className="text-md whitespace-nowrap px-4 font-light">
-                                    <PayloadValueInput
-                                        min={Math.round(Units.kilogramToUser(emptyWeight))}
-                                        max={Math.round(Units.kilogramToUser(loadsheet.specs.weights.maxZfw))}
-                                        value={Units.kilogramToUser(zfwDesired)}
-                                        onBlur={(x) => {
-                                            if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
-                                        }}
-                                        unit={massUnitForDisplay}
-                                        disabled={BoardingInProgress}
-                                    />
-                                </div>
-                            </TooltipWrapper>
-                        )
-                        : (
-                            <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${Units.kilogramToUser(loadsheet.specs.weights.maxGw).toFixed(0)} ${massUnitForDisplay}`}>
-                                <div className="text-md whitespace-nowrap px-4 font-light">
-                                    <PayloadValueInput
-                                        min={Math.round(Units.kilogramToUser(emptyWeight))}
-                                        max={Math.round(Units.kilogramToUser(loadsheet.specs.weights.maxGw))}
-                                        value={Units.kilogramToUser(gwDesired)}
-                                        onBlur={(x) => {
-                                            if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
-                                        }}
-                                        unit={massUnitForDisplay}
-                                        disabled={BoardingInProgress}
-                                    />
-                                </div>
-                            </TooltipWrapper>
-                        )
-                    )}
-                </td>
-                <td className="text-md w-20 whitespace-nowrap px-4 font-mono">
-                    <PayloadValueUnitDisplay
-                        value={displayZfw ? Units.kilogramToUser(zfw) : Units.kilogramToUser(gw)}
-                        padTo={5}
-                        unit={massUnitForDisplay}
-                    />
-                </td>
-            </tr>
-            <tr>
-                <td className="text-md whitespace-nowrap px-4 font-light">
-                    <div className="relative flex flex-row items-center justify-start">
-                        <div>
-                            {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
-                        </div>
-                        <div className="ml-auto">
-                            <button
-                                type="button"
-                                className={`text-theme-highlight ml-auto flex h-8 w-12 items-center justify-center
-                                                    rounded-lg bg-current`}
-                                onClick={() => setDisplayZfw(!displayZfw)}
-                            >
-                                <div className="text-theme-body">
-                                    <Shuffle size={24} />
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <TooltipWrapper text={displayZfw ? `${t('Ground.Payload.TT.MaxZFWCG')} ${loadsheet.specs.weights.maxZfwCg}%` : `${t('Ground.Payload.TT.MaxGWCG')} ${loadsheet.specs.weights.maxGwCg}%`}>
-                        <div className="text-md whitespace-nowrap px-4 font-mono">
-                            {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
-                            <div className="rounded-md px-3 py-4 transition">
-                                <PayloadPercentUnitDisplay value={displayZfw ? desiredZfwCgMac : desiredGwCgMac} />
-                            </div>
-                            {/*
-                                <SimpleInput
-                                    className="my-2 w-24"
-                                    number
-                                    disabled
+            <tbody>
+                <tr className="h-2" />
+                <tr>
+                    <td className="text-md whitespace-nowrap px-4 font-light">
+                        {t('Ground.Payload.Passengers')}
+                    </td>
+                    <td className="mx-8">
+                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
+                            <div className="text-md whitespace-nowrap px-4 font-light">
+                                <PayloadValueInput
                                     min={0}
                                     max={maxPax > 0 ? maxPax : 999}
-                                    value={zfwCgMac.toFixed(2)}
-                                    onBlur={{(x) => processZfwCg(x)}
+                                    value={totalPaxDesired}
+                                    onBlur={(x) => {
+                                        if (!Number.isNaN(parseInt(x) || parseInt(x) === 0)) {
+                                            setTargetPax(parseInt(x));
+                                            setTargetCargo(parseInt(x), 0);
+                                        }
+                                    }}
+                                    unit="PAX"
+                                    disabled={BoardingInProgress}
                                 />
-                            */}
+                            </div>
+                        </TooltipWrapper>
+                    </td>
+                    <td className="text-md w-20 whitespace-nowrap px-4 font-mono font-light">
+                        <PayloadValueUnitDisplay value={totalPax} padTo={3} unit="PAX" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td className="text-md whitespace-nowrap px-4 font-light">
+                        {t('Ground.Payload.Cargo')}
+                    </td>
+                    <td>
+                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${Units.kilogramToUser(maxCargo).toFixed(0)} ${massUnitForDisplay}`}>
+                            <div className="text-md whitespace-nowrap px-4 font-light">
+                                <PayloadValueInput
+                                    min={0}
+                                    max={maxCargo > 0 ? Math.round(Units.kilogramToUser(maxCargo)) : 99999}
+                                    value={Units.kilogramToUser(totalCargoDesired)}
+                                    onBlur={(x) => {
+                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
+                                            setTargetCargo(0, Units.userToKilogram(parseInt(x)));
+                                        }
+                                    }}
+                                    unit={massUnitForDisplay}
+                                    disabled={BoardingInProgress}
+                                />
+                            </div>
+                        </TooltipWrapper>
+                    </td>
+                    <td className="text-md w-20 whitespace-nowrap px-4 font-mono font-light">
+                        <PayloadValueUnitDisplay value={Units.kilogramToUser(totalCargo)} padTo={5} unit={massUnitForDisplay} />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td className="text-md whitespace-nowrap px-4 font-light">
+                        {displayZfw ? t('Ground.Payload.ZFW') : t('Ground.Payload.GW')}
+                    </td>
+                    <td>
+                        {(displayZfw
+                            ? (
+                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(airframeInfo?.designLimits.weights.maxZfw).toFixed(0)} ${massUnitForDisplay}`}>
+                                    <div className="text-md whitespace-nowrap px-4 font-light">
+                                        <PayloadValueInput
+                                            min={Math.round(Units.kilogramToUser(emptyWeight))}
+                                            max={Math.round(Units.kilogramToUser(airframeInfo?.designLimits.weights.maxZfw))}
+                                            value={Units.kilogramToUser(zfwDesired)}
+                                            onBlur={(x) => {
+                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
+                                            }}
+                                            unit={massUnitForDisplay}
+                                            disabled={BoardingInProgress}
+                                        />
+                                    </div>
+                                </TooltipWrapper>
+                            )
+                            : (
+                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${Units.kilogramToUser(airframeInfo?.designLimits.weights.maxGw).toFixed(0)} ${massUnitForDisplay}`}>
+                                    <div className="text-md whitespace-nowrap px-4 font-light">
+                                        <PayloadValueInput
+                                            min={Math.round(Units.kilogramToUser(emptyWeight))}
+                                            max={Math.round(Units.kilogramToUser(airframeInfo?.designLimits.weights.maxGw))}
+                                            value={Units.kilogramToUser(gwDesired)}
+                                            onBlur={(x) => {
+                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
+                                            }}
+                                            unit={massUnitForDisplay}
+                                            disabled={BoardingInProgress}
+                                        />
+                                    </div>
+                                </TooltipWrapper>
+                            )
+                        )}
+                    </td>
+                    <td className="text-md w-20 whitespace-nowrap px-4 font-mono">
+                        <PayloadValueUnitDisplay
+                            value={displayZfw ? Units.kilogramToUser(zfw) : Units.kilogramToUser(gw)}
+                            padTo={5}
+                            unit={massUnitForDisplay}
+                        />
+                    </td>
+                </tr>
+                <tr>
+                    <td className="text-md whitespace-nowrap px-4 font-light">
+                        <div className="relative flex flex-row items-center justify-start">
+                            <div>
+                                {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
+                            </div>
+                            <div className="ml-auto">
+                                <button
+                                    type="button"
+                                    className={`text-theme-highlight ml-auto flex h-8 w-12 items-center justify-center
+                                                        rounded-lg bg-current`}
+                                    onClick={() => setDisplayZfw(!displayZfw)}
+                                >
+                                    <div className="text-theme-body">
+                                        <Shuffle size={24} />
+                                    </div>
+                                </button>
+                            </div>
                         </div>
-                    </TooltipWrapper>
-                </td>
-                <td className="text-md whitespace-nowrap px-4 font-mono">
-                    <PayloadPercentUnitDisplay value={displayZfw ? zfwCgMac : gwCgMac} />
-                </td>
-            </tr>
-        </tbody>
-    </table>
-);
+                    </td>
+                    <td>
+                        <TooltipWrapper text={displayZfw ? `${t('Ground.Payload.TT.MaxZFWCG')} ${airframeInfo?.designLimits.weights.maxZfwCg}%` : `${t('Ground.Payload.TT.MaxGWCG')} ${airframeInfo?.designLimits.weights.maxGwCg}%`}>
+                            <div className="text-md whitespace-nowrap px-4 font-mono">
+                                {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
+                                <div className="rounded-md px-3 py-4 transition">
+                                    <PayloadPercentUnitDisplay value={displayZfw ? desiredZfwCgMac : desiredGwCgMac} />
+                                </div>
+                                {/*
+                                    <SimpleInput
+                                        className="my-2 w-24"
+                                        number
+                                        disabled
+                                        min={0}
+                                        max={maxPax > 0 ? maxPax : 999}
+                                        value={zfwCgMac.toFixed(2)}
+                                        onBlur={{(x) => processZfwCg(x)}
+                                    />
+                                */}
+                            </div>
+                        </TooltipWrapper>
+                    </td>
+                    <td className="text-md whitespace-nowrap px-4 font-mono">
+                        <PayloadPercentUnitDisplay value={displayZfw ? zfwCgMac : gwCgMac} />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    );
+};

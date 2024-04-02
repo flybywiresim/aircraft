@@ -10,28 +10,13 @@ import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadEle
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-import Loadsheet from './a380v3.json';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
+import { PayloadProps } from '../PayloadPage';
 
-interface A380Props {
-    simbriefUnits: string,
-    simbriefBagWeight: number,
-    simbriefPaxWeight: number,
-    simbriefPax: number,
-    simbriefBag: number,
-    simbriefFreight: number,
-    simbriefDataLoaded: boolean,
-    payloadImported: boolean,
-    massUnitForDisplay: string,
-    isOnGround: boolean,
-
-    boardingStarted: boolean,
-    boardingRate: string,
-    setBoardingStarted: (boardingStarted: any) => void,
-    setBoardingRate: (boardingRate: any) => void,
-}
-
-export const A380Payload: React.FC<A380Props> = ({
+export const A380Payload: React.FC<PayloadProps> = ({
+    airframeInfo,
+    payloadInfo,
+    cabinInfo,
     simbriefUnits,
     simbriefBagWeight,
     simbriefPaxWeight,
@@ -48,37 +33,36 @@ export const A380Payload: React.FC<A380Props> = ({
     setBoardingRate,
 }) => {
     const { showModal } = useModals();
-    const dispatch = useAppDispatch();
 
-    const [mainFwdA] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 509);
-    const [mainFwdB] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 521);
-    const [mainMid1A] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity, 523);
-    const [mainMid1B] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity, 541);
-    const [mainMid1C] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}`, Loadsheet.seatMap[4].capacity, 547);
-    const [mainMid2A] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}`, Loadsheet.seatMap[5].capacity, 557);
-    const [mainMid2B] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}`, Loadsheet.seatMap[6].capacity, 563);
-    const [mainMid2C] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}`, Loadsheet.seatMap[7].capacity, 569);
-    const [mainAftA] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}`, Loadsheet.seatMap[8].capacity, 571);
-    const [mainAftB] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}`, Loadsheet.seatMap[9].capacity, 577);
-    const [upperFwd] = useSeatFlags(`L:${Loadsheet.seatMap[10].simVar}`, Loadsheet.seatMap[10].capacity, 587);
-    const [upperMidA] = useSeatFlags(`L:${Loadsheet.seatMap[11].simVar}`, Loadsheet.seatMap[11].capacity, 593);
-    const [upperMidB] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}`, Loadsheet.seatMap[12].capacity, 599);
-    const [upperAft] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}`, Loadsheet.seatMap[13].capacity, 601);
+    const [mainFwdA] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}`, cabinInfo.seatMap[0].capacity, 509);
+    const [mainFwdB] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}`, cabinInfo.seatMap[1].capacity, 521);
+    const [mainMid1A] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}`, cabinInfo.seatMap[2].capacity, 523);
+    const [mainMid1B] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}`, cabinInfo.seatMap[3].capacity, 541);
+    const [mainMid1C] = useSeatFlags(`L:${cabinInfo.seatMap[4].simVar}`, cabinInfo.seatMap[4].capacity, 547);
+    const [mainMid2A] = useSeatFlags(`L:${cabinInfo.seatMap[5].simVar}`, cabinInfo.seatMap[5].capacity, 557);
+    const [mainMid2B] = useSeatFlags(`L:${cabinInfo.seatMap[6].simVar}`, cabinInfo.seatMap[6].capacity, 563);
+    const [mainMid2C] = useSeatFlags(`L:${cabinInfo.seatMap[7].simVar}`, cabinInfo.seatMap[7].capacity, 569);
+    const [mainAftA] = useSeatFlags(`L:${cabinInfo.seatMap[8].simVar}`, cabinInfo.seatMap[8].capacity, 571);
+    const [mainAftB] = useSeatFlags(`L:${cabinInfo.seatMap[9].simVar}`, cabinInfo.seatMap[9].capacity, 577);
+    const [upperFwd] = useSeatFlags(`L:${cabinInfo.seatMap[10].simVar}`, cabinInfo.seatMap[10].capacity, 587);
+    const [upperMidA] = useSeatFlags(`L:${cabinInfo.seatMap[11].simVar}`, cabinInfo.seatMap[11].capacity, 593);
+    const [upperMidB] = useSeatFlags(`L:${cabinInfo.seatMap[12].simVar}`, cabinInfo.seatMap[12].capacity, 599);
+    const [upperAft] = useSeatFlags(`L:${cabinInfo.seatMap[13].simVar}`, cabinInfo.seatMap[13].capacity, 601);
 
-    const [mainFwdADesired, setMainFwdADesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity, 317);
-    const [mainFwdBDesired, setMainFwdBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 347);
-    const [mainMid1ADesired, setMainMid1ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 359);
-    const [mainMid1BDesired, setMainMid1BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 379);
-    const [mainMid1CDesired, setMainMid1CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}_DESIRED`, Loadsheet.seatMap[4].capacity, 397);
-    const [mainMid2ADesired, setMainMid2ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}_DESIRED`, Loadsheet.seatMap[5].capacity, 421);
-    const [mainMid2BDesired, setMainMid2BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}_DESIRED`, Loadsheet.seatMap[6].capacity, 439);
-    const [mainMid2CDesired, setMainMid2CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}_DESIRED`, Loadsheet.seatMap[7].capacity, 457);
-    const [mainAftADesired, setMainAftADesired] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}_DESIRED`, Loadsheet.seatMap[8].capacity, 479);
-    const [mainAftBDesired, setMainAftBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}_DESIRED`, Loadsheet.seatMap[9].capacity, 499);
-    const [upperFwdDesired, setUpperFwdDesired] = useSeatFlags(`L:${Loadsheet.seatMap[10].simVar}_DESIRED`, Loadsheet.seatMap[10].capacity, 521);
-    const [upperMidADesired, setUpperMidADesired] = useSeatFlags(`L:${Loadsheet.seatMap[11].simVar}_DESIRED`, Loadsheet.seatMap[11].capacity, 541);
-    const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}_DESIRED`, Loadsheet.seatMap[12].capacity, 557);
-    const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}_DESIRED`, Loadsheet.seatMap[13].capacity, 571);
+    const [mainFwdADesired, setMainFwdADesired] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}_DESIRED`, cabinInfo.seatMap[0].capacity, 317);
+    const [mainFwdBDesired, setMainFwdBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}_DESIRED`, cabinInfo.seatMap[1].capacity, 347);
+    const [mainMid1ADesired, setMainMid1ADesired] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}_DESIRED`, cabinInfo.seatMap[2].capacity, 359);
+    const [mainMid1BDesired, setMainMid1BDesired] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}_DESIRED`, cabinInfo.seatMap[3].capacity, 379);
+    const [mainMid1CDesired, setMainMid1CDesired] = useSeatFlags(`L:${cabinInfo.seatMap[4].simVar}_DESIRED`, cabinInfo.seatMap[4].capacity, 397);
+    const [mainMid2ADesired, setMainMid2ADesired] = useSeatFlags(`L:${cabinInfo.seatMap[5].simVar}_DESIRED`, cabinInfo.seatMap[5].capacity, 421);
+    const [mainMid2BDesired, setMainMid2BDesired] = useSeatFlags(`L:${cabinInfo.seatMap[6].simVar}_DESIRED`, cabinInfo.seatMap[6].capacity, 439);
+    const [mainMid2CDesired, setMainMid2CDesired] = useSeatFlags(`L:${cabinInfo.seatMap[7].simVar}_DESIRED`, cabinInfo.seatMap[7].capacity, 457);
+    const [mainAftADesired, setMainAftADesired] = useSeatFlags(`L:${cabinInfo.seatMap[8].simVar}_DESIRED`, cabinInfo.seatMap[8].capacity, 479);
+    const [mainAftBDesired, setMainAftBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[9].simVar}_DESIRED`, cabinInfo.seatMap[9].capacity, 499);
+    const [upperFwdDesired, setUpperFwdDesired] = useSeatFlags(`L:${cabinInfo.seatMap[10].simVar}_DESIRED`, cabinInfo.seatMap[10].capacity, 521);
+    const [upperMidADesired, setUpperMidADesired] = useSeatFlags(`L:${cabinInfo.seatMap[11].simVar}_DESIRED`, cabinInfo.seatMap[11].capacity, 541);
+    const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[12].simVar}_DESIRED`, cabinInfo.seatMap[12].capacity, 557);
+    const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${cabinInfo.seatMap[13].simVar}_DESIRED`, cabinInfo.seatMap[13].capacity, 571);
 
     const activeFlags = useMemo(
         () => [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
@@ -93,13 +77,13 @@ export const A380Payload: React.FC<A380Props> = ({
         [],
     );
 
-    const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 619);
-    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 631);
-    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 641);
+    const [fwdBag] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}`, 'Number', 619);
+    const [aftBag] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}`, 'Number', 631);
+    const [aftBulk] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}`, 'Number', 641);
 
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 607);
-    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 613);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 617);
+    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}_DESIRED`, 'Number', 607);
+    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}_DESIRED`, 'Number', 613);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}_DESIRED`, 'Number', 617);
 
     const cargo = useMemo(() => [fwdBag, aftBag, aftBulk], [fwdBag, aftBag, aftBulk]);
     const cargoDesired = useMemo(() => [fwdBagDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftBagDesired, aftBulkDesired]);
@@ -111,8 +95,8 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
 
-    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
+    const [seatMap] = useState<PaxStationInfo[]>(cabinInfo.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(cabinInfo.cargoMap);
 
     const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
     const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
@@ -169,6 +153,8 @@ export const A380Payload: React.FC<A380Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (simbriefDataLoaded === true && payloadImported === false) {
@@ -383,10 +369,10 @@ export const A380Payload: React.FC<A380Props> = ({
     // Init
     useEffect(() => {
         if (paxWeight === 0) {
-            setPaxWeight(Math.round(Loadsheet.specs.pax.defaultPaxWeight));
+            setPaxWeight(Math.round(cabinInfo.defaultPaxWeight));
         }
         if (paxBagWeight === 0) {
-            setPaxBagWeight(Math.round(Loadsheet.specs.pax.defaultBagWeight));
+            setPaxBagWeight(Math.round(cabinInfo.defaultBagWeight));
         }
     }, []);
 
@@ -518,6 +504,7 @@ export const A380Payload: React.FC<A380Props> = ({
         return [base, primary, secondary];
     }, [theme]);
 
+    if (airframeInfo === null) return (<></>);
     return (
         <div>
             <div className="h-content-section-reduced relative">
@@ -556,7 +543,7 @@ export const A380Payload: React.FC<A380Props> = ({
                         <div className="flex w-full flex-row">
                             <Card className="col-1 w-full" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                                 <PayloadInputTable
-                                    loadsheet={Loadsheet}
+                                    airframeInfo={airframeInfo}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
                                     displayZfw={displayZfw}
@@ -585,12 +572,12 @@ export const A380Payload: React.FC<A380Props> = ({
                                 <div className="flex flex-row items-center justify-start">
                                     <MiscParamsInput
                                         disable={gsxPayloadSyncEnabled === 1 && boardingStarted}
-                                        minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
-                                        maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
-                                        defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}
-                                        minBagWeight={Math.round(Loadsheet.specs.pax.minBagWeight)}
-                                        maxBagWeight={Math.round(Loadsheet.specs.pax.maxBagWeight)}
-                                        defaultBagWeight={Math.round(Loadsheet.specs.pax.defaultBagWeight)}
+                                        minPaxWeight={Math.round(cabinInfo.minPaxWeight)}
+                                        maxPaxWeight={Math.round(cabinInfo.maxPaxWeight)}
+                                        defaultPaxWeight={Math.round(cabinInfo.defaultPaxWeight)}
+                                        minBagWeight={Math.round(cabinInfo.minBagWeight)}
+                                        maxBagWeight={Math.round(cabinInfo.maxBagWeight)}
+                                        defaultBagWeight={Math.round(cabinInfo.defaultBagWeight)}
                                         paxWeight={paxWeight}
                                         bagWeight={paxBagWeight}
                                         massUnitForDisplay={massUnitForDisplay}
@@ -680,8 +667,8 @@ export const A380Payload: React.FC<A380Props> = ({
                         <ChartWidget
                             width={525}
                             height={511}
-                            envelope={Loadsheet.chart.performanceEnvelope}
-                            limits={Loadsheet.chart.chartLimits}
+                            envelope={airframeInfo.designLimits.performanceEnvelope}
+                            limits={payloadInfo.chartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

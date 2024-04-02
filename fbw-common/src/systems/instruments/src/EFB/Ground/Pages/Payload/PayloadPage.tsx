@@ -3,13 +3,33 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { AircraftType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, CabinInfo, FlypadPayloadInfo, PayloadType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { useAppSelector, isSimbriefDataLoaded } from '@flybywiresim/flypad';
-import { A320Payload } from './A320_251N/A320Payload';
-import { A380Payload } from './A380_842/A380Payload';
+import { A380Payload } from './WideBody/A380Payload';
+import { A320Payload } from './NarrowBody/A320Payload';
+
+export interface PayloadProps {
+    airframeInfo: AirframeInfo,
+    payloadInfo: FlypadPayloadInfo,
+    cabinInfo: CabinInfo,
+    simbriefUnits: string,
+    simbriefBagWeight: number,
+    simbriefPaxWeight: number,
+    simbriefPax: number,
+    simbriefBag: number,
+    simbriefFreight: number,
+    simbriefDataLoaded: boolean,
+    payloadImported: boolean,
+    massUnitForDisplay: string,
+    isOnGround: boolean,
+
+    boardingStarted: boolean,
+    boardingRate: string,
+    setBoardingStarted: (boardingStarted: any) => void,
+    setBoardingRate: (boardingRate: any) => void,
+}
 
 export const PayloadPage = () => {
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
@@ -26,10 +46,17 @@ export const PayloadPage = () => {
 
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
 
-    switch (airframe) {
-    case AircraftType.A380_842:
+    const payloadInfo = useAppSelector((state) => state.config.flypadPayloadInfo);
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
+    const cabinInfo = useAppSelector((state) => state.config.cabinInfo);
+
+    switch (payloadInfo.type) {
+    case PayloadType.DoubleDeckPassengerOps:
         return (
             <A380Payload
+                airframeInfo={airframeInfo}
+                payloadInfo={payloadInfo}
+                cabinInfo={cabinInfo}
                 simbriefUnits={simbriefUnits}
                 simbriefBagWeight={simbriefBagWeight}
                 simbriefPaxWeight={simbriefPaxWeight}
@@ -46,10 +73,14 @@ export const PayloadPage = () => {
                 setBoardingRate={setBoardingRate}
             />
         );
-    case AircraftType.A320_251N:
+    case PayloadType.SingleDeckPassengerOps:
+    case PayloadType.Default:
     default:
         return (
             <A320Payload
+                airframeInfo={airframeInfo}
+                payloadInfo={payloadInfo}
+                cabinInfo={cabinInfo}
                 simbriefUnits={simbriefUnits}
                 simbriefBagWeight={simbriefBagWeight}
                 simbriefPaxWeight={simbriefPaxWeight}
