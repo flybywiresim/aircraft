@@ -77,6 +77,7 @@
 1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
 1. [FAC] Improve sideslip estimation - @lukecologne (luke)
+1. [FWC] Implement overspeed VMO/MMO warning - @tracernz (Mike)
 1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
 
 ## 0.11.0
