@@ -14,6 +14,81 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
+#define DEFINED_TYPEDEF_FOR_base_fac_bus_
+
+struct base_fac_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 gamma_a_deg;
+  base_arinc_429 gamma_t_deg;
+  base_arinc_429 total_weight_lbs;
+  base_arinc_429 center_of_gravity_pos_percent;
+  base_arinc_429 sideslip_target_deg;
+  base_arinc_429 fac_slat_angle_deg;
+  base_arinc_429 fac_flap_angle;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 rudder_travel_limit_command_deg;
+  base_arinc_429 delta_r_yaw_damper_deg;
+  base_arinc_429 estimated_sideslip_deg;
+  base_arinc_429 v_alpha_lim_kn;
+  base_arinc_429 v_ls_kn;
+  base_arinc_429 v_stall_kn;
+  base_arinc_429 v_alpha_prot_kn;
+  base_arinc_429 v_stall_warn_kn;
+  base_arinc_429 speed_trend_kn;
+  base_arinc_429 v_3_kn;
+  base_arinc_429 v_4_kn;
+  base_arinc_429 v_man_kn;
+  base_arinc_429 v_max_kn;
+  base_arinc_429 v_fe_next_kn;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 delta_r_rudder_trim_deg;
+  base_arinc_429 rudder_trim_pos_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+
+struct base_fac_analog_outputs
+{
+  real_T yaw_damper_order_deg;
+  real_T rudder_trim_order_deg;
+  real_T rudder_travel_limit_order_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -79,54 +154,6 @@ struct base_fac_analog_inputs
   real_T yaw_damper_position_deg;
   real_T rudder_trim_position_deg;
   real_T rudder_travel_lim_position_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
-
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
-#define DEFINED_TYPEDEF_FOR_base_fac_bus_
-
-struct base_fac_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 gamma_a_deg;
-  base_arinc_429 gamma_t_deg;
-  base_arinc_429 total_weight_lbs;
-  base_arinc_429 center_of_gravity_pos_percent;
-  base_arinc_429 sideslip_target_deg;
-  base_arinc_429 fac_slat_angle_deg;
-  base_arinc_429 fac_flap_angle;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 rudder_travel_limit_command_deg;
-  base_arinc_429 delta_r_yaw_damper_deg;
-  base_arinc_429 estimated_sideslip_deg;
-  base_arinc_429 v_alpha_lim_kn;
-  base_arinc_429 v_ls_kn;
-  base_arinc_429 v_stall_kn;
-  base_arinc_429 v_alpha_prot_kn;
-  base_arinc_429 v_stall_warn_kn;
-  base_arinc_429 speed_trend_kn;
-  base_arinc_429 v_3_kn;
-  base_arinc_429 v_4_kn;
-  base_arinc_429 v_man_kn;
-  base_arinc_429 v_max_kn;
-  base_arinc_429 v_fe_next_kn;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 delta_r_rudder_trim_deg;
-  base_arinc_429 rudder_trim_pos_deg;
 };
 
 #endif
@@ -409,33 +436,6 @@ struct base_fac_flight_envelope_outputs
   real_T v_fe_next_kn;
   boolean_T v_fe_next_visible;
   real_T v_c_trend_kn;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-
-struct base_fac_analog_outputs
-{
-  real_T yaw_damper_order_deg;
-  real_T rudder_trim_order_deg;
-  real_T rudder_travel_limit_order_deg;
 };
 
 #endif

@@ -1901,21 +1901,21 @@
 
         <!-- Miscellaneous ==========================================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="WIPER_BASE_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="Wiper_Base_l" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
             <Range LowerBound="75" UpperBound="75" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="77">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="WIPER_BASE_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="Wiper_Base_l" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
             <Range LowerBound="100" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="77">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="WIPER_BASE_L" SimVar="CIRCUIT ON" Units="Bool" Index="77" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="Wiper_Base_l" SimVar="CIRCUIT ON" Units="Bool" Index="77" Continuous="false">
             <Range UpperBound="0" />
         </Sound>
 
@@ -2038,7 +2038,7 @@
 
         <!-- RAIN ========================================================================================== -->
 
-		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="0.01" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2056,7 +2056,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="ModerateRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="ModerateRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="2" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2074,7 +2074,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="HeavyRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="HeavyRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="15" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2092,64 +2092,64 @@
 			</Requires>
 		</Sound>
 
-        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL">
+        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL">
             <Range LowerBound="1" />
 
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV1">
-            <Range LowerBound="1" />
-            <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="squelchloop" NodeName="WIPER_BASE_L" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+            <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop2" NodeName="WIPER_BASE_L" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop2" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV3">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV3">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:3" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop3" NodeName="WIPER_BASE_L" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="3">
+        <Sound WwiseData="true" WwiseEvent="squelchloop3" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="3">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:3" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF1">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop4" NodeName="WIPER_BASE_L" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="squelchloop4" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF2">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop5" NodeName="WIPER_BASE_L" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop5" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
         <!-- CRC and Caution ========================================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
+        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
             <Range LowerBound="0.5" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
@@ -2346,54 +2346,54 @@
         <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
-        <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="Wiper_Base_l" />
 
         <!-- New RA callouts ====================================================================================-->
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="Wiper_Base_l" />
 
         <!-- TCAS callouts ====================================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="climb_climb" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="climb_climb_now" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="climb_crossing_climb" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="descend_crossing_descend" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="descend_descend" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="descend_descend_now" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="increase_climb" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="increase_descent" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="level_off_level_off" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="maint_vs_crossing_maint" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="maint_vs_maint" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="monitor_vs" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="traffic" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="climb_climb" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="climb_climb_now" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="climb_crossing_climb" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="descend_crossing_descend" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="descend_descend" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="descend_descend_now" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="increase_climb" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="increase_descent" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="level_off_level_off" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="maint_vs_crossing_maint" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="maint_vs_maint" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="monitor_vs" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="traffic" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="Wiper_Base_l" />
 
         <!-- ROPS callouts ==================================================================================== -->
 
-        <Sound WwiseData="true" WwiseEvent="brake_max_braking" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="keep_max_reverse" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="runway_too_short" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="set_max_reverse" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="brake_max_braking" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="keep_max_reverse" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="runway_too_short" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="set_max_reverse" NodeName="Wiper_Base_l" />
 
     </AvionicSounds>
 
@@ -2572,8 +2572,8 @@
         <Sound WwiseData="true" WwiseEvent="deice_windshield_switch_off" ViewPoint="Inside"/>
 
         <!-- Exterior ========================================================================================== -->
-        <Sound WwiseData="true" WwiseEvent="wipers_forward" NodeName="WIPER_BASE_L"/>
-        <Sound WwiseData="true" WwiseEvent="wipers_backward" NodeName="WIPER_BASE_L"/>
+        <Sound WwiseData="true" WwiseEvent="wipers_forward" NodeName="Wiper_Base_l"/>
+        <Sound WwiseData="true" WwiseEvent="wipers_backward" NodeName="Wiper_Base_l"/>
 
     </AnimationSounds>
 
