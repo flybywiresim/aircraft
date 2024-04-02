@@ -17,8 +17,6 @@ import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store
 
 /**
  * @brief Get the relevant checklist indices based on the current flight phase.
- *
- * TODO: make flight phases a part of the checklist data definitions
  */
 export const getRelevantChecklistIndices = () => {
     const { aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
