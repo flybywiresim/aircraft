@@ -6,13 +6,13 @@
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Fix, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class TFLeg extends XFLeg {

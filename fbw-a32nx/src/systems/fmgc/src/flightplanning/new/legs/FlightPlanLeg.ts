@@ -24,9 +24,8 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanS
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { MagVar } from '@microsoft/msfs-sdk';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';

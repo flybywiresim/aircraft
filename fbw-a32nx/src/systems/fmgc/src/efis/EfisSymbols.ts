@@ -29,7 +29,7 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 export class EfisSymbols<T extends number> {
     private blockUpdate = false;
