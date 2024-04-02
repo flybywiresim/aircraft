@@ -415,10 +415,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     render(): VNode {
         return (
             <>
-                {/* <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
+                <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
                     <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
                     <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
-                </g> */}
+                </g>
                 <g id="SpeedOfftapeGroup" ref={this.offTapeRef}>
                     <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m72 235h77" />
                     <SpeedTarget bus={this.props.bus} />
