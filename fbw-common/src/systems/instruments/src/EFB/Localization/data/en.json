@@ -592,7 +592,11 @@
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
       "WheelChocksEnabled": "Wheel Chocks",
-      "inHg": "inHg"
+      "inHg": "inHg",
+      "SimbridgeMachine": "Simbridge Host Machine",
+      "SimbridgeLocal": "This PC",
+      "SimbridgeRemote": "Remote PC",
+      "SimbridgeEmptyAddress": "SimBridge Remote IP Address cannot be empty!"
     },
     "ThirdPartyOptions": {
       "TT": {
