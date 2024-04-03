@@ -63,11 +63,11 @@ export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1,
 const DEFAULT_SCALE_NM = 0.539957;
 
 const LAYER_VISIBILITY_RULES = [
-    [true, true, true, true, false, false, true],
-    [true, true, true, true, false, false, false],
-    [false, true, false, false, true, true, false],
-    [false, true, false, false, true, true, false],
-    [false, true, false, false, true, true, false],
+    [true, true, true, true, false, false, true, true],
+    [true, true, true, true, false, false, false, true],
+    [false, true, false, false, true, true, false, true],
+    [false, true, false, false, true, true, false, true],
+    [false, true, false, false, true, true, false, true],
 ];
 
 export const LABEL_VISIBILITY_RULES = [
@@ -88,6 +88,7 @@ export enum LabelStyle {
     BtvSelectedRunwayEnd = 'runway-end-btv-selected',
     BtvSelectedRunwayArrow = 'runway-arrow-btv-selected',
     BtvSelectedExit = 'taxiway-btv-selected',
+    BtvStopLine = 'btv-stop-line',
 }
 
 export interface Label {
@@ -136,9 +137,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         FSComponent.createRef<HTMLCanvasElement>(),
         FSComponent.createRef<HTMLCanvasElement>(),
         FSComponent.createRef<HTMLCanvasElement>(),
+        FSComponent.createRef<HTMLCanvasElement>(),
     ];
 
     private readonly layerCanvasScaleContainerRefs = [
+        FSComponent.createRef<HTMLCanvasElement>(),
         FSComponent.createRef<HTMLCanvasElement>(),
         FSComponent.createRef<HTMLCanvasElement>(),
         FSComponent.createRef<HTMLCanvasElement>(),
@@ -182,6 +185,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
         featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
         featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
+        featureCollection([]), // Layer 7: DYNAMIC CONTENT (BTV PATH, STOP LINES)
     ];
 
     public amdbClient = new NavigraphAmdbClient();
@@ -265,7 +269,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
+    private readonly btvUtils = new BrakeToVacateUtils<T>(this.props.bus, this.labelManager, this.layerCanvasRefs[7], this.canvasCentreX, this.canvasCentreY);
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftOnGround, aircraftWithinAirport]) => {
@@ -320,10 +324,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.btvUtils.btvRunway.sub(() => this.updateLabelClasses());
         this.btvUtils.btvExit.sub(() => {
             this.updateLabelClasses();
-
-            // Draw BTV path
-            // this.layerFeatures[3].features.push(this.btvUtils.btvPath.features[0]);
-            // renderFeaturesToCanvas(3, this.layerCanvasRefs[3].instance.getContext('2d'), this.btvUtils.btvPath, 0, this.btvUtils.btvPath.features.length);
         });
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
@@ -341,6 +341,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
                     this.labelContainerRef.instance.appendChild(element);
                     this.labelManager.visibleLabelElements.set(item as Label, element);
+                }
+                break;
+            }
+            case SubscribableArrayEventType.Removed: {
+                if (Array.isArray(item)) {
+                    for (const label of item as Label[]) {
+                        const element = this.labelManager.visibleLabelElements.get(label);
+                        this.labelContainerRef.instance.removeChild(element);
+                        this.labelManager.visibleLabelElements.delete(label);
+                    }
+                } else {
+                    const element = this.labelManager.visibleLabelElements.get(item as Label);
+                    this.labelContainerRef.instance.removeChild(element);
+                    this.labelManager.visibleLabelElements.delete(item as Label);
                 }
                 break;
             }
@@ -404,7 +418,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.clearMap();
         this.btvUtils.clearSelection();
 
-        const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce((acc, it) => [...acc, ...it.reduce((acc, it) => [...acc, ...it.forFeatureTypes], [])], []);
+        const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
+            (acc, it) => [...acc, ...it.reduce(
+                (acc, it) => [...acc, ...it?.dontFetchFromAmdb ? [] : it.forFeatureTypes], [],
+            )], [],
+        );
         const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
 
         // Additional stuff we need that isn't handled by the canvas renderer
@@ -1144,6 +1162,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                         <div ref={this.layerCanvasScaleContainerRefs[6]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
                             <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
                         </div>
+                        <div ref={this.layerCanvasScaleContainerRefs[7]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
+                            <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
+                        </div>
 
                         <OancAircraftIcon
                             isVisible={this.showAircraft}
@@ -1192,7 +1213,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 }
 
-const pathCache = new Map< string, Path2D[]>();
+const pathCache = new Map<string, Path2D[]>();
 const pathIdCache = new Map<Feature, string>();
 
 function renderFeaturesToCanvas(layer: number, ctx: CanvasRenderingContext2D, data: FeatureCollection<Geometry, AmdbProperties>, startIndex: number, endIndex: number) {

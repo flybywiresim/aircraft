@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Position } from '@turf/turf';
 import { Coordinates, bearingTo, clampAngle, distanceTo } from 'msfs-geo';
 
+export function fractionalPointAlongLine(x1: number, y1: number, x2: number, y2: number, fraction: number): [number, number] {
+    return [x1 + (x2 - x1) / fraction, y1 + (y2 - y1) / fraction];
+}
+
 export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
-    return [x1 + (x2 - x1) / 2, y1 + (y2 - y1) / 2];
+    return fractionalPointAlongLine(x1, y1, x2, y2, 2);
 }
 
 export function pointDistance(x1: number, y1: number, x2: number, y2: number): number {
@@ -65,6 +70,11 @@ function lineLine(x1: number, y1: number, x2: number, y2: number, x3: number, y3
     }
 
     return undefined;
+}
+
+export function pointToLineDistance(point: Position, lineStart: Position, lineEnd: Position) {
+    return ((Math.abs((lineEnd[1] - lineStart[1]) * point[0] - (lineEnd[0] - lineStart[0]) * point[1] + lineEnd[0] * lineStart[1] - lineEnd[1] * lineStart[0]))
+            / ((((lineEnd[1] - lineStart[1]) ** 2 + (lineEnd[0] - lineStart[0]) ** 2)) ** 0.5));
 }
 
 export function globalToAirportCoordinates(airportPos: Coordinates, coordinates: Coordinates): [number, number] {

@@ -33,6 +33,9 @@ export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?
     } if (label.style === LabelStyle.BtvSelectedRunwayArrow && label.text) {
         return label.text.includes(btvSelectedRunway?.substring(2));
     }
+    if (label.style === LabelStyle.BtvStopLine) {
+        return true;
+    }
 
     switch (filter.type) {
     default:

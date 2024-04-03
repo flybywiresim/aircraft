@@ -9,6 +9,8 @@ export interface StyleRule {
 
     forPolygonStructureTypes?: PolygonStructureType[],
 
+    dontFetchFromAmdb?: boolean,
+
     styles: {
         doStroke: boolean,
 
@@ -109,5 +111,7 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
             forFeatureTypes: [FeatureType.StandGuidanceTaxiline],
             styles: { doStroke: true, doFill: false, strokeStyle: '#ffff00', lineWidth: 1.85 },
         },
+    ],
+    7: [
     ],
 };

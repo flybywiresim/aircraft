@@ -151,6 +151,14 @@
   color: $display-white;
 }
 
+.oanc-label-style-btv-stop-line {
+  color: $display-magenta;
+}
+
+.oanc-label-style-btv-stop-line:hover {
+  outline: 0px;
+}
+
 .oanc-button {
   padding: 10px 6px;
   background-color: gray;

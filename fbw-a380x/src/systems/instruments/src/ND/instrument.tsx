@@ -5,13 +5,15 @@
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
 import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, FmsOansData, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS } from '@flybywiresim/oanc';
+import {
+    a380EfisZoomRangeSettings, A380EfisZoomRangeValue, BtvSimvarPublisher, FmsOansArincProvider, FmsOansSimvarPublisher, Oanc, OANC_RENDER_HEIGHT,
+    OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS,
+} from '@flybywiresim/oanc';
 
 import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
 import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { FmsOansArincProvider, FmsOansSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -52,6 +54,8 @@ class NDInstrument implements FsInstrument {
     private readonly fmsOansSimvarPublisher: FmsOansSimvarPublisher;
 
     private readonly fmsOansArincProvider: FmsOansArincProvider;
+
+    private readonly btvSimvarPublisher: BtvSimvarPublisher;
 
     private readonly fgDataPublisher: FGDataPublisher;
 
@@ -166,6 +170,7 @@ class NDInstrument implements FsInstrument {
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
         this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
         this.fmsOansArincProvider = new FmsOansArincProvider(this.bus);
+        this.btvSimvarPublisher = new BtvSimvarPublisher(this.bus);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
@@ -183,6 +188,7 @@ class NDInstrument implements FsInstrument {
         this.backplane.addPublisher('fcu', this.fcuBusPublisher);
         this.backplane.addPublisher('fms', this.fmsDataPublisher);
         this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
+        this.backplane.addPublisher('btv', this.btvSimvarPublisher);
         this.backplane.addPublisher('fg', this.fgDataPublisher);
         this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
         this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);

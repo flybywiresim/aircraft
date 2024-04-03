@@ -156,37 +156,37 @@ export enum PolygonStructureType {
 export interface AmdbProperties {
     feattype: FeatureType,
 
-    plysttyp: PolygonStructureType,
+    plysttyp?: PolygonStructureType,
 
     id: number,
 
-    idlin: string,
+    idlin?: string,
 
-    idstd: string,
+    idstd?: string,
 
-    termref: string,
+    termref?: string,
 
-    idrwy: string,
+    idrwy?: string,
 
-    idthr: string,
+    idthr?: string,
 
-    ident: string,
+    ident?: string,
 
-    name: string,
+    name?: string,
 
-    iata: string,
+    iata?: string,
 
-    lda: number,
+    lda?: number,
 
-    asda: number,
+    asda?: number,
 
-    toda: number,
+    toda?: number,
 
-    tora: number,
+    tora?: number,
 
-    brngmag: number,
+    brngmag?: number,
 
-    brngtrue: number,
+    brngtrue?: number,
 }
 
 export type AmdbFeatureCollection = FeatureCollection<Geometry, AmdbProperties>
