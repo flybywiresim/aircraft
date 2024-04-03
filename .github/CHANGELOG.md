@@ -79,6 +79,8 @@
 1. [FAC] Improve sideslip estimation - @lukecologne (luke)
 1. [FWC] Implement overspeed VMO/MMO warning - @tracernz (Mike)
 1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
+1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
+1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
 
 ## 0.11.0
 
