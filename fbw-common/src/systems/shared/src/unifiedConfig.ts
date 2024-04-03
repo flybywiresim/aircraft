@@ -1,13 +1,21 @@
 /**
  * Contains the airframe.json file's information in a structured way.
  */
+export enum AirframeType {
+    A320_251N = 'A320-251N',
+    A380_842 = 'A380-842'
+}
 export interface AirframeInfo {
+    name: string;
     variant: string;
+    icao: string;
+    engines: string;
     designLimits: AirframeDesignLimits;
 }
 
 export interface AirframeDesignLimits {
     weights: AirframeDesignLimitsWeights;
+    endurance: AirframeDesignLimitsEndurance;
     performanceEnvelope: AirframePerformanceEnvelope;
 }
 
@@ -17,6 +25,13 @@ export interface AirframeDesignLimitsWeights {
     minZfw: number;
     maxGwCg: number;
     maxZfwCg: number;
+    maxCargo: number;
+    maxFuel: number;
+}
+
+export interface AirframeDesignLimitsEndurance {
+    range: number;
+    mmo: string;
 }
 
 export interface AirframePerformanceEnvelope {

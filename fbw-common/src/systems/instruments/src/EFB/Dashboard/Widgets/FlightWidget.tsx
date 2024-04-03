@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar, AircraftType } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import {
     ScrollableContainer, t, useAppSelector,
@@ -31,7 +31,7 @@ export const FlightWidget = () => {
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 248);
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
@@ -130,7 +130,7 @@ export const FlightWidget = () => {
                 <h1 className="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
                 <h1>
                     {simbriefDataLoaded ? `${(airline.length > 0 ? airline : '') + flightNum} | ` : ''}
-                    {airframe === AircraftType.A380_842 ? 'A380-842' : 'A320-251N'}
+                    {airframeInfo.variant}
                 </h1>
             </div>
             <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">

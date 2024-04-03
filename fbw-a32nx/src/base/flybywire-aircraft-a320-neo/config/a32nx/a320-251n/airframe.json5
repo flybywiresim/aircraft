@@ -18,15 +18,24 @@
     "configMajorVersion": 0,
     "configMinorVersion": 1,
     "_variant": "A320-251N",
+    "_icao": "A20N",
+    "_name": "Airbus A320neo",
+    "_engines": "CFM LEAP-1A26",
     "msnReference": "MSN 9XXX",
     "weightVariant": "WV055",
     "designLimits": {
         "weights": {
-            "maxGw": 79000,
-            "maxZfw": 64300,
-            "minZfw": 42500,
-            "maxGwCg": 40,
-            "maxZfwCg": 40
+            "maxGw": 79000,     // kg
+            "maxZfw": 64300,    // kg
+            "minZfw": 42500,    // kg
+            "maxGwCg": 40,      // %CG MAC
+            "maxZfwCg": 40,     // %CG MAC
+            "maxCargo": 9435,   // kg
+            "maxFuel": 23721,   // kg
+        },
+        "endurance": {
+            "range": 3400,   // nm
+            "mmo": "0.82",        // mach
         },
         "performanceEnvelope": {
             "mlw": [

@@ -35,7 +35,13 @@ export class UniversalConfigProvider {
 
         const json = await this.fetchVFSJson5(aircraft, variant, '<atc_id>', 'airframe');
         this.airframeInfo = (
-            { variant: json._variant, designLimits: json.designLimits }
+            {
+                name: json._name,
+                variant: json._variant,
+                icao: json._icao,
+                engines: json._engines,
+                designLimits: json.designLimits,
+            }
         );
 
         return this.airframeInfo;

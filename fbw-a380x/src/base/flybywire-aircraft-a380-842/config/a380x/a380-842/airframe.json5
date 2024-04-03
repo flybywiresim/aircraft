@@ -18,15 +18,24 @@
     "configMajorVersion": 0,
     "configMinorVersion": 1,
     "_variant": "A380-842",
+    "_icao": "A388",
+    "_name": "Airbus A380",
+    "_engines": "RR Trent 972B-84",
     "msnReference": "MSN 225",
     "weightVariant": "WV003",
     "designLimits": {
         "weights": {
-            "maxGw": 512000,
-            "maxZfw": 373000,
-            "minZfw": 300007,
-            "maxGwCg": 43,
-            "maxZfwCg": 43
+            "maxGw": 512000,   // kg
+            "maxZfw": 373000,  // kg
+            "minZfw": 300007,  // kg
+            "maxGwCg": 43,     // %CG MAC
+            "maxZfwCg": 43,    // %CG MAC
+            "maxCargo": 51400, // kg
+            "maxFuel": 323546, // kg
+        },
+        "endurance": {
+            "range": 8000,   // nm
+            "mmo": "0.89",        // mach
         },
         "performanceEnvelope": {
             "mlw": [
