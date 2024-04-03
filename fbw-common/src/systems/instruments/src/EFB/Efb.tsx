@@ -91,6 +91,7 @@ interface BatteryStatus {
 export const usePower = () => React.useContext(PowerContext);
 
 // this returns either `A380_842` or `A320_251N` depending on the aircraft
+// TODO: this will be replaced and improved by PR #8599
 export function getAirframeType() {
     return new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'))
         .searchParams.get('Airframe');
@@ -112,7 +113,8 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
 
     const dispatch = useAppDispatch();
 
-    // Set the aircraft checklists in the redux store, so they can be accessed by the checklist components
+    // Set the aircraft checklists received via component props in the redux store, so they can be
+    // accessed by other EFB components
     dispatch(setAircraftChecklists(aircraftChecklistsProp));
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
@@ -235,16 +237,8 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
         }
     }, [ac1BusIsPowered, powerState, autoLoadLightingPresetEnabled]);
 
-    // ======================
+    // ===================================
     // CHECKLISTS
-    // ======================
-
-    // ChecklistProvider is a singleton that reads the checklists from aircraft-specific json and
-    // provides it as a data structure.
-    // As ChecklistProvider.readChecklist() uses fetch to read a json from the VFS, it is asynchronous,
-    // and therefore a result cannot be provided right away.
-    // The effect is used to read the checklists once and store them in the redux store.
-
     // initialize the reducer store for the checklists' state
     const { checklists } = useAppSelector((state) => state.trackingChecklists);
     useEffect(() => {
@@ -266,7 +260,6 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
             }
         }
     }, [powerState]);
-
     // If the user has activated the autofill of checklists, setAutomaticItemStates will retrieve current aircraft states
     // where appropriate and set checklists items to "completed" automatically
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
@@ -274,7 +267,6 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
         if (!autoFillChecklists) return;
         setAutomaticItemStates(aircraftChecklistsProp);
     }, 1000);
-
     // ===================================
 
     const offToLoaded = () => {
@@ -314,11 +306,10 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
 
     // =========================================================================
     // <Pushback>
-    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
-
     // Required to fully release the tug and restore steering capabilities
-    // Must not be fired too early after disconnect therefore we wait until
-    // ECAM "NW STRG DISC" message also disappears.
+    // Must not be fired too early after disconnect, therefore, we wait until
+    // ECAM "NW STRG DISC" message also disappears.y
+    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
     useEffect(() => {
         if (!nwStrgDisc) {
             SimVar.SetSimVarValue('K:TUG_DISABLE', 'Bool', 1);
