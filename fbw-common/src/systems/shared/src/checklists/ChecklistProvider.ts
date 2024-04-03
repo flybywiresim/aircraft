@@ -94,7 +94,7 @@ export class ChecklistProvider {
                     checklistItems.push(checklistItem);
                     return;
                 }
-                console.warn(`Invalid checklist in list ${checklist.name}: `, checklistItem);
+                console.warn(`Invalid checklist item in list ${checklist.name}: `, checklistItem);
             });
             this.checklists.push({
                 name: checklist.name,
