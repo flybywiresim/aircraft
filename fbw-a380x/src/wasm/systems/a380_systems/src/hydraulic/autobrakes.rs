@@ -191,9 +191,6 @@ pub struct A380AutobrakeController {
 
     btv_scheduler: BtvDecelScheduler,
 
-    // This delay is added only so you have time to click the knob pass the BTV position without an unprogrammed BTV sending knob back to disarm
-    should_disarm_selection_knob_delayed: DelayedTrueLogicGate,
-
     autobrake_runway_overrun_protection: AutobrakeRunwayOverrunProtection,
 }
 impl A380AutobrakeController {
@@ -258,10 +255,6 @@ impl A380AutobrakeController {
             placeholder_ground_spoilers_out: false,
 
             btv_scheduler: BtvDecelScheduler::new(context),
-
-            should_disarm_selection_knob_delayed: DelayedTrueLogicGate::new(Duration::from_millis(
-                500,
-            )),
 
             autobrake_runway_overrun_protection: AutobrakeRunwayOverrunProtection::new(context),
         }
@@ -515,19 +508,17 @@ impl A380AutobrakeController {
 
         let rto_disable = self.rto_mode_deselected_this_update(autobrake_panel);
 
+        let previous_mode = self.mode;
         self.mode = self.determine_mode(autobrake_panel);
 
         if rto_disable || self.should_disarm(context, autobrake_panel) {
             self.disarm_actions();
         }
 
-        self.should_disarm_selection_knob_delayed.update(
-            context,
-            self.mode == A380AutobrakeMode::DISARM ,
+        // Disarm solenoid only when arming is lost
+        self.autobrake_knob.disarm(
+            self.mode == A380AutobrakeMode::DISARM && previous_mode != A380AutobrakeMode::DISARM,
         );
-
-        self.autobrake_knob
-            .disarm(self.should_disarm_selection_knob_delayed.output());
 
         self.deceleration_governor
             .engage_when(self.should_engage_deceleration_governor(context, autobrake_panel));
