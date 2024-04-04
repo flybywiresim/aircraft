@@ -523,7 +523,7 @@ impl A380AutobrakeController {
 
         self.should_disarm_selection_knob_delayed.update(
             context,
-            self.mode == A380AutobrakeMode::DISARM || self.mode == A380AutobrakeMode::RTO,
+            self.mode == A380AutobrakeMode::DISARM ,
         );
 
         self.autobrake_knob
@@ -578,6 +578,7 @@ impl SimulationElement for A380AutobrakeController {
 struct AutobrakeRunwayOverrunProtection {
     distance_to_runway_end_id: VariableIdentifier,
     autobrake_rop_active_id: VariableIdentifier,
+    autobrakemanual_rop_active_id: VariableIdentifier,
 
     ground_speed_id: VariableIdentifier,
 
@@ -586,17 +587,21 @@ struct AutobrakeRunwayOverrunProtection {
     distance_to_runway_end: Arinc429Word<Length>,
 
     is_engaged: bool,
+
+    is_any_autobrake_active: bool,
 }
 impl AutobrakeRunwayOverrunProtection {
     const MAX_DECEL_DRY_MS2: f64 = 3.;
 
-    const TARGET_SPEED_TO_RELEASE_ROP: f64 = 5.15;
+    const MIN_ARMING_SPEED_MS2: f64 = 10.28;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
             distance_to_runway_end_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_RWY_END".to_owned()),
             autobrake_rop_active_id: context.get_identifier("AUTOBRAKE_ROP_ACTIVE".to_owned()),
+            autobrakemanual_rop_active_id: context
+                .get_identifier("MANUAL_BRAKING_ROP_ACTIVE".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
@@ -608,19 +613,31 @@ impl AutobrakeRunwayOverrunProtection {
             ),
 
             is_engaged: false,
+
+            is_any_autobrake_active: false,
         }
     }
 
     fn update(&mut self, is_any_autobrake_active: bool) {
+        self.is_any_autobrake_active = is_any_autobrake_active;
+        // println!(
+        //     "ROP BRAKING {:.0}  RWEND {:.0}",
+        //     self.distance_to_stop_at_max_braking().get::<meter>(),
+        //     self.distance_to_runway_end.value().get::<meter>()
+        // );
+        // Can engage only above min speed
         if self.distance_to_runway_end.is_normal_operation()
             && is_any_autobrake_active
-            && self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_ROP
+            && self.ground_speed.get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
         {
-            if self.distance_to_taxi_speed_at_max_braking() >= self.distance_to_runway_end.value() {
+            if self.distance_to_stop_at_max_braking() >= self.distance_to_runway_end.value() {
                 self.is_engaged = true;
             }
         } else {
-            self.is_engaged = false;
+            // Can only disengage if autobrake or distance lost (not from speed)
+            if !self.distance_to_runway_end.is_normal_operation() || !is_any_autobrake_active {
+                self.is_engaged = false;
+            }
         }
     }
 
@@ -628,9 +645,19 @@ impl AutobrakeRunwayOverrunProtection {
         self.is_engaged
     }
 
-    fn distance_to_taxi_speed_at_max_braking(&mut self) -> Length {
-        let delta_speed_to_decelerate = self.ground_speed
-            - Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_ROP);
+    fn should_show_manual_braking_warning(&self) -> bool {
+        if !self.is_any_autobrake_active
+            && self.distance_to_runway_end.is_normal_operation()
+            && self.ground_speed.get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
+        {
+            self.distance_to_stop_at_max_braking() >= self.distance_to_runway_end.value()
+        } else {
+            false
+        }
+    }
+
+    fn distance_to_stop_at_max_braking(&self) -> Length {
+        let delta_speed_to_decelerate = self.ground_speed;
 
         Length::new::<meter>(
             delta_speed_to_decelerate.get::<meter_per_second>().powi(2)
@@ -641,6 +668,10 @@ impl AutobrakeRunwayOverrunProtection {
 impl SimulationElement for AutobrakeRunwayOverrunProtection {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.autobrake_rop_active_id, self.is_engaged as u8 as f64);
+        writer.write(
+            &self.autobrakemanual_rop_active_id,
+            self.should_show_manual_braking_warning() as u8 as f64,
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -671,6 +702,8 @@ struct BtvDecelScheduler {
     runway_length_id: VariableIdentifier,
     distance_to_exit_id: VariableIdentifier,
     rot_estimation_id: VariableIdentifier,
+    wet_estimated_distance_id: VariableIdentifier,
+    dry_estimated_distance_id: VariableIdentifier,
 
     ground_speed_id: VariableIdentifier,
 
@@ -688,19 +721,20 @@ struct BtvDecelScheduler {
 
     deceleration_request: Acceleration,
     end_of_decel_acceleration: Acceleration,
+    desired_deceleration: Acceleration,
 
     final_distance_remaining: Length,
 
     distance_remaining_at_decel_activation: Length,
 }
 impl BtvDecelScheduler {
-    const MAX_DECEL_DRY_MS2: f64 = -3.;
-    const MAX_DECEL_WET_MS2: f64 = -2.;
+    const MAX_DECEL_DRY_MS2: f64 = -3.0;
+    const MAX_DECEL_WET_MS2: f64 = -1.9;
 
     const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
 
-    const DISTANCE_OFFSET_TO_RELEASE_BTV: f64 = 50.;
-    const TARGET_SPEED_TO_RELEASE_BTV: f64 = 5.15;
+    const DISTANCE_OFFSET_TO_RELEASE_BTV_M: f64 = 65.5;
+    const TARGET_SPEED_TO_RELEASE_BTV_M_S: f64 = 5.15;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -710,6 +744,10 @@ impl BtvDecelScheduler {
             distance_to_exit_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_EXIT".to_owned()),
             rot_estimation_id: context.get_identifier("BTV_ROT".to_owned()),
+            wet_estimated_distance_id: context
+                .get_identifier("OANS_BTV_WET_DISTANCE_ESTIMATED".to_owned()),
+            dry_estimated_distance_id: context
+                .get_identifier("OANS_BTV_DRY_DISTANCE_ESTIMATED".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
@@ -728,6 +766,9 @@ impl BtvDecelScheduler {
 
             deceleration_request: Acceleration::default(),
             end_of_decel_acceleration: Acceleration::default(),
+            desired_deceleration: Acceleration::new::<meter_per_second_squared>(
+                Self::MAX_DECEL_DRY_MS2,
+            ),
 
             final_distance_remaining: Length::default(),
 
@@ -747,6 +788,8 @@ impl BtvDecelScheduler {
         self.end_of_decel_acceleration = Acceleration::new::<meter_per_second_squared>(5.);
         self.final_distance_remaining = Length::default();
         self.distance_remaining_at_decel_activation = Length::default();
+        self.desired_deceleration =
+            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2);
     }
 
     fn decel(&self) -> Acceleration {
@@ -765,6 +808,8 @@ impl BtvDecelScheduler {
         self.compute_decel(context);
 
         self.state = self.update_state(context);
+
+        //println!("AB STATE {:?}", self.state);
     }
 
     fn braking_distance_remaining(&self) -> Length {
@@ -774,7 +819,7 @@ impl BtvDecelScheduler {
             self.oans_distance_to_exit.value()
         };
 
-        let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV);
+        let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M);
 
         (distance_remaining_raw - distance_from_btv_exit).max(Length::default())
     }
@@ -786,7 +831,7 @@ impl BtvDecelScheduler {
             | BTVState::EndOfBraking
             | BTVState::OutOfDecelRange => {
                 let speed_at_btv_release =
-                    Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV) * 0.9; // 10% safety margin on release speed
+                    Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV_M_S) * 0.9; // 10% safety margin on release speed
 
                 self.final_distance_remaining = self.braking_distance_remaining();
 
@@ -801,9 +846,15 @@ impl BtvDecelScheduler {
 
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(
                     target_deceleration_safety_corrected
-                        .max(Self::MAX_DECEL_DRY_MS2)
+                        .max(self.desired_deceleration.get::<meter_per_second_squared>())
                         .min(5.),
                 );
+
+                // println!(
+                //     "Distance remaining {:.0} DECELERATION REQUEST {:.2}",
+                //     self.final_distance_remaining.get::<meter>(),
+                //     self.deceleration_request.get::<meter_per_second_squared>()
+                // )
             }
             _ => {
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
@@ -821,13 +872,14 @@ impl BtvDecelScheduler {
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
-        let percent_of_max = 0.6;
-        Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2 * percent_of_max)
+        let percent_of_max = 0.98;
+        self.desired_deceleration * percent_of_max
     }
 
     fn accel_during_rot_opti(&self) -> Acceleration {
-        let percent_of_max = 0.1;
-        Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2 * percent_of_max)
+        // let percent_of_max = 0.1;
+        // self.desired_deceleration * percent_of_max
+        Acceleration::new::<meter_per_second_squared>(-0.2)
     }
 
     fn safety_margin(&self) -> f64 {
@@ -849,6 +901,11 @@ impl BtvDecelScheduler {
         match self.state {
             BTVState::Armed => {
                 if self.spoilers_active {
+                    self.update_desired_btv_deceleration();
+                    // println!(
+                    //     "DESIRED DECEL SELECTED: {:.2}",
+                    //     self.desired_deceleration.get::<meter_per_second_squared>()
+                    // );
                     BTVState::RotOptimization
                 } else {
                     if !self.arming_authorized() {
@@ -861,6 +918,12 @@ impl BtvDecelScheduler {
             BTVState::RotOptimization => {
                 let accel_min = self.accel_to_reach_to_decelerate();
 
+                // println!(
+                //     "OPTI!!!! DECELERATION REQUEST {:.2} Waiting for {:.2}",
+                //     self.deceleration_request.get::<meter_per_second_squared>(),
+                //     accel_min.get::<meter_per_second_squared>()
+                // );
+
                 if self.deceleration_request < accel_min {
                     self.distance_remaining_at_decel_activation = self.braking_distance_remaining();
                     self.end_of_decel_acceleration = self.deceleration_request;
@@ -872,22 +935,24 @@ impl BtvDecelScheduler {
             BTVState::Decel => {
                 if self.final_distance_remaining.get::<meter>() < 50.
                     || self.ground_speed.get::<meter_per_second>()
-                        <= Self::TARGET_SPEED_TO_RELEASE_BTV
+                        <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
                 {
+                    self.end_of_decel_acceleration = self.deceleration_request;
                     BTVState::EndOfBraking
                 } else {
                     BTVState::Decel
                 }
             }
             BTVState::EndOfBraking => {
-                if self.ground_speed.get::<meter_per_second>() <= Self::TARGET_SPEED_TO_RELEASE_BTV
+                if self.ground_speed.get::<meter_per_second>()
+                    <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
                 {
                     self.disarm();
                     BTVState::Disabled
                 } else {
-                    self.end_of_decel_acceleration = self
-                        .end_of_decel_acceleration
-                        .max(self.deceleration_request);
+                    // self.end_of_decel_acceleration = self
+                    //     .end_of_decel_acceleration
+                    //     .max(self.deceleration_request);
                     BTVState::EndOfBraking
                 }
             }
@@ -919,22 +984,61 @@ impl BtvDecelScheduler {
     }
 
     fn rot_estimation_for_distance(&self) -> Arinc429Word<u64> {
-        let distance = if self.is_oans_fallback_mode() {
-            self.fallback_distance_to_exit_from_touchdown.value()
-        } else {
-            self.oans_distance_to_exit.value()
-        };
+        let distance_valid = self
+            .fallback_distance_to_exit_from_touchdown
+            .is_normal_operation();
 
-        // Only showing ROT when a distance is available and BTV not currently braking
-        if distance.get::<meter>() > 0. && self.state == BTVState::Disabled
-            || self.state == BTVState::Armed
-        {
+        if distance_valid {
+            let distance = self.fallback_distance_to_exit_from_touchdown.value();
+
             let rot_duration =
                 Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.));
             Arinc429Word::new(rot_duration.as_secs(), SignStatus::NormalOperation)
         } else {
-            Arinc429Word::new(0, SignStatus::NormalOperation)
+            Arinc429Word::new(0, SignStatus::NoComputedData)
         }
+    }
+
+    fn stopping_distance_estimation_for_dry(&self, current_speed: Velocity) -> Length {
+        self.stopping_distance_estimation_for_decel(
+            current_speed,
+            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2),
+        )
+    }
+
+    fn stopping_distance_estimation_for_wet(&self, current_speed: Velocity) -> Length {
+        self.stopping_distance_estimation_for_decel(
+            current_speed,
+            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_WET_MS2),
+        )
+    }
+
+    fn stopping_distance_estimation_for_decel(
+        &self,
+        current_speed: Velocity,
+        deceleration: Acceleration,
+    ) -> Length {
+        Length::new::<meter>(
+            current_speed.get::<meter_per_second>().powi(2)
+                / (2. * deceleration.get::<meter_per_second_squared>().abs()),
+        )
+    }
+
+    fn update_desired_btv_deceleration(&mut self) {
+        // println!("update_desired_btv_deceleration : braking remaining {:.0} vs braking dist for wet {:.0}",
+        //     self.braking_distance_remaining().get::<meter>(),
+        //     self.stopping_distance_estimation_for_wet(self.ground_speed).get::<meter>() + 200.,
+        // );
+
+        //TODO 200m added to acount for time to engage decel after touchdown
+        self.desired_deceleration = if self.braking_distance_remaining()
+            < self.stopping_distance_estimation_for_wet(self.ground_speed)
+                + Length::new::<meter>(200.)
+        {
+            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2)
+        } else {
+            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_WET_MS2)
+        };
     }
 }
 impl SimulationElement for BtvDecelScheduler {
@@ -942,6 +1046,22 @@ impl SimulationElement for BtvDecelScheduler {
         let rot_arinc = self.rot_estimation_for_distance();
 
         writer.write_arinc429(&self.rot_estimation_id, rot_arinc.value(), rot_arinc.ssm());
+
+        // TODO check how to use predicted speed
+        writer.write(
+            &self.wet_estimated_distance_id,
+            self.stopping_distance_estimation_for_wet(
+                self.ground_speed.min(Velocity::new::<knot>(150.)),
+            )
+            .get::<meter>(),
+        );
+        writer.write(
+            &self.dry_estimated_distance_id,
+            self.stopping_distance_estimation_for_dry(
+                self.ground_speed.min(Velocity::new::<knot>(150.)),
+            )
+            .get::<meter>(),
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
