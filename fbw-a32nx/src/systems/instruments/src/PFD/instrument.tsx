@@ -7,7 +7,7 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
+import { PfdVisualAlertPublisher } from '@flybywiresim/pfd';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -37,7 +37,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private fmsDataPublisher: FmsDataPublisher;
 
-    private readonly brakingWarningsPublisher: BrakingWarningsPublisher;
+    private readonly brakingWarningsPublisher: PfdVisualAlertPublisher;
 
     /**
      * "mainmenu" = 0
@@ -56,7 +56,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
-        this.brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
+        this.brakingWarningsPublisher = new PfdVisualAlertPublisher(this.bus);
     }
 
     get templateID(): string {

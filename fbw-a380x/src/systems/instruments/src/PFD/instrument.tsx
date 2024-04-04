@@ -1,9 +1,10 @@
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { PfdVisualAlertPublisher } from '@flybywiresim/pfd';
 import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
 import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { BrakingWarningsPublisher } from 'instruments/src/PFD/shared/BrakingWarningsPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { PfdVisualAlertPublisherA380 } from 'instruments/src/PFD/AttitudeIndicatorWarningsA380';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -33,7 +34,9 @@ class A380X_PFD extends BaseInstrument {
 
     private readonly fmsDataPublisher: FmsDataPublisher;
 
-    private readonly brakingWarningsPublisher = new BrakingWarningsPublisher(this.bus);
+    private readonly brakingWarningsPublisher = new PfdVisualAlertPublisher(this.bus);
+
+    private readonly brakingWarningsPublisherA380 = new PfdVisualAlertPublisherA380(this.bus);
 
     constructor() {
         super();
@@ -51,6 +54,7 @@ class A380X_PFD extends BaseInstrument {
         this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
         this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);
         this.backplane.addPublisher('BrakingWarnings', this.brakingWarningsPublisher);
+        this.backplane.addPublisher('BrakingWarningsA380', this.brakingWarningsPublisherA380);
     }
 
     get templateID(): string {

@@ -286,8 +286,10 @@ export class LegacyGpws {
         if (shouldPullUpPlay !== this.PrevShouldPullUpPlay) {
             if (shouldPullUpPlay) {
                 this.soundManager.addPeriodicSound(soundList.pull_up, 1.1);
+                SimVar.SetSimVarValue('L:A32NX_GPWS_PULL_UP', 'Bool', true);
             } else {
                 this.soundManager.removePeriodicSound(soundList.pull_up);
+                SimVar.SetSimVarValue('L:A32NX_GPWS_PULL_UP', 'Bool', false);
             }
             this.PrevShouldPullUpPlay = shouldPullUpPlay;
         }

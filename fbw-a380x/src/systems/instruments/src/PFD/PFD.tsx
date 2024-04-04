@@ -2,9 +2,10 @@ import { A380Failure } from '@flybywiresim/failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
+import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
+import { AttitudeIndicatorWarningsA380 } from 'instruments/src/PFD/AttitudeIndicatorWarningsA380';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
 import { LinearDeviationIndicator } from 'instruments/src/PFD/LinearDeviationIndicator';
-import { AttitudeIndicatorWarnings } from 'instruments/src/PFD/AttitudeIndicatorWarnings';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -139,6 +140,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
                     <AttitudeIndicatorFixedUpper bus={this.props.bus} />
                     <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
+                    <AttitudeIndicatorWarningsA380 bus={this.props.bus} instrument={this.props.instrument} />
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />

@@ -6,7 +6,7 @@ import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VN
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
-import { AttitudeIndicatorWarnings } from 'instruments/src/PFD/AttitudeIndicatorWarnings';
+import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
