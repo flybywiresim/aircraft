@@ -55,8 +55,9 @@ export class UniversalConfigProvider {
         const json = await this.fetchVFSJson5(aircraft, variant, '<atc_id>', 'flypad-payload');
         this.flypadInfo = (
             {
-                type: json._type,
-                chartLimits: json.chartLimits,
+                payloadChartLimits: json.chartLimits,
+                payloadPlaneCanvas: json._canvas,
+                payloadSeatDisplay: json._seatDisplay,
             }
         );
 

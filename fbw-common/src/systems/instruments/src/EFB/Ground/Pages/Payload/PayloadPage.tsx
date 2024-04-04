@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { AirframeInfo, CabinInfo, FlypadInfo, PayloadType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, AirframeType, CabinInfo, FlypadInfo, PayloadType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { useAppSelector, isSimbriefDataLoaded, getMaxPax, getMaxCargo } from '@flybywiresim/flypad';
 import { A380Payload } from './WideBody/A380Payload';
 import { A320Payload } from './NarrowBody/A320Payload';
@@ -51,8 +51,8 @@ export const PayloadPage = () => {
     const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
     const cabinInfo = useAppSelector((state) => state.config.cabinInfo);
 
-    switch (flypadInfo.type) {
-    case PayloadType.DoubleDeckPassengerOps:
+    switch (airframeInfo.variant) {
+    case AirframeType.A380_842:
         return (
             <A380Payload
                 airframeInfo={airframeInfo}
@@ -76,8 +76,7 @@ export const PayloadPage = () => {
                 setBoardingRate={setBoardingRate}
             />
         );
-    case PayloadType.SingleDeckPassengerOps:
-    case PayloadType.Default:
+    case AirframeType.A320_251N:
     default:
         return (
             <A320Payload

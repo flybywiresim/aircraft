@@ -41,19 +41,29 @@ export interface AirframePerformanceEnvelope {
     flight: number[][];
 }
 
-export enum PayloadType {
-    Default = 0,
-    SingleDeckPassengerOps = 1,
-    DoubleDeckPassengerOps = 2
-}
 /**
- * Contains the flypad-payload.json file's information in a structured way.
+ * Contains the flypad-*.json files' information in a structured way.
  */
 export interface FlypadInfo {
-    type: PayloadType;
-    chartLimits: PayloadChartLimits;
+    payloadPlaneCanvas: PayloadPlaneCanvas;
+    payloadChartLimits: PayloadChartLimits;
+    payloadSeatDisplay: PayloadSeatDisplay[];
+}
+export interface PayloadPlaneCanvas {
+    width: number;
+    height: number;
+    canvasX: number;
+    canvasY: number;
 }
 
+export interface PayloadSeatDisplay {
+    len: number;
+    wid: number;
+    padX: number;
+    padY: number;
+    imageX: number;
+    imageY: number;
+}
 export interface PayloadChartLimits {
     weight: ChartLimitsWeights;
     cg: ChartLimitsCG;

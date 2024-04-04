@@ -197,25 +197,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        }
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1, "yOffset": 19},
+                        { "type": 1},
+                        { "type": 1}
                     ],
                     "x": 0,
                     "y": 0,
@@ -224,25 +211,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        }
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1, "yOffset": 19},
+                        { "type": 1},
+                        { "type": 1}
                     ],
                     "x": 0,
                     "y": 0,

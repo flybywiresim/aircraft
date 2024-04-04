@@ -4,13 +4,12 @@
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { CargoStationInfo, PaxStationInfo, SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { setPayloadImported, useAppDispatch, Card, t, TooltipWrapper, SelectGroup, SelectItem, PromptModal, useModals } from '@flybywiresim/flypad';
 import { SeatOutlineBg } from '../../../../Assets/SeatOutlineBg';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
-import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PayloadProps } from '../PayloadPage';
 
@@ -188,7 +187,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
             fillStation(i, parseFloat(Number((Math.ceil((seatMap[i].capacity / maxPax) * 1e2) / 1e2).toExponential(2)).toPrecision(3)), numOfPax);
         }
         fillStation(0, 1, paxRemaining);
-    }, [maxPax, ...seatMap, totalPaxDesired]);
+    }, [maxPax, seatMap, totalPaxDesired]);
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         const bagWeight = numberOfPax * perBagWeight;
@@ -206,7 +205,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
             fillCargo(i, cargoMap[i].weight / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-    }, [maxCargo, ...cargoMap, ...cargoDesired, paxBagWeight]);
+    }, [maxCargo, cargoMap, ...cargoDesired, paxBagWeight]);
 
     const processZfw = useCallback((newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -455,14 +454,25 @@ export const A320Payload: React.FC<PayloadProps> = ({
         return [base, primary, secondary];
     }, [theme]);
 
-    if (airframeInfo === null) return (<></>);
     return (
         <div>
             <div className="h-content-section-reduced relative">
                 <div className="mb-10">
                     <div className="relative flex flex-col">
                         <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
-                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} theme={getTheme(theme)} isMainDeck canvasX={243} canvasY={78} />
+                        <SeatMapWidget
+                            payloadSeatDisplay={flypadInfo.payloadSeatDisplay}
+                            seatMap={seatMap}
+                            desiredFlags={desiredFlags}
+                            activeFlags={activeFlags}
+                            onClickSeat={onClickSeat}
+                            theme={getTheme(theme)}
+                            isMainDeck
+                            width={flypadInfo.payloadPlaneCanvas.width}
+                            height={flypadInfo.payloadPlaneCanvas.height}
+                            canvasX={flypadInfo.payloadPlaneCanvas.canvasX}
+                            canvasY={flypadInfo.payloadPlaneCanvas.canvasY}
+                        />
                     </div>
                 </div>
                 <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} onClickCargo={onClickCargo} />
@@ -592,7 +602,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
                             width={525}
                             height={511}
                             envelope={airframeInfo.designLimits.performanceEnvelope}
-                            limits={flypadInfo.chartLimits}
+                            limits={flypadInfo.payloadChartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

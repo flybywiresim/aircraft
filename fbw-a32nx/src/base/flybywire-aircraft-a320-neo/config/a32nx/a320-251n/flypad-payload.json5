@@ -17,7 +17,12 @@
 {
     "configMajorVersion": 0,
     "configMinorVersion": 1,
-    "_type": 1,
+    "_canvas": {
+        "width": 1000,
+        "height": 150,
+        "canvasX": 243,
+        "canvasY": 78
+    },
     "chartLimits": {
         "weight": {
             "min": 35000,
@@ -66,5 +71,88 @@
                 "y": 0.29
             }
         }
-    }
+    },
+    "_seatDisplay": [
+        {
+            // NarrowbodyEconomy
+            len: 25.4,
+            wid: 19.2,
+            padX: 6.8,
+            padY: 0,
+            imageX: 25.4,
+            imageY: 19.2,
+        },
+        {
+            // NarrowbodyEconomyEmergency
+            len: 25.4,
+            wid: 19.2,
+            padX: 13.8,
+            padY: 0,
+            imageX: 25.4,
+            imageY: 19.2,
+        },
+        {
+            // WidebodyEconomy
+            len: 16,
+            wid: 12.125,
+            padX: 2,
+            padY: 0,
+            imageX: 16,
+            imageY: 12.125,
+        },
+        {
+            // WidebodyEconomyEmergency
+            len: 16,
+            wid: 12.125,
+            padX: 2,
+            padY: 0,
+            imageX: 16,
+            imageY: 12.125,
+        },
+        {
+            // WidebodyBusinessFlatRight
+            len: 24,
+            wid: 23.22,
+            padX: 1,
+            padY: 0,
+            imageX: 24,
+            imageY: 23.22,
+        },
+        {
+            // WidebodyBusinessFlatLeft
+            len: 24,
+            wid: 23.22,
+            padX: 1,
+            padY: 0,
+            imageX: 24,
+            imageY: 23.22,
+        },
+        {
+            // WidebodySuiteRight
+            len: 35,
+            wid: 20,
+            padX: 2,
+            padY: 0,
+            imageX: 50,
+            imageY: 50,
+        },
+        {
+            // WidebodySuiteLeft
+            len: 35,
+            wid: 20,
+            padX: 5,
+            padY: 0,
+            imageX: 50,
+            imageY: 50,
+        },
+        {
+            // WidebodyPremiumEconomy
+            len: 18,
+            wid: 13.64,
+            padX: 2,
+            padY: 0,
+            imageX: 18,
+            imageY: 13.64,
+        }
+    ]
 }
