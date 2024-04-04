@@ -5016,7 +5016,6 @@
                 <NODE_ID>A32NX_PUSH_WARN_L</NODE_ID>
                 <PART_ID>A32NX_PUSH_WARN_L</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
@@ -5040,7 +5039,6 @@
                 <NODE_ID>A32NX_PUSH_CAUTION_L</NODE_ID>
                 <PART_ID>A32NX_PUSH_CAUTION_L</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
@@ -5064,7 +5062,6 @@
                 <NODE_ID>A32NX_PUSH_WARN_R</NODE_ID>
                 <PART_ID>A32NX_PUSH_WARN_R</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
@@ -5088,7 +5085,6 @@
                 <NODE_ID>A32NX_PUSH_CAUTION_R</NODE_ID>
                 <PART_ID>A32NX_PUSH_CAUTION_R</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>

@@ -76,7 +76,12 @@
 1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
 1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
 1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
-2. [FAC] Improve sideslip estimation - @lukecologne (luke)
+1. [FAC] Improve sideslip estimation - @lukecologne (luke)
+1. [FWC] Implement overspeed VMO/MMO warning - @tracernz (Mike)
+1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
+1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
+1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
+1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
 
 ## 0.11.0
 
