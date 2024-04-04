@@ -81,6 +81,7 @@
 1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
 1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
 1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
+1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
 
 ## 0.11.0
 

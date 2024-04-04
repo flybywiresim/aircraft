@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject, SimVarValueType } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject, SimVarValueType, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word, NXDataStore, NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -25,7 +25,7 @@ interface EWDItem {
     failure: number,
     sysPage: number,
     side: string,
-    /** Cancel flag (only emergency cancel can cancel if false), defaults to true. */
+    /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
     cancel?: boolean,
 }
 
@@ -86,8 +86,10 @@ export class PseudoFWC {
 
     private readonly fireActive = Subject.create(false);
 
+    private nonCancellableWarningCount = 0;
+
     private readonly masterWarningOutput = MappedSubject.create(
-        ([masterWarning, fireActive]) => masterWarning || fireActive,
+        SubscribableMapFunctions.or(),
         this.masterWarning,
         this.fireActive,
     );
@@ -1573,7 +1575,7 @@ export class PseudoFWC {
             this.masterCaution.set(false);
             this.auralSingleChimePending = false;
         }
-        if (masterWarningButtonLeft || masterWarningButtonRight) {
+        if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
             this.masterWarning.set(false);
             this.auralCrcActive.set(false);
         }
@@ -1603,15 +1605,8 @@ export class PseudoFWC {
 
         /* CLEAR AND RECALL */
         if (this.clrTriggerRisingEdge) {
-            // delete the first cancellable failure
-            for (const [index, failure] of this.failuresLeft.entries()) {
-                const cancellable = this.ewdMessageFailures[failure]?.cancel;
-                if (cancellable === false) {
-                    continue;
-                }
-                this.failuresLeft.splice(index, 1);
-                break;
-            }
+            // delete the first failure
+            this.failuresLeft.splice(0, 1);
             this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
         }
 
@@ -1665,6 +1660,7 @@ export class PseudoFWC {
 
         this.recallFailures.length = 0;
         this.recallFailures.push(...recallFailureKeys);
+        this.nonCancellableWarningCount = 0;
 
         // Failures first
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
@@ -1689,6 +1685,10 @@ export class PseudoFWC {
                     if (value.failure === 2) {
                         this.masterCaution.set(true);
                     }
+                }
+
+                if (value.cancel === false && value.failure === 3) {
+                    this.nonCancellableWarningCount++;
                 }
 
                 // if the warning is the same as the aural
@@ -1833,7 +1833,9 @@ export class PseudoFWC {
 
             if (orderedFailureArrayRight.length === 0) {
                 this.masterCaution.set(false);
-                this.masterWarning.set(false);
+                if (this.nonCancellableWarningCount === 0) {
+                    this.masterWarning.set(false);
+                }
             }
         }
 
@@ -1921,6 +1923,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400220: { // OVERSPEED FLAPS 3
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1932,6 +1935,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400230: { // OVERSPEED FLAPS 2
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1944,6 +1948,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400235: { // OVERSPEED FLAPS 1+F
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1956,6 +1961,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         3400240: { // OVERSPEED FLAPS 1
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
@@ -1968,6 +1974,7 @@ export class PseudoFWC {
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
+            cancel: false,
         },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
