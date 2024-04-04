@@ -7,7 +7,6 @@ import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from 
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
@@ -156,7 +155,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
                     <FDYawBar bus={this.props.bus} />
                     <AircraftReference bus={this.props.bus} />
                     <FlightPathVector bus={this.props.bus} />
-                    <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
                 </g>
             </>
         );
