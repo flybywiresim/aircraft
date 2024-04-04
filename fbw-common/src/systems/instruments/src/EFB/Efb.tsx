@@ -15,7 +15,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import { Provider } from 'react-redux';
-import { setAirframeInfo, setCabinInfo, setFlypadPayloadInfo } from '@flybywiresim/flypad';
+import { setAirframeInfo, setCabinInfo, setFlypadInfo } from '@flybywiresim/flypad';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -105,10 +105,10 @@ const Efb = () => {
             process.env.AIRCRAFT_VARIANT,
         ).then((info) => dispatch(setAirframeInfo(info)));
 
-        UniversalConfigProvider.fetchFlypadPayloadInfo(
+        UniversalConfigProvider.fetchFlypadInfo(
             process.env.AIRCRAFT_PROJECT_PREFIX,
             process.env.AIRCRAFT_VARIANT,
-        ).then((info) => dispatch(setFlypadPayloadInfo(info)));
+        ).then((info) => dispatch(setFlypadInfo(info)));
 
         UniversalConfigProvider.fetchCabinInfo(
             process.env.AIRCRAFT_PROJECT_PREFIX,

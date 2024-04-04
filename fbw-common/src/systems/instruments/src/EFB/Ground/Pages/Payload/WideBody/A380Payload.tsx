@@ -15,8 +15,10 @@ import { PayloadProps } from '../PayloadPage';
 
 export const A380Payload: React.FC<PayloadProps> = ({
     airframeInfo,
-    payloadInfo,
+    flypadInfo,
     cabinInfo,
+    maxPax,
+    maxCargo,
     simbriefUnits,
     simbriefBagWeight,
     simbriefPaxWeight,
@@ -97,9 +99,6 @@ export const A380Payload: React.FC<PayloadProps> = ({
 
     const [seatMap] = useState<PaxStationInfo[]>(cabinInfo.seatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(cabinInfo.cargoMap);
-
-    const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
-    const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
 
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
@@ -668,7 +667,7 @@ export const A380Payload: React.FC<PayloadProps> = ({
                             width={525}
                             height={511}
                             envelope={airframeInfo.designLimits.performanceEnvelope}
-                            limits={payloadInfo.chartLimits}
+                            limits={flypadInfo.chartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

@@ -49,7 +49,7 @@ export enum PayloadType {
 /**
  * Contains the flypad-payload.json file's information in a structured way.
  */
-export interface FlypadPayloadInfo {
+export interface FlypadInfo {
     type: PayloadType;
     chartLimits: PayloadChartLimits;
 }

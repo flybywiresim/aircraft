@@ -1,18 +1,20 @@
+/* eslint-disable max-len */
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AirframeInfo, CabinInfo, FlypadPayloadInfo } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, CabinInfo, FlypadInfo } from '@flybywiresim/fbw-sdk';
+import { store, RootState } from '../store';
 
 interface AircraftState {
     airframeInfo: AirframeInfo;
-    flypadPayloadInfo: FlypadPayloadInfo;
+    flypadInfo: FlypadInfo;
     cabinInfo: CabinInfo;
 }
 
 const initialState: AircraftState = {
     airframeInfo: null,
-    flypadPayloadInfo: null,
+    flypadInfo: null,
     cabinInfo: null,
 };
 
@@ -23,8 +25,8 @@ export const configSlice = createSlice({
         setAirframeInfo: (state, action: PayloadAction<AirframeInfo>) => {
             state.airframeInfo = action.payload;
         },
-        setFlypadPayloadInfo: (state, action: PayloadAction<FlypadPayloadInfo>) => {
-            state.flypadPayloadInfo = action.payload;
+        setFlypadInfo: (state, action: PayloadAction<FlypadInfo>) => {
+            state.flypadInfo = action.payload;
         },
         setCabinInfo: (state, action: PayloadAction<CabinInfo>) => {
             state.cabinInfo = action.payload;
@@ -32,5 +34,10 @@ export const configSlice = createSlice({
     },
 });
 
-export const { setAirframeInfo, setFlypadPayloadInfo, setCabinInfo } = configSlice.actions;
+export const { setAirframeInfo, setFlypadInfo, setCabinInfo } = configSlice.actions;
+
+export const getMaxPax = (): number => (store.getState() as RootState).config.cabinInfo.seatMap.reduce((count, station) => count + station.rows.reduce((stationCount, row) => stationCount + row.seats.length, 0), 0);
+
+export const getMaxCargo = (): number => (store.getState() as RootState).config.cabinInfo.cargoMap.reduce((a, b) => a + b.weight, 0);
+
 export default configSlice.reducer;

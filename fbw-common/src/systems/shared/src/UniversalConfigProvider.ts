@@ -5,12 +5,12 @@
 /* eslint-disable no-underscore-dangle */
 
 import JSON5 from 'json5';
-import { AirframeInfo, CabinInfo, FlypadPayloadInfo } from './unifiedConfig';
+import { AirframeInfo, CabinInfo, FlypadInfo } from './unifiedConfig';
 
 export class UniversalConfigProvider {
     private static airframeInfo: AirframeInfo;
 
-    private static flypadPayloadInfo: FlypadPayloadInfo;
+    private static flypadInfo: FlypadInfo;
 
     private static cabinInfo: CabinInfo;
 
@@ -47,20 +47,20 @@ export class UniversalConfigProvider {
         return this.airframeInfo;
     }
 
-    public static async fetchFlypadPayloadInfo(aircraft: string, variant: string): Promise<FlypadPayloadInfo> {
-        if (this.flypadPayloadInfo) {
-            return this.flypadPayloadInfo;
+    public static async fetchFlypadInfo(aircraft: string, variant: string): Promise<FlypadInfo> {
+        if (this.flypadInfo) {
+            return this.flypadInfo;
         }
 
         const json = await this.fetchVFSJson5(aircraft, variant, '<atc_id>', 'flypad-payload');
-        this.flypadPayloadInfo = (
+        this.flypadInfo = (
             {
                 type: json._type,
                 chartLimits: json.chartLimits,
             }
         );
 
-        return this.flypadPayloadInfo;
+        return this.flypadInfo;
     }
 
     public static async fetchCabinInfo(aircraft: string, variant: string): Promise<CabinInfo> {

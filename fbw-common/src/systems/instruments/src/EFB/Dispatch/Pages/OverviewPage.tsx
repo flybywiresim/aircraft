@@ -4,7 +4,7 @@ import React, { FC } from 'react';
 import { useSimVar, Units, AirframeType } from '@flybywiresim/fbw-sdk';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
-import { t, A320NoseOutline, A380NoseOutline, useAppSelector } from '@flybywiresim/flypad';
+import { t, A320NoseOutline, A380NoseOutline, useAppSelector, getMaxPax } from '@flybywiresim/flypad';
 
 interface InformationEntryProps {
     title: string;
@@ -42,10 +42,6 @@ export const OverviewPage = () => {
     };
 
     const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
-    const cabinInfo = useAppSelector((state) => state.config.cabinInfo);
-
-    const seatMap = cabinInfo.seatMap;
-    const totalPax = seatMap.reduce((count, station) => count + station.rows.reduce((stationCount, row) => stationCount + row.seats.length, 0), 0);
 
     return (
         <div className="h-content-section-reduced border-theme-accent mr-3 w-min overflow-hidden rounded-lg border-2 p-6">
@@ -79,7 +75,7 @@ export const OverviewPage = () => {
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info={`${totalPax} passengers`}>
+                    <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info={`${getMaxPax()} passengers`}>
                         <PeopleFill size={23} />
                     </InformationEntry>
                 </div>
