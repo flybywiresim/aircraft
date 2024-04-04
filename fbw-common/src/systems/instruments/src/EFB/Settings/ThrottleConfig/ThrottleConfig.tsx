@@ -3,8 +3,9 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { AircraftType, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
+import { useAppSelector } from 'instruments/src/EFB/Store/store';
 import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
@@ -35,12 +36,15 @@ interface ThrottleConfigProps {
  * @constructor
  */
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
+    const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
 
-    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === AircraftType.A380_842 ? 4 : 2);
+    // the number of throttles that are used in the aircraft (2 or 4)
+    const numberOfThrottles = Math.max(...flypadInfo.throttle.axisOptions);
+
+    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', numberOfThrottles);
     // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== AircraftType.A380_842 && axisNum === 4) {
-        setAxisNum(2);
+    if (axisNum > numberOfThrottles) {
+        setAxisNum(numberOfThrottles);
     }
 
     const [selectedDetent, setSelectedDetent] = useState(2);
@@ -61,14 +65,6 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
     const { showModal } = useModals();
-
-    // the number of throttles that are used in the aircraft (2 or 4)
-    const numberOfThrottles = airframe === AircraftType.A380_842 ? 4 : 2;
-
-    // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== AircraftType.A380_842 && axisNum === 4) {
-        setAxisNum(2);
-    }
 
     // simvars for each virtual throttle (we define 4 even for the A320 and ignore 3 + 4)
     const throttleOneSimvars: Array<ThrottleSimvar> = [
@@ -142,7 +138,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             ...getOverlapErrors(2, throttleTwoSimvars),
         ];
         // to avoid false errors on the A320 when only 2 axis are used
-        if (airframe === AircraftType.A380_842) {
+        if (numberOfThrottles === 4) {
             errors.push(...getOverlapErrors(3, throttleThreeSimvars));
             errors.push(...getOverlapErrors(4, throttleFourSimvars));
         }
@@ -220,27 +216,16 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const axisSelectGroup = (
         <SelectGroup>
-            <SelectItem
-                selected={axisNum === 1}
-                onSelect={() => setAxisNum(1)}
-            >
-                1
-            </SelectItem>
-            <SelectItem
-                selected={axisNum === 2}
-                onSelect={() => setAxisNum(2)}
-            >
-                2
-            </SelectItem>
-            {airframe === AircraftType.A380_842 && (
+            {flypadInfo.throttle.axisOptions.map((option) => (
                 <SelectItem
-                    selected={axisNum === 4}
-                    onSelect={() => setAxisNum(4)}
+                    selected={axisNum === option}
+                    onSelect={() => setAxisNum(option)}
                 >
-                    4
+                    {option}
                 </SelectItem>
-            )}
+            ))}
         </SelectGroup>
+
     );
 
     const oneAxis = (
@@ -350,13 +335,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const getAxis = () => {
         switch (axisNum) {
         case 4:
-            if (airframe === AircraftType.A380_842) {
+            if (flypadInfo.throttle.axisOptions.includes(axisNum)) {
                 return fourAxis;
             }
             console.warn('A320 does not have 4 axis - defaulting to 2 axis');
             return twoAxisA320;
         case 2:
-            if (airframe === AircraftType.A380_842) {
+            if (flypadInfo.throttle.axisOptions.includes(4)) {
                 return twoAxisA380;
             }
             return twoAxisA320;
