@@ -50,12 +50,12 @@ const settingsToSync: Map<string, SimVar> = new Map([
 
 const settingEnumToSync: Map<string, SimVarEnum> = new Map([
     ['CONFIG_BOARDING_RATE',
-        ['L:A32NX_BOARDING_RATE', 'number', '0',
+        ['L:A32NX_BOARDING_RATE', 'number', 'REAL',
             new Map([['REAL', 2], ['FAST', 1], ['INSTANT', 0]]),
         ],
     ],
     ['CONFIG_ALIGN_TIME',
-        ['L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'number', '0',
+        ['L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'number', 'REAL',
             new Map([['REAL', 0], ['FAST', 2], ['INSTANT', 1]]),
         ],
     ],
