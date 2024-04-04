@@ -3,19 +3,21 @@
 
 /* eslint-disable no-console */
 import React from 'react';
-import { AircraftType, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeType } from '@flybywiresim/fbw-sdk';
+import { useAppSelector } from 'instruments/src/EFB/Store/store';
 import { A380Services } from './A380_842/A380Services';
 import { A320Services } from './A320_251N/A320Services';
 
 export const ServicesPage = () => {
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
+    // TODO: Configurable Services Page vs A380/A320
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
-    switch (airframe) {
-    case AircraftType.A380_842:
+    switch (airframeInfo.variant) {
+    case AirframeType.A380_842:
         return (
             <A380Services />
         );
-    case AircraftType.A320_251N:
+    case AirframeType.A320_251N:
     default:
         return (
             <A320Services />
