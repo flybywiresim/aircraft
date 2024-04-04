@@ -135,7 +135,11 @@
           "result": "NEUTRAL",
           "condition": [
             {
-              varName: "RUDDER TRIM PCT",
+              varName: "L:A32NX_RUDDER_TRIM_1_COMMANDED_POSITION",
+              result: 0
+            },
+            {
+              varName: "L:A32NX_RUDDER_TRIM_2_COMMANDED_POSITION",
               result: 0
             }
           ]

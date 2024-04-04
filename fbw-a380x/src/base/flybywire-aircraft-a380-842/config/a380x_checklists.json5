@@ -155,12 +155,17 @@
         {
           "item": "RUDDER TRIM",
           "result": "NEUTRAL",
-          "condition": [
-            {
-              varName: "RUDDER TRIM PCT",
-              result: 0
-            }
-          ]
+          // TODO: not working on A380X yet
+//          "condition": [
+//            {
+//              varName: "L:A32NX_RUDDER_TRIM_1_COMMANDED_POSITION",
+//              result: 0
+//            },
+//            {
+//              varName: "L:A32NX_RUDDER_TRIM_2_COMMANDED_POSITION",
+//              result: 0
+//            }
+//          ]
         },
         {
           "item": "PITCH TRIM",
