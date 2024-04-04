@@ -1156,6 +1156,7 @@ struct InertialReference {
     wind_direction_bnr: AdirsData<Angle>,
     latitude: AdirsData<Angle>,
     longitude: AdirsData<Angle>,
+    /// label 270
     maint_word: AdirsData<u32>,
 }
 impl InertialReference {
@@ -1231,7 +1232,6 @@ impl InertialReference {
             wind_speed_bnr: AdirsData::new_ir(context, number, Self::WIND_SPEED_BNR),
             latitude: AdirsData::new_ir(context, number, Self::LATITUDE),
             longitude: AdirsData::new_ir(context, number, Self::LONGITUDE),
-            /// label 270
             maint_word: AdirsData::new_ir(context, number, Self::MAINT_WORD),
         }
     }
