@@ -143,13 +143,14 @@ export const Checklists = () => {
         const isChecklistCompleted = areAllChecklistItemsCompleted(index);
         const isMarkedCompleted = checklists[index].markedCompleted;
         const isSelected = index === selectedChecklistIndex;
-        if (isSelected && isChecklistCompleted) {
+        const isIndexRelevant = relevantChecklistIndices.includes(index);
+        if (isSelected && isChecklistCompleted && isIndexRelevant) {
             return isMarkedCompleted ? 'bg-utility-green font-bold text-theme-body' : 'bg-utility-amber font-bold text-theme-body';
         }
         if (isSelected) {
             return 'bg-theme-highlight font-bold text-theme-body';
         }
-        if (isChecklistCompleted) {
+        if (isChecklistCompleted && isIndexRelevant) {
             return isMarkedCompleted ? 'bg-theme-body border-2 border-utility-green font-bold text-utility-green '
                 + 'hover:text-theme-body hover:bg-utility-green' : 'bg-theme-body border-2 border-utility-amber '
                 + 'font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
