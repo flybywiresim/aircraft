@@ -195,7 +195,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
 
         let remainingWeight = loadableCargoWeight;
 
-        async function fillCargo(station: number, percent: number, loadableCargoWeight: number) {
+        function fillCargo(station: number, percent: number, loadableCargoWeight: number) {
             const c = Math.round(percent * loadableCargoWeight);
             remainingWeight -= c;
             setCargoDesired[station](c);
@@ -380,6 +380,8 @@ export const A320Payload: React.FC<PayloadProps> = ({
                 setTargetPax(0);
                 setTargetCargo(0, 0);
                 break;
+            case gsxStates.PERFORMING:
+            case gsxStates.COMPLETED:
             default:
                 break;
             }

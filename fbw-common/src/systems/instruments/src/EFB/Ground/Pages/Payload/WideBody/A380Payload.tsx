@@ -177,7 +177,7 @@ export const A380Payload: React.FC<PayloadProps> = ({
 
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_581);
     const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 6_397);
-    const [enableReal, setEnableReal] = useState<boolean>(true);
+    const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const chooseDesiredSeats = useCallback((stationIndex: number, fillSeats: boolean = true, numChoose: number) => {
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
@@ -269,7 +269,10 @@ export const A380Payload: React.FC<PayloadProps> = ({
         }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
         setCargoDesired[cargoStation](Math.round(cargoMap[cargoStation].weight * cargoPercent));
-    }, [cargoMap]);
+    }, [cargoMap, boardingStarted,
+        gsxBoardingState,
+        gsxDeBoardingState,
+        gsxPayloadSyncEnabled]);
 
     const onClickSeat = useCallback((stationIndex: number, seatId: number) => {
         if (gsxInProgress() || boardingStarted) {
@@ -282,6 +285,7 @@ export const A380Payload: React.FC<PayloadProps> = ({
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
         seatFlags.toggleSeatId(seatId);
         setDesiredFlags[stationIndex](seatFlags);
+
         let newPaxDesired = 0;
         desiredFlags.forEach((flag) => {
             newPaxDesired += flag.getTotalFilledSeats();
@@ -294,6 +298,10 @@ export const A380Payload: React.FC<PayloadProps> = ({
         ...cargoDesired,
         ...desiredFlags,
         totalPaxDesired,
+        boardingStarted,
+        gsxBoardingState,
+        gsxDeBoardingState,
+        gsxPayloadSyncEnabled,
     ]);
 
     const handleDeboarding = useCallback(() => {
@@ -377,34 +385,19 @@ export const A380Payload: React.FC<PayloadProps> = ({
     // Set Cold and Dark State
     useEffect(() => {
         if (eng1Running || eng4Running || !isOnGround) {
-            setEnableReal(false);
+            setColdAndDark(false);
         } else {
-            setEnableReal(true);
+            setColdAndDark(true);
         }
     }, [eng1Running, eng4Running, isOnGround]);
 
     useEffect(() => {
         if (boardingRate !== 'INSTANT') {
-            if (!enableReal) {
+            if (!coldAndDark) {
                 setBoardingRate('INSTANT');
             }
         }
-    }, [enableReal, boardingRate]);
-
-    useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
-            switch (gsxBoardingState) {
-            // If boarding has been requested, performed or completed
-            case gsxStates.REQUESTED:
-            case gsxStates.PERFORMING:
-            case gsxStates.COMPLETED:
-                setBoardingStarted(true);
-                break;
-            default:
-                break;
-            }
-        }
-    }, [gsxBoardingState]);
+    }, [coldAndDark, boardingRate]);
 
     useEffect(() => {
         if (gsxPayloadSyncEnabled === 1) {
@@ -413,16 +406,9 @@ export const A380Payload: React.FC<PayloadProps> = ({
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
                 setTargetPax(0);
                 setTargetCargo(0, 0);
-                setBoardingStarted(true);
                 break;
             case gsxStates.PERFORMING:
-                // If deboarding is being performed
-                setBoardingStarted(true);
-                break;
             case gsxStates.COMPLETED:
-                // If deboarding is completed
-                setBoardingStarted(false);
-                break;
             default:
                 break;
             }
@@ -452,15 +438,10 @@ export const A380Payload: React.FC<PayloadProps> = ({
         }
 
         if (gsxInProgress() || boardingStarted) {
-            if (boardingStarted) {
-                setShowSimbriefButton(false);
-                return;
-            }
-
+            setShowSimbriefButton(false);
+        } else {
             setShowSimbriefButton(simbriefStatus);
-            return;
         }
-        setShowSimbriefButton(simbriefStatus);
     }, [
         simbriefUnits,
         simbriefFreight,
@@ -518,9 +499,9 @@ export const A380Payload: React.FC<PayloadProps> = ({
                             seatMap={seatMap}
                             desiredFlags={desiredFlags}
                             activeFlags={activeFlags}
+                            onClickSeat={onClickSeat}
                             theme={getTheme(theme)}
                             isMainDeck={displayPaxMainDeck}
-                            onClickSeat={onClickSeat}
                             width={flypadInfo.payloadPlaneCanvas.width}
                             height={flypadInfo.payloadPlaneCanvas.height}
                             canvasX={flypadInfo.payloadPlaneCanvas.canvasX}
@@ -634,12 +615,12 @@ export const A380Payload: React.FC<PayloadProps> = ({
                                                 {t('Settings.Instant')}
                                             </SelectItem>
 
-                                            <TooltipWrapper text={`${!enableReal ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
+                                            <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
                                                 <div>
                                                     <SelectItem
-                                                        className={`${!enableReal && 'opacity-20'}`}
+                                                        className={`${!coldAndDark && 'opacity-20'}`}
                                                         selected={boardingRate === 'FAST'}
-                                                        disabled={!enableReal}
+                                                        disabled={!coldAndDark}
                                                         onSelect={() => setBoardingRate('FAST')}
                                                     >
                                                         {t('Settings.Fast')}
@@ -649,9 +630,9 @@ export const A380Payload: React.FC<PayloadProps> = ({
 
                                             <div>
                                                 <SelectItem
-                                                    className={`${!enableReal && 'opacity-20'}`}
+                                                    className={`${!coldAndDark && 'opacity-20'}`}
                                                     selected={boardingRate === 'REAL'}
-                                                    disabled={!enableReal}
+                                                    disabled={!coldAndDark}
                                                     onSelect={() => setBoardingRate('REAL')}
                                                 >
                                                     {t('Settings.Real')}
