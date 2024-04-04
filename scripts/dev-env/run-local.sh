@@ -3,7 +3,7 @@
 
 # This is a script to use a locally built docker image to run the tests
 
-IMAGE="sha256:13b03e3cdbc4a22f1a710e22771db0cb3f7bd54af42f9eb5cb749f816eb68844"
+IMAGE="sha256:cb436009c99e1c86ff075f137f870201f6e04de08e0b6364d38b83a2f81dc58e"
 
 # only set `-it` if there is a tty
 if [ -t 0 ] && [ -t 1 ];
