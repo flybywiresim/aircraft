@@ -612,13 +612,14 @@ impl AutobrakeRunwayOverrunProtection {
     fn update(&mut self, is_any_autobrake_active: bool) {
         self.is_any_autobrake_active = is_any_autobrake_active;
         // println!(
-        //     "ROP BRAKING {:.0}  RWEND {:.0}",
+        //     "ROP BRAKING {:.0}  RWEND {:.0} ENGAGED{:?}",
         //     self.distance_to_stop_at_max_braking().get::<meter>(),
-        //     self.distance_to_runway_end.value().get::<meter>()
+        //     self.distance_to_runway_end.value().get::<meter>(),
+        //     self.is_engaged
         // );
         // Can engage only above min speed
         if self.distance_to_runway_end.is_normal_operation()
-            && is_any_autobrake_active
+            && self.is_any_autobrake_active
             && self.ground_speed.get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
         {
             if self.distance_to_stop_at_max_braking() >= self.distance_to_runway_end.value() {
@@ -626,7 +627,7 @@ impl AutobrakeRunwayOverrunProtection {
             }
         } else {
             // Can only disengage if autobrake or distance lost (not from speed)
-            if !self.distance_to_runway_end.is_normal_operation() || !is_any_autobrake_active {
+            if !self.distance_to_runway_end.is_normal_operation() || !self.is_any_autobrake_active {
                 self.is_engaged = false;
             }
         }
@@ -800,7 +801,7 @@ impl BtvDecelScheduler {
 
         self.state = self.update_state(context);
 
-        //println!("AB STATE {:?}", self.state);
+        // println!("AB STATE {:?}", self.state);
     }
 
     fn braking_distance_remaining(&self) -> Length {
@@ -845,7 +846,7 @@ impl BtvDecelScheduler {
                 //     "Distance remaining {:.0} DECELERATION REQUEST {:.2}",
                 //     self.final_distance_remaining.get::<meter>(),
                 //     self.deceleration_request.get::<meter_per_second_squared>()
-                // )
+                // );
             }
             _ => {
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
