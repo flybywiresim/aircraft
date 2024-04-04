@@ -45,9 +45,26 @@ export interface AirframePerformanceEnvelope {
  * Contains the flypad-*.json files' information in a structured way.
  */
 export interface FlypadInfo {
-    payloadPlaneCanvas: PayloadPlaneCanvas;
-    payloadChartLimits: PayloadChartLimits;
-    payloadSeatDisplay: PayloadSeatDisplay[];
+    payload: PayloadFlypadInfo;
+    throttle: ThrottleFlypadInfo;
+    pushback: PushbackFlypadInfo;
+}
+
+export interface ThrottleFlypadInfo {
+    axisOptions: number[];
+}
+
+export interface PushbackFlypadInfo {
+    turnIndicatorTuningDefault: number;
+    aircraftWheelBase: number;
+    aircraftLengthMeter: number;
+}
+
+export interface PayloadFlypadInfo {
+    planeCanvas: PayloadPlaneCanvas;
+    chartLimits: PayloadChartLimits;
+    seatDisplay: PayloadSeatDisplay[];
+
 }
 export interface PayloadPlaneCanvas {
     width: number;

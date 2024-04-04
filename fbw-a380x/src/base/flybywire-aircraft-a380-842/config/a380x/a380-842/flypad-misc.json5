@@ -17,11 +17,19 @@
 {
     "configMajorVersion": 0,
     "configMinorVersion": 1,
-    "_throttleAxisOptions": [
-        1,
-        2,
-        4
-    ],
+    "_throttle": {
+        "max": 4,
+        "axisOptions": [
+            1,
+            2,
+            4
+        ],
+        "axisMapping": {
+            "1": [[1, 2, 3, 4]],
+            "2": [[1, 2], [3, 4]],
+            "4": [[1], [2], [3], [4]]
+        }
+    },
     "_pushback": {
         "turnIndicatorTuningDefault": 1.35,
         "aircraftWheelBase": 31.9,

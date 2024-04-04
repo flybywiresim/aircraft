@@ -463,17 +463,17 @@ export const A320Payload: React.FC<PayloadProps> = ({
                     <div className="relative flex flex-col">
                         <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
                         <SeatMapWidget
-                            payloadSeatDisplay={flypadInfo.payloadSeatDisplay}
+                            payloadSeatDisplay={flypadInfo.payload.seatDisplay}
                             seatMap={seatMap}
                             desiredFlags={desiredFlags}
                             activeFlags={activeFlags}
                             onClickSeat={onClickSeat}
                             theme={getTheme(theme)}
                             isMainDeck
-                            width={flypadInfo.payloadPlaneCanvas.width}
-                            height={flypadInfo.payloadPlaneCanvas.height}
-                            canvasX={flypadInfo.payloadPlaneCanvas.canvasX}
-                            canvasY={flypadInfo.payloadPlaneCanvas.canvasY}
+                            width={flypadInfo.payload.planeCanvas.width}
+                            height={flypadInfo.payload.planeCanvas.height}
+                            canvasX={flypadInfo.payload.planeCanvas.canvasX}
+                            canvasY={flypadInfo.payload.planeCanvas.canvasY}
                         />
                     </div>
                 </div>
@@ -604,7 +604,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
                             width={525}
                             height={511}
                             envelope={airframeInfo.designLimits.performanceEnvelope}
-                            limits={flypadInfo.payloadChartLimits}
+                            limits={flypadInfo.payload.chartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

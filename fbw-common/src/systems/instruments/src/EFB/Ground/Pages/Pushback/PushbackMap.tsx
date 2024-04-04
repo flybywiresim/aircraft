@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSimVar, MathUtils, AircraftType } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
@@ -64,7 +64,8 @@ const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) 
 
 export const PushbackMap = () => {
     const dispatch = useAppDispatch();
-    const [airframe] = useSimVar('L:A32NX_AIRCRAFT_TYPE', 'Enum');
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
+    const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
     const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
     const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
@@ -79,7 +80,7 @@ export const PushbackMap = () => {
         'number',
         250,
     );
-    const turnIndicatorTuningDefault = airframe === AircraftType.A380_842 ? 1.35 : 1.35; // determined by testing
+    const turnIndicatorTuningDefault = flypadInfo.pushback.turnIndicatorTuningDefault;
 
     // Reducer state for pushback
     const {
@@ -96,8 +97,8 @@ export const PushbackMap = () => {
     // Aircraft wheelbase in meters
     // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2021-11/Airbus-Commercial-Aircraft-AC-A320.pdf
     // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2022-02/Airbus-A380-Facts-and-Figures-February-2022.pdf
-    const aircraftWheelBase = airframe === AircraftType.A380_842 ? 31.9 : 12.64;
-    const aircraftLengthMeter = airframe === AircraftType.A380_842 ? 72.72 : 37.57;
+    const aircraftWheelBase = flypadInfo.pushback.aircraftWheelBase;
+    const aircraftLengthMeter = flypadInfo.pushback.aircraftLengthMeter;
 
     // Map
     const [mouseDown, setMouseDown] = useState(false);
@@ -219,14 +220,14 @@ export const PushbackMap = () => {
     }, [dragging, mouseDown, mouseCoords]);
 
     const mapConfigPath = useMemo(() => {
-        switch (airframe) {
-        case AircraftType.A380_842:
+        switch (airframeInfo.variant) {
+        case AirframeType.A380_842:
             return '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A380/EFB/';
-        case AircraftType.A320_251N:
+        case AirframeType.A320_251N:
         default:
             return '/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/';
         }
-    }, [airframe]);
+    }, [airframeInfo]);
 
     return (
         <>

@@ -47,7 +47,7 @@
             "mzfw": { "x1": 0.75, "x2": 0.12, "y": 0.57 }
         }
     },
-    "_seatDisplay": [
+    "seatDisplay": [
         {
             // NarrowbodyEconomy
             len: 25.4,
