@@ -90,13 +90,6 @@ interface BatteryStatus {
 
 export const usePower = () => React.useContext(PowerContext);
 
-// this returns either `A380_842` or `A320_251N` depending on the aircraft
-// TODO: this will be replaced and improved by PR #8599
-export function getAirframeType() {
-    return new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'))
-        .searchParams.get('Airframe');
-}
-
 interface EfbProps {
     aircraftChecklistsProp: ChecklistJsonDefinition[],
 }
