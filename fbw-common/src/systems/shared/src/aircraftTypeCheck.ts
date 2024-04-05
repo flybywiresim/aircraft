@@ -13,7 +13,8 @@ export function getAircraftType(): string {
     } else if (aircraftName.includes('A380')) {
         aircraft = 'a380x';
     } else {
-        aircraft = 'other';
+        // FIXME: temporary fix as this will be change via PF #8599 anyway
+        aircraft = 'a32nx';
     }
     return aircraft;
 }
