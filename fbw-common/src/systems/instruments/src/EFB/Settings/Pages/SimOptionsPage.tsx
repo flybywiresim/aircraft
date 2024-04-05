@@ -97,7 +97,7 @@ export const SimOptionsPage = () => {
                         </div>
                     </SettingItem>
 
-                    <SettingItem name="SimBridge Host Machine">
+                    <SettingItem name={t('Settings.SimOptions.SimbridgeMachine')}>
                         <SelectGroup>
                             <SelectItem
                                 className="color-red text-center"
@@ -108,7 +108,7 @@ export const SimOptionsPage = () => {
                                 }
                                 selected={simbridgeRemote === 'local'}
                             >
-                                This PC
+                                {t('Settings.SimOptions.SimbridgeLocal')}
                             </SelectItem>
                             <SelectItem
                                 onSelect={
@@ -118,7 +118,7 @@ export const SimOptionsPage = () => {
                                 }
                                 selected={simbridgeRemote === 'remote'}
                             >
-                                Remote PC
+                                {t('Settings.SimOptions.SimbridgeRemote')}
                             </SelectItem>
                         </SelectGroup>
                         {simbridgeRemote === 'remote'
@@ -130,7 +130,7 @@ export const SimOptionsPage = () => {
                                     onChange={(event) => {
                                         // Error on empty string
                                         if (event === '') {
-                                            toast.error('SimBridge Remote IP Address cannot be empty!');
+                                            toast.error(t('Settings.SimOptions.SimbridgeEmptyAddress'));
                                             // Reset to previous value
                                             setSimbridgeIp(simbridgeIp);
                                             return;

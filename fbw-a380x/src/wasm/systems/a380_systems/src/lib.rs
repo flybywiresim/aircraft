@@ -29,12 +29,12 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use fuel::FuelLevel;
-use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
+use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::A380RadioAltimeters;
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
-use uom::si::{f64::Length, length::nautical_mile};
+use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
 
 use systems::{
     accept_iterable,
@@ -45,12 +45,11 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    shared::ElectricalBusType,
+    shared::{ElectricalBusType, MachNumber},
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
@@ -83,7 +82,7 @@ pub struct A380 {
     lgcius: LandingGearControlInterfaceUnitSet,
     hydraulic: A380Hydraulic,
     hydraulic_overhead: A380HydraulicOverheadPanel,
-    autobrake_panel: AutobrakePanel,
+    autobrake_panel: A380AutobrakePanel,
     landing_gear: LandingGear,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
@@ -100,7 +99,11 @@ impl A380 {
         A380 {
             adcn,
             adcn_simvar_translation,
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs: AirDataInertialReferenceSystem::new(
+                context,
+                Velocity::new::<knot>(340.),
+                MachNumber(0.89),
+            ),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(
@@ -133,7 +136,7 @@ impl A380 {
             ),
             hydraulic: A380Hydraulic::new(context),
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
-            autobrake_panel: AutobrakePanel::new(context),
+            autobrake_panel: A380AutobrakePanel::new(context),
             landing_gear: LandingGear::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),

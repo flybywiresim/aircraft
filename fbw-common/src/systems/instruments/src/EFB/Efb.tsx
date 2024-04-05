@@ -3,9 +3,16 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-    useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient,
-    SentryConsentState, SENTRY_CONSENT_KEY,
+    ChecklistJsonDefinition,
     FailureDefinition,
+    NavigraphClient,
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+    useInteractionEvent,
+    useInterval,
+    usePersistentNumberProperty,
+    usePersistentProperty,
+    useSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
@@ -34,8 +41,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
-import { CHECKLISTS } from './Checklists/Lists';
-import { setChecklistItems } from './Store/features/checklists';
+import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 import './Assets/Efb.scss';
@@ -71,7 +77,7 @@ export enum PowerStates {
 
 interface PowerContextInterface {
     powerState: PowerStates,
-    setPowerState: (PowerState) => void
+    setPowerState: (PowerState: any) => void
 }
 
 export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
@@ -84,7 +90,18 @@ interface BatteryStatus {
 
 export const usePower = () => React.useContext(PowerContext);
 
-const Efb = () => {
+// this returns either `A380_842` or `A320_251N` depending on the aircraft
+// TODO: this will be replaced and improved by PR #8599
+export function getAirframeType() {
+    return new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'))
+        .searchParams.get('Airframe');
+}
+
+interface EfbProps {
+    aircraftChecklistsProp: ChecklistJsonDefinition[],
+}
+
+export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
@@ -95,6 +112,10 @@ const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
+
+    // Set the aircraft checklists received via component props in the redux store, so they can be
+    // accessed by other EFB components
+    dispatch(setAircraftChecklists(aircraftChecklistsProp));
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
@@ -187,26 +208,6 @@ const Efb = () => {
         }
     }, [batteryLevel, powerState]);
 
-    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const { checklists } = useAppSelector((state) => state.trackingChecklists);
-
-    useEffect(() => {
-        if (powerState === PowerStates.SHUTOFF) {
-            dispatch(clearEfbState());
-        } else if (powerState === PowerStates.LOADED) {
-            const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
-
-            if (checklistItemsEmpty) {
-                CHECKLISTS.forEach((checklist, index) => {
-                    dispatch(setChecklistItems({
-                        checklistIndex: index,
-                        itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
-                    }));
-                });
-            }
-        }
-    }, [powerState]);
-
     // Automatically load a lighting preset
     useEffect(() => {
         if (ac1BusIsPowered && powerState === PowerStates.LOADED && autoLoadLightingPresetEnabled) {
@@ -236,11 +237,37 @@ const Efb = () => {
         }
     }, [ac1BusIsPowered, powerState, autoLoadLightingPresetEnabled]);
 
+    // ===================================
+    // CHECKLISTS
+    // initialize the reducer store for the checklists' state
+    const { checklists } = useAppSelector((state) => state.trackingChecklists);
+    useEffect(() => {
+        if (powerState === PowerStates.SHUTOFF) {
+            dispatch(clearEfbState());
+        } else if (powerState === PowerStates.LOADED) {
+            const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
+            if (checklistItemsEmpty) {
+                console.log('Initializing aircraft checklists');
+                // for each aircraft checklist, create a tracking checklist,
+                // add it to the store and create its tracking items
+                aircraftChecklistsProp.forEach((checklist, index) => {
+                    dispatch(addTrackingChecklists({
+                        checklistName: checklist.name,
+                        checklistIndex: index,
+                        itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
+                    }));
+                });
+            }
+        }
+    }, [powerState]);
+    // If the user has activated the autofill of checklists, setAutomaticItemStates will retrieve current aircraft states
+    // where appropriate and set checklists items to "completed" automatically
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
     useInterval(() => {
         if (!autoFillChecklists) return;
-
-        setAutomaticItemStates();
+        setAutomaticItemStates(aircraftChecklistsProp);
     }, 1000);
+    // ===================================
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
@@ -279,11 +306,10 @@ const Efb = () => {
 
     // =========================================================================
     // <Pushback>
-    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
-
     // Required to fully release the tug and restore steering capabilities
-    // Must not be fired too early after disconnect therefore we wait until
-    // ECAM "NW STRG DISC" message also disappears.
+    // Must not be fired too early after disconnect, therefore, we wait until
+    // ECAM "NW STRG DISC" message also disappears.y
+    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
     useEffect(() => {
         if (!nwStrgDisc) {
             SimVar.SetSimVarValue('K:TUG_DISABLE', 'Bool', 1);
@@ -396,9 +422,10 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
 
 export interface EfbInstrumentProps {
     failures: FailureDefinition[],
+    aircraftChecklists: ChecklistJsonDefinition[],
 }
 
-export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
+export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraftChecklists }) => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
     useEffect(
@@ -413,7 +440,7 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
                 <Router>
                     <ModalProvider>
                         <Provider store={store}>
-                            <Efb />
+                            <Efb aircraftChecklistsProp={aircraftChecklists} />
                         </Provider>
                     </ModalProvider>
                 </Router>

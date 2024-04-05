@@ -10,7 +10,7 @@ import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
 import getDistance from 'geolib/es/getPreciseDistance';
 import { GeolibInputCoordinates } from 'geolib/es/types';
-import { BingMap, t, TooltipWrapper, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
+import { BingMap, t, TooltipWrapper, useAppDispatch, useAppSelector, getAirframeType } from '@flybywiresim/flypad';
 import {
     setActualMapLatLon,
     setAircraftIconPosition,
