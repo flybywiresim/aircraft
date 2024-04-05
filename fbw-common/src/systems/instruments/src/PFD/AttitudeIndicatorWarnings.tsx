@@ -1,7 +1,8 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars } from './RopRowOansPublisher';
+import { FwcDataEvents } from '../MsfsAvionicsCommon/providers/FwcPublisher';
 
 interface AttitudeIndicatorWarningsProps {
     bus: ArincEventBus;
@@ -10,8 +11,6 @@ interface AttitudeIndicatorWarningsProps {
 
 export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicatorWarningsProps> {
     private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
-
-    private readonly fwcFlightPhase = Subject.create(0);
 
     private readonly maxReverseActive = Subject.create(false);
 
@@ -23,14 +22,10 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
     private readonly rwyAheadActive = Subject.create(false);
 
-    // FIXME no source yet
-    private readonly stallWarning = Subject.create(false);
+    private readonly fwcWord126 = Arinc429RegisterSubject.createEmpty();
 
-    private readonly stallActive = MappedSubject.create(
-        ([stall, fwcFlightPhase]) => stall && [5, 6, 7].includes(fwcFlightPhase),
-        this.stallWarning,
-        this.fwcFlightPhase,
-    );
+    // stall warning = stall bit && !on ground bit
+    private readonly stallActive = this.fwcWord126.map((v) => v.bitValueOr(17, false) && !v.bitValue(28));
 
     // FIXME no source yet
     private readonly stopRudderInputActive = Subject.create(false);
@@ -47,7 +42,8 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<RopRowOansSimVars>();
+        const sub = this.props.bus.getSubscriber<FwcDataEvents & RopRowOansSimVars>();
+
         sub.on('rowRopWord1Raw').whenChanged().handle((raw) => {
             const ar = new Arinc429Word(raw);
 
@@ -61,6 +57,11 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
             const ar = new Arinc429Word(raw);
 
             this.rwyAheadActive.set(ar.getBitValueOr(11, false));
+        });
+
+        sub.on('fwc_discrete_word_126_1').whenChanged().handle((v) => {
+            this.fwcWord126.setWord(v);
+            console.log(v);
         });
     }
 

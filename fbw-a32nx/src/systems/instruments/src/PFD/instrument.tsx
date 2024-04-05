@@ -6,6 +6,7 @@ import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } fro
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { RopRowOansPublisher } from '@flybywiresim/pfd';
+import { FwcPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
@@ -43,6 +44,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
 
+    private readonly fwcPublisher = new FwcPublisher(this.bus);
 
     /**
      * "mainmenu" = 0
@@ -62,6 +64,7 @@ class A32NX_PFD extends BaseInstrument {
         this.backplane.addInstrument('Clock', this.clock);
         this.backplane.addPublisher('Dmc', this.dmcPublisher);
         this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
+        this.backplane.addPublisher('Fwc', this.fwcPublisher);
     }
 
     get templateID(): string {
