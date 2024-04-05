@@ -6,7 +6,7 @@ import {
     MathUtils, Airport, LegType,
     Runway, RunwaySurfaceType, VhfNavaidType,
     WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
-    NdSymbolTypeFlags, AltitudeDescriptor, EfisSide,
+    NdSymbolTypeFlags, AltitudeDescriptor, EfisSide, Arinc429SignStatusMatrix, Arinc429OutputWord,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -61,6 +61,10 @@ export class EfisSymbols<T extends number> {
     private lastVnavDriverVersion: number = -1;
 
     private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
+
+    private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = { L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LAT'), R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LAT') }
+
+    private mapReferenceLongitude: Record<EfisSide, Arinc429OutputWord> = { L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LONG'), R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LONG') }
 
     constructor(
         guidanceController: GuidanceController,
@@ -163,12 +167,15 @@ export class EfisSymbols<T extends number> {
 
             const termination = this.findPlanCentreCoordinates(side);
             if (termination) {
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LAT`, 'Degrees', termination.lat);
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LONG`, 'Degrees', termination.long);
+                this.mapReferenceLatitude[side].setBnrValue(termination.lat, Arinc429SignStatusMatrix.NormalOperation, 20, 90, -90);
+                this.mapReferenceLongitude[side].setBnrValue(termination.long, Arinc429SignStatusMatrix.NormalOperation, 20, 180, -180);
             } else {
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LAT`, 'Degrees', ppos.lat);
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LONG`, 'Degrees', ppos.long);
+                this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 90, -90);
+                this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 180, -180);
             }
+
+            this.mapReferenceLatitude[side].writeToSimVarIfDirty();
+            this.mapReferenceLongitude[side].writeToSimVarIfDirty();
 
             if (mode === EfisNdMode.PLAN && !termination) {
                 this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
