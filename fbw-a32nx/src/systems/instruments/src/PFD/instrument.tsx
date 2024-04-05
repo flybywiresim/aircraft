@@ -7,7 +7,7 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { PfdVisualAlertPublisher } from '@flybywiresim/pfd';
+import { RopRowOansPublisher } from '@flybywiresim/pfd';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -37,7 +37,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private fmsDataPublisher: FmsDataPublisher;
 
-    private readonly brakingWarningsPublisher: PfdVisualAlertPublisher;
+    private readonly ropRowOansPublisher: RopRowOansPublisher;
 
     /**
      * "mainmenu" = 0
@@ -56,7 +56,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
-        this.brakingWarningsPublisher = new PfdVisualAlertPublisher(this.bus);
+        this.ropRowOansPublisher = new RopRowOansPublisher(this.bus);
     }
 
     get templateID(): string {
@@ -103,7 +103,7 @@ class A32NX_PFD extends BaseInstrument {
                 this.adirsValueProvider.start();
                 this.dmcPublisher.startPublish();
                 this.fmsDataPublisher.startPublish();
-                this.brakingWarningsPublisher.startPublish();
+                this.ropRowOansPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
@@ -112,7 +112,7 @@ class A32NX_PFD extends BaseInstrument {
             this.clock.onUpdate();
             this.dmcPublisher.onUpdate();
             this.fmsDataPublisher.onUpdate();
-            this.brakingWarningsPublisher.onUpdate();
+            this.ropRowOansPublisher.onUpdate();
         }
     }
 }

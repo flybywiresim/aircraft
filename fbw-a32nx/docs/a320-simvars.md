@@ -22,6 +22,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
@@ -3898,6 +3899,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+## ROW / ROP / OANS (ATA 34)
+
+- A32NX_ROW_ROP_WORD_1
+    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD.
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | ROW/ROP operative                 |
+      | 12  | ROP: Active with autobrake        |
+      | 13  | ROP: Active with manual braking   |
+      | 14  | ROW Wet: Runway too short         |
+      | 15  | ROW Dry: Runway too short         |
+
+- A32NX_OANS_WORD_1
+    - Data word for OANS functions. Used for displaying alerts on the PFD.
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | OANS: Runway ahead                |
+
 
 ## Electronic Flight Bag (ATA 46)
 

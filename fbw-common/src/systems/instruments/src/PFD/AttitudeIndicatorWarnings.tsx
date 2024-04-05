@@ -1,7 +1,7 @@
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { RopRowOansSimVars } from 'instruments/src/PFD/RopRowOansPublisher';
+import { Arinc429Register, Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { RopRowOansSimVars } from './RopRowOansPublisher';
 
 interface AttitudeIndicatorWarningsProps {
     bus: ArincEventBus;
@@ -11,18 +11,23 @@ interface AttitudeIndicatorWarningsProps {
 export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicatorWarningsProps> {
     private warningGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private fwcFlightPhase = ConsumerSubject.create(null, 0);
+    private readonly rowRopWord1 = Arinc429RegisterSubject.createEmpty();
 
-    private maxReverseActive = ConsumerSubject.create(null, false);
+    private readonly oansWord1 = Arinc429RegisterSubject.createEmpty();
 
-    private maxReverseMaxBrakingActive = ConsumerSubject.create(null, false);
+    private fwcFlightPhase = Subject.create(0);
 
-    private ifWetRwyTooShortActive = ConsumerSubject.create(null, false);
+    private maxReverseActive = Subject.create(false);
 
-    private rwyTooShortActive = ConsumerSubject.create(null, false);
+    private maxReverseMaxBrakingActive = Subject.create(false);
 
-    private rwyAheadActive = ConsumerSubject.create(null, false);
+    private ifWetRwyTooShortActive = Subject.create(false);
 
+    private rwyTooShortActive = Subject.create(false);
+
+    private rwyAheadActive = Subject.create(false);
+
+    // FIXME no source yet
     private stallWarning = Subject.create(false);
 
     private stallActive = MappedSubject.create(
@@ -31,23 +36,49 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
         this.fwcFlightPhase,
     );
 
+    // FIXME no source yet
     private stopRudderInputActive = Subject.create(false);
 
+    // FIXME no source yet
     private windshearActive = Subject.create(false);
 
+    // FIXME no source yet
     private wsAheadCaution = Subject.create(false);
 
+    // FIXME no source yet
     private wsAheadWarning = Subject.create(false);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<RopRowOansSimVars>();
-        this.maxReverseActive.setConsumer(sub.on('autobrakeRopActive').whenChanged());
-        this.maxReverseMaxBrakingActive.setConsumer(sub.on('manualBrakingRopActive').whenChanged());
-        this.ifWetRwyTooShortActive.setConsumer(sub.on('rowIfWetRwyTooShort').whenChanged());
-        this.rwyTooShortActive.setConsumer(sub.on('rowRwyTooShort').whenChanged());
-        this.rwyAheadActive.setConsumer(sub.on('oansRwyAhead').whenChanged());
+        sub.on('rowRopWord1Raw').whenChanged().handle((raw) => {
+            const ar = Arinc429Register.empty();
+            ar.set(raw);
+
+            if (ar.isNormalOperation()) {
+                this.maxReverseActive.set(ar.bitValue(12));
+                this.maxReverseMaxBrakingActive.set(ar.bitValue(13));
+                this.ifWetRwyTooShortActive.set(ar.bitValue(14));
+                this.rwyTooShortActive.set(ar.bitValue(15));
+            } else {
+                this.maxReverseActive.set(false);
+                this.maxReverseMaxBrakingActive.set(false);
+                this.ifWetRwyTooShortActive.set(false);
+                this.rwyTooShortActive.set(false);
+            }
+        });
+
+        sub.on('oansWord1Raw').whenChanged().handle((raw) => {
+            const ar = Arinc429Register.empty();
+            ar.set(raw);
+
+            if (ar.isNormalOperation()) {
+                this.rwyAheadActive.set(ar.bitValue(11));
+            } else {
+                this.rwyAheadActive.set(false);
+            }
+        });
     }
 
     render(): VNode {
