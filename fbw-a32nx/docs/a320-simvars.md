@@ -26,15 +26,6 @@
 
 ## Uncategorized
 
-- A32NX_AIRCRAFT_TYPE
-    - Enum
-    - Indicates the aircraft type
-        Aircraft | Value
-        --- | ---
-        Unknown | 0
-        A320_251N | 1
-        A380_842 | 2
-
 - A32NX_IS_READY
     - Bool
     - Indicates that the JavaScript part is ready

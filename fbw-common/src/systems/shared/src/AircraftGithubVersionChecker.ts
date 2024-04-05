@@ -7,12 +7,6 @@ import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
-export enum AircraftType {
-    Unknown = 0,
-    A320_251N = 1,
-    A380_842 = 2
-}
-
 /**
  * Contains the ${aircraft}_build_info.json file's information in a structured way.
  */
