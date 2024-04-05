@@ -1,2 +1,2 @@
 export * from './AttitudeIndicatorWarnings';
-export * from './PfdVisualAlertPublisher';
+export * from './RopRowOansPublisher';

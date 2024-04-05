@@ -1,7 +1,7 @@
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { PfdVisualAlertSimVars } from 'instruments/src/PFD';
+import { RopRowOansSimVars } from 'instruments/src/PFD/RopRowOansPublisher';
 
 interface AttitudeIndicatorWarningsProps {
     bus: ArincEventBus;
@@ -23,7 +23,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
     private rwyAheadActive = ConsumerSubject.create(null, false);
 
-    private stallWarning = ConsumerSubject.create(null, false);
+    private stallWarning = Subject.create(false);
 
     private stallActive = MappedSubject.create(
         ([stall, fwcFlightPhase]) => stall && [5, 6, 7].includes(fwcFlightPhase),
@@ -31,29 +31,23 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
         this.fwcFlightPhase,
     );
 
-    private stopRudderInputActive = ConsumerSubject.create(null, false);
+    private stopRudderInputActive = Subject.create(false);
 
-    private windshearActive = ConsumerSubject.create(null, false);
+    private windshearActive = Subject.create(false);
 
-    private wsAheadCaution = ConsumerSubject.create(null, false);
+    private wsAheadCaution = Subject.create(false);
 
-    private wsAheadWarning = ConsumerSubject.create(null, false);
+    private wsAheadWarning = Subject.create(false);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PfdVisualAlertSimVars>();
-        this.fwcFlightPhase.setConsumer(sub.on('fwcFlightPhase').whenChanged());
+        const sub = this.props.bus.getSubscriber<RopRowOansSimVars>();
         this.maxReverseActive.setConsumer(sub.on('autobrakeRopActive').whenChanged());
         this.maxReverseMaxBrakingActive.setConsumer(sub.on('manualBrakingRopActive').whenChanged());
         this.ifWetRwyTooShortActive.setConsumer(sub.on('rowIfWetRwyTooShort').whenChanged());
         this.rwyTooShortActive.setConsumer(sub.on('rowRwyTooShort').whenChanged());
         this.rwyAheadActive.setConsumer(sub.on('oansRwyAhead').whenChanged());
-        this.stallWarning.setConsumer(sub.on('stallWarning').whenChanged());
-        this.stopRudderInputActive.setConsumer(sub.on('stopRudderInput').whenChanged());
-        this.windshearActive.setConsumer(sub.on('windshear').whenChanged());
-        this.wsAheadCaution.setConsumer(sub.on('wsAheadCaution').whenChanged());
-        this.wsAheadWarning.setConsumer(sub.on('wsAheadWarning').whenChanged());
     }
 
     render(): VNode {
