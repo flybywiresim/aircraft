@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/pfd';
+import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -19,25 +19,30 @@ import './style.scss';
 // TODO move this whole thing to InstrumentBackplane and GameStateProvider
 
 class A32NX_PFD extends BaseInstrument {
-    private bus: ArincEventBus;
+    private readonly bus = new ArincEventBus();
 
-    private simVarPublisher: PFDSimvarPublisher;
+    private readonly backplane = new InstrumentBackplane();
 
-    private readonly hEventPublisher;
+    private readonly simVarPublisher = new PFDSimvarPublisher(this.bus);
 
-    private readonly arincProvider: ArincValueProvider;
+    private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-    private readonly simplaneValueProvider: SimplaneValueProvider;
+    private readonly arincProvider = new ArincValueProvider(this.bus);
 
-    private readonly clock: Clock;
+    private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
+    private readonly clock = new Clock(this.bus);
+
+    // FIXME fit this into the normal backplane pattern
     private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
-    private readonly dmcPublisher: DmcPublisher;
+    private readonly dmcPublisher = new DmcPublisher(this.bus);
 
+    // FIXME fit this into the normal backplane pattern
     private fmsDataPublisher: FmsDataPublisher;
 
-    private readonly ropRowOansPublisher: RopRowOansPublisher;
+    private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
+
 
     /**
      * "mainmenu" = 0
@@ -49,14 +54,14 @@ class A32NX_PFD extends BaseInstrument {
 
     constructor() {
         super();
-        this.bus = new ArincEventBus();
-        this.simVarPublisher = new PFDSimvarPublisher(this.bus);
-        this.hEventPublisher = new HEventPublisher(this.bus);
-        this.arincProvider = new ArincValueProvider(this.bus);
-        this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
-        this.clock = new Clock(this.bus);
-        this.dmcPublisher = new DmcPublisher(this.bus);
-        this.ropRowOansPublisher = new RopRowOansPublisher(this.bus);
+
+        this.backplane.addPublisher('PfdSimvars', this.simVarPublisher);
+        this.backplane.addPublisher('hEvent', this.hEventPublisher);
+        this.backplane.addInstrument('arincProvider', this.arincProvider);
+        this.backplane.addInstrument('simPlane', this.simplaneValueProvider);
+        this.backplane.addInstrument('Clock', this.clock);
+        this.backplane.addPublisher('Dmc', this.dmcPublisher);
+        this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     }
 
     get templateID(): string {
@@ -79,9 +84,7 @@ class A32NX_PFD extends BaseInstrument {
         const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
-        this.arincProvider.init();
-        this.clock.init();
-        this.dmcPublisher.startPublish();
+        this.backplane.init();
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
@@ -95,24 +98,17 @@ class A32NX_PFD extends BaseInstrument {
     public Update(): void {
         super.Update();
 
+        this.backplane.onUpdate();
+
         if (this.gameState !== 3) {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
-                this.simVarPublisher.startPublish();
-                this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
-                this.dmcPublisher.startPublish();
                 this.fmsDataPublisher.startPublish();
-                this.ropRowOansPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
-            this.simVarPublisher.onUpdate();
-            this.simplaneValueProvider.onUpdate();
-            this.clock.onUpdate();
-            this.dmcPublisher.onUpdate();
             this.fmsDataPublisher.onUpdate();
-            this.ropRowOansPublisher.onUpdate();
         }
     }
 }
