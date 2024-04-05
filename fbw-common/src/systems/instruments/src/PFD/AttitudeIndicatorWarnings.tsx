@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429Register, Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars } from './RopRowOansPublisher';
 
 interface AttitudeIndicatorWarningsProps {
@@ -9,75 +9,58 @@ interface AttitudeIndicatorWarningsProps {
 }
 
 export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicatorWarningsProps> {
-    private warningGroupRef = FSComponent.createRef<SVGGElement>();
+    private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private readonly rowRopWord1 = Arinc429RegisterSubject.createEmpty();
+    private readonly fwcFlightPhase = Subject.create(0);
 
-    private readonly oansWord1 = Arinc429RegisterSubject.createEmpty();
+    private readonly maxReverseActive = Subject.create(false);
 
-    private fwcFlightPhase = Subject.create(0);
+    private readonly maxReverseMaxBrakingActive = Subject.create(false);
 
-    private maxReverseActive = Subject.create(false);
+    private readonly ifWetRwyTooShortActive = Subject.create(false);
 
-    private maxReverseMaxBrakingActive = Subject.create(false);
+    private readonly rwyTooShortActive = Subject.create(false);
 
-    private ifWetRwyTooShortActive = Subject.create(false);
-
-    private rwyTooShortActive = Subject.create(false);
-
-    private rwyAheadActive = Subject.create(false);
+    private readonly rwyAheadActive = Subject.create(false);
 
     // FIXME no source yet
-    private stallWarning = Subject.create(false);
+    private readonly stallWarning = Subject.create(false);
 
-    private stallActive = MappedSubject.create(
+    private readonly stallActive = MappedSubject.create(
         ([stall, fwcFlightPhase]) => stall && [5, 6, 7].includes(fwcFlightPhase),
         this.stallWarning,
         this.fwcFlightPhase,
     );
 
     // FIXME no source yet
-    private stopRudderInputActive = Subject.create(false);
+    private readonly stopRudderInputActive = Subject.create(false);
 
     // FIXME no source yet
-    private windshearActive = Subject.create(false);
+    private readonly windshearActive = Subject.create(false);
 
     // FIXME no source yet
-    private wsAheadCaution = Subject.create(false);
+    private readonly wsAheadCaution = Subject.create(false);
 
     // FIXME no source yet
-    private wsAheadWarning = Subject.create(false);
+    private readonly wsAheadWarning = Subject.create(false);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<RopRowOansSimVars>();
         sub.on('rowRopWord1Raw').whenChanged().handle((raw) => {
-            const ar = Arinc429Register.empty();
-            ar.set(raw);
+            const ar = new Arinc429Word(raw);
 
-            if (ar.isNormalOperation()) {
-                this.maxReverseActive.set(ar.bitValue(12));
-                this.maxReverseMaxBrakingActive.set(ar.bitValue(13));
-                this.ifWetRwyTooShortActive.set(ar.bitValue(14));
-                this.rwyTooShortActive.set(ar.bitValue(15));
-            } else {
-                this.maxReverseActive.set(false);
-                this.maxReverseMaxBrakingActive.set(false);
-                this.ifWetRwyTooShortActive.set(false);
-                this.rwyTooShortActive.set(false);
-            }
+            this.maxReverseActive.set(ar.getBitValueOr(12, false));
+            this.maxReverseMaxBrakingActive.set(ar.getBitValueOr(13, false));
+            this.ifWetRwyTooShortActive.set(ar.getBitValueOr(14, false));
+            this.rwyTooShortActive.set(ar.getBitValueOr(15, false));
         });
 
         sub.on('oansWord1Raw').whenChanged().handle((raw) => {
-            const ar = Arinc429Register.empty();
-            ar.set(raw);
+            const ar = new Arinc429Word(raw);
 
-            if (ar.isNormalOperation()) {
-                this.rwyAheadActive.set(ar.bitValue(11));
-            } else {
-                this.rwyAheadActive.set(false);
-            }
+            this.rwyAheadActive.set(ar.getBitValueOr(11, false));
         });
     }
 

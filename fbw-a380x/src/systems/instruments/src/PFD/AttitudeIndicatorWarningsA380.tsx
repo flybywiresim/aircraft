@@ -8,21 +8,28 @@ interface AttitudeIndicatorWarningsA380Props {
 }
 
 export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndicatorWarningsA380Props> {
-    private warningGroupRef = FSComponent.createRef<SVGGElement>();
+    private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private gpwsPullUpActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsPullUpActive = Subject.create(false);
 
-    private gpwsSinkRateActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsSinkRateActive = Subject.create(false);
 
-    private gpwsDontSinkActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsDontSinkActive = Subject.create(false);
 
-    private gpwsTooLowGearActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsTooLowGearActive = Subject.create(false);
 
-    private gpwsTooLowTerrainActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsTooLowTerrainActive = Subject.create(false);
 
-    private gpwsTooLowFlapsActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsTooLowFlapsActive = Subject.create(false);
 
-    private gpwsGlideSlopeActive = Subject.create(false);
+    // FIXME no source yet
+    private readonly gpwsGlideSlopeActive = Subject.create(false);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
