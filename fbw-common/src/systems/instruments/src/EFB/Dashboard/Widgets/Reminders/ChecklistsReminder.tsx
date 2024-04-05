@@ -5,7 +5,7 @@ import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
-import { t } from '../../../Localization/translation';
+import { t } from '@flybywiresim/flypad';
 import { areAllChecklistItemsCompleted, getChecklistCompletion, setSelectedChecklistIndex, TrackingChecklist } from '../../../Store/features/checklists';
 import { RemindersSection } from './RemindersSection';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
