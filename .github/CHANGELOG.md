@@ -81,6 +81,8 @@
 1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
 1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
 1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
+1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
+1. [EFB] Checklist restructure to add more capabilities and use json configs - @frankkopp (Frank Kopp)
 1. [GENERAL] Implemented a new unified VFS JSON5 markup standard for A/C configuration for FlyByWire based projects (building block for per-livery configuration) - @2hwk (2Cas)
 1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
 1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
