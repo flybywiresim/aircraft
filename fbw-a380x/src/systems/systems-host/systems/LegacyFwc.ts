@@ -505,7 +505,7 @@ export class LegacyFwc {
 
         // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
         const maxReverseSet = SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1 && SimVar.GetSimVarValue('L:XMLVAR_Throttle3Position', 'number') < 0.1;
-        const maxReverse = w.getBitValueOr(12, false) && !maxReverseSet;
+        const maxReverse = (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)) && !maxReverseSet;
         SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_SET_MAX_REVERSE', 'bool', !maxBraking && maxReverse);
 
         // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed

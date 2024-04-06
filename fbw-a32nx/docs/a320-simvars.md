@@ -3920,7 +3920,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 27  | TERRAIN AHEAD          |
 
 - `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_2`
-    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380)
+    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) or on the GPWS visual indicators on the A320
     - Arinc429<Discrete>
     - | Bit |          Description         |
       |:---:|:----------------------------:|
