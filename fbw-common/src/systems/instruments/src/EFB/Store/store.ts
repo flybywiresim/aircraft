@@ -48,9 +48,8 @@ const combinedReducer = combineReducers({
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
     if (action.type === EFB_CLEAR_STATE) {
         for (const key in state) {
+            // TODO: Exclude checklist from state clear, while resetting all items to un-completed.
             // Items to exclude from state clear
-
-            // TODO: Excempt checklist from state clear, while resetting all items to un-completed.
             if (key !== 'config') {
                 delete state[key];
             }
