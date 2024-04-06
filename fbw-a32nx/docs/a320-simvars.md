@@ -3902,24 +3902,39 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 2
 
 ## GPWS / TAWS (ATA 34)
-- `A32NX_GPWS_{1 | 2}_DISCRETE_WORD`
+- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_1`
+    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) and triggering aural warnings
+    - Arinc429<Discrete>
+    - | Bit |       Description      |
+      |:---:|:----------------------:|
+      | 11  | SINKRATE               |
+      | 12  | PULL UP                |
+      | 13  | TERRAIN                |
+      | 14  | DON'T SINK             |
+      | 15  | TOO LOW GEAR           |
+      | 16  | TOO LOW FLAPS          |
+      | 17  | TOO LOW TERRAIN        |
+      | 18  | GLIDESLOPE             |
+      | 20  | TERRAIN PULL UP        |
+      | 22  | TERRAIN AHEAD PULL UP  |
+      | 27  | TERRAIN AHEAD          |
+
+- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_2`
     - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380)
     - Arinc429<Discrete>
-    - | Bit |            Description               |
-      |:---:|:------------------------------------:|
-      | 11  | GPWS ON                              |
-      | 12  | GPWS failed                          |
-      | 13  | TAWS FLAP MODE OFF                   |
-      | 14  | TAWS G/S MODE OFF                    |
-      | 20  | GPWS Mode 1: Sink rate alert         |
-      | 21  | GPWS Mode 1: Pull up alert           |
-      | 22  | GPWS Mode 2: Terrain alert           |
-      | 23  | GPWS Mode 2: Pull up alert           |
-      | 24  | GPWS Mode 3: Don't sink alert        |
-      | 25  | GPWS Mode 4: Too low terrain alert   |
-      | 26  | GPWS Mode 4A/AB: Too low gear alert  |
-      | 27  | GPWS Mode 4B: Too low flaps alert    |
-      | 28  | GPWS Mode 5: Glide slope alert       |
+    - | Bit |          Description         |
+      |:---:|:----------------------------:|
+      | 11  | G/S CANCEL                   |
+      | 12  | GPWS ALERT                   |
+      | 13  | GPWS WARNING                 |
+      | 14  | GPWS INOP                    |
+      | 15  | W/S WARNING                  |
+      | 16  | AUDIO ON                     |
+      | 22  | TERRAIN AWARENESS WARNING    |
+      | 23  | TERRAIN AWARENESS CAUTION    |
+      | 24  | TERRAIN AWARENESS INOP       |
+      | 25  | EXTERNAL FAULT               |
+      | 26  | TERRAIN AWARENESS NOT AVAIL. |
 
 ## ROW / ROP / OANS (ATA 34)
 

@@ -6,7 +6,8 @@
 import { EventBus, IndexedEventType, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface BaseTawsEvents {
-    gpws_discrete_word: number;
+    egpws_alert_discrete_word_1: number;
+    egpws_alert_discrete_word_2: number;
 }
 
 /**
@@ -27,7 +28,8 @@ export class TawsPublisher extends SimVarPublisher<TawsDataEvents> {
    */
     public constructor(bus: EventBus, pacer?: PublishPacer<TawsDataEvents>) {
         const simvars = new Map<keyof TawsDataEvents, SimVarPublisherEntry<any>>([
-            ['gpws_discrete_word', { name: 'L:A32NX_GPWS_#index#_DISCRETE_WORD', type: SimVarValueType.Number, indexed: true }],
+            ['egpws_alert_discrete_word_1', { name: 'L:A32NX_EGPWS_ALERT_#index#_DISCRETE_WORD_1', type: SimVarValueType.Number, indexed: true }],
+            ['egpws_alert_discrete_word_2', { name: 'L:A32NX_EGPWS_ALERT_#index#_DISCRETE_WORD_2', type: SimVarValueType.Number, indexed: true }],
         ]);
         super(simvars, bus, pacer);
     }

@@ -1,8 +1,7 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { RopRowOansSimVars } from '../MsfsAvionicsCommon/providers/RopRowOansPublisher';
-import { FwcDataEvents } from '../MsfsAvionicsCommon/providers/FwcPublisher';
+import { RopRowOansSimVars, FwcDataEvents, TawsDataEvents } from '../MsfsAvionicsCommon/providers';
 
 interface AttitudeIndicatorWarningsProps {
     bus: ArincEventBus;
@@ -24,14 +23,15 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
     private readonly fwcWord126 = Arinc429RegisterSubject.createEmpty();
 
+    private readonly gpwsWord2 = Arinc429RegisterSubject.createEmpty();
+
     // stall warning = stall bit && !on ground bit
     private readonly stallActive = this.fwcWord126.map((v) => v.bitValueOr(17, false) && !v.bitValue(28));
 
     // FIXME no source yet
     private readonly stopRudderInputActive = Subject.create(false);
 
-    // FIXME no source yet
-    private readonly windshearActive = Subject.create(false);
+    private readonly windshearActive = this.gpwsWord2.map((w) => w.bitValueOr(15, false));
 
     // FIXME no source yet
     private readonly wsAheadCaution = Subject.create(false);
@@ -42,7 +42,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<FwcDataEvents & RopRowOansSimVars>();
+        const sub = this.props.bus.getSubscriber<FwcDataEvents & RopRowOansSimVars & TawsDataEvents>();
 
         sub.on('rowRopWord1Raw').whenChanged().handle((raw) => {
             const ar = new Arinc429Word(raw);
@@ -60,6 +60,10 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
         sub.on('fwc_discrete_word_126_1').whenChanged().handle((v) => {
             this.fwcWord126.setWord(v);
+        });
+
+        sub.on('egpws_alert_discrete_word_2_1').whenChanged().handle((v) => {
+            this.gpwsWord2.setWord(v);
         });
     }
 

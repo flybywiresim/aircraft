@@ -10,29 +10,29 @@ interface AttitudeIndicatorWarningsA380Props {
 export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndicatorWarningsA380Props> {
     private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private readonly gpwsWord = Arinc429RegisterSubject.createEmpty();
+    private readonly gpwsWord1 = Arinc429RegisterSubject.createEmpty();
 
-    private readonly gpwsPullUpActive = this.gpwsWord.map((w) => w.bitValueOr(21, false) || w.bitValueOr(23, false));
+    private readonly gpwsPullUpActive = this.gpwsWord1.map((w) => w.bitValueOr(12, false));
 
-    private readonly gpwsSinkRateActive = this.gpwsWord.map((w) => w.bitValueOr(20, false));
+    private readonly gpwsSinkRateActive = this.gpwsWord1.map((w) => w.bitValueOr(11, false));
 
-    private readonly gpwsDontSinkActive = this.gpwsWord.map((w) => w.bitValueOr(24, false));
+    private readonly gpwsDontSinkActive = this.gpwsWord1.map((w) => w.bitValueOr(14, false));
 
-    private readonly gpwsTooLowGearActive = this.gpwsWord.map((w) => w.bitValueOr(26, false));
+    private readonly gpwsTooLowGearActive = this.gpwsWord1.map((w) => w.bitValueOr(15, false));
 
-    private readonly gpwsTooLowTerrainActive = this.gpwsWord.map((w) => w.bitValueOr(25, false));
+    private readonly gpwsTooLowTerrainActive = this.gpwsWord1.map((w) => w.bitValueOr(17, false));
 
-    private readonly gpwsTooLowFlapsActive = this.gpwsWord.map((w) => w.bitValueOr(27, false));
+    private readonly gpwsTooLowFlapsActive = this.gpwsWord1.map((w) => w.bitValueOr(16, false));
 
-    private readonly gpwsGlideSlopeActive = this.gpwsWord.map((w) => w.bitValueOr(28, false));
+    private readonly gpwsGlideSlopeActive = this.gpwsWord1.map((w) => w.bitValueOr(18, false));
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<TawsDataEvents>();
 
-        sub.on('gpws_discrete_word_1').whenChanged().handle((v) => {
-            this.gpwsWord.setWord(v);
+        sub.on('egpws_alert_discrete_word_1_1').whenChanged().handle((v) => {
+            this.gpwsWord1.setWord(v);
         });
     }
 
