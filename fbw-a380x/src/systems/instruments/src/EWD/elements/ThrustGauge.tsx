@@ -20,8 +20,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
     const [revVisible] = useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 500);
-    // Reverse cowl > 5% is treated like fully open, otherwise REV will not turn green for idle reverse
-    const [revDoorOpenPercentage] = useSimVar(`A:TURB ENG REVERSE NOZZLE PERCENT:${engine}`, 'percent', 100);
+    const [revDoorOpened] = useSimVar(`L:A32NX_REVERSER_${engine}_DEPLOYED`, 'bool', 500);
     const availRevVisible = availVisible || (revVisible && [2, 3].includes(engine));
     const availRevText = availVisible ? 'AVAIL' : 'REV';
 
@@ -70,7 +69,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 visible={availVisible || engineState === 1}
                                 className='GaugeComponent GaugeThrustFill'
                             />
-                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
+                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpened} />
                             <ThrottlePositionDonutComponent
                                 value={throttlePosition < 3 ? 3 / 10 : throttlePosition / 10}
                                 x={x}
@@ -198,7 +197,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                         />
                         {/* reverse */}
                         <GaugeComponent x={x} y={y} radius={revRadius} startAngle={revStartAngle} endAngle={revEndAngle} visible className='GaugeComponent Gauge'>
-                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
+                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpened} />
                             <GaugeMarkerComponent
                                 value={0}
                                 x={x}
@@ -254,7 +253,7 @@ type AvailRevProps = {
     y: number,
     mesg: string,
     visible: boolean,
-    revDoorOpen: number,
+    revDoorOpen: boolean,
 };
 
 const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, revDoorOpen }) => (
@@ -262,7 +261,7 @@ const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, revDoorOpen })
         <g className={visible ? 'Show' : 'Hide'}>
             <rect x={x - 28} y={y - 13} width={90} height={24} className='DarkGreyBox BackgroundFill' />
             {mesg === 'REV'
-            && <text className={`F26 Spread Centre ${Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={x - 8} y={y + 9}>REV</text>}
+            && <text className={`F26 Spread Centre ${revDoorOpen ? 'Green' : 'Amber'}`} x={x - 8} y={y + 9}>REV</text>}
             {mesg === 'AVAIL'
             && <text className='F26 Spread Centre Green' x={x - 26} y={y + 9}>AVAIL</text>}
         </g>
