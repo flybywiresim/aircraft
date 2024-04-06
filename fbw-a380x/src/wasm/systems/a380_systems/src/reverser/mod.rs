@@ -55,7 +55,9 @@ pub struct A380ReverserController {
 
     state: ReverserControlState,
 
-    tertiary_lock_from_prim_should_unlock: DelayedFalseLogicGate,
+    primary_lock_from_prim_should_unlock: bool,
+    secondary_lock_from_prim_should_unlock: bool,
+    tertiary_lock_from_prim_should_unlock: bool,
 }
 impl A380ReverserController {
     pub fn new(context: &mut InitContext, engine_number: usize) -> Self {
@@ -66,10 +68,32 @@ impl A380ReverserController {
             throttle_lever_angle: Angle::default(),
             state: ReverserControlState::StowedOff,
 
-            tertiary_lock_from_prim_should_unlock: DelayedFalseLogicGate::new(Duration::from_secs(
-                40,
-            )),
+            primary_lock_from_prim_should_unlock: false,
+            secondary_lock_from_prim_should_unlock: false,
+            tertiary_lock_from_prim_should_unlock: false,
         }
+    }
+
+    fn first_line_of_defense_condition_should_unlock(
+        &self,
+        lgciu: &impl LgciuWeightOnWheels,
+    ) -> bool {
+        self.throttle_lever_angle.get::<degree>() <= -3.
+            && lgciu.left_and_right_gear_compressed(false)
+    }
+
+    fn second_line_of_defense_condition_should_unlock(
+        &self,
+        lgciu: &impl LgciuWeightOnWheels,
+    ) -> bool {
+        // TODO Should be a switch info from throttle assembly, using a -3.5 value as placeholder
+        self.throttle_lever_angle.get::<degree>() <= -3.5
+            && lgciu.left_and_right_gear_compressed(false)
+    }
+
+    fn third_line_of_defense_condition_should_unlock(&self) -> bool {
+        // TODO This should come from PRIM independant data
+        self.throttle_lever_angle.get::<degree>() <= -4.
     }
 
     pub fn update(
@@ -86,11 +110,14 @@ impl A380ReverserController {
         let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
             && lgciu.left_and_right_gear_compressed(false);
 
-        // TODO: this should come from a SEC output, this is a placeholder of the SEC output
-        self.tertiary_lock_from_prim_should_unlock
-            .update(context, self.throttle_lever_angle.get::<degree>() <= -3.);
-
         let command_opening = self.throttle_lever_angle.get::<degree>() <= -4.3;
+
+        self.primary_lock_from_prim_should_unlock =
+            self.first_line_of_defense_condition_should_unlock(lgciu);
+        self.secondary_lock_from_prim_should_unlock =
+            self.second_line_of_defense_condition_should_unlock(lgciu);
+        self.tertiary_lock_from_prim_should_unlock =
+            self.third_line_of_defense_condition_should_unlock();
 
         self.state = match self.state {
             ReverserControlState::StowedOff => {
@@ -142,15 +169,15 @@ impl SimulationElement for A380ReverserController {
 }
 impl ElecReverserInterface for A380ReverserController {
     fn should_unlock_first(&self) -> bool {
-        self.tertiary_lock_from_prim_should_unlock.output()
+        self.primary_lock_from_prim_should_unlock
     }
 
     fn should_unlock_second(&self) -> bool {
-        self.tertiary_lock_from_prim_should_unlock.output()
+        self.secondary_lock_from_prim_should_unlock
     }
 
     fn should_unlock_third(&self) -> bool {
-        self.tertiary_lock_from_prim_should_unlock.output()
+        self.tertiary_lock_from_prim_should_unlock
     }
 
     fn should_deploy_reverser(&self) -> bool {
