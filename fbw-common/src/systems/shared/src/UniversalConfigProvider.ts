@@ -7,6 +7,11 @@
 import JSON5 from 'json5';
 import { AirframeInfo, CabinInfo, FlypadInfo } from './unifiedConfig';
 
+/**
+ * UniversalConfigProvider is a class that provides for fetching
+ * airframe, flypad, cabin, etc. related markup from the VFS.
+ * The data is fetched from the VFS and is cached for subsequent calls.
+ */
 export class UniversalConfigProvider {
     private static airframeInfo: AirframeInfo;
 
@@ -14,6 +19,9 @@ export class UniversalConfigProvider {
 
     private static cabinInfo: CabinInfo;
 
+    /**
+     * Fetch base VFS JSON5 markup configuration for this A/C variant
+     */
     private static fetchBaseVFSJson5(aircraft: string, variant: string, fileName: string): Promise<any> {
         return fetch(`/VFS/config/${aircraft}/${variant}/${fileName}.json5`)
             .then((response) => response.text())
@@ -23,11 +31,17 @@ export class UniversalConfigProvider {
             });
     }
 
+    /**
+     * Fetch existing livery override JSON5 (TODO)
+     */
     private static fetchVFSJson5(aircraft: string, variant: string, atcId: string, fileName: string): Promise<any> {
         // TODO: Override base VFS Logic goes here
         return this.fetchBaseVFSJson5(aircraft, variant, fileName);
     }
 
+    /**
+     * Fetch cached airframe data if it exists, otherwise fetch from VFS
+     */
     public static async fetchAirframeInfo(aircraft: string, variant: string): Promise<AirframeInfo> {
         if (this.airframeInfo) {
             return this.airframeInfo;
@@ -49,6 +63,9 @@ export class UniversalConfigProvider {
         return this.airframeInfo;
     }
 
+    /**
+     * Fetch cached flypad data if it exists, otherwise fetch from VFS
+     */
     public static async fetchFlypadInfo(aircraft: string, variant: string): Promise<FlypadInfo> {
         if (this.flypadInfo) {
             return this.flypadInfo;
@@ -71,6 +88,9 @@ export class UniversalConfigProvider {
         return this.flypadInfo;
     }
 
+    /**
+     * Fetch cached cabin data if it exists, otherwise fetch from VFS
+     */
     public static async fetchCabinInfo(aircraft: string, variant: string): Promise<CabinInfo> {
         if (this.cabinInfo) {
             return this.cabinInfo;
