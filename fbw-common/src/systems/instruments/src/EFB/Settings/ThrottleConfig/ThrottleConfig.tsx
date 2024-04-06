@@ -294,13 +294,6 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </div>
     );
 
-    const axisDictionary = {
-        1: throttleOneSimvars,
-        2: throttleTwoSimvars,
-        3: throttleThreeSimvars,
-        4: throttleFourSimvars,
-    };
-
     const fourAxis = (
         <div className="mx-16 flex flex-row">
             <BaseThrottleConfig
