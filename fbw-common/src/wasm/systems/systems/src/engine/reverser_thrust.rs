@@ -110,6 +110,13 @@ impl ReverserForce {
                 Acceleration::default()
             };
 
+        println!(
+            "REVERSE E2 {:.0}N / E3 {:.0}N TOTAL {:.0}N ",
+            self.reversers[0].current_thrust().get::<newton>(),
+            self.reversers[1].current_thrust().get::<newton>(),
+            total_force.get::<newton>()
+        );
+
         self.plane_delta_speed_due_to_reverse_thrust = Velocity::new::<meter_per_second>(
             self.plane_delta_acceleration_due_to_reverse_thrust
                 .get::<meter_per_second_squared>()

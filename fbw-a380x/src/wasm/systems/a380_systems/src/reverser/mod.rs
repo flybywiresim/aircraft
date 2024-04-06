@@ -246,7 +246,7 @@ impl A380Reversers {
         &self.reversers[reverser_index]
     }
 
-    fn reversers_position(&self) -> &[impl ReverserPosition] {
+    pub fn reversers_position(&self) -> &[impl ReverserPosition] {
         &self.reversers[..]
     }
 }

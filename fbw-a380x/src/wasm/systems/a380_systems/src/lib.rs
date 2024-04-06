@@ -46,7 +46,7 @@ use systems::{
         AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
@@ -96,6 +96,7 @@ pub struct A380 {
 
     engine_reverser_control: [A380ReverserController; 2],
     reversers_assembly: A380Reversers,
+    reverse_thrust: ReverserForce,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -170,6 +171,7 @@ impl A380 {
                 A380ReverserController::new(context, 3),
             ],
             reversers_assembly: A380Reversers::new(context),
+            reverse_thrust: ReverserForce::new(context),
         }
     }
 }
@@ -340,8 +342,15 @@ impl Aircraft for A380 {
             self.lgcius.lgciu2(),
             self.reversers_assembly.reverser_feedback(1),
         );
+
         self.reversers_assembly
             .update(context, &self.engine_reverser_control);
+
+        self.reverse_thrust.update(
+            context,
+            [&self.engine_2, &self.engine_3],
+            self.reversers_assembly.reversers_position(),
+        );
     }
 }
 impl SimulationElement for A380 {
@@ -383,6 +392,7 @@ impl SimulationElement for A380 {
 
         accept_iterable!(self.engine_reverser_control, visitor);
         self.reversers_assembly.accept(visitor);
+        self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);
     }
