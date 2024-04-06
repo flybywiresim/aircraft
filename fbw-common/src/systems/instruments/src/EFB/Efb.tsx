@@ -7,15 +7,18 @@ import {
     SentryConsentState, SENTRY_CONSENT_KEY,
     FailureDefinition,
     UniversalConfigProvider,
+    NXDataStore,
 } from '@flybywiresim/fbw-sdk';
+
+import { Provider } from 'react-redux';
+import { customAlphabet } from 'nanoid';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
-import { Provider } from 'react-redux';
-import { setAirframeInfo, setCabinInfo, setFlypadInfo } from '@flybywiresim/flypad';
+import { migrateSettings, readSettingsFromPersistentStorage, setAirframeInfo, setCabinInfo, setFlypadInfo } from '@flybywiresim/flypad';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -46,6 +49,64 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
+
+export interface EfbInstrumentProps {
+    // TODO: Move failure definition into VFS
+    failures: FailureDefinition[],
+}
+
+export const EfbWrapper: React.FC<EfbInstrumentProps> = ({ failures }) => {
+    const setSessionId = () => {
+        const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const SESSION_ID_LENGTH = 14;
+        const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
+        const generatedSessionID = nanoid();
+
+        NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
+    };
+
+    useEffect(() => {
+        // Reinject on power cycle
+        console.log('Reinjecting...');
+        UniversalConfigProvider.fetchAirframeInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setAirframeInfo(info)));
+
+        UniversalConfigProvider.fetchFlypadInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setFlypadInfo(info)));
+
+        UniversalConfigProvider.fetchCabinInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setCabinInfo(info)));
+    }, []);
+
+    const setup = () => {
+        readSettingsFromPersistentStorage();
+        migrateSettings();
+        setSessionId();
+
+        // Needed to fetch METARs from the sim
+        RegisterViewListener('JS_LISTENER_FACILITY', () => {
+            console.log('JS_LISTENER_FACILITY registered.');
+        }, true);
+    };
+
+    if (process.env.VITE_BUILD) {
+        window.addEventListener('AceInitialized', setup);
+    } else {
+        setup();
+    }
+
+    return (
+        <Provider store={store}>
+            <EfbInstrument failures={failures} />
+        </Provider>
+    );
+};
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -97,24 +158,6 @@ const Efb = () => {
     const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
-
-    useEffect(() => {
-        // Reinject on power cycle
-        UniversalConfigProvider.fetchAirframeInfo(
-            process.env.AIRCRAFT_PROJECT_PREFIX,
-            process.env.AIRCRAFT_VARIANT,
-        ).then((info) => dispatch(setAirframeInfo(info)));
-
-        UniversalConfigProvider.fetchFlypadInfo(
-            process.env.AIRCRAFT_PROJECT_PREFIX,
-            process.env.AIRCRAFT_VARIANT,
-        ).then((info) => dispatch(setFlypadInfo(info)));
-
-        UniversalConfigProvider.fetchCabinInfo(
-            process.env.AIRCRAFT_PROJECT_PREFIX,
-            process.env.AIRCRAFT_VARIANT,
-        ).then((info) => dispatch(setCabinInfo(info)));
-    }, [powerState]);
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
@@ -214,8 +257,8 @@ const Efb = () => {
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
+            // TODO FIXME: Refactor away this code bandaid that reinitialises checklists after clearing them - See store.ts
             const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
-
             if (checklistItemsEmpty) {
                 CHECKLISTS.forEach((checklist, index) => {
                     dispatch(setChecklistItems({
@@ -414,10 +457,6 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     );
 };
 
-export interface EfbInstrumentProps {
-    failures: FailureDefinition[],
-}
-
 export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
@@ -432,9 +471,7 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures }) => {
             <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
                 <Router>
                     <ModalProvider>
-                        <Provider store={store}>
-                            <Efb />
-                        </Provider>
+                        <Efb />
                     </ModalProvider>
                 </Router>
             </ErrorBoundary>
