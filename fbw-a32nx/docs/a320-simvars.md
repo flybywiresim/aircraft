@@ -42,16 +42,16 @@
 - A32NX_START_STATE
     - Enum
     - Indicates the state in which MSFS started
-        State | Value
-        --- | ---
-        Hangar | 1
-        Apron | 2
-        Taxi | 3
-        Runway | 4
-        Climb | 5
-        Cruise | 6
-        Approach | 7
-        Final | 8
+    - State | Value
+            --- | ---
+      Hangar | 1
+      Apron | 2
+      Taxi | 3
+      Runway | 4
+      Climb | 5
+      Cruise | 6
+      Approach | 7
+      Final | 8
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
