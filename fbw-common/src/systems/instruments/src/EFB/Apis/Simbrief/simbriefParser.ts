@@ -26,9 +26,7 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     simbriefApiParams.append('json', '1');
 
     // Adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
-    // The try/catch is there as the a380x build info file cannot be loaded with the current package setup/order and
-    // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X) then
-    // this try/catch could be removed, but it doesn't hurt to have it here even then as an extra safety measure
+    // try/catch here is an extra safety measure in case the configuration files are not found
     try {
         const airframeInfo = await UniversalConfigProvider.fetchAirframeInfo(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT);
         const versionInfo = await AircraftGithubVersionChecker.getBuildInfo(process.env.AIRCRAFT_PROJECT_PREFIX);
