@@ -67,7 +67,6 @@ export const EfbWrapper: React.FC<EfbInstrumentProps> = ({ failures }) => {
 
     useEffect(() => {
         // Reinject on power cycle
-        console.log('Reinjecting...');
         UniversalConfigProvider.fetchAirframeInfo(
             process.env.AIRCRAFT_PROJECT_PREFIX,
             process.env.AIRCRAFT_VARIANT,

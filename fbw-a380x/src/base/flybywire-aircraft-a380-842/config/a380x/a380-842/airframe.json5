@@ -72,5 +72,9 @@
                 [ 43, 270000 ]
             ]
         }
+    },
+    "_dimensions": {
+        "aircraftWheelBase":  31.9,
+        "aircraftLengthMeter": 72.72
     }
 }

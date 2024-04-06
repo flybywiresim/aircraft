@@ -12,6 +12,7 @@ export interface AirframeInfo {
     icao: string;
     engines: string;
     designLimits: AirframeDesignLimits;
+    dimensions: AirframeDimensions;
 }
 
 export interface AirframeDesignLimits {
@@ -42,6 +43,11 @@ export interface AirframePerformanceEnvelope {
     flight: number[][];
 }
 
+export interface AirframeDimensions {
+    aircraftWheelBase: number;
+    aircraftLengthMeter: number;
+}
+
 /**
  * Contains the flypad-*.json files' information in a structured way.
  */
@@ -66,8 +72,6 @@ export interface ThrottleFlypadAxisMapping {
 
 export interface PushbackFlypadInfo {
     turnIndicatorTuningDefault: number;
-    aircraftWheelBase: number;
-    aircraftLengthMeter: number;
 }
 
 export interface PayloadFlypadInfo {

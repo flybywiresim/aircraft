@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { AirframeInfo, AirframeType, CabinInfo, FlypadInfo, PayloadType, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, AirframeType, CabinInfo, FlypadInfo, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { useAppSelector, isSimbriefDataLoaded, getMaxPax, getMaxCargo } from '@flybywiresim/flypad';
 import { A380Payload } from './WideBody/A380Payload';
 import { A320Payload } from './NarrowBody/A320Payload';

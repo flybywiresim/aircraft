@@ -95,10 +95,8 @@ export const PushbackMap = () => {
     const someConstant = 0.48596;
 
     // Aircraft wheelbase in meters
-    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2021-11/Airbus-Commercial-Aircraft-AC-A320.pdf
-    // Source: https://www.airbus.com/sites/g/files/jlcbta136/files/2022-02/Airbus-A380-Facts-and-Figures-February-2022.pdf
-    const aircraftWheelBase = flypadInfo.pushback.aircraftWheelBase;
-    const aircraftLengthMeter = flypadInfo.pushback.aircraftLengthMeter;
+    const aircraftWheelBase = airframeInfo.dimensions.aircraftWheelBase;
+    const aircraftLengthMeter = airframeInfo.dimensions.aircraftLengthMeter;
 
     // Map
     const [mouseDown, setMouseDown] = useState(false);

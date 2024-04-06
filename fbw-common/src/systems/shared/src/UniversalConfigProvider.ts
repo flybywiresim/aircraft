@@ -42,6 +42,7 @@ export class UniversalConfigProvider {
                 icao: json._icao,
                 engines: json._engines,
                 designLimits: json.designLimits,
+                dimensions: json._dimensions,
             }
         );
 

@@ -24,15 +24,13 @@
             2,
             4
         ],
-        "axisMapping": {
-            "1": [[1, 2, 3, 4]],
-            "2": [[1, 2], [3, 4]],
-            "4": [[1], [2], [3], [4]]
-        }
+        "axisMapping": [
+            [[1, 2, 3, 4]],      // 1
+            [[1, 2], [3, 4]],    // 2
+            [[1], [2], [3], [4]] // 4
+        ]
     },
     "_pushback": {
-        "turnIndicatorTuningDefault": 1.35,
-        "aircraftWheelBase": 31.9,
-        "aircraftLengthMeter": 72.72
+        "turnIndicatorTuningDefault": 1.35, // determined by testing
     }
 }
