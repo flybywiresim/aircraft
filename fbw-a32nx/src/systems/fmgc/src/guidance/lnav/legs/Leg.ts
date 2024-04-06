@@ -26,8 +26,6 @@ export abstract class Leg extends Guidable {
 
     abstract get terminationWaypoint(): Fix | Coordinates | undefined;
 
-    abstract get ident(): string
-
     isNull = false
 
     displayedOnMap = true

@@ -39,10 +39,6 @@ export class CRLeg extends Leg {
         return this.intercept;
     }
 
-    get ident(): string {
-        return this.origin.ident.substring(0, 3) + this.metadata.flightPlanLegDefinition.theta.toFixed(0);
-    }
-
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();

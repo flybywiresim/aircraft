@@ -414,11 +414,7 @@ export class PILeg extends Leg {
         ];
     }
 
-    get ident(): string {
-        return 'INTCPT';
-    }
-
     get repr(): string {
-        return `PI ${this.ident}`;
+        return 'PI INTCPT';
     }
 }

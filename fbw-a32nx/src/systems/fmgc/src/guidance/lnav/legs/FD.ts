@@ -9,7 +9,6 @@ import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { LegMetadata } from './index';
@@ -75,10 +74,6 @@ export class FDLeg extends Leg {
 
     get terminationWaypoint(): Waypoint | Coordinates | undefined {
         return this.intercept;
-    }
-
-    get ident(): string {
-        return procedureLegIdentAndAnnotation(this.metadata.flightPlanLegDefinition, '')[0];
     }
 
     getPathStartPoint(): Coordinates | undefined {

@@ -11,10 +11,7 @@ import {
     LegType,
     ProcedureLeg,
     Runway,
-    SectionCode,
-    WaypointArea,
     WaypointDescriptor,
-    AirportSubsectionCode,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
@@ -365,7 +362,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             procedureIdent: '',
             type: LegType.IF,
             overfly: false,
-            waypoint: { ...airport, sectionCode: SectionCode.Airport, subSectionCode: AirportSubsectionCode.TerminalWaypoints, area: WaypointArea.Terminal },
+            waypoint: WaypointFactory.fromAirport(airport),
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
         }, airportRunwayIdent(airport, runway), procedureIdent, undefined);

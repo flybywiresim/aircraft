@@ -9,7 +9,6 @@ import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmg
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
-import { airportRunwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
@@ -108,7 +107,6 @@ export class OriginSegment extends FlightPlanSegment {
                 if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
                     // TODO should this stuff go into DepartureRunwayTransitionSegment?
                     firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
-                    firstDepartureLeg.ident = airportRunwayIdent(this.originAirport, this.runway);
 
                     addOriginLeg = false;
                     addRunwayLeg = false;
