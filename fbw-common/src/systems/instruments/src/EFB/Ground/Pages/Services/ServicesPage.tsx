@@ -4,7 +4,7 @@
 /* eslint-disable no-console */
 import React from 'react';
 import { AirframeType } from '@flybywiresim/fbw-sdk';
-import { useAppSelector } from 'instruments/src/EFB/Store/store';
+import { useAppSelector } from '@flybywiresim/flypad';
 import { A380Services } from './A380_842/A380Services';
 import { A320Services } from './A320_251N/A320Services';
 
