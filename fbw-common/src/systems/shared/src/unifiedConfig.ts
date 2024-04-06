@@ -6,6 +6,7 @@ export enum AirframeType {
     A380_842 = 'A380-842'
 }
 export interface AirframeInfo {
+    developer: string;
     name: string;
     variant: string;
     icao: string;
@@ -51,7 +52,16 @@ export interface FlypadInfo {
 }
 
 export interface ThrottleFlypadInfo {
+    numberOfAxis: number;
     axisOptions: number[];
+    axisMapping: ThrottleFlypadAxisMapping;
+}
+
+export interface ThrottleFlypadAxisMapping {
+    1?: number[][];
+    2?: number[][];
+    3?: number[][];
+    4?: number[][];
 }
 
 export interface PushbackFlypadInfo {

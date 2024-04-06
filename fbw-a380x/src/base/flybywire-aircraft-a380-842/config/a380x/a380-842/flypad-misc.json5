@@ -18,7 +18,7 @@
     "configMajorVersion": 0,
     "configMinorVersion": 1,
     "_throttle": {
-        "max": 4,
+        "numberOfAxis": 4,
         "axisOptions": [
             1,
             2,

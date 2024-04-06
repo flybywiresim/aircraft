@@ -39,7 +39,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
 
     // the number of throttles that are used in the aircraft (2 or 4)
-    const numberOfThrottles = Math.max(...flypadInfo.throttle.axisOptions);
+    const numberOfThrottles = flypadInfo.throttle.numberOfAxis;
 
     const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', numberOfThrottles);
     // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
@@ -293,6 +293,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             />
         </div>
     );
+
+    const axisDictionary = {
+        1: throttleOneSimvars,
+        2: throttleTwoSimvars,
+        3: throttleThreeSimvars,
+        4: throttleFourSimvars,
+    };
 
     const fourAxis = (
         <div className="mx-16 flex flex-row">

@@ -21,6 +21,7 @@
     "_icao": "A20N",
     "_name": "Airbus A320neo",
     "_engines": "CFM LEAP-1A26",
+    "_developer": "FBW",
     "msnReference": "MSN 9XXX",
     "weightVariant": "WV055",
     "designLimits": {

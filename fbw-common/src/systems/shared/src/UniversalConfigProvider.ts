@@ -36,6 +36,7 @@ export class UniversalConfigProvider {
         const json = await this.fetchVFSJson5(aircraft, variant, '<atc_id>', 'airframe');
         this.airframeInfo = (
             {
+                developer: json._developer,
                 name: json._name,
                 variant: json._variant,
                 icao: json._icao,
@@ -91,5 +92,25 @@ export class UniversalConfigProvider {
         );
 
         return this.cabinInfo;
+    }
+
+    /**
+     * Initialize the A/C config for all airframe, flypad, cabin, etc. related information
+     *
+     * @private
+     */
+    public static async initialize(aircraft: string, variant: string) {
+        this.airframeInfo = await UniversalConfigProvider.fetchAirframeInfo(
+            aircraft,
+            variant,
+        );
+        this.flypadInfo = await UniversalConfigProvider.fetchFlypadInfo(
+            aircraft,
+            variant,
+        );
+        this.cabinInfo = await UniversalConfigProvider.fetchCabinInfo(
+            aircraft,
+            variant,
+        );
     }
 }
