@@ -39,7 +39,7 @@ export class TFLeg extends XFLeg {
             this.to.location,
         );
 
-        // TODO sussy
+        // FIXME this is not how the real plane decides to show/hide runway/airport legs
         // Do not display on map if this is an airport or runway leg
         const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
 
