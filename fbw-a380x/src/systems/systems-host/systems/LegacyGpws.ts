@@ -1,4 +1,4 @@
-import { Arinc429Word, NXDataStore, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
 
@@ -48,6 +48,8 @@ export class LegacyGpws {
     AltCallState: LegacyStateMachine;
 
     RetardState: LegacyStateMachine;
+
+    gpwsDiscreteWord = Arinc429Word.empty();
 
     // eslint-disable-next-line camelcase
     constructor(private soundManager: LegacySoundManager) {
@@ -129,11 +131,30 @@ export class LegacyGpws {
         this.RetardState.setState('landed');
     }
 
+    GPWSUpdateDiscreteWord() {
+        this.gpwsDiscreteWord.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        this.gpwsDiscreteWord.setBitValue(11, true);
+        this.gpwsDiscreteWord.setBitValue(12, false);
+        this.gpwsDiscreteWord.setBitValue(20, this.modes[0].current === 1);
+        this.gpwsDiscreteWord.setBitValue(21, this.modes[0].current === 2);
+        this.gpwsDiscreteWord.setBitValue(22, this.modes[1].current === 1);
+        this.gpwsDiscreteWord.setBitValue(23, this.modes[1].current === 2);
+        this.gpwsDiscreteWord.setBitValue(24, this.modes[2].current === 1);
+        this.gpwsDiscreteWord.setBitValue(25, this.modes[3].current === 3);
+        this.gpwsDiscreteWord.setBitValue(26, this.modes[3].current === 1);
+        this.gpwsDiscreteWord.setBitValue(27, this.modes[3].current === 2);
+        this.gpwsDiscreteWord.setBitValue(28, this.modes[4].current === 1);
+        Arinc429Word.toSimVarValue('L:A32NX_GPWS_1_DISCRETE_WORD', this.gpwsDiscreteWord.value, this.gpwsDiscreteWord.ssm);
+        Arinc429Word.toSimVarValue('L:A32NX_GPWS_2_DISCRETE_WORD', this.gpwsDiscreteWord.value, this.gpwsDiscreteWord.ssm);
+    }
+
     init() {
         console.log('A32NX_GPWS init');
 
         SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', 0);
         SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', 0);
+        this.gpwsDiscreteWord.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        this.gpwsDiscreteWord.setBitValue(12, false);
 
         // eslint-disable-next-line max-len
         NXDataStore.getAndSubscribe('CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)), DEFAULT_RADIO_AUTO_CALL_OUTS.toString());
@@ -193,6 +214,7 @@ export class LegacyGpws {
         }
 
         this.GPWSComputeLightsAndCallouts();
+        this.GPWSUpdateDiscreteWord();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhase.Approach)) {
             let minimumsDA; // MDA or DH

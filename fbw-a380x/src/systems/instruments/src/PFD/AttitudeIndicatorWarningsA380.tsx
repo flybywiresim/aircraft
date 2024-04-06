@@ -1,6 +1,6 @@
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, SimVarPublisher, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { TawsDataEvents } from '@flybywiresim/msfs-avionics-common';
 
 interface AttitudeIndicatorWarningsA380Props {
     bus: ArincEventBus;
@@ -10,29 +10,30 @@ interface AttitudeIndicatorWarningsA380Props {
 export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndicatorWarningsA380Props> {
     private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
 
-    // FIXME no source yet
-    private readonly gpwsPullUpActive = Subject.create(false);
+    private readonly gpwsWord = Arinc429RegisterSubject.createEmpty();
 
-    // FIXME no source yet
-    private readonly gpwsSinkRateActive = Subject.create(false);
+    private readonly gpwsPullUpActive = this.gpwsWord.map((w) => w.bitValueOr(21, false) || w.bitValueOr(23, false));
 
-    // FIXME no source yet
-    private readonly gpwsDontSinkActive = Subject.create(false);
+    private readonly gpwsSinkRateActive = this.gpwsWord.map((w) => w.bitValueOr(20, false));
 
-    // FIXME no source yet
-    private readonly gpwsTooLowGearActive = Subject.create(false);
+    private readonly gpwsDontSinkActive = this.gpwsWord.map((w) => w.bitValueOr(24, false));
 
-    // FIXME no source yet
-    private readonly gpwsTooLowTerrainActive = Subject.create(false);
+    private readonly gpwsTooLowGearActive = this.gpwsWord.map((w) => w.bitValueOr(26, false));
 
-    // FIXME no source yet
-    private readonly gpwsTooLowFlapsActive = Subject.create(false);
+    private readonly gpwsTooLowTerrainActive = this.gpwsWord.map((w) => w.bitValueOr(25, false));
 
-    // FIXME no source yet
-    private readonly gpwsGlideSlopeActive = Subject.create(false);
+    private readonly gpwsTooLowFlapsActive = this.gpwsWord.map((w) => w.bitValueOr(27, false));
+
+    private readonly gpwsGlideSlopeActive = this.gpwsWord.map((w) => w.bitValueOr(28, false));
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<TawsDataEvents>();
+
+        sub.on('gpws_discrete_word_1').whenChanged().handle((v) => {
+            this.gpwsWord.setWord(v);
+        });
     }
 
     render(): VNode {

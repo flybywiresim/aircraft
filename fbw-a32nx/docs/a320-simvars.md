@@ -22,6 +22,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
   - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
@@ -3899,6 +3900,26 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+## GPWS / TAWS (ATA 34)
+- `A32NX_GPWS_{1 | 2}_DISCRETE_WORD`
+    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380)
+    - Arinc429<Discrete>
+    - | Bit |            Description               |
+      |:---:|:------------------------------------:|
+      | 11  | GPWS ON                              |
+      | 12  | GPWS failed                          |
+      | 13  | TAWS FLAP MODE OFF                   |
+      | 14  | TAWS G/S MODE OFF                    |
+      | 20  | GPWS Mode 1: Sink rate alert         |
+      | 21  | GPWS Mode 1: Pull up alert           |
+      | 22  | GPWS Mode 2: Terrain alert           |
+      | 23  | GPWS Mode 2: Pull up alert           |
+      | 24  | GPWS Mode 3: Don't sink alert        |
+      | 25  | GPWS Mode 4: Too low terrain alert   |
+      | 26  | GPWS Mode 4A/AB: Too low gear alert  |
+      | 27  | GPWS Mode 4B: Too low flaps alert    |
+      | 28  | GPWS Mode 5: Glide slope alert       |
 
 ## ROW / ROP / OANS (ATA 34)
 

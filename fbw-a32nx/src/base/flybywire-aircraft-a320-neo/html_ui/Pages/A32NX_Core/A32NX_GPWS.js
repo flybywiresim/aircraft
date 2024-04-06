@@ -109,6 +109,25 @@ class A32NX_GPWS {
         this.AltCallState.setState("ground");
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
         this.RetardState.setState("landed");
+
+        this.gpwsDiscreteWord = Arinc429Word.empty();
+    }
+
+    GPWSUpdateDiscreteWord() {
+        this.gpwsDiscreteWord.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        this.gpwsDiscreteWord.setBitValue(11, true);
+        this.gpwsDiscreteWord.setBitValue(12, false);
+        this.gpwsDiscreteWord.setBitValue(20, this.modes[0].current === 1);
+        this.gpwsDiscreteWord.setBitValue(21, this.modes[0].current === 2);
+        this.gpwsDiscreteWord.setBitValue(22, this.modes[1].current === 1);
+        this.gpwsDiscreteWord.setBitValue(23, this.modes[1].current === 2);
+        this.gpwsDiscreteWord.setBitValue(24, this.modes[2].current === 1);
+        this.gpwsDiscreteWord.setBitValue(25, this.modes[3].current === 3);
+        this.gpwsDiscreteWord.setBitValue(26, this.modes[3].current === 1);
+        this.gpwsDiscreteWord.setBitValue(27, this.modes[3].current === 2);
+        this.gpwsDiscreteWord.setBitValue(28, this.modes[4].current === 1);
+        Arinc429Word.toSimVarValue('L:A32NX_GPWS_1_DISCRETE_WORD', this.gpwsDiscreteWord.value, this.gpwsDiscreteWord.ssm);
+        Arinc429Word.toSimVarValue('L:A32NX_GPWS_2_DISCRETE_WORD', this.gpwsDiscreteWord.value, this.gpwsDiscreteWord.ssm);
     }
 
     init() {
@@ -176,6 +195,7 @@ class A32NX_GPWS {
         }
 
         this.GPWSComputeLightsAndCallouts();
+        this.GPWSUpdateDiscreteWord();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH

@@ -4,9 +4,8 @@
 
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
-import { RopRowOansPublisher } from '@flybywiresim/pfd';
-import { FwcPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';

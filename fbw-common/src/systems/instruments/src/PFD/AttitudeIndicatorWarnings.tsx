@@ -1,7 +1,7 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { RopRowOansSimVars } from './RopRowOansPublisher';
+import { RopRowOansSimVars } from '../MsfsAvionicsCommon/providers/RopRowOansPublisher';
 import { FwcDataEvents } from '../MsfsAvionicsCommon/providers/FwcPublisher';
 
 interface AttitudeIndicatorWarningsProps {
@@ -55,13 +55,11 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
         sub.on('oansWord1Raw').whenChanged().handle((raw) => {
             const ar = new Arinc429Word(raw);
-
             this.rwyAheadActive.set(ar.getBitValueOr(11, false));
         });
 
         sub.on('fwc_discrete_word_126_1').whenChanged().handle((v) => {
             this.fwcWord126.setWord(v);
-            console.log(v);
         });
     }
 
@@ -120,7 +118,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 <text
                     x="69"
                     y="70.25"
-                    class="FontIntermediate Red MiddleAlign Blink9Seconds TextOutline"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{
                         display: MappedSubject.create(
                             ([rwyTooShort, stall]) => rwyTooShort && !stall,
@@ -133,8 +131,8 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 </text>
                 <text
                     x="69"
-                    y="70.25"
-                    class="FontLargest Red MiddleAlign Blink9Seconds TextOutline"
+                    y="78"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{ display: this.stallActive.map((it) => (it ? 'block' : 'none')) }}
                 >
                     STALL
@@ -144,7 +142,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 <text
                     x="69"
                     y="70.25"
-                    class="FontIntermediate Red MiddleAlign Blink9Seconds TextOutline"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{
                         display: MappedSubject.create(
                             ([stopRudder, wetTooShort, tooShort, stall]) => stopRudder && !wetTooShort && !tooShort && !stall,
@@ -159,8 +157,8 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 </text>
                 <text
                     x="69"
-                    y="70.25"
-                    class="FontIntermediate Red MiddleAlign Blink9Seconds TextOutline"
+                    y="78"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{
                         display: MappedSubject.create(
                             ([windshear, maxReverse, maxBraking]) => windshear && !maxReverse && !maxBraking,
@@ -174,8 +172,8 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 </text>
                 <text
                     x="69"
-                    y="70.25"
-                    class="FontIntermediate Amber MiddleAlign Blink9Seconds TextOutline"
+                    y="78"
+                    class="FontLarge Amber MiddleAlign Blink9Seconds TextOutline"
                     style={{
                         display: MappedSubject.create(
                             ([wsCaution, wsWarning, maxReverse, maxBraking, windshear, stall]) => wsCaution && !wsWarning && !maxReverse && !maxBraking && !windshear && !stall,
@@ -192,8 +190,8 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 </text>
                 <text
                     x="69"
-                    y="70.25"
-                    class="FontIntermediate Red MiddleAlign Blink9Seconds TextOutline"
+                    y="78"
+                    class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
                     style={{
                         display: MappedSubject.create(
                             ([wsAheadWarning, maxReverse, maxBraking, windshear, stall]) => wsAheadWarning && !maxReverse && !maxBraking && !windshear && !stall,
