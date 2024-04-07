@@ -353,8 +353,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                     }
                 } else {
                     const element = this.labelManager.visibleLabelElements.get(item as Label);
-                    this.labelContainerRef.instance.removeChild(element);
-                    this.labelManager.visibleLabelElements.delete(item as Label);
+                    if (element) {
+                        this.labelContainerRef.instance.removeChild(element);
+                        this.labelManager.visibleLabelElements.delete(item as Label);
+                    }
                 }
                 break;
             }

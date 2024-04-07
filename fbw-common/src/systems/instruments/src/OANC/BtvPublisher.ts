@@ -22,8 +22,8 @@ export enum BtvSimVars {
     btvRotRaw = 'L:A32NX_BTV_ROT',
     btvTurnAroundIdleReverseRaw = 'L:A32NX_BTV_TURNAROUND_IDLE_REV',
     btvTurnAroundMaxReverseRaw = 'L:A32NX_BTV_TURNAROUND_MAX_REV',
-    dryStoppingDistance = 'L:OANS_BTV_DRY_DISTANCE_ESTIMATED',
-    wetStoppingDistance = 'L:OANS_BTV_WET_DISTANCE_ESTIMATED',
+    dryStoppingDistance = 'L:A32NX_OANS_BTV_DRY_DISTANCE_ESTIMATED',
+    wetStoppingDistance = 'L:A32NX_OANS_BTV_WET_DISTANCE_ESTIMATED',
 }
 
 export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
