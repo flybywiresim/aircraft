@@ -137,24 +137,25 @@ export class BrakeToVacateUtils<T extends number> {
 
         if (exitDist1 < exitDist2) {
             // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20) {
+            if (pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist1 < 400) {
                 return;
             }
             this.btvExitPosition = exitLoc1;
         } else {
             // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20) {
+            if (pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist2 < 400) {
                 return;
             }
             this.btvExitPosition = exitLoc2;
         }
 
+        // Subtract 400m due distance of touchdown zone from threshold
         const exitDistance = pointDistance(
             thrLoc[0],
             thrLoc[1],
             this.btvExitPosition[0],
             this.btvExitPosition[1],
-        );
+        ) - 400;
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
         Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', exitDistance, Arinc429SignStatusMatrix.NormalOperation);
@@ -193,12 +194,15 @@ export class BrakeToVacateUtils<T extends number> {
     selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
         this.btvExitPosition = btvExitPosition;
 
+        // Account for touchdown zone distance
+        const correctedStoppingDistance = reqStoppingDistance - 400;
+
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
-        Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', reqStoppingDistance, Arinc429SignStatusMatrix.NormalOperation);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', correctedStoppingDistance, Arinc429SignStatusMatrix.NormalOperation);
 
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/MANUAL`, true);
 
-        this.btvExitDistance.set(reqStoppingDistance);
+        this.btvExitDistance.set(correctedStoppingDistance);
         this.btvExit.set('N/A');
     }
 
