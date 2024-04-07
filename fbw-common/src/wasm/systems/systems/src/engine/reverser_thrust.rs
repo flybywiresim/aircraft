@@ -52,7 +52,7 @@ impl ReverserThrust {
     fn reverse_thrust_ratio_from_n1(engine_n1: Ratio) -> Ratio {
         let n1_breakpoints = [0., 15., 20., 50., 55., 100.];
 
-        let reverse_thrust_ratio = [0., 0., 0.04, 0.15, 0.15, 0.15];
+        let reverse_thrust_ratio = [0., 0., 0.04, 0.16, 0.16, 0.16];
 
         Ratio::new::<ratio>(interpolation(
             &n1_breakpoints,
