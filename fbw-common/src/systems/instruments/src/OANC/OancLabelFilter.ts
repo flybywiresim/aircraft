@@ -42,12 +42,12 @@ export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?
     case 'none':
         return false;
     case 'null':
-        return label.associatedFeature.properties.feattype !== FeatureType.ExitLine;
+        return label.associatedFeature?.properties.feattype !== FeatureType.ExitLine;
     case 'major':
-        return label.text.length < 2 && label.associatedFeature.properties.feattype !== FeatureType.ExitLine;
+        return label.text.length < 2 && label.associatedFeature?.properties.feattype !== FeatureType.ExitLine;
     case 'runwayBtvSelection':
-        return (label.associatedFeature.properties.feattype === FeatureType.Centerline
-            || label.associatedFeature.properties.feattype === FeatureType.ExitLine || filter.showAdjacent); // TODO lower opacity if associated rwy not selected
+        return (label.associatedFeature?.properties.feattype === FeatureType.Centerline
+            || label.associatedFeature?.properties.feattype === FeatureType.ExitLine || filter.showAdjacent); // TODO lower opacity if associated rwy not selected
     }
 }
 

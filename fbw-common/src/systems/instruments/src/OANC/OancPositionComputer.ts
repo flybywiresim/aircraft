@@ -44,7 +44,7 @@ export class OancPositionComputer<T extends number> {
                 case FeatureType.RunwayElement:
                 case FeatureType.Stopway:
                 case FeatureType.RunwayDisplacedArea:
-                    return feature.properties.idrwy.replace('.', '-');
+                    return feature.properties?.idrwy.replace('.', '-');
                 case FeatureType.Blastpad:
                     return feature.properties.idthr;
                 default:
