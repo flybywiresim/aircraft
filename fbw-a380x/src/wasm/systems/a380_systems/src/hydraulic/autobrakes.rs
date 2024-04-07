@@ -4,8 +4,10 @@ use systems::{
     overhead::PressSingleSignalButton,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        interpolation, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
-        ElectricalBuses, LgciuInterface,
+        interpolation,
+        low_pass_filter::LowPassFilter,
+        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        LgciuInterface,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -690,19 +692,20 @@ enum BTVState {
 }
 
 struct BtvDecelScheduler {
-    dev_exit_distance_to_touchdown_id: VariableIdentifier,
+    in_flight_btv_stopping_distance_id: VariableIdentifier,
     runway_length_id: VariableIdentifier,
     distance_to_exit_id: VariableIdentifier,
     rot_estimation_id: VariableIdentifier,
     wet_estimated_distance_id: VariableIdentifier,
     dry_estimated_distance_id: VariableIdentifier,
+    btv_estimated_stop_id: VariableIdentifier,
 
     ground_speed_id: VariableIdentifier,
 
     runway_length: Arinc429Word<Length>,
 
     rolling_distance: Length,
-    fallback_distance_to_exit_from_touchdown: Arinc429Word<Length>,
+    in_flight_btv_stopping_distance: Arinc429Word<Length>,
     oans_distance_to_exit: Arinc429Word<Length>,
 
     spoilers_active: bool,
@@ -715,9 +718,15 @@ struct BtvDecelScheduler {
     end_of_decel_acceleration: Acceleration,
     desired_deceleration: Acceleration,
 
+    actual_deceleration: Acceleration,
+
     final_distance_remaining: Length,
 
     distance_remaining_at_decel_activation: Length,
+
+    dry_estimated_distance: LowPassFilter<Length>,
+    wet_estimated_distance: LowPassFilter<Length>,
+    actual_estimated_distance: LowPassFilter<Length>,
 }
 impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
@@ -730,7 +739,7 @@ impl BtvDecelScheduler {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            dev_exit_distance_to_touchdown_id: context
+            in_flight_btv_stopping_distance_id: context
                 .get_identifier("OANS_BTV_REQ_STOPPING_DISTANCE".to_owned()),
             runway_length_id: context.get_identifier("OANS_RWY_LENGTH".to_owned()),
             distance_to_exit_id: context
@@ -741,11 +750,14 @@ impl BtvDecelScheduler {
             dry_estimated_distance_id: context
                 .get_identifier("OANS_BTV_DRY_DISTANCE_ESTIMATED".to_owned()),
 
+            btv_estimated_stop_id: context
+                .get_identifier("OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED".to_owned()),
+
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
             runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
             rolling_distance: Length::default(),
-            fallback_distance_to_exit_from_touchdown: Arinc429Word::new(
+            in_flight_btv_stopping_distance: Arinc429Word::new(
                 Length::default(),
                 SignStatus::NoComputedData,
             ),
@@ -761,10 +773,15 @@ impl BtvDecelScheduler {
             desired_deceleration: Acceleration::new::<meter_per_second_squared>(
                 Self::MAX_DECEL_DRY_MS2,
             ),
+            actual_deceleration: Acceleration::default(),
 
             final_distance_remaining: Length::default(),
 
             distance_remaining_at_decel_activation: Length::default(),
+
+            dry_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
+            wet_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
+            actual_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
         }
     }
 
@@ -795,18 +812,47 @@ impl BtvDecelScheduler {
 
     fn update(&mut self, context: &UpdateContext, spoilers_active: bool) {
         self.spoilers_active = spoilers_active;
+        self.actual_deceleration = context.long_accel();
+
         self.integrate_distance(context);
 
         self.compute_decel(context);
 
         self.state = self.update_state(context);
 
+        self.update_braking_estimations(context);
+
         // println!("AB STATE {:?}", self.state);
+    }
+
+    fn update_braking_estimations(&mut self, context: &UpdateContext) {
+        self.wet_estimated_distance.update(
+            context.delta(),
+            self.stopping_distance_estimation_for_wet(
+                self.ground_speed.min(Velocity::new::<knot>(150.)),
+            ),
+        );
+        self.dry_estimated_distance.update(
+            context.delta(),
+            self.stopping_distance_estimation_for_dry(
+                self.ground_speed.min(Velocity::new::<knot>(150.)),
+            ),
+        );
+        self.actual_estimated_distance
+            .update(context.delta(), self.estimated_btv_stopping_position());
+
+        println!(
+            "CUR ACC {:.2}, WETd {:.0} DRYd {:.0}  BTVd {:.0}",
+            self.actual_deceleration.get::<meter_per_second_squared>(),
+            self.wet_estimated_distance.output().get::<meter>(),
+            self.dry_estimated_distance.output().get::<meter>(),
+            self.actual_estimated_distance.output().get::<meter>(),
+        );
     }
 
     fn braking_distance_remaining(&self) -> Length {
         let distance_remaining_raw = if self.is_oans_fallback_mode() {
-            self.fallback_distance_to_exit_from_touchdown.value() - self.rolling_distance
+            self.in_flight_btv_stopping_distance.value() - self.rolling_distance
         } else {
             self.oans_distance_to_exit.value()
         };
@@ -858,9 +904,7 @@ impl BtvDecelScheduler {
         self.runway_length.is_normal_operation()
             && self.runway_length.value().get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
             && (self.oans_distance_to_exit.is_normal_operation()
-                || self
-                    .fallback_distance_to_exit_from_touchdown
-                    .is_normal_operation())
+                || self.in_flight_btv_stopping_distance.is_normal_operation())
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
@@ -976,12 +1020,10 @@ impl BtvDecelScheduler {
     }
 
     fn rot_estimation_for_distance(&self) -> Arinc429Word<u64> {
-        let distance_valid = self
-            .fallback_distance_to_exit_from_touchdown
-            .is_normal_operation();
+        let distance_valid = self.in_flight_btv_stopping_distance.is_normal_operation();
 
         if distance_valid {
-            let distance = self.fallback_distance_to_exit_from_touchdown.value();
+            let distance = self.in_flight_btv_stopping_distance.value();
 
             let rot_duration =
                 Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.));
@@ -1016,13 +1058,29 @@ impl BtvDecelScheduler {
         )
     }
 
+    fn estimated_btv_stopping_position(&self) -> Length {
+        match self.state {
+            BTVState::RotOptimization => {
+                // If waiting to reach sufficient decel, it means we'll stop at exit as planned
+                self.braking_distance_remaining()
+            }
+            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => self
+                .stopping_distance_estimation_for_decel(
+                    self.ground_speed,
+                    self.actual_deceleration,
+                ),
+
+            BTVState::Disabled | BTVState::Armed => Length::default(),
+        }
+    }
+
     fn update_desired_btv_deceleration(&mut self) {
         // println!("update_desired_btv_deceleration : braking remaining {:.0} vs braking dist for wet {:.0}",
         //     self.braking_distance_remaining().get::<meter>(),
         //     self.stopping_distance_estimation_for_wet(self.ground_speed).get::<meter>() + 200.,
         // );
 
-        //TODO 200m added to acount for time to engage decel after touchdown
+        //200m added to acount for time to engage decel after touchdown
         self.desired_deceleration = if self.braking_distance_remaining()
             < self.stopping_distance_estimation_for_wet(self.ground_speed)
                 + Length::new::<meter>(200.)
@@ -1039,30 +1097,28 @@ impl SimulationElement for BtvDecelScheduler {
 
         writer.write_arinc429(&self.rot_estimation_id, rot_arinc.value(), rot_arinc.ssm());
 
-        // TODO check how to use predicted speed
         writer.write(
             &self.wet_estimated_distance_id,
-            self.stopping_distance_estimation_for_wet(
-                self.ground_speed.min(Velocity::new::<knot>(150.)),
-            )
-            .get::<meter>(),
+            self.wet_estimated_distance.output().get::<meter>(),
         );
         writer.write(
             &self.dry_estimated_distance_id,
-            self.stopping_distance_estimation_for_dry(
-                self.ground_speed.min(Velocity::new::<knot>(150.)),
-            )
-            .get::<meter>(),
+            self.dry_estimated_distance.output().get::<meter>(),
+        );
+
+        writer.write(
+            &self.btv_estimated_stop_id,
+            self.actual_estimated_distance.output().get::<meter>(),
         );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let raw_feet_fallback_length_arinc: Arinc429Word<f64> =
-            reader.read_arinc429(&self.dev_exit_distance_to_touchdown_id);
+        let raw_in_flight_btv_stopping_distance_arinc: Arinc429Word<f64> =
+            reader.read_arinc429(&self.in_flight_btv_stopping_distance_id);
 
-        self.fallback_distance_to_exit_from_touchdown = Arinc429Word::new(
-            Length::new::<meter>(raw_feet_fallback_length_arinc.value()),
-            raw_feet_fallback_length_arinc.ssm(),
+        self.in_flight_btv_stopping_distance = Arinc429Word::new(
+            Length::new::<meter>(raw_in_flight_btv_stopping_distance_arinc.value()),
+            raw_in_flight_btv_stopping_distance_arinc.ssm(),
         );
 
         let raw_feet_runway_length_arinc: Arinc429Word<f64> =
