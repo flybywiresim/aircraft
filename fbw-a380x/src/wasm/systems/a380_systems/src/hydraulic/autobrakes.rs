@@ -732,6 +732,9 @@ impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
     const MAX_DECEL_WET_MS2: f64 = -1.9;
 
+    const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.1;
+    const MAX_STOPPING_DISTANCE_M: f64 = 5000.;
+
     const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
 
     const DISTANCE_OFFSET_TO_RELEASE_BTV_M: f64 = 65.5;
@@ -779,9 +782,9 @@ impl BtvDecelScheduler {
 
             distance_remaining_at_decel_activation: Length::default(),
 
-            dry_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
-            wet_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
-            actual_estimated_distance: LowPassFilter::new(Duration::from_millis(1500)),
+            dry_estimated_distance: LowPassFilter::new(Duration::from_millis(600)),
+            wet_estimated_distance: LowPassFilter::new(Duration::from_millis(600)),
+            actual_estimated_distance: LowPassFilter::new(Duration::from_millis(300)),
         }
     }
 
@@ -826,28 +829,47 @@ impl BtvDecelScheduler {
     }
 
     fn update_braking_estimations(&mut self, context: &UpdateContext) {
-        self.wet_estimated_distance.update(
-            context.delta(),
-            self.stopping_distance_estimation_for_wet(
-                self.ground_speed.min(Velocity::new::<knot>(150.)),
-            ),
-        );
-        self.dry_estimated_distance.update(
-            context.delta(),
-            self.stopping_distance_estimation_for_dry(
-                self.ground_speed.min(Velocity::new::<knot>(150.)),
-            ),
-        );
-        self.actual_estimated_distance
-            .update(context.delta(), self.estimated_btv_stopping_position());
+        if self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_BTV_M_S {
+            self.wet_estimated_distance.update(
+                context.delta(),
+                self.stopping_distance_estimation_for_wet(self.ground_speed.min(Velocity::new::<
+                    knot,
+                >(
+                    150.
+                ))),
+            );
+            self.dry_estimated_distance.update(
+                context.delta(),
+                self.stopping_distance_estimation_for_dry(self.ground_speed.min(Velocity::new::<
+                    knot,
+                >(
+                    150.
+                ))),
+            );
+        } else {
+            self.wet_estimated_distance.reset(Length::default());
+            self.dry_estimated_distance.reset(Length::default());
+        }
 
-        println!(
-            "CUR ACC {:.2}, WETd {:.0} DRYd {:.0}  BTVd {:.0}",
-            self.actual_deceleration.get::<meter_per_second_squared>(),
-            self.wet_estimated_distance.output().get::<meter>(),
-            self.dry_estimated_distance.output().get::<meter>(),
-            self.actual_estimated_distance.output().get::<meter>(),
-        );
+        if self.actual_deceleration.get::<meter_per_second_squared>()
+            < Self::MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2
+            && self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
+        {
+            self.actual_estimated_distance.update(
+                context.delta(),
+                self.estimated_stopping_position_at_current_decel_or_btv(),
+            );
+        } else {
+            self.actual_estimated_distance.reset(Length::default())
+        }
+
+        // println!(
+        //     "CUR ACC {:.2}, WETd {:.0} DRYd {:.0}  BTVd {:.0}",
+        //     self.actual_deceleration.get::<meter_per_second_squared>(),
+        //     self.wet_estimated_distance.output().get::<meter>(),
+        //     self.dry_estimated_distance.output().get::<meter>(),
+        //     self.actual_estimated_distance.output().get::<meter>(),
+        // );
     }
 
     fn braking_distance_remaining(&self) -> Length {
@@ -1052,25 +1074,34 @@ impl BtvDecelScheduler {
         current_speed: Velocity,
         deceleration: Acceleration,
     ) -> Length {
-        Length::new::<meter>(
-            current_speed.get::<meter_per_second>().powi(2)
-                / (2. * deceleration.get::<meter_per_second_squared>().abs()),
-        )
+        if deceleration.get::<meter_per_second_squared>()
+            < Self::MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2
+        {
+            Length::new::<meter>(
+                (current_speed.get::<meter_per_second>().powi(2)
+                    / (2. * deceleration.get::<meter_per_second_squared>().abs()))
+                .max(0.)
+                .min(Self::MAX_STOPPING_DISTANCE_M),
+            )
+        } else {
+            Length::new::<meter>(0.)
+        }
     }
 
-    fn estimated_btv_stopping_position(&self) -> Length {
+    fn estimated_stopping_position_at_current_decel_or_btv(&self) -> Length {
         match self.state {
             BTVState::RotOptimization => {
                 // If waiting to reach sufficient decel, it means we'll stop at exit as planned
                 self.braking_distance_remaining()
             }
-            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => self
-                .stopping_distance_estimation_for_decel(
-                    self.ground_speed,
-                    self.actual_deceleration,
-                ),
-
-            BTVState::Disabled | BTVState::Armed => Length::default(),
+            BTVState::Disabled
+            | BTVState::Armed
+            | BTVState::Decel
+            | BTVState::EndOfBraking
+            | BTVState::OutOfDecelRange => self.stopping_distance_estimation_for_decel(
+                self.ground_speed,
+                self.actual_deceleration,
+            ),
         }
     }
 
