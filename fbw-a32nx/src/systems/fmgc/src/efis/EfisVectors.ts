@@ -92,19 +92,20 @@ export class EfisVectors {
         if (!planExists) {
             this.lastFpVersions.delete(planIndex);
 
-            // TODO this is called every frame and sends an empty array via the sync, find a solution to only send it once per side
             switch (planIndex) {
             case FlightPlanIndex.Active:
-                this.transmit([], EfisVectorsGroup.ACTIVE, side);
-                this.transmit([], EfisVectorsGroup.DASHED, side);
-                this.transmit([], EfisVectorsGroup.MISSED, side);
-                this.transmit([], EfisVectorsGroup.ALTERNATE, side);
+                this.transmit(undefined, EfisVectorsGroup.ACTIVE, side);
+                this.transmit(undefined, EfisVectorsGroup.DASHED, side);
+                this.transmit(undefined, EfisVectorsGroup.MISSED, side);
+                this.transmit(undefined, EfisVectorsGroup.ALTERNATE, side);
                 break;
             case FlightPlanIndex.Temporary:
-                this.transmit([], EfisVectorsGroup.TEMPORARY, side);
+                this.transmit(undefined, EfisVectorsGroup.TEMPORARY, side);
                 break;
+            case FlightPlanIndex.FirstSecondary:
+            case FlightPlanIndex.Uplink:
             default:
-                this.transmit([], EfisVectorsGroup.SECONDARY, side);
+                this.transmit(undefined, EfisVectorsGroup.SECONDARY, side);
                 break;
             }
 
@@ -129,9 +130,9 @@ export class EfisVectors {
 
             if (transmitActive) {
                 this.transmitFlightPlan(plan, side, EfisVectorsGroup.ACTIVE, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
-                this.transmit([], EfisVectorsGroup.DASHED, side);
+                this.transmit(undefined, EfisVectorsGroup.DASHED, side);
             } else {
-                this.transmit([], EfisVectorsGroup.ACTIVE, side);
+                this.transmit(undefined, EfisVectorsGroup.ACTIVE, side);
                 this.transmitFlightPlan(plan, side, EfisVectorsGroup.DASHED, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
             }
             break;
@@ -142,7 +143,7 @@ export class EfisVectors {
             if (this.efisInterfaces[side].shouldTransmitSecondary()) {
                 this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
             } else {
-                this.transmit([], EfisVectorsGroup.SECONDARY, side);
+                this.transmit(undefined, EfisVectorsGroup.SECONDARY, side);
             }
             break;
         }
@@ -153,14 +154,14 @@ export class EfisVectors {
         const isArcVsPlanMode = mode === EfisNdMode.ARC;
 
         if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
-            this.transmit([], mainGroup, side);
+            this.transmit(undefined, mainGroup, side);
 
             if (missedApproachGroup !== mainGroup) {
-                this.transmit([], missedApproachGroup, side);
+                this.transmit(undefined, missedApproachGroup, side);
             }
 
             if (alternateGroup !== mainGroup) {
-                this.transmit([], alternateGroup, side);
+                this.transmit(undefined, alternateGroup, side);
             }
 
             return;
@@ -185,7 +186,7 @@ export class EfisVectors {
                 this.transmit(missedVectors, missedApproachGroup, side);
             }
         } else if (missedApproachGroup !== mainGroup) {
-            this.transmit([], missedApproachGroup, side);
+            this.transmit(undefined, missedApproachGroup, side);
         }
 
         this.transmit(vectors, mainGroup, side);
@@ -216,10 +217,10 @@ export class EfisVectors {
                     this.transmit(alternateVectors, alternateGroup, side);
                 }
             } else if (alternateGroup !== mainGroup) {
-                this.transmit([], alternateGroup, side);
+                this.transmit(undefined, alternateGroup, side);
             }
         } else if (alternateGroup !== mainGroup) {
-            this.transmit([], alternateGroup, side);
+            this.transmit(undefined, alternateGroup, side);
         }
     }
 
