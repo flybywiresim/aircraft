@@ -21,8 +21,9 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
     const [revDoorOpened] = useSimVar(`L:A32NX_REVERSER_${engine}_DEPLOYED`, 'bool', 100);
-    const [revDoorTransit] = useSimVar(`L:A32NX_REVERSER_${engine}_DEPLOYING`, 'bool', 100);
-    const [revVisible] = revDoorTransit ||  revDoorOpened  || useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 500);
+    const [revDoorTransittt] = useSimVar(`L:A32NX_REVERSER_${engine}_DEPLOYING`, 'bool', 100);
+    const [revAthr] = useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 100);
+    const revVisible = revDoorTransittt ||  revDoorOpened || revAthr;
     const availRevVisible = availVisible || (revVisible && [2, 3].includes(engine));
     const availRevText = availVisible ? 'AVAIL' : 'REV';
 
