@@ -7,11 +7,11 @@ import { Position } from '@turf/turf';
 import { Coordinates, bearingTo, clampAngle, distanceTo } from 'msfs-geo';
 
 export function fractionalPointAlongLine(x1: number, y1: number, x2: number, y2: number, fraction: number): [number, number] {
-    return [x1 + (x2 - x1) / fraction, y1 + (y2 - y1) / fraction];
+    return [x1 + (x2 - x1) * fraction, y1 + (y2 - y1) * fraction];
 }
 
 export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
-    return fractionalPointAlongLine(x1, y1, x2, y2, 2);
+    return fractionalPointAlongLine(x1, y1, x2, y2, 0.5);
 }
 
 export function pointDistance(x1: number, y1: number, x2: number, y2: number): number {

@@ -5,12 +5,13 @@
 import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { AmdbProperties } from '@shared/amdb';
 import { Feature, Geometry, Position } from '@turf/turf';
-import { Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from 'index-no-react';
+import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from 'index-no-react';
 import { Label, LabelStyle } from 'instruments/src/OANC';
 import { BtvData } from 'instruments/src/OANC/BtvPublisher';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
 import { fractionalPointAlongLine, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
+import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
 
 const TOUCHDOWN_ZONE_DISTANCE = 400;
 
@@ -46,10 +47,11 @@ export class BrakeToVacateUtils<T extends number> {
             }
         });
 
-        const sub = this.bus.getSubscriber<BtvData>();
+        const sub = this.bus.getSubscriber<BtvData & GenericAdirsEvents>();
         this.dryStoppingDistance.setConsumer(sub.on('dryStoppingDistance').whenChanged());
         this.wetStoppingDistance.setConsumer(sub.on('wetStoppingDistance').whenChanged());
         this.liveStoppingDistance.setConsumer(sub.on('stopBarDistance').whenChanged());
+        sub.on('groundSpeed').atFrequency(2).handle((value) => this.groundSpeed.set(value));
 
         this.dryStoppingDistance.sub(() => this.drawBtvLayer());
         this.wetStoppingDistance.sub(() => this.drawBtvLayer());
@@ -60,6 +62,8 @@ export class BrakeToVacateUtils<T extends number> {
 
         this.clearSelection();
     }
+
+    private readonly groundSpeed = Arinc429Register.empty();
 
     /** Updated during deceleration on the ground */
     private readonly remaininingDistToExit = Subject.create<number>(0);
@@ -331,7 +335,7 @@ export class BrakeToVacateUtils<T extends number> {
         if (this.dryStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
             const dryStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                this.btvRunwayLda.get() / (TOUCHDOWN_ZONE_DISTANCE + this.dryStoppingDistance.get()));
+                (TOUCHDOWN_ZONE_DISTANCE + this.dryStoppingDistance.get()) / this.btvRunwayLda.get());
 
             const dryP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
@@ -372,7 +376,7 @@ export class BrakeToVacateUtils<T extends number> {
         if (this.wetStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
             const wetStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                this.btvRunwayLda.get() / (TOUCHDOWN_ZONE_DISTANCE + this.wetStoppingDistance.get()));
+                (TOUCHDOWN_ZONE_DISTANCE + this.wetStoppingDistance.get()) / this.btvRunwayLda.get());
 
             const wetP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
@@ -419,12 +423,14 @@ export class BrakeToVacateUtils<T extends number> {
             this.labelManager.labels.push(wetLabel);
         }
 
-        // On ground: STOP line
-        if (this.liveStoppingDistance.get() > 0 && this.aircraftOnGround.get()) {
+        // On ground & above 20kts: STOP line
+        if (this.liveStoppingDistance.get() > 0 && this.aircraftOnGround.get() && this.groundSpeed.value > 20) {
             const liveRunOverCondition = this.remaininingDistToRwyEnd.get() - this.liveStoppingDistance.get() <= 0;
+            const distFromThreshold = pointDistance(this.btvThresholdPosition[0], this.btvThresholdPosition[1], this.aircraftPpos[0], this.aircraftPpos[1]);
+            const stoppingDistanceToDraw = liveRunOverCondition ? (this.remaininingDistToRwyEnd.get() + 200) : this.liveStoppingDistance.get();
             const stopLinePoint = fractionalPointAlongLine(this.aircraftPpos[0], this.aircraftPpos[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                this.remaininingDistToRwyEnd.get() / this.liveStoppingDistance.get());
+                (distFromThreshold - TOUCHDOWN_ZONE_DISTANCE + stoppingDistanceToDraw) / this.btvRunwayLda.get());
 
             const stopP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
