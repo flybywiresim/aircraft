@@ -7,7 +7,6 @@ import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microso
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 import './MfdFmsFplnVertRev.scss';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
@@ -17,7 +16,7 @@ import { AltitudeOrFlightLevelFormat, SpeedKnotsFormat, TimeHHMMSSFormat } from 
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { SpeedConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { SpeedConstraintType, WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
