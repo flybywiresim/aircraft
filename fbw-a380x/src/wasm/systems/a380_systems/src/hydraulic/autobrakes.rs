@@ -1,6 +1,6 @@
 use nalgebra::distance_squared;
 use systems::{
-    hydraulic::brake_circuit::AutobrakeDecelerationGovernor,
+    hydraulic::brake_circuit::{AutobrakeDecelerationGovernor, AutobrakeMode},
     overhead::PressSingleSignalButton,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -517,6 +517,10 @@ impl A380AutobrakeController {
             self.disarm_actions();
         }
 
+        if self.mode != A380AutobrakeMode::BTV {
+            self.btv_scheduler.disarm()
+        }
+
         // Disarm solenoid only when arming is lost
         self.autobrake_knob.disarm(
             self.mode == A380AutobrakeMode::DISARM && previous_mode != A380AutobrakeMode::DISARM,
@@ -699,6 +703,7 @@ struct BtvDecelScheduler {
     wet_estimated_distance_id: VariableIdentifier,
     dry_estimated_distance_id: VariableIdentifier,
     btv_estimated_stop_id: VariableIdentifier,
+    predicted_touchdown_speed_id: VariableIdentifier,
 
     ground_speed_id: VariableIdentifier,
 
@@ -727,6 +732,7 @@ struct BtvDecelScheduler {
     dry_estimated_distance: LowPassFilter<Length>,
     wet_estimated_distance: LowPassFilter<Length>,
     actual_estimated_distance: LowPassFilter<Length>,
+    predicted_touchdown_speed: Velocity,
 }
 impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
@@ -756,6 +762,8 @@ impl BtvDecelScheduler {
             btv_estimated_stop_id: context
                 .get_identifier("OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED".to_owned()),
 
+            predicted_touchdown_speed_id: context.get_identifier("SPEEDS_VAPP".to_owned()),
+
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
             runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
@@ -782,9 +790,11 @@ impl BtvDecelScheduler {
 
             distance_remaining_at_decel_activation: Length::default(),
 
-            dry_estimated_distance: LowPassFilter::new(Duration::from_millis(600)),
-            wet_estimated_distance: LowPassFilter::new(Duration::from_millis(600)),
-            actual_estimated_distance: LowPassFilter::new(Duration::from_millis(300)),
+            dry_estimated_distance: LowPassFilter::new(Duration::from_millis(1200)),
+            wet_estimated_distance: LowPassFilter::new(Duration::from_millis(1200)),
+            actual_estimated_distance: LowPassFilter::new(Duration::from_millis(700)),
+
+            predicted_touchdown_speed: Velocity::default(),
         }
     }
 
@@ -821,7 +831,7 @@ impl BtvDecelScheduler {
 
         self.compute_decel(context);
 
-        self.state = self.update_state(context);
+        self.state = self.update_state();
 
         self.update_braking_estimations(context);
 
@@ -829,22 +839,22 @@ impl BtvDecelScheduler {
     }
 
     fn update_braking_estimations(&mut self, context: &UpdateContext) {
+        // TODO use correct inpuit to switch speed used
+        let speed_used_for_prediction = if context.plane_height_over_ground().get::<foot>() < 500. {
+            self.ground_speed
+        } else {
+            self.predicted_touchdown_speed
+                .max(Velocity::new::<knot>(100.))
+        };
+
         if self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_BTV_M_S {
             self.wet_estimated_distance.update(
                 context.delta(),
-                self.stopping_distance_estimation_for_wet(self.ground_speed.min(Velocity::new::<
-                    knot,
-                >(
-                    150.
-                ))),
+                self.stopping_distance_estimation_for_wet(speed_used_for_prediction),
             );
             self.dry_estimated_distance.update(
                 context.delta(),
-                self.stopping_distance_estimation_for_dry(self.ground_speed.min(Velocity::new::<
-                    knot,
-                >(
-                    150.
-                ))),
+                self.stopping_distance_estimation_for_dry(speed_used_for_prediction),
             );
         } else {
             self.wet_estimated_distance.reset(Length::default());
@@ -955,7 +965,7 @@ impl BtvDecelScheduler {
         }
     }
 
-    fn update_state(&mut self, context: &UpdateContext) -> BTVState {
+    fn update_state(&mut self) -> BTVState {
         match self.state {
             BTVState::Armed => {
                 if self.spoilers_active {
@@ -1169,5 +1179,7 @@ impl SimulationElement for BtvDecelScheduler {
         );
 
         self.ground_speed = reader.read(&self.ground_speed_id);
+
+        self.predicted_touchdown_speed = reader.read(&self.predicted_touchdown_speed_id);
     }
 }
