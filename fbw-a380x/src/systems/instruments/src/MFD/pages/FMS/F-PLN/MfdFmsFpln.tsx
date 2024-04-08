@@ -471,7 +471,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
 
             const planCentreWpt = this.lineData[planCentreLineDataIndex];
-            if (planCentreWpt && isWaypoint(planCentreWpt) && planCentreWpt.originalLegIndex) {
+            if (planCentreWpt && isWaypoint(planCentreWpt) && planCentreWpt.originalLegIndex !== null) {
                 this.props.fmcService.master?.updateEfisPlanCentre(
                     this.props.mfd.uiService.captOrFo === 'CAPT' ? 'L' : 'R',
                     this.loadedFlightPlanIndex.get(),

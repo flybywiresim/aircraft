@@ -145,12 +145,6 @@ export class FlightManagementComputer implements FmcInterface {
         this.#guidanceController.init();
         this.fmgc.guidanceController = this.#guidanceController;
 
-        /* try {
-            this.initializeTestingFlightPlans();
-        } catch {
-            console.warn('Testing init didn\'t work.');
-        } */
-
         let lastUpdateTime = Date.now();
 
         this.initSimVars();
@@ -343,60 +337,6 @@ export class FlightManagementComputer implements FmcInterface {
         return Math.floor(0.96 * (this.getRecMaxFlightLevel() ?? (maxCertifiedAlt / 100)) / 5) * 5; // TODO remove magic
     }
 
-    private async initializeTestingFlightPlans() {
-        await new Promise((r) => setTimeout(r, 3000));
-
-        // Intialize from MSFS flight data
-        // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
-
-        // Build EDDM08R GIVMI6E GIVMI DCT DKB DCT ILS25L EDDF25L
-        await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
-        await this.flightPlanService.setOriginRunway('RW08R');
-        await this.flightPlanService.setDepartureProcedure('GIVM6E');
-        await this.flightPlanService.nextWaypoint(4, (await NavigationDatabaseService.activeDatabase.searchAllFix('DKB'))[0]);
-        await this.flightPlanService.setDestinationRunway('RW25L');
-        await this.flightPlanService.setApproach('I25L');
-        await this.flightPlanService.temporaryInsert();
-
-        // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
-        /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
-        await this.flightPlanService.setOriginRunway('RW27R');
-        await this.flightPlanService.setDepartureProcedure('MAXI1F');
-        await this.flightPlanService.nextWaypoint(8, (await db.searchAllFix('HARDY'))[0]);
-        await this.flightPlanService.temporaryInsert();
-        await this.flightPlanService.deleteElementAt(8);
-
-        this.flightPlanService.active.startAirwayEntry(8);
-        const awy = (await db.searchAirway('UM605', (await db.searchAllFix('HARDY'))[0]))[0];
-        this.flightPlanService.active.pendingAirways.thenAirway(awy);
-        this.flightPlanService.active.pendingAirways.thenTo((await db.searchAllFix('BIBAX'))[0]);
-        this.flightPlanService.active.pendingAirways.finalize();
-
-        await this.flightPlanService.setDestinationRunway('RW09R');
-        // await this.flightPlanService.setApproach('I09R'); // throws errors
-        // await this.flightPlanService.setApproachVia('MOP6E');
-        // await this.flightPlanService.setArrival('BIBA9X');
-
-        await this.flightPlanService.temporaryInsert();
-        await this.flightPlanService.deleteElementAt(12); */
-
-        // Default performance values
-        this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
-        this.flightPlanService.active.setPerformanceData('pilotThrustReductionAltitude', 1_900);
-        this.flightPlanService.active.setPerformanceData('pilotTransitionAltitude', 5_000);
-        this.acInterface.updateTransitionAltitudeLevel();
-        this.flightPlanService.active.setPerformanceData('pilotEngineOutAccelerationAltitude', 1_500);
-        this.flightPlanService.active.setPerformanceData('v1', 120);
-        this.flightPlanService.active.setPerformanceData('vr', 140);
-        this.flightPlanService.active.setPerformanceData('v2', 145);
-        this.flightPlanService.active.setPerformanceData('costIndex', 69);
-        this.fmgc.data.approachSpeed.set(145);
-        this.fmgc.data.zeroFuelWeight.set(300_000);
-        this.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
-        this.fmgc.data.blockFuel.set(25_000);
-        this.acInterface.setCruiseFl(230);
-    }
-
     private initSimVars() {
         // Reset SimVars
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
@@ -440,8 +380,9 @@ export class FlightManagementComputer implements FmcInterface {
         setInterval(() => {
             if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked && this.navigation.getPpos()) {
                 const dest = this.flightPlanService.active.destinationAirport;
-                if (dest?.location) {
-                    const distanceFromPpos = distanceTo(this.navigation.getPpos(), dest.location);
+                const ppos = this.navigation.getPpos();
+                if (dest?.location && ppos) {
+                    const distanceFromPpos = distanceTo(ppos, dest.location);
                     if (dest && distanceFromPpos < 180) {
                         this.destDataChecked = true;
                         this.checkDestData();
@@ -666,12 +607,14 @@ export class FlightManagementComputer implements FmcInterface {
             SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
             Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error).catch(console.error);
 
-            const cruisePreSel = this.fmgc.data.cruisePreSelSpeed.get() ?? 320;
+            const cruisePreSel = this.fmgc.data.cruisePreSelSpeed.get();
             const cruisePreSelMach = this.fmgc.data.cruisePreSelMach.get();
+            const preSelToActivate = cruisePreSelMach ?? cruisePreSel;
 
             /** Activate pre selected speed/mach */
-            if (prevPhase === FmgcFlightPhase.Climb) {
-                this.acInterface.activatePreSelSpeedMach(cruisePreSelMach ?? cruisePreSel);
+            if (prevPhase === FmgcFlightPhase.Climb && preSelToActivate) {
+                // this.triggerCheckSpeedModeMessage(this.preSelectedCrzSpeed); // TODO activate after rewrite
+                this.acInterface.activatePreSelSpeedMach(preSelToActivate);
             }
 
             /** Arm preselected speed/mach for next flight phase */
@@ -693,6 +636,8 @@ export class FlightManagementComputer implements FmcInterface {
             if (prevPhase === FmgcFlightPhase.Cruise && desPreSel) {
                 this.acInterface.activatePreSelSpeedMach(desPreSel);
             }
+
+            // this.triggerCheckSpeedModeMessage(undefined); // TODO activate after rewrite
 
             /** Clear pre selected speed/mach */
             this.acInterface.updatePreSelSpeedMach(null);
@@ -774,6 +719,33 @@ export class FlightManagementComputer implements FmcInterface {
             break;
         }
     }
+
+    /* TODO rewrite
+    triggerCheckSpeedModeMessage(preselectedSpeed) {
+        const isSpeedSelected = !Simplane.getAutoPilotAirspeedManaged();
+        const hasPreselectedSpeed = preselectedSpeed !== undefined;
+
+        if (!this.checkSpeedModeMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
+            this.checkSpeedModeMessageActive = true;
+            this.addMessageToQueue(
+                NXSystemMessages.checkSpeedMode,
+                () => !this.checkSpeedModeMessageActive,
+                () => {
+                    this.checkSpeedModeMessageActive = false;
+                    SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
+                },
+            );
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", true);
+        }
+    }
+
+    clearCheckSpeedModeMessage() {
+        if (this.checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+            this.checkSpeedModeMessageActive = false;
+            this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
+        }
+    } */
 
     private checkDestData(): void {
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
@@ -860,6 +832,17 @@ export class FlightManagementComputer implements FmcInterface {
         if (flightPlanChanged) {
             this.acInterface.updateManagedProfile();
             this.acInterface.updateDestinationData();
+
+            // Update ND plan center, but only if not on F-PLN page. There has to be a better solution though.
+            if (this.mfdReference?.uiService.activeUri.get().page !== 'f-pln') {
+                this.updateEfisPlanCentre(
+                    this.mfdReference?.uiService.captOrFo === 'FO' ? 'R' : 'L',
+                    FlightPlanIndex.Active,
+                    this.#flightPlanService.active.activeLegIndex,
+                    this.#flightPlanService.active.activeLegIndex >= (this.#flightPlanService.active.allLegs.length ?? 0)
+                );
+            }
+
             this.lastFlightPlanVersion = this.flightPlanService.activeOrTemporary.version;
         }
 
