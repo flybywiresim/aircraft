@@ -334,7 +334,7 @@ export class FmgcDataService implements Fmgc {
 
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
             const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
-            return 290 * (1 - dCI) + 310 * dCI;
+            return 290 * (1 - dCI) + 330 * dCI;
         }
         return 310;
     }

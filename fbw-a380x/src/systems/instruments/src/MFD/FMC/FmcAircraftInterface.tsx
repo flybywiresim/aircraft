@@ -829,6 +829,7 @@ export class FmcAircraftInterface {
         this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
         this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
         this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', approachSpeeds.vapp); // Needed for ROP/BTV
 
         const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
         const gearPos = Math.round(SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum'));
@@ -837,6 +838,7 @@ export class FmcAircraftInterface {
 
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
+
         if (this.fmgc.data.takeoffFlapsSetting.get() && this.fmgc.data.takeoffFlapsSetting.get() === FlapConf.CONF_3) {
             SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', speeds.f3);
             this.fmgc.data.flapRetractionSpeed.set(Math.ceil(speeds.f3));
