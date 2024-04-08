@@ -438,12 +438,14 @@ export class FlightManagementComputer implements FmcInterface {
 
         // Start the check routine for system health and status
         setInterval(() => {
-            if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked) {
+            if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked && this.navigation.getPpos()) {
                 const dest = this.flightPlanService.active.destinationAirport;
-                const distanceFromPpos = distanceTo(this.navigation.getPpos() ?? { lat: 0, long: 0 }, dest?.location ?? 0);
-                if (dest && distanceFromPpos < 180) {
-                    this.destDataChecked = true;
-                    this.checkDestData();
+                if (dest?.location) {
+                    const distanceFromPpos = distanceTo(this.navigation.getPpos(), dest.location);
+                    if (dest && distanceFromPpos < 180) {
+                        this.destDataChecked = true;
+                        this.checkDestData();
+                    }
                 }
             }
         }, 15000);
