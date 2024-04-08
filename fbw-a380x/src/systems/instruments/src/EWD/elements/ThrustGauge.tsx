@@ -216,7 +216,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 multiplierInner={1.1}
                             />
                             <GaugeMarkerComponent
-                                value={ThrustPercent / 10}
+                                value={-ThrustPercent / 10}
                                 x={x}
                                 y={y}
                                 min={revMin}
