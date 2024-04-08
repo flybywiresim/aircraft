@@ -16,6 +16,8 @@ export interface BtvData {
     dryStoppingDistance: number;
     /** (BTV -> OANS) Wet stopping distance */
     wetStoppingDistance: number;
+    /** (PRIM -> OANS) Remaining stop distance on ground, used for ROP */
+    stopBarDistance: number;
 }
 
 export enum BtvSimVars {
@@ -24,6 +26,7 @@ export enum BtvSimVars {
     btvTurnAroundMaxReverseRaw = 'L:A32NX_BTV_TURNAROUND_MAX_REV',
     dryStoppingDistance = 'L:A32NX_OANS_BTV_DRY_DISTANCE_ESTIMATED',
     wetStoppingDistance = 'L:A32NX_OANS_BTV_WET_DISTANCE_ESTIMATED',
+    stopBarDistance = 'L:A32NX_OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED',
 }
 
 export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
@@ -33,6 +36,7 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
         ['btvTurnAroundMaxReverseRaw', { name: BtvSimVars.btvTurnAroundMaxReverseRaw, type: SimVarValueType.Number }],
         ['dryStoppingDistance', { name: BtvSimVars.dryStoppingDistance, type: SimVarValueType.Number }],
         ['wetStoppingDistance', { name: BtvSimVars.wetStoppingDistance, type: SimVarValueType.Number }],
+        ['stopBarDistance', { name: BtvSimVars.stopBarDistance, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: ArincEventBus) {

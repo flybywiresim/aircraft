@@ -7,10 +7,9 @@ import {
     ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent,
     MapSubject, MappedSubject, MappedSubscribable, SimVarValueType, Subject, Subscribable, Subscription, VNode,
 } from '@microsoft/msfs-sdk';
-import { BrakeToVacateUtils, ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, NavigraphAmdbClient, OansControlEvents, globalToAirportCoordinates } from '@flybywiresim/oanc';
+import { BrakeToVacateUtils, ControlPanelAirportSearchMode, ControlPanelStore, ControlPanelUtils, FmsDataStore, FmsOansDataArinc429, NavigraphAmdbClient, OansControlEvents, globalToAirportCoordinates } from '@flybywiresim/oanc';
 import { AmdbAirportSearchResult, Arinc429RegisterSubject, EfisSide, FeatureType, FeatureTypeString, MathUtils, MsfsBackend, Runway } from '@flybywiresim/fbw-sdk';
 
-import { FmsOansData, FmsOansDataArinc429 } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { Button } from 'instruments/src/ND/UI/Button';
 import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
 import { DropdownMenu } from './UI/DropdownMenu';
@@ -103,7 +102,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     private landingRunwayNavdata: Runway | undefined;
 
-    private readonly btvUtils = new BrakeToVacateUtils(this.props.bus);
+    private btvUtils = new BrakeToVacateUtils(this.props.bus);
 
     private readonly airportDatabase = Subject.create('SXT59027250AA04');
 
@@ -195,9 +194,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                 if (destination && this.navigraphAvailable.get() === true) {
                     const data = await this.amdbClient.getAirportData(destination, [FeatureTypeString.RunwayThreshold]);
                     const thresholdFeature = data.runwaythreshold?.features.filter((td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(2));
-                    if (thresholdFeature) {
-                        this.runwayLda.set((thresholdFeature[0].properties.lda > 0 ? thresholdFeature[0].properties.lda : 0).toFixed(0));
-                        this.runwayTora.set((thresholdFeature[0].properties.tora > 0 ? thresholdFeature[0].properties.tora : 0).toFixed(0));
+                    if (thresholdFeature && thresholdFeature[0]?.properties.lda && thresholdFeature[0]?.properties.tora) {
+                        this.runwayLda.set(((thresholdFeature[0].properties.lda) > 0 ? thresholdFeature[0].properties.lda : 0).toFixed(0));
+                        this.runwayTora.set((thresholdFeature[0].properties.tora > 0 ? thresholdFeature[0]?.properties.tora : 0).toFixed(0));
+                    } else {
+                        this.runwayLda.set('N/A');
+                        this.runwayTora.set('N/A');
                     }
                 } else if (destination && this.navigraphAvailable.get() === false) {
                     const db = NavigationDatabaseService.activeDatabase.backendDatabase;

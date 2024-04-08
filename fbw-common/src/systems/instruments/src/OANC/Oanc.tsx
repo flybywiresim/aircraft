@@ -88,7 +88,10 @@ export enum LabelStyle {
     BtvSelectedRunwayEnd = 'runway-end-btv-selected',
     BtvSelectedRunwayArrow = 'runway-arrow-btv-selected',
     BtvSelectedExit = 'taxiway-btv-selected',
-    BtvStopLine = 'btv-stop-line',
+    BtvStopLineMagenta = 'btv-stop-line-magenta',
+    BtvStopLineAmber = 'btv-stop-line-amber',
+    BtvStopLineRed = 'btv-stop-line-red',
+    BtvStopLineGreen = 'btv-stop-line-green',
 }
 
 export interface Label {
@@ -269,7 +272,17 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-    private readonly btvUtils = new BrakeToVacateUtils<T>(this.props.bus, this.labelManager, this.layerCanvasRefs[7], this.canvasCentreX, this.canvasCentreY);
+    private readonly btvUtils = new BrakeToVacateUtils<T>(
+        this.props.bus,
+        this.labelManager,
+        this.aircraftOnGround,
+        this.projectedPpos,
+        this.layerCanvasRefs[7],
+        this.canvasCentreX,
+        this.canvasCentreY,
+        this.zoomLevelIndex,
+        this.getZoomLevelInverseScale.bind(this),
+    );
 
     // eslint-disable-next-line arrow-body-style
     public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftOnGround, aircraftWithinAirport]) => {
@@ -277,7 +290,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }, this.overlayNDModeSub, this.aircraftOnGround, this.aircraftWithinAirport);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly showAircraft = this.usingPposAsReference.map((it) => it);
+    private readonly showAircraft = this.usingPposAsReference;
 
     private readonly aircraftX = Subject.create(0);
 

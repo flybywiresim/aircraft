@@ -12,16 +12,23 @@ import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
 import { fractionalPointAlongLine, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
 
+const TOUCHDOWN_ZONE_DISTANCE = 400;
+
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
  */
+
 export class BrakeToVacateUtils<T extends number> {
     constructor(
         private readonly bus: EventBus,
-        private labelManager: OancLabelManager<T>,
-        private canvasRef: NodeReference<HTMLCanvasElement>,
-        private canvasCentreX: Subscribable<number>,
-        private canvasCentreY: Subscribable<number>,
+        private readonly labelManager?: OancLabelManager<T>,
+        private readonly aircraftOnGround?: Subscribable<boolean>,
+        private readonly aircraftPpos?: Position,
+        private readonly canvasRef?: NodeReference<HTMLCanvasElement>,
+        private readonly canvasCentreX?: Subscribable<number>,
+        private readonly canvasCentreY?: Subscribable<number>,
+        private readonly zoomLevelIndex?: Subscribable<number>,
+        private getZoomLevelInverseScale?: () => number,
     ) {
         this.remaininingDistToExit.sub((v) => {
             if (v < 0) {
@@ -42,19 +49,22 @@ export class BrakeToVacateUtils<T extends number> {
         const sub = this.bus.getSubscriber<BtvData>();
         this.dryStoppingDistance.setConsumer(sub.on('dryStoppingDistance').whenChanged());
         this.wetStoppingDistance.setConsumer(sub.on('wetStoppingDistance').whenChanged());
+        this.liveStoppingDistance.setConsumer(sub.on('stopBarDistance').whenChanged());
 
         this.dryStoppingDistance.sub(() => this.drawBtvLayer());
         this.wetStoppingDistance.sub(() => this.drawBtvLayer());
+        this.liveStoppingDistance.sub(() => this.drawBtvLayer());
+        this.remaininingDistToRwyEnd.sub(() => this.drawBtvLayer());
+        this.aircraftOnGround?.sub(() => this.drawBtvLayer());
+        this.zoomLevelIndex?.sub(() => this.drawBtvLayer());
 
         this.clearSelection();
     }
 
-    private readonly dryStoppingDistance = ConsumerSubject.create(null, 0);
-
-    private readonly wetStoppingDistance = ConsumerSubject.create(null, 0);
-
+    /** Updated during deceleration on the ground */
     private readonly remaininingDistToExit = Subject.create<number>(0);
 
+    /** Updated during deceleration on the ground */
     private readonly remaininingDistToRwyEnd = Subject.create<number>(0);
 
     readonly btvRunway = Subject.create<string | null>(null);
@@ -82,13 +92,13 @@ export class BrakeToVacateUtils<T extends number> {
     private btvPathGeometry: Position[];
 
     /** Stopping distance for dry rwy conditions, in meters. Null if not set. */
-    readonly btvDryStoppingDistance = Subject.create<number | null>(null);
+    private readonly dryStoppingDistance = ConsumerSubject.create(null, 0);
 
     /** Stopping distance for wet rwy conditions, in meters. Null if not set. */
-    readonly btvWetStoppingDistance = Subject.create<number | null>(null);
+    private readonly wetStoppingDistance = ConsumerSubject.create(null, 0);
 
     /** Live remaining stopping distance during deceleration, in meters. Null if not set. */
-    readonly btvLiveStoppingDistance = Subject.create<number | null>(null);
+    private readonly liveStoppingDistance = ConsumerSubject.create(null, 0);
 
     selectRunwayFromOans(runway: string, centerlineFeature: Feature<Geometry, AmdbProperties>, thresholdFeature: Feature<Geometry, AmdbProperties>) {
         this.clearSelection();
@@ -119,6 +129,8 @@ export class BrakeToVacateUtils<T extends number> {
         this.btvRunwayLda.set(lda);
         this.btvRunwayBearingTrue.set(heading);
         this.btvRunway.set(runway);
+        this.remaininingDistToRwyEnd.set(lda - TOUCHDOWN_ZONE_DISTANCE);
+        this.remaininingDistToExit.set(lda - TOUCHDOWN_ZONE_DISTANCE);
 
         const pub = this.bus.getPublisher<FmsOansData>();
         pub.pub('oansSelectedLandingRunway', runway, true);
@@ -137,13 +149,13 @@ export class BrakeToVacateUtils<T extends number> {
 
         if (exitDist1 < exitDist2) {
             // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist1 < 400) {
+            if (pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist1 < TOUCHDOWN_ZONE_DISTANCE) {
                 return;
             }
             this.btvExitPosition = exitLoc1;
         } else {
             // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist2 < 400) {
+            if (pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist2 < TOUCHDOWN_ZONE_DISTANCE) {
                 return;
             }
             this.btvExitPosition = exitLoc2;
@@ -155,7 +167,7 @@ export class BrakeToVacateUtils<T extends number> {
             thrLoc[1],
             this.btvExitPosition[0],
             this.btvExitPosition[1],
-        ) - 400;
+        ) - TOUCHDOWN_ZONE_DISTANCE;
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
         Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', exitDistance, Arinc429SignStatusMatrix.NormalOperation);
@@ -183,6 +195,8 @@ export class BrakeToVacateUtils<T extends number> {
         this.btvRunwayLda.set(lda);
         this.btvRunwayBearingTrue.set(heading);
         this.btvRunway.set(runway);
+        this.remaininingDistToRwyEnd.set(lda - TOUCHDOWN_ZONE_DISTANCE);
+        this.remaininingDistToExit.set(lda - TOUCHDOWN_ZONE_DISTANCE);
 
         const pub = this.bus.getPublisher<FmsOansData>();
         pub.pub('oansSelectedLandingRunway', runway, true);
@@ -195,7 +209,7 @@ export class BrakeToVacateUtils<T extends number> {
         this.btvExitPosition = btvExitPosition;
 
         // Account for touchdown zone distance
-        const correctedStoppingDistance = reqStoppingDistance - 400;
+        const correctedStoppingDistance = reqStoppingDistance - TOUCHDOWN_ZONE_DISTANCE;
 
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
         Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', correctedStoppingDistance, Arinc429SignStatusMatrix.NormalOperation);
@@ -307,83 +321,145 @@ export class BrakeToVacateUtils<T extends number> {
         ctx.resetTransform();
         ctx.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
 
+        const dryRunoverCondition = (TOUCHDOWN_ZONE_DISTANCE + this.dryStoppingDistance.get()) > this.btvRunwayLda.get();
+        const wetRunoverCondition = (TOUCHDOWN_ZONE_DISTANCE + this.wetStoppingDistance.get()) > this.btvRunwayLda.get();
+
+        const latDistance = 27.5 / this.getZoomLevelInverseScale();
+        const strokeWidth = 3.5 / this.getZoomLevelInverseScale();
+
         // DRY stop line
-        const dryStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
-            this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-            this.btvRunwayLda.get() / this.dryStoppingDistance.get());
+        if (this.dryStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+            const dryStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
+                this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
+                this.btvRunwayLda.get() / (TOUCHDOWN_ZONE_DISTANCE + this.dryStoppingDistance.get()));
 
-        const point1 = [
-            100 * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
-            100 * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
-        ];
-        const point2 = [
-            100 * Math.cos((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
-            100 * Math.sin((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
-        ];
+            const dryP1 = [
+                latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
+                latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
+            ];
+            const dryP2 = [
+                latDistance * Math.cos((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
+                latDistance * Math.sin((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
+            ];
 
-        ctx.beginPath();
-        ctx.lineWidth = 18;
-        ctx.strokeStyle = '#000000';
-        ctx.moveTo(point1[0], point1[1] * -1);
-        ctx.lineTo(dryStopLinePoint[0], dryStopLinePoint[1] * -1);
-        ctx.lineTo(point2[0], point2[1] * -1);
-        ctx.stroke();
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = '#ff94ff';
-        ctx.moveTo(point1[0], point1[1] * -1);
-        ctx.lineTo(dryStopLinePoint[0], dryStopLinePoint[1] * -1);
-        ctx.lineTo(point2[0], point2[1] * -1);
-        ctx.stroke();
+            ctx.beginPath();
+            ctx.lineWidth = strokeWidth + 10;
+            ctx.strokeStyle = '#000000';
+            ctx.moveTo(dryP1[0], dryP1[1] * -1);
+            ctx.lineTo(dryStopLinePoint[0], dryStopLinePoint[1] * -1);
+            ctx.lineTo(dryP2[0], dryP2[1] * -1);
+            ctx.stroke();
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeStyle = dryRunoverCondition ? '#ff0000' : '#ff94ff';
+            ctx.moveTo(dryP1[0], dryP1[1] * -1);
+            ctx.lineTo(dryStopLinePoint[0], dryStopLinePoint[1] * -1);
+            ctx.lineTo(dryP2[0], dryP2[1] * -1);
+            ctx.stroke();
 
-        // Label
-        const dryLabel: Label = {
-            text: 'DRY',
-            style: LabelStyle.BtvStopLine,
-            position: point1,
-            rotation: 0,
-            associatedFeature: null,
-        };
-        this.labelManager.visibleLabels.insert(dryLabel);
-        this.labelManager.labels.push(dryLabel);
+            // Label
+            const dryLabel: Label = {
+                text: 'DRY',
+                style: dryRunoverCondition ? LabelStyle.BtvStopLineRed : LabelStyle.BtvStopLineMagenta,
+                position: dryP2,
+                rotation: 0,
+                associatedFeature: null,
+            };
+            this.labelManager.visibleLabels.insert(dryLabel);
+            this.labelManager.labels.push(dryLabel);
+        }
 
         // WET stop line
-        const wetStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
-            this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-            this.btvRunwayLda.get() / this.wetStoppingDistance.get());
+        if (this.wetStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+            const wetStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
+                this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
+                this.btvRunwayLda.get() / (TOUCHDOWN_ZONE_DISTANCE + this.wetStoppingDistance.get()));
 
-        const point3 = [
-            100 * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
-            100 * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
-        ];
-        const point4 = [
-            100 * Math.cos((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
-            100 * Math.sin((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
-        ];
+            const wetP1 = [
+                latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
+                latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
+            ];
+            const wetP2 = [
+                latDistance * Math.cos((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
+                latDistance * Math.sin((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
+            ];
 
-        ctx.beginPath();
-        ctx.lineWidth = 18;
-        ctx.strokeStyle = '#000000';
-        ctx.moveTo(point3[0], point3[1] * -1);
-        ctx.lineTo(wetStopLinePoint[0], wetStopLinePoint[1] * -1);
-        ctx.lineTo(point4[0], point4[1] * -1);
-        ctx.stroke();
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = '#ff94ff';
-        ctx.moveTo(point3[0], point3[1] * -1);
-        ctx.lineTo(wetStopLinePoint[0], wetStopLinePoint[1] * -1);
-        ctx.lineTo(point4[0], point4[1] * -1);
-        ctx.stroke();
+            ctx.beginPath();
+            ctx.lineWidth = strokeWidth + 10;
+            ctx.strokeStyle = '#000000';
+            ctx.moveTo(wetP1[0], wetP1[1] * -1);
+            ctx.lineTo(wetStopLinePoint[0], wetStopLinePoint[1] * -1);
+            ctx.lineTo(wetP2[0], wetP2[1] * -1);
+            ctx.stroke();
+            ctx.lineWidth = strokeWidth;
+            let labelStyle: LabelStyle;
+            if (!dryRunoverCondition && !wetRunoverCondition) {
+                ctx.strokeStyle = '#ff94ff'; // magenta
+                labelStyle = LabelStyle.BtvStopLineMagenta;
+            } else if (!dryRunoverCondition && wetRunoverCondition) {
+                ctx.strokeStyle = '#e68000'; // amber
+                labelStyle = LabelStyle.BtvStopLineAmber;
+            } else {
+                ctx.strokeStyle = '#ff0000';
+                labelStyle = LabelStyle.BtvStopLineRed;
+            }
+            ctx.moveTo(wetP1[0], wetP1[1] * -1);
+            ctx.lineTo(wetStopLinePoint[0], wetStopLinePoint[1] * -1);
+            ctx.lineTo(wetP2[0], wetP2[1] * -1);
+            ctx.stroke();
 
-        // Label
-        const wetLabel: Label = {
-            text: 'WET',
-            style: LabelStyle.BtvStopLine,
-            position: point3,
-            rotation: 0,
-            associatedFeature: null,
-        };
-        this.labelManager.visibleLabels.insert(wetLabel);
-        this.labelManager.labels.push(wetLabel);
+            // Label
+            const wetLabel: Label = {
+                text: 'WET',
+                style: labelStyle,
+                position: wetP2,
+                rotation: 0,
+                associatedFeature: null,
+            };
+            this.labelManager.visibleLabels.insert(wetLabel);
+            this.labelManager.labels.push(wetLabel);
+        }
+
+        // On ground: STOP line
+        if (this.liveStoppingDistance.get() > 0 && this.aircraftOnGround.get()) {
+            const liveRunOverCondition = this.remaininingDistToRwyEnd.get() - this.liveStoppingDistance.get() <= 0;
+            const stopLinePoint = fractionalPointAlongLine(this.aircraftPpos[0], this.aircraftPpos[1],
+                this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
+                this.remaininingDistToRwyEnd.get() / this.liveStoppingDistance.get());
+
+            const stopP1 = [
+                latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
+                latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[1],
+            ];
+            const stopP2 = [
+                latDistance * Math.cos((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
+                latDistance * Math.sin((-this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[1],
+            ];
+
+            ctx.beginPath();
+            ctx.lineWidth = strokeWidth + 10;
+            ctx.strokeStyle = '#000000';
+            ctx.moveTo(stopP1[0], stopP1[1] * -1);
+            ctx.lineTo(stopLinePoint[0], stopLinePoint[1] * -1);
+            ctx.lineTo(stopP2[0], stopP2[1] * -1);
+            ctx.stroke();
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeStyle = liveRunOverCondition ? '#ff0000' : '#00ff00';
+            ctx.moveTo(stopP1[0], stopP1[1] * -1);
+            ctx.lineTo(stopLinePoint[0], stopLinePoint[1] * -1);
+            ctx.lineTo(stopP2[0], stopP2[1] * -1);
+            ctx.stroke();
+
+            // Label
+            const stoplineLabel: Label = {
+                text: '',
+                style: liveRunOverCondition ? LabelStyle.BtvStopLineRed : LabelStyle.BtvStopLineGreen,
+                position: stopP1,
+                rotation: 0,
+                associatedFeature: null,
+            };
+            this.labelManager.visibleLabels.insert(stoplineLabel);
+            this.labelManager.labels.push(stoplineLabel);
+        }
     }
 
     drawBtvLayer() {
@@ -391,10 +467,13 @@ export class BrakeToVacateUtils<T extends number> {
             return;
         }
 
+        const isStopLineStyle = (s: LabelStyle) => [LabelStyle.BtvStopLineAmber, LabelStyle.BtvStopLineGreen, LabelStyle.BtvStopLineMagenta, LabelStyle.BtvStopLineRed].includes(s);
+
         this.canvasRef.instance.getContext('2d').clearRect(0, 0, this.canvasRef.instance.width, this.canvasRef.instance.height);
-        this.labelManager.visibleLabels.removeAt(this.labelManager.visibleLabels.getArray().findIndex((it) => it.text === 'DRY' && it.style === LabelStyle.BtvStopLine));
-        this.labelManager.visibleLabels.removeAt(this.labelManager.visibleLabels.getArray().findIndex((it) => it.text === 'WET' && it.style === LabelStyle.BtvStopLine));
-        this.labelManager.labels = this.labelManager.labels.filter((it) => !((it.text === 'DRY' || it.text === 'WET') && it.style === LabelStyle.BtvStopLine));
+        while (this.labelManager.visibleLabels.getArray().findIndex((it) => isStopLineStyle(it.style)) !== -1) {
+            this.labelManager.visibleLabels.removeAt(this.labelManager.visibleLabels.getArray().findIndex((it) => isStopLineStyle(it.style)));
+        }
+        this.labelManager.labels = this.labelManager.labels.filter((it) => !isStopLineStyle(it.style));
         this.drawBtvPath();
         this.drawStopLines();
     }

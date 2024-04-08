@@ -151,13 +151,38 @@
   color: $display-white;
 }
 
-.oanc-label-style-btv-stop-line {
+.oanc-label-style-btv-stop-line-green {
+  color: $display-green;
+}
+
+.oanc-label-style-btv-stop-line-green:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-btv-stop-line-magenta {
   color: $display-magenta;
 }
 
-.oanc-label-style-btv-stop-line:hover {
+.oanc-label-style-btv-stop-line-magenta:hover {
   outline: 0px;
 }
+
+.oanc-label-style-btv-stop-line-amber {
+  color: $display-amber;
+}
+
+.oanc-label-style-btv-stop-line-amber:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-btv-stop-line-red {
+  color: $display-red;
+}
+
+.oanc-label-style-btv-stop-line-red:hover {
+  outline: 0px;
+}
+
 
 .oanc-button {
   padding: 10px 6px;

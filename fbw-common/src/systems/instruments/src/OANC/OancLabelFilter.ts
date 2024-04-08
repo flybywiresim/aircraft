@@ -33,7 +33,7 @@ export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?
     } if (label.style === LabelStyle.BtvSelectedRunwayArrow && label.text) {
         return label.text.includes(btvSelectedRunway?.substring(2));
     }
-    if (label.style === LabelStyle.BtvStopLine) {
+    if ([LabelStyle.BtvStopLineMagenta, LabelStyle.BtvStopLineAmber, LabelStyle.BtvStopLineRed, LabelStyle.BtvStopLineGreen].includes(label.style)) {
         return true;
     }
 

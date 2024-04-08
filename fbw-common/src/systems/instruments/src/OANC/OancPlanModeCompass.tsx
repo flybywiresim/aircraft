@@ -40,7 +40,7 @@ export class OancPlanModeCompass extends DisplayComponent<OancPlanModeCompassPro
 
                     <rect x={212} y={538} width={41} height={21} class="BackgroundFill" />
                     <text x={212} y={556} class="Cyan" font-size={22}>
-                        {this.props.oansRange.map((range) => range / 1)}
+                        {this.props.oansRange.map((range) => range / 2)}
                     </text>
 
                     <text x={384} y={170} class="White" font-size={25} text-anchor="middle" alignment-baseline="central">N</text>
