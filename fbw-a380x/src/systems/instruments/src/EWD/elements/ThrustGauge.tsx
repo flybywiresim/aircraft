@@ -231,7 +231,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                             />
                         </GaugeComponent>
                         <ThrottlePositionDonutComponent
-                            value={throttlePosition / 10}
+                            value={(throttlePosition / 8)+2.5}
                             x={x}
                             y={y}
                             min={revMin}
