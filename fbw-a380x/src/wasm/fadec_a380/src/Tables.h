@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "SimVars.h"
 #include "common.h"
 
@@ -25,7 +27,7 @@ double table1502(int i, int j) {
 double iCN3(double pressAltitude, double mach) {
   double cn3 = 0;
 
-  cn3 = 60.0 / (sqrt((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * sqrt(1 + (0.2 * powFBW(mach, 2))));
+  cn3 = 60.0 / (std::sqrt((288.15 - (1.98 * pressAltitude / 1000)) / 288.15) * sqrt(1 + (0.2 * powFBW(mach, 2))));
 
   return cn3;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MSFS\Legacy\gauges.h>
+
 /// <summary>
 /// SimConnect data types to send to Sim Updated
 /// </summary>
