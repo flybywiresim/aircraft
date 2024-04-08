@@ -90,24 +90,24 @@ export class EfisVectors {
         const planExists = this.flightPlanService.has(planIndex);
 
         if (!planExists) {
-            const planWasDeleted = this.lastFpVersions.delete(planIndex);
+            this.lastFpVersions.delete(planIndex);
 
-            if (planWasDeleted) {
-                switch (planIndex) {
-                case FlightPlanIndex.Active:
-                    this.transmit([], EfisVectorsGroup.ACTIVE, side);
-                    this.transmit([], EfisVectorsGroup.DASHED, side);
-                    this.transmit([], EfisVectorsGroup.MISSED, side);
-                    this.transmit([], EfisVectorsGroup.ALTERNATE, side);
-                    break;
-                case FlightPlanIndex.Temporary:
-                    this.transmit([], EfisVectorsGroup.TEMPORARY, side);
-                    break;
-                default:
-                    this.transmit([], EfisVectorsGroup.SECONDARY, side);
-                    break;
-                }
+            // TODO this is called every frame and sends an empty array via the sync, find a solution to only send it once per side
+            switch (planIndex) {
+            case FlightPlanIndex.Active:
+                this.transmit([], EfisVectorsGroup.ACTIVE, side);
+                this.transmit([], EfisVectorsGroup.DASHED, side);
+                this.transmit([], EfisVectorsGroup.MISSED, side);
+                this.transmit([], EfisVectorsGroup.ALTERNATE, side);
+                break;
+            case FlightPlanIndex.Temporary:
+                this.transmit([], EfisVectorsGroup.TEMPORARY, side);
+                break;
+            default:
+                this.transmit([], EfisVectorsGroup.SECONDARY, side);
+                break;
             }
+
             return;
         }
 
