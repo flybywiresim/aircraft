@@ -817,7 +817,7 @@ export class EfisSymbols<T extends number> {
         const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
         const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
-        if (!matchingGeometryLeg.terminationWaypoint) {
+        if (!matchingGeometryLeg?.terminationWaypoint) {
             return null;
         }
 
