@@ -736,9 +736,10 @@ struct BtvDecelScheduler {
 }
 impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
-    const MAX_DECEL_WET_MS2: f64 = -1.9;
+    const MAX_DECEL_WET_MS2: f64 = -1.95;
 
     const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.1;
+    const MIN_SPEED_FOR_STOPPING_ESTIMATION_MS: f64 = 15.;
     const MAX_STOPPING_DISTANCE_M: f64 = 5000.;
 
     const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
@@ -863,7 +864,8 @@ impl BtvDecelScheduler {
 
         if self.actual_deceleration.get::<meter_per_second_squared>()
             < Self::MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2
-            && self.ground_speed.get::<meter_per_second>() > Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
+            && self.ground_speed.get::<meter_per_second>()
+                > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS
         {
             self.actual_estimated_distance.update(
                 context.delta(),
