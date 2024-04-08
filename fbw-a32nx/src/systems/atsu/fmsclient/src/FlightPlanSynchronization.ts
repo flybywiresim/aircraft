@@ -75,7 +75,7 @@ export class FlightPlanSynchronization {
 
             // Note that the destination leg index must not necessarily be an airport or a runway, just the last leg of the flight plan (excluding missed approach legs)
             if (leg?.isDiscontinuity === false && idx === flightPlan.destinationLegIndex) {
-                // TOO connect to VNAV
+                // TODO connect to VNAV
                 return {
                     ident: leg.ident,
                     altitude: 0,

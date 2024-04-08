@@ -5,7 +5,6 @@
 
 import { Airport, EnrouteSubsectionCode, Runway, SectionCode, Waypoint, WaypointArea, Icao, AirportSubsectionCode } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
-import { airportRunwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 
 export namespace WaypointFactory {
     export function fromLocation(
@@ -54,7 +53,6 @@ export namespace WaypointFactory {
             ...runway,
             sectionCode: SectionCode.Airport,
             subSectionCode: AirportSubsectionCode.TerminalWaypoints,
-            ident: airportRunwayIdent(airport, runway),
             location: runway.thresholdLocation,
             area: WaypointArea.Terminal,
         };

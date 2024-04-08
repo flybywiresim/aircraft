@@ -515,7 +515,7 @@ export class MsfsMapping {
 
             const levelOfService = this.mapRnavTypeFlags(approach.rnavTypeFlags);
 
-            const transitions = this.mapApproachTransitions(approach, facilities, msAirport, approachName, icaoCode);
+            const transitions = this.mapApproachTransitions(approach, facilities, msAirport, approachName);
 
             return {
                 sectionCode: SectionCode.Airport,
@@ -529,8 +529,8 @@ export class MsfsMapping {
                 authorisationRequired,
                 levelOfService,
                 transitions,
-                legs: approach.finalLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, icaoCode, approach.approachType, rnp)),
-                missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, icaoCode)),
+                legs: approach.finalLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, approach.approachType, rnp)),
+                missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName)),
             };
         });
     }
@@ -547,9 +547,9 @@ export class MsfsMapping {
             databaseId: `P${icaoCode}${airportIdent}${arrival.name}`,
             icaoCode,
             ident: arrival.name,
-            commonLegs: arrival.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, arrival.name, icaoCode)),
-            enrouteTransitions: arrival.enRouteTransitions.map((trans, idx) => this.mapEnrouteTransition(trans, facilities, msAirport, arrival.name, icaoCode, arrival.name + idx)),
-            runwayTransitions: arrival.runwayTransitions.map((trans, idx) => this.mapRunwayTransition(trans, facilities, msAirport, arrival.name, icaoCode, arrival.name + idx)),
+            commonLegs: arrival.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, arrival.name)),
+            enrouteTransitions: arrival.enRouteTransitions.map((trans, idx) => this.mapEnrouteTransition(trans, facilities, msAirport, arrival.name, arrival.name + idx)),
+            runwayTransitions: arrival.runwayTransitions.map((trans, idx) => this.mapRunwayTransition(trans, facilities, msAirport, arrival.name, arrival.name + idx)),
         }));
     }
 
@@ -571,10 +571,10 @@ export class MsfsMapping {
                 icaoCode,
                 ident: departure.name,
                 authorisationRequired,
-                commonLegs: departure.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, departure.name, icaoCode, undefined, commonLegsRnp)),
+                commonLegs: departure.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, departure.name, undefined, commonLegsRnp)),
                 engineOutLegs: [],
-                enrouteTransitions: departure.enRouteTransitions.map((trans, idx) => this.mapEnrouteTransition(trans, facilities, msAirport, departure.name, icaoCode, departure.name + idx)),
-                runwayTransitions: departure.runwayTransitions.map((trans, idx) => this.mapRunwayTransition(trans, facilities, msAirport, departure.name, icaoCode, departure.name + idx)),
+                enrouteTransitions: departure.enRouteTransitions.map((trans, idx) => this.mapEnrouteTransition(trans, facilities, msAirport, departure.name, departure.name + idx)),
+                runwayTransitions: departure.runwayTransitions.map((trans, idx) => this.mapRunwayTransition(trans, facilities, msAirport, departure.name, departure.name + idx)),
             };
         });
     }
@@ -653,8 +653,8 @@ export class MsfsMapping {
         return new Map<string, JS_Facility>([...wps, ...ndbs, ...vors]);
     }
 
-    private mapApproachTransitions(approach: JS_Approach, facilities: Map<string, JS_Facility>, airport: JS_FacilityAirport, procedureIdent: string, icaoCode: string) {
-        const transitions = approach.transitions.map((trans, index) => this.mapApproachTransition(trans, facilities, airport, procedureIdent, icaoCode, procedureIdent + index));
+    private mapApproachTransitions(approach: JS_Approach, facilities: Map<string, JS_Facility>, airport: JS_FacilityAirport, procedureIdent: string) {
+        const transitions = approach.transitions.map((trans, index) => this.mapApproachTransition(trans, facilities, airport, procedureIdent, procedureIdent + index));
 
         approach.transitions.forEach((trans) => {
             // if the trans name is empty (in some 3pd navdata), fill it with the IAF name
@@ -683,7 +683,6 @@ export class MsfsMapping {
                             facilities,
                             airport,
                             procedureIdent,
-                            icaoCode,
                             procedureIdent + transitions.length,
                         ),
                     );
@@ -711,13 +710,12 @@ export class MsfsMapping {
         facilities: Map<string, JS_Facility>,
         airport: JS_FacilityAirport,
         procedureIdent: string,
-        icaoCode: string,
         databaseId: string,
     ): ProcedureTransition {
         return {
             databaseId,
             ident: trans.name,
-            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, icaoCode)),
+            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent)),
         };
     }
 
@@ -726,19 +724,18 @@ export class MsfsMapping {
         facilities: Map<string, JS_Facility>,
         airport: JS_FacilityAirport,
         procedureIdent: string,
-        icaoCode: string,
         databaseId: string,
     ): ProcedureTransition {
         const rnp = this.isAnyRfLegPresent(trans.legs) ? 0.3 : undefined;
         return {
             databaseId,
             ident: trans.name,
-            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, icaoCode, undefined, rnp)),
+            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
         };
     }
 
     private mapRunwayTransition(
-        trans: JS_RunwayTransition, facilities: Map<string, JS_Facility>, airport: JS_FacilityAirport, procedureIdent: string, icaoCode: string, databaseId: string,
+        trans: JS_RunwayTransition, facilities: Map<string, JS_Facility>, airport: JS_FacilityAirport, procedureIdent: string, databaseId: string,
     ): ProcedureTransition {
         const rnp = this.isAnyRfLegPresent(trans.legs) ? 0.3 : undefined;
         const ident = `RW${trans.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(trans.runwayDesignation)}`;
@@ -746,7 +743,7 @@ export class MsfsMapping {
         return {
             databaseId,
             ident,
-            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, icaoCode, undefined, rnp)),
+            legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
         };
     }
 
@@ -755,7 +752,6 @@ export class MsfsMapping {
         facilities: Map<string, JS_Facility>,
         airport: JS_FacilityAirport,
         procedureIdent: string,
-        icaoCode: string,
         approachType?: MSApproachType,
         rnp?: number,
     ): ProcedureLeg {

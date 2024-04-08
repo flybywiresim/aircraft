@@ -38,10 +38,6 @@ export class CALeg extends Leg {
         return this.estimatedTermination;
     }
 
-    get ident(): string {
-        return Math.round(this.altitude).toString();
-    }
-
     getPathStartPoint(): Coordinates | undefined {
         return this.inboundGuidable?.getPathEndPoint();
     }

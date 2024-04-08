@@ -90,21 +90,23 @@ export class EfisVectors {
         const planExists = this.flightPlanService.has(planIndex);
 
         if (!planExists) {
-            this.lastFpVersions.delete(planIndex);
+            const planWasDeleted = this.lastFpVersions.delete(planIndex);
 
-            switch (planIndex) {
-            case FlightPlanIndex.Active:
-                this.transmit([], EfisVectorsGroup.ACTIVE, side);
-                this.transmit([], EfisVectorsGroup.DASHED, side);
-                this.transmit([], EfisVectorsGroup.MISSED, side);
-                this.transmit([], EfisVectorsGroup.ALTERNATE, side);
-                break;
-            case FlightPlanIndex.Temporary:
-                this.transmit([], EfisVectorsGroup.TEMPORARY, side);
-                break;
-            default:
-                this.transmit([], EfisVectorsGroup.SECONDARY, side);
-                break;
+            if (planWasDeleted) {
+                switch (planIndex) {
+                case FlightPlanIndex.Active:
+                    this.transmit([], EfisVectorsGroup.ACTIVE, side);
+                    this.transmit([], EfisVectorsGroup.DASHED, side);
+                    this.transmit([], EfisVectorsGroup.MISSED, side);
+                    this.transmit([], EfisVectorsGroup.ALTERNATE, side);
+                    break;
+                case FlightPlanIndex.Temporary:
+                    this.transmit([], EfisVectorsGroup.TEMPORARY, side);
+                    break;
+                default:
+                    this.transmit([], EfisVectorsGroup.SECONDARY, side);
+                    break;
+                }
             }
             return;
         }

@@ -6,9 +6,8 @@ import { LegType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export interface ReadonlyFlightPlanLeg {
     readonly isDiscontinuity: false,

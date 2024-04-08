@@ -170,6 +170,7 @@
     "esbuild-style-plugin": "^1.6.0",
     "geolib": "^3.3.3",
     "i18next": "^21.6.14",
+    "json5": "^2.2.3",
     "lodash": "^4.17.20",
     "msfs-geo": "^0.1.0-alpha3",
     "msfs-navdata": "^1.1.0",

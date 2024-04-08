@@ -11,10 +11,7 @@ import {
     LegType,
     ProcedureLeg,
     Runway,
-    SectionCode,
-    WaypointArea,
     WaypointDescriptor,
-    AirportSubsectionCode,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
@@ -24,9 +21,8 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanS
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { MagVar } from '@microsoft/msfs-sdk';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
@@ -366,7 +362,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             procedureIdent: '',
             type: LegType.IF,
             overfly: false,
-            waypoint: { ...airport, sectionCode: SectionCode.Airport, subSectionCode: AirportSubsectionCode.TerminalWaypoints, area: WaypointArea.Terminal },
+            waypoint: WaypointFactory.fromAirport(airport),
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
         }, airportRunwayIdent(airport, runway), procedureIdent, undefined);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import {ChecklistProvider, NXDataStore} from '@flybywiresim/fbw-sdk';
 
 import { customAlphabet } from 'nanoid';
 import { render } from '@instruments/common/index';
@@ -37,6 +37,11 @@ if (process.env.VITE_BUILD) {
     setup();
 }
 
-render(
-    <EfbInstrument failures={A380FailureDefinitions} />,
-);
+ChecklistProvider.getInstance().readChecklist()
+    .then((aircraftChecklistsFromJson) => {
+        console.log('Checklists loaded');
+        render(<EfbInstrument failures={A380FailureDefinitions} aircraftChecklists={aircraftChecklistsFromJson} />,);
+    })
+    .catch((error) => {
+        console.error('Failed to load checklists', error);
+    });

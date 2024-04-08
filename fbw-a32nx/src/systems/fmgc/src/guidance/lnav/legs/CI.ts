@@ -43,10 +43,6 @@ export class CILeg extends Leg {
         return this.intercept;
     }
 
-    get ident(): string {
-        return 'INTCPT';
-    }
-
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable instanceof IFLeg) {
             return this.inboundGuidable.fix.location;
