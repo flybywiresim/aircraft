@@ -36,8 +36,6 @@ class CDUAvailableDeparturesPage {
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-        const planColor = forPlan === Fmgc.FlightPlanIndex.Active ? mcdu.flightPlanService.hasTemporary ? "yellow" : "green" : "white";
-
         /** @type {import('msfs-navdata').Runway} */
         const selectedRunway = targetPlan.originRunway;
         const selectedSid = targetPlan.originDeparture;
@@ -133,8 +131,14 @@ class CDUAvailableDeparturesPage {
                     // Clicking the already selected runway is a no-op
                     if (!selected) {
                         mcdu.onLeftInput[i + 1] = async () => {
+                            // TODO: cleanup hotfix solution
                             try {
                                 await mcdu.flightPlanService.setOriginRunway(runway.ident, forPlan, inAlternate);
+                                let _targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                                if (selectedSid && !_targetPlan.availableDepartures.some(sid => sid.databaseId === selectedSid.databaseId)) {
+                                    await mcdu.flightPlanService.setDepartureProcedure(null, forPlan, inAlternate);
+                                    await mcdu.flightPlanService.setDepartureEnrouteTransition(null, forPlan, inAlternate);
+                                }
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
