@@ -35,7 +35,7 @@ export class FlightPlanAsoboSync {
     }
 
     static extractRunwayNumber(ident: string) {
-        return ident.substring(2, 4).startsWith('0') ? ident.substring(3, 4) : ident.substring(2, 4);
+        return ident.substring(4, 6).startsWith('0') ? ident.substring(5, 6) : ident.substring(4, 6);
     }
 
     connectedCallback(): void {
