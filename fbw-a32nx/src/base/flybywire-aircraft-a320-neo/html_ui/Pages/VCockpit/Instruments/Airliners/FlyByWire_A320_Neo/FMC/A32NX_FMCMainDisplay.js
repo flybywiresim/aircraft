@@ -2517,7 +2517,7 @@ class FMCMainDisplay extends BaseAirliners {
                         }
                     }
                 }).catch((err) => {
-                    if (err.type) {
+                    if (err.type !== undefined) {
                         this.showFmsErrorMessage(err.type)
                     } else if (err instanceof McduMessage) {
                         this.setScratchpadMessage(err);
@@ -2528,7 +2528,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             );
         } catch (err) {
-            if (err.type) {
+            if (err.type !== undefined) {
                 this.showFmsErrorMessage(err.type)
             } else if (err instanceof McduMessage) {
                 this.setScratchpadMessage(err);
@@ -4338,7 +4338,7 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }).catch((err) => {
             // Rethrow if error is not an FMS message to display
-            if (!err.type) {
+            if (err.type === undefined) {
                 throw err;
             }
 

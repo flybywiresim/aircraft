@@ -104,7 +104,7 @@ export interface DataInterface {
      *
      * Not available for all backends
      * @param airportIdentifier 4-letter ICAO code for the airport
-     * @param runwayIdentifier RWnnd
+     * @param runwayIdentifier e.g "EDDF25C"
      * @param lsIdentifier the ILS the markers are associated with
      */
     getLsMarkers(airportIdentifier: string, runwayIdentifier: string, lsIdentifier: string): Promise<Marker[]>;

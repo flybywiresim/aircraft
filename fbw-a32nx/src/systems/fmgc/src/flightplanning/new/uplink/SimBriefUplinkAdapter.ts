@@ -119,8 +119,8 @@ export class SimBriefUplinkAdapter {
         await flightPlanService.newCityPair(route.from.ident, route.to.ident, route.altn, FlightPlanIndex.Uplink);
 
         if (doUplinkProcedures) {
-            await flightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
-            await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
+            await flightPlanService.setOriginRunway(`${route.from.ident}${route.from.rwy}`, FlightPlanIndex.Uplink);
+            await flightPlanService.setDestinationRunway(`${route.to.ident}${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
 
         const plan = flightPlanService.uplink;

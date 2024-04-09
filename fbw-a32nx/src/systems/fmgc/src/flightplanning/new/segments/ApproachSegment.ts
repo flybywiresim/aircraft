@@ -75,8 +75,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
         const procedureRunwayIdent = matchingProcedure.runwayIdent;
 
-        if (procedureRunwayIdent && procedureRunwayIdent !== 'RW00') { // TODO temporary workaround for bug in msfs backend
-            await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent.startsWith('R') ? procedureRunwayIdent : `RW${procedureRunwayIdent}`, true);
+        if (procedureRunwayIdent) { // TODO temporary workaround for bug in msfs backend
+            await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent, true);
         }
 
         const mappedMissedApproachLegs = matchingProcedure.missedLegs.map(

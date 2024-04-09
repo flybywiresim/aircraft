@@ -83,7 +83,7 @@ class CDUAvailableDeparturesPage {
         const selectedColour = editingTmpy ? "yellow" : "green";
 
         if (selectedRunway) {
-            selectedRunwayCell = selectedRunway.ident.substring(2);
+            selectedRunwayCell = Fmgc.RunwayUtils.runwayString(selectedRunway.ident);
             selectedRunwayCellColor = selectedColour;
 
             // TODO check type of ls... but awful from raw JS
@@ -127,7 +127,7 @@ class CDUAvailableDeparturesPage {
                     const color = selected && !editingTmpy ? "green" : "cyan";
 
                     const hasIls = runway.lsFrequencyChannel > 0; // TODO what if not ILS
-                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${runway.ident.substring(2).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
+                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${Fmgc.RunwayUtils.runwayString(runway.ident).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
                     const ilsText = hasIls ? `${runway.lsIdent.padStart(6)}/${runway.lsFrequencyChannel.toFixed(2)}` : '';
                     rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(runway.magneticBearing), 3)}${ilsText}{end}`];
                     // Clicking the already selected runway is a no-op

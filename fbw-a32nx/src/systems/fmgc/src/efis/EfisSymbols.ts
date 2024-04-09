@@ -15,7 +15,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -669,7 +668,7 @@ export class EfisSymbols<T extends number> {
 
             const planAltnStr = flightPlan instanceof AlternateFlightPlan ? 'A' : ' ';
             const planIndexStr = flightPlan.index.toString();
-            const runwayIdentStr = runway?.ident.replace('RW', '').padEnd(4, ' ') ?? '    ';
+            const runwayIdentStr = runway?.ident.padEnd(8, ' ') ?? '        ';
 
             const databaseId = `A${airport.ident}${(planAltnStr)}${planIndexStr}${runwayIdentStr}`;
 
@@ -677,7 +676,7 @@ export class EfisSymbols<T extends number> {
                 if (withinEditArea(runway.startLocation)) {
                     ret.push({
                         databaseId,
-                        ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
+                        ident: runway.ident,
                         location: runway.startLocation,
                         direction: runway.bearing,
                         length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,

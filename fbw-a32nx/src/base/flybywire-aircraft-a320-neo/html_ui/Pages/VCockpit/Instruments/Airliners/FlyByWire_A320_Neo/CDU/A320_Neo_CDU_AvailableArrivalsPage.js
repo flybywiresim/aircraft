@@ -129,7 +129,7 @@ class CDUAvailableArrivalsPage {
             // The A320 cannot fly TACAN approaches
             .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
             // filter out approaches with no matching runway, but keep circling approaches (no runway)
-            .filter((a) => a.runwayIdent === 'RW00' || !!runways.find((rw) => rw.ident === a.runwayIdent))
+            .filter((a) => a.runwayIdent === undefined || !!runways.find((rw) => rw.ident === a.runwayIdent))
             // Sort the approaches in Honeywell's documented order
             .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type])
             .map((approach) => ({ approach }))
@@ -158,7 +158,7 @@ class CDUAvailableArrivalsPage {
                     let runwayLength = '----';
                     let runwayCourse = '---';
 
-                    const isCircling = approach.runwayIdent === 'RW00';
+                    const isCircling = approach.runwayIdent === undefined;
                     const isSelected = selectedApproach && selectedApproachId === approach.databaseId;
                     const color = isSelected && !isTemporary ? "green" : "cyan";
 
@@ -221,7 +221,7 @@ class CDUAvailableArrivalsPage {
                             const runwayTransition = arrival.runwayTransitions[j];
                             if (runwayTransition) {
                                 // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
-                                if (runwayTransition.ident === selectedApproach.runwayIdent || (runwayTransition.ident.charAt(4) === 'B' && runwayTransition.ident.substring(0, 4) === selectedApproach.runwayIdent.substring(0, 4))) {
+                                if (runwayTransition.ident === selectedApproach.runwayIdent || (runwayTransition.ident.charAt(6) === 'B' && runwayTransition.ident.substring(4, 6) === selectedApproach.runwayIdent.substring(4, 6))) {
                                     matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                 }
                             }

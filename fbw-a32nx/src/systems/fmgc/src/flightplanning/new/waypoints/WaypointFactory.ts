@@ -48,7 +48,7 @@ export namespace WaypointFactory {
         return WaypointFactory.fromLocation(ident, distanceOne < distanceTwo ? one : two);
     }
 
-    export function fromAirportAndRunway(airport: Airport, runway: Runway): Waypoint {
+    export function fromRunway(runway: Runway): Waypoint {
         return {
             ...runway,
             sectionCode: SectionCode.Airport,

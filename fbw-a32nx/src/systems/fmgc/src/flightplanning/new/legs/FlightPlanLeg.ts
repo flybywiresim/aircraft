@@ -15,7 +15,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
-import { airportRunwayIdent, procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
+import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
@@ -352,10 +352,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
                 procedureIdent: '',
                 type: LegType.IF,
                 overfly: false,
-                waypoint: WaypointFactory.fromAirportAndRunway(airport, runway),
+                waypoint: WaypointFactory.fromRunway(runway),
                 waypointDescriptor: WaypointDescriptor.Runway,
                 magneticCourse: runway?.magneticBearing,
-            }, airportRunwayIdent(airport, runway), procedureIdent, undefined);
+            }, runway.ident, procedureIdent, undefined);
         }
 
         return new FlightPlanLeg(segment, {
@@ -365,7 +365,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             waypoint: WaypointFactory.fromAirport(airport),
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
-        }, airportRunwayIdent(airport, runway), procedureIdent, undefined);
+        }, airport.ident, procedureIdent, undefined);
     }
 
     static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
