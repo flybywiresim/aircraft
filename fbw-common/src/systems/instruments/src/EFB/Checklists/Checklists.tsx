@@ -42,8 +42,8 @@ export const getRelevantChecklistIndices = () => {
 
     // iterate over all checklists and check if they are relevant for the current flight phase
     aircraftChecklists.forEach((cl, clIndex) => {
-        // check if the checklist is relevant for the current flight phase
-        if (cl.flightphase && cl.flightphase === flightPhase) {
+        // check if the checklist is relevant for the previous or the current flight phase
+        if (cl.flightphase && cl.flightphase <= flightPhase) {
             relevantChecklistIndices.push(clIndex);
         }
     });
