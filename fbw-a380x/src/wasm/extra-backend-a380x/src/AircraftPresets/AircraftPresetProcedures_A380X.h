@@ -74,10 +74,6 @@ class AircraftPresetProcedures_A380X {
                                                               "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",            ""},
         ProcedureStep{"APU Bleed On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
                                                               "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
-
-        // To allow slats/flaps to retract in expedited mode when engines were running before and slats/flaps were out
-        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 ==",              "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
-
       },
 
       .POWERED_CONFIG_OFF = {
@@ -207,7 +203,6 @@ class AircraftPresetProcedures_A380X {
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET3) "
                                                                                                                         "1 (>K:TURBINE_IGNITION_SWITCH_SET4)"},
 
-        ProcedureStep{"Yellow Elec Pump Off",  STEP, 1000,  "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 1 ==",                 "1 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
         ProcedureStep{"APU Bleed Off",         STEP, 1500,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",              "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",        STEP, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",               "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
 
