@@ -1,4 +1,3 @@
-use nalgebra::distance_squared;
 use systems::{
     hydraulic::brake_circuit::{AutobrakeDecelerationGovernor, AutobrakeMode},
     overhead::PressSingleSignalButton,
@@ -98,6 +97,10 @@ impl A380AutobrakePanel {
         self.selected_mode
     }
 
+    pub fn is_disarmed_position(&self) -> bool {
+        self.selected_mode == A380AutobrakeKnobPosition::DISARM
+    }
+
     pub fn selected_mode_has_changed(&self) -> bool {
         self.mode_has_changed
     }
@@ -144,6 +147,7 @@ impl A380AutobrakeKnobSelectorSolenoid {
     }
 
     fn disarm(&mut self, solenoid_should_disarm: bool) {
+        println!("DISARM SOL {:?}", solenoid_should_disarm);
         self.disarm_request = self.is_powered && solenoid_should_disarm;
     }
 }
@@ -186,6 +190,7 @@ pub struct A380AutobrakeController {
     should_reject_rto_mode_after_time_in_flight: DelayedTrueLogicGate,
 
     autobrake_knob: A380AutobrakeKnobSelectorSolenoid,
+    selection_knob_should_return_disarm: DelayedTrueLogicGate,
 
     external_disarm_event: bool,
 
@@ -214,6 +219,8 @@ impl A380AutobrakeController {
     const MARGIN_PERCENT_TO_TARGET_TO_REMOVE_DECEL_IN_LANDING_MODE: f64 = 70.;
     const TARGET_TO_SHOW_DECEL_IN_RTO_MS2: f64 = -2.7;
     const TARGET_TO_REMOVE_DECEL_IN_RTO_MS2: f64 = -2.;
+
+    const KNOB_SOLENOID_DISARM_DELAY: Duration = Duration::from_millis(500);
 
     pub fn new(context: &mut InitContext) -> A380AutobrakeController {
         A380AutobrakeController {
@@ -250,6 +257,9 @@ impl A380AutobrakeController {
             autobrake_knob: A380AutobrakeKnobSelectorSolenoid::new(
                 context,
                 ElectricalBusType::DirectCurrent(2),
+            ),
+            selection_knob_should_return_disarm: DelayedTrueLogicGate::new(
+                Self::KNOB_SOLENOID_DISARM_DELAY,
             ),
 
             external_disarm_event: false,
@@ -413,8 +423,8 @@ impl A380AutobrakeController {
             || (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO)
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
-            || (self.mode == A380AutobrakeMode::DISARM
-                && autobrake_panel.selected_mode() != A380AutobrakeKnobPosition::DISARM)
+            //|| (self.mode == A380AutobrakeMode::DISARM
+              //  && autobrake_panel.selected_mode() != A380AutobrakeKnobPosition::DISARM)
           // || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.arming_authorized())
             || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
     }
@@ -510,7 +520,7 @@ impl A380AutobrakeController {
 
         let rto_disable = self.rto_mode_deselected_this_update(autobrake_panel);
 
-        let previous_mode = self.mode;
+        //let previous_mode = self.mode;
         self.mode = self.determine_mode(autobrake_panel);
 
         if rto_disable || self.should_disarm(context, autobrake_panel) {
@@ -521,10 +531,14 @@ impl A380AutobrakeController {
             self.btv_scheduler.disarm()
         }
 
-        // Disarm solenoid only when arming is lost
-        self.autobrake_knob.disarm(
-            self.mode == A380AutobrakeMode::DISARM && previous_mode != A380AutobrakeMode::DISARM,
+        self.selection_knob_should_return_disarm.update(
+            context,
+            self.mode == A380AutobrakeMode::DISARM && !autobrake_panel.is_disarmed_position(),
         );
+
+        // Disarm solenoid only when arming is lost
+        self.autobrake_knob
+            .disarm(self.selection_knob_should_return_disarm.output());
 
         self.deceleration_governor
             .engage_when(self.should_engage_deceleration_governor(context, autobrake_panel));
@@ -1102,18 +1116,16 @@ impl BtvDecelScheduler {
 
     fn estimated_stopping_position_at_current_decel_or_btv(&self) -> Length {
         match self.state {
-            BTVState::RotOptimization => {
+            BTVState::Disabled => Length::default(),
+            BTVState::Armed | BTVState::RotOptimization => {
                 // If waiting to reach sufficient decel, it means we'll stop at exit as planned
                 self.braking_distance_remaining()
             }
-            BTVState::Disabled
-            | BTVState::Armed
-            | BTVState::Decel
-            | BTVState::EndOfBraking
-            | BTVState::OutOfDecelRange => self.stopping_distance_estimation_for_decel(
-                self.ground_speed,
-                self.actual_deceleration,
-            ),
+            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => self
+                .stopping_distance_estimation_for_decel(
+                    self.ground_speed,
+                    self.actual_deceleration,
+                ),
         }
     }
 
