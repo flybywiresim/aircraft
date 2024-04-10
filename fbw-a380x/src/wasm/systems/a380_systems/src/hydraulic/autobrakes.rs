@@ -220,7 +220,7 @@ impl A380AutobrakeController {
     const TARGET_TO_SHOW_DECEL_IN_RTO_MS2: f64 = -2.7;
     const TARGET_TO_REMOVE_DECEL_IN_RTO_MS2: f64 = -2.;
 
-    const KNOB_SOLENOID_DISARM_DELAY: Duration = Duration::from_millis(500);
+    const KNOB_SOLENOID_DISARM_DELAY: Duration = Duration::from_millis(1000);
 
     pub fn new(context: &mut InitContext) -> A380AutobrakeController {
         A380AutobrakeController {
@@ -520,7 +520,6 @@ impl A380AutobrakeController {
 
         let rto_disable = self.rto_mode_deselected_this_update(autobrake_panel);
 
-        //let previous_mode = self.mode;
         self.mode = self.determine_mode(autobrake_panel);
 
         if rto_disable || self.should_disarm(context, autobrake_panel) {
@@ -533,7 +532,8 @@ impl A380AutobrakeController {
 
         self.selection_knob_should_return_disarm.update(
             context,
-            self.mode == A380AutobrakeMode::DISARM && !autobrake_panel.is_disarmed_position(),
+            (self.mode == A380AutobrakeMode::DISARM || self.mode == A380AutobrakeMode::RTO)
+                && !autobrake_panel.is_disarmed_position(),
         );
 
         // Disarm solenoid only when arming is lost
@@ -752,7 +752,7 @@ impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
     const MAX_DECEL_WET_MS2: f64 = -1.95;
 
-    const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.1;
+    const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.25;
     const MIN_SPEED_FOR_STOPPING_ESTIMATION_MS: f64 = 15.;
     const MAX_STOPPING_DISTANCE_M: f64 = 5000.;
 
@@ -951,8 +951,9 @@ impl BtvDecelScheduler {
     fn arming_authorized(&self) -> bool {
         self.runway_length.is_normal_operation()
             && self.runway_length.value().get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
-            && (self.oans_distance_to_exit.is_normal_operation()
-                || self.in_flight_btv_stopping_distance.is_normal_operation())
+            && self.in_flight_btv_stopping_distance.is_normal_operation()
+            && self.runway_length.value().get::<meter>()
+                > self.dry_estimated_distance.output().get::<meter>()
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
@@ -1116,10 +1117,32 @@ impl BtvDecelScheduler {
 
     fn estimated_stopping_position_at_current_decel_or_btv(&self) -> Length {
         match self.state {
-            BTVState::Disabled => Length::default(),
-            BTVState::Armed | BTVState::RotOptimization => {
-                // If waiting to reach sufficient decel, it means we'll stop at exit as planned
-                self.braking_distance_remaining()
+            BTVState::Disabled | BTVState::Armed => {
+                println!("BTV DISABLE 0 STOP");
+                Length::default()
+            }
+            BTVState::RotOptimization => {
+                // let min_distance_to_stop_at_selected_decel = self
+                //     .stopping_distance_estimation_for_decel(
+                //         self.ground_speed,
+                //         self.desired_deceleration,
+                //     );
+                // // If waiting to reach sufficient decel, it means we'll stop at exit as planned
+                // self.braking_distance_remaining()
+                //     .max(min_distance_to_stop_at_selected_decel)
+
+                println!(
+                    "BTV ROT {:.0} STOP",
+                    self.stopping_distance_estimation_for_decel(
+                        self.ground_speed,
+                        self.deceleration_request,
+                    )
+                    .get::<meter>()
+                );
+                self.stopping_distance_estimation_for_decel(
+                    self.ground_speed,
+                    self.deceleration_request,
+                )
             }
             BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => self
                 .stopping_distance_estimation_for_decel(
