@@ -368,11 +368,12 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         }, airport.ident, procedureIdent, undefined);
     }
 
-    static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
-        const altitude = Number.isFinite(segment?.runway?.thresholdLocation?.alt) ? 10 * Math.round(segment.runway.thresholdLocation.alt / 10) + 1500 : 1500;
+    static originExtendedCenterline(segment: OriginSegment, runway: Runway, runwayLeg: FlightPlanLeg): FlightPlanLeg {
+        const altitude = Number.isFinite(runway?.thresholdLocation?.alt) ? 10 * Math.round(runway.thresholdLocation.alt / 10) + 1500 : 1500;
+        const bearing = runway.magneticBearing;
 
         // TODO magvar
-        const annotation = runwayLeg.ident.substring(0, 3) + Math.round(runwayLeg.definition.magneticCourse).toString().padStart(3, '0');
+        const annotation = runwayLeg.ident.substring(0, 3) + Math.round(bearing).toString().padStart(3, '0');
         const ident = Math.round(altitude).toFixed(0);
 
         return new FlightPlanLeg(segment, {
@@ -380,7 +381,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             type: LegType.FA,
             overfly: false,
             waypoint: runwayLeg.terminationWaypoint(),
-            magneticCourse: runwayLeg.definition.magneticCourse,
+            magneticCourse: bearing,
             altitude1: altitude,
         }, ident, annotation, undefined);
     }
