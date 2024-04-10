@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, Instrument, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, ArincEventBus } from 'index-no-react';
+import { Arinc429Word, ArincEventBus } from 'index-no-react';
 
 export interface BtvData {
     /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */
@@ -64,39 +64,15 @@ export class BtvArincProvider implements Instrument {
         const subscriber = this.bus.getSubscriber<BtvData>();
 
         subscriber.on('btvRotRaw').whenChanged().handle((w) => {
-            // Workaround if plain value was transmitted instead of Arinc429Word
-            if (Math.abs(w) < 10000) {
-                const newW = Arinc429Word.empty();
-                newW.ssm = w > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
-                newW.value = w;
-                publisher.pub('btvRot', newW);
-            } else {
-                publisher.pub('btvRot', new Arinc429Word(w));
-            }
+            publisher.pub('btvRot', new Arinc429Word(w));
         });
 
         subscriber.on('btvTurnAroundIdleReverseRaw').whenChanged().handle((w) => {
-            // Workaround if plain value was transmitted instead of Arinc429Word
-            if (Math.abs(w) < 10000) {
-                const newW = Arinc429Word.empty();
-                newW.ssm = w > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
-                newW.value = w;
-                publisher.pub('btvTurnAroundIdleReverse', newW);
-            } else {
-                publisher.pub('btvTurnAroundIdleReverse', new Arinc429Word(w));
-            }
+            publisher.pub('btvTurnAroundIdleReverse', new Arinc429Word(w));
         });
 
         subscriber.on('btvTurnAroundMaxReverseRaw').whenChanged().handle((w) => {
-            // Workaround if plain value was transmitted instead of Arinc429Word
-            if (Math.abs(w) < 10000) {
-                const newW = Arinc429Word.empty();
-                newW.ssm = w > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
-                newW.value = w;
-                publisher.pub('btvTurnAroundMaxReverse', newW);
-            } else {
-                publisher.pub('btvTurnAroundMaxReverse', new Arinc429Word(w));
-            }
+            publisher.pub('btvTurnAroundMaxReverse', new Arinc429Word(w));
         });
     }
 

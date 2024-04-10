@@ -6,7 +6,7 @@ import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, In
 import { A380EfisNdRangeValue, a380EfisRangeSettings, ArincEventBus, EfisNdMode, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 import {
-    a380EfisZoomRangeSettings, A380EfisZoomRangeValue, BtvSimvarPublisher, FmsOansArincProvider, FmsOansSimvarPublisher, Oanc, OANC_RENDER_HEIGHT,
+    a380EfisZoomRangeSettings, A380EfisZoomRangeValue, BtvArincProvider, BtvSimvarPublisher, FmsOansArincProvider, FmsOansSimvarPublisher, Oanc, OANC_RENDER_HEIGHT,
     OANC_RENDER_WIDTH, OansControlEvents, ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
 
@@ -56,6 +56,8 @@ class NDInstrument implements FsInstrument {
     private readonly fmsOansArincProvider: FmsOansArincProvider;
 
     private readonly btvSimvarPublisher: BtvSimvarPublisher;
+
+    private readonly btvArincProvider: BtvArincProvider;
 
     private readonly fgDataPublisher: FGDataPublisher;
 
@@ -171,6 +173,7 @@ class NDInstrument implements FsInstrument {
         this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
         this.fmsOansArincProvider = new FmsOansArincProvider(this.bus);
         this.btvSimvarPublisher = new BtvSimvarPublisher(this.bus);
+        this.btvArincProvider = new BtvArincProvider(this.bus);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
@@ -198,6 +201,7 @@ class NDInstrument implements FsInstrument {
         this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
         this.backplane.addPublisher('hEvent', this.hEventPublisher);
 
+        this.backplane.addInstrument('btvArinc', this.btvArincProvider);
         this.backplane.addInstrument('fms-arinc', this.fmsOansArincProvider);
         this.backplane.addInstrument('clock', this.clock);
 
