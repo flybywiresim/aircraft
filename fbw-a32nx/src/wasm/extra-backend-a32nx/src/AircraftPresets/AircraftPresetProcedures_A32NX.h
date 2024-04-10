@@ -33,7 +33,7 @@ class AircraftPresetProcedures_A32NX {
         // if no Ext Pwr is available we start the APU here with a bat only fire test
         ProcedureStep{"APU Fire Test On",         PROC, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     "1 (>L:A32NX_FIRE_TEST_APU)"},
         ProcedureStep{"APU Fire Test Off",        PROC, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     "0 (>L:A32NX_FIRE_TEST_APU)"},
-        ProcedureStep{"APU Master On",            STEP, 3000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
+        ProcedureStep{"APU Master On",            NOEX, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                     "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
         ProcedureStep{"APU Start On",             STEP, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
                                                               "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",            "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
 
@@ -89,7 +89,10 @@ class AircraftPresetProcedures_A32NX {
                                                               "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
 
         // To allow slats/flaps to retract in expedited mode when engines were running before and slats/flaps were out
-        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 ==",              "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
+        // TODO: Check if the flaps are actually out
+        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 0 == "
+                                                              "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 0 == && "
+                                                              "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 == ||",           "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
 
         //WORKAROUND for intermittent HOT AIR PB Fault when using expedited mode
         ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==",           "0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
