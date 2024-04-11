@@ -896,7 +896,6 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   double       toga          = to + (ga - to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
-  bool         isFlexActive    = false;
   const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
     isFlexActive = true;
@@ -904,8 +903,6 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
     isFlexActive = false;
   }
 
-  double transitionStartTime = 0;
-  double transitionFactor    = 0;
   if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive  = true;
     transitionStartTime = simulationTime;
