@@ -111,8 +111,8 @@ impl Default for MixedAudio {
             // receive_att: false,
             // receive_pa: false,
             //
-            volume_com1: 0,
-            volume_com2: 0,
+            volume_com1: u32::MAX,
+            volume_com2: u32::MAX,
             volume_com3: 0,
             volume_adf1: 0,
             volume_adf2: 0,
@@ -466,23 +466,32 @@ impl SimulationElement for AdaptationBoard {
     }
 
     fn export_to_external_software(&self, data: &mut crate::simulation::ExternalData) {
-        data.set_ivao(
-            self.computer_a
-                .get_second_card()
-                .as_ref()
-                .unwrap()
-                .get_selcal(),
-            self.mixed_audio.volume_com1 as u8,
-            self.mixed_audio.volume_com2 as u8,
-        );
-        data.set_vpilot(
-            1,
-            self.computer_a
-                .get_second_card()
-                .as_ref()
-                .unwrap()
-                .get_selcal(),
-        );
+        if self.mixed_audio.volume_com1 != u32::MAX {
+            println!(
+                "Setting data in external data {} {}",
+                self.mixed_audio.volume_com1 as u8, self.mixed_audio.volume_com2 as u8
+            );
+            data.set_ivao(
+                self.computer_a
+                    .get_second_card()
+                    .as_ref()
+                    .unwrap()
+                    .get_selcal(),
+                self.mixed_audio.volume_com1 as u8,
+                self.mixed_audio.volume_com2 as u8,
+            );
+            data.set_vpilot(
+                1,
+                self.computer_a
+                    .get_second_card()
+                    .as_ref()
+                    .unwrap()
+                    .get_selcal(),
+            );
+        } else {
+            data.set_ivao(0, 0, 0);
+            data.set_vpilot(1, 0);
+        }
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {

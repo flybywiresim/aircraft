@@ -231,6 +231,9 @@ impl MsfsHandler {
 
                     self.external_data = external_data;
 
+                    println!("");
+                    println!("");
+
                     self.post_tick(sim_connect)?;
                 }
             }
@@ -244,9 +247,18 @@ impl MsfsHandler {
                 SimConnectRecv::ClientData(data)
                     if data.id() == MsfsHandler::CLIENT_DATA_REQUEST_ID_IVAO =>
                 {
-                    let ivao: &Ivao = data.into::<Ivao>(sim_connect).unwrap();
-                    self.external_data
-                        .set_ivao(ivao.selcal, ivao.volume_com1, ivao.volume_com2);
+                    if self.external_data.get_volume_com1() != u8::MAX {
+                        let ivao: &Ivao = data.into::<Ivao>(sim_connect).unwrap();
+                        println!(
+                            "Received ivao {} {} {}",
+                            ivao.selcal, ivao.volume_com1, ivao.volume_com2
+                        );
+                        self.external_data.set_ivao(
+                            ivao.selcal,
+                            ivao.volume_com1,
+                            ivao.volume_com2,
+                        );
+                    }
                 }
                 SimConnectRecv::ClientData(data)
                     if data.id() == MsfsHandler::CLIENT_DATA_REQUEST_ID_VPILOT =>
@@ -671,14 +683,33 @@ impl ATCServices {
         new_external_data: &ExternalData,
         previous_external_data: &ExternalData,
     ) {
+        println!(
+            "Before writing to ivao = {} {} {}      {} {} {}",
+            previous_external_data.get_selcal(),
+            previous_external_data.get_volume_com1(),
+            previous_external_data.get_volume_com2(),
+            new_external_data.get_selcal(),
+            new_external_data.get_volume_com1(),
+            new_external_data.get_volume_com2()
+        );
+
         if previous_external_data.get_selcal() != new_external_data.get_selcal()
             || previous_external_data.get_volume_com1() != new_external_data.get_volume_com1()
             || previous_external_data.get_volume_com2() != new_external_data.get_volume_com2()
         {
+            println!("Writing to ivao...");
             let ivao: Ivao = Ivao {
                 selcal: new_external_data.get_selcal() as u8,
-                volume_com1: new_external_data.get_volume_com1(),
-                volume_com2: new_external_data.get_volume_com2(),
+                volume_com1: if new_external_data.get_volume_com1() != u8::MAX {
+                    new_external_data.get_volume_com1()
+                } else {
+                    0
+                },
+                volume_com2: if new_external_data.get_volume_com2() != u8::MAX {
+                    new_external_data.get_volume_com2()
+                } else {
+                    0
+                },
             };
 
             let area = sim_connect.get_client_area(ATCServices::AREA_IVAO).unwrap();
