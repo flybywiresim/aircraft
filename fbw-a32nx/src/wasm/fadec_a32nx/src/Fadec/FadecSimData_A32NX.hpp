@@ -330,7 +330,7 @@ class FadecSimData_A32NX {
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
-    airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Celsius, AUTO_READ);
+    airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
