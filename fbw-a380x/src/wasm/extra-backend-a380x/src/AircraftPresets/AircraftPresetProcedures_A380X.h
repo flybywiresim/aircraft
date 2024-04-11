@@ -241,6 +241,10 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Flaps 0",               STEP, 2000, "(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==",                         "0 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
         ProcedureStep{"Rudder Trim Reset",     STEP, 2000, "(A:RUDDER TRIM, Radians) 0 ==",                             "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Spoiler Disarm",        STEP, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",                             "0 (>K:SPOILERS_ARM_SET)"},
+        ProcedureStep{"Await Flaps 0",         NCON, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 0 =="
+                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 0 == &&",            ""},
+        ProcedureStep{"Await Slats 0",         NCON, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 0 == "
+                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 0 == &&",            ""},
 
         ProcedureStep{"ENG 4 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:4, Bool) !",                       "4 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 3 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:3, Bool) !",                       "3 (>K:FUELSYSTEM_VALVE_CLOSE)"},
