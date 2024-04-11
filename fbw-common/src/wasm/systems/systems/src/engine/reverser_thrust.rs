@@ -1,5 +1,3 @@
-use std::cmp::{max, min};
-
 use uom::si::{
     acceleration::{foot_per_second_squared, meter_per_second_squared},
     angular_acceleration::radian_per_second_squared,
