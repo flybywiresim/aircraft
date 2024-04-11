@@ -10,10 +10,10 @@ import { Label, LabelStyle } from 'instruments/src/OANC';
 import { BtvData } from 'instruments/src/OANC/BtvPublisher';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
-import { fractionalPointAlongLine, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
+import { fractionalPointAlongLine, pointAngle, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
 import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
 
-const TOUCHDOWN_ZONE_DISTANCE = 400;
+const TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -146,26 +146,30 @@ export class BrakeToVacateUtils<T extends number> {
 
     selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
         const thrLoc = this.btvThresholdPosition;
+        const exitLastIndex = feature.geometry.coordinates.length - 1;
         const exitLoc1 = feature.geometry.coordinates[0] as Position;
-        const exitLoc2 = feature.geometry.coordinates[feature.geometry.coordinates.length - 1] as Position;
-        const exitDist1 = pointDistance(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1]);
-        const exitDist2 = pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
+        const exitLoc2 = feature.geometry.coordinates[exitLastIndex] as Position;
+        const exitDistFromCenterLine1 = pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition);
+        const exitDistFromCenterLine2 = pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition);
 
-        if (exitDist1 < exitDist2) {
-            // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc1, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist1 < TOUCHDOWN_ZONE_DISTANCE) {
-                return;
-            }
-            this.btvExitPosition = exitLoc1;
-        } else {
-            // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
-            if (pointToLineDistance(exitLoc2, this.btvThresholdPosition, this.btvOppositeThresholdPosition) > 20 || exitDist2 < TOUCHDOWN_ZONE_DISTANCE) {
-                return;
-            }
-            this.btvExitPosition = exitLoc2;
+        // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
+        const exitStartDistFromThreshold = (exitDistFromCenterLine1 < exitDistFromCenterLine2)
+            ? pointDistance(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1]) : pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
+
+        const exitAngle = (exitDistFromCenterLine1 < exitDistFromCenterLine2)
+            ? (pointAngle(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1])
+                - pointAngle(exitLoc1[0], exitLoc1[1], feature.geometry.coordinates[1][0], feature.geometry.coordinates[1][1]))
+            : (pointAngle(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1])
+                - pointAngle(exitLoc2[0], exitLoc2[1], feature.geometry.coordinates[exitLastIndex - 1][0], feature.geometry.coordinates[exitLastIndex - 1][1]));
+        // Don't run backwards, don't start outside of runway, don't start before minimum touchdown distance
+        if (Math.abs(exitAngle) > 120
+        || Math.min(exitDistFromCenterLine1, exitDistFromCenterLine2) > 20
+        || exitStartDistFromThreshold < TOUCHDOWN_ZONE_DISTANCE) {
+            return;
         }
+        this.btvExitPosition = (exitDistFromCenterLine1 < exitDistFromCenterLine2) ? exitLoc1 : exitLoc2;
 
-        // Subtract 400m due distance of touchdown zone from threshold
+        // Subtract 400m due to distance of touchdown zone from threshold
         const exitDistance = pointDistance(
             thrLoc[0],
             thrLoc[1],
@@ -179,7 +183,7 @@ export class BrakeToVacateUtils<T extends number> {
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/${exit}`, true);
 
         this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
-        if (exitDist1 < exitDist2) {
+        if (exitDistFromCenterLine1 < exitDistFromCenterLine2) {
             this.btvPathGeometry.unshift(thrLoc);
         } else {
             this.btvPathGeometry.push(thrLoc);
@@ -333,8 +337,9 @@ export class BrakeToVacateUtils<T extends number> {
         const dryWetLinesAreUpdating = radioAlt.valueOr(1000) <= 600;
 
         // Aircraft distance after threshold
-        const isPastThreshold = this.remaininingDistToRwyEnd.get() < this.btvRunwayLda.get();
         const aircraftDistFromThreshold = pointDistance(this.btvThresholdPosition[0], this.btvThresholdPosition[1], this.aircraftPpos[0], this.aircraftPpos[1]);
+        const aircraftDistFromRunwayEnd = pointDistance(this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1], this.aircraftPpos[0], this.aircraftPpos[1]);
+        const isPastThreshold = aircraftDistFromRunwayEnd < this.btvRunwayLda.get();
         // As soon as aircraft passes the touchdown zone distance, draw DRY and WET stop bars from there
         const touchdownDistance = (dryWetLinesAreUpdating && isPastThreshold && aircraftDistFromThreshold > TOUCHDOWN_ZONE_DISTANCE) ? aircraftDistFromThreshold : TOUCHDOWN_ZONE_DISTANCE;
         const dryRunoverCondition = (touchdownDistance + this.dryStoppingDistance.get()) > this.btvRunwayLda.get();
