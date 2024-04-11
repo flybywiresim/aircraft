@@ -348,6 +348,9 @@ impl AudioControlPanel {
         self.last_complete_cycle_sent += context.delta();
 
         if self.is_power_supply_powered {
+            self.vhfs[0].update_vhf1(context);
+            self.vhfs[1].update_vhf2(context);
+
             if !bus_acp.is_empty() {
                 // These will be used later on
                 // Especially "calls" when SELCAL will be
@@ -382,14 +385,12 @@ impl AudioControlPanel {
 
             if self.vhfs[0].has_changed()
                 || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf1
-                || self.vhfs[0].update_vhf1(context)
             {
                 self.send_volume_control(bus_acp, 2);
             }
 
             if self.vhfs[1].has_changed()
                 || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHf2
-                || self.vhfs[1].update_vhf2(context)
             {
                 self.send_volume_control(bus_acp, 3);
             }
@@ -446,28 +447,63 @@ impl AudioControlPanel {
             if self.adfs[1].has_changed() {
                 self.send_volume_control(bus_acp, 15);
             }
+
+            if self.selcal != 0 {
+                // selcal on vhf1
+                if self.selcal & 0x1 == 1 {
+                    if self.last_blink_vhf1.as_millis() > 300 {
+                        // Toggle the bit to make it blink
+                        self.selcal_to_blink ^= 0b0000_0001;
+                        self.last_blink_vhf1 = Duration::from_secs(0);
+                    }
+                    self.last_blink_vhf1 += context.delta();
+                } else {
+                    self.selcal_to_blink &= 0b1111_1110;
+                }
+
+                // selcal on vhf2
+                if (self.selcal >> 1) & 0x1 == 1 {
+                    if self.last_blink_vhf2.as_millis() > 300 {
+                        // Toggle the bit to make it blink
+                        self.selcal_to_blink ^= 0b0000_0010;
+                        self.last_blink_vhf2 = Duration::from_secs(0);
+                    }
+                    self.last_blink_vhf2 += context.delta();
+                } else {
+                    self.selcal_to_blink &= 0b1111_1101;
+                }
+            } else {
+                self.selcal_to_blink = 0;
+            }
+        } else {
+            self.last_complete_cycle_sent = Duration::from_secs(0);
+            self.last_blink_vhf1 = Duration::from_secs(0);
+            self.last_blink_vhf2 = Duration::from_secs(0);
+            self.selcal_to_blink = 0;
         }
     }
 }
 
 impl SimulationElement for AudioControlPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for vhf in self.vhfs.iter_mut() {
-            vhf.accept(visitor);
-        }
-        for comm in self.comms.iter_mut() {
-            comm.accept(visitor);
-        }
-        for adf in self.adfs.iter_mut() {
-            adf.accept(visitor);
-        }
-        for vor in self.vors.iter_mut() {
-            vor.accept(visitor);
-        }
+        if self.is_power_supply_powered {
+            for vhf in self.vhfs.iter_mut() {
+                vhf.accept(visitor);
+            }
+            for comm in self.comms.iter_mut() {
+                comm.accept(visitor);
+            }
+            for adf in self.adfs.iter_mut() {
+                adf.accept(visitor);
+            }
+            for vor in self.vors.iter_mut() {
+                vor.accept(visitor);
+            }
 
-        self.ils.accept(visitor);
-        self.gls.accept(visitor);
-        self.markers.accept(visitor);
+            self.ils.accept(visitor);
+            self.gls.accept(visitor);
+            self.markers.accept(visitor);
+        }
 
         visitor.visit(self);
     }
@@ -512,25 +548,27 @@ impl TransceiverACPFacade {
         }
     }
 
-    fn update_vhf1(&mut self, context: &UpdateContext) -> bool {
-        if self.volume != context.external_data().get_volume_com1() as u32 {
-            self.volume = context.external_data().get_volume_com1() as u32;
-            self.changed = true;
-
-            true
-        } else {
-            false
+    fn update_vhf1(&mut self, context: &UpdateContext) {
+        println!(
+            "Before updating ACP vhf1 = {} {}",
+            self.volume,
+            context.external_data().get_volume_com1()
+        );
+        if !self.changed {
+            if self.volume != context.external_data().get_volume_com1() as u32 {
+                self.volume = context.external_data().get_volume_com1() as u32;
+                println!("Updating ACP vhf1...");
+                self.changed = true;
+            }
         }
     }
 
-    fn update_vhf2(&mut self, context: &UpdateContext) -> bool {
-        if self.volume != context.external_data().get_volume_com2() as u32 {
-            self.volume = context.external_data().get_volume_com2() as u32;
-            self.changed = true;
-
-            true
-        } else {
-            false
+    fn update_vhf2(&mut self, context: &UpdateContext) {
+        if !self.changed {
+            if self.volume != context.external_data().get_volume_com2() as u32 {
+                self.volume = context.external_data().get_volume_com2() as u32;
+                self.changed = true;
+            }
         }
     }
 
@@ -555,6 +593,7 @@ impl SimulationElement for TransceiverACPFacade {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.has_changed() {
+            println!("Writing volume ACP vhf1 = {}", self.volume);
             writer.write(&self.volume_id, self.volume);
         }
     }
