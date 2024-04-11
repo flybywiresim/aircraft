@@ -1006,23 +1006,19 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
     isFlexActive = true;
-    std::cout << "Flex Active" << std::endl;
   } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
     isFlexActive = false;
-    std::cout << "Flex Inactive" << std::endl;
   }
 
   if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive  = true;
     transitionStartTime = simulationTime;
     transitionFactor    = 0.2;
-    std::cout << "Transition Active" << std::endl;
     // transitionFactor = (clb - flex) / transitionTime;
   } else if (!isFlexActive) {
     isTransitionActive  = false;
     transitionStartTime = 0;
     transitionFactor    = 0;
-    std::cout << "Transition Inactive" << std::endl;
   }
 
   double deltaThrust = 0;
