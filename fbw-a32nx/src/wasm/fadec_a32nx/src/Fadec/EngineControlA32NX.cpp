@@ -1005,19 +1005,17 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
   const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
-    isFlexActive = true;
+    wasFlexActive = true;
   } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
-    isFlexActive = false;
+    wasFlexActive = false;
   }
 
-  double transitionStartTime = 0;
-  double transitionFactor    = 0;
-  if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
+  if (wasFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive  = true;
     transitionStartTime = simulationTime;
     transitionFactor    = 0.2;
     // transitionFactor = (clb - flex) / transitionTime;
-  } else if (!isFlexActive) {
+  } else if (!wasFlexActive) {
     isTransitionActive  = false;
     transitionStartTime = 0;
     transitionFactor    = 0;
@@ -1030,12 +1028,12 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
       deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
     }
     if (flex + deltaThrust >= clb) {
-      isFlexActive       = false;
+      wasFlexActive = false;
       isTransitionActive = false;
     }
   }
 
-  if (isFlexActive) {
+  if (wasFlexActive) {
     clb = (std::min)(clb, flex) + deltaThrust;
   }
 
