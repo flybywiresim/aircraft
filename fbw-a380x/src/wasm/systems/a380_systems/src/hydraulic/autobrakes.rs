@@ -1,12 +1,12 @@
 use systems::{
-    hydraulic::brake_circuit::{AutobrakeDecelerationGovernor, AutobrakeMode},
+    hydraulic::brake_circuit::AutobrakeDecelerationGovernor,
     overhead::PressSingleSignalButton,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         interpolation,
         low_pass_filter::LowPassFilter,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        LgciuInterface, LgciuWeightOnWheels,
+        LgciuInterface,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -304,30 +304,24 @@ impl A380AutobrakeController {
             && !self.should_reject_rto_mode_after_time_in_flight.output()
         {
             A380AutobrakeMode::RTO
-        } else {
-            if autobrake_panel.selected_mode_has_changed() {
-                match autobrake_panel.selected_mode() {
-                    A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
-                    A380AutobrakeKnobPosition::LOW => A380AutobrakeMode::LOW,
-                    A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
-                    A380AutobrakeKnobPosition::L3 => A380AutobrakeMode::L3,
-                    A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
-                    A380AutobrakeKnobPosition::BTV => {
-                        self.btv_scheduler.enable();
-                        A380AutobrakeMode::BTV
-                    }
+        } else if autobrake_panel.selected_mode_has_changed() {
+            match autobrake_panel.selected_mode() {
+                A380AutobrakeKnobPosition::DISARM => A380AutobrakeMode::DISARM,
+                A380AutobrakeKnobPosition::LOW => A380AutobrakeMode::LOW,
+                A380AutobrakeKnobPosition::L2 => A380AutobrakeMode::L2,
+                A380AutobrakeKnobPosition::L3 => A380AutobrakeMode::L3,
+                A380AutobrakeKnobPosition::HIGH => A380AutobrakeMode::HIGH,
+                A380AutobrakeKnobPosition::BTV => {
+                    self.btv_scheduler.enable();
+                    A380AutobrakeMode::BTV
                 }
-            } else {
-                self.mode
             }
+        } else {
+            self.mode
         }
     }
 
-    fn should_engage_deceleration_governor(
-        &self,
-        context: &UpdateContext,
-        autobrake_panel: &A380AutobrakePanel,
-    ) -> bool {
+    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
         self.is_armed()
             && self.ground_spoilers_are_deployed // We wait 5s after deploy, but they need to be deployed even if nose compressed
             && (self.ground_spoilers_are_deployed_since_5s.output()
@@ -557,7 +551,7 @@ impl A380AutobrakeController {
             .disarm(self.selection_knob_should_return_disarm.output());
 
         self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor(context, autobrake_panel));
+            .engage_when(self.should_engage_deceleration_governor(context));
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
@@ -777,7 +771,7 @@ enum BTVState {
     RotOptimization,
     Decel,
     EndOfBraking,
-    OutOfDecelRange,
+    _OutOfDecelRange,
 }
 
 struct BrakingDistanceCalculator {
@@ -792,13 +786,15 @@ struct BrakingDistanceCalculator {
     predicted_touchdown_speed: Velocity,
 }
 impl BrakingDistanceCalculator {
-    const MAX_DECEL_DRY_MS2: f64 = -2.9;
-    const MAX_DECEL_WET_MS2: f64 = -1.95;
+    const MAX_DECEL_DRY_MS2: f64 = -2.8;
+    const MAX_DECEL_WET_MS2: f64 = -1.8;
 
     const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.25;
     const MIN_SPEED_FOR_STOPPING_ESTIMATION_MS: f64 = 15.;
 
     const MAX_STOPPING_DISTANCE_M: f64 = 5000.;
+
+    const ROLLING_TIME_AFTER_TD_BEFORE_BRAKES_S: f64 = 5.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -861,17 +857,19 @@ impl BrakingDistanceCalculator {
     }
 
     fn stopping_distance_estimation_for_dry(&self, current_speed: Velocity) -> Length {
-        self.stopping_distance_estimation_for_decel(
-            current_speed,
-            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2),
-        )
+        self.distance_run_before_autobrake_active(current_speed)
+            + self.stopping_distance_estimation_for_decel(
+                current_speed,
+                Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2),
+            )
     }
 
     fn stopping_distance_estimation_for_wet(&self, current_speed: Velocity) -> Length {
-        self.stopping_distance_estimation_for_decel(
-            current_speed,
-            Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_WET_MS2),
-        )
+        self.distance_run_before_autobrake_active(current_speed)
+            + self.stopping_distance_estimation_for_decel(
+                current_speed,
+                Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_WET_MS2),
+            )
     }
 
     fn stopping_distance_estimation_for_decel(
@@ -897,6 +895,13 @@ impl BrakingDistanceCalculator {
 
     fn wet(&self) -> Length {
         self.wet_estimated_distance.output()
+    }
+
+    fn distance_run_before_autobrake_active(&self, speed_at_touchdown: Velocity) -> Length {
+        Length::new::<meter>(
+            speed_at_touchdown.get::<meter_per_second>()
+                * Self::ROLLING_TIME_AFTER_TD_BEFORE_BRAKES_S,
+        )
     }
 }
 impl SimulationElement for BrakingDistanceCalculator {
@@ -1013,7 +1018,7 @@ impl BtvDecelScheduler {
 
     fn decel(&self) -> Acceleration {
         match self.state {
-            BTVState::Decel | BTVState::OutOfDecelRange => self.deceleration_request,
+            BTVState::Decel | BTVState::_OutOfDecelRange => self.deceleration_request,
             BTVState::EndOfBraking => self.end_of_decel_acceleration,
             BTVState::RotOptimization => self.accel_during_rot_opti(),
             _ => Acceleration::new::<meter_per_second_squared>(5.),
@@ -1035,7 +1040,7 @@ impl BtvDecelScheduler {
 
         self.integrate_distance(context, ground_speed);
 
-        self.compute_decel(context, ground_speed);
+        self.compute_decel(ground_speed);
 
         self.state = self.update_state(ground_speed);
     }
@@ -1052,12 +1057,12 @@ impl BtvDecelScheduler {
         (distance_remaining_raw - distance_from_btv_exit).max(Length::default())
     }
 
-    fn compute_decel(&mut self, context: &UpdateContext, ground_speed: Velocity) {
+    fn compute_decel(&mut self, ground_speed: Velocity) {
         match self.state {
             BTVState::RotOptimization
             | BTVState::Decel
             | BTVState::EndOfBraking
-            | BTVState::OutOfDecelRange => {
+            | BTVState::_OutOfDecelRange => {
                 let speed_at_btv_release =
                     Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV_M_S) * 0.9; // 10% safety margin on release speed
 
@@ -1104,7 +1109,7 @@ impl BtvDecelScheduler {
 
     fn safety_margin(&self) -> f64 {
         match self.state {
-            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => {
+            BTVState::Decel | BTVState::EndOfBraking | BTVState::_OutOfDecelRange => {
                 let ratio_of_decel_distance =
                     self.braking_distance_remaining() / self.distance_remaining_at_decel_activation;
 
@@ -1123,12 +1128,10 @@ impl BtvDecelScheduler {
                 if self.spoilers_active {
                     self.update_desired_btv_deceleration();
                     BTVState::RotOptimization
+                } else if !self.arming_authorized() {
+                    BTVState::Disabled
                 } else {
-                    if !self.arming_authorized() {
-                        BTVState::Disabled
-                    } else {
-                        self.state
-                    }
+                    self.state
                 }
             }
             BTVState::RotOptimization => {
@@ -1174,9 +1177,9 @@ impl BtvDecelScheduler {
             BTVState::RotOptimization
             | BTVState::Decel
             | BTVState::EndOfBraking
-            | BTVState::OutOfDecelRange => {
+            | BTVState::_OutOfDecelRange => {
                 let distance_this_tick = ground_speed * context.delta_as_time();
-                self.rolling_distance = self.rolling_distance + distance_this_tick;
+                self.rolling_distance += distance_this_tick;
             }
 
             BTVState::Disabled | BTVState::Armed => self.rolling_distance = Length::default(),
@@ -1209,7 +1212,7 @@ impl BtvDecelScheduler {
         match self.state {
             BTVState::Disabled | BTVState::Armed => Acceleration::default(),
             BTVState::RotOptimization => self.deceleration_request,
-            BTVState::Decel | BTVState::EndOfBraking | BTVState::OutOfDecelRange => {
+            BTVState::Decel | BTVState::EndOfBraking | BTVState::_OutOfDecelRange => {
                 self.actual_deceleration
             }
         }
@@ -1257,5 +1260,48 @@ impl SimulationElement for BtvDecelScheduler {
             Length::new::<meter>(raw_feet_exit_length_arinc.value()),
             raw_feet_exit_length_arinc.ssm(),
         );
+    }
+}
+
+#[cfg(test)]
+mod braking_distance_tests {
+    use systems::simulation::test::TestBed;
+
+    use super::*;
+    use crate::systems::simulation::test::{ElementCtorFn, SimulationTestBed};
+
+    #[test]
+    fn landing_140_knot_dry_line() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(BrakingDistanceCalculator::new))
+            .with_update_after_power_distribution(|e, context| {
+                e.update_braking_estimations(
+                    context,
+                    Velocity::new::<knot>(140.),
+                    Acceleration::default(),
+                )
+            });
+
+        test_bed.set_on_ground(true);
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(test_bed.query_element(|e| e.dry().get::<meter>() > 1200.
+            && test_bed.query_element(|e| e.dry().get::<meter>() < 1500.)));
+    }
+
+    #[test]
+    fn landing_140_knot_wet_line() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(BrakingDistanceCalculator::new))
+            .with_update_after_power_distribution(|e, context| {
+                e.update_braking_estimations(
+                    context,
+                    Velocity::new::<knot>(140.),
+                    Acceleration::default(),
+                )
+            });
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(test_bed.query_element(|e| e.wet().get::<meter>() > 1700.
+            && test_bed.query_element(|e| e.wet().get::<meter>() < 2300.)));
     }
 }
