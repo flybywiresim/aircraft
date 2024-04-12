@@ -50,8 +50,9 @@ bool Pushback::initialize() {
 
   // Pushback Base Data
   //  will be updated every visual frame
-  DataDefinitionVector pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
+  DataDefVector pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
                                        {"L:A32NX_PARK_BRAKE_LEVER_POS", 0, UNITS.Bool},
+                                       {"SIM ON GROUND", 0, UNITS.Bool},
                                        {"PUSHBACK ATTACHED", 0, UNITS.Bool},
                                        {"PLANE HEADING DEGREES TRUE", 0, UNITS.degrees},
                                        {"RELATIVE WIND VELOCITY BODY Z", 0, UNITS.FeetSec}};
@@ -60,7 +61,7 @@ bool Pushback::initialize() {
 
   // Data definitions for PushbackDataID
   //  Will only be written to sim if the pushback system is enabled and the tug connected
-  DataDefinitionVector pushBackDataDef = {{"PUSHBACK WAIT", 0, UNITS.Bool},
+  DataDefVector pushBackDataDef = {{"PUSHBACK WAIT", 0, UNITS.Bool},
                                    {"VELOCITY BODY X", 0, UNITS.FeetSec},
                                    {"VELOCITY BODY Y", 0, UNITS.FeetSec},
                                    {"VELOCITY BODY Z", 0, UNITS.FeetSec},
@@ -81,7 +82,7 @@ bool Pushback::initialize() {
 
   // debug purposes
   pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
-  DataDefinitionVector pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
+  DataDefVector pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
                                         {"L:A32NX_PUSHBACK_SPD", 0, UNITS.FeetSec},
                                         {"L:A32NX_PUSHBACK_HDG", 0, UNITS.degrees},
                                         {"L:A32NX_PUSHBACK_INERTIA_SPD", 0, UNITS.FeetSec},
@@ -106,7 +107,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   // Check if the pushback system is enabled and conditions are met
   if (!msfsHandler.getAircraftIsReadyVar() || !pushbackBaseInfoPtr->data().pushbackSystemEnabled ||
-      !pushbackBaseInfoPtr->data().pushbackAttached || !msfsHandler.getSimOnGround()) {
+      !pushbackBaseInfoPtr->data().pushbackAttached || !pushbackBaseInfoPtr->data().simOnGround) {
     return true;
   }
 

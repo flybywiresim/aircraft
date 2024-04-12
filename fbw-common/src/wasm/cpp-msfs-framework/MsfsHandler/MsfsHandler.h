@@ -65,8 +65,6 @@ class MsfsHandler {
    */
   struct BaseSimData {
     FLOAT64 simulationTime;
-    FLOAT64 simulationRate;
-    FLOAT64 simOnGround;
     FLOAT64 aircraftIsReady;
     FLOAT64 aircraftDevelopmentState;
   };
@@ -102,10 +100,7 @@ class MsfsHandler {
   // Allows immediate view on runtime performance issue. Add additional instances into
   // Modules while developing and profiling a module's performance.
 #ifdef PROFILING
-  SimpleProfiler preUpdate{"MsfsHandler::preUpdate()", 100};
-  SimpleProfiler mainUpdate{"MsfsHandler::mainUpdate()", 100};
-  SimpleProfiler postUpdate{"MsfsHandler::postUpdate()", 100};
-  SimpleProfiler profiler{"MsfsHandler::update()", 100};
+  SimpleProfiler profiler{"MsfsHandler::update()", 120};
 #endif
 
  public:
@@ -158,30 +153,15 @@ class MsfsHandler {
   DataManager& getDataManager() { return dataManager; }
 
   /**
-   * @return current simulation time in seconds
-   */
-  [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
-
-  /**
-   * @return current simulation rate
-   */
-  [[nodiscard]] FLOAT64 getSimulationRate() const { return baseSimData->data().simulationRate; }
-
-  /**
-   * @return value of SimOnGround simvar
-   */
-  [[nodiscard]] bool getSimOnGround() const { return baseSimData->data().simOnGround != 0.0; }
-
-  /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[nodiscard]] bool getAircraftIsReadyVar() const { return baseSimData->data().aircraftIsReady != 0.0; }
+  [[nodiscard]] bool getAircraftIsReadyVar() const;
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const { return baseSimData->data().aircraftDevelopmentState; }
+  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const;
 
   /**
    * @return the current simulation time
