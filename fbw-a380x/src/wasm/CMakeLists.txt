@@ -5,10 +5,9 @@ set(OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../out/flybywire-aircraft-a3
 add_definitions(-DA380X)
 
 add_subdirectory(extra-backend-a380x)
-add_subdirectory(fadec_a380x)
 
-# these are only here to allow CMake compatible IDEs (JetBrains' Clion for example) to show systax
-# highlighting and allow code navigation
+# FIXME: remove the if-clause as soon as all components are using CMake
 if (WIN32)
+    add_subdirectory(fadec_a380)
     add_subdirectory(fbw_a380)
 endif ()

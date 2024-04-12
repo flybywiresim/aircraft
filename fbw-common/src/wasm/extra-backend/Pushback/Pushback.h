@@ -17,7 +17,7 @@ constexpr double PI = 3.14159265358979323846;
 
 class MsfsHandler;
 
-using DataDefinitionVector = std::vector<DataDefinition>;
+using DataDefVector = std::vector<DataDefinition>;
 
 /**
  * This module is responsible for the pushback process.
@@ -49,6 +49,7 @@ class Pushback : public Module {
   struct PushbackBaseInfo {
     FLOAT64 pushbackSystemEnabled;
     FLOAT64 parkingBrakeEngaged;
+    FLOAT64 simOnGround;
     FLOAT64 pushbackAttached;
     FLOAT64 aircraftHeading;
     FLOAT64 windVelBodyZ;

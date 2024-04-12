@@ -10,7 +10,7 @@
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
-    if (_warnIfDirty && dirty) {
+    if (dirty) {
       LOG_WARN("CacheableVariable::get() called on " + name + " but the value is dirty");
     }
     return cachedValue.value();
@@ -34,7 +34,7 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
   // compare the value from the sim with the cached value
-  const bool changed = skipChangeCheckFlag || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
+  bool changed = skipChangeCheckFlag || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
   if (changed)
     cachedValue = fromSim;
   dirty = false;
