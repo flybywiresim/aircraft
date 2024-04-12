@@ -704,15 +704,27 @@ impl UpdateContext {
     }
 
     pub fn delta(&self) -> Duration {
-        self.delta.into()
+        if !self.aircraft_preset_quick_mode {
+            self.delta.into()
+        } else {
+            Duration::from_secs(1).into()
+        }
     }
 
     pub fn delta_as_secs_f64(&self) -> f64 {
-        self.delta.into()
+        if !self.aircraft_preset_quick_mode {
+            self.delta.into()
+        } else {
+            1.
+        }
     }
 
     pub fn delta_as_time(&self) -> Time {
-        self.delta.into()
+        if !self.aircraft_preset_quick_mode {
+            self.delta.into()
+        } else {
+            Time::new::<second>(1.)
+        }
     }
 
     pub fn simulation_time(&self) -> f64 {
