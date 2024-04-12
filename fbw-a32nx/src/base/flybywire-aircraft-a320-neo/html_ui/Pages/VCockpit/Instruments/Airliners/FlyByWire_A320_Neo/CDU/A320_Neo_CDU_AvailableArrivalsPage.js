@@ -180,14 +180,18 @@ class CDUAvailableArrivalsPage {
                         }
                     }
 
-                    // Clicking the already selected approach is a no-op
-                    if (!isSelected) {
-                        mcdu.onLeftInput[i + 2] = async () => {
+                    mcdu.onLeftInput[i + 2] = async(_, scratchpadCallback) => {
+                        // Clicking the already selected approach is not allowed
+                        if (!isSelected) {
                             await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
 
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                        };
-                    }
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                            scratchpadCallback()
+                        }
+                    };
                 } else if (runway) {
                     const runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                     const runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
@@ -198,15 +202,19 @@ class CDUAvailableArrivalsPage {
                     rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`];
                     rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
 
-                    // Clicking the already selected runway is a no-op
-                    if (!isSelected) {
-                        mcdu.onLeftInput[i + 2] = async () => {
+                    mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
+                        // Clicking the already selected runway is not allowed
+                        if (!isSelected) {
                             await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
                             await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
 
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                        };
-                    }
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                            scratchpadCallback();
+                        }
+                    };
                 }
             }
         } else {
@@ -262,9 +270,9 @@ class CDUAvailableArrivalsPage {
 
                         rows[2 * i] = [`{${color}}${!isSelected ? "{" : "{sp}"}${star.ident}{end}`];
 
-                        // Clicking the already selected star is a no-op
-                        if (!isSelected) {
-                            mcdu.onLeftInput[i + 2] = async () => {
+                        mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
+                            // Clicking the already selected star is not allowed
+                            if (!isSelected) {
                                 const destinationRunway = targetPlan.destinationRunway;
 
                                 const arrivalRunway = destinationRunway ? star.runwayTransitions.find(t => {
@@ -285,8 +293,12 @@ class CDUAvailableArrivalsPage {
                                 } else {
                                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                                 }
-                            };
-                        }
+                            } else {
+                                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                                scratchpadCallback();
+                            }
+                        };
                     }
                 }
             }
@@ -314,14 +326,18 @@ class CDUAvailableArrivalsPage {
 
                             rows[2 * (i + 1)][1] = `{${color}}${transition.ident}${!isSelected ? "}" : "{sp}"}{end}`;
 
-                            // Clicking the already selected transition is a no-op
-                            if (!isSelected) {
-                                mcdu.onRightInput[i + 3] = async () => {
+                            // Clicking the already selected transition is not allowed
+                            mcdu.onRightInput[i + 3] = async (_, scratchpadCallback) => {
+                                if (!isSelected) {
                                     await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
 
                                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                                };
-                            }
+                                } else {
+                                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                                    scratchpadCallback();
+                                }
+                            };
                         }
                     }
                 }
@@ -460,13 +476,18 @@ class CDUAvailableArrivalsPage {
 
                 rows[2 * i + 1][0] = `{${color}}${!isSelected ? "{" : "{sp}"}${via.ident}{end}`;
 
-                if (!isSelected) {
-                    mcdu.onLeftInput[i + 2] = async () => {
+                mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
+                    // Clicking the already selected via is not allowed
+                    if (!isSelected) {
                         await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                    };
-                }
+                    } else {
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                        scratchpadCallback();
+                    }
+                };
             }
         }
 
