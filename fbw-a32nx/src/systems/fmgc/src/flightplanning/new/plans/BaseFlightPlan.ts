@@ -848,9 +848,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                     }
                 } else if (nextElement.isDiscontinuity === false) {
                     if (previousElement.terminatesWithWaypoint(nextElement.terminationWaypoint())) {
+                        // Disco with same point before and after it
                         this.mergeConstraints(previousElement, nextElement);
 
                         this.removeRange(index, index + 2);
+                    } else {
+                        // Regular disco
+                        segment.allLegs.splice(indexInSegment, 1);
                     }
                 }
             } else {
