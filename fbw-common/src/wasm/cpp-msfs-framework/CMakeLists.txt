@@ -6,6 +6,7 @@ set(SOURCE_FILES
     MsfsHandler/DataTypes/ClientEvent.cpp
     MsfsHandler/DataTypes/NamedVariable.cpp
     MsfsHandler/MsfsHandler.cpp
+    lib/pugixml/pugixml.cpp
     )
 set(INCLUDE_FILES
     MsfsHandler/DataManager.h
@@ -31,6 +32,7 @@ set(INCLUDE_FILES
     lib/logging.h
     lib/math_utils.hpp
     lib/ProfileBuffer.hpp
+    lib/pugixml/pugixml.hpp
     lib/ScopedTimer.hpp
     lib/SimpleProfiler.hpp
     lib/simple_assert.h
