@@ -107,26 +107,19 @@ export class EfisSymbols<T extends number> {
         const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
         this.lastNearbyFacilitiesVersion = this.nearby.version;
 
-        const activeFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Active)
-            && this.lastFpVersions[FlightPlanIndex.Active] !== this.flightPlanService.active.version;
-        const tempFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Temporary)
-            && this.lastFpVersions[FlightPlanIndex.Temporary] !== this.flightPlanService.temporary.version;
-        const secFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.FirstSecondary)
-            && this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== this.flightPlanService.secondary(1).version;
+        const activeFpVersion = this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.version : -1;
+        const tempFpVersion = this.flightPlanService.has(FlightPlanIndex.Temporary) ? this.flightPlanService.temporary.version : -1;
+        const secFpVersion = this.flightPlanService.has(FlightPlanIndex.FirstSecondary) ? this.flightPlanService.secondary(1).version : -1;
+
+        const activeFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Active] !== activeFpVersion;
+        const tempFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Temporary] !== tempFpVersion;
+        const secFPVersionChanged = this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== secFpVersion;
 
         const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;
 
-        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            this.lastFpVersions[FlightPlanIndex.Active] = this.flightPlanService.active.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.Temporary)) {
-            this.lastFpVersions[FlightPlanIndex.Temporary] = this.flightPlanService.temporary.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
-            this.lastFpVersions[FlightPlanIndex.FirstSecondary] = this.flightPlanService.secondary(1).version;
-        }
+        this.lastFpVersions[FlightPlanIndex.Active] = activeFpVersion;
+        this.lastFpVersions[FlightPlanIndex.Temporary] = tempFpVersion;
+        this.lastFpVersions[FlightPlanIndex.FirstSecondary] = secFpVersion;
 
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
