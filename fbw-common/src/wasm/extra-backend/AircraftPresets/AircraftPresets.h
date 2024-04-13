@@ -8,9 +8,8 @@
 
 #include "DataManager.h"
 #include "Module.h"
-#include "PresetProcedures.h"
-#include "PresetProceduresDefinition.h"
-#include "ProcedureStep.h"
+#include "PresetProcedures.hpp"
+#include "ProcedureStep.hpp"
 
 class MsfsHandler;
 
@@ -49,13 +48,13 @@ class AircraftPresets : public Module {
   NamedVariablePtr aircraftPresetQuickMode{};
 
   // Procedures
-  const PresetProcedures presetProcedures;
+  PresetProcedures presetProcedures;
 
   // current procedure ID
   int currentProcedureID = 0;
 
   // current procedure
-  const std::vector<const ProcedureStep*>* currentProcedure = nullptr;
+  const std::vector<ProcedureStep*>* currentProcedure = nullptr;
 
   // flag to signal that a loading process is ongoing
   bool loadingIsActive = false;
@@ -77,8 +76,8 @@ class AircraftPresets : public Module {
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    * @param aircraftProceduresDefinitions The AircraftProceduresDefinition instance that is used to define the procedures.
    */
-  explicit AircraftPresets(MsfsHandler& msfsHandler, const PresetProceduresDefinition& aircraftProceduresDefinitions)
-      : Module(msfsHandler), presetProcedures(PresetProcedures(aircraftProceduresDefinitions)) {}
+  explicit AircraftPresets(MsfsHandler& msfsHandler, std::string&& configFile)
+      : Module(msfsHandler), presetProcedures(std::move(configFile)) {}
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData*) override { return true; };  // not required for this module
@@ -114,7 +113,7 @@ class AircraftPresets : public Module {
    * @param requestedProcedure An optional containing the requested procedure. If no procedure is
    * found, the optional will be empty.
    */
-  void initializeNewLoadingProcess(const std::optional<const Procedure*>& requestedProcedure);
+  void initializeNewLoadingProcess(const Preset* requestedProcedure);
 
   /**
    * @brief Checks if the requested preset procedure exists.
@@ -125,7 +124,7 @@ class AircraftPresets : public Module {
    * @param requestedProcedure An optional containing the requested procedure to check.
    * @return True if the procedure exists and can be initiated, false if the procedure is not found.
    */
-  bool checkIfProcedureExists(const std::optional<const Procedure*>& requestedProcedure);
+  bool checkIfProcedureExists(const std::optional<const Preset*>& requestedProcedure);
 
   /**
    * @brief Determines if the current step should be skipped based on its type and expedited mode.

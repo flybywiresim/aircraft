@@ -1,11 +1,12 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
-#include <MSFS\MSFS_CommBus.h>
+#include <MSFS/MSFS_CommBus.h>
 
 #include "AircraftPresets.h"
 #include "SimUnits.h"
@@ -85,7 +86,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // needs to be initialized
     if (!loadingIsActive) {
       // get the requested procedure
-      const std::optional<const Procedure*> requestedProcedure = presetProcedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
+      const std::optional<Preset*> requestedProcedure = presetProcedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
 
       // check if procedure ID exists
       if (!checkIfProcedureExists(requestedProcedure)) {
@@ -93,7 +94,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       }
 
       // initialize a new loading process
-      initializeNewLoadingProcess(requestedProcedure);
+      initializeNewLoadingProcess(requestedProcedure.value());
 
       return true;
     }
@@ -197,10 +198,10 @@ bool AircraftPresets::checkCompletion() {
   return false;
 }
 
-void AircraftPresets::initializeNewLoadingProcess(const std::optional<const Procedure*>& requestedProcedure) {
+void AircraftPresets::initializeNewLoadingProcess(const Preset* requestedProcedure) {
   LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
   currentProcedureID = loadAircraftPresetRequest->getAsInt64();
-  currentProcedure   = requestedProcedure.value();
+  currentProcedure   = requestedProcedure;
   currentLoadingTime = 0;
   currentDelay       = 0;
   currentStep        = 0;
@@ -208,7 +209,7 @@ void AircraftPresets::initializeNewLoadingProcess(const std::optional<const Proc
   progressAircraftPreset->setAndWriteToSim(0);
 }
 
-bool AircraftPresets::checkIfProcedureExists(const std::optional<const Procedure*>& requestedProcedure) {
+bool AircraftPresets::checkIfProcedureExists(const std::optional<const Preset*>& requestedProcedure) {
   if (!requestedProcedure.has_value()) {
     LOG_WARN("AircraftPresets: Preset " + std::to_string(loadAircraftPresetRequest->getAsInt64()) + " not found!");
     finishLoading();
@@ -234,6 +235,9 @@ void AircraftPresets::handleConditionStep(const ProcedureStep* currentStepPtr) {
            " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
   FLOAT64 fvalue = 0.0;
   updateProgress(currentStepPtr);
+  if (aircraftPresetVerbose->getAsBool()) {
+    std::cout << "AircraftPresets: Aircraft Preset Step Condition: [" << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
+  }
   execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, nullptr, nullptr);
   const bool conditionIsTrue = !helper::Math::almostEqual(0.0, fvalue);
   if (conditionIsTrue) {
@@ -250,8 +254,8 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
   FLOAT64    fvalue        = 0.0;
   const bool verboseOutput = aircraftPresetVerbose->getAsBool();
   if (verboseOutput) {
-    std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: " << currentStepPtr->description << " TEST: \""
-              << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
+    std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: " << currentStepPtr->description << " TEST: ["
+              << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
   }
 
   execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, nullptr, nullptr);
@@ -259,8 +263,8 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
   const bool conditionIsTrue = !helper::Math::almostEqual(0.0, fvalue);
   if (conditionIsTrue) {
     if (verboseOutput) {
-      std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: " << currentStepPtr->description << " TEST: \""
-                << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
+      std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: " << currentStepPtr->description << " TEST: ["
+                << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
     }
     currentDelay = 0;
     currentStep++;
@@ -272,6 +276,9 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
 void AircraftPresets::executeAction(const ProcedureStep* currentStepPtr) {
   LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
            " (delay after: " + std::to_string(static_cast<int>(currentDelay - currentLoadingTime)) + ")");
+  if (aircraftPresetVerbose->getAsBool()) {
+    std::cout << "AircraftPresets: Aircraft Preset Step Action: [" << currentStepPtr->actionCode << "]" << std::endl;
+  }
   execute_calculator_code(currentStepPtr->actionCode.c_str(), nullptr, nullptr, nullptr);
   currentStep++;
 }

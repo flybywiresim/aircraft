@@ -1,10 +1,12 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_H
-#define FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_H
+#ifndef FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_HPP
+#define FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_HPP
 
+#include <sstream>
 #include <string>
+#include <unordered_map>
 
 /**
  * @brief The type of a procedure step as a combination of flags.
@@ -54,13 +56,53 @@ enum StepType {
  * @field actionCode Calculator code to achieve the desired state.
  * @field noExpedite If true, the step will not be expedited even if expedite is set (default: false)
  */
-struct ProcedureStep {
-  std::string description;
-  StepType    type;
-  double      delayAfter;
-  std::string expectedStateCheckCode;
-  std::string actionCode;
-  bool        noExpedite = false;
+class ProcedureStep {
+ public:
+  static std::unordered_map<std::string, StepType> StepTypeMap;
+
+  // the data of the procedure step
+  const std::string description;
+  const StepType    type;
+  const double      delayAfter;
+  const std::string expectedStateCheckCode;
+  const std::string actionCode;
+
+  /**
+   * @brief Convert a StepType to a string.
+   * @param type the StepType to convert
+   * @return the string representation of the StepType
+   */
+  static std::string toString(const StepType& type) {
+    for (const auto& pair : StepTypeMap) {
+      if (pair.second == type)
+        return pair.first;
+    }
+    return "Invalid StepType";
+  }
+
+  /**
+   * @brief Convert a ProcedureStep to a string.
+   * @return the string representation of the ProcedureStep
+   */
+  std::string toString() const {
+    std::stringstream ss;
+    ss << "Step: " << description                                          //
+       << " Type: " << toString(type) << " Delay: " << delayAfter << "\n"  //
+       << " ExpectedStateCheckCode: [" << expectedStateCheckCode << "]\n"  //
+       << " ActionCode:             [" << actionCode << "]" << std::endl;  //
+    return ss.str();
+  }
 };
 
-#endif  // FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_H
+// Initialize the StepTypeMap
+std::unordered_map<std::string, StepType> ProcedureStep::StepTypeMap = {
+    {"STEP", StepType::STEP},
+    {"PROC", StepType::PROC},
+    {"NOEX", StepType::NOEX},
+    {"EXON", StepType::EXON},
+    {"COND", StepType::COND},
+    {"NCON", StepType::NCON},
+    {"ECON", StepType::ECON}
+};
+
+#endif  // FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_HPP
