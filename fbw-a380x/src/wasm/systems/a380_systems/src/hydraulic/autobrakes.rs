@@ -564,6 +564,7 @@ impl A380AutobrakeController {
             self.ground_spoilers_are_deployed,
             &self.braking_distance_calculator,
             self.ground_speed,
+            &self.autobrake_runway_overrun_protection,
         );
 
         self.autobrake_runway_overrun_protection.update(
@@ -662,6 +663,14 @@ impl AutobrakeRunwayOverrunProtection {
     fn is_row_rop_operative(&self) -> bool {
         self.distance_to_runway_end.is_normal_operation()
             && self.ground_speed.get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
+    }
+
+    fn distance_to_runway_end(&self) -> Length {
+        if self.distance_to_runway_end.is_normal_operation() {
+            self.distance_to_runway_end.value()
+        } else {
+            Length::new::<meter>(5000.)
+        }
     }
 
     fn update(
@@ -974,6 +983,8 @@ struct BtvDecelScheduler {
 
     dry_prediction: Length,
     wet_prediction: Length,
+
+    distance_to_rwy_end: Length,
 }
 impl BtvDecelScheduler {
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
@@ -1018,6 +1029,8 @@ impl BtvDecelScheduler {
 
             dry_prediction: Length::default(),
             wet_prediction: Length::default(),
+
+            distance_to_rwy_end: Length::default(),
         }
     }
 
@@ -1052,7 +1065,10 @@ impl BtvDecelScheduler {
         spoilers_active: bool,
         braking_distance: &BrakingDistanceCalculator,
         ground_speed: Velocity,
+        rop: &AutobrakeRunwayOverrunProtection,
     ) {
+        self.distance_to_rwy_end = rop.distance_to_runway_end();
+
         self.wet_prediction = braking_distance.wet_landing();
         self.dry_prediction = braking_distance.dry_landing();
 
@@ -1075,7 +1091,10 @@ impl BtvDecelScheduler {
 
         let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M);
 
-        (distance_remaining_raw - distance_from_btv_exit).max(Length::default())
+        // Max distance clamped to end of rwy minus a margin
+        (distance_remaining_raw - distance_from_btv_exit)
+            .max(Length::default())
+            .min(self.distance_to_rwy_end - Length::new::<meter>(100.))
     }
 
     fn compute_decel(&mut self, ground_speed: Velocity) {
