@@ -89,10 +89,17 @@ class AircraftPresetProcedures_A32NX {
                                                               "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",              "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
 
         // To allow slats/flaps to retract in expedited mode when engines were running before and slats/flaps were out
-        // TODO: Check if the flaps are actually out
-        ProcedureStep{"Yellow Elec Pump On",      EXON, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 0 == "
-                                                              "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 0 == && "
+        ProcedureStep{"Yellow Elec Pump On",      STEP, 200,  "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 1 <= "
+                                                              "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 1 <= && "
+                                                              "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 1 <= && "
+                                                              "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 1 <= && "
                                                               "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 0 == ||",           "0 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
+        ProcedureStep{"Await Flaps 0",            COND, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 1 <= "
+                                                              "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 1 <= &&",         ""},
+        ProcedureStep{"Await Slats 0",            COND, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 1 <= "
+                                                              "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 1 <= &&",         ""},
+        ProcedureStep{"Yellow Elec Pump Off",     STEP, 200,  "(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO) 1 ==",              "1 (>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)"},
+
 
         //WORKAROUND for intermittent HOT AIR PB Fault when using expedited mode
         ProcedureStep{"HOT AIR PB Reset",        STEP, 0,    "(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==",           "0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) "},
@@ -187,10 +194,10 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"Autobrake Max",        STEP, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",                      "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
         ProcedureStep{"TERR ON ND Capt. On",  STEP, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                         "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
 
-        ProcedureStep{"Await Flaps 1+F",      3110, true,  1000,  "",                                                 "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 24 >= "
-                                                                                                                      "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 24 >= && "},
-        ProcedureStep{"Await Slats 1+F",      3110, true,  1000,  "",                                                 "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 >= "
-                                                                                                                      "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 >= && "},
+        ProcedureStep{"Await Flaps 1+F",      COND, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 24 >= "
+                                                          "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 24 >= &&",            ""},
+        ProcedureStep{"Await Slats 1+F",      COND, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 >= "
+                                                          "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 >= &&",            ""},
 
         ProcedureStep{"T.O Config",           STEP, 200,   "",                                                          "1 (>L:A32NX_BTN_TOCONFIG)"},
         ProcedureStep{"T.O Config",           STEP, 2000,  "",                                                          "0 (>L:A32NX_BTN_TOCONFIG)"},
@@ -209,10 +216,11 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"Flaps 0",               STEP, 2000, "(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==",                         "0 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
         ProcedureStep{"Rudder Trim Reset",     STEP, 2000, "(A:RUDDER TRIM, Radians) 0 ==",                             "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Spoiler Disarm",        STEP, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",                             "0 (>K:SPOILERS_ARM_SET)"},
-        ProcedureStep{"Await Flaps 0",         NCON, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 0 =="
-                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 0 == &&",            ""},
-        ProcedureStep{"Await Slats 0",         NCON, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 0 == "
-                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 0 == &&",            ""},
+
+        ProcedureStep{"Await Flaps 0",         COND, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 1 <="
+                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 1 <= &&",            ""},
+        ProcedureStep{"Await Slats 0",         COND, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 1 <= "
+                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 1 <= &&",            ""},
 
         ProcedureStep{"ENG 1 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",                       "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 2 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",                       "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},

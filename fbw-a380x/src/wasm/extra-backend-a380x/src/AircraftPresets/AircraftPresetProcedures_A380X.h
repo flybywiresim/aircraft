@@ -221,6 +221,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Autobrake RTO",         STEP,  200,  "(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==",                      "1 (>L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)"},
         ProcedureStep{"TERR ON ND Capt. On",   STEP, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                        "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
 
+        ProcedureStep{"Await Flaps 1+F",       COND, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 24 >= "
+                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 24 >= &&",           ""},
+        ProcedureStep{"Await Slats 1+F",       COND, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 >= "
+                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 >= &&",           ""},
+
         ProcedureStep{"T.O. Config",           STEP, 2000,  "",                                                         "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
       },
 
@@ -241,10 +246,11 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"Flaps 0",               STEP, 2000, "(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==",                         "0 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
         ProcedureStep{"Rudder Trim Reset",     STEP, 2000, "(A:RUDDER TRIM, Radians) 0 ==",                             "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Spoiler Disarm",        STEP, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",                             "0 (>K:SPOILERS_ARM_SET)"},
-        ProcedureStep{"Await Flaps 0",         NCON, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 0 =="
-                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 0 == &&",            ""},
-        ProcedureStep{"Await Slats 0",         NCON, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 0 == "
-                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 0 == &&",            ""},
+
+        ProcedureStep{"Await Flaps 0",         COND, 1000, "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 1 <= "
+                                                           "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 1 <= &&",            ""},
+        ProcedureStep{"Await Slats 0",         COND, 1000, "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 1 <= "
+                                                           "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 1 <= &&",            ""},
 
         ProcedureStep{"ENG 4 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:4, Bool) !",                       "4 (>K:FUELSYSTEM_VALVE_CLOSE)"},
         ProcedureStep{"ENG 3 Off",             STEP, 2000, "(A:FUELSYSTEM VALVE OPEN:3, Bool) !",                       "3 (>K:FUELSYSTEM_VALVE_CLOSE)"},
