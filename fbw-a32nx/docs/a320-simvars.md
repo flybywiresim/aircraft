@@ -248,10 +248,24 @@
     - Enum
     - Contains the numeric flight phase as determined by the FWC
     - Input for: systems.wasm
+  - | Value  | Flight Phase     |
+        |--------|------------------|
+    | 0      |                  |
+    | 1      | ELEC PWR         |
+    | 2      | 1ST ENG STARTED  |
+    | 3      | 1ST ENG TO PWR   |
+    | 4      | 80 kt            |
+    | 5      | LIFTOFF          |
+    | 6      | 1500ft (in clb)  |
+    | 7      | 800 ft (in desc) |
+    | 8      | TOUCHDOWN        |
+    | 9      | 80 kt            |
+    | 10     | 2nd ENG SHUTDOWN |
+    | &gt; 1 | 5 MIN AFTER      |
 
 - A32NX_FWC_SKIP_STARTUP
-    - Bool
-    - Set to true in a non-cold and dark flight phase to skip the initial memorization step
+  - Bool
+  - Set to true in a non-cold and dark flight phase to skip the initial memorization step
 
 - A32NX_FWC_TOMEMO
     - Bool

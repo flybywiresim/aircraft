@@ -82,6 +82,8 @@
 1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
 1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
 1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
+1. [EFB] Checklist restructure to add more capabilities and use json configs - @frankkopp (Frank Kopp)
+1. [FLIGHTMODEL] Landing lights or RAT extended now have drag - @Crocket63 (crocket)
 
 ## 0.11.0
 
