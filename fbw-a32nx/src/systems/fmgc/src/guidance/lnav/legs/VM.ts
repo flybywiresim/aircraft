@@ -34,10 +34,6 @@ export class VMLeg extends Leg {
         return undefined;
     }
 
-    get ident(): string {
-        return 'MANUAL';
-    }
-
     displayedOnMap = false;
 
     getPathStartPoint(): Coordinates | undefined {

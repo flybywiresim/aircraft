@@ -248,10 +248,24 @@
     - Enum
     - Contains the numeric flight phase as determined by the FWC
     - Input for: systems.wasm
+  - | Value  | Flight Phase     |
+        |--------|------------------|
+    | 0      |                  |
+    | 1      | ELEC PWR         |
+    | 2      | 1ST ENG STARTED  |
+    | 3      | 1ST ENG TO PWR   |
+    | 4      | 80 kt            |
+    | 5      | LIFTOFF          |
+    | 6      | 1500ft (in clb)  |
+    | 7      | 800 ft (in desc) |
+    | 8      | TOUCHDOWN        |
+    | 9      | 80 kt            |
+    | 10     | 2nd ENG SHUTDOWN |
+    | &gt; 1 | 5 MIN AFTER      |
 
 - A32NX_FWC_SKIP_STARTUP
-    - Bool
-    - Set to true in a non-cold and dark flight phase to skip the initial memorization step
+  - Bool
+  - Set to true in a non-cold and dark flight phase to skip the initial memorization step
 
 - A32NX_FWC_TOMEMO
     - Bool
@@ -1386,14 +1400,14 @@ These variables are the interface between the 3D model and the systems/code.
         - R
 
 - A32NX_EFIS_{side}_MRP_LAT
-    - Degrees
+    - Arinc429<Degrees>
     - Provides the latitude of the map reference point in the FMS to show on the ND
     - {side}
         - L
         - R
 
 - A32NX_EFIS_{side}_MRP_LONG
-    - Degrees
+    - Arinc429<Degrees>
     - Provides the longitude of the map reference point in the FMS to show on the ND
     - {side}
         - L
@@ -1654,6 +1668,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Knots>
     - The computed airspeed (CAS).
 
+- A32NX_ADIRS_ADR_{number}_MAX_AIRSPEED
+    - Arinc429Word<Knots>
+    - The max allowable airspeed (CAS), considering VMO and MMO.
+
 - A32NX_ADIRS_ADR_{number}_MACH
     - Arinc429Word<Mach>
     - The Mach number (M).
@@ -1677,6 +1695,30 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
     - Arinc429Word<Degrees>
     - The angle of attack (α) of the aircraft
+
+- A32NX_ADIRS_ADR_{number}_DISCRETE_WORD_1
+    - Arinc429Word<flags>
+    - Indicates state of the ADR
+      Bit | Meaning
+      --- | ---
+        0 | ICING_DETECTOR_HEAT (not yet implemented)
+        1 | PITOT_HEAT (not yet implemented)
+        2 | ADR_FAULT
+        3 | RIGHT_STATIC_HEAT (not yet implemented)
+        4 | LEFT_STATIC_HEAT (not yet implemented)
+        5 | TAT_HEAT (not yet implemented)
+        6 | AOA_SENSOR_1_FAULT (not yet implemented)
+        7 | AOA_SENSOR_2_FAULT (not yet implemented)
+        8 | OVERSPEED_WARNING
+       10 | AOA_UNIQUE (not yet implemented)
+       11 | VMO_MMO_1 (not yet implemented)
+       12 | VMO_MMO_2 (not yet implemented)
+       13 | VMO_MMO_3 (not yet implemented)
+       14 | VMO_MMO_4 (not yet implemented)
+       15 | ALTERNATE_SSEC_A (not yet implemented)
+       16 | ALTERNATE_SSEC_B (not yet implemented)
+       17 | BARO_PORT_A (not yet implemented)
+       18 | ZERO_MACH_IGNORE_SSEC (not yet implemented)
 
 - A32NX_ADIRS_IR_{number}_PITCH
     - Arinc429Word<Degrees>

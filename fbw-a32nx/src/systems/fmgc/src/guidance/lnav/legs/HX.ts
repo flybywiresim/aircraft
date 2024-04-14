@@ -94,10 +94,6 @@ abstract class HXLeg extends XFLeg {
         return this.metadata.flightPlanLegDefinition.turnDirection;
     }
 
-    get ident(): string {
-        return this.fix.ident;
-    }
-
     /**
      * Used by hold entry transition to set our initial state depending on entry type
      * @param initialState

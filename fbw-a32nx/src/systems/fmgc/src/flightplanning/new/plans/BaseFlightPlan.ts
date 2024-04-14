@@ -43,12 +43,11 @@ import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType, ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
@@ -827,6 +826,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         if (index > 0) {
             const previousElement = this.elementAt(index - 1);
+            const element = this.elementAt(index);
             const [prevSegment, prevIndexInSegment] = this.segmentPositionForIndex(index - 1);
             const nextElement = this.elementAt(index + 1);
 
@@ -834,17 +834,31 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const numElementsToDelete = nextElement.isDiscontinuity === false && nextElement.isHX() ? 2 : 1;
 
             if (previousElement.isDiscontinuity === false) {
-                if (insertDiscontinuity) {
-                    segment.allLegs.splice(indexInSegment, numElementsToDelete, { isDiscontinuity: true });
-                } else {
-                    segment.allLegs.splice(indexInSegment, numElementsToDelete);
-                }
+                if (element.isDiscontinuity === false) {
+                    // Use `removeRange` because the next leg might be in the next segment
+                    this.removeRange(index, index + numElementsToDelete);
 
-                if (previousElement.isXI()) {
-                    prevSegment.allLegs.splice(prevIndexInSegment, 1);
+                    if (insertDiscontinuity) {
+                        segment.allLegs.splice(indexInSegment, 0, { isDiscontinuity: true });
+                    }
+
+                    // Also clear INTCPT if we clear the leg after it
+                    if (previousElement.isXI()) {
+                        prevSegment.allLegs.splice(prevIndexInSegment, 1);
+                    }
+                } else if (nextElement.isDiscontinuity === false) {
+                    if (previousElement.terminatesWithWaypoint(nextElement.terminationWaypoint())) {
+                        // Disco with same point before and after it
+                        this.mergeConstraints(previousElement, nextElement);
+
+                        this.removeRange(index, index + 2);
+                    } else {
+                        // Regular disco
+                        segment.allLegs.splice(indexInSegment, 1);
+                    }
                 }
             } else {
-                segment.allLegs.splice(indexInSegment, numElementsToDelete);
+                this.removeRange(index, index + numElementsToDelete);
             }
         } else {
             segment.allLegs.splice(indexInSegment, 1);
@@ -861,6 +875,35 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.incrementVersion();
 
         return true;
+    }
+
+    private mergeConstraints(first: FlightPlanLeg, second: FlightPlanLeg) {
+        // Speed constraints
+        const onlyFirstHasPilotSpeedConstraint = first.hasPilotEnteredSpeedConstraint() && !second.hasPilotEnteredSpeedConstraint();
+        if (!onlyFirstHasPilotSpeedConstraint) {
+            first.pilotEnteredSpeedConstraint = second.pilotEnteredSpeedConstraint;
+        }
+
+        const secondHasSpeedConstraint = second.hasDatabaseSpeedConstraint() || second.hasPilotEnteredSpeedConstraint();
+        const onlyFirstHasSpeedConstraintAtAll = first.hasDatabaseSpeedConstraint() && !secondHasSpeedConstraint;
+        if (!onlyFirstHasSpeedConstraintAtAll) {
+            first.definition.speedDescriptor = second.definition.speedDescriptor;
+            first.definition.speed = second.definition.speed;
+        }
+
+        // Altitude constraints
+        const onlyFirstHasPilotAltitudeConstraint = first.hasPilotEnteredAltitudeConstraint() && !second.hasPilotEnteredAltitudeConstraint();
+        if (!onlyFirstHasPilotAltitudeConstraint) {
+            first.pilotEnteredAltitudeConstraint = second.pilotEnteredAltitudeConstraint;
+        }
+
+        const secondHasAltitudeConstraint = second.hasDatabaseAltitudeConstraint() || second.hasPilotEnteredAltitudeConstraint();
+        const onlyFirstHasAltitudeConstraintAtAll = first.hasDatabaseAltitudeConstraint() && !secondHasAltitudeConstraint;
+        if (!onlyFirstHasAltitudeConstraintAtAll) {
+            first.definition.altitudeDescriptor = second.definition.altitudeDescriptor;
+            first.definition.altitude1 = second.definition.altitude1;
+            first.definition.altitude2 = second.definition.altitude2;
+        }
     }
 
     /**

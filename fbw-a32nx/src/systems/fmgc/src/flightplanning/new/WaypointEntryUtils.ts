@@ -6,7 +6,6 @@
 import { Fix, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
-import { runwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { Coordinates } from 'msfs-geo';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
@@ -92,17 +91,15 @@ export class WaypointEntryUtils {
 
         if (rwy !== null) {
             const airport = await NavigationDatabaseService.activeDatabase.searchAirport(rwy[1]);
-            const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
 
             if (airport) {
+                const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
+
                 for (let i = 0; i < runways.length; i++) {
                     const runway = runways[i];
 
-                    const actualIdent = runwayIdent(runway);
-                    const requestedIdent = rwy[2];
-
-                    if (actualIdent === requestedIdent) {
-                        return WaypointFactory.fromAirportAndRunway(airport, runway);
+                    if (runway.ident === place) {
+                        return WaypointFactory.fromRunway(runway);
                     }
                 }
             }

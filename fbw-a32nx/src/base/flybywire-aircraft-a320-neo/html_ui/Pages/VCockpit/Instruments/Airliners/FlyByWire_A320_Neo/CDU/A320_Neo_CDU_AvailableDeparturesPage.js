@@ -36,8 +36,6 @@ class CDUAvailableDeparturesPage {
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-        const planColor = forPlan === Fmgc.FlightPlanIndex.Active ? mcdu.flightPlanService.hasTemporary ? "yellow" : "green" : "white";
-
         /** @type {import('msfs-navdata').Runway} */
         const selectedRunway = targetPlan.originRunway;
         const selectedSid = targetPlan.originDeparture;
@@ -83,7 +81,7 @@ class CDUAvailableDeparturesPage {
         const selectedColour = editingTmpy ? "yellow" : "green";
 
         if (selectedRunway) {
-            selectedRunwayCell = selectedRunway.ident.substring(2);
+            selectedRunwayCell = Fmgc.RunwayUtils.runwayString(selectedRunway.ident);
             selectedRunwayCellColor = selectedColour;
 
             // TODO check type of ls... but awful from raw JS
@@ -127,12 +125,12 @@ class CDUAvailableDeparturesPage {
                     const color = selected && !editingTmpy ? "green" : "cyan";
 
                     const hasIls = runway.lsFrequencyChannel > 0; // TODO what if not ILS
-                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${runway.ident.substring(2).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
+                    rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${Fmgc.RunwayUtils.runwayString(runway.ident).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
                     const ilsText = hasIls ? `${runway.lsIdent.padStart(6)}/${runway.lsFrequencyChannel.toFixed(2)}` : '';
                     rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(runway.magneticBearing), 3)}${ilsText}{end}`];
-                    // Clicking the already selected runway is a no-op
-                    if (!selected) {
-                        mcdu.onLeftInput[i + 1] = async () => {
+                    mcdu.onLeftInput[i + 1] = async (_, scratchpadCallback) => {
+                        // Clicking the already selected runway is not allowed
+                        if (!selected) {
                             try {
                                 await mcdu.flightPlanService.setOriginRunway(runway.ident, forPlan, inAlternate);
                             } catch (e) {
@@ -140,8 +138,12 @@ class CDUAvailableDeparturesPage {
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                             }
                             CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-                        };
-                    }
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                            scratchpadCallback();
+                        }
+                    };
                 }
             }
         } else {
@@ -158,9 +160,9 @@ class CDUAvailableDeparturesPage {
                     const color = selected && !editingTmpy ? "green" : "cyan";
 
                     rows[2 * i] = [`{${color}}${selected ? "{sp}" : "{"}${typeof sid === 'string' ? sid : sid.ident}{end}`];
-                    // Clicking the already selected SID is a no-op
-                    if (!selected) {
-                        mcdu.onLeftInput[1 + i] = async () => {
+                    mcdu.onLeftInput[1 + i] = async (_, scratchpadCallback) => {
+                        // Clicking the already selected SID is not allowed
+                        if (!selected) {
                             try {
                                 if (sid === Labels.NO_SID) {
                                     await mcdu.flightPlanService.setDepartureProcedure(null, forPlan, inAlternate);
@@ -173,8 +175,12 @@ class CDUAvailableDeparturesPage {
                             }
 
                             CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                        };
-                    }
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                            scratchpadCallback();
+                        }
+                    };
                 }
             }
 
@@ -189,9 +195,9 @@ class CDUAvailableDeparturesPage {
                         const color = selected && !editingTmpy ? "green" : "cyan";
 
                         rows[2 * i][1] = `{${color}}${typeof trans === 'string' ? trans : trans.ident}${selected ? " " : "}"}{end}`;
-                        // Clicking the already selected transition is a no-op
-                        if (!selected) {
-                            mcdu.onRightInput[i + 1] = async () => {
+                        mcdu.onRightInput[i + 1] = async (_, scratchpadCallback) => {
+                            // Clicking the already selected transition is not allowed
+                            if (!selected) {
                                 try {
                                     if (trans === Labels.NO_TRANS) {
                                         await mcdu.flightPlanService.setDepartureEnrouteTransition(null, forPlan, inAlternate);
@@ -203,8 +209,12 @@ class CDUAvailableDeparturesPage {
                                     mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                                 }
                                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
-                            };
-                        }
+                            } else {
+                                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+
+                                scratchpadCallback();
+                            }
+                        };
                     }
                 }
             }

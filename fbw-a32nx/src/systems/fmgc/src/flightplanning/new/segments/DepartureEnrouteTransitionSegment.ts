@@ -7,7 +7,7 @@ import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 
 export class DepartureEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {

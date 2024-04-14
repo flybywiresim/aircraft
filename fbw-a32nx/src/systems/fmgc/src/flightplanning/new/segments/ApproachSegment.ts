@@ -8,7 +8,7 @@ import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
@@ -33,8 +33,9 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
             if (!skipUpdateLegs) {
                 await this.flightPlan.approachViaSegment.setProcedure(undefined);
-                this.flightPlan.missedApproachSegment.setMissedApproachLegs([]);
+                await this.flightPlan.arrivalSegment.setProcedure(undefined);
 
+                this.flightPlan.missedApproachSegment.setMissedApproachLegs([]);
                 this.allLegs = this.createLegSet(undefined, []);
 
                 this.flightPlan.syncSegmentLegsChange(this);
@@ -75,8 +76,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
         const procedureRunwayIdent = matchingProcedure.runwayIdent;
 
-        if (procedureRunwayIdent && procedureRunwayIdent !== 'RW00') { // TODO temporary workaround for bug in msfs backend
-            await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent.startsWith('R') ? procedureRunwayIdent : `RW${procedureRunwayIdent}`, true);
+        if (procedureRunwayIdent) { // TODO temporary workaround for bug in msfs backend
+            await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent, true);
         }
 
         const mappedMissedApproachLegs = matchingProcedure.missedLegs.map(
@@ -85,8 +86,9 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         this.flightPlan.missedApproachSegment.setMissedApproachLegs(mappedMissedApproachLegs);
 
         if (oldApproachName !== matchingProcedure.ident) {
-            // Clear flight plan approach VIA if the new approach is different
+            // Clear flight plan approach VIA and arrival if the new approach is different
             await this.flightPlan.approachViaSegment.setProcedure(undefined);
+            await this.flightPlan.arrivalSegment.setProcedure(undefined);
         }
 
         this.flightPlan.availableApproachVias = matchingProcedure.transitions;

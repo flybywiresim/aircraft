@@ -34,7 +34,7 @@ use icing::Icing;
 use navigation::A380RadioAltimeters;
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
-use uom::si::{f64::Length, length::nautical_mile};
+use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
 
 use systems::{
     accept_iterable,
@@ -49,7 +49,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    shared::ElectricalBusType,
+    shared::{ElectricalBusType, MachNumber},
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
@@ -99,7 +99,11 @@ impl A380 {
         A380 {
             adcn,
             adcn_simvar_translation,
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs: AirDataInertialReferenceSystem::new(
+                context,
+                Velocity::new::<knot>(340.),
+                MachNumber(0.89),
+            ),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(

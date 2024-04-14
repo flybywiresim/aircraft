@@ -1,3 +1,6 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 const EWDMessages = {
     '000000001': '              \x1b<3mNORMAL',
     '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
@@ -354,6 +357,8 @@ const EWDMessages = {
     '320019503': '\x1b<5m -GPWS SYS...........OFF',
     '340014001': '\x1b<4m\x1b4mNAV\x1bm RA 1 FAULT',
     '340015001': '\x1b<4m\x1b4mNAV\x1bm RA 2 FAULT',
+    '340017001': '\x1b<2m\x1b4mOVER SPEED\x1bm',
+    '340017002': '\x1b<2m -VMO/MMO........350/.82',
     '340050001': '\x1b<4m\x1b4mNAV\x1bm TCAS FAULT',
     '340050701': '\x1b<4m\x1b4mNAV\x1bm TCAS STBY',
     '340021001': '\x1b<2m\x1b4mOVERSPEED\x1bm',

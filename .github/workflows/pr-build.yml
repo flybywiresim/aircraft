@@ -1,0 +1,127 @@
+name: PR Tests & Build
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: install
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: npm run lint
+        run: ./scripts/dev-env/run.sh npm run lint
+      - name: lint-rust.sh
+        run: |
+          ./scripts/dev-env/run.sh scripts/lint-rust.sh
+  test-rust:
+    name: Tests (Rust)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: test-rust.sh
+        run: |
+          ./scripts/dev-env/run.sh scripts/test-rust.sh
+  test-js:
+    name: Tests (JS)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: npm install
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: npm test
+        run: npm test
+  build-a32nx:
+    name: Build and upload A32NX
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    env:
+      FBW_PRODUCTION_BUILD: 1
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Create .env file
+        run: |
+          echo FBW_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
+          echo FBW_TYPECHECK=1 >> fbw-a32nx/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a32nx/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a32nx/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+          cat fbw-a32nx/.env
+      - name: Install dependencies
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: Build A32NX
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
+          rm -rf fbw-a32nx/src
+          docker system prune -af
+      - name: Generate install.json
+        if: github.event.pull_request.auto_merge == false
+        run: |
+          df -h
+          node ./scripts/fragment_a32nx.js
+          cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
+          node ./scripts/install-source_a32nx.js
+      - name: Upload PR artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: flybywire-aircraft-a320-neo
+          path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
+  build-a380x:
+    name: Build and upload A380X
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    env:
+      FBW_PRODUCTION_BUILD: 1
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Create .env file
+        # We do not set FBW_TYPECHECK=1 here, as there are still things to fix in the A380 instruments
+        run: |
+          echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+          cat fbw-a380x/.env
+      - name: Install dependencies
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: Build A380X
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          rm -rf fbw-a380x/src
+          docker system prune -af
+      - name: Generate install.json
+        if: github.event.pull_request.auto_merge == false
+        run: |
+          df -h
+          node ./scripts/fragment_a380x.js
+          cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
+          node ./scripts/install-source_a380x.js
+      - name: Upload PR artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: flybywire-aircraft-a380-842
+          path: ./fbw-a380x/out/flybywire-aircraft-a380-842/

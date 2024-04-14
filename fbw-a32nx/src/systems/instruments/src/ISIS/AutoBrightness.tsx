@@ -18,7 +18,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
 
     const [rawAutoBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
     const [autoBrightness, setAutoBrightness] = useState(0.5);
-    const [manualOffset, setManualOffset] = useState(0);
+    const [manualOffset, setManualOffset] = useSimVar('L:A32NX_ISIS_MANUAL_BRIGHTNESS_OFFSET', 'number', 200);
     const [targetBrightness, setTargetBrightness] = useState(0.5);
 
     const [plusHeld, setPlusHeld] = useState(false);

@@ -186,8 +186,8 @@ export class GuidanceController {
 
     private updateEfisIdent() {
         // Update EFIS ident
-
-        const efisIdent = this.activeGeometry.legs.get(this.activeLegIndex)?.ident ?? 'PPOS';
+        const activeLeg = this.flightPlanService.active?.activeLeg;
+        const efisIdent = activeLeg?.isDiscontinuity === false ? activeLeg.ident : 'PPOS';
 
         const efisVars = SimVarString.pack(efisIdent, 9);
         // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..

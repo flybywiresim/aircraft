@@ -11,22 +11,18 @@ import {
     LegType,
     ProcedureLeg,
     Runway,
-    SectionCode,
-    WaypointArea,
     WaypointDescriptor,
-    AirportSubsectionCode,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
-import { airportRunwayIdent, procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
+import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { MagVar } from '@microsoft/msfs-sdk';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
@@ -356,27 +352,28 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
                 procedureIdent: '',
                 type: LegType.IF,
                 overfly: false,
-                waypoint: WaypointFactory.fromAirportAndRunway(airport, runway),
+                waypoint: WaypointFactory.fromRunway(runway),
                 waypointDescriptor: WaypointDescriptor.Runway,
                 magneticCourse: runway?.magneticBearing,
-            }, airportRunwayIdent(airport, runway), procedureIdent, undefined);
+            }, runway.ident, procedureIdent, undefined);
         }
 
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.IF,
             overfly: false,
-            waypoint: { ...airport, sectionCode: SectionCode.Airport, subSectionCode: AirportSubsectionCode.TerminalWaypoints, area: WaypointArea.Terminal },
+            waypoint: WaypointFactory.fromAirport(airport),
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
-        }, airportRunwayIdent(airport, runway), procedureIdent, undefined);
+        }, airport.ident, procedureIdent, undefined);
     }
 
-    static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
-        const altitude = Number.isFinite(segment?.runway?.thresholdLocation?.alt) ? 10 * Math.round(segment.runway.thresholdLocation.alt / 10) + 1500 : 1500;
+    static originExtendedCenterline(segment: OriginSegment, runway: Runway, runwayLeg: FlightPlanLeg): FlightPlanLeg {
+        const altitude = Number.isFinite(runway?.thresholdLocation?.alt) ? 10 * Math.round(runway.thresholdLocation.alt / 10) + 1500 : 1500;
+        const bearing = runway.magneticBearing;
 
         // TODO magvar
-        const annotation = runwayLeg.ident.substring(0, 3) + Math.round(runwayLeg.definition.magneticCourse).toString().padStart(3, '0');
+        const annotation = runwayLeg.ident.substring(0, 3) + Math.round(bearing).toString().padStart(3, '0');
         const ident = Math.round(altitude).toFixed(0);
 
         return new FlightPlanLeg(segment, {
@@ -384,7 +381,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             type: LegType.FA,
             overfly: false,
             waypoint: runwayLeg.terminationWaypoint(),
-            magneticCourse: runwayLeg.definition.magneticCourse,
+            magneticCourse: bearing,
             altitude1: altitude,
         }, ident, annotation, undefined);
     }

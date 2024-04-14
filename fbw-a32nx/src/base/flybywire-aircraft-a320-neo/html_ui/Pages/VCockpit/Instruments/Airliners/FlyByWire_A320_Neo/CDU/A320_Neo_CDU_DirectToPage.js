@@ -71,7 +71,7 @@ class CDUDirectToPage {
                 }
             }).catch((err) => {
                 // Rethrow if error is not an FMS message to display
-                if (!err.type) {
+                if (err.type === undefined) {
                     throw err;
                 }
 

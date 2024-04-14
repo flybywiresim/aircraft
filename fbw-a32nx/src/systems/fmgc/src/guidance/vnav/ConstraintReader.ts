@@ -8,7 +8,7 @@ import {
     MaxAltitudeConstraint,
     MaxSpeedConstraint,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
@@ -84,7 +84,7 @@ export class ConstraintReader {
                     });
                 } else {
                     // We've already passed the waypoint
-                    leg.cruiseStep = undefined; // TODO fms-v2: sync this
+                    plan.removeCruiseStep(i);
                     SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', true);
                 }
             }

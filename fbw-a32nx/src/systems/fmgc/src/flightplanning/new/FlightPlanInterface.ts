@@ -82,7 +82,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the origin runway in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param runwayIdent the runway identifier (e.g., RW27C)
+     * @param runwayIdent the runway identifier (e.g., EDDF25C)
      * @param planIndex   which flight plan to make the change on
      * @param alternate   whether to edit the plan's alternate flight plan
      */
@@ -145,7 +145,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     /**
      * Sets the origin runway in the flight plan. Creates a temporary flight plan if target is active.
      *
-     * @param runwayIdent the runway identifier (e.g., RW27C)
+     * @param runwayIdent the runway identifier (e.g., EDDF25C)
      * @param planIndex   which flight plan to make the change on
      * @param alternate   whether to edit the plan's alternate flight plan
      */

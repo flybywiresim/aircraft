@@ -6,7 +6,7 @@ import {
     MathUtils, Airport, LegType,
     Runway, RunwaySurfaceType, VhfNavaidType,
     WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
-    NdSymbolTypeFlags, AltitudeDescriptor, EfisSide,
+    NdSymbolTypeFlags, AltitudeDescriptor, EfisSide, Arinc429SignStatusMatrix, Arinc429OutputWord,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -15,7 +15,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -29,7 +28,7 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 export class EfisSymbols<T extends number> {
     private blockUpdate = false;
@@ -61,6 +60,10 @@ export class EfisSymbols<T extends number> {
     private lastVnavDriverVersion: number = -1;
 
     private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
+
+    private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = { L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LAT'), R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LAT') }
+
+    private mapReferenceLongitude: Record<EfisSide, Arinc429OutputWord> = { L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LONG'), R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LONG') }
 
     constructor(
         guidanceController: GuidanceController,
@@ -104,26 +107,19 @@ export class EfisSymbols<T extends number> {
         const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
         this.lastNearbyFacilitiesVersion = this.nearby.version;
 
-        const activeFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Active)
-            && this.lastFpVersions[FlightPlanIndex.Active] !== this.flightPlanService.active.version;
-        const tempFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Temporary)
-            && this.lastFpVersions[FlightPlanIndex.Temporary] !== this.flightPlanService.temporary.version;
-        const secFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.FirstSecondary)
-            && this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== this.flightPlanService.secondary(1).version;
+        const activeFpVersion = this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.version : -1;
+        const tempFpVersion = this.flightPlanService.has(FlightPlanIndex.Temporary) ? this.flightPlanService.temporary.version : -1;
+        const secFpVersion = this.flightPlanService.has(FlightPlanIndex.FirstSecondary) ? this.flightPlanService.secondary(1).version : -1;
+
+        const activeFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Active] !== activeFpVersion;
+        const tempFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Temporary] !== tempFpVersion;
+        const secFPVersionChanged = this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== secFpVersion;
 
         const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;
 
-        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            this.lastFpVersions[FlightPlanIndex.Active] = this.flightPlanService.active.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.Temporary)) {
-            this.lastFpVersions[FlightPlanIndex.Temporary] = this.flightPlanService.temporary.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
-            this.lastFpVersions[FlightPlanIndex.FirstSecondary] = this.flightPlanService.secondary(1).version;
-        }
+        this.lastFpVersions[FlightPlanIndex.Active] = activeFpVersion;
+        this.lastFpVersions[FlightPlanIndex.Temporary] = tempFpVersion;
+        this.lastFpVersions[FlightPlanIndex.FirstSecondary] = secFpVersion;
 
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
@@ -163,12 +159,15 @@ export class EfisSymbols<T extends number> {
 
             const termination = this.findPlanCentreCoordinates(side);
             if (termination) {
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LAT`, 'Degrees', termination.lat);
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LONG`, 'Degrees', termination.long);
+                this.mapReferenceLatitude[side].setBnrValue(termination.lat, Arinc429SignStatusMatrix.NormalOperation, 20, 90, -90);
+                this.mapReferenceLongitude[side].setBnrValue(termination.long, Arinc429SignStatusMatrix.NormalOperation, 20, 180, -180);
             } else {
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LAT`, 'Degrees', ppos.lat);
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_MRP_LONG`, 'Degrees', ppos.long);
+                this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 90, -90);
+                this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 180, -180);
             }
+
+            this.mapReferenceLatitude[side].writeToSimVarIfDirty();
+            this.mapReferenceLongitude[side].writeToSimVarIfDirty();
 
             if (mode === EfisNdMode.PLAN && !termination) {
                 this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
@@ -662,7 +661,7 @@ export class EfisSymbols<T extends number> {
 
             const planAltnStr = flightPlan instanceof AlternateFlightPlan ? 'A' : ' ';
             const planIndexStr = flightPlan.index.toString();
-            const runwayIdentStr = runway?.ident.replace('RW', '').padEnd(4, ' ') ?? '    ';
+            const runwayIdentStr = runway?.ident.padEnd(8, ' ') ?? '        ';
 
             const databaseId = `A${airport.ident}${(planAltnStr)}${planIndexStr}${runwayIdentStr}`;
 
@@ -670,7 +669,7 @@ export class EfisSymbols<T extends number> {
                 if (withinEditArea(runway.startLocation)) {
                     ret.push({
                         databaseId,
-                        ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
+                        ident: runway.ident,
                         location: runway.startLocation,
                         direction: runway.bearing,
                         length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
@@ -810,7 +809,7 @@ export class EfisSymbols<T extends number> {
         const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
         const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
-        if (!matchingGeometryLeg.terminationWaypoint) {
+        if (!matchingGeometryLeg?.terminationWaypoint) {
             return null;
         }
 
