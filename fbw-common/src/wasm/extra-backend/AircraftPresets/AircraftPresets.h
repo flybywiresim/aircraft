@@ -116,17 +116,6 @@ class AircraftPresets : public Module {
   void initializeNewLoadingProcess(const Preset* requestedProcedure);
 
   /**
-   * @brief Checks if the requested preset procedure exists.
-   *
-   * Verifies that the requested preset procedure is defined and can be loaded. This is an initial check
-   * before starting the loading process.
-   *
-   * @param requestedProcedure An optional containing the requested procedure to check.
-   * @return True if the procedure exists and can be initiated, false if the procedure is not found.
-   */
-  bool checkIfProcedureExists(const std::optional<const Preset*>& requestedProcedure);
-
-  /**
    * @brief Determines if the current step should be skipped based on its type and expedited mode.
    *
    * In expedited mode, certain steps may be skipped to accelerate the loading process. This method
