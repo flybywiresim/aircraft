@@ -246,7 +246,7 @@ class CDUFlightPlanPage {
             switch (rowI) {
                 case 1:
                     const trueBearing = SimVar.GetSimVarValue("L:A32NX_EFIS_L_TO_WPT_BEARING", "Degrees");
-                    if (isActive && trueBearing && trueBearing >= 0) {
+                    if (isActive && trueBearing != null && trueBearing >= 0) {
                         bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3,"0")}\u00b0`;
                     }
                     break;
