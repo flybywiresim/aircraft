@@ -52,7 +52,7 @@ export class N1Limit extends DisplayComponent<N1LimitProps> {
         });
 
         sub.on('autoThrustLimit').whenChanged().handle((l) => {
-            this.autoThrustLimit = l;
+            this.autoThrustLimit = Math.abs(l);
         });
 
         sub.on('thrustLimitType').whenChanged().handle((l) => {
