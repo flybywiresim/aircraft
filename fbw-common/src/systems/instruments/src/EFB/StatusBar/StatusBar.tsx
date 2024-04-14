@@ -5,11 +5,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar, usePersistentNumberProperty, usePersistentProperty, ClientState } from '@flybywiresim/fbw-sdk';
 import { useInterval } from '@flybywiresim/react-components';
-import { t } from '../Localization/translation';
-import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
+import { t, TooltipWrapper, initialState } from '@flybywiresim/flypad';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
-import { initialState } from '../Store/features/simBrief';
 import { QuickControls } from './QuickControls';
 
 interface StatusBarProps {

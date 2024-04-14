@@ -1,7 +1,12 @@
 #pragma once
 
+#include <algorithm>
+#include <iostream>
 #include <string>
-#include "Arinc429Utils.h"
+
+#include <MSFS\Legacy\gauges.h>
+#include <SimConnect.h>
+
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -23,9 +28,9 @@
 /* Values in gallons */
 struct Configuration {
   double fuelCenter = 0;
-  double fuelLeft = 400;
+  double fuelLeft = 411.34;
   double fuelRight = fuelLeft;
-  double fuelLeftAux = 228;
+  double fuelLeftAux = 0;
   double fuelRightAux = fuelLeftAux;
 };
 
@@ -304,8 +309,6 @@ class EngineControl {
                             double simN2,
                             double pressAltitude,
                             double ambientTemp) {
-    double startCN2Left;
-    double startCN2Right;
     double preN2Fbw;
     double newN2Fbw;
     double preEgtFbw;
@@ -464,10 +467,10 @@ class EngineControl {
 
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
-      simVars->setEngine1N2(max(0, simN2 - paramImbalance));
+      simVars->setEngine1N2((std::max)(0.0, simN2 - paramImbalance));
     } else {
       simVars->setEngine2N1(simN1);
-      simVars->setEngine2N2(max(0, simN2 - paramImbalance));
+      simVars->setEngine2N2((std::max)(0.0, simN2 - paramImbalance));
     }
   }
 
@@ -991,17 +994,17 @@ class EngineControl {
     double flex = 0;
 
     // Write all N1 Limits
-    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
-    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    to = limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    ga = limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
     if (flexTemp > 0) {
-      flex_to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
-      flex_ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_to = limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_ga = limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
     }
     clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
     mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
 
     // transition between TO and GA limit -----------------------------------------------------------------------------
-    double machFactorLow = max(0.0, min(1.0, (mach - 0.04) / 0.04));
+    double machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
     toga = to + (ga - to) * machFactorLow;
     flex = flex_to + (flex_ga - flex_to) * machFactorLow;
 
@@ -1027,10 +1030,10 @@ class EngineControl {
     double deltaThrust = 0;
 
     if (isTransitionActive) {
-      double timeDifference = max(0, (simulationTime - transitionStartTime) - waitTime);
+      double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - waitTime);
 
       if (timeDifference > 0 && clb > flex) {
-        deltaThrust = min(clb - flex, timeDifference * transitionFactor);
+        deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
       }
 
       if (flex + deltaThrust >= clb) {
@@ -1040,7 +1043,7 @@ class EngineControl {
     }
 
     if (isFlexActive) {
-      clb = min(clb, flex) + deltaThrust;
+      clb = (std::min)(clb, flex) + deltaThrust;
     }
 
     prevThrustLimitType = thrustLimitType;
@@ -1049,20 +1052,20 @@ class EngineControl {
     // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 
     // get factors
-    double machFactor = max(0.0, min(1.0, ((mach - 0.37) / 0.05)));
-    double altitudeFactorLow = max(0.0, min(1.0, ((altitude - 16600) / 500)));
-    double altitudeFactorHigh = max(0.0, min(1.0, ((altitude - 25000) / 500)));
+    double machFactor = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
+    double altitudeFactorLow = (std::max)(0.0, (std::min)(1.0, ((altitude - 16600) / 500)));
+    double altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((altitude - 25000) / 500)));
 
     // adapt thrust limits
     if (altitude >= 25000) {
-      mct = max(clb, mct + (clb - mct) * altitudeFactorHigh);
+      mct = (std::max)(clb, mct + (clb - mct) * altitudeFactorHigh);
       toga = mct;
     } else {
       if (mct > toga) {
-        mct = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+        mct = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
         toga = mct;
       } else {
-        toga = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+        toga = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
       }
     }
 
@@ -1160,12 +1163,27 @@ class EngineControl {
     simVars->setEngine2Timer(0);
 
     // Initialize Fuel Tanks
-    simVars->setFuelLeftPre(configuration.fuelLeft * simVars->getFuelWeightGallon());          // in LBS
-    simVars->setFuelRightPre(configuration.fuelRight * simVars->getFuelWeightGallon());        // in LBS
-    simVars->setFuelAuxLeftPre(configuration.fuelLeftAux * simVars->getFuelWeightGallon());    // in LBS
-    simVars->setFuelAuxRightPre(configuration.fuelRightAux * simVars->getFuelWeightGallon());  // in LBS
-    simVars->setFuelCenterPre(configuration.fuelCenter * simVars->getFuelWeightGallon());      // in LBS
+    double centerQuantity = simVars->getFuelTankQuantity(1);    // gal
+    double leftQuantity = simVars->getFuelTankQuantity(2);      // gal
+    double rightQuantity = simVars->getFuelTankQuantity(3);     // gal
+    double leftAuxQuantity = simVars->getFuelTankQuantity(4);   // gal
+    double rightAuxQuantity = simVars->getFuelTankQuantity(5);  // gal
 
+    double fuelWeightGallon = simVars->getFuelWeightGallon();  // weight of gallon of jet A in lbs
+
+    if (simVars->getStartState() == 2) {                                           // only loads saved fuel quantity on C/D spawn
+      simVars->setFuelCenterPre(configuration.fuelCenter * fuelWeightGallon);      // in LBS
+      simVars->setFuelLeftPre(configuration.fuelLeft * fuelWeightGallon);          // in LBS
+      simVars->setFuelRightPre(configuration.fuelRight * fuelWeightGallon);        // in LBS
+      simVars->setFuelAuxLeftPre(configuration.fuelLeftAux * fuelWeightGallon);    // in LBS
+      simVars->setFuelAuxRightPre(configuration.fuelRightAux * fuelWeightGallon);  // in LBS
+    } else {
+      simVars->setFuelCenterPre(centerQuantity * fuelWeightGallon);      // in LBS
+      simVars->setFuelLeftPre(leftQuantity * fuelWeightGallon);          // in LBS
+      simVars->setFuelRightPre(rightQuantity * fuelWeightGallon);        // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity * fuelWeightGallon);    // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity * fuelWeightGallon);  // in LBS
+    }
     // Initialize Pump State
     simVars->setPumpStateLeft(0);
     simVars->setPumpStateRight(0);
@@ -1186,9 +1204,7 @@ class EngineControl {
     double simN1highest = 0;
 
     double engineStarterPressurized;
-    double engineStarterToggled;
     double engineFuelValveOpen;
-    double fbwN2;
 
     // animationDeltaTimes being used to detect a Paused situation
     prevAnimationDeltaTime = animationDeltaTime;
@@ -1226,29 +1242,23 @@ class EngineControl {
       engineFuelValveOpen = simVars->getValve(engine);
       engineStarterPressurized = simVars->getStarterPressurized(engine);
 
-      // simulates delay to start valve open through fuel valve travel time
-      bool engineMasterTurnedOn = prevEngineMasterPos[engine - 1] < 1 && engineFuelValveOpen >= 1;
-      bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
-
       if (engine == 1) {
         deltaN2 = simN2 - simN2LeftPre;
         simN2LeftPre = simN2;
         timer = simVars->getEngine1Timer();
-        fbwN2 = simVars->getEngine1N2();
       } else {
         deltaN2 = simN2 - simN2RightPre;
         simN2RightPre = simN2;
         timer = simVars->getEngine2Timer();
-        fbwN2 = simVars->getEngine2N2();
       }
 
       // starts engines if Engine Master is turned on and Starter is pressurized or engine is still spinning fast enough
       if (!engineStarter && engineFuelValveOpen == 1 && (engineStarterPressurized || simN2 >= 20)) {
         std::string command = engine == 1 ? "1 (>K:SET_STARTER1_HELD)" : "1 (>K:SET_STARTER2_HELD)";
-
         execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
         engineStarter = 1;
-      }  // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
+      }
+      // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
       else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && !engineStarterPressurized && simN2 < 20))) {
         std::string command1 = engine == 1 ? "0 (>K:SET_STARTER1_HELD)" : "0 (>K:SET_STARTER2_HELD)";
         execute_calculator_code(command1.c_str(), nullptr, nullptr, nullptr);
@@ -1257,6 +1267,9 @@ class EngineControl {
         engineStarter = 0;
       }
 
+      // simulates delay to start valve open through fuel valve travel time
+      bool engineMasterTurnedOn = prevEngineMasterPos[engine - 1] < 1 && engineFuelValveOpen >= 1;
+      bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
       bool engineStarterTurnedOff = prevEngineStarterState[engine - 1] == 1 && engineStarter == 0;
 
       // Set & Check Engine Status for this Cycle
@@ -1282,7 +1295,7 @@ class EngineControl {
       }
 
       // set highest N1 from either engine
-      simN1highest = max(simN1highest, simN1);
+      simN1highest = (std::max)(simN1highest, simN1);
       prevEngineMasterPos[engine - 1] = engineFuelValveOpen;
       prevEngineStarterState[engine - 1] = engineStarter;
     }
@@ -1315,10 +1328,10 @@ class EngineControl {
   Configuration loadConfiguration(const mINI::INIStructure& structure) {
     return {
         mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 411.34),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 411.34),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 0),
     };
   }
 

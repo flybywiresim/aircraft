@@ -47,9 +47,7 @@ clang++ \
   -I "${COMMON_DIR}/fadec_common/src" \
   -I "${COMMON_DIR}/fbw_common/src/inih" \
   -I "${DIR}/common" \
-  "${DIR}/src/FadecGauge.cpp" \
-  "${DIR}/src/Arinc429.cpp" \
-  "${DIR}/src/Arinc429Utils.cpp"
+  "${DIR}/src/FadecGauge.cpp"
 
 # restore directory
 popd
@@ -65,6 +63,11 @@ wasm-ld \
   --export malloc \
   --export free \
   --export __wasm_call_ctors \
+  --export mallinfo \
+  --export mchunkit_begin \
+  --export mchunkit_next \
+  --export get_pages_state \
+  --export mark_decommit_pages \
   --export-table \
   --gc-sections \
   -lc++ -lc++abi \

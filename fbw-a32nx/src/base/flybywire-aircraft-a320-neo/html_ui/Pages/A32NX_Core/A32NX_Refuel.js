@@ -1,9 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
-// SPDX-License-Identifier: GPL-3.0
-
-const WING_FUELRATE_GAL_SEC = 3.99;
-const CENTER_MODIFIER = 3.0198;
+const WING_FUELRATE_GAL_SEC = 4.01;
+const CENTER_MODIFIER = 0.4528;
 
 class A32NX_Refuel {
     constructor() {}
@@ -84,7 +80,8 @@ class A32NX_Refuel {
             SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
             SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
             SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
-        } else {
+        }
+        else {
             let multiplier = 1;
             if (refuelRate == '1') { // fast
                 multiplier = 5;
@@ -97,9 +94,6 @@ class A32NX_Refuel {
                     centerCurrent = centerTarget;
                 }
                 SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
-                if (centerCurrent != centerTarget) {
-                    return;
-                }
             }
             if (LInnCurrent > LInnTarget || RInnCurrent > RInnTarget) {
                 LInnCurrent += this.defuelTank(multiplier) / 2;
@@ -132,6 +126,13 @@ class A32NX_Refuel {
                 }
             }
             // REFUELING (aux first, then main, then center tank)
+            if (centerCurrent < centerTarget) {
+                centerCurrent += this.refuelTank(multiplier) * CENTER_MODIFIER;
+                if (centerCurrent > centerTarget) {
+                    centerCurrent = centerTarget;
+                }
+                SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
+            }
             if (LOutCurrent < LOutTarget || ROutCurrent < ROutTarget) {
                 LOutCurrent += this.refuelTank(multiplier) / 2;
                 ROutCurrent += this.refuelTank(multiplier) / 2;
@@ -162,16 +163,7 @@ class A32NX_Refuel {
                     return;
                 }
             }
-            if (centerCurrent < centerTarget) {
-                centerCurrent += this.refuelTank(multiplier) * CENTER_MODIFIER;
-                if (centerCurrent > centerTarget) {
-                    centerCurrent = centerTarget;
-                }
-                SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
-                if (centerCurrent != centerTarget) {
-                    return;
-                }
-            }
+
         }
 
         if (centerCurrent == centerTarget && LInnCurrent == LInnTarget && LOutCurrent == LOutTarget && RInnCurrent == RInnTarget && ROutCurrent == ROutTarget) {
