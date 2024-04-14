@@ -95,7 +95,7 @@ class ProcedureStep {
 };
 
 // Initialize the StepTypeMap
-std::unordered_map<std::string, StepType> ProcedureStep::StepTypeMap = {
+inline std::unordered_map<std::string, StepType> ProcedureStep::StepTypeMap = {
     {"STEP", StepType::STEP},
     {"PROC", StepType::PROC},
     {"NOEX", StepType::NOEX},
