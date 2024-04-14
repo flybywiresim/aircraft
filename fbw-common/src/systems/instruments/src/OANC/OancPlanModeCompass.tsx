@@ -38,7 +38,7 @@ export class OancPlanModeCompass extends DisplayComponent<OancPlanModeCompassPro
 
                     <path d="M259,384a125,125 0 1,0 250,0a125,125 0 1,0 -250,0" stroke-dasharray="14 13" class="White" />
 
-                    <rect x={212} y={538} width={41} height={21} class="BackgroundFill" />
+                    <rect x={212} y={538} width={this.props.oansRange.map((rng) => ((rng / 2).toString().length === 4 ? 55 : 41))} height={21} class="BackgroundFill" />
                     <text x={212} y={556} class="Cyan" font-size={22}>
                         {this.props.oansRange.map((range) => range / 2)}
                     </text>

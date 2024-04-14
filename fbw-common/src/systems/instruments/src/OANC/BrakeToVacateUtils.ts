@@ -120,13 +120,8 @@ export class BrakeToVacateUtils<T extends number> {
             this.btvOppositeThresholdPosition = lastEl;
         }
 
-        // Derive LDA from geometry (as long as we don't have a proper database)
-        let lda: number = 0;
-        if (thresholdFeature.properties?.lda > 0) {
-            lda = thresholdFeature.properties?.lda;
-        } else {
-            lda = (dist1 > dist2 ? dist1 : dist2);
-        }
+        // Derive LDA from geometry (if we take the LDA database value, there might be drawing errors)
+        const lda = dist1 > dist2 ? dist1 : dist2;
 
         const heading = thresholdFeature.properties?.brngtrue ?? 0;
 
