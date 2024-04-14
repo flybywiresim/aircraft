@@ -1388,20 +1388,20 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
             this.currentValue = _value;
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
-                this.setElementVisibility(this.standardElem, false)
-                this.setElementVisibility(this.selectedElem, true)
+                this.setElementVisibility(this.standardElem, false);
+                this.setElementVisibility(this.selectedElem, true);
                 this.setTextElementActive(this.textQFE, true);
                 this.setTextElementActive(this.textQNH, true);
                 this.textValueContent = "88.88";
                 return;
             }
             if (this.currentMode == "STD") {
-                this.setElementVisibility(this.standardElem, true)
-                this.setElementVisibility(this.selectedElem, false)
+                this.setElementVisibility(this.standardElem, true);
+                this.setElementVisibility(this.selectedElem, false);
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 1);
             } else {
-                this.setElementVisibility(this.standardElem, false)
-                this.setElementVisibility(this.selectedElem, true)
+                this.setElementVisibility(this.standardElem, false);
+                this.setElementVisibility(this.selectedElem, true);
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 0);
                 const isQFE = (this.currentMode == "QFE") ? true : false;
                 this.setTextElementActive(this.textQFE, isQFE);

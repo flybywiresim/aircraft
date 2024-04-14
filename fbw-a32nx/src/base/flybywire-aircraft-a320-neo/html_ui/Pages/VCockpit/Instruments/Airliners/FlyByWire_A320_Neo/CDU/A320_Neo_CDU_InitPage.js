@@ -377,8 +377,8 @@ class CDUInitPage {
             if (value === "") {
                 let zfw = undefined;
                 let zfwCg = undefined;
-                let a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");
-                let gsxBoarding = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "number");
+                const a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");
+                const gsxBoarding = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "number");
                 if (a32nxBoarding || (gsxBoarding >= 4 && gsxBoarding < 6)) {
                     zfw = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number");
                     zfwCg = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", "number");
