@@ -34,7 +34,7 @@ typedef std::vector<ProcedureStep*> Preset;
  * @brief The PresetProcedures class is responsible for loading the procedures from an XML file and
  *        creating the presets with the correct procedure steps.
  *
- * @note A Procedure is a list of ProcedureSteps that are read from the XML file and executed in the order given in the XML.<br/
+ * @note A Procedure is a list of ProcedureSteps that are read from the XML file and executed in the order given in the XML.<br/>
  *       A Preset is a list of pointers to ProcedureSteps from several Procedures that are executed in a specific order to
  *       ensure the correct state of the aircraft.<br/>
  *       Create a PresetProcedures object with the path to the XML file containing the procedure definitions in the MSFS VFS.<br/>
@@ -51,7 +51,7 @@ class PresetProcedures {
   // List of all presets to access via index ID - ID starts at 1 so must be mapped to the index by subtracting 1
   std::vector<Preset*> presets = {&coldAndDark, &powered, &readyForPushback, &readyForTaxi, &readyForTakeoff};
 
-  // Map configurations to procedure lists to quickly validate the XML given procedures and add them to the correct list
+  // Map the procedure names to procedure definitions to quickly validate the XML given procedures and add them to the correct list
   std::unordered_map<std::string, ProcedureDefinition> procedureListMap;
 
   // the path to the XML file containing the procedure definitions in the MSFS VFS
