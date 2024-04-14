@@ -35,7 +35,7 @@ export class FlightPlanAsoboSync {
     }
 
     static extractRunwayNumber(ident: string) {
-        return ident.substring(2, 4).startsWith('0') ? ident.substring(3, 4) : ident.substring(2, 4);
+        return ident.substring(4, 6).startsWith('0') ? ident.substring(5, 6) : ident.substring(4, 6);
     }
 
     connectedCallback(): void {
@@ -53,7 +53,6 @@ export class FlightPlanAsoboSync {
 
         this.subs.push(sub.on('flightPlanManager.syncResponse').handle(async (event) => {
             if (NXDataStore.get('FP_SYNC', 'NONE') === 'SAVE') {
-                console.log('SYNC RESPONSE', event);
                 const plan = event.plans[FlightPlanIndex.Active];
                 this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
                 this.originAirport = plan.originAirport;
@@ -81,8 +80,9 @@ export class FlightPlanAsoboSync {
         this.subs.push(sub.on('flightPlan.setPerformanceData.cruiseFlightLevel').handle(async (event) => {
             if (event.planIndex === FlightPlanIndex.Active) {
                 this.cruiseFlightLevel = event.value;
-                console.log('SET CRUISE FLIGHT LEVEL', this.cruiseFlightLevel);
-                await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
+                if (this.cruiseFlightLevel) {
+                    await Coherent.call('SET_CRUISE_ALTITUDE', this.cruiseFlightLevel * 100);
+                }
             }
         }));
         this.subs.push(sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
@@ -134,7 +134,6 @@ export class FlightPlanAsoboSync {
             }
 
             const data = await Coherent.call('GET_FLIGHTPLAN') as any;
-            console.log('LOADED FP', data);
 
             const isDirectTo = data.isDirectTo;
 
@@ -146,7 +145,6 @@ export class FlightPlanAsoboSync {
                 if (!ICAO.isFacility(data.waypoints[0].icao) || !ICAO.isFacility(data.waypoints[destIndex].icao)) {
                     return;
                 }
-                console.log('NEW CITY PAIR', data.waypoints[0].ident, data.waypoints[destIndex].ident);
                 await rpcClient.newCityPair(data.waypoints[0].ident, data.waypoints[destIndex].ident, null, FlightPlanIndex.Uplink);
 
                 await rpcClient.setPerformanceData('cruiseFlightLevel', data.cruisingAltitude / 100, FlightPlanIndex.Uplink);
@@ -160,15 +158,12 @@ export class FlightPlanAsoboSync {
                 for (let i = 1; i <= enroute.length; i++) {
                     const wpt = enroute[i - 1];
                     if (wpt.icao.trim() !== '') {
-                        console.log('adding wp loaded', i, wpt);
                         const wptMapped = this.mapFacilityToWaypoint(wpt);
-                        console.log('adding wp mapped', i, wptMapped);
                         // eslint-disable-next-line no-await-in-loop
                         await rpcClient.nextWaypoint(i, wptMapped, FlightPlanIndex.Uplink);
                     }
                 }
 
-                console.log('finishing uplink');
                 await rpcClient.uplinkInsert();
             }
         } catch (e) {
@@ -193,19 +188,16 @@ export class FlightPlanAsoboSync {
                     await Coherent.call('SET_DESTINATION', `A      ${this.destinationAirport} `, false);
 
                     const allEnrouteLegs = this.enrouteLegs;
-                    console.log('ALL ENROUTE LEGS', allEnrouteLegs);
 
                     let globalIndex = 1;
 
                     for (let i = 0; i < allEnrouteLegs.length; i++) {
                         const leg = allEnrouteLegs[i];
-                        console.log('LEG', leg);
                         if (!leg.isDiscontinuity) {
                             const fpLeg = leg as SerializedFlightPlanLeg;
                             if (fpLeg) {
                                 // eslint-disable-next-line no-await-in-loop
                                 if (!fpLeg.definition.waypoint.databaseId.startsWith('A')) {
-                                    console.log('ADDING WAYPOINT with index', fpLeg.definition.waypoint.databaseId, globalIndex);
                                     await Coherent.call('ADD_WAYPOINT', fpLeg.definition.waypoint.databaseId, globalIndex, false);
                                     globalIndex++;
                                 }
@@ -234,9 +226,6 @@ export class FlightPlanAsoboSync {
                                 const departureTransitionIndex = originFacility.departures
                                     .findIndex((departure) => departure.enRouteTransitions
                                         .map((t) => t.name === this.procedureDetails.departureTransitionIdent));
-
-                                console.log('DEPARTURE INDEX', departureIndex);
-                                console.log('DEPARTURE TransitionIndex', departureIndex);
 
                                 await Coherent.call('SET_DEPARTURE_PROC_INDEX', departureIndex);
                                 await Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', departureTransitionIndex > -1 ? departureTransitionIndex : 0);
@@ -271,23 +260,11 @@ export class FlightPlanAsoboSync {
                                 const arritvalTransitionIndex = airportFacility.arrivals
                                     .findIndex((arrival) => arrival.enRouteTransitions.map((t) => t.name === this.procedureDetails.arrivalTransitionIdent));
 
-                                console.log('APPR IDENT', this.procedureDetails.approachIdent);
-                                console.log('available appr', airportFacility.approaches);
                                 const approachType = this.mapToMsfsApproachType(this.procedureDetails.approachIdent[0]);
-
-                                console.log('APPROACH TYPE', approachType);
-                                console.log('RUNWAY DESIGNATOR', this.mapRunwayDesignator(runway.designatorCharSecondary));
-                                console.log('RUNWAY DESIGNATION', designation);
                                 const apoprachIndex = this.findApproachIndexByRunwayAndApproachType(airportFacility.approaches, runway, runwayPairIndex === 0, designation, approachType);
 
                                 const approachEnrouteTransitionIndex = airportFacility.approaches
                                     .findIndex((approach) => approach.transitions.map((t) => t.name === this.procedureDetails.approachTransitionIdent));
-
-                                console.log('DESTINATION RUNWAY INDEX', destinationRunwayIndex);
-                                console.log('ARRIVAL INDEX', arrivalIndex);
-                                console.log('ARRIVAL TransitionIndex', arritvalTransitionIndex);
-                                console.log('APPROACH INDEX', apoprachIndex);
-                                console.log('APPROACH TransitionIndex', approachEnrouteTransitionIndex);
 
                                 await Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', destinationRunwayIndex);
                                 await Coherent.call('SET_ARRIVAL_PROC_INDEX', arrivalIndex);

@@ -34,7 +34,9 @@ class CDUFixInfoPage {
 
                     CDUFixInfoPage.ShowPage(mcdu, page);
                 }).catch((message) => {
-                    if (message instanceof McduMessage) {
+                    if (message.type !== undefined) {
+                        mcdu.showFmsErrorMessage(message.type);
+                    } else if (message instanceof McduMessage) {
                         mcdu.setScratchpadMessage(message);
 
                         scratchpadCallback();

@@ -21,11 +21,11 @@ describe('a base flight plan', () => {
         const fp = emptyFlightPlan();
 
         await fp.setOriginAirport('CYUL');
-        await fp.setOriginRunway('RW06R');
+        await fp.setOriginRunway('CYYZ06R');
         await fp.setDeparture('CYUL1');
 
         await fp.setDestinationAirport('CYYZ');
-        await fp.setDestinationRunway('RW05');
+        await fp.setDestinationRunway('CYYZ05');
         await fp.setApproach('I05');
         await fp.setArrival('BOXUM5');
 
@@ -48,7 +48,7 @@ describe('a base flight plan', () => {
             const fp = emptyFlightPlan();
 
             await fp.setOriginAirport('CYYZ');
-            await fp.setOriginRunway('RW06R');
+            await fp.setOriginRunway('CYYZ06R');
             await fp.setDeparture('AVSEP6');
 
             fp.removeElementAt(5, false);
@@ -60,7 +60,7 @@ describe('a base flight plan', () => {
             const fp = emptyFlightPlan();
 
             await fp.setOriginAirport('CYYZ');
-            await fp.setOriginRunway('RW06R');
+            await fp.setOriginRunway('CYYZ06R');
             await fp.setDeparture('AVSEP6');
 
             fp.removeElementAt(5, true);
@@ -73,7 +73,7 @@ describe('a base flight plan', () => {
             const fp = emptyFlightPlan();
 
             await fp.setOriginAirport('CYYZ');
-            await fp.setOriginRunway('RW06R');
+            await fp.setOriginRunway('CYYZ06R');
             await fp.setDeparture('AVSEP6');
 
             fp.removeElementAt(4, true);
@@ -87,7 +87,7 @@ describe('a base flight plan', () => {
             const flightPlan = emptyFlightPlan();
 
             await flightPlan.setOriginAirport('CYYZ');
-            await flightPlan.setOriginRunway('RW06R');
+            await flightPlan.setOriginRunway('CYYZ06R');
             await flightPlan.setDeparture('AVSEP6');
 
             flightPlan.removeElementAt(4);
@@ -111,7 +111,7 @@ describe('a base flight plan', () => {
             const flightPlan = emptyFlightPlan();
 
             await flightPlan.setOriginAirport('CYYZ');
-            await flightPlan.setOriginRunway('RW06R');
+            await flightPlan.setOriginRunway('CYYZ06R');
             await flightPlan.setDeparture('AVSEP6');
 
             flightPlan.removeElementAt(5, true);
@@ -158,7 +158,7 @@ describe('a base flight plan', () => {
             const departure = flightPlan.departureSegment;
 
             await flightPlan.setOriginAirport('NZQN');
-            await flightPlan.setOriginRunway('RW05');
+            await flightPlan.setOriginRunway('CYYZ05');
             await departure.setProcedure('ANPO3A');
 
             await flightPlan.setDepartureEnrouteTransition('SAVLA');
@@ -185,7 +185,7 @@ describe('a base flight plan', () => {
         const fp = emptyFlightPlan();
 
         await fp.setDestinationAirport('EGLL');
-        await fp.setDestinationRunway('RW27R');
+        await fp.setDestinationRunway('EGLL27R');
         await fp.setApproach('I27R');
         await fp.setApproachVia('LAM');
         await fp.setArrival('LOGA2H');
@@ -203,11 +203,11 @@ describe('a base flight plan', () => {
         const fp = emptyFlightPlan();
 
         await fp.setOriginAirport('EGLL');
-        await fp.setOriginRunway('RW09L');
+        await fp.setOriginRunway('EGLL09L');
         await fp.setDeparture('CPT4K');
 
         await fp.setDestinationAirport('EGCC');
-        await fp.setDestinationRunway('RW23R');
+        await fp.setDestinationRunway('EGLL23R');
         await fp.setApproach('D23R');
 
         await fp.setApproachVia('MCT');
@@ -231,7 +231,7 @@ describe('a base flight plan', () => {
                 const fp = emptyFlightPlan();
 
                 await fp.setDestinationAirport('CYYZ');
-                await fp.setDestinationRunway('RW05');
+                await fp.setDestinationRunway('CYYZ05');
                 await fp.setApproach('I05');
 
                 const destinationLeg = assertNotDiscontinuity(fp.destinationLeg);
@@ -244,7 +244,7 @@ describe('a base flight plan', () => {
                 const fp = emptyFlightPlan();
 
                 await fp.setDestinationAirport('NZQN');
-                await fp.setDestinationRunway('RW05');
+                await fp.setDestinationRunway('CYYZ05');
                 await fp.setApproach('D05-B');
 
                 const destinationLeg = assertNotDiscontinuity(fp.destinationLeg);

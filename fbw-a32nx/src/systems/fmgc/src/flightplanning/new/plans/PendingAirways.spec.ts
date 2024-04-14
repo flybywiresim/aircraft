@@ -19,7 +19,7 @@ describe('pending airways entry', () => {
         const db = NavigationDatabaseService.activeDatabase;
 
         await FlightPlanService.newCityPair('CYUL', 'KBOS', 'KJFK');
-        await FlightPlanService.setOriginRunway('RW06R');
+        await FlightPlanService.setOriginRunway('CYUL06R');
         await FlightPlanService.setDepartureProcedure('CYUL1');
 
         const wp = await loadSingleWaypoint('DUNUP', 'WCY    DUNUP');
@@ -56,7 +56,7 @@ describe('pending airways entry', () => {
         const db = NavigationDatabaseService.activeDatabase;
 
         await FlightPlanService.newCityPair('LPPR', 'EGCC', 'EGKK');
-        await FlightPlanService.setOriginRunway('RW35');
+        await FlightPlanService.setOriginRunway('LPPR35');
         await FlightPlanService.setDepartureProcedure('TURO9E');
 
         FlightPlanService.temporaryInsert();
@@ -114,7 +114,7 @@ describe('pending airways entry', () => {
         const fp = FlightPlanService.active;
 
         await FlightPlanService.newCityPair('EGLL', 'OMDB', 'OMAA');
-        await FlightPlanService.setOriginRunway('RW27R');
+        await FlightPlanService.setOriginRunway('EGLL27R');
         await FlightPlanService.setDepartureProcedure('DET2F');
 
         FlightPlanService.temporaryInsert();

@@ -19,7 +19,7 @@ describe('simBrief uplink adapter', () => {
     it('tracer test', async () => {
         await FlightPlanService.newCityPair('NZWN', 'NZQN', 'NZAA');
 
-        await FlightPlanService.setDestinationRunway('RW23');
+        await FlightPlanService.setDestinationRunway('NZQN23');
         await FlightPlanService.setArrival('ELRU4B');
         await FlightPlanService.setApproach('R23-Z');
         await FlightPlanService.setApproachVia('ATKIL');

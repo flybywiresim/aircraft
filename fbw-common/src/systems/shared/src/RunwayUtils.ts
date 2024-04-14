@@ -5,20 +5,20 @@ import { RunwayDesignatorChar } from './navdata';
 
 export class RunwayUtils {
     public static runwayString(runwayIdent: string): string {
-        const regex = /RW(\d{2})([LCRTABW])?/;
+        const regex = /\w{4}(\d{2})([LCRTABW])?/;
         const match = regex.exec(runwayIdent);
 
         if (!match) {
             return '';
         }
 
-        const [, number] = match;
+        const [, number, designator] = match;
 
         if (number === '00') {
             return '';
         }
 
-        return runwayIdent.replace('RW', '');
+        return `${number}${designator ?? ''}`;
     }
 
     public static designatorString(runwayDesignator: RunwayDesignatorChar): string {

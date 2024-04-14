@@ -228,14 +228,10 @@ class CDUProgressPage {
         const destUTCCell = "---";
         const destDistCell = "----";
         if (plan.destinationAirport) {
-            destCell = plan.destinationAirport.ident;
+            destCell = plan.destinationRunway
+                ? plan.destinationRunway.ident
+                : plan.destinationAirport.ident;
 
-            if (plan.destinationRunway) {
-                destCell += plan.destinationRunway.ident.replace('RW', '');
-            }
-
-            // destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over (fms-v2)
-            // destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0); TODO port over (fms-v2)
         }
 
         mcdu.setTemplate([

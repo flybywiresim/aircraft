@@ -15,7 +15,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { NauticalMiles, bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -108,26 +107,19 @@ export class EfisSymbols<T extends number> {
         const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
         this.lastNearbyFacilitiesVersion = this.nearby.version;
 
-        const activeFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Active)
-            && this.lastFpVersions[FlightPlanIndex.Active] !== this.flightPlanService.active.version;
-        const tempFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Temporary)
-            && this.lastFpVersions[FlightPlanIndex.Temporary] !== this.flightPlanService.temporary.version;
-        const secFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.FirstSecondary)
-            && this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== this.flightPlanService.secondary(1).version;
+        const activeFpVersion = this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.version : -1;
+        const tempFpVersion = this.flightPlanService.has(FlightPlanIndex.Temporary) ? this.flightPlanService.temporary.version : -1;
+        const secFpVersion = this.flightPlanService.has(FlightPlanIndex.FirstSecondary) ? this.flightPlanService.secondary(1).version : -1;
+
+        const activeFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Active] !== activeFpVersion;
+        const tempFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Temporary] !== tempFpVersion;
+        const secFPVersionChanged = this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== secFpVersion;
 
         const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;
 
-        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-            this.lastFpVersions[FlightPlanIndex.Active] = this.flightPlanService.active.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.Temporary)) {
-            this.lastFpVersions[FlightPlanIndex.Temporary] = this.flightPlanService.temporary.version;
-        }
-
-        if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
-            this.lastFpVersions[FlightPlanIndex.FirstSecondary] = this.flightPlanService.secondary(1).version;
-        }
+        this.lastFpVersions[FlightPlanIndex.Active] = activeFpVersion;
+        this.lastFpVersions[FlightPlanIndex.Temporary] = tempFpVersion;
+        this.lastFpVersions[FlightPlanIndex.FirstSecondary] = secFpVersion;
 
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
@@ -669,7 +661,7 @@ export class EfisSymbols<T extends number> {
 
             const planAltnStr = flightPlan instanceof AlternateFlightPlan ? 'A' : ' ';
             const planIndexStr = flightPlan.index.toString();
-            const runwayIdentStr = runway?.ident.replace('RW', '').padEnd(4, ' ') ?? '    ';
+            const runwayIdentStr = runway?.ident.padEnd(8, ' ') ?? '        ';
 
             const databaseId = `A${airport.ident}${(planAltnStr)}${planIndexStr}${runwayIdentStr}`;
 
@@ -677,7 +669,7 @@ export class EfisSymbols<T extends number> {
                 if (withinEditArea(runway.startLocation)) {
                     ret.push({
                         databaseId,
-                        ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
+                        ident: runway.ident,
                         location: runway.startLocation,
                         direction: runway.bearing,
                         length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
@@ -817,7 +809,7 @@ export class EfisSymbols<T extends number> {
         const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
         const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
-        if (!matchingGeometryLeg.terminationWaypoint) {
+        if (!matchingGeometryLeg?.terminationWaypoint) {
             return null;
         }
 
