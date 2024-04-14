@@ -86,15 +86,17 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // needs to be initialized
     if (!loadingIsActive) {
       // get the requested procedure
-      const std::optional<Preset*> requestedProcedure = presetProcedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
+      const Preset* requestedProcedure = presetProcedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
 
       // check if procedure ID exists
-      if (!checkIfProcedureExists(requestedProcedure)) {
+      if (!requestedProcedure) {
+        LOG_WARN("AircraftPresets: Preset " + std::to_string(loadAircraftPresetRequest->getAsInt64()) + " not found!");
+        finishLoading();
         return true;
       }
 
       // initialize a new loading process
-      initializeNewLoadingProcess(requestedProcedure.value());
+      initializeNewLoadingProcess(requestedProcedure);
 
       return true;
     }
@@ -158,8 +160,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     updateProgress(currentStepPtr);
 
     executeAction(currentStepPtr);
-
-  } else if (loadingIsActive) {
+    
+  } else if (loadingIsActive) {  // loading has been 0
     finishLoading();
   }
 
@@ -207,15 +209,6 @@ void AircraftPresets::initializeNewLoadingProcess(const Preset* requestedProcedu
   currentStep        = 0;
   loadingIsActive    = true;
   progressAircraftPreset->setAndWriteToSim(0);
-}
-
-bool AircraftPresets::checkIfProcedureExists(const std::optional<const Preset*>& requestedProcedure) {
-  if (!requestedProcedure.has_value()) {
-    LOG_WARN("AircraftPresets: Preset " + std::to_string(loadAircraftPresetRequest->getAsInt64()) + " not found!");
-    finishLoading();
-    return false;
-  }
-  return true;
 }
 
 bool AircraftPresets::checkStepTypeSkipping(const bool expeditedMode, const ProcedureStep* currentStepPtr) {
