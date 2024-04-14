@@ -73,43 +73,65 @@ class PresetProcedures {
    *
    * @param pID numerical ID of the procedure
    *            (1 = cold and dark, 2 = powered, 3 = ready for pushback, 4 = ready for taxi, 5 = ready for takeoff)
-   * @return am optional pointer to the Preset or an empty optional if the procedure was not found
+   * @return a pointer to the Preset or nullptr if the procedure was not found
    */
-  std::optional<Preset*> getProcedure(int64_t pID) {
-    using namespace pugi;
-    xml_document presetProceduresXML;
-
-    // load the XML file and check for errors
-    const xml_parse_result result = presetProceduresXML.load_file(configFile.c_str());
-    if (result) {
-      LOG_INFO("AircraftPresets: XML config \"" + configFile + "\" parsed without errors.");
-    } else {
-      LOG_ERROR("AircraftPresets: XML config \"" + configFile + "\" parsed with errors, Error description: " + result.description());
-      return std::nullopt;
+  Preset* getProcedure(int pID) {
+    pugi::xml_node aircraftPresetProcedures = loadXMLConfig(configFile);
+    if (aircraftPresetProcedures.empty()) {
+      return nullptr;
     }
-
-    // clear the procedure list map
     initializeProcedureListMap();
+    processProcedures(aircraftPresetProcedures);
+    initializePresets();
+    return presets[pID - 1];
+  }
 
-    // get root node
-    xml_node aircraftPresetProcedures = presetProceduresXML.child("AircraftPresetProcedures");
+ private:
+  /**
+   * @brief Load the XML config file and return the root node
+   * @param filePath the path to the XML file containing the procedure definitions in the MSFS VFS
+   * @return the root node of the XML file
+   */
+  pugi::xml_node loadXMLConfig(const std::string& filePath) {
+    pugi::xml_document           presetProceduresXML;
+    const pugi::xml_parse_result result = presetProceduresXML.load_file(filePath.c_str());
+    if (!result) {
+      LOG_ERROR("AircraftPresets: XML config \"" + filePath + "\" parsed with errors. Error description: " + result.description());
+      return pugi::xml_node();
+    }
+    LOG_INFO("AircraftPresets: XML config \"" + filePath + "\" parsed without errors.");
+    return presetProceduresXML.child("AircraftPresetProcedures");
+  }
 
-    bool continue_outer = false;  // flag to skip the whole procedure if an error occurs
+  /**
+   * @brief Process the procedures from the XML file and add them to the procedure list map
+   * @param rootNode the root node of the XML file
+   */
+  void processProcedures(const pugi::xml_node& rootNode) {
+    // flag to skip a whole procedure if an error occurs
+    bool continue_outer = false;
 
     // iterate over all procedures
-    for (xml_node procedure : aircraftPresetProcedures.children("Procedure")) {
+    for (pugi::xml_node procedure : rootNode.children("Procedure")) {
       const std::string procedureName = procedure.attribute("name").as_string();
 
       // iterate over all steps
-      for (xml_node step : procedure.children("Step")) {
-        // Check if the step is valid
+      for (pugi::xml_node step : procedure.children("Step")) {
+        // Check if the step type is valid
         auto it = ProcedureStep::StepTypeMap.find(step.attribute("Type").as_string());
         if ((it == ProcedureStep::StepTypeMap.end())) {  // The color was not found in the map
-          std::cerr << "The step type " << step.attribute("Type").as_string() << " is not valid. Skipping the Step." << std::endl;
+          LOG_ERROR("AircraftPresets: The step type " + std::string{step.attribute("Type").as_string()} +
+                    " is not valid. Skipping the Step.");
           continue;
         }
 
-        // Step is valid, create a new ProcedureStep
+        // Check if the delay is valid
+        if (step.attribute("Delay").as_int() < 0) {
+          LOG_ERROR("AircraftPresets: The delay " + std::to_string(step.attribute("Delay").as_int()) + " is not valid. Skipping the Step.");
+          continue;
+        }
+
+        // Create a new ProcedureStep
         ProcedureStep pStep = {
             .description            = std::string{step.attribute("Name").as_string()},
             .type                   = it->second,
@@ -118,12 +140,12 @@ class PresetProcedures {
             .actionCode             = std::string{step.child("Action").child_value()},
         };
 
-        // Check if the procedure is valid and add the step to the correct list or skip the procedure completely
+        // Add the step to the correct procedure list
         auto itr = procedureListMap.find(procedureName);
         if (itr != procedureListMap.end()) {
           itr->second.push_back(pStep);
         } else {
-          std::cerr << "The procedure " << procedureName << " is not valid. Skipping the whole procedure." << std::endl;
+          LOG_ERROR("The procedure " + procedureName + " is not valid. Skipping the whole procedure.");
           continue_outer = true;
           break;
         }
@@ -133,25 +155,10 @@ class PresetProcedures {
         continue;
       }
     }  // for all procedures
-
-    // build the presets with the new procedure configurations
-    initializePresets();
-
-    return presets[pID - 1];
-  }
-
- private:
-  /**
-   * @brief Insert pointers to the procedure steps into the preset
-   * @param dest the preset to insert the procedure steps into
-   * @param src the procedure steps to insert
-   */
-  static void insert(Preset& dest, ProcedureDefinition& src) {
-    std::transform(begin(src), end(src), back_inserter(dest), [](auto& procedure) { return &procedure; });
   }
 
   /**
-   * @brief Initialize the procedure list map with the correct procedures
+   * @brief Clears and initializes the procedure list map with the correct procedures
    */
   void initializeProcedureListMap() {
     procedureListMap.clear();
@@ -166,7 +173,7 @@ class PresetProcedures {
   }
 
   /**
-   * @brief Initialize the presets with the correct procedures steps
+   * @brief Clears and initializes the presets with the correct procedures steps
    *
    * Resets the presets and inserts the correct procedure steps as pointers into the presets.
    */
@@ -177,30 +184,27 @@ class PresetProcedures {
     readyForTaxi.clear();
     readyForTakeoff.clear();
 
-    insert(coldAndDark, procedureListMap["TAKEOFF_CONFIG_OFF"]);
-    insert(coldAndDark, procedureListMap["TAXI_CONFIG_OFF"]);
-    insert(coldAndDark, procedureListMap["PUSHBACK_CONFIG_OFF"]);
-    insert(coldAndDark, procedureListMap["POWERED_CONFIG_OFF"]);
+    insertProcedureSteps(coldAndDark, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERED_CONFIG_OFF"});
+    insertProcedureSteps(powered, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERED_CONFIG_ON"});
+    insertProcedureSteps(readyForPushback, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON"});
+    insertProcedureSteps(readyForTaxi, {"TAKEOFF_CONFIG_OFF", "POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON"});
+    insertProcedureSteps(readyForTakeoff, {"POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON", "TAKEOFF_CONFIG_ON"});
+  }
 
-    insert(powered, procedureListMap["TAKEOFF_CONFIG_OFF"]);
-    insert(powered, procedureListMap["TAXI_CONFIG_OFF"]);
-    insert(powered, procedureListMap["PUSHBACK_CONFIG_OFF"]);
-    insert(powered, procedureListMap["POWERED_CONFIG_ON"]);
-
-    insert(readyForPushback, procedureListMap["TAKEOFF_CONFIG_OFF"]);
-    insert(readyForPushback, procedureListMap["TAXI_CONFIG_OFF"]);
-    insert(readyForPushback, procedureListMap["POWERED_CONFIG_ON"]);
-    insert(readyForPushback, procedureListMap["PUSHBACK_CONFIG_ON"]);
-
-    insert(readyForTaxi, procedureListMap["TAKEOFF_CONFIG_OFF"]);
-    insert(readyForTaxi, procedureListMap["POWERED_CONFIG_ON"]);
-    insert(readyForTaxi, procedureListMap["PUSHBACK_CONFIG_ON"]);
-    insert(readyForTaxi, procedureListMap["TAXI_CONFIG_ON"]);
-
-    insert(readyForTakeoff, procedureListMap["POWERED_CONFIG_ON"]);
-    insert(readyForTakeoff, procedureListMap["PUSHBACK_CONFIG_ON"]);
-    insert(readyForTakeoff, procedureListMap["TAXI_CONFIG_ON"]);
-    insert(readyForTakeoff, procedureListMap["TAKEOFF_CONFIG_ON"]);
+  /**
+   * @brief Insert the procedure steps into the presets
+   * @param dest the preset to insert the procedure steps into
+   * @param procedureNames the names of the procedures to insert
+   */
+  void insertProcedureSteps(Preset& dest, const std::vector<std::string>& procedureNames) {
+    for (const auto& name : procedureNames) {
+      std::transform(                                 //
+          begin(procedureListMap[name]),              //
+          end(procedureListMap[name]),                //
+          back_inserter(dest),                        //
+          [](auto& procedure) { return &procedure; }  //
+      );                                              //
+    }
   }
 };
 
