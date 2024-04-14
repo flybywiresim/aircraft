@@ -168,7 +168,7 @@ class CDUInitPage {
         mcdu.onLeftInput[0] = coRouteAction;
 
         if (mcdu.tropo) {
-            tropo.update("" + mcdu.tropo, Column.big);
+            tropo.update(mcdu.tropo.toString(), mcdu.isTropoPilotEntered ? Column.big : Column.small);
         }
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateTropo(value)) {

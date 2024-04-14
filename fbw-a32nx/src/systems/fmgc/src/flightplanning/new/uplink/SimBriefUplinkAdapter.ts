@@ -34,7 +34,8 @@ export interface ImportedPerformanceData {
     departureTransitionAltitude: number,
     destinationTransitionLevel: number,
     costIndex: number,
-    cruiseFlightLevel: number
+    cruiseFlightLevel: number,
+    pilotTropopause: number,
 }
 
 interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
@@ -125,11 +126,15 @@ export class SimBriefUplinkAdapter {
 
         const plan = flightPlanService.uplink;
 
+        // FIXME more validation?
+        const tropopause = Number.parseInt(ofp.averageTropopause);
+
         plan.setImportedPerformanceData({
             departureTransitionAltitude: route.from.transAlt,
             destinationTransitionLevel: route.to.transLevel / 100,
             costIndex: route.costIndex,
             cruiseFlightLevel: ofp.cruiseAltitude / 100,
+            pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
         });
 
         // used by FlightPhaseManager

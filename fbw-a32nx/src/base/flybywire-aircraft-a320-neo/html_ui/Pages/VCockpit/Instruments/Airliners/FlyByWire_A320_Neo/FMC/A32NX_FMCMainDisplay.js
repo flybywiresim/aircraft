@@ -73,7 +73,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._checkWeightSettable = undefined;
         this._gwInitDisplayed = undefined;
         /* CPDLC Fields */
-        this.tropo = undefined;
         this._destDataChecked = undefined;
         this._towerHeadwind = undefined;
         this._EfobBelowMinClr = undefined;
@@ -4782,6 +4781,34 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return false;
+    }
+
+    get tropo() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.tropopause;
+        }
+
+        return undefined;
+    }
+
+    get isTropoPilotEntered() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.tropopauseIsPilotEntered;
+        }
+
+        return false;
+    }
+
+    set tropo(tropo) {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            this.currFlightPlanService.setPerformanceData('pilotTropopause', tropo);
+        }
     }
 
     get flightNumber() {
