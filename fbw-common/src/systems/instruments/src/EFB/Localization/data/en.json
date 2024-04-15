@@ -164,6 +164,11 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
+      "SelectItem": {
+        "MainDeck": "Main",
+        "UpperDeck": "Upper",
+        "CargoDeck": "Cargo"
+      },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",

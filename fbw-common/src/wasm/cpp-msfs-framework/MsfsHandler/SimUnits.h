@@ -38,6 +38,7 @@ class SimUnits {
   const SimUnit FeetSecSquared{"feet per second squared"};
   const SimUnit FootPounds{"Foot pounds"};
   const SimUnit Gallons{"Gallons"};
+  const SimUnit Gph{"Gallons per hour"};
   const SimUnit Hours{"Hours"};
   const SimUnit Mach{"Mach"};
   const SimUnit Millibars{"Millibars"};

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
-import { getAirframeType } from '../../Efb';
+import { useAppSelector } from '@flybywiresim/flypad';
 import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
@@ -36,12 +36,15 @@ interface ThrottleConfigProps {
  * @constructor
  */
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [airframe] = useState(getAirframeType());
+    const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
 
-    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === 'A380_842' ? 4 : 2);
+    // the number of throttles that are used in the aircraft (2 or 4)
+    const numberOfThrottles = flypadInfo.throttle.numberOfAxis;
+
+    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', numberOfThrottles);
     // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== 'A380_842' && axisNum === 4) {
-        setAxisNum(2);
+    if (axisNum > numberOfThrottles) {
+        setAxisNum(numberOfThrottles);
     }
 
     const [selectedDetent, setSelectedDetent] = useState(2);
@@ -62,14 +65,6 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
     const { showModal } = useModals();
-
-    // the number of throttles that are used in the aircraft (2 or 4)
-    const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
-
-    // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
-    if (airframe !== 'A380_842' && axisNum === 4) {
-        setAxisNum(2);
-    }
 
     // simvars for each virtual throttle (we define 4 even for the A320 and ignore 3 + 4)
     const throttleOneSimvars: Array<ThrottleSimvar> = [
@@ -143,7 +138,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             ...getOverlapErrors(2, throttleTwoSimvars),
         ];
         // to avoid false errors on the A320 when only 2 axis are used
-        if (airframe === 'A380_842') {
+        if (numberOfThrottles === 4) {
             errors.push(...getOverlapErrors(3, throttleThreeSimvars));
             errors.push(...getOverlapErrors(4, throttleFourSimvars));
         }
@@ -221,27 +216,16 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const axisSelectGroup = (
         <SelectGroup>
-            <SelectItem
-                selected={axisNum === 1}
-                onSelect={() => setAxisNum(1)}
-            >
-                1
-            </SelectItem>
-            <SelectItem
-                selected={axisNum === 2}
-                onSelect={() => setAxisNum(2)}
-            >
-                2
-            </SelectItem>
-            {airframe === 'A380_842' && (
+            {flypadInfo.throttle.axisOptions.map((option) => (
                 <SelectItem
-                    selected={axisNum === 4}
-                    onSelect={() => setAxisNum(4)}
+                    selected={axisNum === option}
+                    onSelect={() => setAxisNum(option)}
                 >
-                    4
+                    {option}
                 </SelectItem>
-            )}
+            ))}
         </SelectGroup>
+
     );
 
     const oneAxis = (
@@ -351,13 +335,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const getAxis = () => {
         switch (axisNum) {
         case 4:
-            if (airframe === 'A380_842') {
+            if (flypadInfo.throttle.axisOptions.includes(axisNum)) {
                 return fourAxis;
             }
             console.warn('A320 does not have 4 axis - defaulting to 2 axis');
             return twoAxisA320;
         case 2:
-            if (airframe === 'A380_842') {
+            if (flypadInfo.throttle.axisOptions.includes(4)) {
                 return twoAxisA380;
             }
             return twoAxisA320;
@@ -370,10 +354,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     if (!isShown) return null;
 
     return (
-        <div className="flex h-content-section-full flex-col justify-between">
+        <div className="h-content-section-full flex flex-col justify-between">
             <div className="space-y-2">
                 <div>
-                    <div className="mb-8 mt-auto flex w-full flex-row items-center justify-center space-x-16 rounded-lg border-2 border-theme-accent p-4">
+                    <div className="border-theme-accent mb-8 mt-auto flex w-full flex-row items-center justify-center space-x-16 rounded-lg border-2 p-4">
                         <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.TogaOnAxis')}</div>
                             <Toggle value={!!togaOnAxis1} onToggle={(value) => setTogaOnAxis(value ? 1 : 0)} />
@@ -392,7 +376,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
                 {/* To make sure users map throttles 1+2 to axis 1 and 3+4 to axis 2 and not any other grouping */}
                 {validConfig && numberOfThrottles === 4 && axisNum === 2 && (
-                    <div className="w-full overflow-hidden rounded-md border-2 border-theme-accent">
+                    <div className="border-theme-accent w-full overflow-hidden rounded-md border-2">
                         <h2 className="py-4 text-center">
                             {t('Settings.ThrottleConfig.FourThrottleWarning')}
                         </h2>
@@ -400,8 +384,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 )}
 
                 {!validConfig && (
-                    <div className="w-full overflow-hidden rounded-md border-2 border-theme-accent">
-                        <div className="flex w-full items-center justify-center bg-utility-red py-3">
+                    <div className="border-theme-accent w-full overflow-hidden rounded-md border-2">
+                        <div className="bg-utility-red flex w-full items-center justify-center py-3">
                             <ExclamationCircleFill size={25} />
                         </div>
                         <h2 className="py-4 text-center">
@@ -411,12 +395,12 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 )}
             </div>
 
-            <div className="flex w-full flex-row justify-between rounded-lg border-2 border-theme-accent p-4">
+            <div className="border-theme-accent flex w-full flex-row justify-between rounded-lg border-2 p-4">
                 <div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                        className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight rounded-md border-2 px-5 py-2.5 transition duration-100"
                     >
                         {t('Settings.ThrottleConfig.Back')}
                     </button>
@@ -435,7 +419,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 />,
                             );
                         }}
-                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                        className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight rounded-md border-2 px-5 py-2.5 transition duration-100"
                     >
                         {t('Settings.ThrottleConfig.ResetToDefaults')}
                     </button>
@@ -444,7 +428,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             syncToThrottle(1);
                         }}
-                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                        className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight rounded-md border-2 px-5 py-2.5 transition duration-100"
                     >
                         {t('Settings.ThrottleConfig.LoadFromFile')}
                     </button>
@@ -467,7 +451,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         }}
                         disabled={!validConfig}
                         className={`rounded-md border-2 px-5 py-2.5 transition duration-100 ${validConfig
-                            ? 'border-green-400 bg-green-400 text-theme-body hover:bg-theme-body hover:text-green-400'
+                            ? 'text-theme-body hover:bg-theme-body border-green-400 bg-green-400 hover:text-green-400'
                             : 'border-theme-accent bg-theme-accent opacity-30'}`}
                     >
                         {t('Settings.ThrottleConfig.SaveAndApply')}

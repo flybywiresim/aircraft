@@ -16,6 +16,8 @@ export * from './Settings/sync';
 export * from './Store/features/dispatchPage';
 export * from './Store/features/groundServicePage';
 export * from './Store/features/simBrief';
+export * from './Store/features/payload';
+export * from './Store/features/config';
 export * from './Store/store';
 export * from './UtilComponents/BingMap';
 export * from './UtilComponents/Card/Card';

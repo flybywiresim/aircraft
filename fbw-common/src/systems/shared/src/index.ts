@@ -1,4 +1,4 @@
-export * from './AircraftVersionChecker';
+export * from './AircraftGithubVersionChecker';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
 export * from './Arinc429RegisterSubject';
@@ -15,7 +15,8 @@ export * from './MathUtils';
 export * from './PathVector';
 export * from './RunwayUtils';
 export * from './UpdateThrottler';
-export * from './aircraftTypeCheck';
+export * from './UniversalConfigProvider';
+export * from './unifiedConfig';
 export * from './arinc429';
 export * from './array';
 export * from './ata';
