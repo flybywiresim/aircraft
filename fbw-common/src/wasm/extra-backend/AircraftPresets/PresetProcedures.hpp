@@ -76,6 +76,10 @@ class PresetProcedures {
    * @return a pointer to the Preset or nullptr if the procedure was not found
    */
   Preset* getProcedure(int pID) {
+    if (pID < 1 || pID > 5) {
+      LOG_ERROR("AircraftPresets: The procedure ID " + std::to_string(pID) + " is not valid. Valid IDs are 1-5.");
+      return nullptr;
+    }
     pugi::xml_node aircraftPresetProcedures = loadXMLConfig(configFile);
     if (aircraftPresetProcedures.empty()) {
       return nullptr;
@@ -121,13 +125,15 @@ class PresetProcedures {
         auto it = ProcedureStep::StepTypeMap.find(step.attribute("Type").as_string());
         if ((it == ProcedureStep::StepTypeMap.end())) {  // The color was not found in the map
           LOG_ERROR("AircraftPresets: The step type " + std::string{step.attribute("Type").as_string()} +
-                    " is not valid. Skipping the Step.");
+                    " is not valid. Skipping the Step.\n" + "Procedure: " + procedureName + " Step: " + step.attribute("Name").as_string() +
+                    "\n");
           continue;
         }
 
         // Check if the delay is valid
         if (step.attribute("Delay").as_int() < 0) {
-          LOG_ERROR("AircraftPresets: The delay " + std::to_string(step.attribute("Delay").as_int()) + " is not valid. Skipping the Step.");
+          LOG_ERROR("AircraftPresets: The delay " + std::to_string(step.attribute("Delay").as_int()) +
+                    " is not valid. Skipping the Step.\n" + "Procedure: " + procedureName + " Step: " + step.attribute("Name").as_string());
           continue;
         }
 
