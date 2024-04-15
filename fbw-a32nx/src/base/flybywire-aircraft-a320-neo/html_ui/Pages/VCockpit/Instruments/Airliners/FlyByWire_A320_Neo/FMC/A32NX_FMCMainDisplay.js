@@ -73,7 +73,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._checkWeightSettable = undefined;
         this._gwInitDisplayed = undefined;
         /* CPDLC Fields */
-        this.tropo = undefined;
         this._destDataChecked = undefined;
         this._towerHeadwind = undefined;
         this._EfobBelowMinClr = undefined;
@@ -2481,6 +2480,12 @@ class FMCMainDisplay extends BaseAirliners {
         this._getOrSelectWaypoints(this.navigationDatabase.searchAllNavaid.bind(this.navigationDatabase), ident, callback);
     }
 
+    /**
+     * This function only finds waypoints, not navaids. Some fixes may exist as a VOR and a waypoint in the database, this will only return the waypoint.
+     * Use @see Fmgc.WaypointEntryUtils.getOrCreateWaypoint instead if you don't want that
+     * @param {*} ident
+     * @param {*} callback
+     */
     getOrSelectWaypointByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.navigationDatabase.searchWaypoint.bind(this.navigationDatabase), ident, callback);
     }
@@ -4776,6 +4781,34 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return false;
+    }
+
+    get tropo() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.tropopause;
+        }
+
+        return undefined;
+    }
+
+    get isTropoPilotEntered() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.tropopauseIsPilotEntered;
+        }
+
+        return false;
+    }
+
+    set tropo(tropo) {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            this.currFlightPlanService.setPerformanceData('pilotTropopause', tropo);
+        }
     }
 
     get flightNumber() {
