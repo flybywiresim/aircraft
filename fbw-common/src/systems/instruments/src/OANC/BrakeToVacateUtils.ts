@@ -14,6 +14,8 @@ import { fractionalPointAlongLine, pointAngle, pointDistance, pointToLineDistanc
 import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
 
 const TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
+const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
+const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -345,9 +347,10 @@ export class BrakeToVacateUtils<T extends number> {
 
         // DRY stop line
         if (this.dryStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+            const distanceToDraw = Math.min(this.dryStoppingDistance.get(), this.btvRunwayLda.get() - touchdownDistance + CLAMP_DRY_STOPBAR_DISTANCE);
             const dryStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                (touchdownDistance + this.dryStoppingDistance.get()) / this.btvRunwayLda.get());
+                (touchdownDistance + distanceToDraw) / this.btvRunwayLda.get());
 
             const dryP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
@@ -386,9 +389,10 @@ export class BrakeToVacateUtils<T extends number> {
 
         // WET stop line
         if (this.wetStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+            const distanceToDraw = Math.min(this.wetStoppingDistance.get(), this.btvRunwayLda.get() - touchdownDistance + CLAMP_WET_STOPBAR_DISTANCE);
             const wetStopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                (touchdownDistance + this.wetStoppingDistance.get()) / this.btvRunwayLda.get());
+                (touchdownDistance + distanceToDraw) / this.btvRunwayLda.get());
 
             const wetP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
@@ -439,10 +443,12 @@ export class BrakeToVacateUtils<T extends number> {
         if (this.liveStoppingDistance.get() > 0 && this.aircraftOnGround.get() && this.groundSpeed.value > 25) {
             const liveRunOverCondition = this.remaininingDistToRwyEnd.get() - this.liveStoppingDistance.get() <= 0;
             // If runover predicted, draw stop bar a little behind the runway end
-            const stoppingDistanceToDraw = liveRunOverCondition ? (this.remaininingDistToRwyEnd.get() + 100) : this.liveStoppingDistance.get();
+            const distanceToDraw = liveRunOverCondition && (this.liveStoppingDistance.get() - this.remaininingDistToRwyEnd.get() > CLAMP_DRY_STOPBAR_DISTANCE)
+                ? (this.remaininingDistToRwyEnd.get() + 100)
+                : this.liveStoppingDistance.get();
             const stopLinePoint = fractionalPointAlongLine(this.btvThresholdPosition[0], this.btvThresholdPosition[1],
                 this.btvOppositeThresholdPosition[0], this.btvOppositeThresholdPosition[1],
-                (aircraftDistFromThreshold + stoppingDistanceToDraw) / this.btvRunwayLda.get());
+                (aircraftDistFromThreshold + distanceToDraw) / this.btvRunwayLda.get());
 
             const stopP1 = [
                 latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
