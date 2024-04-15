@@ -30,7 +30,7 @@ export class NXApiConnector {
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
         const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degree');
-        const acType = SimVar.GetSimVarValue('TITLE', 'string');
+        const acType = SimVar.GetSimVarValue('TITLE', 'string'); // Note: This can be overriden by livery aircraft.cfg
         const origin = NXDataStore.get('PLAN_ORIGIN', '');
         const destination = NXDataStore.get('PLAN_DESTINATION', '');
         const freetext = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED';

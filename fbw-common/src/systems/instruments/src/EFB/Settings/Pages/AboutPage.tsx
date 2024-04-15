@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSessionStorage, AircraftGithubVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, useSimVar } from '@flybywiresim/fbw-sdk';
 import { t } from '@flybywiresim/flypad';
-import { getAirframeType } from '../../Efb';
 import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
@@ -46,6 +45,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
 };
 
 export const AboutPage = () => {
+    const [title] = useSimVar('TITLE', 'string');
     const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
@@ -60,10 +60,10 @@ export const AboutPage = () => {
     useViewListenerEvent('JS_LISTENER_COMMUNITY', 'SetGamercardInfo', onSetPlayerData);
 
     useEffect(() => {
-        AircraftVersionChecker.getBuildInfo(
-            getAirframeType() === 'A320_251N' ? 'a32nx' : 'a380x',
+        AircraftGithubVersionChecker.getBuildInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
         ).then((info) => setBuildInfo(info));
-    }, []);
+    }, [process.env.AIRCRAFT_PROJECT_PREFIX]);
 
     return (
         <SettingsPage name={t('Settings.About.Title')}>
@@ -84,7 +84,7 @@ export const AboutPage = () => {
                     </div>
                 </div>
                 <div className="mt-8 flex flex-col justify-center">
-                    <p>&copy; 2020-2022 FlyByWire Simulations and its contributors, all rights reserved.</p>
+                    <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
                     <p>Licensed under the GNU General Public License Version 3</p>
                 </div>
 
@@ -93,6 +93,7 @@ export const AboutPage = () => {
                     <div className="mt-4">
                         <BuildInfoEntry title="Sim Version" value={version} />
                         <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
+                        <BuildInfoEntry title="Livery Title" value={title} />
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
                         <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />

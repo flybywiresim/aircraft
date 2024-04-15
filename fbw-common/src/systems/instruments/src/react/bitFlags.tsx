@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { SeatFlags } from '../../../shared/src';
+import { PaxStationInfo, SeatFlags } from '../../../shared/src';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
 
@@ -53,7 +53,7 @@ export const useSeatFlags = (
 };
 
 export const useSeatMap = (
-    Loadsheet: any,
+    seatMap: PaxStationInfo[],
 ) : [
         SeatFlags[],
         SeatFlags[],
@@ -74,53 +74,51 @@ export const useSeatMap = (
         const desiredUnits: string[] = [];
         const activeNames: string[] = [];
         const activeUnits: string[] = [];
-        Loadsheet.seatMap.forEach((station) => {
-            desiredNames.push(`L:${station.bitFlags}_DESIRED`);
+        seatMap.forEach((station) => {
+            desiredNames.push(`L:${station.simVar}_DESIRED`);
             desiredUnits.push('number');
-            activeNames.push(`L:${station.bitFlags}`);
+            activeNames.push(`L:${station.simVar}`);
             activeUnits.push('number');
         });
         return [desiredNames, desiredUnits, activeNames, activeUnits];
-    }, [Loadsheet]);
+    }, [seatMap]);
 
-    const [desiredBitVars] = useSimVarList(desiredVarNames, desiredVarUnits);
-    const [activeBitVars] = useSimVarList(activeVarNames, activeVarUnits);
+    const [desiredBitVars] = useSimVarList(desiredVarNames, desiredVarUnits, 379);
+    const [activeBitVars] = useSimVarList(activeVarNames, activeVarUnits, 379);
 
     const setActiveFlags = useCallback((value: SeatFlags, index: number) => {
-        SimVar.SetSimVarValue(`L:${Loadsheet.seatMap[index].bitFlags}`, 'string', value.toString()).catch(console.error).then();
-    }, [Loadsheet]);
+        SimVar.SetSimVarValue(`L:${seatMap[index].simVar}`, 'string', value.toString()).catch(console.error).then();
+    }, [seatMap]);
 
     const setDesiredFlags = useCallback((value: SeatFlags, index: number) => {
-        SimVar.SetSimVarValue(`L:${Loadsheet.seatMap[index].bitFlags}_DESIRED`, 'string', value.toString()).catch(console.error).then();
-    }, [Loadsheet]);
+        SimVar.SetSimVarValue(`L:${seatMap[index].simVar}_DESIRED`, 'string', value.toString()).catch(console.error).then();
+    }, [seatMap]);
+
+    const stationSizes = useMemo(() => seatMap.map((station) => {
+        let stationSize = 0;
+        station.rows.forEach((row) => {
+            row.seats.forEach(() => {
+                stationSize++;
+            });
+        });
+        return stationSize;
+    }), [seatMap]);
 
     const desiredFlags = useMemo(() => {
         const flags: SeatFlags[] = [];
-        Loadsheet.seatMap.forEach((station, index) => {
-            let stationSize = 0;
-            station.rows.forEach((row) => {
-                row.seats.forEach(() => {
-                    stationSize++;
-                });
-            });
-            flags[index] = new SeatFlags(desiredBitVars[index], stationSize);
+        seatMap.forEach((_station, index) => {
+            flags[index] = new SeatFlags(desiredBitVars[index], stationSizes[index]);
         });
         return flags;
-    }, [desiredBitVars, ...desiredBitVars]);
+    }, [...desiredBitVars, stationSizes]);
 
     const activeFlags = useMemo(() => {
         const flags: SeatFlags[] = [];
-        Loadsheet.seatMap.forEach((station, index) => {
-            let stationSize = 0;
-            station.rows.forEach((row) => {
-                row.seats.forEach(() => {
-                    stationSize++;
-                });
-            });
-            flags[index] = new SeatFlags(activeBitVars[index], stationSize);
+        seatMap.forEach((_station, index) => {
+            flags[index] = new SeatFlags(activeBitVars[index], stationSizes[index]);
         });
         return flags;
-    }, [activeBitVars, ...activeBitVars]);
+    }, [...activeBitVars, stationSizes]);
 
     return [
         desiredFlags,
