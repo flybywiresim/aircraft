@@ -88,6 +88,7 @@
 1. [GENERAL] Implemented a new unified VFS JSON5 markup standard for A/C configuration for FlyByWire based projects (building block for per-livery configuration) - @2hwk (2Cas)
 1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
 1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
+1. [FADEC] Fadec rewrite/cleanup/commenting using cpp framework - @frankkopp (Frank Kopp)
 
 ## 0.11.0
 

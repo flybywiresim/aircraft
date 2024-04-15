@@ -16,9 +16,9 @@ class DataManager;
 
 /**
  * @brief The AircraftVariable class is a specialized class for aircraft cacheable variables (aka simvars or A:VARS).
+ *        AircraftVariables are always FLOAT64.
  *
- * This class uses events or calculator code to write to a variable as
- * AircraftVariables are read-only.<p/>
+ * This class uses events or calculator code to write to a variable as AircraftVariables are read-only.<p/>
  *
  * If a setter event or event name is provided the variable will be writable.<p/>
  *
@@ -60,7 +60,6 @@ class AircraftVariable : public CacheableVariable {
    * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of an auto updated the variable in seconds.
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
-   * @param setterEventName The calculator code to write to the variable.
    */
   explicit AircraftVariable(const std::string& varName,
                             int varIndex = 0,
