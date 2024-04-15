@@ -211,11 +211,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
 
         <!-- WORKAROUND: for intermittent HOT AIR PB Fault when using expedited mode       -->
-        <Step Name="HOT AIR PB Reset" Type="STEP" Delay="0">
+        <Step Name="HOT AIR PB Off" Type="STEP" Delay="0">
             <Condition>(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==</Condition>
             <Action>0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON)</Action>
         </Step>
-        <Step Name="HOT AIR PB Reset" Type="STEP" Delay="0">
+        <Step Name="HOT AIR PB On" Type="STEP" Delay="0">
             <Condition>(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON) 1 ==</Condition>
             <Action>1 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON)</Action>
         </Step>
