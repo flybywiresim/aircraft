@@ -324,16 +324,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
         if (fwcFlightPhase < 7) {
             // Go through all airports, load if distance <20NM
-            for(const ap of this.store.airports.getArray()) {
-                if (distanceTo(this.presentPos.get(), { lat: ap.coordinates.lat, long: ap.coordinates.lon }) < 20) {
-                    if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
+            const nearestAirports = this.store.airports.getArray().filter((ap) => distanceTo(this.presentPos.get(), { lat: ap.coordinates.lat, long: ap.coordinates.lon }) < 20);
+            const sortedAirports = nearestAirports.sort((a, b) => distanceTo(this.presentPos.get(), { lat: a.coordinates.lat, long: a.coordinates.lon }) - distanceTo(this.presentPos.get(), { lat: b.coordinates.lat, long: b.coordinates.lon }));
+            if (sortedAirports.length > 0) {
+                const ap = sortedAirports[0];
+                if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
                         this.handleSelectAirport(ap.idarpt);
                         this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', ap.idarpt, true);
                         this.store.loadedAirport.set(ap.idarpt);
                         this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
                     }
                     return;
-                }
             }
         }
         // If in flight, load destination airport if distance is <50NM. This could cause stutters, consider deactivating.

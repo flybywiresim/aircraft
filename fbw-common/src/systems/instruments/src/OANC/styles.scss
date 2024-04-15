@@ -57,19 +57,25 @@
   pointer-events: auto;
 }
 
-.oanc-label:hover {
-  outline: 3px solid $display-cyan;
-  pointer-events: auto;
-  outline-offset: 4px;
-}
-
 .oanc-label-style-taxiway {
   color: $display-yellow;
   outline: 0px solid $display-cyan;
   outline-offset: 0px;
 }
 
-.oanc-label-style-taxiway-btv-selected {
+.oanc-label-style-exit-line {
+  color: $display-yellow;
+  outline: 0px solid $display-cyan;
+  outline-offset: 0px;
+}
+
+.oanc-label-style-exit-line:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 4px;
+}
+
+.oanc-label-style-exit-line-btv-selected {
   color: $display-cyan;
   outline: 3px solid $display-cyan;
   outline-offset: 4px;

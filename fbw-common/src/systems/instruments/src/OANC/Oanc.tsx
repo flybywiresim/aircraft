@@ -80,6 +80,7 @@ export const LABEL_VISIBILITY_RULES = [
 
 export enum LabelStyle {
     Taxiway = 'taxiway',
+    ExitLine = 'exit-line',
     TerminalBuilding = 'terminal-building',
     RunwayAxis = 'runway-axis',
     RunwayEnd = 'runway-end',
@@ -87,7 +88,7 @@ export enum LabelStyle {
     FmsSelectedRunwayAxis = 'runway-axis-fms-selected',
     BtvSelectedRunwayEnd = 'runway-end-btv-selected',
     BtvSelectedRunwayArrow = 'runway-arrow-btv-selected',
-    BtvSelectedExit = 'taxiway-btv-selected',
+    BtvSelectedExit = 'exit-line-btv-selected',
     BtvStopLineMagenta = 'btv-stop-line-magenta',
     BtvStopLineAmber = 'btv-stop-line-amber',
     BtvStopLineRed = 'btv-stop-line-red',
@@ -534,7 +535,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 const thresholdFeature = this.data.features.filter((it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text);
                 this.btvUtils.selectRunwayFromOans(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
             });
-        } if (label.style === LabelStyle.Taxiway && label.associatedFeature.properties.feattype === FeatureType.ExitLine) {
+        } if (label.style === LabelStyle.ExitLine && label.associatedFeature.properties.feattype === FeatureType.ExitLine) {
             element.addEventListener('click', () => {
                 this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
             });
@@ -721,13 +722,16 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 }
 
                 if (text !== undefined) {
-                    let style: LabelStyle.TerminalBuilding | LabelStyle.Taxiway;
+                    let style: LabelStyle.TerminalBuilding | LabelStyle.Taxiway | LabelStyle.ExitLine;
                     switch (feature.properties.feattype) {
                     case FeatureType.VerticalPolygonObject:
                         style = LabelStyle.TerminalBuilding;
                         break;
                     case FeatureType.ParkingStandLocation:
                         style = LabelStyle.TerminalBuilding;
+                        break;
+                    case FeatureType.ExitLine:
+                        style = LabelStyle.ExitLine;
                         break;
                     default:
                         style = LabelStyle.Taxiway;
