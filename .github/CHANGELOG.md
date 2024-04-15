@@ -89,6 +89,7 @@
 1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
 1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
 1. [FADEC] Fadec rewrite/cleanup/commenting using cpp framework - @frankkopp (Frank Kopp)
+1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 
 ## 0.11.0
 
