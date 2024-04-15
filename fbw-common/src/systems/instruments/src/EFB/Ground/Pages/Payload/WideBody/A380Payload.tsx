@@ -4,34 +4,20 @@
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
-import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
-import { setPayloadImported, t, useAppDispatch, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card, A380SeatOutlineBg, A380SeatOutlineUpperBg } from '@flybywiresim/flypad';
+import { CargoStationInfo, PaxStationInfo, SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { setPayloadImported, setDisplayPaxMainDeck, t, useAppDispatch, TooltipWrapper, PromptModal, useModals, SelectGroup, SelectItem, Card, A380SeatOutlineBg, A380SeatOutlineUpperBg, useAppSelector } from '@flybywiresim/flypad';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
-import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
-import Loadsheet from './a380v3.json';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
+import { PayloadProps } from '../PayloadPage';
 
-interface A380Props {
-    simbriefUnits: string,
-    simbriefBagWeight: number,
-    simbriefPaxWeight: number,
-    simbriefPax: number,
-    simbriefBag: number,
-    simbriefFreight: number,
-    simbriefDataLoaded: boolean,
-    payloadImported: boolean,
-    massUnitForDisplay: string,
-    isOnGround: boolean,
-
-    boardingStarted: boolean,
-    boardingRate: string,
-    setBoardingStarted: (boardingStarted: any) => void,
-    setBoardingRate: (boardingRate: any) => void,
-}
-
-export const A380Payload: React.FC<A380Props> = ({
+export const A380Payload: React.FC<PayloadProps> = ({
+    airframeInfo,
+    flypadInfo,
+    cabinInfo,
+    maxPax,
+    maxCargo,
     simbriefUnits,
     simbriefBagWeight,
     simbriefPaxWeight,
@@ -49,35 +35,35 @@ export const A380Payload: React.FC<A380Props> = ({
 }) => {
     const { showModal } = useModals();
 
-    const [mainFwdA] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 509);
-    const [mainFwdB] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 521);
-    const [mainMid1A] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity, 523);
-    const [mainMid1B] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity, 541);
-    const [mainMid1C] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}`, Loadsheet.seatMap[4].capacity, 547);
-    const [mainMid2A] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}`, Loadsheet.seatMap[5].capacity, 557);
-    const [mainMid2B] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}`, Loadsheet.seatMap[6].capacity, 563);
-    const [mainMid2C] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}`, Loadsheet.seatMap[7].capacity, 569);
-    const [mainAftA] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}`, Loadsheet.seatMap[8].capacity, 571);
-    const [mainAftB] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}`, Loadsheet.seatMap[9].capacity, 577);
-    const [upperFwd] = useSeatFlags(`L:${Loadsheet.seatMap[10].simVar}`, Loadsheet.seatMap[10].capacity, 587);
-    const [upperMidA] = useSeatFlags(`L:${Loadsheet.seatMap[11].simVar}`, Loadsheet.seatMap[11].capacity, 593);
-    const [upperMidB] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}`, Loadsheet.seatMap[12].capacity, 599);
-    const [upperAft] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}`, Loadsheet.seatMap[13].capacity, 601);
+    const [mainFwdA] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}`, cabinInfo.seatMap[0].capacity, 509);
+    const [mainFwdB] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}`, cabinInfo.seatMap[1].capacity, 521);
+    const [mainMid1A] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}`, cabinInfo.seatMap[2].capacity, 523);
+    const [mainMid1B] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}`, cabinInfo.seatMap[3].capacity, 541);
+    const [mainMid1C] = useSeatFlags(`L:${cabinInfo.seatMap[4].simVar}`, cabinInfo.seatMap[4].capacity, 547);
+    const [mainMid2A] = useSeatFlags(`L:${cabinInfo.seatMap[5].simVar}`, cabinInfo.seatMap[5].capacity, 557);
+    const [mainMid2B] = useSeatFlags(`L:${cabinInfo.seatMap[6].simVar}`, cabinInfo.seatMap[6].capacity, 563);
+    const [mainMid2C] = useSeatFlags(`L:${cabinInfo.seatMap[7].simVar}`, cabinInfo.seatMap[7].capacity, 569);
+    const [mainAftA] = useSeatFlags(`L:${cabinInfo.seatMap[8].simVar}`, cabinInfo.seatMap[8].capacity, 571);
+    const [mainAftB] = useSeatFlags(`L:${cabinInfo.seatMap[9].simVar}`, cabinInfo.seatMap[9].capacity, 577);
+    const [upperFwd] = useSeatFlags(`L:${cabinInfo.seatMap[10].simVar}`, cabinInfo.seatMap[10].capacity, 587);
+    const [upperMidA] = useSeatFlags(`L:${cabinInfo.seatMap[11].simVar}`, cabinInfo.seatMap[11].capacity, 593);
+    const [upperMidB] = useSeatFlags(`L:${cabinInfo.seatMap[12].simVar}`, cabinInfo.seatMap[12].capacity, 599);
+    const [upperAft] = useSeatFlags(`L:${cabinInfo.seatMap[13].simVar}`, cabinInfo.seatMap[13].capacity, 601);
 
-    const [mainFwdADesired, setMainFwdADesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity, 317);
-    const [mainFwdBDesired, setMainFwdBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 347);
-    const [mainMid1ADesired, setMainMid1ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 359);
-    const [mainMid1BDesired, setMainMid1BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 379);
-    const [mainMid1CDesired, setMainMid1CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}_DESIRED`, Loadsheet.seatMap[4].capacity, 397);
-    const [mainMid2ADesired, setMainMid2ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}_DESIRED`, Loadsheet.seatMap[5].capacity, 421);
-    const [mainMid2BDesired, setMainMid2BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}_DESIRED`, Loadsheet.seatMap[6].capacity, 439);
-    const [mainMid2CDesired, setMainMid2CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}_DESIRED`, Loadsheet.seatMap[7].capacity, 457);
-    const [mainAftADesired, setMainAftADesired] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}_DESIRED`, Loadsheet.seatMap[8].capacity, 479);
-    const [mainAftBDesired, setMainAftBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}_DESIRED`, Loadsheet.seatMap[9].capacity, 499);
-    const [upperFwdDesired, setUpperFwdDesired] = useSeatFlags(`L:${Loadsheet.seatMap[10].simVar}_DESIRED`, Loadsheet.seatMap[10].capacity, 521);
-    const [upperMidADesired, setUpperMidADesired] = useSeatFlags(`L:${Loadsheet.seatMap[11].simVar}_DESIRED`, Loadsheet.seatMap[11].capacity, 541);
-    const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}_DESIRED`, Loadsheet.seatMap[12].capacity, 557);
-    const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}_DESIRED`, Loadsheet.seatMap[13].capacity, 571);
+    const [mainFwdADesired, setMainFwdADesired] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}_DESIRED`, cabinInfo.seatMap[0].capacity, 317);
+    const [mainFwdBDesired, setMainFwdBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}_DESIRED`, cabinInfo.seatMap[1].capacity, 347);
+    const [mainMid1ADesired, setMainMid1ADesired] = useSeatFlags(`L:${cabinInfo.seatMap[2].simVar}_DESIRED`, cabinInfo.seatMap[2].capacity, 359);
+    const [mainMid1BDesired, setMainMid1BDesired] = useSeatFlags(`L:${cabinInfo.seatMap[3].simVar}_DESIRED`, cabinInfo.seatMap[3].capacity, 379);
+    const [mainMid1CDesired, setMainMid1CDesired] = useSeatFlags(`L:${cabinInfo.seatMap[4].simVar}_DESIRED`, cabinInfo.seatMap[4].capacity, 397);
+    const [mainMid2ADesired, setMainMid2ADesired] = useSeatFlags(`L:${cabinInfo.seatMap[5].simVar}_DESIRED`, cabinInfo.seatMap[5].capacity, 421);
+    const [mainMid2BDesired, setMainMid2BDesired] = useSeatFlags(`L:${cabinInfo.seatMap[6].simVar}_DESIRED`, cabinInfo.seatMap[6].capacity, 439);
+    const [mainMid2CDesired, setMainMid2CDesired] = useSeatFlags(`L:${cabinInfo.seatMap[7].simVar}_DESIRED`, cabinInfo.seatMap[7].capacity, 457);
+    const [mainAftADesired, setMainAftADesired] = useSeatFlags(`L:${cabinInfo.seatMap[8].simVar}_DESIRED`, cabinInfo.seatMap[8].capacity, 479);
+    const [mainAftBDesired, setMainAftBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[9].simVar}_DESIRED`, cabinInfo.seatMap[9].capacity, 499);
+    const [upperFwdDesired, setUpperFwdDesired] = useSeatFlags(`L:${cabinInfo.seatMap[10].simVar}_DESIRED`, cabinInfo.seatMap[10].capacity, 521);
+    const [upperMidADesired, setUpperMidADesired] = useSeatFlags(`L:${cabinInfo.seatMap[11].simVar}_DESIRED`, cabinInfo.seatMap[11].capacity, 541);
+    const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${cabinInfo.seatMap[12].simVar}_DESIRED`, cabinInfo.seatMap[12].capacity, 557);
+    const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${cabinInfo.seatMap[13].simVar}_DESIRED`, cabinInfo.seatMap[13].capacity, 571);
 
     const activeFlags = useMemo(
         () => [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
@@ -92,13 +78,13 @@ export const A380Payload: React.FC<A380Props> = ({
         [],
     );
 
-    const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 619);
-    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 631);
-    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 641);
+    const [fwdBag] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}`, 'Number', 619);
+    const [aftBag] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}`, 'Number', 631);
+    const [aftBulk] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}`, 'Number', 641);
 
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 607);
-    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 613);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 617);
+    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[0].simVar}_DESIRED`, 'Number', 607);
+    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${cabinInfo.cargoMap[1].simVar}_DESIRED`, 'Number', 613);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${cabinInfo.cargoMap[2].simVar}_DESIRED`, 'Number', 617);
 
     const cargo = useMemo(() => [fwdBag, aftBag, aftBulk], [fwdBag, aftBag, aftBulk]);
     const cargoDesired = useMemo(() => [fwdBagDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftBagDesired, aftBulkDesired]);
@@ -110,11 +96,8 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
 
-    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
-
-    const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
-    const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
+    const [seatMap] = useState<PaxStationInfo[]>(cabinInfo.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(cabinInfo.cargoMap);
 
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
@@ -151,7 +134,8 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const [displayZfw, setDisplayZfw] = useState(true);
-    const [displayPaxMainDeck, setDisplayPaxMainDeck] = useState(true);
+
+    const displayPaxMainDeck = useAppSelector((state) => state.payload.displayPaxMainDeck);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -193,7 +177,7 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_581);
     const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 6_397);
-    const [enableReal, setEnableReal] = useState<boolean>(true);
+    const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const chooseDesiredSeats = useCallback((stationIndex: number, fillSeats: boolean = true, numChoose: number) => {
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
@@ -231,7 +215,7 @@ export const A380Payload: React.FC<A380Props> = ({
             fillStation(i, parseFloat(Number((Math.ceil((seatMap[i].capacity / maxPax) * 1e2) / 1e2).toExponential(2)).toPrecision(3)), numOfPax);
         }
         fillStation(0, 1, paxRemaining);
-    }, [maxPax, ...seatMap, totalPaxDesired]);
+    }, [maxPax, seatMap, totalPaxDesired]);
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         const bagWeight = numberOfPax * perBagWeight;
@@ -239,7 +223,7 @@ export const A380Payload: React.FC<A380Props> = ({
 
         let remainingWeight = loadableCargoWeight;
 
-        async function fillCargo(station: number, percent: number, loadableCargoWeight: number) {
+        function fillCargo(station: number, percent: number, loadableCargoWeight: number) {
             const c = Math.round(percent * loadableCargoWeight);
             remainingWeight -= c;
             setCargoDesired[station](c);
@@ -249,7 +233,7 @@ export const A380Payload: React.FC<A380Props> = ({
             fillCargo(i, cargoMap[i].weight / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-    }, [maxCargo, ...cargoMap, ...cargoDesired, paxBagWeight]);
+    }, [maxCargo, cargoMap, ...cargoDesired, paxBagWeight]);
 
     const processZfw = useCallback((newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -280,15 +264,18 @@ export const A380Payload: React.FC<A380Props> = ({
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, gw, zfw]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxInProgress() || boardingStarted) {
             return;
         }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
         setCargoDesired[cargoStation](Math.round(cargoMap[cargoStation].weight * cargoPercent));
-    }, [cargoMap]);
+    }, [cargoMap, boardingStarted,
+        gsxBoardingState,
+        gsxDeBoardingState,
+        gsxPayloadSyncEnabled]);
 
     const onClickSeat = useCallback((stationIndex: number, seatId: number) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxInProgress() || boardingStarted) {
             return;
         }
 
@@ -298,6 +285,7 @@ export const A380Payload: React.FC<A380Props> = ({
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
         seatFlags.toggleSeatId(seatId);
         setDesiredFlags[stationIndex](seatFlags);
+
         let newPaxDesired = 0;
         desiredFlags.forEach((flag) => {
             newPaxDesired += flag.getTotalFilledSeats();
@@ -310,6 +298,10 @@ export const A380Payload: React.FC<A380Props> = ({
         ...cargoDesired,
         ...desiredFlags,
         totalPaxDesired,
+        boardingStarted,
+        gsxBoardingState,
+        gsxDeBoardingState,
+        gsxPayloadSyncEnabled,
     ]);
 
     const handleDeboarding = useCallback(() => {
@@ -383,44 +375,29 @@ export const A380Payload: React.FC<A380Props> = ({
     // Init
     useEffect(() => {
         if (paxWeight === 0) {
-            setPaxWeight(Math.round(Loadsheet.specs.pax.defaultPaxWeight));
+            setPaxWeight(Math.round(cabinInfo.defaultPaxWeight));
         }
         if (paxBagWeight === 0) {
-            setPaxBagWeight(Math.round(Loadsheet.specs.pax.defaultBagWeight));
+            setPaxBagWeight(Math.round(cabinInfo.defaultBagWeight));
         }
     }, []);
 
     // Set Cold and Dark State
     useEffect(() => {
         if (eng1Running || eng4Running || !isOnGround) {
-            setEnableReal(false);
+            setColdAndDark(false);
         } else {
-            setEnableReal(true);
+            setColdAndDark(true);
         }
     }, [eng1Running, eng4Running, isOnGround]);
 
     useEffect(() => {
         if (boardingRate !== 'INSTANT') {
-            if (!enableReal) {
+            if (!coldAndDark) {
                 setBoardingRate('INSTANT');
             }
         }
-    }, [enableReal, boardingRate]);
-
-    useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
-            switch (gsxBoardingState) {
-            // If boarding has been requested, performed or completed
-            case gsxStates.REQUESTED:
-            case gsxStates.PERFORMING:
-            case gsxStates.COMPLETED:
-                setBoardingStarted(true);
-                break;
-            default:
-                break;
-            }
-        }
-    }, [gsxBoardingState]);
+    }, [coldAndDark, boardingRate]);
 
     useEffect(() => {
         if (gsxPayloadSyncEnabled === 1) {
@@ -429,16 +406,9 @@ export const A380Payload: React.FC<A380Props> = ({
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
                 setTargetPax(0);
                 setTargetCargo(0, 0);
-                setBoardingStarted(true);
                 break;
             case gsxStates.PERFORMING:
-                // If deboarding is being performed
-                setBoardingStarted(true);
-                break;
             case gsxStates.COMPLETED:
-                // If deboarding is completed
-                setBoardingStarted(false);
-                break;
             default:
                 break;
             }
@@ -467,16 +437,11 @@ export const A380Payload: React.FC<A380Props> = ({
             );
         }
 
-        if (gsxPayloadSyncEnabled === 1) {
-            if (boardingStarted) {
-                setShowSimbriefButton(false);
-                return;
-            }
-
+        if (gsxInProgress() || boardingStarted) {
+            setShowSimbriefButton(false);
+        } else {
             setShowSimbriefButton(simbriefStatus);
-            return;
         }
-        setShowSimbriefButton(simbriefStatus);
     }, [
         simbriefUnits,
         simbriefFreight,
@@ -529,21 +494,33 @@ export const A380Payload: React.FC<A380Props> = ({
                         {!displayPaxMainDeck && (
                             <A380SeatOutlineUpperBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
                         )}
-                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} theme={getTheme(theme)} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
+                        <SeatMapWidget
+                            payloadSeatDisplay={flypadInfo.payload.seatDisplay}
+                            seatMap={seatMap}
+                            desiredFlags={desiredFlags}
+                            activeFlags={activeFlags}
+                            onClickSeat={onClickSeat}
+                            theme={getTheme(theme)}
+                            isMainDeck={displayPaxMainDeck}
+                            width={flypadInfo.payload.planeCanvas.width}
+                            height={flypadInfo.payload.planeCanvas.height}
+                            canvasX={flypadInfo.payload.planeCanvas.canvasX}
+                            canvasY={flypadInfo.payload.planeCanvas.canvasY}
+                        />
                         <div className="absolute top-full flex w-full flex-row px-4">
                             <div><AirplaneFill size={25} className="mx-3 my-1" /></div>
                             <SelectGroup>
                                 <SelectItem
                                     selected={displayPaxMainDeck}
-                                    onSelect={() => setDisplayPaxMainDeck(true)}
+                                    onSelect={() => dispatch(setDisplayPaxMainDeck(true))}
                                 >
-                                    Main
+                                    {t('Ground.Payload.SelectItem.MainDeck')}
                                 </SelectItem>
                                 <SelectItem
                                     selected={!displayPaxMainDeck}
-                                    onSelect={() => setDisplayPaxMainDeck(false)}
+                                    onSelect={() => dispatch(setDisplayPaxMainDeck(false))}
                                 >
-                                    Upper
+                                    {t('Ground.Payload.SelectItem.UpperDeck')}
                                 </SelectItem>
                             </SelectGroup>
                         </div>
@@ -556,7 +533,7 @@ export const A380Payload: React.FC<A380Props> = ({
                         <div className="flex w-full flex-row">
                             <Card className="col-1 w-full" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                                 <PayloadInputTable
-                                    loadsheet={Loadsheet}
+                                    airframeInfo={airframeInfo}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
                                     displayZfw={displayZfw}
@@ -584,13 +561,13 @@ export const A380Payload: React.FC<A380Props> = ({
                                 <hr className="mb-4 border-gray-700" />
                                 <div className="flex flex-row items-center justify-start">
                                     <MiscParamsInput
-                                        disable={gsxPayloadSyncEnabled === 1 && boardingStarted}
-                                        minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
-                                        maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
-                                        defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}
-                                        minBagWeight={Math.round(Loadsheet.specs.pax.minBagWeight)}
-                                        maxBagWeight={Math.round(Loadsheet.specs.pax.maxBagWeight)}
-                                        defaultBagWeight={Math.round(Loadsheet.specs.pax.defaultBagWeight)}
+                                        disable={gsxInProgress() || boardingStarted}
+                                        minPaxWeight={Math.round(cabinInfo.minPaxWeight)}
+                                        maxPaxWeight={Math.round(cabinInfo.maxPaxWeight)}
+                                        defaultPaxWeight={Math.round(cabinInfo.defaultPaxWeight)}
+                                        minBagWeight={Math.round(cabinInfo.minBagWeight)}
+                                        maxBagWeight={Math.round(cabinInfo.maxBagWeight)}
+                                        defaultBagWeight={Math.round(cabinInfo.defaultBagWeight)}
                                         paxWeight={paxWeight}
                                         bagWeight={paxBagWeight}
                                         massUnitForDisplay={massUnitForDisplay}
@@ -638,12 +615,12 @@ export const A380Payload: React.FC<A380Props> = ({
                                                 {t('Settings.Instant')}
                                             </SelectItem>
 
-                                            <TooltipWrapper text={`${!enableReal ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
+                                            <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
                                                 <div>
                                                     <SelectItem
-                                                        className={`${!enableReal && 'opacity-20'}`}
+                                                        className={`${!coldAndDark && 'opacity-20'}`}
                                                         selected={boardingRate === 'FAST'}
-                                                        disabled={!enableReal}
+                                                        disabled={!coldAndDark}
                                                         onSelect={() => setBoardingRate('FAST')}
                                                     >
                                                         {t('Settings.Fast')}
@@ -653,9 +630,9 @@ export const A380Payload: React.FC<A380Props> = ({
 
                                             <div>
                                                 <SelectItem
-                                                    className={`${!enableReal && 'opacity-20'}`}
+                                                    className={`${!coldAndDark && 'opacity-20'}`}
                                                     selected={boardingRate === 'REAL'}
-                                                    disabled={!enableReal}
+                                                    disabled={!coldAndDark}
                                                     onSelect={() => setBoardingRate('REAL')}
                                                 >
                                                     {t('Settings.Real')}
@@ -680,8 +657,8 @@ export const A380Payload: React.FC<A380Props> = ({
                         <ChartWidget
                             width={525}
                             height={511}
-                            envelope={Loadsheet.chart.performanceEnvelope}
-                            limits={Loadsheet.chart.chartLimits}
+                            envelope={airframeInfo.designLimits.performanceEnvelope}
+                            limits={flypadInfo.payload.chartLimits}
                             cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
                             gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
                             mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

@@ -19,6 +19,8 @@ import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
 import tooltipReducer from './features/tooltip';
 import pushbackReducer from './features/pushback';
+import payloadReducer from './features/payload';
+import configReducer from './features/config';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -39,11 +41,19 @@ const combinedReducer = combineReducers({
     failuresPage: failuresPageReducer,
     tooltip: tooltipReducer,
     pushback: pushbackReducer,
+    payload: payloadReducer,
+    config: configReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
     if (action.type === EFB_CLEAR_STATE) {
-        state = {} as RootState;
+        for (const key in state) {
+            // TODO: Exclude checklist from state clear, while resetting all items to un-completed.
+            // Items to exclude from state clear
+            if (key !== 'config') {
+                delete state[key];
+            }
+        }
     }
 
     return combinedReducer(state, action);

@@ -17,6 +17,8 @@ jobs:
       FBW_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       BUILD_DIR_NAME: a380x-experimental-a32nx
+      AIRCRAFT_PROJECT_PREFIX: a32nx
+      AIRCRAFT_VARIANT: a320-251n
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -29,6 +31,8 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a32nx/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a32nx/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
@@ -66,6 +70,8 @@ jobs:
     env:
       FBW_PRODUCTION_BUILD: 1
       BUILD_DIR_NAME: a380x-experimental-a380x
+      AIRCRAFT_PROJECT_PREFIX: a380x
+      AIRCRAFT_VARIANT: a380-842
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -78,6 +84,8 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
