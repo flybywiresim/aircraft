@@ -186,6 +186,7 @@ class DataManager {
    * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
+   * @param noPrefix optional if the aircraft prefix should not be added to the variable name (default=false)
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
@@ -193,7 +194,8 @@ class DataManager {
                                                 SimUnit unit = UNITS.Number,
                                                 UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                 FLOAT64 maxAgeTime = 0.0,
-                                                UINT64 maxAgeTicks = 0);
+                                                UINT64             maxAgeTicks = 0,
+                                                bool               noPrefix    = false);
 
   /**
    * @brief Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
