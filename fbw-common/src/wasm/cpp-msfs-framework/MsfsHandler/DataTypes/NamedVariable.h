@@ -46,11 +46,12 @@ class NamedVariable : public CacheableVariable {
    * @param noPrefix If true, the aircraft prefix will not be added to the variable name.
    */
   explicit NamedVariable(const std::string& varName,
-                         SimUnit unit = UNITS.Number,
-                         UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                         FLOAT64 maxAgeTime = 0.0,
-                         UINT64 maxAgeTicks = 0)
-      : CacheableVariable(addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
+                         SimUnit            unit        = UNITS.Number,
+                         UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                         FLOAT64            maxAgeTime  = 0.0,
+                         UINT64             maxAgeTicks = 0,
+                         bool               noPrefix    = false)
+      : CacheableVariable(noPrefix ? varName : addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
   }
 
