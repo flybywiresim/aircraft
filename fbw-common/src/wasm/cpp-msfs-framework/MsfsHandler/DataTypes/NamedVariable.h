@@ -43,13 +43,15 @@ class NamedVariable : public CacheableVariable {
    * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of an auto updated variable in seconds.
    * @param maxAgeTicks The maximum age of an auto updated variable in sim ticks.
+   * @param noPrefix If true, the aircraft prefix will not be added to the variable name.
    */
   explicit NamedVariable(const std::string& varName,
-                         SimUnit unit = UNITS.Number,
-                         UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                         FLOAT64 maxAgeTime = 0.0,
-                         UINT64 maxAgeTicks = 0)
-      : CacheableVariable(addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
+                         SimUnit            unit        = UNITS.Number,
+                         UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                         FLOAT64            maxAgeTime  = 0.0,
+                         UINT64             maxAgeTicks = 0,
+                         bool               noPrefix    = false)
+      : CacheableVariable(noPrefix ? varName : addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
   }
 
@@ -61,14 +63,14 @@ class NamedVariable : public CacheableVariable {
   static std::string addPrefixToVarName(const std::string& varName);
 
  public:
-  NamedVariable() = delete;                                // no default constructor
-  NamedVariable(const NamedVariable&) = delete;            // no copy constructor
-  NamedVariable& operator=(const NamedVariable&) = delete; // no copy assignment
-  NamedVariable(NamedVariable&&) = delete;                 // move constructor
-  NamedVariable& operator=(NamedVariable&&) = delete;      // move assignment
+  NamedVariable()                                = delete;  // no default constructor
+  NamedVariable(const NamedVariable&)            = delete;  // no copy constructor
+  NamedVariable& operator=(const NamedVariable&) = delete;  // no copy assignment
+  NamedVariable(NamedVariable&&)                 = delete;  // move constructor
+  NamedVariable& operator=(NamedVariable&&)      = delete;  // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
-  void rawWriteToSim() override;
+  void                  rawWriteToSim() override;
 
   [[nodiscard]] std::string str() const override;
 
@@ -77,9 +79,7 @@ class NamedVariable : public CacheableVariable {
    * This will usually be set by the MsfsHandler constructor.
    * @param aircraftPrefix The aircraft prefix to use.
    */
-  static void setAircraftPrefix(const std::string& aircraftPrefix) {
-    NamedVariable::AIRCRAFT_PREFIX = aircraftPrefix;
-  }
+  static void setAircraftPrefix(const std::string& aircraftPrefix) { NamedVariable::AIRCRAFT_PREFIX = aircraftPrefix; }
 
   /**
    * Returns the aircraft prefix for all NamedVariables.
