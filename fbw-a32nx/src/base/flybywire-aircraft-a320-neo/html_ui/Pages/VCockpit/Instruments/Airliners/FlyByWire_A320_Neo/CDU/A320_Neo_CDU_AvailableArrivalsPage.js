@@ -104,11 +104,14 @@ class CDUAvailableArrivalsPage {
             const selectedTransition = targetPlan.arrivalEnrouteTransition;
             const availableTransitions = selectedArrival.enrouteTransitions;
 
-            if (availableTransitions.length === 0 || selectedTransition === null) {
-                selectedTransitionCell = "NONE";
-                selectedTransitionCellColor = flightPlanAccentColor;
-            } else if (selectedTransition) {
+            if (selectedTransition) {
                 selectedTransitionCell = selectedTransition.ident;
+                selectedTransitionCellColor = flightPlanAccentColor;
+            } else if (selectedTransition === null) {
+                selectedTransitionCell = Labels.NO_TRANS;
+                selectedTransitionCellColor = flightPlanAccentColor;
+            } else if (availableTransitions.length === 0) {
+                selectedTransitionCell = "NONE";
                 selectedTransitionCellColor = flightPlanAccentColor;
             }
         }
