@@ -106,10 +106,11 @@ void DataManager::getRequestedData() const {
 // =================================================================================================
 
 NamedVariablePtr DataManager::make_named_var(const std::string& varName,
-                                             SimUnit unit,
-                                             UpdateMode updateMode,
-                                             FLOAT64 maxAgeTime,
-                                             UINT64 maxAgeTicks) {
+                                             SimUnit            unit,
+                                             UpdateMode         updateMode,
+                                             FLOAT64            maxAgeTime,
+                                             UINT64             maxAgeTicks,
+                                             bool               noPrefix) {
   // The uniqueName is used in the map of all named variables and needs to
   // contain all the information to identify the variable and the expected value
   // uniquely. This is because the same variable can be used in different places
@@ -139,7 +140,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   }
 
   // Create new var and store it in the map
-  NamedVariablePtr var = NamedVariablePtr(new NamedVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks));
+  NamedVariablePtr var  = NamedVariablePtr(new NamedVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks, noPrefix));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
