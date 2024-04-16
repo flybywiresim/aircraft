@@ -30,13 +30,13 @@ class MsfsHandler;
 
 // convenience typedefs
 using CacheableVariablePtr = std::shared_ptr<CacheableVariable>;
-using NamedVariablePtr = std::shared_ptr<NamedVariable>;
-using AircraftVariablePtr = std::shared_ptr<AircraftVariable>;
-using SimObjectBasePtr = std::shared_ptr<SimObjectBase>;
-using ClientEventPtr = std::shared_ptr<ClientEvent>;
+using NamedVariablePtr     = std::shared_ptr<NamedVariable>;
+using AircraftVariablePtr  = std::shared_ptr<AircraftVariable>;
+using SimObjectBasePtr     = std::shared_ptr<SimObjectBase>;
+using ClientEventPtr       = std::shared_ptr<ClientEvent>;
 template <typename T>
 using DataDefinitionVariablePtr = std::shared_ptr<DataDefinitionVariable<T>>;
-using DataDefinitionVector = std::vector<DataDefinition>;
+using DataDefinitionVector      = std::vector<DataDefinition>;
 template <typename T>
 using ClientDataAreaVariablePtr = std::shared_ptr<ClientDataAreaVariable<T>>;
 template <typename T, std::size_t ChunkSize>
@@ -107,11 +107,11 @@ class DataManager {
    */
   explicit DataManager(MsfsHandler* msfsHdl) : msfsHandlerPtr(msfsHdl) {}
 
-  DataManager() = delete;                               // no default constructor
-  DataManager(const DataManager&) = delete;             // no copy constructor
+  DataManager()                              = delete;  // no default constructor
+  DataManager(const DataManager&)            = delete;  // no copy constructor
   DataManager& operator=(const DataManager&) = delete;  // no copy assignment
-  DataManager(DataManager&&) = delete;                  // no move constructor
-  DataManager& operator=(DataManager&&) = delete;       // no move assignment
+  DataManager(DataManager&&)                 = delete;  // no move constructor
+  DataManager& operator=(DataManager&&)      = delete;  // no move assignment
 
   ~DataManager() = default;
 
@@ -191,9 +191,9 @@ class DataManager {
    * @see SimUnits.h for available units
    */
   [[nodiscard]] NamedVariablePtr make_named_var(const std::string& varName,
-                                                SimUnit unit = UNITS.Number,
-                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                FLOAT64 maxAgeTime = 0.0,
+                                                SimUnit            unit        = UNITS.Number,
+                                                UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                                                FLOAT64            maxAgeTime  = 0.0,
                                                 UINT64             maxAgeTicks = 0,
                                                 bool               noPrefix    = false);
 
@@ -217,14 +217,14 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
-  [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string& varName,
-                                                      int index = 0,
-                                                      std::string setterEventName = "",
-                                                      const ClientEventPtr& setterEvent = nullptr,
-                                                      SimUnit unit = UNITS.Number,
-                                                      UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                      FLOAT64 maxAgeTime = 0.0,
-                                                      UINT64 maxAgeTicks = 0);
+  [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string&    varName,
+                                                      int                   index           = 0,
+                                                      std::string           setterEventName = "",
+                                                      const ClientEventPtr& setterEvent     = nullptr,
+                                                      SimUnit               unit            = UNITS.Number,
+                                                      UpdateMode            updateMode      = UpdateMode::NO_AUTO_UPDATE,
+                                                      FLOAT64               maxAgeTime      = 0.0,
+                                                      UINT64                maxAgeTicks     = 0);
 
   /**
    * @brief Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
@@ -240,18 +240,12 @@ class DataManager {
    * @see SimUnits.h for available units
    */
   [[nodiscard]] AircraftVariablePtr make_simple_aircraft_var(const std::string& varName,
-                                                             SimUnit unit = UNITS.Number,
-                                                             bool autoReading = false,
-                                                             FLOAT64 maxAgeTime = 0.0,
-                                                             UINT64 maxAgeTicks = 0) {
-    AircraftVariablePtr var = make_aircraft_var(varName,
-                                                0,
-                                                "",
-                                                nullptr,
-                                                unit,
-                                                autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE,
-                                                maxAgeTime,
-                                                maxAgeTicks);
+                                                             SimUnit            unit        = UNITS.Number,
+                                                             bool               autoReading = false,
+                                                             FLOAT64            maxAgeTime  = 0.0,
+                                                             UINT64             maxAgeTicks = 0) {
+    AircraftVariablePtr var = make_aircraft_var(varName, 0, "", nullptr, unit,
+                                                autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE, maxAgeTime, maxAgeTicks);
     LOG_DEBUG("DataManager::make_simple_aircraft_var(): call make_aircraft_var() to create variable " + var->str());
     return var;
   };
@@ -273,11 +267,11 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  [[nodiscard]] DataDefinitionVariablePtr<T> make_datadefinition_var(const std::string& name,
+  [[nodiscard]] DataDefinitionVariablePtr<T> make_datadefinition_var(const std::string&                 name,
                                                                      const std::vector<DataDefinition>& dataDefinitions,
-                                                                     UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                                     FLOAT64 maxAgeTime = 0.0,
-                                                                     UINT64 maxAgeTicks = 0) {
+                                                                     UpdateMode updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                                                                     FLOAT64    maxAgeTime  = 0.0,
+                                                                     UINT64     maxAgeTicks = 0) {
     DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(new DataDefinitionVariable<T>(
         hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
@@ -307,9 +301,9 @@ class DataManager {
    */
   template <typename T>
   [[nodiscard]] ClientDataAreaVariablePtr<T> make_clientdataarea_var(const std::string& clientDataName,
-                                                                     UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                                     FLOAT64 maxAgeTime = 0.0,
-                                                                     UINT64 maxAgeTicks = 0) {
+                                                                     UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                                                                     FLOAT64            maxAgeTime  = 0.0,
+                                                                     UINT64             maxAgeTicks = 0) {
     ClientDataAreaVariablePtr<T> var = ClientDataAreaVariablePtr<T>(
         new ClientDataAreaVariable<T>(hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(),
                                       dataReqIDGen.getNextId(), sizeof(T), updateMode, maxAgeTime, maxAgeTicks));
@@ -351,9 +345,9 @@ class DataManager {
   template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
   [[nodiscard]] StreamingClientDataAreaVariablePtr<T, ChunkSize> make_streamingclientdataarea_var(
       const std::string& clientDataName,
-      UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-      FLOAT64 maxAgeTime = 0.0,
-      UINT64 maxAgeTicks = 0) {
+      UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+      FLOAT64            maxAgeTime  = 0.0,
+      UINT64             maxAgeTicks = 0) {
     StreamingClientDataAreaVariablePtr<T, ChunkSize> var =
         StreamingClientDataAreaVariablePtr<T, ChunkSize>(new StreamingClientDataAreaVariable<T, ChunkSize>(
             hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode,
@@ -403,8 +397,8 @@ class DataManager {
    *                           notification group (default=SIMCONNECT_UNUSED).
    * @return A shared pointer to the ClientEvent
    */
-  [[nodiscard]] ClientEventPtr make_client_event(const std::string& clientEventName,
-                                                 bool registerToSim,
+  [[nodiscard]] ClientEventPtr make_client_event(const std::string&               clientEventName,
+                                                 bool                             registerToSim,
                                                  SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED);
 
   /**
@@ -417,11 +411,11 @@ class DataManager {
    *                        Custom events will only be recognized by another client (and not Microsoft
    *                        Flight Simulator) that has been coded to receive such events.<p/>
    * @param notificationGroupId Specifies the notification group to which the event is added. If no
-*                           entry is made for this parameter, the event is not added to a
-*                           notification group (default=SIMCONNECT_UNUSED).
+   *                           entry is made for this parameter, the event is not added to a
+   *                           notification group (default=SIMCONNECT_UNUSED).
    * @return A shared pointer to the custom ClientEvent
    */
-  [[nodiscard]] ClientEventPtr make_custom_event(const std::string& clientEventName,
+  [[nodiscard]] ClientEventPtr make_custom_event(const std::string&               clientEventName,
                                                  SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED) {
     SIMPLE_ASSERT(clientEventName.find('.') != std::string::npos, "Custom event name must contain a period in the name.");
     return make_client_event(clientEventName, true, notificationGroupId);
@@ -437,7 +431,7 @@ class DataManager {
    *                          notification group (default=SIMCONNECT_UNUSED).
    * @return A shared pointer to the sim ClientEvent
    */
-  [[nodiscard]] ClientEventPtr make_sim_event(const std::string& clientEventName,
+  [[nodiscard]] ClientEventPtr make_sim_event(const std::string&               clientEventName,
                                               SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED) {
     SIMPLE_ASSERT(clientEventName.find('.') == std::string::npos, "Sim event name must not contain a period in the name.");
     return make_client_event(clientEventName, true, notificationGroupId);
@@ -453,8 +447,7 @@ class DataManager {
    *                       SimConnect will throw an exception error.
    * @return A shared pointer to the system ClientEvent
    */
-  [[nodiscard]] ClientEventPtr make_system_event(const std::string& clientEventName,
-                                                 const std::string& systemEventName) {
+  [[nodiscard]] ClientEventPtr make_system_event(const std::string& clientEventName, const std::string& systemEventName) {
     SIMPLE_ASSERT(clientEventName.find('.') != std::string::npos, "Client event name for system events must contain a period in the name.");
     auto event = make_client_event(clientEventName, false, SIMCONNECT_UNUSED);
     event->subscribeToSimSystemEvent(systemEventName);
