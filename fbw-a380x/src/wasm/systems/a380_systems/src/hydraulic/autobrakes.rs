@@ -787,7 +787,7 @@ enum BTVState {
 struct BrakingDistanceCalculator {
     wet_estimated_distance_id: VariableIdentifier,
     dry_estimated_distance_id: VariableIdentifier,
-    btv_estimated_stop_id: VariableIdentifier,
+    autobrake_estimated_stop_id: VariableIdentifier,
     predicted_touchdown_speed_id: VariableIdentifier,
 
     dry_landing_estimated_distance: LowPassFilter<Length>,
@@ -807,6 +807,9 @@ impl BrakingDistanceCalculator {
 
     const ROLLING_TIME_AFTER_TD_BEFORE_BRAKES_S: f64 = 5.;
 
+    // Offset for stop bar so it shows at front of the plane instead of its reference position
+    const OFFSET_PLANE_REF_POINT_TO_FRONT_METERS: f64 = 40.;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             wet_estimated_distance_id: context
@@ -814,7 +817,7 @@ impl BrakingDistanceCalculator {
             dry_estimated_distance_id: context
                 .get_identifier("OANS_BTV_DRY_DISTANCE_ESTIMATED".to_owned()),
 
-            btv_estimated_stop_id: context
+            autobrake_estimated_stop_id: context
                 .get_identifier("OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED".to_owned()),
             predicted_touchdown_speed_id: context.get_identifier("SPEEDS_VAPP".to_owned()),
 
@@ -944,10 +947,11 @@ impl SimulationElement for BrakingDistanceCalculator {
         );
 
         writer.write(
-            &self.btv_estimated_stop_id,
+            &self.autobrake_estimated_stop_id,
             self.braking_estimated_distance_at_current_decel
                 .output()
-                .get::<meter>(),
+                .get::<meter>()
+                + Self::OFFSET_PLANE_REF_POINT_TO_FRONT_METERS,
         );
     }
     fn read(&mut self, reader: &mut SimulatorReader) {
