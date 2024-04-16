@@ -6,15 +6,13 @@ import { SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import {
-  AdirsSimVarDefinitions,
-  AdirsSimVars,
-  SwitchingPanelSimVarsDefinitions,
-  SwitchingPanelVSimVars,
+    AdirsSimVarDefinitions,
+    AdirsSimVars,
+    SwitchingPanelSimVarsDefinitions, SwitchingPanelVSimVars,
 } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
-export type PFDSimvars = AdirsSimVars &
-  SwitchingPanelVSimVars & {
+export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     coldDark: number;
     elec: boolean;
     elecFo: boolean;
@@ -257,7 +255,7 @@ export enum PFDVars {
   radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
   crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
   tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
-  flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+  flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
   autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
@@ -492,7 +490,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2Backbeam', { name: PFDVars.fm2Backbeam, type: SimVarValueType.Bool }],
   ]);
 
-  public constructor(bus: ArincEventBus) {
-    super(PFDSimvarPublisher.simvars, bus);
-  }
+    public constructor(bus: ArincEventBus) {
+        super(PFDSimvarPublisher.simvars, bus);
+    }
 }

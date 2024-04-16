@@ -46,14 +46,20 @@ class NamedVariable : public CacheableVariable {
    * @param noPrefix If true, the aircraft prefix will not be added to the variable name.
    */
   explicit NamedVariable(const std::string& varName,
-                         SimUnit            unit        = UNITS.Number,
-                         UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
-                         FLOAT64            maxAgeTime  = 0.0,
-                         UINT64             maxAgeTicks = 0,
-                         bool               noPrefix    = false)
-      : CacheableVariable(noPrefix ? varName : addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
+                         SimUnit unit = UNITS.Number,
+                         UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
+                         FLOAT64 maxAgeTime = 0.0,
+                         UINT64 maxAgeTicks = 0)
+      : CacheableVariable(addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
   }
+
+  /**
+   * @brief Adds the aircraft prefix to the variable name if it is not already present.
+   * @param varName The variable name to prefix.
+   * @return The prefixed variable name.
+   */
+  static std::string addPrefixToVarName(const std::string& varName);
 
  public:
   NamedVariable()                                = delete;  // no default constructor
@@ -79,13 +85,6 @@ class NamedVariable : public CacheableVariable {
    * @return The aircraft prefix.
    */
   static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
-
-  /**
-   * @brief Adds the aircraft prefix to the variable name if it is not already present.
-   * @param varName The variable name to prefix.
-   * @return The prefixed variable name.
-   */
-  static std::string addPrefixToVarName(const std::string& varName);
 
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };

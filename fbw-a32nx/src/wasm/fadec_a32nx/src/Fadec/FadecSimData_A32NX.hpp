@@ -288,73 +288,76 @@ class FadecSimData_A32NX {
 
   void initLvars(DataManager* dm) {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
-    startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
-    engineEgt[L] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
-    engineEgt[R] = dm->make_named_var("A32NX_ENGINE_EGT:2", UNITS.Number, AUTO_READ_WRITE);
+    // Remember that all LVars will receive the prefix defined when creating the MsfsHandler object - usually "A32NX_"
+    
+    startState = dm->make_named_var("START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
-    engineFF[L] = dm->make_named_var("A32NX_ENGINE_FF:1", UNITS.Number, AUTO_READ_WRITE);
-    engineFF[R] = dm->make_named_var("A32NX_ENGINE_FF:2", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[L] = dm->make_named_var("ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[R] = dm->make_named_var("ENGINE_EGT:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineFuelUsed[L] = dm->make_named_var("A32NX_FUEL_USED:1", UNITS.Number, AUTO_READ_WRITE);
-    engineFuelUsed[R] = dm->make_named_var("A32NX_FUEL_USED:2", UNITS.Number, AUTO_READ_WRITE);
+    engineFF[L] = dm->make_named_var("ENGINE_FF:1", UNITS.Number, AUTO_READ_WRITE);
+    engineFF[R] = dm->make_named_var("ENGINE_FF:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineIdleEGT = dm->make_named_var("A32NX_ENGINE_IDLE_EGT", UNITS.Number, AUTO_READ_WRITE);
-    engineIdleFF  = dm->make_named_var("A32NX_ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
+    engineFuelUsed[L] = dm->make_named_var("FUEL_USED:1", UNITS.Number, AUTO_READ_WRITE);
+    engineFuelUsed[R] = dm->make_named_var("FUEL_USED:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineIdleN1 = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Number, AUTO_READ_WRITE);
-    engineIdleN2 = dm->make_named_var("A32NX_ENGINE_IDLE_N2", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleEGT = dm->make_named_var("ENGINE_IDLE_EGT", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleFF  = dm->make_named_var("ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
 
-    engineImbalance = dm->make_named_var("A32NX_ENGINE_IMBALANCE", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleN1 = dm->make_named_var("ENGINE_IDLE_N1", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleN2 = dm->make_named_var("ENGINE_IDLE_N2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineN1[L] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
-    engineN1[R] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);
+    engineImbalance = dm->make_named_var("ENGINE_IMBALANCE", UNITS.Number, AUTO_READ_WRITE);
 
-    engineN2[L] = dm->make_named_var("A32NX_ENGINE_N2:1", UNITS.Number, AUTO_READ_WRITE);
-    engineN2[R] = dm->make_named_var("A32NX_ENGINE_N2:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[L] = dm->make_named_var("ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[R] = dm->make_named_var("ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineOil[L] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:1", UNITS.Number, AUTO_READ_WRITE);
-    engineOil[R] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[L] = dm->make_named_var("ENGINE_N2:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[R] = dm->make_named_var("ENGINE_N2:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineOilTotal[L] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
-    engineOilTotal[R] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOil[L] = dm->make_named_var("ENGINE_OIL_QTY:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOil[R] = dm->make_named_var("ENGINE_OIL_QTY:2", UNITS.Number, AUTO_READ_WRITE);
 
-    enginePreFF[L] = dm->make_named_var("A32NX_ENGINE_PRE_FF:1", UNITS.Number, AUTO_READ_WRITE);
-    enginePreFF[R] = dm->make_named_var("A32NX_ENGINE_PRE_FF:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTotal[L] = dm->make_named_var("ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTotal[R] = dm->make_named_var("ENGINE_OIL_TOTAL:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineState[L] = dm->make_named_var("A32NX_ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
-    engineState[R] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    enginePreFF[L] = dm->make_named_var("ENGINE_PRE_FF:1", UNITS.Number, AUTO_READ_WRITE);
+    enginePreFF[R] = dm->make_named_var("ENGINE_PRE_FF:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineTimer[L] = dm->make_named_var("A32NX_ENGINE_TIMER:1", UNITS.Number, AUTO_READ_WRITE);
-    engineTimer[R] = dm->make_named_var("A32NX_ENGINE_TIMER:2", UNITS.Number, AUTO_READ_WRITE);
+    engineState[L] = dm->make_named_var("ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    engineState[R] = dm->make_named_var("ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineStarterPressurized[L] = dm->make_named_var("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
-    engineStarterPressurized[R] = dm->make_named_var("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
+    engineTimer[L] = dm->make_named_var("ENGINE_TIMER:1", UNITS.Number, AUTO_READ_WRITE);
+    engineTimer[R] = dm->make_named_var("ENGINE_TIMER:2", UNITS.Number, AUTO_READ_WRITE);
 
-    fuelAuxLeftPre   = dm->make_named_var("A32NX_FUEL_AUX_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelAuxRightPre  = dm->make_named_var("A32NX_FUEL_AUX_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelCenterPre    = dm->make_named_var("A32NX_FUEL_CENTER_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelLeftPre      = dm->make_named_var("A32NX_FUEL_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
-    fuelPumpState[L] = dm->make_named_var("A32NX_PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
-    fuelPumpState[R] = dm->make_named_var("A32NX_PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
-    fuelRightPre     = dm->make_named_var("A32NX_FUEL_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    engineStarterPressurized[L] = dm->make_named_var("PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
+    engineStarterPressurized[R] = dm->make_named_var("PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Number, AUTO_READ);
 
-    thrustLimitType  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
-    thrustLimitIdle  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
-    thrustLimitClimb = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
-    thrustLimitFlex  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
-    thrustLimitMct   = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
-    thrustLimitToga  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+    fuelAuxLeftPre   = dm->make_named_var("FUEL_AUX_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelAuxRightPre  = dm->make_named_var("FUEL_AUX_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelCenterPre    = dm->make_named_var("FUEL_CENTER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftPre      = dm->make_named_var("FUEL_LEFT_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelPumpState[L] = dm->make_named_var("PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    fuelPumpState[R] = dm->make_named_var("PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightPre     = dm->make_named_var("FUEL_RIGHT_PRE", UNITS.Number, AUTO_READ_WRITE);
 
-    packsState[L]       = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
-    packsState[R]       = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
-    wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
-    refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
-    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
+    thrustLimitType  = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TYPE", UNITS.Number, AUTO_READ);
+    thrustLimitIdle  = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
+    thrustLimitClimb = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
+    thrustLimitFlex  = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
+    thrustLimitMct   = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
+    thrustLimitToga  = dm->make_named_var("AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+
+    packsState[L]       = dm->make_named_var("COND_PACK_FLOW_VALVE_1_IS_OPEN", UNITS.Number, AUTO_READ);
+    packsState[R]       = dm->make_named_var("COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
+    wingAntiIce         = dm->make_named_var("PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
+    refuelRate          = dm->make_named_var("EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
+    refuelStartedByUser = dm->make_named_var("REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
     airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
-    apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+    apuRpmPercent       = dm->make_named_var("APU_N_RAW", UNITS.Number, AUTO_READ);
 
-    aircraftPresetQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
+    aircraftPresetQuickMode = dm->make_named_var("AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     aircraftPresetQuickMode->setAndWriteToSim(0);

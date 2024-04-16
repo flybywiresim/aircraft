@@ -2448,7 +2448,10 @@ mod tests {
 
         fn command_nav_cruise_altitude(mut self, target_altitude: Length) -> Self {
             self.write_by_name("FMA_LATERAL_MODE", 20);
-            self.write_by_name("AIRLINER_CRUISE_ALTITUDE", target_altitude.get::<foot>());
+            self.write_by_name(
+                "A32NX_AIRLINER_CRUISE_ALTITUDE",
+                target_altitude.get::<foot>(),
+            );
             self
         }
 
