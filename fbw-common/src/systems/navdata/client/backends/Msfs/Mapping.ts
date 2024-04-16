@@ -505,38 +505,38 @@ export class MsfsMapping {
 
         const facilities = await this.loadFacilitiesFromProcedures(msAirport.approaches);
 
-        return msAirport.approaches.map((approach) => {
-            const approachName = this.mapApproachName(approach);
-            const isRunwaySpecificApproach = approach.runwayNumber !== 0;
+        return msAirport.approaches
+            // Filter out circling approaches
+            .filter((approach) => approach.runwayNumber !== 0)
+            .map((approach) => {
+                const approachName = this.mapApproachName(approach);
 
-            // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-            const authorisationRequired = isRunwaySpecificApproach && approach.rnavTypeFlags === 0;
-            const rnp = authorisationRequired ? 0.3 : undefined;
+                // the AR flag is not available so we use this heuristic based on analysing the MSFS data
+                const authorisationRequired = approach.rnavTypeFlags === 0;
+                const rnp = authorisationRequired ? 0.3 : undefined;
 
-            const runwayIdent = isRunwaySpecificApproach
-                ? `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`
-                : undefined;
+                const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
 
-            const levelOfService = this.mapRnavTypeFlags(approach.rnavTypeFlags);
+                const levelOfService = this.mapRnavTypeFlags(approach.rnavTypeFlags);
 
-            const transitions = this.mapApproachTransitions(approach, facilities, msAirport, approachName);
+                const transitions = this.mapApproachTransitions(approach, facilities, msAirport, approachName);
 
-            return {
-                sectionCode: SectionCode.Airport,
-                subSectionCode: AirportSubsectionCode.ApproachProcedures,
-                databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
-                icaoCode,
-                ident: approachName,
-                runwayIdent,
-                multipleIndicator: approach.approachSuffix,
-                type: this.mapApproachType(approach.approachType),
-                authorisationRequired,
-                levelOfService,
-                transitions,
-                legs: approach.finalLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, approach.approachType, rnp)),
-                missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName)),
-            };
-        });
+                return {
+                    sectionCode: SectionCode.Airport,
+                    subSectionCode: AirportSubsectionCode.ApproachProcedures,
+                    databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
+                    icaoCode,
+                    ident: approachName,
+                    runwayIdent,
+                    multipleIndicator: approach.approachSuffix,
+                    type: this.mapApproachType(approach.approachType),
+                    authorisationRequired,
+                    levelOfService,
+                    transitions,
+                    legs: approach.finalLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName, approach.approachType, rnp)),
+                    missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName)),
+                };
+            });
     }
 
     public async mapArrivals(msAirport: JS_FacilityAirport): Promise<Arrival[]> {
