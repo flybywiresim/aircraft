@@ -210,7 +210,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
         </Step>
 
-        <!-- WORKAROUND: for intermittent HOT AIR PB Fault when using expedited mode       -->
+        <!-- WORKAROUND: for intermittent HOT AIR PB Fault when using expedited mode -->
         <Step Name="HOT AIR PB Off" Type="STEP" Delay="0">
             <Condition>(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT) 0 ==</Condition>
             <Action>0 (>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON)</Action>
@@ -499,7 +499,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
             <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
         </Step>
-        <Step Name="Autobrake Max" Type="STEP" Delay="2000">
+        <Step Name="Autobrake Max" Type="NOEX" Delay="500">
             <Condition>(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==</Condition>
             <Action>3 (&gt;L:A32NX_AUTOBRAKES_ARMED_MODE_SET)</Action>
         </Step>
@@ -519,7 +519,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
                 (L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 &gt;= &amp;&amp;
             </Condition>
         </Step>
-        <Step Name="T.O Config" Type="STEP" Delay="200">
+        <Step Name="T.O Config" Type="NOEX" Delay="200">
             <Action>1 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
         </Step>
         <Step Name="T.O Config" Type="STEP" Delay="2000">
