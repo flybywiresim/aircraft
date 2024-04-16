@@ -388,6 +388,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 this.fmsDataStore.departureRunway.get(),
                 this.fmsDataStore.landingRunway.get(),
                 this.btvUtils.btvRunway.get(),
+                this.btvUtils.btvExit.get(),
             );
         });
 
@@ -897,6 +898,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 this.fmsDataStore.departureRunway.get(),
                 this.fmsDataStore.landingRunway.get(),
                 this.btvUtils.btvRunway.get(),
+                this.btvUtils.btvExit.get(),
             );
 
             return;

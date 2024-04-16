@@ -87,7 +87,7 @@ class NDInstrument implements FsInstrument {
 
     private readonly contextMenuY = Subject.create(0);
 
-    private readonly controlPanelVisible = Subject.create(true);
+    private readonly controlPanelVisible = Subject.create(false);
 
     private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -217,7 +217,7 @@ class NDInstrument implements FsInstrument {
             <div ref={this.topRef}>
                 <CdsDisplayUnit bus={this.bus} displayUnitId={DisplayUnitID.CaptNd} test={Subject.create(-1)} failed={Subject.create(false)}>
                     <div ref={this.oansContainerRef} class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
-                        <div ref={this.waitScreenRef} class="oanc-waiting-screen">
+                        <div ref={this.waitScreenRef} class="oanc-waiting-screen" style="visibility: hidden;">
                             PLEASE WAIT
                         </div>
                         <Oanc

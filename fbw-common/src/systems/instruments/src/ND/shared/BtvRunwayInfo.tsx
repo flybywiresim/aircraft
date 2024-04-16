@@ -4,7 +4,7 @@
 
 import { FSComponent, DisplayComponent, Subject, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { FmsOansData, FmsOansDataArinc429 } from 'instruments/src/OANC';
+import { BtvDataArinc429, FmsOansData, FmsOansDataArinc429 } from 'instruments/src/OANC';
 import { Arinc429Word, ArincEventBus } from '@shared/index';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
@@ -55,7 +55,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData>();
+        const sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData & BtvDataArinc429>();
 
         this.fmsRwyIdent.setConsumer(sub.on('fmsLandingRunway'));
         this.runwayIdent.setConsumer(sub.on('oansSelectedLandingRunway'));
@@ -81,7 +81,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
                         <text x={50} y={0} class="Green FontSmallest">{this.runwayInfoString}</text>
                         <text x={205} y={0} class="Cyan FontSmallest">M</text>
                         <text x={225} y={0} class="White FontSmallest">-</text>
-                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing.map((it) => it?.value.toFixed(0))}</text>
+                        <text x={245} y={0} class="Green FontSmallest">{this.runwayBearing.map((it) => (it.isNormalOperation() ? it.value.toFixed(0).padStart(3, '0') : ''))}</text>
                         <text x={283} y={0} class="Cyan FontSmallest">°</text>
                     </Layer>
                 </g>

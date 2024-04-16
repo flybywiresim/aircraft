@@ -27,7 +27,7 @@ export class OancLabelManager<T extends number> {
 
     public visibleLabelElements = new Map<Label, HTMLDivElement>();
 
-    public reflowLabels(fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string) {
+    public reflowLabels(fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string, btvSelectedExit?: string) {
         // eslint-disable-next-line prefer-const
         let [offsetX, offsetY] = this.oanc.arpReferencedMapParams.coordinatesToXYy(this.oanc.referencePos);
 
@@ -48,7 +48,7 @@ export class OancLabelManager<T extends number> {
                     continue;
                 }
 
-                const labelVisible = filterLabel(label, this.currentFilter, fmsDepRunway, fmsLdgRunway, btvSelectedRunway);
+                const labelVisible = filterLabel(label, this.currentFilter, fmsDepRunway, fmsLdgRunway, btvSelectedRunway, btvSelectedExit);
 
                 if (!labelVisible) {
                     element.style.visibility = 'hidden';

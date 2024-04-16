@@ -27,11 +27,17 @@ export interface MajorLabelFilter extends BaseOancLabelFilter {
 export type OancLabelFilter = RunwayBtvSelectionLabelFilter | NoneLabelFilter | NullLabelFilter | MajorLabelFilter
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string): boolean {
+export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string, btvSelectedExit?: string): boolean {
     if (label.style === LabelStyle.FmsSelectedRunwayEnd && label.text) {
         return label.text.includes(fmsDepRunway?.substring(2)) || label.text.includes(fmsLdgRunway?.substring(2));
     } if (label.style === LabelStyle.BtvSelectedRunwayArrow && label.text) {
         return label.text.includes(btvSelectedRunway?.substring(2));
+    }
+    if (btvSelectedRunway && label.associatedFeature?.properties.feattype === FeatureType.Centerline && label.text.includes(btvSelectedRunway?.substring(2))) {
+        return true;
+    }
+    if (btvSelectedExit && label.style === LabelStyle.BtvSelectedExit) {
+        return true;
     }
     if ([LabelStyle.BtvStopLineMagenta, LabelStyle.BtvStopLineAmber, LabelStyle.BtvStopLineRed, LabelStyle.BtvStopLineGreen].includes(label.style)) {
         return true;
@@ -44,10 +50,10 @@ export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?
     case 'null':
         return label.associatedFeature?.properties.feattype !== FeatureType.ExitLine;
     case 'major':
-        return label.text.length < 2 && label.associatedFeature?.properties.feattype !== FeatureType.ExitLine;
+        return label.associatedFeature?.properties.feattype === FeatureType.Centerline || (label.text.length < 2 && label.associatedFeature?.properties.feattype !== FeatureType.ExitLine);
     case 'runwayBtvSelection':
         return (label.associatedFeature?.properties.feattype === FeatureType.Centerline
-            || label.associatedFeature?.properties.feattype === FeatureType.ExitLine || filter.showAdjacent); // TODO lower opacity if associated rwy not selected
+            || label.associatedFeature?.properties.feattype === FeatureType.ExitLine || filter.showAdjacent); // FIXME lower opacity if associated rwy not selected
     }
 }
 
@@ -58,8 +64,8 @@ export function labelStyle(label: Label, fmsDataStore: FmsDataStore, isFmsOrigin
         const isSelectedRunway = (isFmsOrigin && label.text.includes(fmsDataStore.departureRunway.get()?.substring(2)))
                     || (isFmsDestination && label.text.includes(fmsDataStore.landingRunway.get()?.substring(2)));
         return isSelectedRunway ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis;
-    } if (label.style === LabelStyle.Taxiway || label.style === LabelStyle.BtvSelectedExit) {
-        return label.text === btvSelectedExit ? LabelStyle.BtvSelectedExit : LabelStyle.Taxiway;
+    } if (label.style === LabelStyle.ExitLine || label.style === LabelStyle.BtvSelectedExit) {
+        return label.text === btvSelectedExit ? LabelStyle.BtvSelectedExit : LabelStyle.ExitLine;
     }
     return label.style;
 }

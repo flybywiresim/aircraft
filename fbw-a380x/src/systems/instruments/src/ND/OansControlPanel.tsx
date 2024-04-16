@@ -220,7 +220,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             }
         });
 
-        sub.on('realTime').atFrequency(0.2).handle((_) => this.autoLoadAirport());
+        sub.on('realTime').atFrequency(1).handle((_) => this.autoLoadAirport());
 
         sub.on('realTime').atFrequency(5).handle((_) => {
             const ppos: Coordinates = { lat: 0, long: 0 };
@@ -321,8 +321,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             return;
         }
         // If on ground, and no airport is loaded, find current airport.
-        const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Enum);
-        if (fwcFlightPhase < 7) {
+        if (![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
             // Go through all airports, load if distance <20NM
             const nearestAirports = this.store.airports.getArray().filter((ap) => distanceTo(this.presentPos.get(), { lat: ap.coordinates.lat, long: ap.coordinates.lon }) < 20);
             const sortedAirports = nearestAirports.sort((a, b) => distanceTo(this.presentPos.get(), { lat: a.coordinates.lat, long: a.coordinates.lon }) - distanceTo(this.presentPos.get(), { lat: b.coordinates.lat, long: b.coordinates.lon }));

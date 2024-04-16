@@ -101,6 +101,8 @@
 }
 
 .oanc-label-style-runway-end:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
   outline-offset: 0px !important;
 }
 
@@ -126,7 +128,8 @@
 }
 
 .oanc-label-style-runway-end-fms-selected {
-  font-size: 0px;
+  font-size: 0.1px;
+  color: transparent;
   width: 0px;
   height: 0px;
   background-color: transparent;
@@ -140,7 +143,8 @@
 }
 
 .oanc-label-style-runway-arrow-btv-selected {
-  font-size: 0px;
+  font-size: 0.1px;
+  color: transparent;
   width: 50px;
   height: 35px;
   background-color: transparent;
