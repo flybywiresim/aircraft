@@ -290,7 +290,7 @@ class FadecSimData_A32NX {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
 
     // Remember that all LVars will receive the prefix defined when creating the MsfsHandler object - usually "A32NX_"
-    
+
     startState = dm->make_named_var("START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
     engineEgt[L] = dm->make_named_var("ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
