@@ -168,7 +168,7 @@ class CDUInitPage {
         mcdu.onLeftInput[0] = coRouteAction;
 
         if (mcdu.tropo) {
-            tropo.update("" + mcdu.tropo, Column.big);
+            tropo.update(mcdu.tropo.toString(), mcdu.isTropoPilotEntered ? Column.big : Column.small);
         }
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateTropo(value)) {
@@ -378,7 +378,11 @@ class CDUInitPage {
             }
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
-            if (value === "") {
+            if (value === FMCMainDisplay.clrValue) {
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                scratchpadCallback();
+                return;
+            } else if (value === "") {
                 let zfw = undefined;
                 let zfwCg = undefined;
                 let a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");

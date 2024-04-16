@@ -41,6 +41,14 @@ export interface FlightPlanPerformanceData {
 
     cruiseFlightLevel: number
 
+    pilotTropopause: AltitudeValue;
+
+    defaultTropopause: AltitudeValue;
+
+    get tropopause(): AltitudeValue;
+
+    get tropopauseIsPilotEntered(): boolean;
+
     // THR RED
 
     /**
@@ -184,6 +192,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
         cloned.cruiseFlightLevel = this.cruiseFlightLevel;
         cloned.costIndex = this.costIndex;
+        cloned.pilotTropopause = this.pilotTropopause;
+        cloned.defaultTropopause = this.defaultTropopause;
 
         return cloned as this;
     }
@@ -196,7 +206,26 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     /**
      * Cost index
      */
-    costIndex: number = undefined;
+    costIndex: CostIndexValue = undefined;
+
+    /**
+     * Tropopause altitude in feet entered by the pilot, undefined if not entered
+     */
+    pilotTropopause: AltitudeValue = undefined;
+
+    /**
+     * Default tropopause altitude in feet
+     */
+    defaultTropopause: AltitudeValue = 36090;
+
+    get tropopause() {
+        const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+    }
+
+    get tropopauseIsPilotEntered() {
+        return this.pilotTropopause !== undefined;
+    }
 
     /**
      * V1 speed, in knots
@@ -429,6 +458,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
         return {
             cruiseFlightLevel: this.cruiseFlightLevel,
             costIndex: this.costIndex,
+            pilotTropopause: this.pilotTropopause,
+            defaultTropopause: this.defaultTropopause,
             v1: this.v1,
             vr: this.vr,
             v2: this.v2,
@@ -455,6 +486,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 export interface SerializedFlightPlanPerformanceData {
     cruiseFlightLevel: number | undefined,
     costIndex: number | undefined,
+    defaultTropopause: number,
+    pilotTropopause: number | undefined,
 
     v1: number | undefined,
 

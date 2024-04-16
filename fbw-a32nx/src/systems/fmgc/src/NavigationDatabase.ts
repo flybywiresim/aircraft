@@ -13,7 +13,6 @@ import {
     NdbNavaid,
     VhfNavaid,
     Waypoint,
-    RunwayUtils,
 } from '@flybywiresim/fbw-sdk';
 
 /**

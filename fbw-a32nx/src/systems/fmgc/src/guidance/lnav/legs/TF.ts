@@ -12,12 +12,9 @@ import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from 
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class TFLeg extends XFLeg {
-    constraintType: WaypointConstraintType;
-
     private readonly course: Degrees;
 
     private computedPath: PathVector[] = [];
@@ -33,7 +30,6 @@ export class TFLeg extends XFLeg {
         this.from = from;
         this.to = to;
         this.segment = segment;
-        this.constraintType = WaypointConstraintType.CLB;
         this.course = bearingTo(
             this.from.location,
             this.to.location,

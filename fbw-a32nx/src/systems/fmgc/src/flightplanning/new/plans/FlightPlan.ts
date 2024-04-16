@@ -376,6 +376,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
         this.setPerformanceData('costIndex', data.costIndex);
         this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
+        this.setPerformanceData('pilotTropopause', data.pilotTropopause);
     }
 
     setFlightNumber(flightNumber: string, notify = true) {

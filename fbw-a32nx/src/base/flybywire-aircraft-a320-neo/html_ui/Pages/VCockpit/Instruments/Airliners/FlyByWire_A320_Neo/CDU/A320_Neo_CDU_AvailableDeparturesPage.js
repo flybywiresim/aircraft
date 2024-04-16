@@ -90,8 +90,6 @@ class CDUAvailableDeparturesPage {
             }
         }
 
-        // TODO This is the same thing 3 times in a row?
-
         if (selectedSid) {
             selectedSidCell = selectedSid.ident;
             selectedSidCellColor = selectedColour;
@@ -99,7 +97,10 @@ class CDUAvailableDeparturesPage {
             if (selectedTransition) {
                 selectedTransCell = selectedTransition.ident;
                 selectedTransCellColor = selectedColour;
-            } else if (availableTransitions.length === 0 || selectedTransition === null) {
+            } else if (selectedTransition === null) {
+                selectedTransCell = Labels.NO_TRANS;
+                selectedTransCellColor = selectedColour;
+            } else if (availableTransitions.length === 0) {
                 selectedTransCell = "NONE";
                 selectedTransCellColor = selectedColour;
             }

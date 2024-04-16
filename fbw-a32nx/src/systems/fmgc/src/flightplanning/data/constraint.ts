@@ -62,7 +62,7 @@ export class ConstraintUtils {
 }
 
 export enum WaypointConstraintType {
+    Unknown = 0,
     CLB = 1,
     DES = 2,
-    Unknown = 3,
 }

@@ -104,11 +104,14 @@ class CDUAvailableArrivalsPage {
             const selectedTransition = targetPlan.arrivalEnrouteTransition;
             const availableTransitions = selectedArrival.enrouteTransitions;
 
-            if (availableTransitions.length === 0 || selectedTransition === null) {
-                selectedTransitionCell = "NONE";
-                selectedTransitionCellColor = flightPlanAccentColor;
-            } else if (selectedTransition) {
+            if (selectedTransition) {
                 selectedTransitionCell = selectedTransition.ident;
+                selectedTransitionCellColor = flightPlanAccentColor;
+            } else if (selectedTransition === null) {
+                selectedTransitionCell = Labels.NO_TRANS;
+                selectedTransitionCellColor = flightPlanAccentColor;
+            } else if (availableTransitions.length === 0) {
+                selectedTransitionCell = "NONE";
                 selectedTransitionCellColor = flightPlanAccentColor;
             }
         }
@@ -128,8 +131,9 @@ class CDUAvailableArrivalsPage {
         const sortedApproaches = approaches.slice()
             // The A320 cannot fly TACAN approaches
             .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
-            // filter out approaches with no matching runway, but keep circling approaches (no runway)
-            .filter((a) => a.runwayIdent === undefined || !!runways.find((rw) => rw.ident === a.runwayIdent))
+            // Filter out approaches with no matching runway
+            // Approaches not going to a specific runway (i.e circling approaches are filtered out at DB level)
+            .filter((a) => !!runways.find((rw) => rw.ident === a.runwayIdent))
             // Sort the approaches in Honeywell's documented order
             .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type])
             .map((approach) => ({ approach }))
@@ -158,26 +162,21 @@ class CDUAvailableArrivalsPage {
                     let runwayLength = '----';
                     let runwayCourse = '---';
 
-                    const isCircling = approach.runwayIdent === undefined;
                     const isSelected = selectedApproach && selectedApproachId === approach.databaseId;
                     const color = isSelected && !isTemporary ? "green" : "cyan";
 
-                    if (isCircling) {
-                        rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", ""];
-                    } else {
-                        const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
-                        if (runway) {
-                            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
-                            runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
+                    const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
+                    if (runway) {
+                        runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                        runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
-                            const finalLeg = approach.legs[approach.legs.length - 1];
-                            const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find((ils) => ils.databaseId === finalLeg.recommendedNavaid.databaseId) : undefined;
-                            const hasIls = !!matchingIls;
-                            const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
+                        const finalLeg = approach.legs[approach.legs.length - 1];
+                        const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find((ils) => ils.databaseId === finalLeg.recommendedNavaid.databaseId) : undefined;
+                        const hasIls = !!matchingIls;
+                        const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
 
-                            rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`];
-                            rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
-                        }
+                        rows[2 * i] = [`{${color}}${ !isSelected ? "{" : "{sp}"}${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`];
+                        rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
                     }
 
                     mcdu.onLeftInput[i + 2] = async(_, scratchpadCallback) => {

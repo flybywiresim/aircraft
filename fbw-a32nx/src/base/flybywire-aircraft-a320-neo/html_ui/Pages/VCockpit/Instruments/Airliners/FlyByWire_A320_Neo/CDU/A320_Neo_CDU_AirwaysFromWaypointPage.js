@@ -105,7 +105,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                         if (value.length > 0) {
-                            mcdu.getOrSelectWaypointByIdent(value, /** @param wp {import('msfs-navdata').Waypoint|undefined} */ (wp) => {
+                            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then(/** @param wp {import('msfs-navdata').Fix | undefined} */ (wp) => {
                                 if (wp) {
                                     const result = targetPlan.pendingAirways.thenTo(wp);
 

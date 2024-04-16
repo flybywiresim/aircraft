@@ -95,7 +95,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
     holdImmExit = false;
 
-    constraintType: WaypointConstraintType | undefined;
+    constraintType: WaypointConstraintType = WaypointConstraintType.Unknown;
 
     cruiseStep: CruiseStepEntry | undefined;
 
