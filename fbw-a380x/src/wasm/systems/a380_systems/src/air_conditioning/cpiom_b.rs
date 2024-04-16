@@ -767,7 +767,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
 
             landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
-            cruise_altitude_id: context.get_identifier("A32NX_AIRLINER_CRUISE_ALTITUDE".to_owned()),
+            cruise_altitude_id: context.get_identifier("AIRLINER_CRUISE_ALTITUDE".to_owned()),
             fma_lateral_mode_id: context.get_identifier("FMA_LATERAL_MODE".to_owned()),
 
             outflow_valve_open_percentage_id: (1..=4)
