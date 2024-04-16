@@ -32,7 +32,7 @@ export interface ReadonlyFlightPlanLeg {
 
     readonly holdImmExit: boolean,
 
-    readonly constraintType: WaypointConstraintType | undefined,
+    readonly constraintType: WaypointConstraintType,
 
     readonly cruiseStep: CruiseStepEntry | undefined,
 
