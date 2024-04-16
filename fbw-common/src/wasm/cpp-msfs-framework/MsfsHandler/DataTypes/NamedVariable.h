@@ -37,7 +37,8 @@ class NamedVariable : public CacheableVariable {
    * It is recommended to use the DataManager's make_named_var() to create instances of NamedVariable
    * as it de-duplicates variables and only creates one instance of each name-unit combination.
    *
-   * @param varName The varName of the variable in the sim. An aircraft prefix (e.g. A32NX_) will be added automatically.
+   * @param varName The varName of the variable in the sim. An aircraft prefix (e.g. A32NX_) might be added
+   *                automatically if specified when creating the MsfsHandler and the varName does not already contain it.
    * @param unit The unit  of the variable as per the sim. See SimUnits.h
    * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of an auto updated variable in seconds.
@@ -48,9 +49,16 @@ class NamedVariable : public CacheableVariable {
                          UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
-      : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, updateMode, maxAgeTime, maxAgeTicks) {
+      : CacheableVariable(addPrefixToVarName(varName), unit, updateMode, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
-  };
+  }
+
+  /**
+   * @brief Adds the aircraft prefix to the variable name if it is not already present.
+   * @param varName The variable name to prefix.
+   * @return The prefixed variable name.
+   */
+  static std::string addPrefixToVarName(const std::string& varName);
 
  public:
   NamedVariable() = delete;                                // no default constructor
