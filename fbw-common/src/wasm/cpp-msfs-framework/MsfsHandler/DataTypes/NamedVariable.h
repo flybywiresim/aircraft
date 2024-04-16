@@ -70,7 +70,8 @@ class NamedVariable : public CacheableVariable {
   NamedVariable& operator=(NamedVariable&&)      = delete;  // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
-  void                  rawWriteToSim() override;
+
+  void rawWriteToSim() override;
 
   [[nodiscard]] std::string str() const override;
 
