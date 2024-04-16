@@ -276,7 +276,6 @@ class DataManager {
       LOG_ERROR("DataManager::make_datadefinition_var(): DataDefinitionVariable with name " + name + " already exists");
       return nullptr;
     }
-
     DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(new DataDefinitionVariable<T>(
         hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});

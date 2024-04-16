@@ -160,7 +160,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     updateProgress(currentStepPtr);
 
     executeAction(currentStepPtr);
-    
+
   } else if (loadingIsActive) {  // loading has been 0
     finishLoading();
   }
