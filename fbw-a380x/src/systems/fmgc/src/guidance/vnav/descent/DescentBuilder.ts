@@ -7,7 +7,7 @@ export class DescentBuilder {
         geometry: Geometry,
         decelPath: DecelPathCharacteristics,
     ): TheoreticalDescentPathCharacteristics {
-        const cruiseAlt = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
+        const cruiseAlt = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number');
         const verticalDistance = cruiseAlt - decelPath.top;
         const fpa = 3;
 

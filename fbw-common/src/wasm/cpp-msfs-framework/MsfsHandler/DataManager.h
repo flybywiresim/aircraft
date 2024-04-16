@@ -178,7 +178,8 @@ class DataManager {
    * can be used to store and retrieve custom numeric data from the sim.<p/>
    *
    * OBS: If defined at Module creation time a prefix will be added to the variable name depending
-   * on aircraft type. E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
+   * on aircraft type. E.g. "A32NX_" for the A32NX. If the varName already contains the prefix it
+   * will not be added again.<p/>
    *
    * @param varName Name of the variable in the sim
    * @param unit optional SimUnit of the variable (default=Number)
