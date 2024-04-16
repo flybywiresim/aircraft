@@ -6,7 +6,7 @@ import { ConfirmationNode } from '@shared/logic';
 function canInitiateDes(distanceToDestination: number): boolean {
     const fl = Math.round(Simplane.getAltitude() / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
-    const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+    const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
     // Can initiate descent? OR Can initiate early descent?
     return ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl)
