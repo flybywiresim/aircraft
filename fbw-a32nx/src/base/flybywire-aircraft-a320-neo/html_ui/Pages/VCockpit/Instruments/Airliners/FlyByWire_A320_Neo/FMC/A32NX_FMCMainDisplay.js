@@ -4336,10 +4336,8 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
-            // FIXME wp.additionalData.temporary
-            const temporary = false;
-            this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
+        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false, "ENTRY").then((wp) => {
+            this._setProgLocation(wp.ident, wp.location, wp.databaseId);
             return callback(true);
         }).catch((err) => {
             // Rethrow if error is not an FMS message to display
