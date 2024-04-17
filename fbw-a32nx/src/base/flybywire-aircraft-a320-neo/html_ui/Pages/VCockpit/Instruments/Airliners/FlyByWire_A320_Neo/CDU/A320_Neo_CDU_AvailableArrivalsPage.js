@@ -217,7 +217,12 @@ class CDUAvailableArrivalsPage {
                 }
             }
         } else {
-            if (selectedApproach && selectedApproach.runwayIdent) {
+            /**
+             * @type {import('msfs-navdata').Runway | undefined}
+             */
+            const destinationRunway = targetPlan.destinationRunway;
+
+            if (destinationRunway) {
                 const arrivals = targetPlan.availableArrivals;
 
                 for (let i = 0; i < arrivals.length; i++) {
@@ -228,7 +233,7 @@ class CDUAvailableArrivalsPage {
                             const runwayTransition = arrival.runwayTransitions[j];
                             if (runwayTransition) {
                                 // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
-                                if (runwayTransition.ident === selectedApproach.runwayIdent || (runwayTransition.ident.charAt(6) === 'B' && runwayTransition.ident.substring(4, 6) === selectedApproach.runwayIdent.substring(4, 6))) {
+                                if (runwayTransition.ident === destinationRunway.ident || (runwayTransition.ident.charAt(6) === 'B' && runwayTransition.ident.substring(4, 6) === destinationRunway.ident.substring(4, 6))) {
                                     matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                 }
                             }
