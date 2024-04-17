@@ -10,15 +10,14 @@ import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { FullscreenSettingsPage, SettingItem, SettingsPage } from '../Settings';
 import { t } from '../../Localization/translation';
 import { NavigraphAuthUIWrapper, useNavigraphAuthInfo } from '../../Apis/Navigraph/Components/Authentication';
-import { useNavigraph } from '../../Apis/Navigraph/Navigraph';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 // @ts-ignore
 import NavigraphIcon from '../../Assets/navigraph-logo-alone.svg';
+import { navigraphAuth } from '../../../navigraph';
 
 export const ThirdPartyOptionsPage = () => {
     const history = useHistory();
-    const navigraph = useNavigraph();
     const navigraphAuthInfo = useNavigraphAuthInfo();
 
     const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
@@ -90,7 +89,7 @@ export const ThirdPartyOptionsPage = () => {
     };
 
     const handleNavigraphAccountUnlink = () => {
-        navigraph.deAuthenticate();
+        navigraphAuth.signOut();
     };
 
     return (

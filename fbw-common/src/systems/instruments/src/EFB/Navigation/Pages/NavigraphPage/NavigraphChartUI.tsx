@@ -1,51 +1,41 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
-import { emptyNavigraphCharts, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
-import { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
+
 import { t } from '../../../Localization/translation';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
-import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
+import { ChartTabType, editTabProperty, NavigationTab } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
+import { navigraphCharts } from '../../../../navigraph';
 
 export const NavigraphChartUI = () => {
     const dispatch = useAppDispatch();
-
-    const navigraph = useNavigraph();
 
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
     const [chartListDisagrees, setChartListDisagrees] = useState(false);
 
-    const [charts, setCharts] = useState<NavigraphAirportCharts>({
-        arrival: [],
-        approach: [],
-        airport: [],
-        departure: [],
-        reference: [],
-    });
+    const { availableCharts, isFullScreen, searchQuery, selectedTabType } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
-    const [organizedCharts, setOrganizedCharts] = useState<OrganizedChart[]>([
-        { name: 'STAR', charts: charts.arrival },
-        { name: 'APP', charts: charts.approach, bundleRunways: true },
-        { name: 'TAXI', charts: charts.airport },
-        { name: 'SID', charts: charts.departure },
-        { name: 'REF', charts: charts.reference },
-    ]);
-
-    const { isFullScreen, searchQuery, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const organizedCharts = useMemo(() => ({
+        STAR: { name: 'STAR', charts: availableCharts.STAR },
+        APP: { name: 'APP', charts: availableCharts.APP, bundleRunways: true },
+        TAXI: { name: 'TAXI', charts: availableCharts.TAXI },
+        SID: { name: 'SID', charts: availableCharts.SID },
+        REF: { name: 'REF', charts: availableCharts.REF },
+    } satisfies Record<ChartTabType, OrganizedChart>), [availableCharts]);
 
     const assignAirportInfo = async () => {
         setIcaoAndNameDisagree(true);
-        const airportInfo = await navigraph.getAirportInfo(searchQuery);
+        const airportInfo = await navigraphCharts.getAirportInfo({ icao: searchQuery });
         setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
         setIcaoAndNameDisagree(false);
     };
@@ -55,39 +45,36 @@ export const NavigraphChartUI = () => {
             assignAirportInfo();
         } else {
             setStatusBarInfo('');
-            setCharts(emptyNavigraphCharts);
+            dispatch(editTabProperty({
+                tab: NavigationTab.NAVIGRAPH,
+                availableCharts: {
+                    STAR: [],
+                    APP: [],
+                    TAXI: [],
+                    SID: [],
+                    REF: [],
+                },
+            }));
         }
     }, [searchQuery]);
-
-    useEffect(() => {
-        setOrganizedCharts([
-            { name: 'STAR', charts: charts.arrival },
-            { name: 'APP', charts: charts.approach, bundleRunways: true },
-            { name: 'TAXI', charts: charts.airport },
-            { name: 'SID', charts: charts.departure },
-            { name: 'REF', charts: charts.reference },
-        ]);
-    }, [charts]);
-
-    useEffect(() => {
-        if (chartName && (chartName.light !== '' || chartName.dark !== '')) {
-            const fetchCharts = async () => {
-                const light = await navigraph.chartCall(searchQuery, chartName.light);
-                const dark = await navigraph.chartCall(searchQuery, chartName.dark);
-                dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
-            };
-            fetchCharts();
-        }
-    }, [chartName]);
 
     const handleIcaoChange = async (value: string) => {
         if (value.length !== 4) return;
         const newValue = value.toUpperCase();
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
         setChartListDisagrees(true);
-        const chartList = await navigraph.getChartList(newValue);
+        const chartList = await navigraphCharts.getChartsIndex({ icao: newValue });
         if (chartList) {
-            setCharts(chartList);
+            dispatch(editTabProperty({
+                tab: NavigationTab.NAVIGRAPH,
+                availableCharts: {
+                    STAR: chartList.filter((it) => it.category === 'ARR'),
+                    APP: chartList.filter((it) => it.category === 'APP'),
+                    TAXI: chartList.filter((it) => it.category === 'APT'),
+                    SID: chartList.filter((it) => it.category === 'DEP'),
+                    REF: chartList.filter((it) => it.category === 'REF'),
+                },
+            }));
         }
         setChartListDisagrees(false);
     };
@@ -163,20 +150,20 @@ export const NavigraphChartUI = () => {
 
                         <div className="mt-6">
                             <SelectGroup>
-                                {organizedCharts.map((organizedChart, index) => (
+                                {(['STAR', 'APP', 'TAXI', 'SID', 'REF'] as ChartTabType[]).map((tabType) => (
                                     <SelectItem
-                                        selected={index === selectedTabIndex}
-                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabIndex: index }))}
-                                        key={organizedChart.name}
+                                        selected={selectedTabType === tabType}
+                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabType: tabType }))}
+                                        key={tabType}
                                         className="flex w-full justify-center"
                                     >
-                                        {organizedChart.name}
+                                        {tabType}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
                             <ScrollableContainer className="mt-5" height={42.75}>
                                 <NavigraphChartSelector
-                                    selectedTab={organizedCharts[selectedTabIndex]}
+                                    selectedTab={organizedCharts[selectedTabType]}
                                     loading={loading}
                                 />
                             </ScrollableContainer>

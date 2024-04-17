@@ -32,7 +32,6 @@ import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
-import { NavigraphContext } from './Apis/Navigraph/Navigraph';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -56,6 +55,7 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
+import { NavigraphAuthProvider } from '../react/navigraph';
 
 export interface EfbWrapperProps {
     failures: FailureDefinition[], // TODO: Move failure definition into VFS
@@ -126,13 +126,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -172,8 +172,6 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
     const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
-
-    const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
 
@@ -399,7 +397,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
         return <EmptyBatteryScreen />;
     case PowerStates.LOADED:
         return (
-            <NavigraphContext.Provider value={navigraph}>
+            <NavigraphAuthProvider>
                 <ModalContainer />
                 <PowerContext.Provider value={{ powerState, setPowerState }}>
                     <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
@@ -437,7 +435,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                         </div>
                     </div>
                 </PowerContext.Provider>
-            </NavigraphContext.Provider>
+            </NavigraphAuthProvider>
         );
     default:
         throw new Error('Invalid content state provided');
@@ -453,7 +451,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
+        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
             <div className="max-w-4xl">
                 <ErrorIcon />
                 <div className="mt-6 space-y-12">
@@ -473,7 +471,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                     )}
 
                     <div
-                        className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100"
+                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                         onClick={resetErrorBoundary}
                     >
                         <h2 className="text-center font-bold text-current">Reset Display</h2>

@@ -96,7 +96,7 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete } : PinnedC
                         dispatch(editTabProperty({ tab, chartName }));
                         dispatch(editTabProperty({ tab, chartId }));
                         dispatch(editTabProperty({ tab, searchQuery: title }));
-                        dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
+                        dispatch(editTabProperty({ tab, selectedTabType: tabIndex })); // TODO fix this (navigraph)
                         dispatch(editTabProperty({ tab, chartRotation: 0 }));
                         dispatch(editTabProperty({ tab, currentPage: 1 }));
                         dispatch(setBoundingBox(undefined));

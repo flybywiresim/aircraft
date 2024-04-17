@@ -1,3 +1,6 @@
+import { Chart } from 'navigraph/charts';
+import { ChartTabType } from '../../../instruments/src/EFB/Store/features/navigationPage';
+
 export enum NavigraphSubscriptionStatus {
     None,
     Unlimited,
@@ -35,13 +38,7 @@ export interface NavigraphChart {
     boundingBox?: NavigraphBoundingBox,
 }
 
-export interface NavigraphAirportCharts {
-    arrival: NavigraphChart[],
-    approach: NavigraphChart[],
-    airport: NavigraphChart[],
-    departure: NavigraphChart[],
-    reference: NavigraphChart[],
-}
+export type NavigraphAirportCharts = Record<ChartTabType, Chart[]>;
 
 export interface AirportInfo {
     name: string,

@@ -194,7 +194,7 @@ export const LocalFileChartUI = () => {
                                 {organizedCharts.map((organizedChart, index) => (
                                     <SelectItem
                                         selected={index === selectedTabIndex}
-                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabIndex: index }))}
+                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabType: index }))}
                                         key={organizedChart.name}
                                         className="flex w-full justify-center uppercase"
                                     >

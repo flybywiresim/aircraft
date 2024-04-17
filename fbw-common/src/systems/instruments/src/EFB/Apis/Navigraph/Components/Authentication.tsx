@@ -4,12 +4,12 @@
 import { useInterval } from '@flybywiresim/react-components';
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
+import { DeviceFlowParams } from 'navigraph/auth';
 import QRCode from 'qrcode.react';
-import { NavigraphClient, NavigraphSubscriptionStatus, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { NavigraphClient, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
-import { useNavigraph } from '../Navigraph';
+import { useNavigraphAuth } from '../../../../react/navigraph';
 
 export type NavigraphAuthInfo = {
     loggedIn: false,
@@ -22,38 +22,26 @@ export type NavigraphAuthInfo = {
 }
 
 export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
-    const navigraph = useNavigraph();
+    const navigraphAuth = useNavigraphAuth();
 
-    const [tokenAvail, setTokenAvail] = useState(false);
-    const [subscriptionStatus, setSubscriptionStatus] = useState<NavigraphSubscriptionStatus>(NavigraphSubscriptionStatus.Unknown);
-    const [username] = usePersistentProperty('NAVIGRAPH_USERNAME');
-
-    useInterval(() => {
-        if ((tokenAvail !== navigraph.hasToken) && navigraph.hasToken) {
-            navigraph.fetchSubscriptionStatus()
-                .then(setSubscriptionStatus)
-                .catch(() => setSubscriptionStatus(NavigraphSubscriptionStatus.Unknown));
-        } else if (!navigraph.hasToken) {
-            setSubscriptionStatus(NavigraphSubscriptionStatus.None);
-        }
-
-        setTokenAvail(navigraph.hasToken);
-    }, 1000, { runOnStart: true });
-
-    if (tokenAvail) {
-        return { loggedIn: tokenAvail, username, subscriptionStatus };
+    if (navigraphAuth.user) {
+        console.log('BRUH', navigraphAuth.user.subscriptions);
+        return { loggedIn: true, username: navigraphAuth.user.preferred_username, subscriptionStatus: NavigraphSubscriptionStatus.Unlimited };
     }
+
     return { loggedIn: false };
 };
 
-const Loading = () => {
-    const navigraph = useNavigraph();
-    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
+interface LoadingProps {
+    onNewDeviceFlowParams: (params: DeviceFlowParams) => void;
+}
+
+const Loading: React.FC<LoadingProps> = ({ onNewDeviceFlowParams }) => {
+    const navigraph = useNavigraphAuth();
     const [showResetButton, setShowResetButton] = useState(false);
 
     const handleResetRefreshToken = () => {
-        setRefreshToken('');
-        navigraph.authenticate();
+        navigraph.signIn((params) => onNewDeviceFlowParams(params));
     };
 
     useEffect(() => {
@@ -85,40 +73,17 @@ const Loading = () => {
 };
 
 export const NavigraphAuthUI = () => {
-    const navigraph = useNavigraph();
+    const [params, setParams] = useState<DeviceFlowParams | null>(null);
+
     const [displayAuthCode, setDisplayAuthCode] = useState(t('NavigationAndCharts.Navigraph.LoadingMsg').toUpperCase());
 
     useInterval(() => {
-        if (navigraph.auth.code) {
-            setDisplayAuthCode(navigraph.auth.code);
+        if (params.user_code) {
+            setDisplayAuthCode(params.user_code);
         }
     }, 1000);
 
-    const hasQr = !!navigraph.auth.qrLink;
-
-    useInterval(async () => {
-        if (!navigraph.hasToken) {
-            try {
-                await navigraph.getToken();
-            } catch (e) {
-                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-            }
-        }
-    }, (navigraph.auth.interval * 1000));
-
-    useInterval(async () => {
-        try {
-            await navigraph.getToken();
-        } catch (e) {
-            toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-        }
-    }, (navigraph.tokenRefreshInterval * 1000));
-
-    useEffect(() => {
-        if (!navigraph.hasToken) {
-            navigraph.authenticate();
-        }
-    }, []);
+    const hasQr = !!params.verification_uri_complete;
 
     return (
         <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
@@ -132,7 +97,7 @@ export const NavigraphAuthUI = () => {
                 <p className="mt-6 w-2/3 text-center">
                     {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}
                     {' '}
-                    <span className="text-theme-highlight">{navigraph.auth.link}</span>
+                    <span className="text-theme-highlight">{params.verification_uri_complete}</span>
                     {' '}
                     {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
                 </p>
@@ -148,13 +113,10 @@ export const NavigraphAuthUI = () => {
                     {hasQr
                         ? (
                             <div className="rounded-md bg-white p-3">
-                                <QRCode
-                                    value={navigraph.auth.qrLink}
-                                    size={400}
-                                />
+                                <QRCode value={params.verification_uri_complete} size={400} />
                             </div>
                         )
-                        : <Loading />}
+                        : <Loading onNewDeviceFlowParams={setParams} />}
                 </div>
             </div>
         </div>
@@ -167,20 +129,16 @@ export interface NavigraphAuthUIWrapperProps {
 }
 
 export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({ showLogin, onSuccessfulLogin, children }) => {
-    const [tokenAvail, setTokenAvail] = useState(false);
-
-    const navigraph = useNavigraph();
+    const navigraph = useNavigraphAuth();
 
     useInterval(() => {
-        if (!tokenAvail && navigraph.hasToken) {
+        if (navigraph.user) {
             onSuccessfulLogin?.();
         }
-
-        setTokenAvail(navigraph.hasToken);
     }, 1000, { runOnStart: true });
 
     let ui: React.ReactNode;
-    if (tokenAvail) {
+    if (navigraph.user) {
         ui = children;
     } else if (showLogin) {
         ui = <NavigraphAuthUI />;
