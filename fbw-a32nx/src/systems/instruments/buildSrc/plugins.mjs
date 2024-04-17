@@ -43,9 +43,7 @@ function postCss(_, instrumentFolder) {
     const tailwindConfigPath = join(Directories.instruments, 'src', instrumentFolder, 'tailwind.config.js');
 
     if (fs.existsSync(tailwindConfigPath)) {
-        plugins = [
-            tailwindcss(tailwindConfigPath),
-        ];
+        plugins = [tailwindcss(tailwindConfigPath)];
     } else {
         plugins = [];
     }
@@ -71,8 +69,8 @@ export function baseCompile(instrumentName, instrumentFolder) {
             preserveExtensions: true,
         }),
         replace({
-            'DEBUG': 'false',
-            'preventAssignment': true,
+            DEBUG: 'false',
+            preventAssignment: true,
             'process.env.VITE_BUILD': 'false',
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),

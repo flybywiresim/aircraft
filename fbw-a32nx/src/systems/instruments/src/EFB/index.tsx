@@ -8,8 +8,4 @@ import { EfbWrapper } from '@flybywiresim/flypad';
 import { A320FailureDefinitions } from '@failures';
 
 // TODO: Move failure definition into VFS
-render(
-    <EfbWrapper failures={A320FailureDefinitions} />,
-    true,
-    true,
-);
+render(<EfbWrapper failures={A320FailureDefinitions} />, true, true);
