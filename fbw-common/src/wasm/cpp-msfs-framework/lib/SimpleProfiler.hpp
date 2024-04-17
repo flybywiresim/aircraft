@@ -109,6 +109,8 @@ class SimpleProfiler {
 
   /**
    * @brief Return a string with the average execution time of the collected samples at the time of calling this method
+   * @format Profiler:     207 (     100 /           202 /           400) nanoseconds for Perft::update (avg of 100 samples) <br/>
+   *         Profiler: average ( minimum / trimmed average 5% / maximum ) <name>
    * @return String with the average execution time of the collected samples at the time of calling this method
    */
   [[nodiscard]] std::string str() {

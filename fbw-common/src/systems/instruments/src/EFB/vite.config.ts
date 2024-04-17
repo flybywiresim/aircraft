@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../../../../../.env' });
 
-const envVarsToReplace = ['CLIENT_ID', 'CLIENT_SECRET', 'SENTRY_DSN'];
+const envVarsToReplace = ['CLIENT_ID', 'CLIENT_SECRET', 'SENTRY_DSN', 'AIRCRAFT_PROJECT_PREFIX', 'AIRCRAFT_VARIANT'];
 
 export default defineConfig({
   css: {

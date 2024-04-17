@@ -17,9 +17,10 @@ import keyboardReducer from './features/keyboard';
 import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
 import pushbackReducer from './features/pushback';
+import payloadReducer from './features/payload';
+import configReducer from './features/config';
 
-export const createRootReducer = (history: any) =>
-  combineReducers({
+export const createRootReducer = (history: any) => combineReducers({
     router: connectRouter(history),
     todCalculator: todCalculatorReducer,
     groundServicePage: groundServicePageReducer,
@@ -33,4 +34,6 @@ export const createRootReducer = (history: any) =>
     dispatchPage: dispatchPageReducer,
     failuresPage: failuresPageReducer,
     pushback: pushbackReducer,
-  });
+    payload: payloadReducer,
+    config: configReducer,
+});
