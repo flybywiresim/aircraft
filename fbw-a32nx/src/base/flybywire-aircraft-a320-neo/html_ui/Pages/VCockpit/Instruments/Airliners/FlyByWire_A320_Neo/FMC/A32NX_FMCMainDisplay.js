@@ -4531,7 +4531,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {boolean}
      */
     isEngineOn(index) {
-        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
     }
     /**
      * Returns true if any one engine is running (N2 > 20)

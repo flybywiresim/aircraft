@@ -165,10 +165,10 @@ export class FlightManagementComputer implements FmcInterface {
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             if (this.enginesWereStarted.get() === false) {
                 const flightPhase = this.fmgc.getFlightPhase();
-                const oneEngineWasStarted = (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20)
-                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20)
-                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20)
-                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20);
+                const oneEngineWasStarted = (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20)
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20)
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20)
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20);
                 this.enginesWereStarted.set(flightPhase >= FmgcFlightPhase.Takeoff || (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted));
             }
         }));

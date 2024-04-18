@@ -25,11 +25,11 @@ export function isOnGround(): boolean {
 }
 
 function isEngineOn(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
 }
 
 function isEngineOnTakeOffThrust(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N1:${index}`, 'number') >= 70;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N1:${index}`, 'percent') >= 70;
 }
 
 export function isAnEngineOn(): boolean {

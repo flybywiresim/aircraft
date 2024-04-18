@@ -472,7 +472,7 @@ export class FmgcDataService implements Fmgc {
      * @returns {boolean}
      */
     public isEngineOn(index: number): boolean {
-        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
     }
 
     /**
