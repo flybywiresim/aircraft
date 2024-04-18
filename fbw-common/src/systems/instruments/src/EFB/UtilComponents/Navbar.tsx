@@ -19,8 +19,8 @@ export const Navbar = ({ tabs, className, onSelected, basePath }: NavbarProps) =
         <NavLink
           onClick={() => onSelected?.(index)}
           to={`${basePath}/${pathify(tab.name)}`}
-          className="flex items-center bg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
-          activeClassName="flex items-center px-6 py-2 bg-theme-accent bg-opacity-100"
+          className="flex items-center px-6 py-2 transition duration-300"
+          activeClassName="flex items-center px-6 py-2 bg-theme-accent"
           key={tab.name}
         >
           {tab.alias ?? tab.name}

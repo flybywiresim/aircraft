@@ -86,7 +86,7 @@ export const LoadSheetWidget = () => {
               <button
                 type="button"
                 onClick={handleFontDecrease}
-                className="hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 px-3 py-2 transition duration-100 hover:bg-opacity-100"
+                className="hover:bg-theme-highlight hover:text-theme-body px-3 py-2 transition duration-100"
               >
                 <ZoomOut size={30} />
               </button>
@@ -96,7 +96,7 @@ export const LoadSheetWidget = () => {
               <button
                 type="button"
                 onClick={handleFontIncrease}
-                className="hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 px-3 py-2 transition duration-100 hover:bg-opacity-100"
+                className="hover:bg-theme-highlight hover:text-theme-body px-3 py-2 transition duration-100"
               >
                 <ZoomIn size={30} />
               </button>

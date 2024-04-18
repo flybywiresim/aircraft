@@ -613,7 +613,7 @@ export const A320Services: React.FC = () => {
             className={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}
           >
             <div
-              className={`-ml-2 -mr-[2px] flex items-end justify-center ${wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}
+              className={`-ml-2 mr-[-2px] flex items-end justify-center ${wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}
             >
               <Chock size="12" stroke="4" />
               <Wheel size="36" stroke="5" className="-mx-0.5" />
