@@ -40,11 +40,11 @@ class EngineControl_A32NX {
   FuelConfiguration_A32NX fuelConfiguration{};
 
   // previous time the fuel levels were saved to file
-  double lastFuelSaveTime = 0.0;
+  double                  lastFuelSaveTime   = 0.0;
   static constexpr double FUEL_SAVE_INTERVAL = 5.0;  // seconds
 
   // some pump timings - unclear why these are needed
-  double pumpStateLeftTimeStamp = 0.0;
+  double pumpStateLeftTimeStamp  = 0.0;
   double pumpStateRightTimeStamp = 0.0;
 
   bool isTransitionActive = false;
@@ -52,19 +52,19 @@ class EngineControl_A32NX {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature = 0.0;
-  double prevThrustLimitType = 0.0;
-  double prevEngineMasterPos[2] = {0, 0};
-  bool prevEngineStarterState[2] = {false, false};
+  double prevFlexTemperature       = 0.0;
+  double prevThrustLimitType       = 0.0;
+  double prevEngineMasterPos[2]    = {0, 0};
+  bool   prevEngineStarterState[2] = {false, false};
 
   // FLX->CLB thrust limit transition
   double transitionStartTime;
   double transitionFactor;
-  bool wasFlexActive = false;
+  bool   wasFlexActive = false;
 
   // additional constants
-  static constexpr int MAX_OIL = 200;
-  static constexpr int MIN_OIL = 140;
+  static constexpr int    MAX_OIL             = 200;
+  static constexpr int    MIN_OIL             = 140;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
@@ -78,11 +78,11 @@ class EngineControl_A32NX {
    * @var SHUTTING The engine is in the process of shutting down.
    */
   enum EngineState {
-    OFF = 0,
-    ON = 1,
-    STARTING = 2,
+    OFF        = 0,
+    ON         = 1,
+    STARTING   = 2,
     RESTARTING = 3,
-    SHUTTING = 4,
+    SHUTTING   = 4,
   };
 
 #ifdef PROFILING
@@ -136,46 +136,40 @@ class EngineControl_A32NX {
    * @brief Generates a random engine imbalance.
    *
    * This function generates a random engine imbalance for an engine.
-   * As this imbalance is stored and shared via a LVar the imbalance is encoded as a digital number/word.
-   * (LVars are limited to FLOAT64)
+   * As this imbalance is stored and shared via a LVar the imbalance is encoded into a double as
+   * LVars are limited to FLOAT64.<p/>
    *
-   * The coded digital word is structured as follows:
-   * - The first 2 digits represent the engine number (1 or 2).
-   * - The next 2 digits represent the EGT imbalance (max 20 degree C).
-   * - The next 2 digits represent the Fuel Flow imbalance (max 36 Kg/h).
-   * - The next 2 digits represent the N2 imbalance (max 0.3%).
-   * - The next 2 digits represent the Oil Quantity imbalance (max 2.0 qt).
-   * - The next 2 digits represent the Oil Pressure imbalance (max 3.0 PSI).
-   * - The next 2 digits represent the Oil Pressure Random Idle (-6 to +6 PSI).
-   * - The last 2 digits represent the Oil Temperature (85 to 95 Celsius).
+   * The parameters are: <br/>
+   * 1. Engine Number <br/>
+   * 2. Engine EGT <br/>
+   * 3. Engine FF <br/>
+   * 4. Engine N2 <br/>
+   * 5. Engine Oil Quantity <br/>
+   * 6. Engine Oil Pressure <br/>
+   * 7. Engine Oil Idle Pressure <br/>
+   * 8. Engine Oil Temperature <p/>
    *
-   * The function is currently using string operations to generate the coded digital word.
-   * Future work includes refactoring this to avoid string operations.
-   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
+   * For encoding it uses the LVarEncoder::encode8Int8ToDouble() function.
+   * @see LVarEncoder::encode8Int8ToDouble()
    *
-   * @param initial A flag to indicate whether this is the initial generation of engine imbalance. If initial is 1, a new imbalance is
-   * generated. Otherwise, the existing imbalance is used. TODO: is this required? A flag would do instead of a parameter
    */
-  void generateEngineImbalance(int i);
+  double generateEngineImbalance();
 
   /**
    * @brief Extracts a specific parameter from the imbalance code.
    *
-   * This function extracts a specific parameter from the imbalance code. The imbalance code is a coded digital word that represents the
-   * engine imbalance. The coded digital word is structured as follows:
-   * - The first 2 digits represent the engine number (1 or 2).
-   * - The next 2 digits represent the EGT imbalance (max 20 degree C).
-   * - The next 2 digits represent the Fuel Flow imbalance (max 36 Kg/h).
-   * - The next 2 digits represent the N2 imbalance (max 0.3%).
-   * - The next 2 digits represent the Oil Quantity imbalance (max 2.0 qt).
-   * - The next 2 digits represent the Oil Pressure imbalance (max 3.0 PSI).
-   * - The next 2 digits represent the Oil Pressure Random Idle (-6 to +6 PSI).
-   * - The last 2 digits represent the Oil Temperature (85 to 95 Celsius).
+   * This function extracts a specific parameter from the imbalance code using the LVarEncoder::extract8Int8FromDouble() function.
+   * @see LVarEncoder::extract8Int8FromDouble()
    *
-   * The function takes the imbalance code number and the parameter number as input. It then calculates the
-   * position of the parameter in the imbalance code and extracts the corresponding two digits.
-   * The function returns the extracted parameter as a double.
-   * TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
+   * The parameters are: <br/>
+   * 1. Engine Number <br/>
+   * 2. Engine EGT <br/>
+   * 3. Engine FF <br/>
+   * 4. Engine N2 <br/>
+   * 5. Engine Oil Quantity <br/>
+   * 6. Engine Oil Pressure <br/>
+   * 7. Engine Oil Idle Pressure <br/>
+   * 8. Engine Oil Temperature <p/>
    *
    * @param imbalanceCode The imbalance code from which to extract the parameter.
    * @param parameter The number of the parameter to extract. The parameters are numbered from 1 to 8,
@@ -209,12 +203,12 @@ class EngineControl_A32NX {
    * @return The current state of the engine as an enum of type EngineState.
    * @see EngineState
    */
-  EngineControl_A32NX::EngineState engineStateMachine(int engine,
+  EngineControl_A32NX::EngineState engineStateMachine(int    engine,
                                                       double engineIgniter,
-                                                      bool engineStarter,
-                                                      bool engineStarterTurnedOff,
-                                                      bool engineMasterTurnedOn,
-                                                      bool engineMasterTurnedOff,
+                                                      bool   engineStarter,
+                                                      bool   engineStarterTurnedOff,
+                                                      bool   engineMasterTurnedOn,
+                                                      bool   engineMasterTurnedOff,
                                                       double simN2,
                                                       double idleN2,
                                                       double ambientTemperature);
@@ -233,14 +227,14 @@ class EngineControl_A32NX {
    *
    * @see EngineState
    */
-  void engineStartProcedure(int engine,
+  void engineStartProcedure(int         engine,
                             EngineState engineState,
-                            double imbalance,
-                            double deltaTime,
-                            double engineTimer,
-                            double simN2,
-                            double pressureAltitude,
-                            double ambientTemperature);
+                            double      imbalance,
+                            double      deltaTime,
+                            double      engineTimer,
+                            double      simN2,
+                            double      pressureAltitude,
+                            double      ambientTemperature);
 
   /**
    * @brief This function manages the engine shutdown procedure.
@@ -266,7 +260,7 @@ class EngineControl_A32NX {
    * @param ambientPressure The current ambient pressure in hPa.
    * @return The updated fuel flow as a double.
    */
-  double updateFF(int engine,                 //
+  double updateFF(int    engine,              //
                   double imbalance,           //
                   double simCN1,              //
                   double mach,                //
@@ -301,16 +295,16 @@ class EngineControl_A32NX {
    *
    * @see EngineState
    */
-  void updateEGT(int engine,
-                 double imbalance,
-                 double deltaTime,
-                 double simOnGround,
+  void updateEGT(int         engine,
+                 double      imbalance,
+                 double      deltaTime,
+                 double      simOnGround,
                  EngineState engineState,
-                 double simCN1,
-                 double customFuelFlow,
-                 double mach,
-                 double pressureAltitude,
-                 double ambientTemperature);
+                 double      simCN1,
+                 double      customFuelFlow,
+                 double      mach,
+                 double      pressureAltitude,
+                 double      ambientTemperature);
 
   /**
    * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
@@ -338,9 +332,9 @@ class EngineControl_A32NX {
                           double ambientPressure,
                           double mach,
                           double simN1highest,
-                          int packs,
-                          int nai,
-                          int wai);
+                          int    packs,
+                          int    nai,
+                          int    wai);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H
