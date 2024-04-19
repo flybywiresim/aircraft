@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "logging.h"
+#include "lvar_encoder.hpp"
+#include "simple_assert.h"
+
 #ifdef PROFILING
 #include "ScopedTimer.hpp"
 #include "SimpleProfiler.hpp"
@@ -165,19 +168,19 @@ void EngineControl_A32NX::initializeEngineControlData() {
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
   // prepare random number generator for engine imbalance
-  srand((int)time(0));
-  generateEngineImbalance(1);
-  const double imbalance        = simData.engineImbalance->get();
-  const double engineImbalanced = imbalanceExtractor(imbalance, 1);
+  srand(time(0));
 
-  // Checking engine imbalance
-  const double paramImbalance = imbalanceExtractor(imbalance, 5) / 10;
+  // Initialize Engine Imbalance
+  const double imbalance = generateEngineImbalance();
+  simData.engineImbalance->set(imbalance);
+  const double engineImbalanced = imbalanceExtractor(imbalance, 1);
+  const double oilQtyImbalance  = imbalanceExtractor(imbalance, 5) / 10;
 
   // Setting initial Oil with some randomness and imbalance
   const double idleOilL = (rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10;
-  simData.engineOilTotal[L]->set(idleOilL - ((engineImbalanced == 1) ? paramImbalance : 0));
+  simData.engineOilTotal[L]->set(idleOilL - ((engineImbalanced == 1) ? oilQtyImbalance : 0));
   const double idleOilR = (rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10;
-  simData.engineOilTotal[R]->set(idleOilR - ((engineImbalanced == 2) ? paramImbalance : 0));
+  simData.engineOilTotal[R]->set(idleOilR - ((engineImbalanced == 2) ? oilQtyImbalance : 0));
 
   const bool engine1Combustion = static_cast<bool>(simData.engineCombustion[L]->updateFromSim(timeStamp, tickCounter));
   const bool engine2Combustion = static_cast<bool>(simData.engineCombustion[R]->updateFromSim(timeStamp, tickCounter));
@@ -257,61 +260,63 @@ void EngineControl_A32NX::initializeEngineControlData() {
   simData.thrustLimitToga->set(0);
 }
 
-void EngineControl_A32NX::generateEngineImbalance(int initial) {
-  std::string imbalanceCode;
-  int         engine;
+double EngineControl_A32NX::generateEngineImbalance() {
+  // TODO: Improve by assigning an imbalance to each engine to avoid one engine always having the default values
 
-  if (initial == 1) {
-    // Decide Engine with imbalance
-    if ((rand() % 100) + 1 < 50) {
-      engine = 1;
-    } else {
-      engine = 2;
-    }
+  double imbalanceCode;
 
-    // Obtain EGT imbalance (Max 20 degree C)
-    const int egtImbalance = (rand() % 20) + 1;
+  // Be aware the encode8Int8ToDouble function only allows a 15bit value for the first parameter
+  // and 7bit for the other 7 parameters
 
-    // Obtain FF imbalance (Max 36 Kg/h)
-    const int ffImbalance = (rand() % 36) + 1;
+  // Decide Engine with imbalance
+  const uint8_t engine = (rand() % 2) + 1;
 
-    // Obtain N2 imbalance (Max 0.3%)
-    const int n2Imbalance = (rand() % 30) + 1;
+  // Obtain EGT imbalance (Max 20 degree C)
+  const uint8_t egtImbalance = (rand() % 20) + 1;
 
-    // Obtain Oil Qty imbalance (Max 2.0 qt)
-    const int oilQtyImbalance = (rand() % 20) + 1;
+  // Obtain FF imbalance (Max 36 Kg/h)
+  const uint8_t ffImbalance = (rand() % 36) + 1;
 
-    // Obtain Oil Pressure imbalance (Max 3.0 PSI)
-    const int oilPressureImbalance = (rand() % 30) + 1;
+  // Obtain N2 imbalance (Max 0.3%)
+  const uint8_t n2Imbalance = (rand() % 30) + 1;
 
-    // Obtain Oil Pressure Random Idle (-6 to +6 PSI)
-    const int oilPressureIdle = (rand() % 12) + 1;
+  // Obtain Oil Qty imbalance (Max 2.0 qt)
+  const uint8_t oilQtyImbalance = (rand() % 20) + 1;
 
-    // Obtain Oil Temperature (85 to 95 Celsius)
-    const int oilTemperatureMax = (rand() % 10) + 86;
+  // Obtain Oil Pressure imbalance (Max 3.0 PSI)
+  const uint8_t oilPressureImbalance = (rand() % 30) + 1;
 
-    // Zero Padding and Merging
-    // TODO: this is highly inefficient and should be refactored  - maybe use bit operations or even a simple array
-    imbalanceCode = helper::StringUtils::to_string_with_zero_padding<int>(engine, 2)                  //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(egtImbalance, 2)          //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(ffImbalance, 2)           //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(n2Imbalance, 2)           //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(oilQtyImbalance, 2)       //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(oilPressureImbalance, 2)  //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(oilPressureIdle, 2)       //
-                    + helper::StringUtils::to_string_with_zero_padding<int>(oilTemperatureMax, 2);
-    const double value = std::stod(imbalanceCode);
-    simData.engineImbalance->set(value);
-  }
+  // Obtain Oil Pressure Random Idle (-6 to +6 PSI)
+  const uint8_t oilPressureIdle = (rand() % 12) + 1;
+
+  // Obtain Oil Temperature (85 to 95 Celsius)
+  const uint8_t oilTemperature = (rand() % 10) + 86;
+
+  imbalanceCode = LVarEncoder::encode8Int8ToDouble(engine,                //
+                                                   egtImbalance,          //
+                                                   ffImbalance,           //
+                                                   n2Imbalance,           //
+                                                   oilQtyImbalance,       //
+                                                   oilPressureImbalance,  //
+                                                   oilPressureIdle,       //
+                                                   oilTemperature         //
+  );
+
+  LOG_INFO("Fadec::EngineControl_A32NX::generateEngineImbalance() - Values:\n Engine: " +
+           std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 1)) + "\n" +
+           "EGT Imbalance: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 2)) + "\n" +
+           "FF Imbalance: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 3)) + "\n" +
+           "N2 Imbalance: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 4)) + "\n" +
+           "Oil Quantity Imbalance: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 5)) + "\n" +
+           "Oil Pressure Imbalance: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 6)) + "\n" +
+           "Oil Pressure Idle: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 7)) + "\n" +
+           "Oil Temperature Max: " + std::to_string(LVarEncoder::extract8Int8FromDouble(imbalanceCode, 8)));
+
+  return imbalanceCode;
 }
 
 double EngineControl_A32NX::imbalanceExtractor(double imbalanceCode, int parameter) {
-  // Adjust the parameter number to match the position in the imbalance code
-  parameter = 9 - parameter;
-  // Shift the decimal point of the imbalance code to the right by the parameter number of places
-  imbalanceCode = std::floor(imbalanceCode / std::pow(100, parameter));
-  // Extract the last two digits of the resulting number
-  return static_cast<int>(imbalanceCode) % 100;
+  return LVarEncoder::extract8Int8FromDouble(imbalanceCode, parameter);
 }
 
 void EngineControl_A32NX::generateIdleParameters(double pressAltitude, double mach, double ambientTemp, double ambientPressure) {
@@ -575,9 +580,9 @@ double EngineControl_A32NX::updateFF(int    engine,
 
   // Check which engine is imbalanced and set the imbalance parameter
   const double engineImbalanced = imbalanceExtractor(imbalance, 1);
-  double       paramImbalance   = 0;
+  double       ffImbalance      = 0;
   if (engineImbalanced == engine && correctedFuelFlow >= 1) {
-    paramImbalance = imbalanceExtractor(imbalance, 3);
+    ffImbalance = imbalanceExtractor(imbalance, 3);
   }
 
   // Checking Fuel Logic and final Fuel Flow
@@ -586,7 +591,7 @@ double EngineControl_A32NX::updateFF(int    engine,
     outFlow = std::max(0.0,                                                                                  //
                        (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
                         * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)))                       //
-                           - paramImbalance);                                                                //
+                           - ffImbalance);                                                                   //
   }
   simData.engineFF[engine - 1]->set(outFlow);
 
@@ -609,12 +614,12 @@ void EngineControl_A32NX::updatePrimaryParameters(int engine, double imbalance, 
 
   // Check which engine is imbalanced and set the imbalance parameter
   const double engineImbalanced = imbalanceExtractor(imbalance, 1);
-  double       paramImbalance   = 0;
+  double       n2Imbalance      = 0;
   if (engineImbalanced == engine) {
-    paramImbalance = imbalanceExtractor(imbalance, 4) / 100;
+    n2Imbalance = imbalanceExtractor(imbalance, 4) / 100;
   }
   simData.engineN1[engineIdx]->set(simN1);
-  simData.engineN2[engineIdx]->set((std::max)(0.0, simN2 - paramImbalance));
+  simData.engineN2[engineIdx]->set((std::max)(0.0, simN2 - n2Imbalance));
 
 #ifdef PROFILING
   profilerUpdatePrimaryParameters.stop();
@@ -645,13 +650,13 @@ void EngineControl_A32NX::updateEGT(int         engine,
   } else {
     // Check which engine is imbalanced and set the imbalance parameter
     const double engineImbalanced = imbalanceExtractor(imbalance, 1);
-    double       paramImbalance   = 0;
+    double       egtImbalance     = 0;
     if (engineImbalanced == engine) {
-      paramImbalance = imbalanceExtractor(imbalance, 2);
+      egtImbalance = imbalanceExtractor(imbalance, 2);
     }
     const double correctedEGT      = Polynomial_A32NX::correctedEGT(simCN1, customFuelFlow, mach, pressureAltitude);
     const double egtFbwPreviousEng = simData.engineEgt[engineIdx]->get();
-    double       egtFbwActualEng   = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature)) - paramImbalance;
+    double       egtFbwActualEng   = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature)) - egtImbalance;
     egtFbwActualEng                = egtFbwActualEng + (egtFbwPreviousEng - egtFbwActualEng) * (std::exp)(-0.1 * deltaTime);
     simData.engineEgt[engineIdx]->set(egtFbwActualEng);
   }

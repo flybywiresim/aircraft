@@ -31,6 +31,7 @@ set(INCLUDE_FILES
     lib/inih/ini_fbw.h
     lib/inih/ini_type_conversion.h
     lib/logging.h
+    lib/lvar_encoder.hpp
     lib/math_utils.hpp
     lib/ProfileBuffer.hpp
     lib/pugixml/pugixml.hpp
@@ -41,7 +42,8 @@ set(INCLUDE_FILES
     lib/quantity.hpp)
 
 # create the targets for all packages
-add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
+add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES}
+    test/test_lvar_encoder.cpp)
 target_compile_definitions(cpp-msfs-framework-a32nx PUBLIC A32NX)
 
 add_library(cpp-msfs-framework-a380x OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
