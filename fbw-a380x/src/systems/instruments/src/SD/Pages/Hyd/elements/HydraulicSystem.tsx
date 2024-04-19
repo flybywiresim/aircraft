@@ -71,10 +71,10 @@ type ElecPumpProps = {
 const ElecPump = ({ x, y, label, side, systemPressureSwitch }: ElecPumpProps) => {
     const isGreen = side === 'GREEN';
 
-    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
-    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'percent', 500);
-    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'percent', 500);
-    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'percent', 500);
+    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'number', 500);
+    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'number', 500);
+    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'number', 500);
+    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'number', 500);
     const anyEngineIsRunning = engine1N3 > 50 || engine2N3 > 50 || engine3N3 > 50 || engine4N3 > 50;
 
     const [isElecPumpActive] = useSimVar(`L:A32NX_HYD_${side[0]}${label}_EPUMP_ACTIVE`, 'boolean', 1000);

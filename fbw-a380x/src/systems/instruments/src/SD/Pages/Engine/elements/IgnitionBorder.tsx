@@ -3,9 +3,9 @@ import { Position, EngineNumber, IgnitionActive } from '@instruments/common/type
 import React from 'react';
 
 const IgnitionBorder: React.FC<Position & EngineNumber & IgnitionActive> = ({ x, y, engine, ignition }) => {
-    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
-    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
-    const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 1000);
+    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'number', 500);
+    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'number', 100);
+    const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'number', 1000);
     const showBorder = !!(N1Percent < Math.floor(N1Idle) - 1 && engineState === 2);
 
     return (
