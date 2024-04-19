@@ -64,6 +64,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
         aircraftReg: aircraft.reg,
+        aircraftIcao: aircraft.icaocode,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,

@@ -94,7 +94,7 @@ export const FlightWidget = () => {
             toast.error(t('Dashboard.YourFlight.NoImportDueToBoardingOrRefuel'));
         } else {
             try {
-                const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '');
+                const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '', airframeInfo ? airframeInfo.icao : '');
                 dispatch(action);
                 dispatch(setFuelImported(false));
                 dispatch(setPayloadImported(false));
