@@ -164,6 +164,11 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
+      "SelectItem": {
+        "MainDeck": "Main",
+        "UpperDeck": "Upper",
+        "CargoDeck": "Cargo"
+      },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
@@ -587,7 +592,11 @@
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
       "WheelChocksEnabled": "Wheel Chocks",
-      "inHg": "inHg"
+      "inHg": "inHg",
+      "SimbridgeMachine": "Simbridge Host Machine",
+      "SimbridgeLocal": "This PC",
+      "SimbridgeRemote": "Remote PC",
+      "SimbridgeEmptyAddress": "SimBridge Remote IP Address cannot be empty!"
     },
     "ThirdPartyOptions": {
       "TT": {

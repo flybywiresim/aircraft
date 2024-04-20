@@ -24,9 +24,9 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
-use uom::si::{f64::Length, length::nautical_mile};
+use systems::{enhanced_gpwc::EnhancedGroundProximityWarningComputer, shared::MachNumber};
+use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
 
 use systems::{
     air_starter_unit::AirStarterUnit,
@@ -79,7 +79,11 @@ pub struct A320 {
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
         A320 {
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs: AirDataInertialReferenceSystem::new(
+                context,
+                Velocity::new::<knot>(350.),
+                MachNumber(0.82),
+            ),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(

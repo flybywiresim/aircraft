@@ -8,7 +8,7 @@ declare const process: any;
 
 new FbwAircraftSentryClient().onInstrumentLoaded({
     dsn: process.env.SENTRY_DSN,
-    buildInfoFilePrefix: 'a32nx',
+    buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
     root: false,
     enableTracing: false,
 });

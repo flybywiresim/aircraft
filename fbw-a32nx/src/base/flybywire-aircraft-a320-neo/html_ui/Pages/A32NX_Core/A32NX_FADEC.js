@@ -14,7 +14,7 @@ class A32NX_FADEC {
         const dcEssIsPowered = this.isDcEssPowered();
         const ignitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") === 2;
         const engineState = SimVar.GetSimVarValue(`L:A32NX_ENGINE_STATE:${this.engine}`, "Number");
-        const n2Percent = SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${this.engine}`, "Percent");
+        const n2Percent = SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${this.engine}`, "Number");
 
         if ((this.dcEssPoweredInPreviousUpdate !== dcEssIsPowered && dcEssIsPowered === 1) ||
             (this.lastEngineState !== engineState && engineState === 4) ) {

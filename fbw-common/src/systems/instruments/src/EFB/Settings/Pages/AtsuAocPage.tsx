@@ -22,8 +22,6 @@ export const AtsuAocPage = () => {
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-    const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
-
     const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
 
@@ -185,10 +183,6 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}>
-                <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
             </SettingItem>
 
             <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
