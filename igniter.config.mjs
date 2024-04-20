@@ -1,6 +1,6 @@
 import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
-import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from './fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs';
-import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
+import {getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks} from './fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs';
+import {getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks} from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('all', [
     // A32NX Task
@@ -248,6 +248,27 @@ export default new TaskOfTasks('all', [
             new ExecTask('metadata', 'npm run build-a380x:metadata'),
             new ExecTask('manifests', 'npm run build-a380x:manifest'),
         ]),
+    ]),
+
+    // LVar Provider
+    new TaskOfTasks("lvar-provider", [
+        // Prepare the out folder and any other pre tasks.
+        // Currently, these can be run in parallel, but in the future, we may need to run them in sequence if there are any dependencies.
+        new TaskOfTasks("preparation", [
+            new ExecTask("copy-base-files", "npm run build-lvar-provider:copy-base-files")
+        ]),
+
+        new ExecTask('cpp-wasm-cmake',
+            "npm run build:cpp-wasm-cmake",
+            [
+                'fbw-common/src/wasm/cpp-msfs-framework',
+                'fbw-lvar-provider/src/wasm/lvar-provider',
+                'fbw-lvar-provider/out/flybywire-lvar-provider/panel/lvar-provider.wasm'
+            ]),
+
+        new TaskOfTasks("dist", [
+            new ExecTask("manifests", "npm run build-lvar-provider:manifest")
+        ])
     ]),
 
     // InGamePanels Checklist Fix Tasks
