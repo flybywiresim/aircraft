@@ -103,9 +103,6 @@ export const FlightWidget = () => {
                 history.push('/ground/fuel');
                 history.push('/ground/payload');
                 history.push('/dashboard');
-                if (aircraftIcao !== airframeInfo.icao) {
-                    toast.error(t('Dashboard.YourFlight.WrongAircraftTypeWarning'));
-                }
             } catch (e) {
                 toast.error(e.message);
             }
@@ -115,7 +112,11 @@ export const FlightWidget = () => {
 
     useEffect(() => {
         if (!simbriefDataPending && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
-            toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            if (aircraftIcao !== airframeInfo.icao) {
+                toast.error(t('Dashboard.YourFlight.ToastWrongAircraftTypeWarning'));
+            } else {
+                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            }
             dispatch(setToastPresented(true));
         }
     }, [fuelImported, payloadImported, simbriefDataPending]);
