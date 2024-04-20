@@ -525,9 +525,9 @@ export class PseudoFWC {
 
     private readonly brakesHot = Subject.create(false);
 
-    private readonly landingLight2Retracted = Subject.create(false);
+    private readonly leftLandingLightExtended = Subject.create(false);
 
-    private readonly landingLight3Retracted = Subject.create(false);
+    private readonly rightlandingLightExtended = Subject.create(false);
 
     private readonly lgciu1Fault = Subject.create(false);
 
@@ -1081,8 +1081,11 @@ export class PseudoFWC {
         this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
         this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
         this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
-        this.landingLight2Retracted.set(SimVar.GetSimVarValue('L:LANDING_2_Retracted', 'bool'));
-        this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
+        // FIX ME ldg lt extended signal should come from SDAC
+        const leftLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_2_POSITION', 'number');
+        const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
+        this.leftLandingLightExtended.set(leftLdgLtPosition >= 30);
+        this.rightlandingLightExtended.set(rightLdgLtPosition >= 30);
         this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
         this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
         this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
@@ -3273,7 +3276,7 @@ export class PseudoFWC {
         '0000190': { // LDG LT
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(
-                ([landingLight2Retracted, landingLight3Retracted]) => !landingLight2Retracted || !landingLight3Retracted, this.landingLight2Retracted, this.landingLight3Retracted,
+                ([leftLandingLightExtended, rightLandingLightExtended]) => leftLandingLightExtended || rightLandingLightExtended, this.leftLandingLightExtended, this.rightlandingLightExtended,
             ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000019001'],
