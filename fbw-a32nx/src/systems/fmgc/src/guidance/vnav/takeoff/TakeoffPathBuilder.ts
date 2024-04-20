@@ -35,7 +35,7 @@ export class TakeoffPathBuilder {
         const lastCheckpoint = profile.lastCheckpoint;
 
         const startingAltitude = lastCheckpoint.altitude;
-        const predictedN1 = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'Percent');
+        const predictedN1 = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'Number');
         const speed = v2Speed + 10;
 
         const { fuelBurned, distanceTraveled, timeElapsed } = Predictions.altitudeStep(

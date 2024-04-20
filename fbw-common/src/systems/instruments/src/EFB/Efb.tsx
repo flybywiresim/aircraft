@@ -5,6 +5,8 @@ import React, { useEffect, useState } from 'react';
 import {
     ChecklistJsonDefinition,
     FailureDefinition,
+    UniversalConfigProvider,
+    NXDataStore,
     NavigraphClient,
     SENTRY_CONSENT_KEY,
     SentryConsentState,
@@ -13,14 +15,18 @@ import {
     usePersistentNumberProperty,
     usePersistentProperty,
     useSimVar,
+    ChecklistProvider,
 } from '@flybywiresim/fbw-sdk';
+
+import { Provider } from 'react-redux';
+import { customAlphabet } from 'nanoid';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
-import { Provider } from 'react-redux';
+import { migrateSettings, readSettingsFromPersistentStorage, setAirframeInfo, setCabinInfo, setFlypadInfo } from '@flybywiresim/flypad';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
@@ -51,17 +57,82 @@ import './Assets/Slider.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
 
+export interface EfbWrapperProps {
+    failures: FailureDefinition[], // TODO: Move failure definition into VFS
+}
+
+export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures }) => {
+    const setSessionId = () => {
+        const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const SESSION_ID_LENGTH = 14;
+        const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
+        const generatedSessionID = nanoid();
+
+        NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
+    };
+    const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
+
+    useEffect(() => {
+        UniversalConfigProvider.fetchAirframeInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setAirframeInfo(info)));
+
+        UniversalConfigProvider.fetchFlypadInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setFlypadInfo(info)));
+
+        UniversalConfigProvider.fetchCabinInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+            process.env.AIRCRAFT_VARIANT,
+        ).then((info) => store.dispatch(setCabinInfo(info)));
+
+        ChecklistProvider.getInstance().readChecklist()
+            .then((aircraftChecklistsFromJson) => {
+                console.log('Checklists loaded');
+                setAircraftChecklists(aircraftChecklistsFromJson);
+            })
+            .catch((error) => {
+                console.error('Failed to load checklists', error);
+            });
+    }, []);
+
+    const setup = () => {
+        readSettingsFromPersistentStorage();
+        migrateSettings();
+        setSessionId();
+
+        // Needed to fetch METARs from the sim
+        RegisterViewListener('JS_LISTENER_FACILITY', () => {
+            console.log('JS_LISTENER_FACILITY registered.');
+        }, true);
+    };
+
+    if (process.env.VITE_BUILD) {
+        window.addEventListener('AceInitialized', setup);
+    } else {
+        setup();
+    }
+
+    return (
+        <Provider store={store}>
+            <EfbInstrument failures={failures} aircraftChecklists={aircraftChecklists} />
+        </Provider>
+    );
+};
+
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -89,13 +160,6 @@ interface BatteryStatus {
 }
 
 export const usePower = () => React.useContext(PowerContext);
-
-// this returns either `A380_842` or `A320_251N` depending on the aircraft
-// TODO: this will be replaced and improved by PR #8599
-export function getAirframeType() {
-    return new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url'))
-        .searchParams.get('Airframe');
-}
 
 interface EfbProps {
     aircraftChecklistsProp: ChecklistJsonDefinition[],
@@ -389,7 +453,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-theme-body">
+        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
             <div className="max-w-4xl">
                 <ErrorIcon />
                 <div className="mt-6 space-y-12">
@@ -409,7 +473,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                     )}
 
                     <div
-                        className="w-full rounded-md border-2 border-utility-red bg-utility-red px-8 py-4 text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
+                        className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100"
                         onClick={resetErrorBoundary}
                     >
                         <h2 className="text-center font-bold text-current">Reset Display</h2>
@@ -420,7 +484,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     );
 };
 
-export interface EfbInstrumentProps {
+interface EfbInstrumentProps {
     failures: FailureDefinition[],
     aircraftChecklists: ChecklistJsonDefinition[],
 }
@@ -439,9 +503,7 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
             <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
                 <Router>
                     <ModalProvider>
-                        <Provider store={store}>
-                            <Efb aircraftChecklistsProp={aircraftChecklists} />
-                        </Provider>
+                        <Efb aircraftChecklistsProp={aircraftChecklists} />
                     </ModalProvider>
                 </Router>
             </ErrorBoundary>
