@@ -2286,6 +2286,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
       SELECTED | 0
       MANAGED | 1
 
+- `A320_NE0_FCU_STATE`
+    - Enum
+    - Indicates the state of the VS/FPA window.
+      State | Value
+      --- | ---
+      Idle (should be dashed) | 0
+      Zeroing (should show 00oo with no + sign) | 1
+      Selecting (should show the selected value) | 2
+      Flying (should show the selected value) | 3
+
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
     - Indicates if LOC button on the FCU is illuminated

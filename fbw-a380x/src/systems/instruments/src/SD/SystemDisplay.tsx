@@ -12,7 +12,7 @@ import { ElecAcPage } from './Pages/ElecAc/ElecAcPage';
 import { FuelPage } from './Pages/FuelPage';
 import { CbPage } from './Pages/CbPage';
 import { ApuPage } from './Pages/Apu/ApuPage';
-import { CondPage } from './Pages/CondPage';
+import { CondPage } from './Pages/Cond/CondPage';
 import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
