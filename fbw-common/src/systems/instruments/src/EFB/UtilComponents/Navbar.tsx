@@ -14,7 +14,7 @@ interface NavbarProps {
 
 export const Navbar = ({ tabs, className, onSelected, basePath }: NavbarProps) => (
   <nav className={`flex justify-between ${className}`}>
-    <div className="flex divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent">
+    <div className="divide-theme-accent border-theme-accent flex divide-x overflow-hidden rounded-md border">
       {tabs.map((tab, index) => (
         <NavLink
           onClick={() => onSelected?.(index)}
