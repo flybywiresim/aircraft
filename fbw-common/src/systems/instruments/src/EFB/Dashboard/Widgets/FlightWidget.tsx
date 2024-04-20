@@ -28,6 +28,7 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
 export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
     const simbriefDataPending = useAppSelector((state) => state.simbrief.simbriefDataPending);
+    const aircraftIcao = useAppSelector((state) => state.simbrief.data.aircraftIcao);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
@@ -94,7 +95,7 @@ export const FlightWidget = () => {
             toast.error(t('Dashboard.YourFlight.NoImportDueToBoardingOrRefuel'));
         } else {
             try {
-                const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '', airframeInfo ? airframeInfo.icao : '');
+                const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '');
                 dispatch(action);
                 dispatch(setFuelImported(false));
                 dispatch(setPayloadImported(false));
@@ -102,6 +103,9 @@ export const FlightWidget = () => {
                 history.push('/ground/fuel');
                 history.push('/ground/payload');
                 history.push('/dashboard');
+                if (aircraftIcao !== airframeInfo.icao) {
+                    toast.error(t('Dashboard.YourFlight.WrongAircraftTypeWarning'));
+                }
             } catch (e) {
                 toast.error(e.message);
             }

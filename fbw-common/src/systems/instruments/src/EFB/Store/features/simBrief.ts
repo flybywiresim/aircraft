@@ -148,12 +148,8 @@ export const simbriefSlice = createSlice({
     },
 });
 
-export async function fetchSimbriefDataAction(navigraphUsername: string, overrideSimbriefID: string, airframeIcao: string): Promise<PayloadAction<SimbriefData>> {
+export async function fetchSimbriefDataAction(navigraphUsername: string, overrideSimbriefID: string): Promise<PayloadAction<SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(navigraphUsername, overrideSimbriefID);
-
-    if (returnedSimbriefData.aircraftIcao !== airframeIcao) {
-        throw new Error('Wrong Aircraft Type Detected - Check Simbrief OFP');
-    }
 
     return setSimbriefData({
         airline: returnedSimbriefData.airline,
