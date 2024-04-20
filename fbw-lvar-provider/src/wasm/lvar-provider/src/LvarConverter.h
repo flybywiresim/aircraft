@@ -23,9 +23,10 @@ class LvarConverter {
 
   int64_t tickCounter = 0;
 
+  ID isReadyID;
   ID isLvarBridgeOnID;
   ID doLvarBridgeInit;
-  ID isReadyID;
+  ID isLvarBridgeVerbose;
 
   std::vector<std::pair<int, int>> arinc429Vars;
 
