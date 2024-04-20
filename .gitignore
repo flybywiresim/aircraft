@@ -109,14 +109,18 @@
 /flybywire-aircraft-a320-neo-lock-highlight/
 
 # explicit exclusions
-/.env
+bundles/
 node_modules/
 target/
+out/
+build/
 obj/
+cmake-vscode-build/
 cmake-build*/
+cmake-build*
+.env
 *.tgz
 *.wasm
-cmake-build*
 
 localazy.keys.json
 
