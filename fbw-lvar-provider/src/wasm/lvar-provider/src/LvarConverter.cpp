@@ -57,14 +57,15 @@ void LvarConverter::update() {
     float rawValue = arinc429NumericWord.valueOr(0.0f);
 
     // DEBUG
-    if (tickCounter % 100 == 0 && rawValue != 0.0f) {
-      std::cout << "Processed " << arinc429Vars.size() << " vars" << std::endl;
-      if (get_named_variable_value(isLvarBridgeVerbose)) {
-        std::cout << "LVar: " << firstName << " = " << value << " Raw Value: " << secondName << " = " << rawValue << std::endl;
-      }
+    if (tickCounter % 100 == 0 && rawValue != 0.0f && get_named_variable_value(isLvarBridgeVerbose)) {
+      std::cout << "LVar: " << firstName << " = " << value << " Raw Value: " << secondName << " = " << rawValue << std::endl;
     }
-
     set_named_variable_value(ids.second, rawValue);
+  }
+
+  // DEBUG
+  if (tickCounter % 100 == 0) {
+    std::cout << "Processed " << arinc429Vars.size() << " vars" << std::endl;
   }
 
 #ifdef PROFILING
