@@ -75,6 +75,14 @@
 !/fbw-common/**
 /fbw-common/src/systems/instruments/src/EFB/Localization/data/downloaded/*.json
 
+/fbw-lvar-provider/*
+!/fbw-lvar-provider/README.md
+!/fbw-lvar-provider/docs/
+!/fbw-lvar-provider/docs/**
+!/fbw-lvar-provider/src/
+!/fbw-lvar-provider/src/**
+/fbw-lvar-provider/out
+
 /fbw-ingamepanels-checklist-fix/*
 !/fbw-ingamepanels-checklist-fix/README.md
 !/fbw-ingamepanels-checklist-fix/docs/
