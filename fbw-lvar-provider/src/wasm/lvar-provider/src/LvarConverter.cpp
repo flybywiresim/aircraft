@@ -40,24 +40,24 @@ void LvarConverter::update() {
   profiler.start();
 #endif
 
+  // check if the bridge is activated
   if (get_named_variable_value(isLvarBridgeOnID)) {
     // process vars
     for (std::pair<int, int>& ids : arinc429Vars) {
-      // DEBUG
-      PCSTRINGZ firstName  = get_name_of_named_variable(ids.first);
-      PCSTRINGZ secondName = get_name_of_named_variable(ids.second);
-
       auto value = get_named_variable_value(ids.first);
 
       Arinc429NumericWord arinc429NumericWord{value};
       arinc429NumericWord.setSsm(Arinc429SignStatus::FunctionalTest);
       float rawValue = arinc429NumericWord.valueOr(0.0f);
 
+      set_named_variable_value(ids.second, rawValue ? rawValue : -1.0f);
+
       // DEBUG
       if (tickCounter % 100 == 0 && rawValue != 0.0f && get_named_variable_value(isLvarBridgeVerbose)) {
+        PCSTRINGZ firstName  = get_name_of_named_variable(ids.first);
+        PCSTRINGZ secondName = get_name_of_named_variable(ids.second);
         std::cout << "LVar: " << firstName << " = " << value << " Raw Value: " << secondName << " = " << rawValue << std::endl;
       }
-      set_named_variable_value(ids.second, rawValue ? rawValue : -1.0f);
     }
 
     // DEBUG
