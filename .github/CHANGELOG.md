@@ -84,6 +84,12 @@
 1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
 1. [EFB] Checklist restructure to add more capabilities and use json configs - @frankkopp (Frank Kopp)
 1. [FLIGHTMODEL] Landing lights or RAT extended now have drag - @Crocket63 (crocket)
+1. [ATHR/FADEC] Improved reverse thrust limit - @aguther (Andreas Guther)
+1. [GENERAL] Implemented a new unified VFS JSON5 markup standard for A/C configuration for FlyByWire based projects (building block for per-livery configuration) - @2hwk (2Cas)
+1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
+1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
+1. [FADEC] Fadec rewrite/cleanup/commenting using cpp framework - @frankkopp (Frank Kopp)
+1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 
 ## 0.11.0
 

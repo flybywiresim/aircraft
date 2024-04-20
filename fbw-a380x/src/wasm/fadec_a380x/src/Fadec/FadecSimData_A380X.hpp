@@ -125,18 +125,18 @@ class FadecSimData_A380X {
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;      // in Seconds
-    FLOAT64 airSpeedMach;            // in Mach
-    FLOAT64 ambientPressure;         // in Millibars
-    FLOAT64 ambientTemperature;      // in Celsius
-    FLOAT64 pressureAltitude;        // in Feet
-    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
-    FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineIgniter[4];        // 0 or 1
-    FLOAT64 engineStarter[4];        // 0 or 1
-    FLOAT64 simEngineCorrectedN1[4];    // in Percent
-    FLOAT64 simEngineN1[4];          // in Percent
-    FLOAT64 simEngineN2[4];          // in Percent
+    FLOAT64 animationDeltaTime;       // in Seconds
+    FLOAT64 airSpeedMach;             // in Mach
+    FLOAT64 ambientPressure;          // in Millibars
+    FLOAT64 ambientTemperature;       // in Celsius
+    FLOAT64 pressureAltitude;         // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;   // in Pounds
+    FLOAT64 engineAntiIce[4];         // 0 or 1
+    FLOAT64 engineIgniter[4];         // 0 or 1
+    FLOAT64 engineStarter[4];         // 0 or 1
+    FLOAT64 simEngineCorrectedN1[4];  // in Percent
+    FLOAT64 simEngineN1[4];           // in Percent
+    FLOAT64 simEngineN2[4];           // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -314,35 +314,35 @@ class FadecSimData_A380X {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
     startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
-    engineIdleN1  = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Percent, AUTO_READ_WRITE);
-    engineIdleN3  = dm->make_named_var("A32NX_ENGINE_IDLE_N3", UNITS.Percent, AUTO_READ_WRITE);
+    engineIdleN1  = dm->make_named_var("A32NX_ENGINE_IDLE_N1", UNITS.Number, AUTO_READ_WRITE);
+    engineIdleN3  = dm->make_named_var("A32NX_ENGINE_IDLE_N3", UNITS.Number, AUTO_READ_WRITE);
     engineIdleEGT = dm->make_named_var("A32NX_ENGINE_IDLE_EGT", UNITS.Number, AUTO_READ_WRITE);
     engineIdleFF  = dm->make_named_var("A32NX_ENGINE_IDLE_FF", UNITS.Number, AUTO_READ_WRITE);
 
-    engineState[E1] = dm->make_named_var("A32NX_ENGINE_STATE:1", UNITS.Enum, AUTO_READ_WRITE);
-    engineState[E2] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Enum, AUTO_READ_WRITE);
-    engineState[E3] = dm->make_named_var("A32NX_ENGINE_STATE:3", UNITS.Enum, AUTO_READ_WRITE);
-    engineState[E4] = dm->make_named_var("A32NX_ENGINE_STATE:4", UNITS.Enum, AUTO_READ_WRITE);
+    engineState[E1] = dm->make_named_var("A32NX_ENGINE_STATE:1", UNITS.Number, AUTO_READ_WRITE);
+    engineState[E2] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
+    engineState[E3] = dm->make_named_var("A32NX_ENGINE_STATE:3", UNITS.Number, AUTO_READ_WRITE);
+    engineState[E4] = dm->make_named_var("A32NX_ENGINE_STATE:4", UNITS.Number, AUTO_READ_WRITE);
 
-    engineN1[E1] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Percent, AUTO_READ_WRITE);
-    engineN1[E2] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Percent, AUTO_READ_WRITE);
-    engineN1[E3] = dm->make_named_var("A32NX_ENGINE_N1:3", UNITS.Percent, AUTO_READ_WRITE);
-    engineN1[E4] = dm->make_named_var("A32NX_ENGINE_N1:4", UNITS.Percent, AUTO_READ_WRITE);
+    engineN1[E1] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[E2] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[E3] = dm->make_named_var("A32NX_ENGINE_N1:3", UNITS.Number, AUTO_READ_WRITE);
+    engineN1[E4] = dm->make_named_var("A32NX_ENGINE_N1:4", UNITS.Number, AUTO_READ_WRITE);
 
-    engineN2[E1] = dm->make_named_var("A32NX_ENGINE_N2:1", UNITS.Percent, AUTO_READ_WRITE);
-    engineN2[E2] = dm->make_named_var("A32NX_ENGINE_N2:2", UNITS.Percent, AUTO_READ_WRITE);
-    engineN2[E3] = dm->make_named_var("A32NX_ENGINE_N2:3", UNITS.Percent, AUTO_READ_WRITE);
-    engineN2[E4] = dm->make_named_var("A32NX_ENGINE_N2:4", UNITS.Percent, AUTO_READ_WRITE);
+    engineN2[E1] = dm->make_named_var("A32NX_ENGINE_N2:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[E2] = dm->make_named_var("A32NX_ENGINE_N2:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[E3] = dm->make_named_var("A32NX_ENGINE_N2:3", UNITS.Number, AUTO_READ_WRITE);
+    engineN2[E4] = dm->make_named_var("A32NX_ENGINE_N2:4", UNITS.Number, AUTO_READ_WRITE);
 
-    engineN3[E1] = dm->make_named_var("A32NX_ENGINE_N3:1", UNITS.Percent, AUTO_READ_WRITE);
-    engineN3[E2] = dm->make_named_var("A32NX_ENGINE_N3:2", UNITS.Percent, AUTO_READ_WRITE);
-    engineN3[E3] = dm->make_named_var("A32NX_ENGINE_N3:3", UNITS.Percent, AUTO_READ_WRITE);
-    engineN3[E4] = dm->make_named_var("A32NX_ENGINE_N3:4", UNITS.Percent, AUTO_READ_WRITE);
+    engineN3[E1] = dm->make_named_var("A32NX_ENGINE_N3:1", UNITS.Number, AUTO_READ_WRITE);
+    engineN3[E2] = dm->make_named_var("A32NX_ENGINE_N3:2", UNITS.Number, AUTO_READ_WRITE);
+    engineN3[E3] = dm->make_named_var("A32NX_ENGINE_N3:3", UNITS.Number, AUTO_READ_WRITE);
+    engineN3[E4] = dm->make_named_var("A32NX_ENGINE_N3:4", UNITS.Number, AUTO_READ_WRITE);
 
-    engineEgt[E1] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Celsius, AUTO_READ_WRITE);
-    engineEgt[E2] = dm->make_named_var("A32NX_ENGINE_EGT:2", UNITS.Celsius, AUTO_READ_WRITE);
-    engineEgt[E3] = dm->make_named_var("A32NX_ENGINE_EGT:3", UNITS.Celsius, AUTO_READ_WRITE);
-    engineEgt[E4] = dm->make_named_var("A32NX_ENGINE_EGT:4", UNITS.Celsius, AUTO_READ_WRITE);
+    engineEgt[E1] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[E2] = dm->make_named_var("A32NX_ENGINE_EGT:2", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[E3] = dm->make_named_var("A32NX_ENGINE_EGT:3", UNITS.Number, AUTO_READ_WRITE);
+    engineEgt[E4] = dm->make_named_var("A32NX_ENGINE_EGT:4", UNITS.Number, AUTO_READ_WRITE);
 
     engineFF[E1] = dm->make_named_var("A32NX_ENGINE_FF:1", UNITS.Number, AUTO_READ_WRITE);
     engineFF[E2] = dm->make_named_var("A32NX_ENGINE_FF:2", UNITS.Number, AUTO_READ_WRITE);
@@ -374,17 +374,17 @@ class FadecSimData_A380X {
     engineTimer[E3] = dm->make_named_var("A32NX_ENGINE_TIMER:3", UNITS.Number, AUTO_READ_WRITE);
     engineTimer[E4] = dm->make_named_var("A32NX_ENGINE_TIMER:4", UNITS.Number, AUTO_READ_WRITE);
 
-    fuelLeftOuterPre  = dm->make_named_var("A32NX_FUEL_LEFTOUTER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelFeedOnePre    = dm->make_named_var("A32NX_FUEL_FEED1_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelLeftMidPre    = dm->make_named_var("A32NX_FUEL_LEFTMID_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelLeftInnerPre  = dm->make_named_var("A32NX_FUEL_LEFTINNER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelFeedTwoPre    = dm->make_named_var("A32NX_FUEL_FEED2_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelFeedThreePre  = dm->make_named_var("A32NX_FUEL_FEED3_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelRightInnerPre = dm->make_named_var("A32NX_FUEL_RIGHTINNER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelRightMidPre   = dm->make_named_var("A32NX_FUEL_RIGHTMID_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelFeedFourPre   = dm->make_named_var("A32NX_FUEL_FEED4_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelRightOuterPre = dm->make_named_var("A32NX_FUEL_RIGHTOUTER_PRE", UNITS.Pounds, AUTO_READ_WRITE);
-    fuelTrimPre       = dm->make_named_var("A32NX_FUEL_TRIM_PRE", UNITS.Pounds, AUTO_READ_WRITE);
+    fuelLeftOuterPre  = dm->make_named_var("A32NX_FUEL_LEFTOUTER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelFeedOnePre    = dm->make_named_var("A32NX_FUEL_FEED1_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftMidPre    = dm->make_named_var("A32NX_FUEL_LEFTMID_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelLeftInnerPre  = dm->make_named_var("A32NX_FUEL_LEFTINNER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelFeedTwoPre    = dm->make_named_var("A32NX_FUEL_FEED2_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelFeedThreePre  = dm->make_named_var("A32NX_FUEL_FEED3_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightInnerPre = dm->make_named_var("A32NX_FUEL_RIGHTINNER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightMidPre   = dm->make_named_var("A32NX_FUEL_RIGHTMID_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelFeedFourPre   = dm->make_named_var("A32NX_FUEL_FEED4_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelRightOuterPre = dm->make_named_var("A32NX_FUEL_RIGHTOUTER_PRE", UNITS.Number, AUTO_READ_WRITE);
+    fuelTrimPre       = dm->make_named_var("A32NX_FUEL_TRIM_PRE", UNITS.Number, AUTO_READ_WRITE);
 
     fuelPumpState[E1] = dm->make_named_var("A32NX_PUMP_STATE:1", UNITS.Number, AUTO_READ_WRITE);
     fuelPumpState[E2] = dm->make_named_var("A32NX_PUMP_STATE:2", UNITS.Number, AUTO_READ_WRITE);
@@ -402,7 +402,7 @@ class FadecSimData_A380X {
     packsState[1]       = dm->make_named_var("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", UNITS.Number, AUTO_READ);
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
-    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Gallons, AUTO_READ);
+    refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
     airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 

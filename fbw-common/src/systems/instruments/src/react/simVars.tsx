@@ -129,34 +129,21 @@ export const useSimVarList = (
 
         if (delta >= refreshInterval) {
             lastUpdate.current = Date.now();
-            names.forEach((name, index) => {
-                stateList[index] = SimVar.GetSimVarValue(name, units[index]);
-            });
-            setStateList(stateList);
+            setStateList((prevStateList) => prevStateList.map((value, index) => SimVar.GetSimVarValue(names[index], units[index])));
         }
-    }, [
-        names, ...names,
-        units, ...units,
-        refreshInterval,
-    ]);
+    }, [names, units, refreshInterval]);
 
     useUpdate(updateCallback);
 
     const setter = useCallback((valuesOrSetter: any | SimVarSetter) => {
-        const executedValues = typeof valuesOrSetter === 'function' ? valuesOrSetter(stateList) : valuesOrSetter;
-
-        executedValues.forEach((executedValue, index) => {
-            SimVar.SetSimVarValue(names[index], units[index], executedValue);
-            stateList[index] = executedValue;
+        setStateList((prevStateList) => {
+            const executedValues = typeof valuesOrSetter === 'function' ? valuesOrSetter(prevStateList) : valuesOrSetter;
+            executedValues.forEach((executedValue, index) => {
+                SimVar.SetSimVarValue(names[index], units[index], executedValue);
+            });
+            return executedValues;
         });
-        setStateList(stateList);
-
-        return stateList;
-    }, [
-        names, ...names,
-        units, ...units,
-        ...stateList, stateList,
-    ]);
+    }, [names, units]);
 
     return [stateList, setter];
 };

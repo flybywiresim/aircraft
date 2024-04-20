@@ -1,15 +1,15 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentProperty, useSimVar, Units } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSimVar, Units, PayloadChartLimits, AirframePerformanceEnvelope } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasConst, PerformanceEnvelope, ChartLimits } from './Constants';
+import { CanvasConst } from './Constants';
 
 interface ChartWidgetProps {
     width: number,
     height: number,
-    envelope: PerformanceEnvelope,
-    limits: ChartLimits,
+    envelope: AirframePerformanceEnvelope,
+    limits: PayloadChartLimits,
     gw: number,
     cg: number,
     mldw: number,
@@ -276,9 +276,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
             {cgAxis}
             {weightAxis}
             <p key="wu" className="absolute top-0 font-mono text-sm font-medium" style={weightUnits}>{usingMetric ? 'x 1000 kgs' : 'x 1000 lbs'}</p>
-            <p key="mtow" className="absolute top-0 font-mono font-medium text-theme-highlight drop-shadow" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
+            <p key="mtow" className="text-theme-highlight absolute top-0 font-mono font-medium drop-shadow" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p key="mldw" className="absolute top-0 font-mono font-medium text-lime-500" style={mlw}>MLDW</p>
-            <p key="mzfw" className="absolute top-0 font-mono font-medium text-theme-text" style={mzfw}>MZFW</p>
+            <p key="mzfw" className="text-theme-text absolute top-0 font-mono font-medium" style={mzfw}>MZFW</p>
         </div>
     );
 };

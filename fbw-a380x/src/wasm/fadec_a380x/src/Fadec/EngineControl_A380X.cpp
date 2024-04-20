@@ -896,22 +896,19 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   double       toga          = to + (ga - to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
-  bool         isFlexActive    = false;
   const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
-    isFlexActive = true;
+    wasFlexActive = true;
   } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
-    isFlexActive = false;
+    wasFlexActive = false;
   }
 
-  double transitionStartTime = 0;
-  double transitionFactor    = 0;
-  if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
+  if (wasFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive  = true;
     transitionStartTime = simulationTime;
     transitionFactor    = 0.2;
     // transitionFactor = (clb - flex) / transitionTime;
-  } else if (!isFlexActive) {
+  } else if (!wasFlexActive) {
     isTransitionActive  = false;
     transitionStartTime = 0;
     transitionFactor    = 0;
@@ -921,15 +918,9 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   if (isTransitionActive) {
     double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
     if (timeDifference > 0 && clb > flex) {
-      deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
-    }
-    if (flex + deltaThrust >= clb) {
-      isFlexActive       = false;
-      isTransitionActive = false;
-    }
+      wasFlexActive = false;
   }
-
-  if (isFlexActive) {
+  if (wasFlexActive) {
     clb = (std::min)(clb, flex) + deltaThrust;
   }
 
