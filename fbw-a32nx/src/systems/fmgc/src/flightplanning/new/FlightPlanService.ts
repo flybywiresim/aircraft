@@ -296,6 +296,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         await plan.insertWaypointBefore(atIndex, waypoint);
     }
 
+    async insertDiscontinuityAfter(atIndex: number, planIndex = FlightPlanIndex.Active, alternate = false) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        await plan.insertDiscontinuityAfter(atIndex);
+    }
+
     async nextWaypoint(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 

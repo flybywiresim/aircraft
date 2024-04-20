@@ -175,6 +175,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex?: number, alternate?: boolean): Promise<void>;
 
     /**
+     *
+     * @param atIndex the index of the leg to insert the waypoint after
+     * @param planIndex which flight plan to make the change on
+     * @param alternate whether to edit the plan's alternate flight plan
+     */
+    insertDiscontinuityAfter(atIndex: number, planIndex?: number, alternate?: boolean): Promise<void>;
+
+    /**
      * NEXT WPT revision. Inserts a waypoint after a leg at an index, adding a discontinuity if the waypoint isn't downstream in the plan.
      *
      * @param atIndex the index of the leg to insert the waypoint after

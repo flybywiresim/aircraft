@@ -12,6 +12,7 @@ import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FmsErrorType } from '@fmgc/FmsError';
 import { ISimbriefData, simbriefDataParser } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
 
@@ -49,6 +50,10 @@ interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
 
 interface AirwayTerminationOfpRouteChunk extends BaseOfpRouteChunk {
     instruction: 'airwayTermination',
+    locationHint: {
+        lat: number,
+        long: number,
+    },
     ident: string,
 }
 
@@ -323,7 +328,10 @@ export class SimBriefUplinkAdapter {
                     if (airways.length > 0) {
                         plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
                     } else {
-                        throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for "airway" chunk: ${chunk.ident}`);
+                        console.warn(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`);
+                        fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
+                        // Cancel airway entry
+                        plan.pendingAirways = undefined;
                     }
                 } else {
                     throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no search fix for "airway" chunk: ${chunk.ident}`);
@@ -334,15 +342,26 @@ export class SimBriefUplinkAdapter {
             case 'airwayTermination': {
                 const plan = flightPlanService.uplink;
 
-                if (!plan.pendingAirways) {
-                    plan.startAirwayEntry(insertHead);
-                }
-
-                const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
-
                 const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
                 if (fixes.length > 0) {
+                    if (!plan.pendingAirways) {
+                        // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
+                        // we add the termination fix with a disco in between
+                        console.warn(
+                            `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
+                        );
+
+                        await flightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
+                        await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+
+                        insertHead += 2;
+
+                        break;
+                    }
+
+                    const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
+
                     plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
 
                     ensureAirwaysFinalized();
@@ -426,7 +445,7 @@ export class SimBriefUplinkAdapter {
                 }
             } else if (!(lastInstruction && lastInstruction.instruction === 'airway' && lastInstruction.ident === fix.via_airway)) {
                 if (lastFix && lastInstruction && lastInstruction.instruction === 'airway' && fix.via_airway !== lastFix.via_airway) {
-                    instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident });
+                    instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident, locationHint: { lat: parseFloat(lastFix.pos_lat), long: parseFloat(lastFix.pos_long) } });
                 }
 
                 // Airway
@@ -435,7 +454,7 @@ export class SimBriefUplinkAdapter {
 
             if (instructions[instructions.length - 1]?.instruction === 'airway' && ofp.navlog[i + 1]?.via_airway !== fix.via_airway) {
                 // End of airway
-                instructions.push({ instruction: 'airwayTermination', ident: fix.ident });
+                instructions.push({ instruction: 'airwayTermination', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
             }
         }
 
