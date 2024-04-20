@@ -87,7 +87,7 @@
       "Title": "Your Flight",
       "ZFW": "ZFW",
       "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!",
-      "ToastWrongAircraftTypeWarning": "Simbrief - Invalid aircraft type detected. Check that aircraft type in Simbrief OFP is correct."
+      "ToastWrongAircraftType": "Simbrief - Invalid aircraft type detected. Check that aircraft type in Simbrief OFP is correct."
     }
   },
   "Dispatch": {

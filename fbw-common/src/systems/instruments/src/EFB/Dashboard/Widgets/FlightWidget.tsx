@@ -113,7 +113,7 @@ export const FlightWidget = () => {
     useEffect(() => {
         if (!simbriefDataPending && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
             if (aircraftIcao !== airframeInfo.icao) {
-                toast.error(t('Dashboard.YourFlight.ToastWrongAircraftTypeWarning'));
+                toast.error(t('Dashboard.YourFlight.ToastWrongAircraftType'));
             } else {
                 toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
             }
