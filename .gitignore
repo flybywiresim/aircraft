@@ -78,6 +78,14 @@ large-files/node_modules
 !/fbw-common/**
 /fbw-common/src/systems/instruments/src/EFB/Localization/data/downloaded/*.json
 
+/fbw-lvar-provider/*
+!/fbw-lvar-provider/README.md
+!/fbw-lvar-provider/docs/
+!/fbw-lvar-provider/docs/**
+!/fbw-lvar-provider/src/
+!/fbw-lvar-provider/src/**
+/fbw-lvar-provider/out
+
 # === Ingame Panels Checklist Fix ===
 /fbw-ingamepanels-checklist-fix/*
 !/fbw-ingamepanels-checklist-fix/README.md
