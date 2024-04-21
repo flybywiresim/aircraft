@@ -105,34 +105,34 @@ export class FmcAircraftInterface {
         const activePerformanceData = this.flightPlanService.active.performanceData;
 
         this.arincThrustReductionAltitude.setBnrValue(
-            activePerformanceData.thrustReductionAltitude !== undefined ? activePerformanceData.thrustReductionAltitude : 0,
-            activePerformanceData.thrustReductionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.thrustReductionAltitude !== null ? activePerformanceData.thrustReductionAltitude : 0,
+            activePerformanceData.thrustReductionAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincAccelerationAltitude.setBnrValue(
-            activePerformanceData.accelerationAltitude !== undefined ? activePerformanceData.accelerationAltitude : 0,
-            activePerformanceData.accelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.accelerationAltitude !== null ? activePerformanceData.accelerationAltitude : 0,
+            activePerformanceData.accelerationAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincEoAccelerationAltitude.setBnrValue(
-            activePerformanceData.engineOutAccelerationAltitude !== undefined ? activePerformanceData.engineOutAccelerationAltitude : 0,
-            activePerformanceData.engineOutAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.engineOutAccelerationAltitude !== null ? activePerformanceData.engineOutAccelerationAltitude : 0,
+            activePerformanceData.engineOutAccelerationAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
 
         this.arincMissedThrustReductionAltitude.setBnrValue(
-            activePerformanceData.missedThrustReductionAltitude !== undefined ? activePerformanceData.missedThrustReductionAltitude : 0,
-            activePerformanceData.missedThrustReductionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedThrustReductionAltitude !== null ? activePerformanceData.missedThrustReductionAltitude : 0,
+            activePerformanceData.missedThrustReductionAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedAccelerationAltitude.setBnrValue(
-            activePerformanceData.missedAccelerationAltitude !== undefined ? activePerformanceData.missedAccelerationAltitude : 0,
-            activePerformanceData.missedAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedAccelerationAltitude !== null ? activePerformanceData.missedAccelerationAltitude : 0,
+            activePerformanceData.missedAccelerationAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedEoAccelerationAltitude.setBnrValue(
-            activePerformanceData.missedEngineOutAccelerationAltitude !== undefined ? activePerformanceData.missedEngineOutAccelerationAltitude : 0,
-            activePerformanceData.missedEngineOutAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedEngineOutAccelerationAltitude !== null ? activePerformanceData.missedEngineOutAccelerationAltitude : 0,
+            activePerformanceData.missedEngineOutAccelerationAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
     }
@@ -146,8 +146,8 @@ export class FmcAircraftInterface {
 
         if (Number.isFinite(originTransitionAltitude)) {
             this.arincTransitionAltitude.setBnrValue(
-                originTransitionAltitude !== undefined ? originTransitionAltitude : 0,
-                originTransitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+                originTransitionAltitude !== null ? originTransitionAltitude : 0,
+                originTransitionAltitude !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
                 17, 131072, 0,
             );
 
@@ -202,10 +202,10 @@ export class FmcAircraftInterface {
         const taxiFuel = this.fmgc.data.taxiFuel.get() ?? 0;
         const tow = (this.fmc.getGrossWeight() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
 
-        return this.flightPlanService.active.performanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
-            || this.flightPlanService.active.performanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
-            || this.flightPlanService.active.performanceData.v2 < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
-            || (Number.isFinite(tow) && this.flightPlanService.active.performanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get())));
+        return (this.flightPlanService.active.performanceData.v1 ?? Infinity) < Math.trunc(A380SpeedsUtils.getVmcg(zp))
+            || (this.flightPlanService.active.performanceData.vr ?? Infinity) < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
+            || (this.flightPlanService.active.performanceData.v2 ?? Infinity) < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
+            || (Number.isFinite(tow) && (this.flightPlanService.active.performanceData.v2 ?? Infinity) < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get())));
     }
 
     private toSpeedsNotInserted = true;
@@ -994,7 +994,7 @@ export class FmcAircraftInterface {
     }
 
     onStepClimbDescent() {
-        if (!(this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise)) {
+        if (!(this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise) || !this.flightPlanService.active.performanceData.cruiseFlightLevel) {
             return;
         }
 
@@ -1042,7 +1042,7 @@ export class FmcAircraftInterface {
      * @private
      */
     private onTrySetCruiseFlightLevel() {
-        if (!(this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise)) {
+        if (!(this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb || this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise) || !this.flightPlanService.active.performanceData.cruiseFlightLevel) {
             return;
         }
 
@@ -1060,6 +1060,10 @@ export class FmcAircraftInterface {
                 }
 
                 this.cruiseFlightLevelTimeOut = setTimeout(() => {
+                    if (!this.flightPlanService.active.performanceData.cruiseFlightLevel) {
+                        return;
+                    }
+
                     if (fcuFl === ((Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100)
                         && (
                             this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel

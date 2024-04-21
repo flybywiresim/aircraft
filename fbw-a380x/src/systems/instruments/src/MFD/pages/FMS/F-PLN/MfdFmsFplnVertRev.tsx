@@ -83,7 +83,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const pd = this.loadedFlightPlan?.performanceData;
         // const fm = this.props.fmService.fmgc.data;
 
-        if (pd?.transitionAltitude !== undefined) {
+        if (pd?.transitionAltitude) {
             this.transitionAltitude.set(pd.transitionAltitude);
         }
 

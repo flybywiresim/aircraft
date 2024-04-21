@@ -280,11 +280,11 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
     get tropopause() {
         const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     get tropopauseIsPilotEntered() {
-        return this.pilotTropopause !== undefined;
+        return this.pilotTropopause !== null;
     }
 
     /**
@@ -319,7 +319,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get thrustReductionAltitude() {
         const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -346,7 +346,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get accelerationAltitude() {
         const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -373,7 +373,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get engineOutAccelerationAltitude() {
         const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -400,7 +400,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get missedThrustReductionAltitude() {
         const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -427,7 +427,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get missedAccelerationAltitude() {
         const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -454,7 +454,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get missedEngineOutAccelerationAltitude() {
         const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -479,7 +479,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get transitionAltitude() {
         const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+        return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
     }
 
     /**
@@ -504,7 +504,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      */
     get transitionLevel() {
         const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
-        return rawLevel !== undefined ? MathUtils.round(rawLevel, 0) : undefined;
+        return rawLevel !== null ? MathUtils.round(rawLevel, 0) : null;
     }
 
     /**
@@ -544,38 +544,38 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 }
 
 export interface SerializedFlightPlanPerformanceData {
-    cruiseFlightLevel: number | undefined | null,
-    costIndex: number | undefined | null,
+    cruiseFlightLevel: number | null,
+    costIndex: number | null,
     defaultTropopause: number,
-    pilotTropopause: number | undefined,
+    pilotTropopause: number,
 
-    v1: number | undefined | null,
+    v1: number | null,
 
-    vr: number | undefined | null,
+    vr: number | null,
 
-    v2: number | undefined | null,
+    v2: number | null,
 
-    pilotThrustReductionAltitude: number | undefined | null,
-    defaultThrustReductionAltitude: number | undefined | null,
+    pilotThrustReductionAltitude: number | null,
+    defaultThrustReductionAltitude: number | null,
 
-    pilotAccelerationAltitude: number | undefined | null,
-    defaultAccelerationAltitude: number | undefined | null,
+    pilotAccelerationAltitude: number | null,
+    defaultAccelerationAltitude: number | null,
 
-    pilotEngineOutAccelerationAltitude: number | undefined | null,
-    defaultEngineOutAccelerationAltitude: number | undefined | null,
+    pilotEngineOutAccelerationAltitude: number | null,
+    defaultEngineOutAccelerationAltitude: number | null,
 
-    pilotMissedThrustReductionAltitude: number | undefined | null,
-    defaultMissedThrustReductionAltitude: number | undefined | null,
+    pilotMissedThrustReductionAltitude: number | null,
+    defaultMissedThrustReductionAltitude: number | null,
 
-    pilotMissedAccelerationAltitude: number | undefined | null,
-    defaultMissedAccelerationAltitude: number | undefined | null,
+    pilotMissedAccelerationAltitude: number | null,
+    defaultMissedAccelerationAltitude: number | null,
 
-    pilotMissedEngineOutAccelerationAltitude: number | undefined | null,
-    defaultMissedEngineOutAccelerationAltitude: number | undefined | null,
+    pilotMissedEngineOutAccelerationAltitude: number | null,
+    defaultMissedEngineOutAccelerationAltitude: number | null,
 
-    databaseTransitionAltitude: number | undefined | null,
-    pilotTransitionAltitude: number | undefined | null,
+    databaseTransitionAltitude: number | null,
+    pilotTransitionAltitude: number | null,
 
-    databaseTransitionLevel: number | undefined | null,
-    pilotTransitionLevel: number | undefined | null,
+    databaseTransitionLevel: number | null,
+    pilotTransitionLevel: number | null,
 }

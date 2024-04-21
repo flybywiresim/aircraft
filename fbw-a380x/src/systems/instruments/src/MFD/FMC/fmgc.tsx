@@ -274,7 +274,7 @@ export class FmgcDataService implements Fmgc {
     }
 
     getV2Speed(): Knots {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.performanceData.v2 : 150;
+        return this.flightPlanService.has(FlightPlanIndex.Active) && this.flightPlanService.active.performanceData.v2 ? this.flightPlanService.active.performanceData.v2 : 150;
     }
 
     getTropoPause(): Feet {
@@ -319,7 +319,7 @@ export class FmgcDataService implements Fmgc {
      * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
      */
     getCruiseAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 320;
+        return this.flightPlanService.has(FlightPlanIndex.Active) && this.flightPlanService?.active.performanceData.cruiseFlightLevel ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 320;
     }
 
     getFlightPhase(): FmgcFlightPhase {
