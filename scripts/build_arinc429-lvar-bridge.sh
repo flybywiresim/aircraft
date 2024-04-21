@@ -25,7 +25,7 @@ for arg in "$@"; do
 done
 
 # run build
-time npx igniter -r 'lvar-provider' "${args[@]}"
+time npx igniter -r 'arinc429-lvar-bridge' "${args[@]}"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
