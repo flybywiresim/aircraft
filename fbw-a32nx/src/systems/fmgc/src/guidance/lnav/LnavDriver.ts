@@ -19,7 +19,6 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
