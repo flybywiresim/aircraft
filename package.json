@@ -67,8 +67,8 @@
     "build-a380x:manifest": "node scripts/build_a380x.js flybywire-aircraft-a380-842",
 
     "====== LVar Provider =========": "==========================================",
-    "build-lvar-provider:copy-base-files": "mkdir -p fbw-lvar-provider/out/flybywire-lvar-provider && (rsync -a fbw-lvar-provider/src/base/flybywire-lvar-provider fbw-lvar-provider/out/ || cp -a -u fbw-lvar-provider/src/base/flybywire-lvar-provider fbw-lvar-provider/out/)",
-    "build-lvar-provider:manifest": "node scripts/build_lvar_provider.js",
+    "build-arinc429-lvar-bridge:copy-base-files": "mkdir -p fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge && (rsync -a fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/ || cp -a -u fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/)",
+    "build-arinc429-lvar-bridge:manifest": "node scripts/build_arinc429-lvar-bridge.js",
 
     "====== INGAMEPANELS CHECKLIST FIX =======================================": "========================================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",

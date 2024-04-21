@@ -6,7 +6,7 @@
       "OlderHistory": ""
     }
   },
-  "title": "FlyByWire ARINC LVAR Bridge",
+  "title": "FlyByWire Arinc429 LVar Bridge",
   "dependencies": [],
   "content_type": "MISC",
   "minimum_game_version": "1.36.2",

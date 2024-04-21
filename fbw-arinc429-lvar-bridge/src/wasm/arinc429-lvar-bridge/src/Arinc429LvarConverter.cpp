@@ -4,25 +4,25 @@
 #include <fstream>
 #include <iostream>
 
-#include "LvarConverter.h"
+#include "Arinc429LvarConverter.h"
 #include "arinc429/Arinc429.hpp"
 #include "logging.h"
 
 // DEBUG
 #define PROFILING
 
-void LvarConverter::init() {
-  LOG_INFO("FlyByWire Lvar Bridge: Initializing");
+void Arinc429LvarConverter::init() {
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Initializing");
   // setup control variables
-  isLvarBridgeOnID    = register_named_variable("FBW_LVAR_BRIDGE_ON");
-  doLvarBridgeInit    = register_named_variable("FBW_LVAR_BRIDGE_INIT");
-  isLvarBridgeVerbose = register_named_variable("FBW_LVAR_BRIDGE_VERBOSE");
-  isReadyID           = register_named_variable("A32NX_IS_READY");
+  isArinc429LvarBridgeOnID    = register_named_variable("FBW_ARINC429_LVAR_BRIDGE_ON");
+  doArinc429LvarBridgeInit    = register_named_variable("FBW_ARINC429_LVAR_BRIDGE_INIT");
+  isArinc429LvarBridgeVerbose = register_named_variable("FBW_ARINC429_LVAR_BRIDGE_VERBOSE");
+  isReadyID                   = register_named_variable("A32NX_IS_READY");
 
   this->initialized = true;
 }
 
-void LvarConverter::update() {
+void Arinc429LvarConverter::update() {
   // check if the bridge is initialized and the aircraft is ready
   if (!this->initialized || !get_named_variable_value(isReadyID)) {
     return;
@@ -30,9 +30,9 @@ void LvarConverter::update() {
   tickCounter++;
 
   // read vars file if not read yet or re-read if the init flag is set
-  if (!varsRead || get_named_variable_value(doLvarBridgeInit)) {
-    LOG_INFO("FlyByWire Lvar Bridge: Re-reading vars file");
-    set_named_variable_value(doLvarBridgeInit, 0);
+  if (!varsRead || get_named_variable_value(doArinc429LvarBridgeInit)) {
+    LOG_INFO("FlyByWire Arinc429LVarBridge: Re-reading vars file");
+    set_named_variable_value(doArinc429LvarBridgeInit, 0);
     readVarFile();
   }
 
@@ -41,7 +41,7 @@ void LvarConverter::update() {
 #endif
 
   // check if the bridge is activated
-  if (get_named_variable_value(isLvarBridgeOnID)) {
+  if (get_named_variable_value(isArinc429LvarBridgeOnID)) {
     // process vars
     for (std::pair<int, int>& ids : arinc429Vars) {
       auto value = get_named_variable_value(ids.first);
@@ -53,7 +53,7 @@ void LvarConverter::update() {
       set_named_variable_value(ids.second, rawValue ? rawValue : -1.0f);
 
       // DEBUG
-      if (tickCounter % 100 == 0 && rawValue != 0.0f && get_named_variable_value(isLvarBridgeVerbose)) {
+      if (tickCounter % 100 == 0 && rawValue != 0.0f && get_named_variable_value(isArinc429LvarBridgeVerbose)) {
         PCSTRINGZ firstName  = get_name_of_named_variable(ids.first);
         PCSTRINGZ secondName = get_name_of_named_variable(ids.second);
         std::cout << "LVar: " << firstName << " = " << value << " Raw Value: " << secondName << " = " << rawValue << std::endl;
@@ -78,8 +78,8 @@ void LvarConverter::update() {
 // PRIVATE
 // =================================================================================================
 
-void LvarConverter::readVarFile() {  // read vars from works file
-  LOG_INFO("FlyByWire Lvar Bridge: Reading vars file");
+void Arinc429LvarConverter::readVarFile() {  // read vars from works file
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Reading vars file");
 
   arinc429Vars.clear();
 
@@ -109,10 +109,10 @@ void LvarConverter::readVarFile() {  // read vars from works file
   varsRead = true;
 }
 
-void LvarConverter::registerConvertedVars(const std::string& line) {  // register converted vars
+void Arinc429LvarConverter::registerConvertedVars(const std::string& line) {  // register converted vars
   const std::string convertedVar = line + "_RAW";
   auto              id           = register_named_variable(line.c_str());
   auto              mappedId     = register_named_variable(convertedVar.c_str());
   arinc429Vars.push_back(std::pair<int, int>(id, mappedId));
-  LOG_INFO("FlyByWire Lvar Bridge: Arinc429 var: " + line + " raw: " + convertedVar);
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Arinc429 var: " + line + " raw: " + convertedVar);
 }
