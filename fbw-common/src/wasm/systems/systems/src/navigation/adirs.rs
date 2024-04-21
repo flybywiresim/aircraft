@@ -559,6 +559,7 @@ impl AirDataInertialReferenceUnit {
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         align_time: AlignTime,
+        // TODO: this should be refactored (abstracted) away from the AirInertialReferenceUnit struct
         aircraft_preset_quick_mode: bool,
         simulator_data: AdirsSimulatorData,
     ) {
