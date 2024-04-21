@@ -271,8 +271,8 @@ export class GuidanceController {
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-        this.lnavDriver = new LnavDriver(flightPlanService, this, acConfig);
-        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, acConfig);
+        this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
+        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, this.acConfig);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
         this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterfaces);
     }
