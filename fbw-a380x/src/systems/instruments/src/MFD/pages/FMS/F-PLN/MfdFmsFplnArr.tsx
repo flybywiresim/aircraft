@@ -95,7 +95,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
             sortedRunways.forEach((rw) => {
                 runways.push({
-                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
+                    label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
                     action: async () => {
                         await this.props.fmcService.master?.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
                         await this.props.fmcService.master?.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
@@ -107,7 +107,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
             if (flightPlan.destinationRunway) {
                 this.rwyLs.set(flightPlan.destinationRunway.lsIdent);
-                this.rwyIdent.set(flightPlan.destinationRunway.ident.substring(2));
+                this.rwyIdent.set(flightPlan.destinationRunway.ident.substring(4));
                 this.rwyLength.set(flightPlan.destinationRunway.length.toFixed(0) ?? '----');
                 this.rwyCrs.set(flightPlan.destinationRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
             } else {

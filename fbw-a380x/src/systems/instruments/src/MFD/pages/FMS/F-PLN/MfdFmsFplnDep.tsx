@@ -53,7 +53,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
             sortedRunways.forEach((rw) => {
                 runways.push({
-                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
+                    label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
                         await this.props.fmcService.master?.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn ?? false);
                         await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn ?? false);
@@ -64,7 +64,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             this.rwyOptions.set(runways);
 
             if (flightPlan.originRunway) {
-                this.rwyIdent.set(flightPlan.originRunway.ident.substring(2));
+                this.rwyIdent.set(flightPlan.originRunway.ident.substring(4));
                 this.rwyLength.set(flightPlan.originRunway.length.toFixed(0) ?? '----');
                 this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
                 this.rwyEoSid.set('NONE');
