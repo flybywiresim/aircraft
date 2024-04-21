@@ -492,6 +492,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
     const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
 
+    // TODO: Replace magic numbers with constants to make this more understandable
     const totalPitchCommand =
       Math.max(
         Math.min(
