@@ -20,7 +20,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     private readonly exitDistance = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
     private readonly runwayInfoString = MappedSubject.create(
-        ([ident, length]) => ((ident && length.isNormalOperation()) ? `${ident.substring(2).padStart(5, '\xa0')}${length.value.toFixed(0).padStart(6, '\xa0')}` : ''),
+        ([ident, length]) => ((ident && length.isNormalOperation()) ? `${ident.substring(4).padStart(5, '\xa0')}${length.value.toFixed(0).padStart(6, '\xa0')}` : ''),
         this.runwayIdent,
         this.runwayLength,
     );

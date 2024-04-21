@@ -184,16 +184,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.fmsDataStore.landingRunway.sub(async (it) => {
             // Set control panel display
             if (it) {
-                this.availableEntityList.set([it.substring(2)]);
+                this.availableEntityList.set([it.substring(4)]);
                 this.selectedEntityType.set(EntityTypes.RWY);
                 this.selectedEntityIndex.set(0);
-                this.selectedEntityString.set(it.substring(2));
+                this.selectedEntityString.set(it.substring(4));
 
                 // Load runway data
                 const destination = this.fmsDataStore.destination.get();
                 if (destination && this.navigraphAvailable.get() === true) {
                     const data = await this.amdbClient.getAirportData(destination, [FeatureTypeString.RunwayThreshold]);
-                    const thresholdFeature = data.runwaythreshold?.features.filter((td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(2));
+                    const thresholdFeature = data.runwaythreshold?.features.filter((td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(4));
                     if (thresholdFeature && thresholdFeature[0]?.properties.lda && thresholdFeature[0]?.properties.tora) {
                         this.runwayLda.set(((thresholdFeature[0].properties.lda) > 0 ? thresholdFeature[0].properties.lda : 0).toFixed(0));
                         this.runwayTora.set((thresholdFeature[0].properties.tora > 0 ? thresholdFeature[0]?.properties.tora : 0).toFixed(0));

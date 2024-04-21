@@ -534,7 +534,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         if (label.style === LabelStyle.RunwayEnd) {
             element.addEventListener('click', () => {
                 const thresholdFeature = this.data.features.filter((it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text);
-                this.btvUtils.selectRunwayFromOans(`RW${label.text}`, label.associatedFeature, thresholdFeature[0]);
+                this.btvUtils.selectRunwayFromOans(`${this.dataAirportIcao.get()}${label.text}`, label.associatedFeature, thresholdFeature[0]);
             });
         } if (label.style === LabelStyle.ExitLine && label.associatedFeature.properties.feattype === FeatureType.ExitLine) {
             element.addEventListener('click', () => {
@@ -628,8 +628,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
                 const isFmsOrigin = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
                 const isFmsDestination = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
-                const isSelectedRunway = (isFmsOrigin && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(2)))
-                    || (isFmsDestination && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(2)));
+                const isSelectedRunway = (isFmsOrigin && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(4)))
+                    || (isFmsDestination && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(4)));
 
                 const label1: Label = {
                     text: designators[0],

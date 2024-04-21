@@ -49,6 +49,9 @@ export class OancLabelManager<T extends number> {
                 }
 
                 const labelVisible = filterLabel(label, this.currentFilter, fmsDepRunway, fmsLdgRunway, btvSelectedRunway, btvSelectedExit);
+                if (label.style === LabelStyle.RunwayEnd && btvSelectedRunway) {
+                    // console.log(label, this.currentFilter, fmsDepRunway, fmsLdgRunway, btvSelectedRunway, btvSelectedExit);
+                }
 
                 if (!labelVisible) {
                     element.style.visibility = 'hidden';

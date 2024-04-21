@@ -177,7 +177,7 @@ export class BrakeToVacateUtils<T extends number> {
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
         Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', exitDistance, Arinc429SignStatusMatrix.NormalOperation);
 
-        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/${exit}`, true);
+        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/${exit}`, true);
 
         this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
         if (exitDistFromCenterLine1 < exitDistFromCenterLine2) {
@@ -219,7 +219,7 @@ export class BrakeToVacateUtils<T extends number> {
         this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
         Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', correctedStoppingDistance, Arinc429SignStatusMatrix.NormalOperation);
 
-        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(2)}/MANUAL`, true);
+        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/MANUAL`, true);
 
         this.btvExitDistance.set(correctedStoppingDistance);
         this.btvExit.set('N/A');

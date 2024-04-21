@@ -29,11 +29,11 @@ export type OancLabelFilter = RunwayBtvSelectionLabelFilter | NoneLabelFilter | 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?: string, fmsLdgRunway?: string, btvSelectedRunway?: string, btvSelectedExit?: string): boolean {
     if (label.style === LabelStyle.FmsSelectedRunwayEnd && label.text) {
-        return label.text.includes(fmsDepRunway?.substring(2)) || label.text.includes(fmsLdgRunway?.substring(2));
+        return label.text.includes(fmsDepRunway?.substring(4)) || label.text?.includes(fmsLdgRunway?.substring(4));
     } if (label.style === LabelStyle.BtvSelectedRunwayArrow && label.text) {
-        return label.text.includes(btvSelectedRunway?.substring(2));
+        return label.text.includes(btvSelectedRunway?.substring(4));
     }
-    if (btvSelectedRunway && label.associatedFeature?.properties.feattype === FeatureType.Centerline && label.text.includes(btvSelectedRunway?.substring(2))) {
+    if (btvSelectedRunway && label.associatedFeature?.properties.feattype === FeatureType.Centerline && label.text?.includes(btvSelectedRunway?.substring(4))) {
         return true;
     }
     if (btvSelectedExit && label.style === LabelStyle.BtvSelectedExit) {
@@ -59,10 +59,10 @@ export function filterLabel(label: Label, filter: OancLabelFilter, fmsDepRunway?
 
 export function labelStyle(label: Label, fmsDataStore: FmsDataStore, isFmsOrigin: boolean, isFmsDestination: boolean, btvSelectedRunway: string, btvSelectedExit: string): LabelStyle {
     if (label.style === LabelStyle.RunwayEnd || label.style === LabelStyle.BtvSelectedRunwayEnd) {
-        return btvSelectedRunway?.substring(2) === label.text ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd;
+        return btvSelectedRunway?.substring(4) === label.text ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd;
     } if (label.style === LabelStyle.RunwayAxis || label.style === LabelStyle.FmsSelectedRunwayAxis) {
-        const isSelectedRunway = (isFmsOrigin && label.text.includes(fmsDataStore.departureRunway.get()?.substring(2)))
-                    || (isFmsDestination && label.text.includes(fmsDataStore.landingRunway.get()?.substring(2)));
+        const isSelectedRunway = (isFmsOrigin && label.text?.includes(fmsDataStore.departureRunway.get()?.substring(4)))
+                    || (isFmsDestination && label.text?.includes(fmsDataStore.landingRunway.get()?.substring(4)));
         return isSelectedRunway ? LabelStyle.FmsSelectedRunwayAxis : LabelStyle.RunwayAxis;
     } if (label.style === LabelStyle.ExitLine || label.style === LabelStyle.BtvSelectedExit) {
         return label.text === btvSelectedExit ? LabelStyle.BtvSelectedExit : LabelStyle.ExitLine;
