@@ -78,13 +78,13 @@ large-files/node_modules
 !/fbw-common/**
 /fbw-common/src/systems/instruments/src/EFB/Localization/data/downloaded/*.json
 
-/fbw-lvar-provider/*
-!/fbw-lvar-provider/README.md
-!/fbw-lvar-provider/docs/
-!/fbw-lvar-provider/docs/**
-!/fbw-lvar-provider/src/
-!/fbw-lvar-provider/src/**
-/fbw-lvar-provider/out
+/fbw-arinc429-lvar-bridge/*
+!/fbw-arinc429-lvar-bridge/README.md
+!/fbw-arinc429-lvar-bridge/docs/
+!/fbw-arinc429-lvar-bridge/docs/**
+!/fbw-arinc429-lvar-bridge/src/
+!/fbw-arinc429-lvar-bridge/src/**
+/fbw-arinc429-lvar-bridge/out
 
 # === Ingame Panels Checklist Fix ===
 /fbw-ingamepanels-checklist-fix/*

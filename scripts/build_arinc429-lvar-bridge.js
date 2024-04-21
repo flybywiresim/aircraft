@@ -47,8 +47,8 @@ const titleSuffix = ` (${titlePostfix})`;
 
 const MS_FILETIME_EPOCH = 116444736000000000n;
 
-const LVAR_PROVIDER_SRC = path.resolve(__dirname, '..', 'fbw-lvar-provider/src');
-const LVAR_PROVIDER_OUT = path.resolve(__dirname, '..', 'fbw-lvar-provider/out');
+const SRC_FOLDER = path.resolve(__dirname, '..', 'fbw-arinc429-lvar-bridge/src');
+const OUT_FOLDER = path.resolve(__dirname, '..', 'fbw-arinc429-lvar-bridge/out');
 
 function createPackageFiles(baseDir, manifestBaseFilename) {
     const contentEntries = [];
@@ -68,7 +68,7 @@ function createPackageFiles(baseDir, manifestBaseFilename) {
         content: contentEntries,
     }, null, 2));
 
-    const manifestBase = require(path.join(LVAR_PROVIDER_SRC, 'base', manifestBaseFilename));
+    const manifestBase = require(path.join(SRC_FOLDER, 'base', manifestBaseFilename));
 
     fs.writeFileSync(path.join(baseDir, 'manifest.json'), JSON.stringify({
         ...manifestBase,
@@ -78,4 +78,4 @@ function createPackageFiles(baseDir, manifestBaseFilename) {
     }, null, 2));
 }
 
-createPackageFiles(path.resolve(LVAR_PROVIDER_OUT, 'flybywire-lvar-provider'), 'manifest-base.json');
+createPackageFiles(path.resolve(OUT_FOLDER, 'flybywire-arinc429-lvar-bridge'), 'manifest-base.json');
