@@ -33,7 +33,8 @@ void Arinc429LvarConverter::update() {
   if (!varsRead || get_named_variable_value(doArinc429LvarBridgeInit)) {
     LOG_INFO("FlyByWire Arinc429LVarBridge: Re-reading vars file");
     set_named_variable_value(doArinc429LvarBridgeInit, 0);
-    readVarFile();
+    //    readVarFile();
+    getAllLVarsFromSim();
   }
 
 #ifdef PROFILING
@@ -109,10 +110,39 @@ void Arinc429LvarConverter::readVarFile() {  // read vars from works file
   varsRead = true;
 }
 
+void Arinc429LvarConverter::getAllLVarsFromSim() {
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Getting all LVars with prefix " + LVAR_PREFIX + " and suffix " + ARINC429_LVAR_SUFFIX);
+
+  // find all LVars with the given prefix and suffix and put them in a vector
+  int                      numVars = 0;
+  std::vector<std::string> lvars;
+  for (int i = 0; i < MAX_INDEX_LVAR_SCAN; i++) {
+    PCSTRINGZ name = get_name_of_named_variable(i);
+    if (name != nullptr) {
+      std::string nameStr = name;
+      if (nameStr.rfind(LVAR_PREFIX, 0) == 0 &&
+          nameStr.rfind(ARINC429_LVAR_SUFFIX, nameStr.size() - ARINC429_LVAR_SUFFIX.size()) != std::string::npos) {
+        lvars.push_back(nameStr);
+        numVars++;
+        if (isArinc429LvarBridgeVerbose) {
+          LOG_INFO("FlyByWire Arinc429LVarBridge: Found LVar: " + std::to_string(numVars) + " " + nameStr);
+        }
+      }
+    }
+  }
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Found " + std::to_string(numVars) + " LVars - registering raw value LVars now.");
+
+  // register all LVars
+  arinc429Vars.clear();
+  for (const std::string& nameStr : lvars) {
+    registerConvertedVars(nameStr);
+  }
+  varsRead = true;
+}
+
 void Arinc429LvarConverter::registerConvertedVars(const std::string& line) {  // register converted vars
   const std::string convertedVar = line + "_RAW";
   auto              id           = register_named_variable(line.c_str());
   auto              mappedId     = register_named_variable(convertedVar.c_str());
   arinc429Vars.push_back(std::pair<int, int>(id, mappedId));
-  LOG_INFO("FlyByWire Arinc429LVarBridge: Arinc429 var: " + line + " raw: " + convertedVar);
 }

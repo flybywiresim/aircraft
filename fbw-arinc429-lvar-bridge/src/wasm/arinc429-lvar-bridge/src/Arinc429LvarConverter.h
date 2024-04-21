@@ -10,6 +10,10 @@
 #include <SimConnect.h>
 #include "SimpleProfiler.hpp"
 
+static constexpr int     MAX_INDEX_LVAR_SCAN  = 99999;
+static const std::string LVAR_PREFIX          = "A32NX_";
+static const std::string ARINC429_LVAR_SUFFIX = "";
+
 /**
  * @brief TODO
  */
@@ -37,8 +41,9 @@ class Arinc429LvarConverter {
   void update();
 
  private:
-  void registerConvertedVars(const std::string& line);
   void readVarFile();
+  void getAllLVarsFromSim();
+  void registerConvertedVars(const std::string& line);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ARINC429LVARCONVERTER_H
