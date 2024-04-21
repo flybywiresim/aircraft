@@ -1294,6 +1294,16 @@
         - 2 | LEFT
         - 3 | RIGHT
 
+- A32NX_AIRLINER_CRUISE_ALTITUDE
+  - Number (feet)
+  - Current cruise altitude of the aircraft
+  - note: this LVar was named incorrectly before missing the prefix:`AIRLINER_CRUISE_ALTITUDE`
+
+- A32NX_AIRLINER_TO_FLEX_TEMP
+  - Number (degrees Celsius)
+  - Current takeoff flex temperature of the aircraft
+  - note: this LVar was named incorrectly before missing the prefix:`AIRLINER_TO_FLEX_TEMP`
+
 ## Model/XML Interface
 
 These variables are the interface between the 3D model and the systems/code.
