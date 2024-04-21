@@ -11,7 +11,7 @@ export enum FansMode {
 // https://www.icao.int/WACAF/Documents/Meetings/2016/Lisbon-2016/SAT-FI11/SAT-FIT-11_IP%2004%20-attachment_Boeing.pdf
 // Station logons are taken from VATSIM vACCs and sector file data of controllers (IVAO and VATSIM use the same callsigns)
 export class FutureAirNavigationSystem {
-  /* eslint-disable prettier/prettier */
+  /* eslint-disable prettier/prettier -- this should be in its own JSON file, the formatting by prettier here is a symptom of this not being in the right place */
   // contains all CPDLC callsigns that use FANS-B
   // FANS-A is assumed to be the fallback
   private static areasFansB = [

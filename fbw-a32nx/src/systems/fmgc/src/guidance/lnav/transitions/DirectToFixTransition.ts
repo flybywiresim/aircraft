@@ -28,8 +28,17 @@ import {
 } from '../CommonGeometry';
 import { CRLeg } from '../legs/CR';
 
-// eslint-disable-next-line prettier/prettier
-type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
+type PrevLeg =
+  | CALeg
+  | /* CDLeg | */ CFLeg
+  | CILeg
+  | CRLeg
+  | DFLeg
+  | /* FALeg | FMLeg | */ HALeg
+  | HFLeg
+  | HMLeg
+  | TFLeg
+  | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
 type NextLeg = CFLeg | DFLeg; /* | FALeg | FMLeg */
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));

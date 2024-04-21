@@ -67,8 +67,11 @@ export class TodGuidance {
             `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
           );
           // Only guard AP above transitional altitude
-          // eslint-disable-next-line prettier/prettier
-        } else if (this.atmosphericConditions.currentAltitude ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude : false) {
+        } else if (
+          this.atmosphericConditions.currentAltitude
+            ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
+            : false
+        ) {
           const apActive =
             SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean') &&
             SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum') === LateralMode.NAV;
