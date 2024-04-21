@@ -57,6 +57,11 @@ class EngineControl_A32NX {
   double prevEngineMasterPos[2] = {0, 0};
   bool prevEngineStarterState[2] = {false, false};
 
+  // FLX->CLB thrust limit transition
+  double transitionStartTime;
+  double transitionFactor;
+  bool wasFlexActive = false;
+
   // additional constants
   static constexpr int MAX_OIL = 200;
   static constexpr int MIN_OIL = 140;

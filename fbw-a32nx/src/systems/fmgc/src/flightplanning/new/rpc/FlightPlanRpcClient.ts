@@ -207,6 +207,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('insertWaypointBefore', atIndex, waypoint, planIndex, alternate);
     }
 
+    insertDiscontinuityAfter(atIndex: number, planIndex?: number, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('insertDiscontinuityAfter', atIndex, planIndex, alternate);
+    }
+
     nextWaypoint(atIndex: number, waypoint: Fix, planIndex?: number, alternate?: boolean): Promise<void> {
         return this.callFunctionViaRpc('nextWaypoint', atIndex, waypoint, planIndex, alternate);
     }

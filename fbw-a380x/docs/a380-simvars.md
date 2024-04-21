@@ -170,11 +170,11 @@
     - Bool
     - True if the hot air valve {1 or 2} is open
 
-- A32NX_COND_TADD_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
+- A32NX_COND_TADD_CHANNEL_{id}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id}
+        - 1 or 2
 
 - A32NX_VENT_PRIMARY_FANS_ENABLED
     - Bool
@@ -194,14 +194,14 @@
         - FWD
         - BULK
 
-- A32NX_VENT_{id}_VCM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id}
+- A32NX_VENT_{id1}_VCM_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id1}
         - FWD
         - AFT
+    - {id2}
+        - 1 or 2
 
 - A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
     - Bool

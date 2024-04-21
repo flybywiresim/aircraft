@@ -3,10 +3,32 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { useAppSelector, isSimbriefDataLoaded, getAirframeType } from '@flybywiresim/flypad';
-import { A320Payload } from './A320_251N/A320Payload';
-import { A380Payload } from './A380_842/A380Payload';
+import { AirframeInfo, AirframeType, CabinInfo, FlypadInfo, Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useAppSelector, isSimbriefDataLoaded, getMaxPax, getMaxCargo } from '@flybywiresim/flypad';
+import { A380Payload } from './WideBody/A380Payload';
+import { A320Payload } from './NarrowBody/A320Payload';
+
+export interface PayloadProps {
+    airframeInfo: AirframeInfo,
+    flypadInfo: FlypadInfo,
+    cabinInfo: CabinInfo,
+    maxPax: number,
+    maxCargo: number,
+    simbriefUnits: string,
+    simbriefBagWeight: number,
+    simbriefPaxWeight: number,
+    simbriefPax: number,
+    simbriefBag: number,
+    simbriefFreight: number,
+    simbriefDataLoaded: boolean,
+    payloadImported: boolean,
+    massUnitForDisplay: string,
+    isOnGround: boolean,
+    boardingStarted: boolean,
+    boardingRate: string,
+    setBoardingStarted: (boardingStarted: any) => void,
+    setBoardingRate: (boardingRate: any) => void,
+}
 
 export const PayloadPage = () => {
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
@@ -25,10 +47,19 @@ export const PayloadPage = () => {
 
     const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
 
-    switch (getAirframeType()) {
-    case 'A380_842':
+    const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
+    const cabinInfo = useAppSelector((state) => state.config.cabinInfo);
+
+    switch (airframeInfo.variant) {
+    case AirframeType.A380_842:
         return (
             <A380Payload
+                airframeInfo={airframeInfo}
+                flypadInfo={flypadInfo}
+                cabinInfo={cabinInfo}
+                maxPax={getMaxPax()}
+                maxCargo={getMaxCargo()}
                 simbriefUnits={simbriefUnits}
                 simbriefBagWeight={simbriefBagWeight}
                 simbriefPaxWeight={simbriefPaxWeight}
@@ -45,10 +76,15 @@ export const PayloadPage = () => {
                 setBoardingRate={setBoardingRate}
             />
         );
-    case 'A320_251N':
+    case AirframeType.A320_251N:
     default:
         return (
             <A320Payload
+                airframeInfo={airframeInfo}
+                flypadInfo={flypadInfo}
+                cabinInfo={cabinInfo}
+                maxPax={getMaxPax()}
+                maxCargo={getMaxCargo()}
                 simbriefUnits={simbriefUnits}
                 simbriefBagWeight={simbriefBagWeight}
                 simbriefPaxWeight={simbriefPaxWeight}

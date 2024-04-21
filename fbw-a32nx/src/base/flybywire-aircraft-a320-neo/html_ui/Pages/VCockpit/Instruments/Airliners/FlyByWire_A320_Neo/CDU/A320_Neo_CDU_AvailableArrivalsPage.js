@@ -90,12 +90,17 @@ class CDUAvailableArrivalsPage {
         } else if (!selectedApproach && targetPlan.destinationRunway) {
             selectedApproachCell = Fmgc.RunwayUtils.runwayString(targetPlan.destinationRunway.ident);
             selectedApproachCellColor = flightPlanAccentColor;
+
+            // Runway-only approaches have no VIAs
+            selectedViasCell = "NONE";
+            selectedViasCellColor = flightPlanAccentColor;
         }
 
         let selectedStarCell = "------";
         let selectedStarCellColor = "white";
 
         const selectedArrival = targetPlan.arrival;
+        const availableArrivals = targetPlan.availableArrivals;
 
         if (selectedArrival) {
             selectedStarCell = selectedArrival.ident;
@@ -107,13 +112,16 @@ class CDUAvailableArrivalsPage {
             if (selectedTransition) {
                 selectedTransitionCell = selectedTransition.ident;
                 selectedTransitionCellColor = flightPlanAccentColor;
-            } else if (selectedTransition === null) {
-                selectedTransitionCell = Labels.NO_TRANS;
-                selectedTransitionCellColor = flightPlanAccentColor;
-            } else if (availableTransitions.length === 0) {
+            } else if (availableTransitions.length === 0 || selectedTransition === null) {
                 selectedTransitionCell = "NONE";
                 selectedTransitionCellColor = flightPlanAccentColor;
             }
+        } else if (selectedArrival === null || availableArrivals.length === 0) {
+            selectedStarCell = "NONE";
+            selectedStarCellColor = flightPlanAccentColor;
+
+            selectedTransitionCell = "NONE";
+            selectedTransitionCellColor = flightPlanAccentColor;
         }
 
         /**
@@ -217,7 +225,12 @@ class CDUAvailableArrivalsPage {
                 }
             }
         } else {
-            if (selectedApproach && selectedApproach.runwayIdent) {
+            /**
+             * @type {import('msfs-navdata').Runway | undefined}
+             */
+            const destinationRunway = targetPlan.destinationRunway;
+
+            if (destinationRunway) {
                 const arrivals = targetPlan.availableArrivals;
 
                 for (let i = 0; i < arrivals.length; i++) {
@@ -228,7 +241,7 @@ class CDUAvailableArrivalsPage {
                             const runwayTransition = arrival.runwayTransitions[j];
                             if (runwayTransition) {
                                 // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
-                                if (runwayTransition.ident === selectedApproach.runwayIdent || (runwayTransition.ident.charAt(6) === 'B' && runwayTransition.ident.substring(4, 6) === selectedApproach.runwayIdent.substring(4, 6))) {
+                                if (runwayTransition.ident === destinationRunway.ident || (runwayTransition.ident.charAt(6) === 'B' && runwayTransition.ident.substring(4, 6) === destinationRunway.ident.substring(4, 6))) {
                                     matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                 }
                             }
@@ -256,7 +269,13 @@ class CDUAvailableArrivalsPage {
                         mcdu.onLeftInput[i + 2] = async () => {
                             await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
 
-                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                            const availableVias = targetPlan.availableApproachVias;
+
+                            if (selectedApproach !== undefined && availableVias.length > 0) {
+                                CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                            } else {
+                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                            }
                         };
                     }
                 } else {
@@ -284,10 +303,9 @@ class CDUAvailableArrivalsPage {
 
                                 await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
 
-                                const approach = targetPlan.approach;
                                 const availableVias = targetPlan.availableApproachVias;
 
-                                if (approach !== undefined && availableVias.length > 0) {
+                                if (selectedApproach !== undefined && availableVias.length > 0) {
                                     CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
                                 } else {
                                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
@@ -457,9 +475,13 @@ class CDUAvailableArrivalsPage {
         let selectedStarCellColor = "white";
 
         const selectedArrival = targetPlan.arrival;
+        const availableArrivals = targetPlan.availableArrivals;
 
         if (selectedArrival) {
             selectedStarCell = selectedArrival.ident;
+            selectedStarCellColor = planColor;
+        } else if (selectedArrival === null || availableArrivals.length === 0) {
+            selectedStarCell = "NONE";
             selectedStarCellColor = planColor;
         }
 

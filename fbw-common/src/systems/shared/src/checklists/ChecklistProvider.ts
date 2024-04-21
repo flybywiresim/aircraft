@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConditionType, getAircraftType } from '@flybywiresim/fbw-sdk';
+import { ConditionType } from '@flybywiresim/fbw-sdk';
 import JSON5 from 'json5';
 import { ChecklistItem, ChecklistJsonDefinition } from './ChecklistInterfaces';
 
@@ -56,9 +56,7 @@ export class ChecklistProvider {
     // =============================================================================================
 
     private constructor() {
-        // TODO: adapt to the new unified configuration (PR #8599)
-        const aircraft = getAircraftType();
-        this.configFilename = `/VFS/config/${aircraft}_checklists.json5`;
+        this.configFilename = `/VFS/config/${process.env.AIRCRAFT_PROJECT_PREFIX}/${process.env.AIRCRAFT_VARIANT}/checklists.json5`;
     }
 
     /**

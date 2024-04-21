@@ -1,22 +1,30 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is the base cabin configuration file for A320-251N
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+//
+// NOTE: * This is currently a WIP * ! The override functionality has not been completed yet !
+//
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+//
+// Please follow the instructions in the documentation to create a new configuration file!
+// =======================================================================================
+// Last updated: 2 April 2024
 {
-    "specs": {
-        "prefix": "A32NX",
-        "weights": {
-            "maxGw": 79000,
-            "maxZfw": 64300,
-            "minZfw": 42500,
-            "maxGwCg": 40,
-            "maxZfwCg": 40
-        },
-        "pax": {
-            "defaultPaxWeight": 84,
-            "defaultBagWeight": 20,
-            "minPaxWeight": 10,
-            "maxPaxWeight": 250,
-            "minBagWeight": 1,
-            "maxBagWeight": 250
-        }
-    },
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "defaultPaxWeight": 84,
+    "defaultBagWeight": 20,
+    "_paxDecks": 1,
+    "_decks": 2,
+    "_minPaxWeight": 10,
+    "_maxPaxWeight": 250,
+    "_minBagWeight": 1,
+    "_maxBagWeight": 250,
     "seatMap": [
         {
             "name": "ROWS [1-6]",
@@ -28,7 +36,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19},
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -42,7 +50,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -56,7 +64,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -70,7 +78,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -84,7 +92,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -98,7 +106,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -122,7 +130,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -136,7 +144,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -150,7 +158,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -164,7 +172,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -178,7 +186,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -189,12 +197,12 @@
                 },
                 {
                     "seats": [
-                        { "type": 1 },
-                        { "type": 1 },
-                        { "type": 1 },
-                        { "type": 1,  "yOffset": 19 },
-                        { "type": 1 },
-                        { "type": 1 }
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1, "yOffset": 19},
+                        { "type": 1},
+                        { "type": 1}
                     ],
                     "x": 0,
                     "y": 0,
@@ -203,12 +211,12 @@
                 },
                 {
                     "seats": [
-                        { "type": 1 },
-                        { "type": 1 },
-                        { "type": 1 },
-                        { "type": 1,  "yOffset": 19 },
-                        { "type": 1 },
-                        { "type": 1 }
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1},
+                        { "type": 1, "yOffset": 19},
+                        { "type": 1},
+                        { "type": 1}
                     ],
                     "x": 0,
                     "y": 0,
@@ -230,7 +238,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -244,7 +252,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -258,7 +266,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -272,7 +280,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -286,7 +294,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -300,7 +308,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -314,7 +322,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -328,7 +336,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -352,7 +360,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -366,7 +374,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -380,7 +388,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -394,7 +402,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -408,7 +416,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -422,7 +430,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -436,7 +444,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -450,7 +458,7 @@
                         { "type": 0 },
                         { "type": 0 },
                         { "type": 0 },
-                        { "type": 0,  "yOffset": 19},
+                        { "type": 0, "yOffset": 19 },
                         { "type": 0 },
                         { "type": 0 }
                     ],
@@ -498,210 +506,5 @@
             "progressBarWidth": 75,
             "simVar": "A32NX_CARGO_AFT_BULK_LOOSE"
         }
-    ],
-    "chart": {
-        "performanceEnvelope": {
-            "mlw": [
-                [
-                    15,
-                    42500
-                ],
-                [
-                    15,
-                    53000
-                ],
-                [
-                    17,
-                    63000
-                ],
-                [
-                    17,
-                    67400
-                ],
-                [
-                    40,
-                    67400
-                ],
-                [
-                    40,
-                    67400
-                ],
-                [
-                    37,
-                    50000
-                ],
-                [
-                    35,
-                    46000
-                ],
-                [
-                    35,
-                    42500
-                ]
-            ],
-            "mzfw": [
-                [
-                    17,
-                    64300
-                ],
-                [
-                    39.5,
-                    64300
-                ],
-                [
-                    37,
-                    50000
-                ],
-                [
-                    35,
-                    46000
-                ],
-                [
-                    35,
-                    42500
-                ],
-                [
-                    15,
-                    42500
-                ]
-            ],
-            "mtow": [
-                [
-                    15,
-                    42500
-                ],
-                [
-                    15,
-                    53000
-                ],
-                [
-                    17,
-                    63000
-                ],
-                [
-                    17,
-                    72000
-                ],
-                [
-                    27,
-                    79000
-                ],
-                [
-                    36,
-                    79000
-                ],
-                [
-                    40,
-                    73500
-                ],
-                [
-                    40,
-                    67400
-                ],
-                [
-                    37,
-                    50000
-                ],
-                [
-                    33,
-                    42500
-                ]
-            ],
-            "flight": [
-                [
-                    13,
-                    42500
-                ],
-                [
-                    13,
-                    52500
-                ],
-                [
-                    15,
-                    63000
-                ],
-                [
-                    15,
-                    72000
-                ],
-                [
-                    25,
-                    79000
-                ],
-                [
-                    38,
-                    79000
-                ],
-                [
-                    41,
-                    74500
-                ],
-                [
-                    41,
-                    51000
-                ],
-                [
-                    35,
-                    46000
-                ],
-                [
-                    35,
-                    42500
-                ],
-                [
-                    13,
-                    42500
-                ]
-            ]
-        },
-        "chartLimits": {
-            "weight": {
-                "min": 35000,
-                "max": 80000,
-                "lines": 9,
-                "scale": 5000,
-                "values": [
-                    80,
-                    70,
-                    60,
-                    50,
-                    40
-                ]
-            },
-            "cg": {
-                "angleRad": 0.014025,
-                "min": 12,
-                "max": 47,
-                "overlap": 32,
-                "highlight": 5,
-                "lines": 35,
-                "scale": 1,
-                "values": [
-                    15,
-                    20,
-                    25,
-                    30,
-                    35,
-                    40
-                ]
-            },
-            "labels": {
-                "mtow": {
-                    "x1": 0.65,
-                    "x2": 0.22,
-                    "y": 0.02
-                },
-                "mlw": {
-                    "x1": 0.65,
-                    "x2": 0.22,
-                    "y": 0.22
-                },
-                "mzfw": {
-                    "x1": 0.65,
-                    "x2": 0.22,
-                    "y": 0.29
-                }
-            }
-        }
-    }
+    ]
 }

@@ -7,10 +7,10 @@ import '../../../index.scss';
 
 
 export const HydPage = () => {
-    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
-    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'percent', 500);
-    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'percent', 500);
-    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'percent', 500);
+    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'number', 500);
+    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'number', 500);
+    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'number', 500);
+    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'number', 500);
     const anyEngineIsRunning = engine1N3 > 50 || engine2N3 > 50 || engine3N3 > 50 || engine4N3 > 50;
 
     return (
