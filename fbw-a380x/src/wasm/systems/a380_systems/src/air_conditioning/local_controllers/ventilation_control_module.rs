@@ -2,7 +2,7 @@ use super::outflow_valve_control_module::OcsmShared;
 use std::fmt::Display;
 use systems::{
     air_conditioning::{
-        AirConditioningOverheadShared, CabinFansSignal, OperatingChannel,
+        AirConditioningOverheadShared, CabinFansSignal, Channel, OperatingChannel,
         PressurizationOverheadShared, VcmShared,
     },
     shared::{ControllerSignal, ElectricalBusType},
@@ -35,7 +35,8 @@ impl Display for VcmId {
 }
 
 pub struct VentilationControlModule {
-    vcm_channel_failure_id: VariableIdentifier,
+    vcm_channel_1_failure_id: VariableIdentifier,
+    vcm_channel_2_failure_id: VariableIdentifier,
     orvp_open_id: VariableIdentifier,
 
     id: VcmId,
@@ -55,8 +56,10 @@ pub struct VentilationControlModule {
 impl VentilationControlModule {
     pub fn new(context: &mut InitContext, id: VcmId, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
-            vcm_channel_failure_id: context
-                .get_identifier(format!("VENT_{}_VCM_CHANNEL_FAILURE", id)),
+            vcm_channel_1_failure_id: context
+                .get_identifier(format!("VENT_{}_VCM_CHANNEL_1_FAILURE", id)),
+            vcm_channel_2_failure_id: context
+                .get_identifier(format!("VENT_{}_VCM_CHANNEL_2_FAILURE", id)),
             orvp_open_id: context
                 .get_identifier("VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN".to_owned()),
 
@@ -168,12 +171,17 @@ impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
 
 impl SimulationElement for VentilationControlModule {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_id = match self.fault {
-            None => 0,
-            Some(VcmFault::OneChannelFault) => self.stand_by_channel.id().into(),
-            Some(VcmFault::BothChannelsFault) => 3,
+        let (channel_1_failure, channel_2_failure) = match self.fault {
+            None => (false, false),
+            Some(VcmFault::OneChannelFault) => (
+                self.stand_by_channel.id() == Channel::ChannelOne,
+                self.stand_by_channel.id() == Channel::ChannelTwo,
+            ),
+            Some(VcmFault::BothChannelsFault) => (true, true),
         };
-        writer.write(&self.vcm_channel_failure_id, failure_id);
+        writer.write(&self.vcm_channel_1_failure_id, channel_1_failure);
+        writer.write(&self.vcm_channel_2_failure_id, channel_2_failure);
+
         writer.write(
             &self.orvp_open_id,
             self.overpressure_relief_valve_open_amount()

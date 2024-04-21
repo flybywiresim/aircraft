@@ -58,7 +58,7 @@ class CDUAvailableDeparturesPage {
             );
         }
 
-        // NO SID/NO TRANS option is available at the end of the list when non-zero options
+        // NO SID option is available at the end of the list when non-zero options
         if (availableSids.length > 0) {
             availableSids.push(Labels.NO_SID);
         }
@@ -72,8 +72,9 @@ class CDUAvailableDeparturesPage {
 
         const selectedRunwayPage = selectedRunway ? Math.floor((availableRunways.findIndex((runway) => runway.ident === selectedRunway.ident)) / DeparturePagination.DEPT_PAGE) : -1;
 
+        // NO TRANS option is available at the end of the list when non-zero options
         if (availableTransitions.length > 0) {
-            availableTransitions.unshift(Labels.NO_TRANS);
+            availableTransitions.push(Labels.NO_TRANS);
         }
 
         // --- render the top part of the page ---
@@ -86,26 +87,24 @@ class CDUAvailableDeparturesPage {
 
             // TODO check type of ls... but awful from raw JS
             if (selectedRunway.lsIdent) {
-                selectedRunwayCell += '{small}-ILS{end}';
+                selectedRunwayCell = `${selectedRunwayCell.padEnd(3)}{small}-ILS{end}`;
             }
         }
-
-        // TODO This is the same thing 3 times in a row?
 
         if (selectedSid) {
             selectedSidCell = selectedSid.ident;
             selectedSidCellColor = selectedColour;
-
-            if (selectedTransition) {
-                selectedTransCell = selectedTransition.ident;
-                selectedTransCellColor = selectedColour;
-            } else if (availableTransitions.length === 0 || selectedTransition === null) {
-                selectedTransCell = "NONE";
-                selectedTransCellColor = selectedColour;
-            }
         } else if (availableSids.length === 0 || selectedSid === null) {
             selectedSidCell = "NONE";
             selectedSidCellColor = selectedColour;
+        }
+
+        if (selectedTransition) {
+            selectedTransCell = selectedTransition.ident;
+            selectedTransCellColor = selectedColour;
+        } else if (selectedSid !== undefined && availableTransitions.length === 0 || selectedTransition === null) {
+            selectedTransCell = "NONE";
+            selectedTransCellColor = selectedColour;
         }
 
         // --- render the rows ---

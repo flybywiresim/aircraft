@@ -2416,6 +2416,9 @@ class FMCMainDisplay extends BaseAirliners {
             case 4: // ListOf99InUse
                 this.setScratchpadMessage(NXSystemMessages.listOf99InUse);
                 break;
+            case 5: // AwyWptMismatch
+                this.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
+                break;
         }
     }
 
@@ -2542,74 +2545,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return callback(false);
         }
-    }
-
-    /**
-     *
-     * @param {string} lastWaypointIdent The waypoint along the airway to insert up to
-     * @param {number} index the flight plan index of the from waypoint
-     * @param {string} airwayName the name/ident of the airway
-     * @param {boolean} smartAirway true if the intersection is computed by the smart airways function
-     * @returns index of the last waypoint inserted or -1 on error
-     */
-    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, smartAirway = false) {
-        const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
-        const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
-        if (referenceWaypoint) {
-            const infos = referenceWaypoint.infos;
-            if (infos instanceof WayPointInfo) {
-                await referenceWaypoint.infos.UpdateAirway(airwayName).catch(console.error); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
-                const airway = infos.airways.find(a => {
-                    return a.name === airwayName;
-                });
-                if (airway) {
-                    const firstIndex = airway.icaos.indexOf(referenceWaypoint.icao);
-                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdentPadEnd);
-                    const lastIndex = airway.icaos.indexOf(lastWaypointIcao);
-                    if (firstIndex >= 0) {
-                        if (lastIndex >= 0) {
-                            let inc = 1;
-                            if (lastIndex < firstIndex) {
-                                inc = -1;
-                            }
-                            index -= 1;
-                            const count = Math.abs(lastIndex - firstIndex);
-                            for (let i = 1; i < count + 1; i++) { // 9 -> 6
-                                const syncInsertWaypointByIcao = async (icao, idx) => {
-                                    return new Promise(resolve => {
-                                        console.log("add icao:" + icao + " @ " + idx);
-                                        this.flightPlanManager.addWaypoint(icao, idx, () => {
-                                            const waypoint = this.flightPlanManager.getWaypoint(idx);
-                                            waypoint.infos.airwayIn = airwayName;
-                                            if (i < count) {
-                                                waypoint.infos.airwayOut = airwayName;
-                                            }
-                                            waypoint.additionalData.smartAirway = smartAirway;
-                                            waypoint.additionalData.annotation = airwayName;
-                                            console.log("icao:" + icao + " added");
-                                            resolve();
-                                        }).catch(console.error);
-                                    });
-                                };
-
-                                await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i).catch(console.error);
-                            }
-                            return index + count;
-                        }
-                        this.setScratchpadMessage(NXFictionalMessages.secondIndexNotFound);
-                        return -1;
-                    }
-                    this.setScratchpadMessage(NXFictionalMessages.firstIndexNotFound);
-                    return -1;
-                }
-                this.setScratchpadMessage(NXFictionalMessages.noRefWpt);
-                return -1;
-            }
-            this.setScratchpadMessage(NXFictionalMessages.noWptInfos);
-            return -1;
-        }
-        this.setScratchpadMessage(NXFictionalMessages.noRefWpt);
-        return -1;
     }
 
     toggleWaypointOverfly(index, fpIndex, forAlternate, callback = EmptyCallback.Void) {
@@ -4336,10 +4271,8 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
-            // FIXME wp.additionalData.temporary
-            const temporary = false;
-            this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
+        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false, "ENTRY").then((wp) => {
+            this._setProgLocation(wp.ident, wp.location, wp.databaseId);
             return callback(true);
         }).catch((err) => {
             // Rethrow if error is not an FMS message to display

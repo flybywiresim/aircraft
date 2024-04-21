@@ -1267,6 +1267,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.incrementVersion();
     }
 
+    /**
+     * Inserts a discontinuity after a flightplan element
+     * @param index
+     */
+    async insertDiscontinuityAfter(index: number) {
+        const [segment, indexInSegment] = this.segmentPositionForIndex(index);
+
+        if (segment.allLegs[indexInSegment].isDiscontinuity === true) {
+            console.warn('[FMS/FPM] Tried to insert discontinuity after a discontinuity');
+            return;
+        }
+
+        segment.insertAfter(indexInSegment, { isDiscontinuity: true });
+
+        this.incrementVersion();
+    }
+
     editLegDefinition(index: number, changes: Partial<FlightPlanLegDefinition>, notify = true): void {
         const leg = this.legElementAt(index);
 

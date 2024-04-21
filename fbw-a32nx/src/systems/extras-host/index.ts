@@ -9,6 +9,7 @@ import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/Pushbutton
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
+import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -44,6 +45,10 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
 
+    private readonly aircraftSync: AircraftSync;
+
+    public readonly xmlConfig: Document;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -62,9 +67,11 @@ class ExtrasHost extends BaseInstrument {
         this.notificationManager = new NotificationManager();
 
         this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-        this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
         this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
+
+        this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+        this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -88,6 +95,12 @@ class ExtrasHost extends BaseInstrument {
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();
         this.flightPlanAsoboSync.connectedCallback();
+        this.aircraftSync.connectedCallback();
+    }
+
+    public parseXMLConfig(): void {
+        super.parseXMLConfig();
+        this.aircraftSync.parseXMLConfig(this.xmlConfig);
     }
 
     public Update(): void {
@@ -101,6 +114,7 @@ class ExtrasHost extends BaseInstrument {
                 this.keyInterceptor.startPublish();
                 this.simVarPublisher.startPublish();
                 this.flightPlanAsoboSync.init();
+                this.aircraftSync.startPublish();
             }
             this.gameState = gs;
         } else {
@@ -109,6 +123,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck.update();
         this.keyInterceptor.update();
+        this.aircraftSync.update();
     }
 }
 

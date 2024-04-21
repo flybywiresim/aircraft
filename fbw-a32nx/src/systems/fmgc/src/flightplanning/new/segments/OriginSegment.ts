@@ -143,7 +143,9 @@ export class OriginSegment extends FlightPlanSegment {
                 }
             } else {
                 // If not compatible with the new runway, remove the departure procedure
-                this.flightPlan.departureSegment.setProcedure(undefined, true);
+                if (this.flightPlan.originDeparture) {
+                    this.flightPlan.departureSegment.setProcedure(undefined, true);
+                }
 
                 const runwayLeg = this.allLegs[this.allLegs.length - 1];
 

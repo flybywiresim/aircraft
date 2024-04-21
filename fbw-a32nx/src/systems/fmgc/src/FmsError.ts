@@ -12,6 +12,7 @@ export enum FmsErrorType {
     FormatError,
     EntryOutOfRange,
     ListOf99InUse,
+    AwyWptMismatch,
 }
 
 export class FmsError extends Error {

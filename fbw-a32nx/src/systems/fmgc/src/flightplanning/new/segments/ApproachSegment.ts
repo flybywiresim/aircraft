@@ -81,7 +81,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         }
 
         const mappedMissedApproachLegs = matchingProcedure.missedLegs.map(
-            (leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, shortApproachName, WaypointConstraintType.CLB),
+            (leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, shortApproachName, WaypointConstraintType.DES),
         );
         this.flightPlan.missedApproachSegment.setMissedApproachLegs(mappedMissedApproachLegs);
 

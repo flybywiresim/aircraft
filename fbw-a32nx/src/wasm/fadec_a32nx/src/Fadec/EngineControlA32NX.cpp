@@ -646,11 +646,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   const double pumpStateRight         = simData.fuelPumpState[R]->get();
   const bool   xfrCenterLeftManual    = simData.simVarsDataPtr->data().xfrCenterManual[L] > 1.5;                              // junction 4
   const bool   xfrCenterRightManual   = simData.simVarsDataPtr->data().xfrCenterManual[R] > 1.5;                              // junction 5
-  const bool   xfrCenterLeftAuto      = simData.simVarsDataPtr->data().xfrValveCenterAuto[L] > 1.5 && !xfrCenterLeftManual;   // valve 11
-  const bool   xfrCenterRightAuto     = simData.simVarsDataPtr->data().xfrValveCenterAuto[R] > 1.5 && !xfrCenterRightManual;  // valve 12
-  const bool   xfrValveCenterLeftOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[L] > 1.5                            //
+  const bool   xfrCenterLeftAuto      = simData.simVarsDataPtr->data().xfrValveCenterAuto[L] > 0.0 && !xfrCenterLeftManual;   // valve 11
+  const bool   xfrCenterRightAuto     = simData.simVarsDataPtr->data().xfrValveCenterAuto[R] > 0.0 && !xfrCenterRightManual;  // valve 12
+  const bool   xfrValveCenterLeftOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[L] > 0.0                            //
                                       && (xfrCenterLeftAuto || xfrCenterLeftManual);                                          // valve 9
-  const bool xfrValveCenterRightOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[R] > 1.5                             //
+  const bool xfrValveCenterRightOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[R] > 0.0                             //
                                        && (xfrCenterRightAuto || xfrCenterRightManual);                                       // valve 10
   const double xfrValveOuterLeft1    = simData.simVarsDataPtr->data().xfrValveOuter1[L];                                      // valve 6
   const double xfrValveOuterRight1   = simData.simVarsDataPtr->data().xfrValveOuter1[R];                                      // valve 7
@@ -1003,22 +1003,19 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   flex                 = flex_to + (flex_ga - flex_to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
-  bool         isFlexActive    = false;
   const double thrustLimitType = simData.thrustLimitType->get();
   if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
-    isFlexActive = true;
+    wasFlexActive = true;
   } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
-    isFlexActive = false;
+    wasFlexActive = false;
   }
 
-  double transitionStartTime = 0;
-  double transitionFactor    = 0;
-  if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
+  if (wasFlexActive && !isTransitionActive && thrustLimitType == 1) {
     isTransitionActive  = true;
     transitionStartTime = simulationTime;
     transitionFactor    = 0.2;
     // transitionFactor = (clb - flex) / transitionTime;
-  } else if (!isFlexActive) {
+  } else if (!wasFlexActive) {
     isTransitionActive  = false;
     transitionStartTime = 0;
     transitionFactor    = 0;
@@ -1031,12 +1028,12 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
       deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
     }
     if (flex + deltaThrust >= clb) {
-      isFlexActive       = false;
+      wasFlexActive = false;
       isTransitionActive = false;
     }
   }
 
-  if (isFlexActive) {
+  if (wasFlexActive) {
     clb = (std::min)(clb, flex) + deltaThrust;
   }
 

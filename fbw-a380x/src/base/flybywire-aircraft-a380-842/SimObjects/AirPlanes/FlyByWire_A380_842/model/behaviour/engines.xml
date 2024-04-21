@@ -40,7 +40,7 @@
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Anim">
             <!-- 385 is used for best visual appearance of the engine blur -->
-            <ANIM_CODE>0.01 385 (L:A32NX_ENGINE_N1:#ID#, Percent) * *</ANIM_CODE>
+            <ANIM_CODE>0.01 385 (L:A32NX_ENGINE_N1:#ID#, Number) * *</ANIM_CODE>
 			<ANIM_LENGTH>360</ANIM_LENGTH>
 			<ANIM_LAG>0</ANIM_LAG>
             <ANIM_WRAP>True</ANIM_WRAP>
@@ -83,36 +83,36 @@
 
     <Template Name="A380X_ENGINE_Turbine_Still_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
-            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR1# &lt;</VISIBILITY_CODE>
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR1# &lt;</VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A380X_ENGINE_Turbine_Blurred1_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
             <VISIBILITY_CODE>
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR1# &gt;=
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR2# &lt; and
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR1# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR2# &lt; and
             </VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A380X_ENGINE_Turbine_Blurred2_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
             <VISIBILITY_CODE>
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR2# &gt;=
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR3# &lt; and
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR2# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR3# &lt; and
             </VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A380X_ENGINE_Turbine_Blurred3_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
             <VISIBILITY_CODE>
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR3# &gt;=
-                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR4# &lt; and
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR3# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR4# &lt; and
             </VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A380X_ENGINE_Turbine_Blurred4_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
-            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR4# &gt;=</VISIBILITY_CODE>
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR4# &gt;=</VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <!-- Base visibility template for turbines -->

@@ -51,6 +51,11 @@ class EngineControl_A380X {
   double prevFlexTemperature = 0.0;
   double prevThrustLimitType = 0.0;
 
+  // FLX->CLB thrust limit transition
+  bool wasFlexActive;
+  double transitionStartTime;
+  double transitionFactor;
+
   // TODO - might not be required - feeds into stateMachine but really relevant
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
