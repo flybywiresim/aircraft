@@ -35,7 +35,9 @@ export class VnavDriver implements GuidanceComponent {
 
     private currentMcduSpeedProfile: McduSpeedProfile;
 
-    private constraintReader: ConstraintReader;
+    // TODO this is public because it's needed in the StepAhead FMMessage. Make this private and pass it to the message class once we don't instantiate
+    // those from vanilla JS
+    public constraintReader: ConstraintReader;
 
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
 

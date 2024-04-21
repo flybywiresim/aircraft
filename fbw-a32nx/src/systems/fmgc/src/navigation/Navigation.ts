@@ -79,7 +79,7 @@ export class Navigation implements NavigationProvider {
         facility: null,
     }));
 
-    constructor(private flightPlanService: FlightPlanService, private readonly facLoader: FacilityLoader) {
+    constructor(private flightPlanService: FlightPlanService, private readonly facLoader?: FacilityLoader) {
         this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
         this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
         this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);

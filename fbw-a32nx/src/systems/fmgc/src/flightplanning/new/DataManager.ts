@@ -52,7 +52,7 @@ type PbdWaypoint = {
     pbdDistance: NauticalMiles,
 }
 
-export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint;
+export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint | null;
 
 export class DataManager {
     private static readonly STORED_WP_KEY: string = 'A32NX.StoredWaypoints';

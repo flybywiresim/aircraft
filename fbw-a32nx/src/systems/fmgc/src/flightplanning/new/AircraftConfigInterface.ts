@@ -135,11 +135,15 @@ export interface EngineModelParameters {
     /** In pounds of force. Used as a multiplier for results of table 1506 */
     maxThrust: number;
 
+    /** Well... how many engines the plen has */
     numberOfEngines: number;
+
+    /** Fuel burn relative to A320 / base implementation */
+    fuelBurnFactor: number;
 }
 
 export interface FlightModelParameters {
-    Cd0: number;
+    Cd0?: number;
 
     wingSpan: number;
 
@@ -163,4 +167,13 @@ export interface FlightModelParameters {
     machValues: Mach[];
 
     dragCoefficientCorrections: number[];
+
+    /** Drag coefficient increase due to extended speed brake */
+    speedBrakeDrag: number;
+
+    /** Drag coefficient increase due to extended speed brake */
+    gearDrag: number;
+
+    /** Drag coefficient factor for tuning */
+    dragCoeffFactor: number;
 }

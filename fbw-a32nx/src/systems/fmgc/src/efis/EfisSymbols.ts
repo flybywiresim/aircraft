@@ -12,7 +12,7 @@ import {
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { NauticalMiles, bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
