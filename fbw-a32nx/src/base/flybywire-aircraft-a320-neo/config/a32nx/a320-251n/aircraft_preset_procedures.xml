@@ -73,12 +73,12 @@ The StepType also defines if the step is executed in normal mode, expedited mode
 
         <!-- if no Ext Pwr is available we start the APU here with a bat only fire test -->
         <Step Name="APU Fire Test On" Type="PROC" Delay="2000">
-            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) (L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE) ||</Condition>
             <Action>1 (>L:A32NX_FIRE_TEST_APU)</Action>
         </Step>
         <Step Name="APU Fire Test Off" Type="PROC" Delay="2000">
-            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
-            <Action>0 (>L:A32NX_FIRE_TEST_APU)</Action>
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) (L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE) ||</Condition>
+            <Action>0 (>L:A32NX_FIRE_TEST_APU) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)</Action>
         </Step>
         <Step Name="APU Master On" Type="NOEX" Delay="2000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
@@ -204,7 +204,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
 
         <Step Name="APU Bleed On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) !
+            <Condition>
+                (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) !
                 (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||
             </Condition>
             <Action>1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
@@ -288,6 +289,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <Step Name="AC BUS Off Check" Type="COND" Delay="2000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !</Condition>
         </Step>
+        <!-- Resets steps that are only done when cold & dark -->
         <Step Name="CVR Test Reset" Type="STEP" Delay="0">
             <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)</Action>
         </Step>
