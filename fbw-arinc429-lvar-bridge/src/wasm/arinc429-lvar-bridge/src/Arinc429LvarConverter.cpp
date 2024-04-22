@@ -29,11 +29,11 @@ void Arinc429LvarConverter::update() {
   }
   tickCounter++;
 
-  // read vars file if not read yet or re-read if the init flag is set
+  // read all LVars from sim if not done yet or if the init variable is set
   if (!varsRead || get_named_variable_value(doArinc429LvarBridgeInit)) {
     LOG_INFO("FlyByWire Arinc429LVarBridge: Re-reading vars file");
     set_named_variable_value(doArinc429LvarBridgeInit, 0);
-    //    readVarFile();
+    // readVarFile();
     getAllLVarsFromSim();
   }
 
@@ -48,7 +48,7 @@ void Arinc429LvarConverter::update() {
       auto value = get_named_variable_value(ids.first);
 
       Arinc429NumericWord arinc429NumericWord{value};
-      arinc429NumericWord.setSsm(Arinc429SignStatus::FunctionalTest);
+      arinc429NumericWord.setSsm(Arinc429SignStatus::FunctionalTest);  // to get the raw value independent of the actual SSM
       float rawValue = arinc429NumericWord.valueOr(0.0f);
 
       set_named_variable_value(ids.second, rawValue ? rawValue : -1.0f);
@@ -79,6 +79,36 @@ void Arinc429LvarConverter::update() {
 // PRIVATE
 // =================================================================================================
 
+void Arinc429LvarConverter::getAllLVarsFromSim() {
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Getting all LVars with prefix " + LVAR_PREFIX + " and suffix " + ARINC429_LVAR_SUFFIX);
+
+  // find all LVars with the given prefix and suffix and put them in a vector
+  int                      numVars = 0;
+  std::vector<std::string> lvars;
+  for (int i = 0; i < MAX_INDEX_LVAR_SCAN; i++) {
+    PCSTRINGZ name = get_name_of_named_variable(i);
+    if (name != nullptr) {
+      std::string nameStr = name;
+      if (nameStr.rfind(LVAR_PREFIX, 0) == 0 &&
+          nameStr.rfind(ARINC429_LVAR_SUFFIX, nameStr.size() - ARINC429_LVAR_SUFFIX.size()) != std::string::npos) {
+        lvars.push_back(nameStr);
+        numVars++;
+        if (isArinc429LvarBridgeVerbose) {
+          LOG_INFO("FlyByWire Arinc429LVarBridge: Found LVar: " + std::to_string(numVars) + " " + nameStr);
+        }
+      }
+    }
+  }
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Found " + std::to_string(numVars) + " LVars - registering raw value LVars now.");
+
+  // register all LVars
+  arinc429Vars.clear();
+  for (const std::string& nameStr : lvars) {
+    registerConvertedVars(nameStr);
+  }
+  varsRead = true;
+}
+
 void Arinc429LvarConverter::readVarFile() {  // read vars from works file
   LOG_INFO("FlyByWire Arinc429LVarBridge: Reading vars file");
 
@@ -106,36 +136,6 @@ void Arinc429LvarConverter::readVarFile() {  // read vars from works file
     while (std::getline(work_vars, line)) {
       registerConvertedVars(line);
     }
-  }
-  varsRead = true;
-}
-
-void Arinc429LvarConverter::getAllLVarsFromSim() {
-  LOG_INFO("FlyByWire Arinc429LVarBridge: Getting all LVars with prefix " + LVAR_PREFIX + " and suffix " + ARINC429_LVAR_SUFFIX);
-
-  // find all LVars with the given prefix and suffix and put them in a vector
-  int                      numVars = 0;
-  std::vector<std::string> lvars;
-  for (int i = 0; i < MAX_INDEX_LVAR_SCAN; i++) {
-    PCSTRINGZ name = get_name_of_named_variable(i);
-    if (name != nullptr) {
-      std::string nameStr = name;
-      if (nameStr.rfind(LVAR_PREFIX, 0) == 0 &&
-          nameStr.rfind(ARINC429_LVAR_SUFFIX, nameStr.size() - ARINC429_LVAR_SUFFIX.size()) != std::string::npos) {
-        lvars.push_back(nameStr);
-        numVars++;
-        if (isArinc429LvarBridgeVerbose) {
-          LOG_INFO("FlyByWire Arinc429LVarBridge: Found LVar: " + std::to_string(numVars) + " " + nameStr);
-        }
-      }
-    }
-  }
-  LOG_INFO("FlyByWire Arinc429LVarBridge: Found " + std::to_string(numVars) + " LVars - registering raw value LVars now.");
-
-  // register all LVars
-  arinc429Vars.clear();
-  for (const std::string& nameStr : lvars) {
-    registerConvertedVars(nameStr);
   }
   varsRead = true;
 }

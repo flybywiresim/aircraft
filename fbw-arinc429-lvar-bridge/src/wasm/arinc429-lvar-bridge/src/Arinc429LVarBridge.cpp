@@ -1,11 +1,9 @@
-// arinc3.cpp
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 #include <MSFS/Legacy/gauges.h>
-#include <MSFS\MSFS.h>
+#include <MSFS/MSFS.h>
 #include <SimConnect.h>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <vector>
 
 #include "Arinc429LvarConverter.h"
 
@@ -15,9 +13,17 @@ enum eEvents {
   EVENT_FRAME  //
 };
 
-void CALLBACK ProcessDispatchCallbacks(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
-
 Arinc429LvarConverter lvarConverter;
+
+/**
+ * @brief This is called whenever SimConnect receives a message. It has been registered in the module_init function.
+ */
+void CALLBACK ProcessDispatchCallbacks(SIMCONNECT_RECV* pData, DWORD, void*) {
+  switch (pData->dwID) {
+    case SIMCONNECT_RECV_ID_EVENT_FRAME:
+      lvarConverter.update();
+  }
+}
 
 /**
  * @brief Initializes the module.
@@ -39,7 +45,7 @@ extern "C" MSFS_CALLBACK void module_init(void) {
 
   hr = SimConnect_CallDispatch(g_hSimConnect, ProcessDispatchCallbacks, nullptr);
   if (hr != S_OK) {
-    fprintf(stderr, "Arinc429LVarBridge: Could not set dispatch proc.\n");
+    fprintf(stderr, "Arinc429LVarBridge: Could not set dispatch callback.\n");
     return;
   }
 
@@ -50,8 +56,9 @@ extern "C" MSFS_CALLBACK void module_init(void) {
  * @brief De-initializes the module.
  */
 extern "C" MSFS_CALLBACK void module_deinit(void) {
-  if (!g_hSimConnect)
+  if (!g_hSimConnect) {
     return;
+  }
 
   unregister_all_named_vars();
 
@@ -59,15 +66,5 @@ extern "C" MSFS_CALLBACK void module_deinit(void) {
   if (hr != S_OK) {
     fprintf(stderr, "Arinc429LVarBridge: Could not close SimConnect connection.\n");
     return;
-  }
-}
-
-/**
- * @brief Updates the module.
- */
-void CALLBACK ProcessDispatchCallbacks(SIMCONNECT_RECV* pData, DWORD, void*) {
-  switch (pData->dwID) {
-    case SIMCONNECT_RECV_ID_EVENT_FRAME:
-      lvarConverter.update();
   }
 }
