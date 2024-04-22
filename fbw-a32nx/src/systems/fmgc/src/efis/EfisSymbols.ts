@@ -499,8 +499,14 @@ export class EfisSymbols<T extends number> {
                 continue;
             }
 
+            // no symbols for manual legs, except FM leg with no leg before it
+            if (leg.definition.type === LegType.VM || (leg.definition.type === LegType.FM && !flightPlan.maybeElementAt(i - 1)?.isDiscontinuity)) {
+                continue;
+            }
+
             // if range >= 160, don't include terminal waypoints, except at enroute boundary
             if (range >= 160) {
+                // FIXME the enroute boundary condition has been removed in fms-v2...
                 const [segment] = flightPlan.segmentPositionForIndex(i);
                 if (segment.class === SegmentClass.Departure || segment.class === SegmentClass.Arrival) {
                     continue;

@@ -39,6 +39,7 @@ import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { isCourseReversalLeg } from '@fmgc/guidance/lnav/legs';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
@@ -46,7 +47,7 @@ import { RFLeg } from '../legs/RF';
 
 export type PrevLeg = AFLeg | CALeg | CDLeg | CRLeg | /* FALeg | */ FDLeg | HALeg | HFLeg | HMLeg | RFLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
-export type NextLeg = AFLeg | CFLeg | FDLeg | /* FALeg | */ TFLeg;
+export type NextLeg = AFLeg | CFLeg | FDLeg | /* FALeg | */ FMLeg | TFLeg;
 type NextReversionLeg = PILeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));
