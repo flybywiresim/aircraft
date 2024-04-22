@@ -93,7 +93,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;L:A32NX_FIRE_TEST_ENG1) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
         </Step>
 
-        <!-- Start APU after fire tests (APU fire tests are done automatically in the A380 -->
+        <!-- Start APU (APU fire tests are done automatically in the A380 -->
         <Step Name="APU Master On" Type="STEP" Delay="3000">
             <Condition>(L:A32NX_ENGINE_STATE:1) 1 == (L:A32NX_ENGINE_STATE:2) 1 == &amp;&amp; (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||</Condition>
             <Action>1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
