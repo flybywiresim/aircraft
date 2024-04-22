@@ -69,10 +69,21 @@ class Arinc429Word {
   }
 };
 
+/**
+ * @brief Arinc429DiscreteWord uses bit level encoding of the data. These cannot be used a numeric value.
+ */
 class Arinc429DiscreteWord : public Arinc429Word<float> {
  public:
+  /**
+   * @brief Construct a new Arinc429DiscreteWord object
+   */
   Arinc429DiscreteWord() = default;
 
+  /**
+   * @brief Construct a new Arinc429DiscreteWord object
+   *
+   * @param simVar An arinc429 encoded LVar value
+   */
   explicit Arinc429DiscreteWord(double simVar) { setFromSimVar(simVar); }
 
   bool bitFromValue(int bit) const { return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01; }
@@ -90,10 +101,21 @@ class Arinc429DiscreteWord : public Arinc429Word<float> {
   }
 };
 
+/**
+ * @brief Arinc429NumericWord uses numeric encoding of the data
+ */
 class Arinc429NumericWord : public Arinc429Word<float> {
  public:
+  /**
+   * @brief Construct a new Arinc429NumericWord object
+   */
   Arinc429NumericWord() = default;
 
+  /**
+   * @brief Construct a new Arinc429NumericWord object
+   *
+   * @param simVar An arinc429 encoded LVar value
+   */
   explicit Arinc429NumericWord(double simVar) { setFromSimVar(simVar); }
 };
 
@@ -102,34 +124,34 @@ class Arinc429NumericWord : public Arinc429Word<float> {
 // TODO:are these necessary?
 // ============================================================================
 
-template void Arinc429Word<uint32_t>::setFromSimVar(double simVar);
-template void Arinc429Word<float>::setFromSimVar(double simVar);
-
-template void Arinc429Word<uint32_t>::setFromData(uint32_t data, Arinc429SignStatus ssm);
-template void Arinc429Word<float>::setFromData(float data, Arinc429SignStatus ssm);
-
-template double Arinc429Word<uint32_t>::toSimVar();
-template double Arinc429Word<float>::toSimVar();
-
-template Arinc429SignStatus Arinc429Word<uint32_t>::ssm() const;
-template Arinc429SignStatus Arinc429Word<float>::ssm() const;
-
-template void Arinc429Word<uint32_t>::setSsm(Arinc429SignStatus ssm);
-template void Arinc429Word<float>::setSsm(Arinc429SignStatus ssm);
-
-template void Arinc429Word<uint32_t>::setData(uint32_t data);
-template void Arinc429Word<float>::setData(float data);
-
-template bool Arinc429Word<uint32_t>::isFw() const;
-template bool Arinc429Word<float>::isFw() const;
-
-template bool Arinc429Word<uint32_t>::isNo() const;
-template bool Arinc429Word<float>::isNo() const;
-
-template uint32_t Arinc429Word<uint32_t>::value() const;
-template float    Arinc429Word<float>::value() const;
-
-template uint32_t Arinc429Word<uint32_t>::valueOr(uint32_t defaultVal) const;
-template float    Arinc429Word<float>::valueOr(float defaultVal) const;
+// template void Arinc429Word<uint32_t>::setFromSimVar(double simVar);
+// template void Arinc429Word<float>::setFromSimVar(double simVar);
+//
+// template void Arinc429Word<uint32_t>::setFromData(uint32_t data, Arinc429SignStatus ssm);
+// template void Arinc429Word<float>::setFromData(float data, Arinc429SignStatus ssm);
+//
+// template double Arinc429Word<uint32_t>::toSimVar();
+// template double Arinc429Word<float>::toSimVar();
+//
+// template Arinc429SignStatus Arinc429Word<uint32_t>::ssm() const;
+// template Arinc429SignStatus Arinc429Word<float>::ssm() const;
+//
+// template void Arinc429Word<uint32_t>::setSsm(Arinc429SignStatus ssm);
+// template void Arinc429Word<float>::setSsm(Arinc429SignStatus ssm);
+//
+// template void Arinc429Word<uint32_t>::setData(uint32_t data);
+// template void Arinc429Word<float>::setData(float data);
+//
+// template bool Arinc429Word<uint32_t>::isFw() const;
+// template bool Arinc429Word<float>::isFw() const;
+//
+// template bool Arinc429Word<uint32_t>::isNo() const;
+// template bool Arinc429Word<float>::isNo() const;
+//
+// template uint32_t Arinc429Word<uint32_t>::value() const;
+// template float    Arinc429Word<float>::value() const;
+//
+// template uint32_t Arinc429Word<uint32_t>::valueOr(uint32_t defaultVal) const;
+// template float    Arinc429Word<float>::valueOr(float defaultVal) const;
 
 #endif  // FLYBYWIRE_AIRCRAFT_ARINC429_HPP
