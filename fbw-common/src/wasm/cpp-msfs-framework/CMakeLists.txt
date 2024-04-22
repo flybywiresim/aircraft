@@ -42,8 +42,7 @@ set(INCLUDE_FILES
     lib/quantity.hpp)
 
 # create the targets for all packages
-add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES}
-    test/test_lvar_encoder.cpp)
+add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
 target_compile_definitions(cpp-msfs-framework-a32nx PUBLIC A32NX)
 
 add_library(cpp-msfs-framework-a380x OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})

@@ -28,12 +28,12 @@ int main(int argc, char* argv[]) {
   // Run tests
   for (int t = 0; t < tests; ++t) {
     // prepare random data
-    uint8_t original[8];
-    for (unsigned char& i : original) {
-      i = dis(gen);  // Generate random uint8_t
+    int8_t original[8];
+    for (int8_t& i : original) {
+      i = static_cast<int8_t>(dis(gen));  // Generate random int8_t
     }
     while (original[0] > 15) {
-      original[0] = original[0] / 2;  // Make sure the first parameter is within the 4 bits
+      original[0] /= 2;  // Make sure the first parameter is within the 4 bits
     }
 
     // encode
