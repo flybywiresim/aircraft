@@ -27,8 +27,8 @@ class LVarEncoder {
    * @param param8 int8_t value between 0-127
    * @return double encoded value
    *
-   * @note As a double value can only hold 53 bits of precision for the integer part, the first parameter is limited to 4 bits
-   *       and the other 7 parameters are limited to 7 bits.
+   * @note As a double value can only hold 53 bits of precision for the integer part, the first parameter is limited to 4 bits (0-15)
+   *       and the other 7 parameters are limited to 7 bits (0-127).
    */
   static double encode8Int8ToDouble(int8_t param1,
                                     int8_t param2 = 0,
@@ -38,7 +38,6 @@ class LVarEncoder {
                                     int8_t param6 = 0,
                                     int8_t param7 = 0,
                                     int8_t param8 = 0) {
-#undef NDEBUG
     SIMPLE_ASSERT(param1 >= 0 && param1 <= 15, "First parameter must be between 0-15");
     SIMPLE_ASSERT(param2 >= 0, "Second parameter must be between 0-127");
     SIMPLE_ASSERT(param3 >= 0, "Third parameter must be between 0-127");
