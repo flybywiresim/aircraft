@@ -783,8 +783,8 @@ void SecComputer::step()
       SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_y_k, &SecComputer_DWork.sf_MATLABFunction_a);
     rtb_NOT_bl = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const_m);
     rtb_AND1_h = ((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos > SecComputer_P.CompareToConstant15_const) ||
-                    rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
-      SecComputer_P.CompareToConstant1_const_l) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+                    rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
+      SecComputer_P.CompareToConstant1_const_l) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
       SecComputer_P.CompareToConstant2_const))) || (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
       SecComputer_P.CompareToConstant3_const_a) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
       SecComputer_P.CompareToConstant4_const_j)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=

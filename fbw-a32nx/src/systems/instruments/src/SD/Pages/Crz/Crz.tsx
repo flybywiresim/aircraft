@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentProperty, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -119,17 +119,41 @@ export const OilComponent = () => {
 };
 
 export const PressureComponent = () => {
-    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
-    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
-    const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
+    const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+    const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+    const activeCpcNumber = cpc1DiscreteWord.getBitValueOr(11, false) ? 1 : 2;
+    const cpcDiscreteWordToUse = activeCpcNumber === 1 ? cpc1DiscreteWord : cpc2DiscreteWord;
+
+    const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
+    const cpcLandingElevation = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_LANDING_ELEVATION`, 500);
+    const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
+
+    let landingElevation;
+    if (cpcLandingElevation.isNormalOperation()) {
+        landingElevation = cpcLandingElevation.value;
+    } else if (fmLandingElevation.isNormalOperation()) {
+        landingElevation = fmLandingElevation.value;
+    } else {
+        landingElevation = -6000;
+    }
+
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
-    const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
+
+    const arincCabinAlt = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_ALTITUDE`, 500);
+    const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'foot', 500);
+    const cabinAlt = arincCabinAlt.isNormalOperation() ? arincCabinAlt.value : manCabinAlt;
+
+    const arincDeltaPsi = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`, 500);
+    const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'psi', 500);
+    const deltaPsi = arincDeltaPsi.isNormalOperation() ? arincDeltaPsi.value : manDeltaPsi;
+
+    const arincCabinVs = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_VS`, 500);
+    const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
+    const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 
     const vsx = 440;
     const y = 385;
@@ -138,19 +162,12 @@ export const PressureComponent = () => {
     const deltaPress = splitDecimals(deltaPsi);
 
     useEffect(() => {
-        setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
-        if (landingElevDialPosition === 0) {
-            // On Auto
-            const nearestfifty = Math.round(landingRunwayElevation / 50) * 50;
-            setLdgElevValue(landingRunwayElevation > -5000 ? nearestfifty.toString() : 'XX');
-            setCssLdgElevName(landingRunwayElevation > -5000 ? 'Green' : 'Amber');
-        } else {
-            // On manual
-            const nearestfifty = Math.round(landingElev / 50) * 50;
-            setLdgElevValue(nearestfifty.toString());
-            setCssLdgElevName('Green');
-        }
-    }, [landingElevDialPosition, landingRunwayElevation]);
+        setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
+        const nearestfifty = Math.round(landingElevation / 50) * 50;
+
+        setLdgElevValue(landingElevation > -5000 ? nearestfifty.toString() : 'XX');
+        setCssLdgElevName(landingElevation > -5000 ? 'Green' : 'Amber');
+    }, [landingElevationIsMan, landingElevation]);
 
     return (
         <>
@@ -194,7 +211,15 @@ export const PressureComponent = () => {
             <text className="Standard Cyan" x="320" y="370">PSI</text>
 
             <text className="Standard" x="480" y="380">CAB V/S</text>
-            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}</text>
+            <text
+                id="CabinVerticalSpeed"
+                className="Large Green"
+                x="515"
+                y="405"
+                textAnchor="end"
+            >
+                {!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}
+            </text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>

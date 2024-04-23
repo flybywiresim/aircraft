@@ -5,6 +5,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -99,6 +100,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus, failed: Su
                     <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
                     <path class="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
                     <GroundTrackBug bus={this.props.bus} heading={this.heading} />
+                    <TrueFlag bus={this.props.bus} />
                 </g>
             </>
         );
@@ -335,6 +337,47 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
                     <path class="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
                     <text id="ILSCourseTextLeft" class="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">{this.text}</text>
                 </g>
+            </g>
+        );
+    }
+}
+
+interface TrueFlagProps {
+    bus: EventBus;
+}
+
+class TrueFlag extends DisplayComponent<TrueFlagProps> {
+    private readonly trueRefActive = Subject.create(false);
+
+    private readonly slatsExtended = Subject.create(false);
+
+    private readonly slatsExtendedWithTrue = Subject.create(false);
+
+    private readonly trueFlagRef = FSComponent.createRef<SVGGElement>();
+
+    /** @inheritdoc */
+    onAfterRender(node: VNode): void {
+        this.props.bus.getSubscriber<DmcLogicEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        // FIXME this should be 127-11 from FWC
+        this.props.bus.getSubscriber<PFDSimvars>().on('slatPosLeft').withPrecision(0.25).handle((v) => this.slatsExtended.set(v > 0.4));
+
+        this.trueRefActive.sub((trueRef) => this.trueFlagRef.instance.classList.toggle('HiddenElement', !trueRef), true);
+
+        this.trueRefActive.sub(this.handleSlatsTrue.bind(this));
+        this.slatsExtended.sub(this.handleSlatsTrue.bind(this));
+        this.slatsExtendedWithTrue.sub((flash) => this.trueFlagRef.instance.classList.toggle('Blink10Seconds', flash));
+    }
+
+    private handleSlatsTrue(): void {
+        this.slatsExtendedWithTrue.set(this.trueRefActive.get() && this.slatsExtended.get());
+    }
+
+    /** @inheritdoc */
+    render(): VNode {
+        return (
+            <g id="TrueRefFlag" ref={this.trueFlagRef}>
+                <rect x="62.439" y="134.468" width="12.935" height="4.575" class="Cyan NormalStroke" />
+                <text x="68.9065" y="137.008" text-anchor="middle" alignment-baseline="middle" class="FontSmallest Cyan">TRUE</text>
             </g>
         );
     }

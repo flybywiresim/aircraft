@@ -3,14 +3,16 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import { BitFlags } from '@flybywiresim/fbw-sdk';
-import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, SeatType, RowInfo } from './Constants';
+import { BitFlags, PaxStationInfo, PayloadSeatDisplay, RowInfo, SeatInfo, SeatType } from '@flybywiresim/fbw-sdk';
 import { BusinessSeatLeft, BusinessSeatRight, Seat, SuiteLeft, SuiteRight } from '../../../../Assets/Seat';
 
 interface SeatMapProps {
+    payloadSeatDisplay: PayloadSeatDisplay[],
     seatMap: PaxStationInfo[],
     desiredFlags: BitFlags[],
     activeFlags: BitFlags[],
+    width: number,
+    height: number,
     canvasX: number,
     canvasY: number,
     theme: string[],
@@ -28,7 +30,7 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, theme, isMainDeck, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ payloadSeatDisplay, seatMap, desiredFlags, activeFlags, width, height, canvasX, canvasY, theme, isMainDeck, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -77,10 +79,10 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
         }
         if (row !== 0 || station !== 0) {
-            xOff += (SeatConstants[seatType].padX + SeatConstants[seatType].len);
+            xOff += (payloadSeatDisplay[seatType].padX + payloadSeatDisplay[seatType].len);
         }
         return xOff;
-    }, [ctx]);
+    }, [payloadSeatDisplay, ctx]);
 
     const addYOffsetSeat = useMemo(() => (yOff: number, station: number, row: number, seat: number) => {
         if (seatMap[station].rows[row].yOffset !== undefined
@@ -90,10 +92,10 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         }
         const seatType = seatMap[station].rows[row].seats[seat].type;
         if (seat !== 0) {
-            yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
+            yOff += (payloadSeatDisplay[seatType].padY + payloadSeatDisplay[seatType].wid);
         }
         return yOff;
-    }, [ctx]);
+    }, [payloadSeatDisplay, ctx]);
 
     const draw = () => {
         const currDeck = isMainDeck ? 0 : 1;
@@ -126,9 +128,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             if (!xYMap[station]) {
                 xYMap[station] = [];
             }
-            xYMap[station][seatId] = [x + SeatConstants[seatsInfo[seat].type].imageX / 2, yOff + SeatConstants[seatsInfo[seat].type].imageY / 2, deck];
+            xYMap[station][seatId] = [x + payloadSeatDisplay[seatsInfo[seat].type].imageX / 2, yOff + payloadSeatDisplay[seatsInfo[seat].type].imageY / 2, deck];
             setXYMap(xYMap);
-            drawSeat(x, yOff, seatsInfo[seat].type, SeatConstants[seatsInfo[seat].type].imageX, SeatConstants[seatsInfo[seat].type].imageY, station, seatId++);
+            drawSeat(x, yOff, seatsInfo[seat].type, payloadSeatDisplay[seatsInfo[seat].type].imageX, payloadSeatDisplay[seatsInfo[seat].type].imageY, station, seatId++);
         }
     };
 
@@ -226,9 +228,6 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     useEffect(() => {
         const context = canvasRef.current.getContext('2d');
-
-        const width = CanvasConst.width;
-        const height = CanvasConst.height;
         let ratio = 1;
         ratio = window.devicePixelRatio;
         canvasRef.current.width = width * ratio;

@@ -76,7 +76,7 @@ class FlyByWireInterface {
   bool wasPaused = false;
   bool wasInSlew = false;
 
-  double autothrustThrustLimitReverse = -45;
+  double autothrustThrustLimitReversePercentageToga = 0.0;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;

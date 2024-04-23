@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import {
-    AC_TYPE, ScrollableContainer, getAirframeType, t, useAppSelector,
+    ScrollableContainer, t, useAppSelector,
     useAppDispatch, fetchSimbriefDataAction, isSimbriefDataLoaded, setPayloadImported, setFuelImported, setToastPresented, setSimbriefDataPending,
 } from '@flybywiresim/flypad';
 
@@ -28,10 +28,11 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
 export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
     const simbriefDataPending = useAppSelector((state) => state.simbrief.simbriefDataPending);
+    const aircraftIcao = useAppSelector((state) => state.simbrief.data.aircraftIcao);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
-    const [airframe] = useState(getAirframeType());
+    const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 248);
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
@@ -111,7 +112,11 @@ export const FlightWidget = () => {
 
     useEffect(() => {
         if (!simbriefDataPending && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
-            toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            if (aircraftIcao !== airframeInfo.icao) {
+                toast.error(t('Dashboard.YourFlight.ToastWrongAircraftType'));
+            } else {
+                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            }
             dispatch(setToastPresented(true));
         }
     }, [fuelImported, payloadImported, simbriefDataPending]);
@@ -130,7 +135,7 @@ export const FlightWidget = () => {
                 <h1 className="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
                 <h1>
                     {simbriefDataLoaded ? `${(airline.length > 0 ? airline : '') + flightNum} | ` : ''}
-                    {(airframe !== null ? AC_TYPE[airframe] : 'A320-251N')}
+                    {airframeInfo.variant}
                 </h1>
             </div>
             <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">

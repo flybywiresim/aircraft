@@ -43,8 +43,8 @@ const CabinTemperatures = () => {
         "UPPER_DECK_7",
     ];
 
-    let minMainDeckTemp = Infinity;
-    let maxMainDeckTemp = -Infinity;
+    let [minMainDeckTemp] = useSimVar(`L:A32NX_COND_MAIN_DECK_1_TEMP`, 'celsius', 1000);
+    let maxMainDeckTemp = minMainDeckTemp;
 
     for (let zone of mainCabinZones) {
         let [temperature] = useSimVar(`L:A32NX_COND_${zone}_TEMP`, 'celsius', 1000);
@@ -55,8 +55,8 @@ const CabinTemperatures = () => {
         }
     }
 
-    let minUpperDeckTemp = Infinity;
-    let maxUpperDeckTemp = -Infinity;
+    let [minUpperDeckTemp] = useSimVar(`L:A32NX_COND_UPPER_DECK_1_TEMP`, 'celsius', 1000);
+    let maxUpperDeckTemp = minUpperDeckTemp;
 
     for (let zone of upperCabinZones) {
         let [temperature] = useSimVar(`L:A32NX_COND_${zone}_TEMP`, 'celsius', 1000);

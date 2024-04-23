@@ -150,8 +150,8 @@ class ManagedDataObjectBase : public DataObjectBase {
 
   /**
    * Checks if the variable needs to be updated from the sim based on the given time stamp
-   * and tickCounter.<p/>
-   * Returns true if the value is older than the max age for sim time and ticks.<p/>
+   * and/or tickCounter.<p/>
+   * Returns true if the value is either older than the max age for sim time or older than maxTicks.<p/>
    * This includes to make sure is only read from the sim once per tick when max age is 0.
    * @param timeStamp - current sim time
    * @param tickCounter - current tick counter
