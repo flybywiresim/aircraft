@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AircraftVersionChecker, getAircraftType } from '@flybywiresim/fbw-sdk';
+import { AircraftGithubVersionChecker, UniversalConfigProvider } from '@flybywiresim/fbw-sdk';
 import { ISimbriefData } from './simbriefInterface';
 
 const SIMBRIEF_BASE_URL = 'https://www.simbrief.com/api/xml.fetcher.php';
@@ -26,14 +26,13 @@ export const getSimbriefData = async (navigraphUsername: string, overrideSimbrie
     simbriefApiParams.append('json', '1');
 
     // Adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
-    // The try/catch is there as the a380x build info file cannot be loaded with the current package setup/order and
-    // will throw an error - if this is fixed (build_info for a380x is readable from the flyPad for the A380X) then
-    // this try/catch could be removed, but it doesn't hurt to have it here even then as an extra safety measure
+    // try/catch here is an extra safety measure in case the configuration files are not found
     try {
-        const versionInfo = await AircraftVersionChecker.getBuildInfo(getAircraftType());
-        simbriefApiParams.append('client', `fbw-${versionInfo.version}`);
+        const airframeInfo = await UniversalConfigProvider.fetchAirframeInfo(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT);
+        const versionInfo = await AircraftGithubVersionChecker.getBuildInfo(process.env.AIRCRAFT_PROJECT_PREFIX);
+        simbriefApiParams.append('client', `${airframeInfo.developer.toLowerCase()}-${airframeInfo.variant.toLowerCase()}-${versionInfo.version}`);
     } catch (e) {
-        console.error('Error getting build info', e);
+        console.error('Error getting airframe and build info', e);
     }
 
     simbriefApiUrl.search = simbriefApiParams.toString();
@@ -65,6 +64,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
         aircraftReg: aircraft.reg,
+        aircraftIcao: aircraft.icaocode,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,

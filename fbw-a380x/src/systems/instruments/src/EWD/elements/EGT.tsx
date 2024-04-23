@@ -33,7 +33,7 @@ const warningEGTColor = (EGTemperature: number) => {
 };
 
 const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
-    const [EGTemperature] = useSimVar(`L:A32NX_ENGINE_EGT:${engine}`, 'celsius');
+    const [EGTemperature] = useSimVar(`L:A32NX_ENGINE_EGT:${engine}`, 'number');
     const radius = 68;
     const startAngle = 270;
     const endAngle = 90;

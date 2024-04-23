@@ -7,7 +7,7 @@ import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, usePersistentNumberProperty, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { Card, A380FuelOutline, t, TooltipWrapper, SimpleInput, SelectGroup, SelectItem, ProgressBar } from '@flybywiresim/flypad';
+import { Card, A380FuelOutline, t, TooltipWrapper, SimpleInput, SelectGroup, SelectItem, ProgressBar, useAppSelector, setFuelImported, useAppDispatch } from '@flybywiresim/flypad';
 
 // Page is very WIP, needs to be cleaned up and refactored
 
@@ -140,6 +140,16 @@ export const A380Fuel: React.FC<FuelProps> = ({
     // GSX
     const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
+
+    const dispatch = useAppDispatch();
+    const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && fuelImported === false) {
+            handleSimbriefFuelSync();
+            dispatch(setFuelImported(true));
+        }
+    }, []);
 
     useEffect(() => {
         // GSX
@@ -277,25 +287,6 @@ export const A380Fuel: React.FC<FuelProps> = ({
                         <tbody>
                             <tr>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed One
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={feedOneGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
-                                    />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
                                     Feed Two
                                 </td>
                                 <td className="text-md whitespace-nowrap px-2 font-light">
@@ -310,7 +301,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -329,7 +324,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(leftInnerGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(leftInnerGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -348,7 +347,34 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Feed One
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={feedOneGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -367,13 +393,23 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </Card>
-                <Card className="absolute right-0 top-6 flex w-fit" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
+                {' '}
+                {' '}
+                {' '}
+                <Card
+                    className="absolute right-0 top-6 flex w-fit"
+                    childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}
+                >
                     <table className="table-fixed">
                         <tbody>
                             <tr>
@@ -392,26 +428,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    Feed Four
-                                </td>
-                                <td className="text-md whitespace-nowrap px-2 font-light">
-                                    <ProgressBar
-                                        height="10px"
-                                        width="80px"
-                                        displayBar={false}
-                                        completedBarBegin={100}
-                                        isLabelVisible={false}
-                                        bgcolor="var(--color-highlight)"
-                                        completed={feedFourGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
                                     />
-                                </td>
-                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
                                 </td>
                             </tr>
                             <tr>
@@ -430,7 +451,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(rightInnerGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(rightInnerGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -449,7 +474,34 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    Feed Four
+                                </td>
+                                <td className="text-md whitespace-nowrap px-2 font-light">
+                                    <ProgressBar
+                                        height="10px"
+                                        width="80px"
+                                        displayBar={false}
+                                        completedBarBegin={100}
+                                        isLabelVisible={false}
+                                        bgcolor="var(--color-highlight)"
+                                        completed={feedFourGal * FUEL_GALLONS_TO_KG / OUTER_FEED_MAX_KG * 100}
+                                    />
+                                </td>
+                                <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -468,12 +520,23 @@ export const A380Fuel: React.FC<FuelProps> = ({
                                     />
                                 </td>
                                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
-                                    <ValueUnitDisplay value={Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG)} padTo={6} unit={massUnitForDisplay} />
+                                    <ValueUnitDisplay
+                                        value={Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG)}
+                                        padTo={6}
+                                        unit={massUnitForDisplay}
+                                    />
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </Card>
+                {' '}
+                {' '}
+                {' '}
+                {' '}
+                {' '}
+                {' '}
+                {' '}
                 <A380FuelOutline
                     className="text-theme-text absolute inset-x-0 right-4 top-20 mx-auto flex h-full w-full"
                     feed1Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / OUTER_FEED_MAX_KG) * 100}
@@ -487,6 +550,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     rightMidPercent={(Math.max(rightMidGal * FUEL_GALLONS_TO_KG, 0) / MID_TANK_MAX_KG) * 100}
                     rightOuterPercent={(Math.max(rightOuterGal * FUEL_GALLONS_TO_KG, 0) / OUTER_TANK_MAX_KG) * 100}
                     trimPercent={(Math.max(trimGal * FUEL_GALLONS_TO_KG, 0) / TRIM_TANK_MAX_KG) * 100}
+                    enableDynamic={!eng1Running && !eng2Running && !eng3Running && !eng4Running || refuelStartedByUser}
                 />
             </div>
 

@@ -40,7 +40,6 @@
     "build-a32nx:ewd": "cd fbw-a32nx/src/systems/instruments/src/EWD && rollup -c",
 
     "build-a32nx:systems": "cargo build -p a320_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 --signext-lowering --enable-bulk-memory -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm /external/target/wasm32-wasi/release/a320_systems_wasm.wasm",
-    "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh   && wasm-opt -O1 --signext-lowering -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
     "build-a32nx:fbw": "cd fbw-a32nx/src/wasm/fbw_a320 && ./build.sh       && wasm-opt -O1 --signext-lowering -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm",
     "build-a32nx:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh && wasm-opt -O1 --signext-lowering -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd.wasm",
 
@@ -67,7 +66,6 @@
     "build-a380x:systems-host": "node fbw-a380x/src/systems/systems-host/build.js",
 
     "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 --signext-lowering --enable-bulk-memory -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
-    "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh   && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm",
     "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh       && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
     "build-a380x:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd.wasm",
 
@@ -170,6 +168,7 @@
     "esbuild-style-plugin": "^1.6.0",
     "geolib": "^3.3.3",
     "i18next": "^21.6.14",
+    "json5": "^2.2.3",
     "lodash": "^4.17.20",
     "msfs-geo": "^0.1.0-alpha3",
     "msfs-navdata": "^1.1.0",

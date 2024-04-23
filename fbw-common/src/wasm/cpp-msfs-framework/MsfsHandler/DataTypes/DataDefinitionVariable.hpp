@@ -128,11 +128,11 @@ class DataDefinitionVariable : public SimObjectBase {
   }
 
  public:
-  DataDefinitionVariable<T>() = delete;                               // no default constructor
-  DataDefinitionVariable<T>(const DataDefinitionVariable&) = delete;  // no copy constructor
-  DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;   // no copy assignment
-  DataDefinitionVariable<T>(DataDefinitionVariable&&) = delete;                   // no move constructor
-  DataDefinitionVariable<T>& operator=(DataDefinitionVariable&&) = delete;        // no move assignment
+  DataDefinitionVariable<T>() = delete;                                          // no default constructor
+  DataDefinitionVariable<T>(const DataDefinitionVariable&) = delete;             // no copy constructor
+  DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;  // no copy assignment
+  DataDefinitionVariable<T>(DataDefinitionVariable&&) = delete;                  // no move constructor
+  DataDefinitionVariable<T>& operator=(DataDefinitionVariable&&) = delete;       // no move assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
@@ -224,7 +224,8 @@ class DataDefinitionVariable : public SimObjectBase {
   };
 
   bool writeDataToSim() override {
-    if (!SUCCEEDED(SimConnect_SetDataOnSimObject(hSimConnect, dataDefId, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(T), &dataStruct))) {
+    if (!SUCCEEDED(SimConnect_SetDataOnSimObject(hSimConnect, dataDefId, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG_DEFAULT, 0,
+                                                 sizeof(T), &dataStruct))) {
       LOG_ERROR("Setting data to sim for " + name + " with dataDefId=" + std::to_string(dataDefId) + " failed!");
       return false;
     }

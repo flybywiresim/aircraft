@@ -14,6 +14,7 @@
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
+  - [Autobrakes](#autobrakes)
 
 ## Uncategorized
 
@@ -168,11 +169,11 @@
     - Bool
     - True if the hot air valve {1 or 2} is open
 
-- A32NX_COND_TADD_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
+- A32NX_COND_TADD_CHANNEL_{id}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id}
+        - 1 or 2
 
 - A32NX_VENT_PRIMARY_FANS_ENABLED
     - Bool
@@ -192,14 +193,14 @@
         - FWD
         - BULK
 
-- A32NX_VENT_{id}_VCM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id}
+- A32NX_VENT_{id1}_VCM_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id1}
         - FWD
         - AFT
+    - {id2}
+        - 1 or 2
 
 - A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
     - Bool
@@ -696,3 +697,38 @@
 - A380X_SOUND_COCKPIT_WINDOW_RATIO
     - Number
     - Ratio between 0-1 of the cockpit windows being physically open
+
+## Autobrakes
+
+- A32NX_AUTOBRAKES_SELECTED_MODE
+    - Number
+    - Indicates position of the autobrake selection knob
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Indicates actual armed mode of autobrake system
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+        | RTO    | 6      |
+
+- A32NX_AUTOBRAKES_DISARM_KNOB_REQ
+    - Boolean
+    - True when autobrake knob solenoid resets knob position to DISARM
+
+- A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
+    - Boolean
+    - RTO autobrake button is pressed

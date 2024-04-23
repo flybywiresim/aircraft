@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, useSessionStorage, AircraftVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY } from '@flybywiresim/fbw-sdk';
-import { getAirframeType } from '../../Efb';
+import { usePersistentProperty, useSessionStorage, AircraftGithubVersionChecker, BuildInfo, SentryConsentState, SENTRY_CONSENT_KEY, useSimVar } from '@flybywiresim/fbw-sdk';
+import { t } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
-
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
-import { t } from '../../Localization/translation';
+import { useViewListenerEvent } from '../../Utils/listener';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -46,28 +45,25 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
 };
 
 export const AboutPage = () => {
+    const [title] = useSimVar('TITLE', 'string');
     const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-    const [listener] = useState(RegisterViewListener('JS_LISTENER_COMMUNITY', undefined, false));
 
+    // Callback function to set sBuildVersion from the community panel
     const onSetPlayerData = (data: CommunityPanelPlayerData) => {
         setVersion(data.sBuildVersion);
     };
 
-    useEffect(() => {
-        listener.on('SetGamercardInfo', onSetPlayerData, null);
-        AircraftVersionChecker.getBuildInfo(
-            getAirframeType() === 'A320_251N' ? 'a32nx' : 'a380x',
-        ).then((info) => setBuildInfo(info));
-    }, []);
+    // Register the callback function to receive the build version from the community panel
+    useViewListenerEvent('JS_LISTENER_COMMUNITY', 'SetGamercardInfo', onSetPlayerData);
 
     useEffect(() => {
-        if (version) {
-            listener.unregister();
-        }
-    }, [version]);
+        AircraftGithubVersionChecker.getBuildInfo(
+            process.env.AIRCRAFT_PROJECT_PREFIX,
+        ).then((info) => setBuildInfo(info));
+    }, [process.env.AIRCRAFT_PROJECT_PREFIX]);
 
     return (
         <SettingsPage name={t('Settings.About.Title')}>
@@ -88,7 +84,7 @@ export const AboutPage = () => {
                     </div>
                 </div>
                 <div className="mt-8 flex flex-col justify-center">
-                    <p>&copy; 2020-2022 FlyByWire Simulations and its contributors, all rights reserved.</p>
+                    <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
                     <p>Licensed under the GNU General Public License Version 3</p>
                 </div>
 
@@ -97,6 +93,7 @@ export const AboutPage = () => {
                     <div className="mt-4">
                         <BuildInfoEntry title="Sim Version" value={version} />
                         <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
+                        <BuildInfoEntry title="Livery Title" value={title} />
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
                         <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />
