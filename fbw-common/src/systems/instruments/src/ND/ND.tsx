@@ -6,6 +6,7 @@ import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, 
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from 'instruments/src/ND/shared/BtvRunwayInfo';
+import { RwyAheadAdvisory } from 'instruments/src/ND/shared/RwyAheadAdvisory';
 import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { VnavStatus } from './shared/VnavStatus';
 import { LnavStatus } from './shared/LnavStatus';
@@ -284,6 +285,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                     <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                         <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
                         <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+                        <RwyAheadAdvisory bus={this.props.bus} />
                     </svg>
                 </div>
                 <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>

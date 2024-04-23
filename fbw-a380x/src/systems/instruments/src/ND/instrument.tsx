@@ -26,6 +26,7 @@ import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPubli
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { MouseCursor } from './UI/MouseCursor';
 
 import './style.scss';
@@ -54,6 +55,8 @@ class NDInstrument implements FsInstrument {
     private readonly fmsOansSimvarPublisher: FmsOansSimvarPublisher;
 
     private readonly fmsOansArincProvider: FmsOansArincProvider;
+
+    private readonly ropRowOansPublisher: RopRowOansPublisher;
 
     private readonly btvSimvarPublisher: BtvSimvarPublisher;
 
@@ -172,6 +175,7 @@ class NDInstrument implements FsInstrument {
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
         this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
         this.fmsOansArincProvider = new FmsOansArincProvider(this.bus);
+        this.ropRowOansPublisher = new RopRowOansPublisher(this.bus);
         this.btvSimvarPublisher = new BtvSimvarPublisher(this.bus);
         this.btvArincProvider = new BtvArincProvider(this.bus);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
@@ -191,6 +195,7 @@ class NDInstrument implements FsInstrument {
         this.backplane.addPublisher('fcu', this.fcuBusPublisher);
         this.backplane.addPublisher('fms', this.fmsDataPublisher);
         this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
+        this.backplane.addPublisher('rop-row-oans', this.ropRowOansPublisher);
         this.backplane.addPublisher('btv', this.btvSimvarPublisher);
         this.backplane.addPublisher('fg', this.fgDataPublisher);
         this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);

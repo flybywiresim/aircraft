@@ -4,13 +4,14 @@
 
 import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { AmdbProperties } from '@shared/amdb';
-import { Feature, Geometry, Position } from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, Polygon, Position, booleanDisjoint, booleanPointInPolygon, lineOffset, lineString, polygon } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from 'index-no-react';
 import { Label, LabelStyle } from 'instruments/src/OANC';
 import { BtvData } from 'instruments/src/OANC/BtvPublisher';
 import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
 import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
-import { fractionalPointAlongLine, pointAngle, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
+import { fractionalPointAlongLine, globalToAirportCoordinates, pointAngle, pointDistance, pointToLineDistance } from 'instruments/src/OANC/OancMapUtils';
+import { Coordinates, placeBearingDistance } from 'msfs-geo';
 import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
 
 const TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
@@ -105,6 +106,12 @@ export class BrakeToVacateUtils<T extends number> {
 
     /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
     private readonly liveStoppingDistance = ConsumerSubject.create(null, 0);
+
+    /** "runway ahead" advisory was triggered */
+    private rwyAheadTriggered: boolean = false;
+
+    /** Timestamp at which "runway ahead" advisory was triggered */
+    private rwyAheadTriggeredTime: number = 0;
 
     selectRunwayFromOans(runway: string, centerlineFeature: Feature<Geometry, AmdbProperties>, thresholdFeature: Feature<Geometry, AmdbProperties>) {
         this.clearSelection();
@@ -500,5 +507,71 @@ export class BrakeToVacateUtils<T extends number> {
         this.labelManager.labels = this.labelManager.labels.filter((it) => !isStopLineStyle(it.style));
         this.drawBtvPath();
         this.drawStopLines();
+    }
+
+    updateRwyAheadAdvisory(globalPos: Coordinates, airportPos: Coordinates, aircraftBearing: number, runwayFeatures: FeatureCollection<Geometry, AmdbProperties>) {
+        if (this.aircraftOnGround.get() === false || this.groundSpeed.ssm !== Arinc429SignStatusMatrix.NormalOperation || this.groundSpeed.value > 40) {
+            // Transmit no advisory
+            const rwyAheadArinc = Arinc429Word.empty();
+            rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
+            rwyAheadArinc.setBitValue(11, false);
+            Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', rwyAheadArinc.value, rwyAheadArinc.ssm);
+
+            this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '');
+
+            return;
+        }
+
+        // Warn 7s before entering the runway area: Draw line from aircraft nose to 7s in front of aircraft, check if intersects with runway geometry
+        // Only available with AMDB data atm, i.e. Navigraph sub
+        const dist7Sec = this.groundSpeed.value / 60 / 60 * 7 + (73 / 2) / MathUtils.METRES_TO_NAUTICAL_MILES; // Add distance to aircraft front
+        const predictionHorizon = placeBearingDistance(globalPos, aircraftBearing, dist7Sec);
+        const line = lineString([[globalPos.lat, globalPos.long], [predictionHorizon.lat, predictionHorizon.long]]);
+        const leftLine = lineOffset(line, 40, { units: 'meters' });
+        const rightLine = lineOffset(line, -40, { units: 'meters' });
+        const volumeCoords = [
+            globalToAirportCoordinates(airportPos, { lat: leftLine.geometry.coordinates[0][0], long: leftLine.geometry.coordinates[0][1] }) as Position,
+            globalToAirportCoordinates(airportPos, { lat: leftLine.geometry.coordinates[1][0], long: leftLine.geometry.coordinates[1][1] }) as Position,
+            globalToAirportCoordinates(airportPos, { lat: rightLine.geometry.coordinates[1][0], long: rightLine.geometry.coordinates[1][1] }) as Position,
+            globalToAirportCoordinates(airportPos, { lat: rightLine.geometry.coordinates[0][0], long: rightLine.geometry.coordinates[0][1] }) as Position,
+            globalToAirportCoordinates(airportPos, { lat: leftLine.geometry.coordinates[0][0], long: leftLine.geometry.coordinates[0][1] }) as Position,
+        ];
+
+        // From here on comparing local to local coords
+        const predictionVolume = polygon([volumeCoords]);
+
+        let rwyAhead = false;
+        let rwyAheadQfu = '';
+
+        runwayFeatures.features.forEach((feat) => {
+            const intersects = !booleanDisjoint(predictionVolume, feat.geometry as Polygon);
+            const insideRunway = booleanPointInPolygon(globalToAirportCoordinates(airportPos, globalPos), feat.geometry as Polygon);
+            if (intersects && !insideRunway) {
+                rwyAhead = true;
+                rwyAheadQfu = feat.properties?.idrwy.replace('.', ' - ');
+            }
+        });
+
+        if (!this.rwyAheadTriggered && rwyAhead) {
+            this.rwyAheadTriggeredTime = Date.now();
+        }
+        this.rwyAheadTriggered = rwyAhead;
+
+        // Set rwyAhead to false (i.e. suppress), if:
+        // More than 30s since rwyAheadTriggeredTime, or
+        // Aircraft stopped (GS < 2), or
+        // Aircraft inside runway area
+        if (rwyAhead && (Date.now() - this.rwyAheadTriggeredTime > 30_000 || this.groundSpeed.value < 2)) {
+            rwyAhead = false;
+            rwyAheadQfu = '';
+        }
+
+        // Transmit on bus
+        const rwyAheadArinc = Arinc429Word.empty();
+        rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        rwyAheadArinc.setBitValue(11, rwyAhead);
+        Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', rwyAheadArinc.value, rwyAheadArinc.ssm);
+
+        this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', rwyAheadQfu);
     }
 }

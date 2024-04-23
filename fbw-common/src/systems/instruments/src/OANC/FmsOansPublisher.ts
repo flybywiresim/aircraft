@@ -33,7 +33,9 @@ export interface FmsOansData {
     oansRemainingDistToRwyEndRaw: number,
     /** (OANS -> BTV) Distance to requested stopping distance, in meters. */
     oansRemainingDistToExitRaw: number,
-    /** Message displayed at the top of the ND (instead of TRUE REF), e.g. BTV 08R/A13 */
+    /** (OANS -> ND) QFU to be displayed in flashing RWY AHEAD warning in ND */
+    ndRwyAheadQfu: string,
+    /** (OANS -> ND) Message displayed at the top of the ND (instead of TRUE REF), e.g. BTV 08R/A13 */
     ndBtvMessage: string;
 }
 

@@ -843,6 +843,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
         this.btvUtils.updateRemainingDistances(this.projectedPpos);
+        this.btvUtils.updateRwyAheadAdvisory(this.ppos, this.arpCoordinates, this.planeTrueHeading.get(), this.layerFeatures[2]);
 
         // TODO figure out how to not need this
         offsetY *= -1;
