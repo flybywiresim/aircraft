@@ -47,7 +47,7 @@ export class DFLeg extends XFLeg {
             bearing = this.outboundGuidable.inboundCourse + 180;
         }
 
-        bearing = MathUtils.clampAngle(bearing);
+        bearing = MathUtils.normalise360(bearing);
 
         const coordinates = this.fix.location;
 

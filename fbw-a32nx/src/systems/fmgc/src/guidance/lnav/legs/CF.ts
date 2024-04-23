@@ -64,7 +64,7 @@ export class CFLeg extends XFLeg {
                 this.getPathEndPoint(),
                 inverseCourse,
                 prevLegTerm,
-                MathUtils.clampAngle(inverseCourse + 90),
+                MathUtils.normalise360(inverseCourse + 90),
             )[0];
         }
 

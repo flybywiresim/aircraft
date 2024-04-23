@@ -149,13 +149,13 @@ export class DmeArcTransition extends Transition {
 
                     turnCentre = placeBearingDistance(
                         this.ftp,
-                        MathUtils.clampAngle(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
+                        MathUtils.normalise360(this.nextLeg.boundaryRadial + (turnSign > 0 ? 180 : 0)),
                         this.radius,
                     );
 
                     this.itp = placeBearingDistance(
                         turnCentre,
-                        MathUtils.clampAngle(this.previousLeg.outboundCourse - turnSign * 90),
+                        MathUtils.normalise360(this.previousLeg.outboundCourse - turnSign * 90),
                         this.radius,
                     );
                 }

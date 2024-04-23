@@ -185,7 +185,7 @@ export class EfisSymbols<T extends number> {
                 const dist = distanceTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
                 let bearing = bearingTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
                 if (mode !== EfisNdMode.PLAN) {
-                    bearing = MathUtils.clampAngle(bearing - trueHeading);
+                    bearing = MathUtils.normalise360(bearing - trueHeading);
                 }
                 bearing = bearing * Math.PI / 180;
                 const dx = dist * Math.sin(bearing);

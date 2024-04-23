@@ -256,7 +256,7 @@ export class FixedRadiusTransition extends Transition {
 
         this.centre = placeBearingDistance(
             inbound,
-            MathUtils.clampAngle(this.previousLeg.outboundCourse + (this.clockwise ? 90 : -90)),
+            MathUtils.normalise360(this.previousLeg.outboundCourse + (this.clockwise ? 90 : -90)),
             this.radius,
         );
 

@@ -255,7 +255,7 @@ export class PathCaptureTransition extends Transition {
                 const bearingTcFtp = bearingTo(turnCenter, intercept);
 
                 const angleToLeg = MathUtils.diffAngle(
-                    MathUtils.clampAngle(bearingTcFtp - (turnDirection > 0 ? -90 : 90)),
+                    MathUtils.normalise360(bearingTcFtp - (turnDirection > 0 ? -90 : 90)),
                     this.nextLeg.outboundCourse,
                 );
 
@@ -329,7 +329,7 @@ export class PathCaptureTransition extends Transition {
         if ('from' in this.nextLeg) {
             const intersections = placeBearingIntersection(
                 finalTurningPoint,
-                MathUtils.clampAngle(targetTrack + courseChange),
+                MathUtils.normalise360(targetTrack + courseChange),
                 this.nextLeg.from.location,
                 this.nextLeg.outboundCourse,
             );
