@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Arinc429LvarConverter.h"
+#include "ScopedTimer.hpp"
 #include "arinc429/Arinc429.hpp"
 #include "logging.h"
 
@@ -27,23 +28,27 @@ void Arinc429LvarConverter::update() {
   if (!this->initialized || !get_named_variable_value(isReadyID)) {
     return;
   }
-  tickCounter++;
-
-  // read all LVars from sim if not done yet or if the init variable is set
-  if (!varsRead || get_named_variable_value(doArinc429LvarBridgeInit)) {
-    LOG_INFO("FlyByWire Arinc429LVarBridge: Re-reading vars file");
-    set_named_variable_value(doArinc429LvarBridgeInit, 0);
-    // readVarFile();
-    getAllLVarsFromSim();
-  }
 
 #ifdef PROFILING
   profiler.start();
 #endif
 
+  tickCounter++;
+  time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+
+  // Update LVars from sim every LVAR_UPDATE_INTERVAL_SECONDS to get new LVars registered in the sim
+  // or if the init variable is set to 1
+  if (duration_cast<seconds>(now - lastLVarUpdate).count() > LVAR_UPDATE_INTERVAL_SECONDS ||
+      get_named_variable_value(doArinc429LvarBridgeInit)) {
+    LOG_INFO("FlyByWire Arinc429LVarBridge: Discovering LVars from sim");
+    set_named_variable_value(doArinc429LvarBridgeInit, 0);
+    getAllLVarsFromSim();
+    lastLVarUpdate = now;
+  }
+
   // check if the bridge is activated
   if (get_named_variable_value(isArinc429LvarBridgeOnID)) {
-    // process vars
+    // process all known arinc vars
     for (std::pair<int, int>& ids : arinc429Vars) {
       auto value = get_named_variable_value(ids.first);
 
@@ -53,23 +58,18 @@ void Arinc429LvarConverter::update() {
 
       set_named_variable_value(ids.second, rawValue ? rawValue : -1.0f);
 
-      // DEBUG
       if (tickCounter % 100 == 0 && rawValue != 0.0f && get_named_variable_value(isArinc429LvarBridgeVerbose)) {
         PCSTRINGZ firstName  = get_name_of_named_variable(ids.first);
         PCSTRINGZ secondName = get_name_of_named_variable(ids.second);
         std::cout << "LVar: " << firstName << " = " << value << " Raw Value: " << secondName << " = " << rawValue << std::endl;
       }
     }
-
-    // DEBUG
-    if (tickCounter % 100 == 0) {
-      std::cout << "Processed " << arinc429Vars.size() << " vars per tick" << std::endl;
-    }
   }
 
 #ifdef PROFILING
   profiler.stop();
   if (tickCounter % 100 == 0) {
+    std::cout << "Processed " << arinc429Vars.size() << " arinc vars per tick" << std::endl;
     profiler.print();
   }
 #endif
@@ -80,9 +80,12 @@ void Arinc429LvarConverter::update() {
 // =================================================================================================
 
 void Arinc429LvarConverter::getAllLVarsFromSim() {
-  LOG_INFO("FlyByWire Arinc429LVarBridge: Getting all LVars with prefix " + LVAR_PREFIX + " and suffix " + ARINC429_LVAR_SUFFIX);
+  LOG_INFO("FlyByWire Arinc429LVarBridge: Getting all LVars with prefix \'"    //
+           + LVAR_PREFIX + "\' and suffix \'" + ARINC429_LVAR_SUFFIX + "\'");  //
+  ScopedTimer timer{"Arinc429LvarConverter::getAllLVarsFromSim"};
 
   // find all LVars with the given prefix and suffix and put them in a vector
+  // excludes all LVars with the suffix for already converted LVars so that they are not converted again (e.g. _RAW)
   int                      numVars = 0;
   std::vector<std::string> lvars;
   for (int i = 0; i < MAX_INDEX_LVAR_SCAN; i++) {
@@ -90,10 +93,11 @@ void Arinc429LvarConverter::getAllLVarsFromSim() {
     if (name != nullptr) {
       std::string nameStr = name;
       if (nameStr.rfind(LVAR_PREFIX, 0) == 0 &&
-          nameStr.rfind(ARINC429_LVAR_SUFFIX, nameStr.size() - ARINC429_LVAR_SUFFIX.size()) != std::string::npos) {
+          nameStr.rfind(ARINC429_LVAR_SUFFIX, nameStr.size() - ARINC429_LVAR_SUFFIX.size()) != std::string::npos &&
+          nameStr.rfind(ARINC429_LVAR_RAW_SUFFIX, nameStr.size() - ARINC429_LVAR_RAW_SUFFIX.size()) == std::string::npos) {
         lvars.push_back(nameStr);
         numVars++;
-        if (isArinc429LvarBridgeVerbose) {
+        if (get_named_variable_value(isArinc429LvarBridgeVerbose)) {
           LOG_INFO("FlyByWire Arinc429LVarBridge: Found LVar: " + std::to_string(numVars) + " " + nameStr);
         }
       }
@@ -102,14 +106,22 @@ void Arinc429LvarConverter::getAllLVarsFromSim() {
   LOG_INFO("FlyByWire Arinc429LVarBridge: Found " + std::to_string(numVars) + " LVars - registering raw value LVars now.");
 
   // register all LVars
+  // this is done in a separate loop to avoid the newly registered LVars to be found during the scan
   arinc429Vars.clear();
   for (const std::string& nameStr : lvars) {
     registerConvertedVars(nameStr);
   }
-  varsRead = true;
 }
 
-void Arinc429LvarConverter::readVarFile() {  // read vars from works file
+void Arinc429LvarConverter::registerConvertedVars(const std::string& line) {  // register converted vars
+  const std::string convertedVar = line + ARINC429_LVAR_RAW_SUFFIX;
+  auto              id           = register_named_variable(line.c_str());
+  auto              mappedId     = register_named_variable(convertedVar.c_str());
+  arinc429Vars.push_back(std::pair<int, int>(id, mappedId));
+}
+
+// deprecated - currently not used
+void Arinc429LvarConverter::readVarFile() {
   LOG_INFO("FlyByWire Arinc429LVarBridge: Reading vars file");
 
   arinc429Vars.clear();
@@ -137,12 +149,4 @@ void Arinc429LvarConverter::readVarFile() {  // read vars from works file
       registerConvertedVars(line);
     }
   }
-  varsRead = true;
-}
-
-void Arinc429LvarConverter::registerConvertedVars(const std::string& line) {  // register converted vars
-  const std::string convertedVar = line + "_RAW";
-  auto              id           = register_named_variable(line.c_str());
-  auto              mappedId     = register_named_variable(convertedVar.c_str());
-  arinc429Vars.push_back(std::pair<int, int>(id, mappedId));
 }
