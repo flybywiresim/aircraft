@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
-import { DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 export interface ArcModeOverlayProps {
@@ -13,10 +13,15 @@ export interface ArcModeOverlayProps {
     oansRange: Subscribable<number>,
     doClip: boolean,
     yOffset: number,
+    airportWithinRange: Subscribable<boolean>,
+    airportBearing: Subscribable<number>,
+    airportIcao: Subscribable<string>,
 }
 
 export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
     private readonly rotationValid = this.props.rotation.map((it) => it.isNormalOperation());
+
+    private readonly rotationToAirport = MappedSubject.create(([bearing, rot]) => MathUtils.diffAngle(rot.value, bearing).toFixed(2), this.props.airportBearing, this.props.rotation)
 
     render(): VNode | null {
         return (
@@ -52,6 +57,20 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
                         stroke-dasharray="10 6"
                         clip-path="url(#arc-mode-overlay-clip-2)"
                     />
+                </g>
+
+                <g
+                    transform={this.rotationToAirport.map((it) => `translate(369 250) rotate(-90) rotate(${it} -370 0)`)}
+                    class="White"
+                    fill="none"
+                    stroke-width={3}
+                    stroke-linecap="round"
+                    visibility={this.props.airportWithinRange.map((it) => (it ? 'hidden' : 'inherit'))}
+                >
+                    <path id="svg_5" d="m21,15l-17.33333,-13l60,0l31.66667,12l-31.66667,13l-60.33333,0l17.66667,-12z" />
+                    <g transform={this.rotationToAirport.map((it) => `translate(60 60) rotate(${-it + 90})`)}>
+                        <text text-anchor="middle" font-size={20}>{this.props.airportIcao}</text>
+                    </g>
                 </g>
             </Layer>
         );

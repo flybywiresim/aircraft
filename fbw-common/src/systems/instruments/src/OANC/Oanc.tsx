@@ -15,7 +15,7 @@ import {
     BBox, bbox, bboxPolygon, booleanPointInPolygon, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon,
     Position,
 } from '@turf/turf';
-import { clampAngle, Coordinates, placeBearingDistance } from 'msfs-geo';
+import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -244,6 +244,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     public readonly referencePos: Coordinates = { lat: 0, long: 0 };
 
     public readonly aircraftWithinAirport = Subject.create(false);
+
+    private readonly airportWithinRange = Subject.create(false);
+
+    private readonly airportBearing = Subject.create(0);
 
     public readonly projectedPpos: Position = [0, 0];
 
@@ -478,7 +482,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.dataAirportIata.set(wgs84ReferencePoint.properties.iata);
 
         // Figure out the boundaries of the map data
-
         const dataBbox = bbox(airportMap);
 
         this.updatePosition();
@@ -787,6 +790,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.updatePosition();
 
         this.aircraftOnGround.set(![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)));
+
+        if (this.arpCoordinates) {
+            this.airportWithinRange.set(distanceTo(this.ppos, this.arpCoordinates) < (this.props.zoomValues[this.zoomLevelIndex.get()] + 1)); // Add 1nm for airport dimension
+            this.airportBearing.set(bearingTo(this.ppos, this.arpCoordinates));
+        }
 
         if (this.usingPposAsReference.get() || !this.arpCoordinates) {
             this.referencePos.lat = this.ppos.lat;
@@ -1207,6 +1215,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                             ndMode={this.overlayNDModeSub}
                             rotation={this.interpolatedMapHeading}
                             isMapPanned={this.isMapPanned}
+                            airportWithinRange={this.airportWithinRange}
+                            airportBearing={this.airportBearing}
+                            airportIcao={this.dataAirportIcao}
                         />
                     </div>
                 </div>
@@ -1229,6 +1240,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                     ndMode={this.overlayNDModeSub}
                     rotation={this.interpolatedMapHeading}
                     isMapPanned={this.isMapPanned}
+                    airportWithinRange={this.airportWithinRange}
+                    airportBearing={this.airportBearing}
+                    airportIcao={this.dataAirportIcao}
                 />
             </>
         );

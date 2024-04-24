@@ -20,6 +20,12 @@ export interface OancMapOverlayProps {
     ndMode: Subscribable<EfisNdMode>,
 
     isMapPanned: Subscribable<boolean>,
+
+    airportWithinRange: Subscribable<boolean>,
+
+    airportBearing: Subscribable<number>,
+
+    airportIcao: Subscribable<string>,
 }
 
 export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps> {
@@ -63,6 +69,9 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
                     oansRange={this.props.oansRange}
                     doClip={false}
                     yOffset={620 - 384}
+                    airportWithinRange={this.props.airportWithinRange}
+                    airportBearing={this.props.airportBearing}
+                    airportIcao={this.props.airportIcao}
                 />
             </svg>
         );
@@ -110,6 +119,9 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
                     oansRange={this.props.oansRange}
                     doClip
                     yOffset={0}
+                    airportWithinRange={this.props.airportWithinRange}
+                    airportBearing={this.props.airportBearing}
+                    airportIcao={this.props.airportIcao}
                 />
 
                 <OancPlanModeCompass
