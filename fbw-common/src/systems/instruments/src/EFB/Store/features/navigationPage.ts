@@ -201,7 +201,9 @@ export const navigationTabSlice = createSlice({
  * @returns Whether or not associated chart with the passed chartId is pinned
  */
 export const isChartPinned = (chartId: string): boolean => {
-  return store.getState().navigationTab.pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chartId);
+  return (store.getState() as RootState).navigationTab.pinnedCharts.some(
+    (pinnedChart) => pinnedChart.chartId === chartId,
+  );
 };
 
 export const {
