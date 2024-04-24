@@ -108,9 +108,8 @@ class EngineControl_A380X {
 
   /**
    * @brief Updates the EngineControl_A32NX class once per frame.
-   * @param pData
    */
-  void update(sGaugeDrawData* pData);
+  void update();
 
   /**
    * @brief Shuts down the EngineControl_A32NX class once during the gauge shutdown.
