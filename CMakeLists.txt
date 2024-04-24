@@ -47,6 +47,8 @@ add_definitions(
     -DNO_EXAMPLES
     #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
     -DNO_PROFILING
+    # disable MSFS header min/max macros which clobber std::min/max
+    -DNOMINMAX
 )
 
 # add the common components
