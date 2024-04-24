@@ -11,10 +11,6 @@
 #include <SimConnect.h>
 #include "SimpleProfiler.hpp"
 
-static constexpr int     LVAR_UPDATE_INTERVAL_SECONDS = 60;        // in what interval shall all available LVars be discovered  from the sim
-static constexpr int     MAX_INDEX_LVAR_SCAN          = 99999;     // the max index we probe for LVars in the sim
-static const std::string LVAR_PREFIX                  = "A32NX_";  // the prefix of the LVars we are interested in
-static const std::string ARINC429_LVAR_SUFFIX         = "";        // the suffix of the LVars we are interested in
 static const std::string ARINC429_LVAR_RAW_SUFFIX     = "_RAW";    // the suffix we add to the raw LVars
 static const std::string DEFAULT_VARS_FILE            = "\\modules\\arinc429_vars.txt";
 static const std::string WORK_VARS_FILE               = "\\work\\aring429_vars.txt";
@@ -32,9 +28,12 @@ using namespace std::chrono;
  * - FBW_ARINC429_LVAR_BRIDGE_INIT: to trigger the discovery of all LVars from the sim
  * - FBW_ARINC429_LVAR_BRIDGE_VERBOSE: to enable verbose output
  *
- * During initialization, the converter reads all LVars from the sim, checks for specific prefixes and suffixes and
- * registers corresponding raw value LVars for the ARINC429 LVars. The converter is then updated every frame and
- * converts the ARINC429 LVars to raw values if the bridge is activated.
+ * The converter reads the ARINC429 LVars from a var file that is located in the package's module folder. The file
+ * should contain the Arinc 429 LVars (one each line) which are to be converted to raw values.
+ * These LVars are then copied to the work file in the "work" folder. This file can be edited by the user to add or
+ * mark LVars as "not to be converted". The converter will then use all LVars from the work file and create corresponding
+ * raw value LVars in the sim. If the FBW_ARINC429_LVAR_BRIDGE_ON control variable is set, the converter will convert the ARINC429 LVars to
+ * raw values at every frame and update the raw value LVars in the sim.
  */
 class Arinc429LvarConverter {
  private:
