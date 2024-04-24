@@ -49,6 +49,8 @@ add_definitions(
     -DNO_PROFILING
     # disable MSFS header min/max macros which clobber std::min/max
     -DNOMINMAX
+    # MSFS stdlib uses 64-bit off_t for lseek etc.
+    -D_FILE_OFFSET_BITS=64
 )
 
 # add the common components
