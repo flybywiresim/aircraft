@@ -16,6 +16,8 @@ static constexpr int     MAX_INDEX_LVAR_SCAN          = 99999;     // the max in
 static const std::string LVAR_PREFIX                  = "A32NX_";  // the prefix of the LVars we are interested in
 static const std::string ARINC429_LVAR_SUFFIX         = "";        // the suffix of the LVars we are interested in
 static const std::string ARINC429_LVAR_RAW_SUFFIX     = "_RAW";    // the suffix we add to the raw LVars
+static const std::string DEFAULT_VARS_FILE            = "\\modules\\arinc429_vars.txt";
+static const std::string WORK_VARS_FILE               = "\\work\\aring429_vars.txt";
 
 using namespace std::chrono;
 
@@ -35,15 +37,12 @@ using namespace std::chrono;
  * converts the ARINC429 LVars to raw values if the bridge is activated.
  */
 class Arinc429LvarConverter {
-  const std::string DEFAULT_VARS_FILE = "\\modules\\arinc429_vars.txt";
-  const std::string WORK_VARS_FILE    = "\\work\\aring429_vars.txt";
-
  private:
   // prevents running update before init
   bool initialized = false;
 
-  // last time the LVars were updated - initial value is in the past to trigger the first update
-  time_point<std::chrono::system_clock> lastLVarUpdate = std::chrono::system_clock::now() - seconds(LVAR_UPDATE_INTERVAL_SECONDS);
+  // flag to signal that the var file has been read
+  bool varFileRead = false;
 
   // counter for the ticks (calls to update)
   int64_t tickCounter = 0;
@@ -72,10 +71,6 @@ class Arinc429LvarConverter {
   void update();
 
  private:
-  /**
-   * @brief Get all LVars from the sim and register raw value LVars for the relevant ARINC429 LVars.
-   */
-  void getAllLVarsFromSim();
 
   /**
    * @brief Register the raw value variable names in the sim.
@@ -85,7 +80,6 @@ class Arinc429LvarConverter {
 
   /**
    * @brief Read the var file and register the raw value variable names in the sim.
-   * @deprecated
    */
   void readVarFile();
 };
