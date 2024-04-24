@@ -1,0 +1,10 @@
+{
+  "index": "./instrument.tsx",
+  "isInteractive": false,
+  "dimensions": {
+    "px": {
+      "width": 256,
+      "height": 128
+    }
+  }
+}
