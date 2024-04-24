@@ -74,6 +74,7 @@ void Arinc429LvarConverter::update() {
 
 void Arinc429LvarConverter::readVarFile() {
   LOG_INFO("FlyByWire Arinc429LVarBridge: Reading vars file");
+  ScopedTimer timer("Reading vars files");
 
   arinc429Vars.clear();
 
