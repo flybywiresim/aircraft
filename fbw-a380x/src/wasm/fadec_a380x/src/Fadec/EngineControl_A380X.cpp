@@ -921,6 +921,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
     double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
     if (timeDifference > 0 && clb > flex) {
       wasFlexActive = false;
+    }
   }
   if (wasFlexActive) {
     clb = (std::min)(clb, flex) + deltaThrust;
@@ -956,10 +957,10 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   simData.thrustLimitClimb->set(clb);
   simData.thrustLimitMct->set(mct);
 
-#ifdef PROFILING
-  profilerUpdateThrustLimits.stop();
-#endif
-}
+  #ifdef PROFILING
+    profilerUpdateThrustLimits.stop();
+  #endif
+  }
 
 /*
  * Previous code - call to it was already commented out and this function was not in use.
