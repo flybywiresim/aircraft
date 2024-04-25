@@ -17,7 +17,7 @@ bool Fadec_A380X::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
 
-  engineControl.update(pData);
+  engineControl.update();
 
   return true;
 }
