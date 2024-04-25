@@ -7,7 +7,7 @@
 
 #include "Arinc429LvarConverter.h"
 #include "ScopedTimer.hpp"
-#include "arinc429/Arinc429.hpp"
+#include "arinc429/arinc429.hpp"
 #include "logging.h"
 
 void Arinc429LvarConverter::init() {

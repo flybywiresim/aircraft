@@ -25,7 +25,7 @@ using namespace std::chrono;
  *
  * This class uses a set of control variables to control the behavior of the converter:
  * - FBW_ARINC429_LVAR_BRIDGE_ON: to activate the converter
- * - FBW_ARINC429_LVAR_BRIDGE_INIT: to trigger the discovery of all LVars from the sim
+ * - FBW_ARINC429_LVAR_BRIDGE_INIT: to trigger the re-reading of the config files containing the ARINC429 LVars
  * - FBW_ARINC429_LVAR_BRIDGE_VERBOSE: to enable verbose output
  *
  * The converter reads the ARINC429 LVars from a var file that is located in the package's module folder. The file
