@@ -28,6 +28,7 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
 export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
     const simbriefDataPending = useAppSelector((state) => state.simbrief.simbriefDataPending);
+    const aircraftIcao = useAppSelector((state) => state.simbrief.data.aircraftIcao);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
@@ -111,7 +112,11 @@ export const FlightWidget = () => {
 
     useEffect(() => {
         if (!simbriefDataPending && (navigraphUsername || overrideSimBriefUserID) && !toastPresented && fuelImported && payloadImported) {
-            toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            if (aircraftIcao !== airframeInfo.icao) {
+                toast.error(t('Dashboard.YourFlight.ToastWrongAircraftType'));
+            } else {
+                toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
+            }
             dispatch(setToastPresented(true));
         }
     }, [fuelImported, payloadImported, simbriefDataPending]);

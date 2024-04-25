@@ -55,6 +55,7 @@ export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         flightNumber: general.flight_number,
         callsign: atc.callsign,
         aircraftReg: aircraft.reg,
+        aircraftIcao: aircraft.icaocode,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,
