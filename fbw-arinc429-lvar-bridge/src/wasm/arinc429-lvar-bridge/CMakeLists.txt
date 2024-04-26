@@ -13,12 +13,10 @@ include_directories(
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Arinc429LVarBridge.cpp
     src/Arinc429LvarConverter.cpp
-    src/Arinc429LvarConverter.h
 )
 
 set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Arinc429LVarBridge.h
-    src/Arinc429LvarConverter.cpp
     src/Arinc429LvarConverter.h
 )
 
