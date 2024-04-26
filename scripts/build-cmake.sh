@@ -48,6 +48,12 @@ if [ ! -d "$A380X_WASM_OUT_DIR" ]; then
   mkdir -p $A380X_WASM_OUT_DIR
   echo "$A380X_WASM_OUT_DIR directory created."
 fi
+FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR="../fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge/modules"
+if [ ! -d "$FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR" ]; then
+  echo "$FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR directory does not exist."
+  mkdir -p $FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR
+  echo "$FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR directory created."
+fi
 
 echo "Toolchain versions:"
 cmake --version
