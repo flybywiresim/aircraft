@@ -162,3 +162,15 @@ export interface TcasWxrMessage {
     text: string;
     color: 'White' | 'Amber';
 }
+
+export interface HUDSyntheticRunway {
+    // degrees
+    direction: number;
+    latitude: number;
+    longitude: number;
+    // metres
+    elevation: number;
+    length: number;
+    width: number;
+    cornerCoordinates: LatLongAlt[];
+}

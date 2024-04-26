@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
+import { GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -116,6 +116,41 @@ export class EfisSymbols<T extends number> {
             }
             return false;
         };
+
+        // FIXME dirty hack on type check
+        if (activeFp.destinationAirfield) {
+            const runway = activeFp.getDestinationRunway();
+            if (runway) {
+                const cornerCoor: LatLongAlt[] = [];
+                const p1 = Avionics.Utils.bearingDistanceToCoordinates(runway.direction - 90, (runway as any).width / 2 / 1852,
+                    runway.endCoordinates.lat, runway.endCoordinates.long);
+                p1.alt = (runway.elevation + runway.slope * runway.length / 100) * 3.28084;
+                cornerCoor.push(p1);
+                const p2 = Avionics.Utils.bearingDistanceToCoordinates(runway.direction + 90, (runway as any).width / 2 / 1852,
+                    runway.endCoordinates.lat, runway.endCoordinates.long);
+                p2.alt = p1.alt;
+                cornerCoor.push(p2);
+                const p3 = Avionics.Utils.bearingDistanceToCoordinates(runway.direction + 90, (runway as any).width / 2 / 1852,
+                    runway.beginningCoordinates.lat, runway.beginningCoordinates.long);
+                p3.alt = (runway.elevation - runway.slope * runway.length / 100) * 3.28084;
+                cornerCoor.push(p3);
+                const p4 = Avionics.Utils.bearingDistanceToCoordinates(runway.direction - 90, (runway as any).width / 2 / 1852,
+                    runway.beginningCoordinates.lat, runway.beginningCoordinates.long);
+                p4.alt = p3.alt;
+                cornerCoor.push(p4);
+
+                const HUDSymbol:HUDSyntheticRunway = {
+                    direction: runway.direction,
+                    latitude: (runway as any).latitude,
+                    longitude: (runway as any).longitude,
+                    elevation: runway.elevation, // in meters
+                    length: runway.length,
+                    width: (runway as any).width,
+                    cornerCoordinates: cornerCoor,
+                };
+                this.syncer.sendEvent('A32NX_EFIS_HUD_SYMBOLS', HUDSymbol);
+            }
+        }
 
         for (const side of EfisSymbols.sides) {
             const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
