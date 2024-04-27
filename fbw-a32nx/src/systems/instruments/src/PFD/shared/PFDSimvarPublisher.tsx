@@ -6,13 +6,15 @@ import { SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import {
-    AdirsSimVarDefinitions,
-    AdirsSimVars,
-    SwitchingPanelSimVarsDefinitions, SwitchingPanelVSimVars,
+  AdirsSimVarDefinitions,
+  AdirsSimVars,
+  SwitchingPanelSimVarsDefinitions,
+  SwitchingPanelVSimVars,
 } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
-export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
+export type PFDSimvars = AdirsSimVars &
+  SwitchingPanelVSimVars & {
     coldDark: number;
     elec: boolean;
     elecFo: boolean;
@@ -484,7 +486,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
   ]);
 
-    public constructor(bus: ArincEventBus) {
-        super(PFDSimvarPublisher.simvars, bus);
-    }
+  public constructor(bus: ArincEventBus) {
+    super(PFDSimvarPublisher.simvars, bus);
+  }
 }
