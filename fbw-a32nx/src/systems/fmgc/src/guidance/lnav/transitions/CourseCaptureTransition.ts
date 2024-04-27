@@ -20,13 +20,14 @@ import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { ControlLaw } from '@shared/autopilot';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { arcDistanceToGo, arcLength, maxBank } from '../CommonGeometry';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 import { CILeg } from '../legs/CI';
 import { CDLeg } from '../legs/CD';
 
-type PrevLeg = AFLeg | CALeg | CDLeg | CFLeg | CRLeg | DFLeg | FDLeg | /* FALeg | */ FMLeg | HALeg | HFLeg | HMLeg | RFLeg | TFLeg | /* VALeg | VDLeg | */ VMLeg;
+type PrevLeg = AFLeg | CALeg | CDLeg | CFLeg | CRLeg | DFLeg | FDLeg | FALeg | FMLeg | HALeg | HFLeg | HMLeg | RFLeg | TFLeg | /* VALeg | VDLeg | */ VMLeg;
 type NextLeg = CALeg | CDLeg | CILeg | CRLeg | /* VALeg | VDLeg | VILeg | */ VMLeg;
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));

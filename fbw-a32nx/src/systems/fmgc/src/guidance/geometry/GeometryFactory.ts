@@ -28,6 +28,7 @@ import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { HALeg, HFLeg, HMLeg } from '../lnav/legs/HX';
 
 function getFacilities(): typeof Facilities {
@@ -239,7 +240,6 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
         return new AFLeg(waypoint, navaid, rho, trueTheta, trueCourse, metadata, SegmentType.Departure);
     }
     case LegType.CA:
-    case LegType.FA:
     case LegType.VA: { // TODO FA, VA legs in geometry
         const altitude = flightPlanLeg.definition.altitude1;
 
@@ -269,6 +269,8 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
         return new HMLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.DF:
         return new DFLeg(waypoint, metadata, SegmentType.Departure);
+    case LegType.FA:
+        return new FALeg(waypoint, trueCourse, flightPlanLeg.definition.altitude1, metadata, SegmentType.Departure);
     case LegType.FC:
     case LegType.FD:
         return new FDLeg(trueCourse, length, waypoint, legType === LegType.FC ? waypoint : recommendedNavaid, metadata, SegmentType.Departure);

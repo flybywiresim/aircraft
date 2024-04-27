@@ -25,6 +25,7 @@ import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 
 export class TransitionPicker {
     static forLegs(from: Leg, to: Leg): Transition | null {
@@ -48,6 +49,9 @@ export class TransitionPicker {
         }
         if (from instanceof DFLeg) {
             return TransitionPicker.fromDF(from, to);
+        }
+        if (from instanceof FALeg) {
+            return TransitionPicker.fromFA(from, to);
         }
         if (from instanceof FDLeg) {
             return TransitionPicker.fromFD(from, to);
@@ -87,10 +91,7 @@ export class TransitionPicker {
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
         }
-        if (to instanceof FDLeg) {
-            return new PathCaptureTransition(from, to);
-        }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
             return new PathCaptureTransition(from, to);
         }
         if (to instanceof CILeg) {
@@ -135,10 +136,7 @@ export class TransitionPicker {
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
         }
-        if (to instanceof FDLeg) {
-            return new PathCaptureTransition(from, to);
-        }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
             return new PathCaptureTransition(from, to);
         }
         if (to instanceof VMLeg) {
@@ -170,7 +168,7 @@ export class TransitionPicker {
             // (waypoint would need to lie on DME arc)
             return new PathCaptureTransition(from, to);
         }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FMLeg) {
             // FIXME proper DME arc transition
             return new PathCaptureTransition(from, to);
         }
@@ -207,6 +205,9 @@ export class TransitionPicker {
         }
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
+        }
+        if (to instanceof FALeg) {
+            return new FixedRadiusTransition(from, to);
         }
         if (to instanceof FDLeg) {
             return new PathCaptureTransition(from, to);
@@ -250,7 +251,7 @@ export class TransitionPicker {
         if (to instanceof FDLeg) {
             return new PathCaptureTransition(from, to);
         }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FMLeg) {
             return new FixedRadiusTransition(from, to);
         }
 
@@ -276,6 +277,9 @@ export class TransitionPicker {
         }
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
+        }
+        if (to instanceof FALeg) {
+            return new FixedRadiusTransition(from, to);
         }
         if (to instanceof FDLeg) {
             return new PathCaptureTransition(from, to);
@@ -325,10 +329,7 @@ export class TransitionPicker {
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
         }
-        if (to instanceof FDLeg) {
-            return new PathCaptureTransition(from, to);
-        }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
             return new PathCaptureTransition(from, to);
         }
         if (to instanceof TFLeg) {
@@ -369,10 +370,7 @@ export class TransitionPicker {
         if (to instanceof CILeg) {
             return new CourseCaptureTransition(from, to);
         }
-        if (to instanceof FDLeg) {
-            return new PathCaptureTransition(from, to);
-        }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
             return new PathCaptureTransition(from, to);
         }
         if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
@@ -415,7 +413,7 @@ export class TransitionPicker {
 
             return new PathCaptureTransition(from, to);
         }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FMLeg) {
             return new FixedRadiusTransition(from, to);
         }
         if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
@@ -458,7 +456,7 @@ export class TransitionPicker {
         if (to instanceof DFLeg) {
             return new DirectToFixTransition(from, to);
         }
-        if (to instanceof FDLeg) {
+        if (to instanceof FALeg || to instanceof FDLeg) {
             return new PathCaptureTransition(from, to);
         }
         if (to instanceof FMLeg) {
@@ -479,6 +477,32 @@ export class TransitionPicker {
         }
 
         return null;
+    }
+
+    private static fromFA(from: FALeg, to: Leg): Transition | null {
+        switch (true) {
+        case to instanceof CALeg:
+        case to instanceof CDLeg:
+        case to instanceof CILeg:
+        case to instanceof CRLeg:
+        case to instanceof VMLeg:
+        // case to instanceof VALeg:
+        // case to instanceof VDLeg:
+        // case to instanceof VILeg:
+        // case to instanceof VRLeg:
+            return new CourseCaptureTransition(from, to);
+        case to instanceof CFLeg:
+        case to instanceof FALeg:
+        case to instanceof FMLeg:
+            return new PathCaptureTransition(from, to);
+        case to instanceof DFLeg:
+            return new DirectToFixTransition(from, to);
+        default:
+            if (DEBUG) {
+                console.error(`Illegal sequence FMLeg -> ${to.constructor.name}`);
+            }
+            return null;
+        }
     }
 
     private static fromFD(from: FDLeg, to: Leg) {
@@ -531,8 +555,8 @@ export class TransitionPicker {
         // case to instanceof VRLeg:
             return new CourseCaptureTransition(from, to);
         case to instanceof CFLeg:
+        case to instanceof FALeg:
         case to instanceof FMLeg:
-        // case to instanceof FALeg:
             return null;
         case to instanceof DFLeg:
             return new DirectToFixTransition(from, to);
@@ -560,7 +584,7 @@ export class TransitionPicker {
         if (to instanceof CRLeg) {
             return new CourseCaptureTransition(from, to);
         }
-        if (to instanceof FMLeg) {
+        if (to instanceof FALeg || to instanceof FMLeg) {
             return null;
         }
 
