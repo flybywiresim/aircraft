@@ -117,11 +117,14 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   // active pause with just the aircraft not moving.
   // See the comments above for the different pause states.
   if (a32nxPauseDetected->getAsInt64() > 0 && a32nxPauseDetected->getAsInt64() != 4) {
+    simulationDeltaTime = 0.;
     return true;
   }
 
   // read and update base data from sim
+  FLOAT64 previousTimeStamp = timeStamp;
   timeStamp = baseSimData->data().simulationTime;
+  simulationDeltaTime = std::max(0., timeStamp - previousTimeStamp);
   tickCounter++;
 
   // Call preUpdate(), update() and postUpdate() for all modules

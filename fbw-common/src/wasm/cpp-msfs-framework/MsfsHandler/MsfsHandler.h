@@ -90,6 +90,9 @@ class MsfsHandler {
    */
   FLOAT64 timeStamp{};
 
+  /** The difference in sim time (including sim rate) since the last update, in seconds. */
+  FLOAT64 simulationDeltaTime{};
+
   /**
    * Counts the number of ticks since start instance creation (calls to update). Used to
    * tick stamping the variable updates.
@@ -161,6 +164,12 @@ class MsfsHandler {
    * @return current simulation time in seconds
    */
   [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
+
+  /**
+   * @return The difference in sim time (accounting for sim rate) since the last update, in seconds.
+   * @note This can return 0, and will return 0 when paused.
+   */
+  [[nodiscard]] FLOAT64 getSimulationDeltaTime() const { return simulationDeltaTime; }
 
   /**
    * @return current simulation rate
