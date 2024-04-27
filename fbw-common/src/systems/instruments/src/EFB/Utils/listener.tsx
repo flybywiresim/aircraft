@@ -15,23 +15,27 @@ import { useEffect, useState } from 'react';
  * @param eventName the name of the event to listen for, e.g. 'SetGamercardInfo' or 'AIRCRAFT_PRESET_WASM_CALLBACK'
  * @param callback the callback function to be called when the event is triggered
  */
-export const useViewListenerEvent = (viewListenerName: string, eventName: string, callback: (...args: unknown[]) => void) => {
-    const [listener, setListener] = useState<ViewListener.ViewListener | null>(null);
+export const useViewListenerEvent = (
+  viewListenerName: string,
+  eventName: string,
+  callback: (...args: unknown[]) => void,
+) => {
+  const [listener, setListener] = useState<ViewListener.ViewListener | null>(null);
 
-    useEffect(() => {
-        const listener = RegisterViewListener(viewListenerName, undefined, false);
-        setListener(listener);
-        return () => {
-            setListener(null);
-            listener.unregister();
-        };
-    }, []);
+  useEffect(() => {
+    const listener = RegisterViewListener(viewListenerName, undefined, false);
+    setListener(listener);
+    return () => {
+      setListener(null);
+      listener.unregister();
+    };
+  }, []);
 
-    useEffect(() => {
-        if (!listener) {
-            return undefined;
-        }
-        listener.on(eventName, callback);
-        return () => listener.off(eventName, callback);
-    }, [listener]);
+  useEffect(() => {
+    if (!listener) {
+      return undefined;
+    }
+    listener.on(eventName, callback);
+    return () => listener.off(eventName, callback);
+  }, [listener]);
 };

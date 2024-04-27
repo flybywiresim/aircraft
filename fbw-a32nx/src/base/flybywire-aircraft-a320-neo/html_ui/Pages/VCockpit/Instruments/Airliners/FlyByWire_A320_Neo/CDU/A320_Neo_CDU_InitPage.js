@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
@@ -373,8 +377,8 @@ class CDUInitPage {
             if (value === "") {
                 let zfw = undefined;
                 let zfwCg = undefined;
-                let a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");
-                let gsxBoarding = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "number");
+                const a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");
+                const gsxBoarding = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "number");
                 if (a32nxBoarding || (gsxBoarding >= 4 && gsxBoarding < 6)) {
                     zfw = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number");
                     zfwCg = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", "number");
@@ -589,14 +593,14 @@ class CDUInitPage {
                         mcdu.tryUpdateRouteAlternate();
                     }
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                        altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, altFuelEntered? Column.big : Column.small);
+                        altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, altFuelEntered ? Column.big : Column.small);
                         const time = mcdu.getRouteAltFuelTime();
                         if (time) {
                             altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
                             altnCellDivider.updateAttributes(Column.green, Column.small);
                         } else {
                             altnTimeCell.update('----',Column.white);
-                            altnCellDivider.updateAttributes(Column.white, altFuelEntered? Column.big : Column.small);
+                            altnCellDivider.updateAttributes(Column.white, altFuelEntered ? Column.big : Column.small);
                         }
                     }
                 } else {
