@@ -128,16 +128,10 @@ export class LandingSystemSelectionManager {
    * @param airport The airport
    * @param runway The runway
    * @param icao If specified, the facility will only be selected if it matches this icao
-   * @param checkBothEnds Check the secondary runway too in case it's a backcourse approach
    * @returns true on success
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async setIlsFromRunway(
-    airport: Airport,
-    runway?: Runway,
-    icao?: string,
-    checkBothEnds = false,
-  ): Promise<boolean> {
+  private async setIlsFromRunway(airport: Airport, runway?: Runway, icao?: string): Promise<boolean> {
     if (!runway) {
       return false;
     }
@@ -194,7 +188,7 @@ export class LandingSystemSelectionManager {
       const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
       const runway = runways.find((it) => it.ident === approach.runwayIdent);
 
-      if (runway && (await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId, true))) {
+      if (runway && (await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId))) {
         return true;
       }
     }
