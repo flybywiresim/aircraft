@@ -249,7 +249,7 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
     case LegType.VD: // TODO FA, VA legs in geometry
         return new CDLeg(trueCourse, length, recommendedNavaid, metadata, SegmentType.Departure);
     case LegType.CF:
-        return new CFLeg(waypoint, trueCourse, metadata, SegmentType.Departure);
+        return new CFLeg(waypoint, trueCourse, length, metadata, SegmentType.Departure);
     case LegType.CI:
     case LegType.VI: { // TODO VI leg in geometry
         if (!nextGeometryLeg) {
