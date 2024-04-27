@@ -130,7 +130,7 @@ export class HoldEntryTransition extends Transition {
           this.state = EntryState.Turn2;
         }
         break;
-      case EntryState.Turn2:
+      case EntryState.Turn2: {
         dtg = arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
         const refFrameOffset = MathUtils.diffAngle(0, this.outboundCourse);
         const trackAngleError =
@@ -141,6 +141,7 @@ export class HoldEntryTransition extends Transition {
           this.state = EntryState.Capture;
         }
         break;
+      }
       case EntryState.Capture:
         dtg = courseToFixDistanceToGo(ppos, this.outboundCourse, this.nextLeg.fix.location);
         if (dtg < 0.1) {
@@ -162,7 +163,7 @@ export class HoldEntryTransition extends Transition {
         params = courseToFixGuidance(ppos, trueTrack, this.straightCourse, this.turn2.itp);
         bankNext = this.turn2.sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
         break;
-      case EntryState.Turn2:
+      case EntryState.Turn2: {
         // force the initial part of the turn to ensure correct direction
         const phiCommand =
           this.turn2.sweepAngle > 0 ? maxBank(tas, true /* FIXME false */) : -maxBank(tas, true /* FIXME false */);
@@ -174,12 +175,14 @@ export class HoldEntryTransition extends Transition {
           crossTrackError: 0,
         };
         break;
-      case EntryState.Capture:
+      }
+      case EntryState.Capture: {
         params = courseToFixGuidance(ppos, trueTrack, this.outboundCourse, this.nextLeg.fix.location);
         // TODO for HF get the following leg bank
         const { sweepAngle } = this.nextLeg.geometry;
         bankNext = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
         break;
+      }
       case EntryState.Done:
         params = this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
         bankNext = params.phiCommand;

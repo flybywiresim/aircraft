@@ -1,4 +1,3 @@
-/* global jest */
 let values;
 
 global.beforeEach(() => {
@@ -7,7 +6,7 @@ global.beforeEach(() => {
 
 global.SimVar = {};
 global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
-  if (values.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(values, name)) {
     return values[name];
   } else {
     return 0;
@@ -22,7 +21,7 @@ global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
 });
 
 global.Facilities = {
-  getMagVar(lat, lon) {
+  getMagVar(_lat, _lon) {
     return 0; // FIXME ship magnetic model
   },
 };

@@ -122,7 +122,7 @@ export class EfisVectors {
     this.lastFpVersions.set(planIndex, plan.version);
 
     switch (planIndex) {
-      case FlightPlanIndex.Active:
+      case FlightPlanIndex.Active: {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
@@ -153,6 +153,7 @@ export class EfisVectors {
           );
         }
         break;
+      }
       case FlightPlanIndex.Temporary:
         this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
         break;

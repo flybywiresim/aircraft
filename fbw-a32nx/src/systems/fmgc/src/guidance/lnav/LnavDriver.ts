@@ -196,7 +196,7 @@ export class LnavDriver implements GuidanceComponent {
         SimVar.SetSimVarValue('L:A32NX_FG_PHI_LIMIT', 'Degrees', bankLimit);
 
         switch (params.law) {
-          case ControlLaw.LATERAL_PATH:
+          case ControlLaw.LATERAL_PATH: {
             let { crossTrackError, trackAngleError, phiCommand } = params;
 
             // Update and take into account turn state; only guide using phi during a forced turn
@@ -238,7 +238,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.HEADING:
+          }
+          case ControlLaw.HEADING: {
             const { heading, phiCommand: forcedPhiHeading } = params;
 
             if (!this.lastAvail) {
@@ -293,7 +294,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.TRACK:
+          }
+          case ControlLaw.TRACK: {
             const { course, phiCommand: forcedPhiCourse } = params;
 
             if (!this.lastAvail) {
@@ -343,6 +345,7 @@ export class LnavDriver implements GuidanceComponent {
               }
             }
             break;
+          }
           default:
             break;
         }

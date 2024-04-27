@@ -1004,7 +1004,7 @@ export class MsfsMapping {
     // TODO: VORs are also stored as intersections in the database. In this case, their ICAO starts with "V" but they are of type
     // `JS_FacilityIntersection`. What to do with those?
     switch (facility.icao.charAt(0)) {
-      case 'N':
+      case 'N': {
         const ndb = facility as any as JS_FacilityNDB;
         return {
           ...databaseItem,
@@ -1014,7 +1014,8 @@ export class MsfsMapping {
           class: this.mapNdbType(ndb.type),
           bfoOperation: false, // TODO can we?
         } as unknown as FacilityType<T>;
-      case 'V':
+      }
+      case 'V': {
         const vor = facility as any as JS_FacilityVOR;
 
         return {
@@ -1029,6 +1030,7 @@ export class MsfsMapping {
           type: this.mapVorType(vor),
           class: this.mapVorClass(vor),
         } as unknown as FacilityType<T>;
+      }
       case 'W':
       default:
         return {

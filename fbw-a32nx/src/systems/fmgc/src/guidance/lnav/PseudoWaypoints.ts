@@ -220,7 +220,7 @@ export class PseudoWaypoints implements GuidanceComponent {
    * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
    */
   sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
-    if (true) {
+    if (DEBUG) {
       console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
     }
 
@@ -228,7 +228,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       case PseudoWaypointSequencingAction.TOD_REACHED:
         // TODO EFIS message;
         break;
-      case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE:
+      case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE: {
         const apLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
         const agl = Simplane.getAltitudeAboveGround();
 
@@ -246,6 +246,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           ]);
         }
         break;
+      }
       default:
     }
   }

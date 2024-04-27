@@ -54,11 +54,12 @@ export class RFLeg extends XFLeg {
         this.clockwise = true;
         this.angle = MathUtils.normalise360(toBearing - fromBearing);
         break;
-      default:
+      default: {
         const angle = MathUtils.diffAngle(toBearing, fromBearing);
         this.clockwise = angle > 0;
         this.angle = Math.abs(angle);
         break;
+      }
     }
 
     this.mDistance = ((2 * Math.PI * this.radius) / 360) * this.angle;

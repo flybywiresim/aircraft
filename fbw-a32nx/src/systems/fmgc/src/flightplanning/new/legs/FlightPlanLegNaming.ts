@@ -36,13 +36,14 @@ export function procedureLegIdentAndAnnotation(
     case LegType.CD:
     case LegType.FC:
     case LegType.FD:
-    case LegType.VD:
+    case LegType.VD: {
       const targetFix = legType === LegType.FC ? procedureLeg.waypoint : procedureLeg.recommendedNavaid;
 
       return [
         `${targetFix.ident.substring(0, 3)}/${Math.round(procedureLeg.length).toString().padStart(2, '0')}`,
         `${legType === LegType.VD ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ];
+    }
     case LegType.CI:
     case LegType.VI:
       return [
