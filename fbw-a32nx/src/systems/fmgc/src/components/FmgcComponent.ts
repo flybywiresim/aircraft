@@ -5,6 +5,6 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
 export interface FmgcComponent {
-    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
-    update(deltaTime: number): void;
+  init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
+  update(deltaTime: number): void;
 }

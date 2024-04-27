@@ -302,7 +302,7 @@ class FMCMainDisplay extends BaseAirliners {
                     lat: NaN,
                     long: NaN
                 };
-                const distanceToDestination = this.getDistanceToDestination()
+                const distanceToDestination = this.getDistanceToDestination();
                 if (Number.isFinite(distanceToDestination) && distanceToDestination < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
@@ -1519,14 +1519,13 @@ class FMCMainDisplay extends BaseAirliners {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(speedConstraint.speed));
                 }
 
-
                 if (altConstraint) {
                     switch (altConstraint.altitudeDescriptor) {
                         case "@": // at alt 1
                         case "-": // at or below alt 1
                         case "B": // between alt 1 and alt 2
-                        currentClbConstraint = Math.min(currentClbConstraint, Math.round(altConstraint.altitude1));
-                        break;
+                            currentClbConstraint = Math.min(currentClbConstraint, Math.round(altConstraint.altitude1));
+                            break;
                         default:
                             // not constraining
                     }
@@ -1540,11 +1539,11 @@ class FMCMainDisplay extends BaseAirliners {
                         case "J": // alt1 is at or above for FACF, Alt2 is glideslope intercept
                         case "V": // alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
                         case "X": // alt 1 is at, Alt 2 is on the vertical angle
-                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
-                        break;
+                            currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
+                            break;
                         case "B": // between alt 1 and alt 2
-                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude2));
-                        break;
+                            currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude2));
+                            break;
                         default:
                             // not constraining
                     }
@@ -1780,7 +1779,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(_targetFl * 100));
             this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', _targetFl);
             SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', _targetFl * 100);
- }
+        }
     }
 
     deleteOutdatedCruiseSteps(oldCruiseLevel, newCruiseLevel) {
@@ -1892,7 +1891,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     /* END OF FMS CHECK ROUTINE */
     /* MCDU GET/SET METHODS */
-
 
     setCruiseFlightLevelAndTemperature(input) {
         if (input === FMCMainDisplay.clrValue) {
@@ -2129,7 +2127,7 @@ class FMCMainDisplay extends BaseAirliners {
     async tryUpdateAltDestination(altDestIdent) {
         if (!altDestIdent || altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.atsu.resetAtisAutoUpdate();
-            this.flightPlanService.setAlternate(undefined)
+            this.flightPlanService.setAlternate(undefined);
             this._DistanceToAlt = 0;
             return true;
         }
@@ -2522,19 +2520,19 @@ class FMCMainDisplay extends BaseAirliners {
                         }
                     }
                 }).catch((err) => {
-                    if (err.type !== undefined) {
-                        this.showFmsErrorMessage(err.type)
-                    } else if (err instanceof McduMessage) {
-                        this.setScratchpadMessage(err);
-                    } else if (err) {
-                        console.error(err);
-                    }
-                    return callback(false);
+                if (err.type !== undefined) {
+                    this.showFmsErrorMessage(err.type);
+                } else if (err instanceof McduMessage) {
+                    this.setScratchpadMessage(err);
+                } else if (err) {
+                    console.error(err);
                 }
+                return callback(false);
+            }
             );
         } catch (err) {
             if (err.type !== undefined) {
-                this.showFmsErrorMessage(err.type)
+                this.showFmsErrorMessage(err.type);
             } else if (err instanceof McduMessage) {
                 this.setScratchpadMessage(err);
             } else {
@@ -2571,7 +2569,7 @@ class FMCMainDisplay extends BaseAirliners {
             const oldCostIndex = this.costIndex;
             const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
             this.flightPlanService.temporaryInsert();
-            this.checkCostIndex(oldCostIndex)
+            this.checkCostIndex(oldCostIndex);
             this.checkDestination(oldDestination);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
@@ -3108,14 +3106,14 @@ class FMCMainDisplay extends BaseAirliners {
             originTransitionAltitude !== undefined ? originTransitionAltitude : 0,
             originTransitionAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
-        )
+        );
 
         const destinationTansitionLevel = this.getDestinationTransitionLevel();
         this.arincTransitionLevel.setBnrValue(
             destinationTansitionLevel !== undefined ? destinationTansitionLevel : 0,
             destinationTansitionLevel !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             9, 512, 0,
-        )
+        );
     }
 
     //Needs PR Merge #3082
@@ -3598,7 +3596,7 @@ class FMCMainDisplay extends BaseAirliners {
         const spd = parseInt(s);
         if (!Number.isFinite(spd)) {
             this.setScratchpadMessage(NXSystemMessages.formatError);
-            return false
+            return false;
         }
 
         if (spd < 100 || spd > 350) {
@@ -4093,46 +4091,46 @@ class FMCMainDisplay extends BaseAirliners {
 
     checkEFOBBelowMin() {
         if (this._fuelPredDone) {
-        if (!this._minDestFobEntered) {
-            this.tryUpdateMinDestFob();
-        }
+            if (!this._minDestFobEntered) {
+                this.tryUpdateMinDestFob();
+            }
 
-        if (this._minDestFob) {
+            if (this._minDestFob) {
             // round & only use 100kgs precision since thats how it is displayed in fuel pred
-            const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
-            const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
-            if (!this._isBelowMinDestFob) {
-                if (destEfob < roundedMinDestFob) {
-                    this._isBelowMinDestFob = true;
-                    // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
-                    if (this.isAnEngineOn()) {
-                        setTimeout(() => {
+                const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
+                const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+                if (!this._isBelowMinDestFob) {
+                    if (destEfob < roundedMinDestFob) {
+                        this._isBelowMinDestFob = true;
+                        // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
+                        if (this.isAnEngineOn()) {
+                            setTimeout(() => {
+                                this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                                    return this._EfobBelowMinClr === true;
+                                }, () => {
+                                    this._EfobBelowMinClr = true;
+                                });
+                            }, 120000);
+                        } else {
                             this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
                                 return this._EfobBelowMinClr === true;
                             }, () => {
                                 this._EfobBelowMinClr = true;
                             });
-                        }, 120000);
-                    } else {
-                        this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                            return this._EfobBelowMinClr === true;
-                        }, () => {
-                            this._EfobBelowMinClr = true;
-                        });
+                        }
                     }
-                }
-            } else {
+                } else {
                 // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
-                if (roundedMinDestFob) {
-                    if (destEfob - roundedMinDestFob >= 0.3) {
-                        this._isBelowMinDestFob = false;
-                        this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
+                    if (roundedMinDestFob) {
+                        if (destEfob - roundedMinDestFob >= 0.3) {
+                            this._isBelowMinDestFob = false;
+                            this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin);
+                        }
                     }
                 }
             }
         }
     }
-}
 
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
@@ -4876,7 +4874,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (Number.isFinite(mach)) {
                 if (mach < 0.15 || mach > 0.82) {
                     this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false
+                    return false;
                 }
 
                 this.managedSpeedDescendMachPilot = mach;
@@ -4889,7 +4887,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (Number.isFinite(mach)) {
                 if (mach < 0.15 || mach > 0.82) {
                     this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false
+                    return false;
                 }
 
                 this.managedSpeedDescendMachPilot = mach;

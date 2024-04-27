@@ -6,140 +6,140 @@
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export interface FlightPlanPerformanceData {
-    v1: number;
+  v1: number;
 
-    vr: number;
+  vr: number;
 
-    v2: number;
+  v2: number;
 
-    databaseTransitionAltitude: number,
+  databaseTransitionAltitude: number;
 
-    databaseTransitionLevel: number,
+  databaseTransitionLevel: number;
 
-    pilotTransitionAltitude: number,
+  pilotTransitionAltitude: number;
 
-    pilotTransitionLevel: number,
+  pilotTransitionLevel: number;
 
-    get transitionAltitude(): AltitudeValue;
+  get transitionAltitude(): AltitudeValue;
 
-    get transitionAltitudeIsFromDatabase(): boolean;
+  get transitionAltitudeIsFromDatabase(): boolean;
 
-    get transitionLevel(): AltitudeValue;
+  get transitionLevel(): AltitudeValue;
 
-    get transitionLevelIsFromDatabase(): boolean;
+  get transitionLevelIsFromDatabase(): boolean;
 
-    costIndex: number,
+  costIndex: number;
 
-    cruiseFlightLevel: number
+  cruiseFlightLevel: number;
 
-    pilotTropopause: AltitudeValue;
+  pilotTropopause: AltitudeValue;
 
-    defaultTropopause: AltitudeValue;
+  defaultTropopause: AltitudeValue;
 
-    get tropopause(): AltitudeValue;
+  get tropopause(): AltitudeValue;
 
-    get tropopauseIsPilotEntered(): boolean;
+  get tropopauseIsPilotEntered(): boolean;
 
-    // THR RED
+  // THR RED
 
-    /**
-     * THR RED pilot entry
-     */
-    pilotThrustReductionAltitude: AltitudeValue;
+  /**
+   * THR RED pilot entry
+   */
+  pilotThrustReductionAltitude: AltitudeValue;
 
-    /**
-     * THR RED from NAV database
-     */
-    defaultThrustReductionAltitude: AltitudeValue;
+  /**
+   * THR RED from NAV database
+   */
+  defaultThrustReductionAltitude: AltitudeValue;
 
-    get thrustReductionAltitude(): AltitudeValue;
+  get thrustReductionAltitude(): AltitudeValue;
 
-    get thrustReductionAltitudeIsPilotEntered(): boolean;
+  get thrustReductionAltitudeIsPilotEntered(): boolean;
 
-    // ACC
+  // ACC
 
-    /**
-     * ACC pilot entry
-     */
-    pilotAccelerationAltitude: AltitudeValue;
+  /**
+   * ACC pilot entry
+   */
+  pilotAccelerationAltitude: AltitudeValue;
 
-    /**
-     * ACC from NAV database
-     */
-    defaultAccelerationAltitude: AltitudeValue;
+  /**
+   * ACC from NAV database
+   */
+  defaultAccelerationAltitude: AltitudeValue;
 
-    get accelerationAltitude(): AltitudeValue;
+  get accelerationAltitude(): AltitudeValue;
 
-    get accelerationAltitudeIsPilotEntered(): boolean;
+  get accelerationAltitudeIsPilotEntered(): boolean;
 
-    // EO ACC
+  // EO ACC
 
-    /**
-     * EO ACC pilot entry
-     */
-    pilotEngineOutAccelerationAltitude: AltitudeValue;
+  /**
+   * EO ACC pilot entry
+   */
+  pilotEngineOutAccelerationAltitude: AltitudeValue;
 
-    /**
-     * EO ACC from NAV database
-     */
-    defaultEngineOutAccelerationAltitude: AltitudeValue;
+  /**
+   * EO ACC from NAV database
+   */
+  defaultEngineOutAccelerationAltitude: AltitudeValue;
 
-    get engineOutAccelerationAltitude(): AltitudeValue;
+  get engineOutAccelerationAltitude(): AltitudeValue;
 
-    get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
+  get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
-    // MISSED THR RED
+  // MISSED THR RED
 
-    /**
-     * Missed THR RED pilot entry
-     */
-    pilotMissedThrustReductionAltitude: AltitudeValue;
+  /**
+   * Missed THR RED pilot entry
+   */
+  pilotMissedThrustReductionAltitude: AltitudeValue;
 
-    /**
-     * Missed THR RED from NAV database
-     */
-    defaultMissedThrustReductionAltitude: AltitudeValue;
+  /**
+   * Missed THR RED from NAV database
+   */
+  defaultMissedThrustReductionAltitude: AltitudeValue;
 
-    get missedThrustReductionAltitude(): AltitudeValue;
+  get missedThrustReductionAltitude(): AltitudeValue;
 
-    get missedThrustReductionAltitudeIsPilotEntered(): boolean;
+  get missedThrustReductionAltitudeIsPilotEntered(): boolean;
 
-    // MISSED ACC
+  // MISSED ACC
 
-    /**
-     * Missed ACC pilot entry
-     */
-    pilotMissedAccelerationAltitude: AltitudeValue;
+  /**
+   * Missed ACC pilot entry
+   */
+  pilotMissedAccelerationAltitude: AltitudeValue;
 
-    /**
-     * Missed ACC from NAV database
-     */
-    defaultMissedAccelerationAltitude: AltitudeValue;
+  /**
+   * Missed ACC from NAV database
+   */
+  defaultMissedAccelerationAltitude: AltitudeValue;
 
-    get missedAccelerationAltitude(): AltitudeValue;
+  get missedAccelerationAltitude(): AltitudeValue;
 
-    get missedAccelerationAltitudeIsPilotEntered(): boolean;
+  get missedAccelerationAltitudeIsPilotEntered(): boolean;
 
-    // MISSED EO ACC
+  // MISSED EO ACC
 
-    /**
-     * Missed EO ACC pilot entry
-     */
-    pilotMissedEngineOutAccelerationAltitude: AltitudeValue;
+  /**
+   * Missed EO ACC pilot entry
+   */
+  pilotMissedEngineOutAccelerationAltitude: AltitudeValue;
 
-    /**
-     * Missed EO ACC from NAV database
-     */
-    defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
+  /**
+   * Missed EO ACC from NAV database
+   */
+  defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
 
-    get missedEngineOutAccelerationAltitude(): AltitudeValue;
+  get missedEngineOutAccelerationAltitude(): AltitudeValue;
 
-    get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
+  get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
-    clone(): this;
+  clone(): this;
 }
 
-export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>
+export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>;
 
 type VSpeedValue = number | undefined;
 
@@ -150,363 +150,363 @@ type CostIndexValue = number | undefined;
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
-    public clone(): this {
-        const cloned = new A320FlightPlanPerformanceData();
+  public clone(): this {
+    const cloned = new A320FlightPlanPerformanceData();
 
-        cloned.v1 = this.v1;
-        cloned.vr = this.vr;
-        cloned.v2 = this.v2;
+    cloned.v1 = this.v1;
+    cloned.vr = this.vr;
+    cloned.v2 = this.v2;
 
-        cloned.pilotThrustReductionAltitude = this.pilotThrustReductionAltitude;
-        cloned.defaultThrustReductionAltitude = this.defaultThrustReductionAltitude;
+    cloned.pilotThrustReductionAltitude = this.pilotThrustReductionAltitude;
+    cloned.defaultThrustReductionAltitude = this.defaultThrustReductionAltitude;
 
-        cloned.pilotAccelerationAltitude = this.pilotAccelerationAltitude;
-        cloned.defaultAccelerationAltitude = this.defaultAccelerationAltitude;
+    cloned.pilotAccelerationAltitude = this.pilotAccelerationAltitude;
+    cloned.defaultAccelerationAltitude = this.defaultAccelerationAltitude;
 
-        cloned.pilotEngineOutAccelerationAltitude = this.pilotEngineOutAccelerationAltitude;
-        cloned.defaultEngineOutAccelerationAltitude = this.defaultEngineOutAccelerationAltitude;
+    cloned.pilotEngineOutAccelerationAltitude = this.pilotEngineOutAccelerationAltitude;
+    cloned.defaultEngineOutAccelerationAltitude = this.defaultEngineOutAccelerationAltitude;
 
-        cloned.pilotMissedThrustReductionAltitude = this.pilotMissedThrustReductionAltitude;
-        cloned.defaultMissedThrustReductionAltitude = this.defaultMissedThrustReductionAltitude;
+    cloned.pilotMissedThrustReductionAltitude = this.pilotMissedThrustReductionAltitude;
+    cloned.defaultMissedThrustReductionAltitude = this.defaultMissedThrustReductionAltitude;
 
-        cloned.pilotMissedAccelerationAltitude = this.pilotMissedAccelerationAltitude;
-        cloned.defaultMissedAccelerationAltitude = this.defaultMissedAccelerationAltitude;
+    cloned.pilotMissedAccelerationAltitude = this.pilotMissedAccelerationAltitude;
+    cloned.defaultMissedAccelerationAltitude = this.defaultMissedAccelerationAltitude;
 
-        cloned.pilotMissedEngineOutAccelerationAltitude = this.pilotMissedEngineOutAccelerationAltitude;
-        cloned.defaultMissedEngineOutAccelerationAltitude = this.defaultMissedEngineOutAccelerationAltitude;
+    cloned.pilotMissedEngineOutAccelerationAltitude = this.pilotMissedEngineOutAccelerationAltitude;
+    cloned.defaultMissedEngineOutAccelerationAltitude = this.defaultMissedEngineOutAccelerationAltitude;
 
-        cloned.databaseTransitionAltitude = this.databaseTransitionAltitude;
-        cloned.pilotTransitionAltitude = this.pilotTransitionAltitude;
+    cloned.databaseTransitionAltitude = this.databaseTransitionAltitude;
+    cloned.pilotTransitionAltitude = this.pilotTransitionAltitude;
 
-        cloned.databaseTransitionLevel = this.databaseTransitionLevel;
-        cloned.pilotTransitionLevel = this.pilotTransitionLevel;
+    cloned.databaseTransitionLevel = this.databaseTransitionLevel;
+    cloned.pilotTransitionLevel = this.pilotTransitionLevel;
 
-        cloned.cruiseFlightLevel = this.cruiseFlightLevel;
-        cloned.costIndex = this.costIndex;
-        cloned.pilotTropopause = this.pilotTropopause;
-        cloned.defaultTropopause = this.defaultTropopause;
+    cloned.cruiseFlightLevel = this.cruiseFlightLevel;
+    cloned.costIndex = this.costIndex;
+    cloned.pilotTropopause = this.pilotTropopause;
+    cloned.defaultTropopause = this.defaultTropopause;
 
-        return cloned as this;
-    }
+    return cloned as this;
+  }
 
-    /**
-     * Cruise FL
-     */
-    cruiseFlightLevel: AltitudeValue = undefined;
+  /**
+   * Cruise FL
+   */
+  cruiseFlightLevel: AltitudeValue = undefined;
 
-    /**
-     * Cost index
-     */
-    costIndex: CostIndexValue = undefined;
+  /**
+   * Cost index
+   */
+  costIndex: CostIndexValue = undefined;
 
-    /**
-     * Tropopause altitude in feet entered by the pilot, undefined if not entered
-     */
-    pilotTropopause: AltitudeValue = undefined;
+  /**
+   * Tropopause altitude in feet entered by the pilot, undefined if not entered
+   */
+  pilotTropopause: AltitudeValue = undefined;
 
-    /**
-     * Default tropopause altitude in feet
-     */
-    defaultTropopause: AltitudeValue = 36090;
+  /**
+   * Default tropopause altitude in feet
+   */
+  defaultTropopause: AltitudeValue = 36090;
 
-    get tropopause() {
-        const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  get tropopause() {
+    const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    get tropopauseIsPilotEntered() {
-        return this.pilotTropopause !== undefined;
-    }
+  get tropopauseIsPilotEntered() {
+    return this.pilotTropopause !== undefined;
+  }
 
-    /**
-     * V1 speed
-     */
-    v1: VSpeedValue = undefined;
+  /**
+   * V1 speed
+   */
+  v1: VSpeedValue = undefined;
 
-    /**
-     * VR speed
-     */
-    vr: VSpeedValue = undefined;
+  /**
+   * VR speed
+   */
+  vr: VSpeedValue = undefined;
 
-    /**
-     * V2 speed
-     */
-    v2: VSpeedValue = undefined;
+  /**
+   * V2 speed
+   */
+  v2: VSpeedValue = undefined;
 
-    // THR RED
+  // THR RED
 
-    /**
-     * THR RED pilot entry
-     */
-    pilotThrustReductionAltitude: AltitudeValue = undefined;
+  /**
+   * THR RED pilot entry
+   */
+  pilotThrustReductionAltitude: AltitudeValue = undefined;
 
-    /**
-     * THR RED from NAV database
-     */
-    defaultThrustReductionAltitude: AltitudeValue = undefined;
+  /**
+   * THR RED from NAV database
+   */
+  defaultThrustReductionAltitude: AltitudeValue = undefined;
 
-    /**
-     * THR RED from pilot if entered, otherwise from database
-     */
-    get thrustReductionAltitude() {
-        const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * THR RED from pilot if entered, otherwise from database
+   */
+  get thrustReductionAltitude() {
+    const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether THR RED is from the database
-     */
-    get thrustReductionAltitudeIsPilotEntered() {
-        return this.pilotThrustReductionAltitude !== undefined;
-    }
+  /**
+   * Whether THR RED is from the database
+   */
+  get thrustReductionAltitudeIsPilotEntered() {
+    return this.pilotThrustReductionAltitude !== undefined;
+  }
 
-    // ACC
+  // ACC
 
-    /**
-     * ACC pilot entry
-     */
-    pilotAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * ACC pilot entry
+   */
+  pilotAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * ACC from NAV database
-     */
-    defaultAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * ACC from NAV database
+   */
+  defaultAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * ACC from pilot if entered, otherwise from database
-     */
-    get accelerationAltitude() {
-        const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * ACC from pilot if entered, otherwise from database
+   */
+  get accelerationAltitude() {
+    const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether ACC is from the database
-     */
-    get accelerationAltitudeIsPilotEntered() {
-        return this.pilotAccelerationAltitude !== undefined;
-    }
+  /**
+   * Whether ACC is from the database
+   */
+  get accelerationAltitudeIsPilotEntered() {
+    return this.pilotAccelerationAltitude !== undefined;
+  }
 
-    // EO ACC
+  // EO ACC
 
-    /**
-     * EO ACC pilot entry
-     */
-    pilotEngineOutAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * EO ACC pilot entry
+   */
+  pilotEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * EO ACC from NAV database
-     */
-    defaultEngineOutAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * EO ACC from NAV database
+   */
+  defaultEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * EO ACC from pilot if entered, otherwise from database
-     */
-    get engineOutAccelerationAltitude() {
-        const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * EO ACC from pilot if entered, otherwise from database
+   */
+  get engineOutAccelerationAltitude() {
+    const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether EO ACC is from the database
-     */
-    get engineOutAccelerationAltitudeIsPilotEntered() {
-        return this.pilotEngineOutAccelerationAltitude !== undefined;
-    }
+  /**
+   * Whether EO ACC is from the database
+   */
+  get engineOutAccelerationAltitudeIsPilotEntered() {
+    return this.pilotEngineOutAccelerationAltitude !== undefined;
+  }
 
-    // MISSED THR RED
+  // MISSED THR RED
 
-    /**
-     * Missed THR RED pilot entry
-     */
-    pilotMissedThrustReductionAltitude: AltitudeValue = undefined;
+  /**
+   * Missed THR RED pilot entry
+   */
+  pilotMissedThrustReductionAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed THR RED from NAV database
-     */
-    defaultMissedThrustReductionAltitude: AltitudeValue = undefined;
+  /**
+   * Missed THR RED from NAV database
+   */
+  defaultMissedThrustReductionAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed THR RED from pilot if entered, otherwise from database
-     */
-    get missedThrustReductionAltitude() {
-        const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * Missed THR RED from pilot if entered, otherwise from database
+   */
+  get missedThrustReductionAltitude() {
+    const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether missed THR RED is from the database
-     */
-    get missedThrustReductionAltitudeIsPilotEntered() {
-        return this.pilotMissedThrustReductionAltitude !== undefined;
-    }
+  /**
+   * Whether missed THR RED is from the database
+   */
+  get missedThrustReductionAltitudeIsPilotEntered() {
+    return this.pilotMissedThrustReductionAltitude !== undefined;
+  }
 
-    // MISSED ACC
+  // MISSED ACC
 
-    /**
-     * Missed ACC pilot entry
-     */
-    pilotMissedAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * Missed ACC pilot entry
+   */
+  pilotMissedAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed ACC from NAV database
-     */
-    defaultMissedAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * Missed ACC from NAV database
+   */
+  defaultMissedAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed ACC from pilot if entered, otherwise from database
-     */
-    get missedAccelerationAltitude() {
-        const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * Missed ACC from pilot if entered, otherwise from database
+   */
+  get missedAccelerationAltitude() {
+    const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether missed ACC is from the database
-     */
-    get missedAccelerationAltitudeIsPilotEntered() {
-        return this.pilotMissedAccelerationAltitude !== undefined;
-    }
+  /**
+   * Whether missed ACC is from the database
+   */
+  get missedAccelerationAltitudeIsPilotEntered() {
+    return this.pilotMissedAccelerationAltitude !== undefined;
+  }
 
-    // MISSED EO ACC
+  // MISSED EO ACC
 
-    /**
-     * Missed EO ACC pilot entry
-     */
-    pilotMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * Missed EO ACC pilot entry
+   */
+  pilotMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed EO ACC from NAV database
-     */
-    defaultMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
+  /**
+   * Missed EO ACC from NAV database
+   */
+  defaultMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
-    /**
-     * Missed EO ACC from pilot if entered, otherwise from database
-     */
-    get missedEngineOutAccelerationAltitude() {
-        const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * Missed EO ACC from pilot if entered, otherwise from database
+   */
+  get missedEngineOutAccelerationAltitude() {
+    const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether missed EO ACC is from the database
-     */
-    get missedEngineOutAccelerationAltitudeIsPilotEntered() {
-        return this.pilotMissedEngineOutAccelerationAltitude !== undefined;
-    }
+  /**
+   * Whether missed EO ACC is from the database
+   */
+  get missedEngineOutAccelerationAltitudeIsPilotEntered() {
+    return this.pilotMissedEngineOutAccelerationAltitude !== undefined;
+  }
 
-    /**
-     * TRANS ALT from NAV database
-     */
-    databaseTransitionAltitude: AltitudeValue = undefined;
+  /**
+   * TRANS ALT from NAV database
+   */
+  databaseTransitionAltitude: AltitudeValue = undefined;
 
-    /**
-     * TRANS ALT from pilot entry
-     */
-    pilotTransitionAltitude: AltitudeValue = undefined;
+  /**
+   * TRANS ALT from pilot entry
+   */
+  pilotTransitionAltitude: AltitudeValue = undefined;
 
-    /**
-     * TRANS ALT from pilot if entered, otherwise from database
-     */
-    get transitionAltitude() {
-        const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
-        return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
-    }
+  /**
+   * TRANS ALT from pilot if entered, otherwise from database
+   */
+  get transitionAltitude() {
+    const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
+  }
 
-    /**
-     * Whether TRANS ALT is from the database
-     */
-    get transitionAltitudeIsFromDatabase() {
-        return this.pilotTransitionAltitude === undefined;
-    }
+  /**
+   * Whether TRANS ALT is from the database
+   */
+  get transitionAltitudeIsFromDatabase() {
+    return this.pilotTransitionAltitude === undefined;
+  }
 
-    /**
-     * TRANS LVL from NAV database
-     */
-    databaseTransitionLevel: AltitudeValue = undefined;
+  /**
+   * TRANS LVL from NAV database
+   */
+  databaseTransitionLevel: AltitudeValue = undefined;
 
-    /**
-     * TRANS LVL from pilot entry
-     */
-    pilotTransitionLevel: AltitudeValue = undefined;
+  /**
+   * TRANS LVL from pilot entry
+   */
+  pilotTransitionLevel: AltitudeValue = undefined;
 
-    /**
-     * TRANS LVL from pilot if entered, otherwise from database
-     */
-    get transitionLevel() {
-        const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
-        return rawLevel !== undefined ? MathUtils.round(rawLevel, 0) : undefined;
-    }
+  /**
+   * TRANS LVL from pilot if entered, otherwise from database
+   */
+  get transitionLevel() {
+    const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
+    return rawLevel !== undefined ? MathUtils.round(rawLevel, 0) : undefined;
+  }
 
-    /**
-     * Whether TRANS LVL is from the database
-     */
-    get transitionLevelIsFromDatabase() {
-        return this.pilotTransitionLevel === undefined;
-    }
+  /**
+   * Whether TRANS LVL is from the database
+   */
+  get transitionLevelIsFromDatabase() {
+    return this.pilotTransitionLevel === undefined;
+  }
 
-    serialize(): SerializedFlightPlanPerformanceData {
-        return {
-            cruiseFlightLevel: this.cruiseFlightLevel,
-            costIndex: this.costIndex,
-            pilotTropopause: this.pilotTropopause,
-            defaultTropopause: this.defaultTropopause,
-            v1: this.v1,
-            vr: this.vr,
-            v2: this.v2,
-            pilotThrustReductionAltitude: this.pilotThrustReductionAltitude,
-            defaultThrustReductionAltitude: this.defaultThrustReductionAltitude,
-            pilotAccelerationAltitude: this.pilotAccelerationAltitude,
-            defaultAccelerationAltitude: this.defaultAccelerationAltitude,
-            pilotEngineOutAccelerationAltitude: this.pilotEngineOutAccelerationAltitude,
-            defaultEngineOutAccelerationAltitude: this.defaultEngineOutAccelerationAltitude,
-            pilotMissedThrustReductionAltitude: this.pilotMissedThrustReductionAltitude,
-            defaultMissedThrustReductionAltitude: this.defaultMissedThrustReductionAltitude,
-            pilotMissedAccelerationAltitude: this.pilotMissedAccelerationAltitude,
-            defaultMissedAccelerationAltitude: this.defaultMissedAccelerationAltitude,
-            pilotMissedEngineOutAccelerationAltitude: this.pilotMissedEngineOutAccelerationAltitude,
-            defaultMissedEngineOutAccelerationAltitude: this.defaultMissedEngineOutAccelerationAltitude,
-            databaseTransitionAltitude: this.databaseTransitionAltitude,
-            pilotTransitionAltitude: this.pilotTransitionAltitude,
-            databaseTransitionLevel: this.databaseTransitionLevel,
-            pilotTransitionLevel: this.pilotTransitionLevel,
-        };
-    }
+  serialize(): SerializedFlightPlanPerformanceData {
+    return {
+      cruiseFlightLevel: this.cruiseFlightLevel,
+      costIndex: this.costIndex,
+      pilotTropopause: this.pilotTropopause,
+      defaultTropopause: this.defaultTropopause,
+      v1: this.v1,
+      vr: this.vr,
+      v2: this.v2,
+      pilotThrustReductionAltitude: this.pilotThrustReductionAltitude,
+      defaultThrustReductionAltitude: this.defaultThrustReductionAltitude,
+      pilotAccelerationAltitude: this.pilotAccelerationAltitude,
+      defaultAccelerationAltitude: this.defaultAccelerationAltitude,
+      pilotEngineOutAccelerationAltitude: this.pilotEngineOutAccelerationAltitude,
+      defaultEngineOutAccelerationAltitude: this.defaultEngineOutAccelerationAltitude,
+      pilotMissedThrustReductionAltitude: this.pilotMissedThrustReductionAltitude,
+      defaultMissedThrustReductionAltitude: this.defaultMissedThrustReductionAltitude,
+      pilotMissedAccelerationAltitude: this.pilotMissedAccelerationAltitude,
+      defaultMissedAccelerationAltitude: this.defaultMissedAccelerationAltitude,
+      pilotMissedEngineOutAccelerationAltitude: this.pilotMissedEngineOutAccelerationAltitude,
+      defaultMissedEngineOutAccelerationAltitude: this.defaultMissedEngineOutAccelerationAltitude,
+      databaseTransitionAltitude: this.databaseTransitionAltitude,
+      pilotTransitionAltitude: this.pilotTransitionAltitude,
+      databaseTransitionLevel: this.databaseTransitionLevel,
+      pilotTransitionLevel: this.pilotTransitionLevel,
+    };
+  }
 }
 
 export interface SerializedFlightPlanPerformanceData {
-    cruiseFlightLevel: number | undefined,
-    costIndex: number | undefined,
-    defaultTropopause: number,
-    pilotTropopause: number | undefined,
+  cruiseFlightLevel: number | undefined;
+  costIndex: number | undefined;
+  defaultTropopause: number;
+  pilotTropopause: number | undefined;
 
-    v1: number | undefined,
+  v1: number | undefined;
 
-    vr: number | undefined,
+  vr: number | undefined;
 
-    v2: number | undefined,
+  v2: number | undefined;
 
-    pilotThrustReductionAltitude: number | undefined,
-    defaultThrustReductionAltitude: number | undefined,
+  pilotThrustReductionAltitude: number | undefined;
+  defaultThrustReductionAltitude: number | undefined;
 
-    pilotAccelerationAltitude: number | undefined,
-    defaultAccelerationAltitude: number | undefined,
+  pilotAccelerationAltitude: number | undefined;
+  defaultAccelerationAltitude: number | undefined;
 
-    pilotEngineOutAccelerationAltitude: number | undefined,
-    defaultEngineOutAccelerationAltitude: number | undefined,
+  pilotEngineOutAccelerationAltitude: number | undefined;
+  defaultEngineOutAccelerationAltitude: number | undefined;
 
-    pilotMissedThrustReductionAltitude: number | undefined,
-    defaultMissedThrustReductionAltitude: number | undefined,
+  pilotMissedThrustReductionAltitude: number | undefined;
+  defaultMissedThrustReductionAltitude: number | undefined;
 
-    pilotMissedAccelerationAltitude: number | undefined,
-    defaultMissedAccelerationAltitude: number | undefined,
+  pilotMissedAccelerationAltitude: number | undefined;
+  defaultMissedAccelerationAltitude: number | undefined;
 
-    pilotMissedEngineOutAccelerationAltitude: number | undefined,
-    defaultMissedEngineOutAccelerationAltitude: number | undefined,
+  pilotMissedEngineOutAccelerationAltitude: number | undefined;
+  defaultMissedEngineOutAccelerationAltitude: number | undefined;
 
-    databaseTransitionAltitude: number | undefined,
-    pilotTransitionAltitude: number | undefined,
+  databaseTransitionAltitude: number | undefined;
+  pilotTransitionAltitude: number | undefined;
 
-    databaseTransitionLevel: number | undefined,
-    pilotTransitionLevel: number | undefined,
+  databaseTransitionLevel: number | undefined;
+  pilotTransitionLevel: number | undefined;
 }

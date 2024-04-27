@@ -6,16 +6,16 @@
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 
 export class NavigationDatabaseService {
-    static version = 0;
+  static version = 0;
 
-    private static activeDb: NavigationDatabase;
+  private static activeDb: NavigationDatabase;
 
-    static get activeDatabase(): NavigationDatabase {
-        return this.activeDb;
-    }
+  static get activeDatabase(): NavigationDatabase {
+    return this.activeDb;
+  }
 
-    static set activeDatabase(db: NavigationDatabase) {
-        this.activeDb = db;
-        this.version++;
-    }
+  static set activeDatabase(db: NavigationDatabase) {
+    this.activeDb = db;
+    this.version++;
+  }
 }

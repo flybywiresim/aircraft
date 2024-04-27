@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUSecFplnMain {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -8,7 +12,7 @@ class CDUSecFplnMain {
         mcdu.onUnload = () => {
             mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
             mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
-        }
+        };
 
         mcdu.onLeftInput[0] = () => {
             return;

@@ -10,20 +10,16 @@ import { FmsMessages } from './fms-messages';
 
 const fmsMessages = new FmsMessages();
 
-const components: FmgcComponent[] = [
-    fmsMessages,
-    new ReadySignal(),
-    new FcuSync(),
-];
+const components: FmgcComponent[] = [fmsMessages, new ReadySignal(), new FcuSync()];
 
 export function initComponents(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
-    components.forEach((component) => component.init(baseInstrument, flightPlanService));
+  components.forEach((component) => component.init(baseInstrument, flightPlanService));
 }
 
 export function updateComponents(deltaTime: number): void {
-    components.forEach((component) => component.update(deltaTime));
+  components.forEach((component) => component.update(deltaTime));
 }
 
 export function recallMessageById(id: number) {
-    fmsMessages.recallId(id);
+  fmsMessages.recallId(id);
 }

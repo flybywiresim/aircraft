@@ -10,39 +10,39 @@ import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fm
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 export interface ReadonlyFlightPlanLeg {
-    readonly isDiscontinuity: false,
+  readonly isDiscontinuity: false;
 
-    readonly type: LegType,
+  readonly type: LegType;
 
-    readonly flags: number,
+  readonly flags: number;
 
-    readonly segment: FlightPlanSegment,
+  readonly segment: FlightPlanSegment;
 
-    readonly definition: Readonly<FlightPlanLegDefinition>,
+  readonly definition: Readonly<FlightPlanLegDefinition>;
 
-    readonly ident: string,
+  readonly ident: string;
 
-    readonly annotation: string,
+  readonly annotation: string;
 
-    readonly rnp: number | undefined, // TODO maybe redundant
+  readonly rnp: number | undefined; // TODO maybe redundant
 
-    readonly defaultHold: HoldData | undefined,
+  readonly defaultHold: HoldData | undefined;
 
-    readonly modifiedHold: HoldData | undefined,
+  readonly modifiedHold: HoldData | undefined;
 
-    readonly holdImmExit: boolean,
+  readonly holdImmExit: boolean;
 
-    readonly constraintType: WaypointConstraintType,
+  readonly constraintType: WaypointConstraintType;
 
-    readonly cruiseStep: CruiseStepEntry | undefined,
+  readonly cruiseStep: CruiseStepEntry | undefined;
 
-    readonly pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined,
+  readonly pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
 
-    readonly pilotEnteredSpeedConstraint: SpeedConstraint | undefined,
+  readonly pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 }
 
 export interface ReadonlyDiscontinuity {
-    readonly isDiscontinuity: true
+  readonly isDiscontinuity: true;
 }
 
 export type ReadonlyFlightPlanElement = ReadonlyFlightPlanLeg | ReadonlyDiscontinuity;

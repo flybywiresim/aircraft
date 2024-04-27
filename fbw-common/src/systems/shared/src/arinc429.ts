@@ -155,72 +155,75 @@ export class Arinc429Register implements Arinc429WordData {
  * Optimized to only write when the value changes more than some quantization.
  */
 export class Arinc429OutputWord implements Arinc429WordData {
-    private word: Arinc429Word
+  private word: Arinc429Word;
 
-    private isDirty: boolean = true;
+  private isDirty: boolean = true;
 
-    constructor(private name: string, value = 0) {
-        this.word = new Arinc429Word(value);
+  constructor(
+    private name: string,
+    value = 0,
+  ) {
+    this.word = new Arinc429Word(value);
+  }
+
+  static empty(name: string) {
+    return new Arinc429OutputWord(name);
+  }
+
+  get value() {
+    return this.word.value;
+  }
+
+  set value(value) {
+    if (this.word.value !== value) {
+      this.isDirty = true;
     }
 
-    static empty(name: string) {
-        return new Arinc429OutputWord(name);
+    this.word.value = value;
+  }
+
+  get ssm() {
+    return this.word.ssm;
+  }
+
+  set ssm(ssm) {
+    if (this.word.ssm !== ssm) {
+      this.isDirty = true;
     }
 
-    get value() {
-        return this.word.value;
+    this.word.ssm = ssm;
+  }
+
+  isFailureWarning() {
+    return this.word.isFailureWarning();
+  }
+
+  isNoComputedData() {
+    return this.word.isNoComputedData();
+  }
+
+  isFunctionalTest() {
+    return this.word.isFunctionalTest();
+  }
+
+  isNormalOperation() {
+    return this.word.isNormalOperation();
+  }
+
+  async writeToSimVarIfDirty() {
+    if (this.isDirty) {
+      this.isDirty = false;
+      return Arinc429Word.toSimVarValue(this.name, this.value, this.ssm);
     }
 
-    set value(value) {
-        if (this.word.value !== value) {
-            this.isDirty = true;
-        }
+    return Promise.resolve();
+  }
 
-        this.word.value = value;
-    }
+  setBnrValue(value: number, ssm: Arinc429SignStatusMatrix, bits: number, rangeMax: number, rangeMin: number = 0) {
+    const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+    const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
 
-    get ssm() {
-        return this.word.ssm;
-    }
-
-    set ssm(ssm) {
-        if (this.word.ssm !== ssm) {
-            this.isDirty = true;
-        }
-
-        this.word.ssm = ssm;
-    }
-
-    isFailureWarning() {
-        return this.word.isFailureWarning();
-    }
-
-    isNoComputedData() {
-        return this.word.isNoComputedData();
-    }
-
-    isFunctionalTest() {
-        return this.word.isFunctionalTest();
-    }
-
-    isNormalOperation() {
-        return this.word.isNormalOperation();
-    }
-
-    async writeToSimVarIfDirty() {
-        if (this.isDirty) {
-            this.isDirty = false;
-            return Arinc429Word.toSimVarValue(this.name, this.value, this.ssm);
-        }
-
-        return Promise.resolve();
-    }
-
-    setBnrValue(value: number, ssm: Arinc429SignStatusMatrix, bits: number, rangeMax: number, rangeMin: number = 0) {
-        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
-        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
-
-        this.value = data;
-        this.ssm = ssm;
-    }
+    this.value = data;
+    this.ssm = ssm;
+  }
 }

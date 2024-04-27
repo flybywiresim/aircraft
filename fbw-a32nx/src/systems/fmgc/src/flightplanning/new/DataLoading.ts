@@ -14,16 +14,16 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
  * @throws if the airport is not found
  */
 export async function loadAirport(icao: string): Promise<Airport> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const airports = await db.getAirports([icao]);
-    const matchingAirport = airports.find((a) => a.ident === icao);
+  const airports = await db.getAirports([icao]);
+  const matchingAirport = airports.find((a) => a.ident === icao);
 
-    if (!matchingAirport) {
-        throw new Error(`[FMS/FPM] Can't find airport with ICAO '${icao}'`);
-    }
+  if (!matchingAirport) {
+    throw new Error(`[FMS/FPM] Can't find airport with ICAO '${icao}'`);
+  }
 
-    return matchingAirport;
+  return matchingAirport;
 }
 
 /**
@@ -32,11 +32,11 @@ export async function loadAirport(icao: string): Promise<Airport> {
  * @param airport Airport object
  */
 export async function loadAllRunways(airport: Airport): Promise<Runway[]> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const runways = await db.getRunways(airport.ident);
+  const runways = await db.getRunways(airport.ident);
 
-    return runways;
+  return runways;
 }
 
 /**
@@ -48,16 +48,16 @@ export async function loadAllRunways(airport: Airport): Promise<Runway[]> {
  * @throws if the runway is not found
  */
 export async function loadRunway(airport: Airport, runwayIdent: string): Promise<Runway> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const runways = await db.getRunways(airport.ident);
-    const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
+  const runways = await db.getRunways(airport.ident);
+  const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
 
-    if (!matchingRunway) {
-        throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${airport.ident}`);
-    }
+  if (!matchingRunway) {
+    throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${airport.ident}`);
+  }
 
-    return matchingRunway;
+  return matchingRunway;
 }
 
 /**
@@ -66,15 +66,15 @@ export async function loadRunway(airport: Airport, runwayIdent: string): Promise
  * @param airport Airport object
  */
 export async function loadAllDepartures(airport: Airport | undefined): Promise<Departure[]> {
-    if (!airport) {
-        return [];
-    }
+  if (!airport) {
+    return [];
+  }
 
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const proceduresAtAirport = await db.getDepartures(airport.ident);
+  const proceduresAtAirport = await db.getDepartures(airport.ident);
 
-    return proceduresAtAirport;
+  return proceduresAtAirport;
 }
 
 /**
@@ -83,15 +83,15 @@ export async function loadAllDepartures(airport: Airport | undefined): Promise<D
  * @param airport Airport object
  */
 export async function loadAllArrivals(airport: Airport | undefined): Promise<Arrival[]> {
-    if (!airport) {
-        return [];
-    }
+  if (!airport) {
+    return [];
+  }
 
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const proceduresAtAirport = await db.getArrivals(airport.ident);
+  const proceduresAtAirport = await db.getArrivals(airport.ident);
 
-    return proceduresAtAirport;
+  return proceduresAtAirport;
 }
 
 /**
@@ -100,13 +100,13 @@ export async function loadAllArrivals(airport: Airport | undefined): Promise<Arr
  * @param airport Airport object
  */
 export async function loadAllApproaches(airport: Airport | undefined): Promise<Approach[]> {
-    if (!airport) {
-        return [];
-    }
+  if (!airport) {
+    return [];
+  }
 
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const proceduresAtAirport = await db.getApproaches(airport.ident);
+  const proceduresAtAirport = await db.getApproaches(airport.ident);
 
-    return proceduresAtAirport;
+  return proceduresAtAirport;
 }

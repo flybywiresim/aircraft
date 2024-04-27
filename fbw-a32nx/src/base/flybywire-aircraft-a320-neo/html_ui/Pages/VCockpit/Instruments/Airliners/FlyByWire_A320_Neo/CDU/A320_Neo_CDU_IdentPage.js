@@ -130,7 +130,7 @@ class CDUIdentPage {
                         }
 
                         CDUIdentPage.ShowPage(mcdu);
-                    })
+                    });
                 } else {
                     CDUIdentPage.ShowPage(mcdu, ConfirmType.DeleteStored);
                 }

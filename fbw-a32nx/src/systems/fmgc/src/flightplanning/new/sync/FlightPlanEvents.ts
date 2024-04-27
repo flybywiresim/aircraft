@@ -11,85 +11,85 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanSyncResponsePacket {
-    plans: Record<number, SerializedFlightPlan>,
+  plans: Record<number, SerializedFlightPlan>;
 }
 
 export interface FlightPlanSyncEvent {
-    planIndex: number,
+  planIndex: number;
 }
 
 export interface FlightPlanManagerEvent extends FlightPlanSyncEvent {
-    targetPlanIndex?: number,
+  targetPlanIndex?: number;
 }
 
 export interface FlightPlanCopyEvent extends FlightPlanManagerEvent {
-    options: number,
+  options: number;
 }
 
 export interface FlightPlanEditSyncEvent extends FlightPlanSyncEvent {
-    forAlternate: boolean,
+  forAlternate: boolean;
 }
 
 export interface FlightPlanSetActiveLegIndexEvent extends FlightPlanEditSyncEvent {
-    activeLegIndex: number,
+  activeLegIndex: number;
 }
 
 export interface FlightPlanSetSegmentLegsEvent extends FlightPlanEditSyncEvent {
-    segmentIndex: number,
-    legs: (SerializedFlightPlanLeg | Discontinuity)[],
+  segmentIndex: number;
+  legs: (SerializedFlightPlanLeg | Discontinuity)[];
 }
 
 export interface FlightPlanLegDefinitionEditEvent extends FlightPlanEditSyncEvent {
-    atIndex: number,
-    newDefinition: FlightPlanLegDefinition,
+  atIndex: number;
+  newDefinition: FlightPlanLegDefinition;
 }
 
 export interface FlightPlanLegCruiseStepEditEvent extends FlightPlanEditSyncEvent {
-    atIndex: number,
-    cruiseStep: CruiseStepEntry | undefined,
+  atIndex: number;
+  cruiseStep: CruiseStepEntry | undefined;
 }
 
 export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent {
-    index: 1 | 2 | 3 | 4,
-    fixInfo: FixInfoData | null,
+  index: 1 | 2 | 3 | 4;
+  fixInfo: FixInfoData | null;
 }
 
 export interface PerformanceDataSetEvent<T> extends FlightPlanEditSyncEvent {
-    value: T,
+  value: T;
 }
 
 export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent {
-    flightNumber: string,
+  flightNumber: string;
 }
 
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
-    [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
-}
+  [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
+};
 
 /**
  * Flight plan change events. Those are for local use only, and are not synced across instruments.
  */
 export interface FlightPlanEvents {
-    'flightPlanManager.syncRequest': undefined,
-    'flightPlanManager.syncResponse': FlightPlanSyncResponsePacket,
+  'flightPlanManager.syncRequest': undefined;
+  'flightPlanManager.syncResponse': FlightPlanSyncResponsePacket;
 
-    'flightPlanManager.create': FlightPlanManagerEvent,
-    'flightPlanManager.delete': FlightPlanManagerEvent,
-    'flightPlanManager.deleteAll': undefined,
-    'flightPlanManager.copy': FlightPlanCopyEvent,
-    'flightPlanManager.swap': FlightPlanManagerEvent,
+  'flightPlanManager.create': FlightPlanManagerEvent;
+  'flightPlanManager.delete': FlightPlanManagerEvent;
+  'flightPlanManager.deleteAll': undefined;
+  'flightPlanManager.copy': FlightPlanCopyEvent;
+  'flightPlanManager.swap': FlightPlanManagerEvent;
 
-    'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent,
-    'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent,
-    'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent,
-    'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent,
-    'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent
-    'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent,
+  'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent;
+  'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent;
+  'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
+  'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
+  'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
+  'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
 }
 
 /**
  * Flight plan change sync events. Those are for cross-instrument use only
  */
 export type SyncFlightPlanEvents = {
-    [k in keyof FlightPlanEvents & string as `SYNC_${k}`]: FlightPlanEvents[k]
-}
+  [k in keyof FlightPlanEvents & string as `SYNC_${k}`]: FlightPlanEvents[k];
+};
