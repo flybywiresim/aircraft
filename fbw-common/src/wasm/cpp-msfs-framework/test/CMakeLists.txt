@@ -10,6 +10,10 @@ set(CMAKE_CXX_STANDARD 20)
 # compiler refinement
 set(COMPILER_FLAGS "-g -O0 -Wall -Wextra -Werror -Wshadow -fprofile-arcs -ftest-coverage -pthread")
 
+# Paths
+set(FBW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../)
+set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
+
 # ====================================================================
 # Source files
 # ====================================================================
@@ -27,6 +31,15 @@ set(SOURCE_FILES
 # Include directories
 # ====================================================================
 set(INCLUDE_FILES
+    # these do not work in the test environment
+    #    "${MSFS_SDK}/WASM/include"
+    #    "${MSFS_SDK}/WASM/wasi-sysroot/include"
+    #    "${MSFS_SDK}/WASM/wasi-sysroot/include/c++/v1"
+    #    "${MSFS_SDK}/SimConnect SDK/include"
+    #    "${FBW_COMMON}/cpp-msfs-framework/lib"
+    #    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler"
+    #    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler/DataTypes"
+
     ../lib
 )
 
