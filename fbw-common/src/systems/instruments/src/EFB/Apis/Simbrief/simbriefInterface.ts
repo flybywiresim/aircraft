@@ -8,6 +8,7 @@ export interface ISimbriefData {
     flightNumber: string,
     callsign: string,
     aircraftReg: string,
+    aircraftIcao: string,
     cruiseAltitude: number,
     costIndex: string,
     route: string,

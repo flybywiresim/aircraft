@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-
 #include "logging.h"
 #ifdef PROFILING
 #include "ScopedTimer.hpp"
@@ -14,6 +13,8 @@
 #include "Tables1502_A32NX.hpp"
 #include "ThrustLimits_A32NX.hpp"
 
+#include <algorithm>
+
 void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
@@ -25,7 +26,7 @@ void EngineControl_A32NX::shutdown() {
   LOG_INFO("Fadec::EngineControl_A32NX::shutdown()");
 }
 
-void EngineControl_A32NX::update(sGaugeDrawData* pData) {
+void EngineControl_A32NX::update() {
 #ifdef PROFILING
   profilerUpdate.start();
 #endif
@@ -43,7 +44,7 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
     return;
   }
 
-  const double deltaTime          = pData->dt;
+  const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double simTime            = msfsHandlerPtr->getSimulationTime();
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
   const double pressureAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
@@ -554,7 +555,7 @@ double EngineControl_A32NX::updateFF(int    engine,
   // Checking Fuel Logic and final Fuel Flow
   double outFlow = 0;
   if (correctedFuelFlow >= 1) {
-    outFlow = (std::max)(0.0,                                                                                  //
+    outFlow = std::max(0.0,                                                                                  //
                          (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
                           * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)))                       //
                              - paramImbalance);                                                                //

@@ -185,7 +185,7 @@ export class EfisSymbols<T extends number> {
                 const dist = distanceTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
                 let bearing = bearingTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
                 if (mode !== EfisNdMode.PLAN) {
-                    bearing = MathUtils.clampAngle(bearing - trueHeading);
+                    bearing = MathUtils.normalise360(bearing - trueHeading);
                 }
                 bearing = bearing * Math.PI / 180;
                 const dx = dist * Math.sin(bearing);
@@ -320,7 +320,7 @@ export class EfisSymbols<T extends number> {
                 // ACTIVE ALTN
                 if (this.flightPlanService.active.alternateFlightPlan.legCount > 0
                     && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
-                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.ARC)
+                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV)
                 ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
@@ -386,7 +386,7 @@ export class EfisSymbols<T extends number> {
                 // SEC ALTN
                 if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0
                     && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)
-                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.ARC)
+                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV)
                 ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
@@ -475,9 +475,11 @@ export class EfisSymbols<T extends number> {
         const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
         const flightPhase = getFlightPhaseManager().phase;
 
+        const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+
         const transmitMissed = isAlternate
-            ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, mode === EfisNdMode.ARC)
-            : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, mode === EfisNdMode.ARC);
+            ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isArcVsPlanMode)
+            : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isArcVsPlanMode);
 
         const ret: NdSymbol[] = [];
 
@@ -496,8 +498,14 @@ export class EfisSymbols<T extends number> {
                 continue;
             }
 
+            // no symbols for manual legs, except FM leg with no leg before it
+            if (leg.definition.type === LegType.VM || (leg.definition.type === LegType.FM && !flightPlan.maybeElementAt(i - 1)?.isDiscontinuity)) {
+                continue;
+            }
+
             // if range >= 160, don't include terminal waypoints, except at enroute boundary
             if (range >= 160) {
+                // FIXME the enroute boundary condition has been removed in fms-v2...
                 const [segment] = flightPlan.segmentPositionForIndex(i);
                 if (segment.class === SegmentClass.Departure || segment.class === SegmentClass.Arrival) {
                     continue;

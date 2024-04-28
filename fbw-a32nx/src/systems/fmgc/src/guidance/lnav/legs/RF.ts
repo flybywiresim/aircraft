@@ -48,11 +48,11 @@ export class RFLeg extends XFLeg {
         switch (this.metadata.turnDirection) {
         case TurnDirection.Left:
             this.clockwise = false;
-            this.angle = MathUtils.clampAngle(fromBearing - toBearing);
+            this.angle = MathUtils.normalise360(fromBearing - toBearing);
             break;
         case TurnDirection.Right:
             this.clockwise = true;
-            this.angle = MathUtils.clampAngle(toBearing - fromBearing);
+            this.angle = MathUtils.normalise360(toBearing - fromBearing);
             break;
         default:
             const angle = MathUtils.diffAngle(toBearing, fromBearing);
@@ -97,11 +97,11 @@ export class RFLeg extends XFLeg {
     }
 
     get inboundCourse(): Degrees {
-        return MathUtils.clampAngle(bearingTo(this.center, this.from.location) + (this.clockwise ? 90 : -90));
+        return MathUtils.normalise360(bearingTo(this.center, this.from.location) + (this.clockwise ? 90 : -90));
     }
 
     get outboundCourse(): Degrees {
-        return MathUtils.clampAngle(bearingTo(this.center, this.to.location) + (this.clockwise ? 90 : -90));
+        return MathUtils.normalise360(bearingTo(this.center, this.to.location) + (this.clockwise ? 90 : -90));
     }
 
     get distance(): NauticalMiles {

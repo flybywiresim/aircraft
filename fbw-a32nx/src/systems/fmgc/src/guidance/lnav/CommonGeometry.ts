@@ -24,7 +24,7 @@ export function arcDistanceToGo(ppos: Coordinates, itp: Coordinates, centreFix: 
     const radius = distanceTo(centreFix, itp);
 
     const refFrameOffset = MathUtils.diffAngle(0, itpBearing);
-    const pposAngle = sweepAngle < 0 ? MathUtils.clampAngle(refFrameOffset - pposBearing) : MathUtils.clampAngle(pposBearing - refFrameOffset);
+    const pposAngle = sweepAngle < 0 ? MathUtils.normalise360(refFrameOffset - pposBearing) : MathUtils.normalise360(pposBearing - refFrameOffset);
 
     // before the arc... this implies max sweep angle is <340, arinc allows less than that anyway
     if (pposAngle >= 340) {
@@ -55,7 +55,7 @@ export function arcGuidance(ppos: Coordinates, trueTrack: Degrees, itp: Coordina
         ppos,
     );
 
-    const desiredTrack = sweepAngle > 0 ? MathUtils.clampAngle(bearingPpos + 90) : MathUtils.clampAngle(bearingPpos - 90);
+    const desiredTrack = sweepAngle > 0 ? MathUtils.normalise360(bearingPpos + 90) : MathUtils.normalise360(bearingPpos - 90);
     const trackAngleError = MathUtils.diffAngle(trueTrack, desiredTrack);
 
     const radius = distanceTo(centreFix, itp);
@@ -118,7 +118,7 @@ export function pointOnArc(
 
     return placeBearingDistance(
         centreFix,
-        MathUtils.clampAngle(centerToTerminationBearing + angleFromFtp),
+        MathUtils.normalise360(centerToTerminationBearing + angleFromFtp),
         radius,
     );
 }
@@ -314,7 +314,7 @@ export function arcLength(radius: NauticalMiles, sweepAngle: Degrees): NauticalM
 }
 
 export function reciprocal(course: Degrees): Degrees {
-    return MathUtils.clampAngle(course + 180);
+    return MathUtils.normalise360(course + 180);
 }
 
 export function getRollAnticipationDistance(gs: Knots, bankA: Degrees, bankB: Degrees): NauticalMiles {

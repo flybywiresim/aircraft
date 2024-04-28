@@ -50,7 +50,7 @@ class CDUPerformancePage {
             const runwayObj = targetPlan.originRunway;
 
             if (runwayObj) {
-                runway = runwayObj.ident.substring(2);
+                runway = Fmgc.RunwayUtils.runwayString(runwayObj.ident);
                 hasRunway = true;
             }
         }

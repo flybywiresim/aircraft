@@ -11,13 +11,13 @@ bool Fadec_A32NX::initialize() {
   return true;
 }
 
-bool Fadec_A32NX::update(sGaugeDrawData* pData) {
+bool Fadec_A32NX::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
     std::cerr << "Fadec_A32NX::update() - not initialized" << std::endl;
     return false;
   }
 
-  engineControl.update(pData);
+  engineControl.update();
 
   return true;
 }

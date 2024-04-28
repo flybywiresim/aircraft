@@ -5,7 +5,9 @@
 /* eslint-disable no-await-in-loop */
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+// FIXME remove msfs-sdk dep
 import { AirportClassMask } from '@microsoft/msfs-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import {
     AirportCommunication,
     Airway,
@@ -919,7 +921,7 @@ export class MsfsMapping {
                 frequency: vor.freqMHz,
                 range: this.mapVorRange(vor),
                 figureOfMerit: this.mapVorFigureOfMerit(vor),
-                stationDeclination: vor.magneticVariation > 180 ? vor.magneticVariation - 360 : vor.magneticVariation,
+                stationDeclination: MathUtils.normalise180(360 - vor.magneticVariation),
                 dmeLocation: (vor.type & (VorType.DME)) > 0 ? databaseItem.location : undefined,
                 type: this.mapVorType(vor),
                 class: this.mapVorClass(vor),
