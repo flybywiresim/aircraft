@@ -10,22 +10,35 @@ set(CMAKE_CXX_STANDARD 20)
 # compiler refinement
 set(COMPILER_FLAGS "-g -O0 -Wall -Wextra -Werror -Wshadow -fprofile-arcs -ftest-coverage -pthread")
 
+# Paths
+set(FBW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../)
+set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
+
 # ====================================================================
 # Source files
 # ====================================================================
 set(SOURCE_FILES
-    src/string_utils-tests.cpp
-    src/math_utils-tests.cpp
-    src/ProfileBuffer-tests.cpp
-    src/quantity-tests.cpp
-    src/fingerprint-tests.cpp
-    src/arinc429-tests.cpp
+    src/lib/string_utils-tests.cpp
+    src/lib/math_utils-tests.cpp
+    src/lib/ProfileBuffer-tests.cpp
+    src/lib/quantity-tests.cpp
+    src/lib/fingerprint-tests.cpp
+    src/lib/arinc429-tests.cpp
 )
 
 # ====================================================================
 # Include directories
 # ====================================================================
 set(INCLUDE_FILES
+    # these do not work in the test environment
+    #    "${MSFS_SDK}/WASM/include"
+    #    "${MSFS_SDK}/WASM/wasi-sysroot/include"
+    #    "${MSFS_SDK}/WASM/wasi-sysroot/include/c++/v1"
+    #    "${MSFS_SDK}/SimConnect SDK/include"
+    #    "${FBW_COMMON}/cpp-msfs-framework/lib"
+    #    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler"
+    #    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler/DataTypes"
+
     ../lib
 )
 
