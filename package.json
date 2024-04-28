@@ -63,7 +63,7 @@
     "build-a380x:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh --a380x && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm",
     "build-a380x:metadata": "node scripts/metadata.js fbw-a380x/out/flybywire-aircraft-a380-842 a380x",
     "build-a380x:manifest": "node scripts/build_a380x.js flybywire-aircraft-a380-842",
-    "====== LVar Provider =========": "==========================================",
+    "====== LVar Provider ====================================================": "========================================================",
     "build-arinc429-lvar-bridge:copy-base-files": "mkdir -p fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge && (rsync -a fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/ || cp -a -u fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/)",
     "build-arinc429-lvar-bridge:manifest": "node scripts/build_arinc429-lvar-bridge.js",
     "====== INGAMEPANELS CHECKLIST FIX =======================================": "========================================================",
