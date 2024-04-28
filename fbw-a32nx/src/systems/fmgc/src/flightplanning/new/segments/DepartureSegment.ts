@@ -46,8 +46,8 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    if (!this.flightPlan.originAirport || !this.flightPlan.originRunway) {
-      throw new Error('[FMS/FPM] Cannot set departure procedure without origin airport and runway');
+    if (!this.flightPlan.originAirport) {
+      throw new Error('[FMS/FPM] Cannot set departure procedure without origin airport');
     }
 
     const proceduresAtAirport = await db.getDepartures(this.flightPlan.originAirport.ident);
@@ -86,7 +86,7 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
     this.allLegs.push(...departureSegmentLegs);
     this.strung = false;
 
-    await this.flightPlan.departureRunwayTransitionSegment.setProcedure(this.flightPlan.originRunway.ident);
+    await this.flightPlan.departureRunwayTransitionSegment.setProcedure(this.flightPlan.originRunway?.ident);
 
     this.flightPlan.syncSegmentLegsChange(this);
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);

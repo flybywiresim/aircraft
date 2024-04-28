@@ -151,7 +151,7 @@ export class OriginSegment extends FlightPlanSegment {
 
         if (
           currentSidNewRunwayTransition &&
-          this.flightPlan.departureRunwayTransition.ident !== currentSidNewRunwayTransition.ident
+          this.flightPlan.departureRunwayTransition?.ident !== currentSidNewRunwayTransition.ident
         ) {
           await this.flightPlan.departureRunwayTransitionSegment.setProcedure(currentSidNewRunwayTransition.ident);
 
