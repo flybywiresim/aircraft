@@ -403,6 +403,5 @@ class A32NX_FWC {
         const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
         SimVar.SetSimVarValue('L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE', 'bool', (ias <= 80 && ias > 4) && (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)));
 
-
     }
 }
