@@ -11,11 +11,9 @@
 #include <SimConnect.h>
 #include "SimpleProfiler.hpp"
 
-static const std::string ARINC429_LVAR_RAW_SUFFIX     = "_RAW";    // the suffix we add to the raw LVars
-static const std::string DEFAULT_VARS_FILE            = "\\modules\\arinc429_vars.txt";
-static const std::string WORK_VARS_FILE               = "\\work\\aring429_vars.txt";
-
-using namespace std::chrono;
+static const std::string ARINC429_LVAR_RAW_SUFFIX = "_RAW";  // the suffix we add to the raw LVars
+static const std::string DEFAULT_VARS_FILE        = "\\modules\\arinc429_vars.txt";
+static const std::string WORK_VARS_FILE           = "\\work\\aring429_vars.txt";
 
 /**
  * @brief The Arinc429LvarConverter class is used to convert ARINC429 LVars to raw values and to register the raw value
@@ -70,7 +68,6 @@ class Arinc429LvarConverter {
   void update();
 
  private:
-
   /**
    * @brief Register the raw value variable names in the sim.
    * @param line the line from the var file
