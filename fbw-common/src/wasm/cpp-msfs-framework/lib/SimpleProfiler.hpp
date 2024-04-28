@@ -42,7 +42,7 @@ class SimpleProfiler {
 
  public:
   SimpleProfiler() = delete;
-  
+
   /**
    * @brief Construct a new Simple Profiler object
    * @param name Name of the profiler for the output
