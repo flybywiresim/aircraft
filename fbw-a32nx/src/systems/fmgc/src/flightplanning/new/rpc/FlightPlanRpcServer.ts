@@ -9,29 +9,32 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanServerRpcEvents {
-    'flightPlanServer_rpcCommandResponse': [string, any],
+  flightPlanServer_rpcCommandResponse: [string, any];
 }
 
 export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
-    private readonly pub: Publisher<FlightPlanServerRpcEvents>;
+  private readonly pub: Publisher<FlightPlanServerRpcEvents>;
 
-    constructor(private readonly bus: EventBus, private readonly localFlightPlanService: FlightPlanService) {
-        const sub = bus.getSubscriber<FlightPlanRemoteClientRpcEvents<P>>();
-        this.pub = bus.getPublisher<FlightPlanServerRpcEvents>();
+  constructor(
+    private readonly bus: EventBus,
+    private readonly localFlightPlanService: FlightPlanService,
+  ) {
+    const sub = bus.getSubscriber<FlightPlanRemoteClientRpcEvents<P>>();
+    this.pub = bus.getPublisher<FlightPlanServerRpcEvents>();
 
-        sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
-            this.handleRpcCommand(command, id, ...args);
-        });
-    }
+    sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
+      this.handleRpcCommand(command, id, ...args);
+    });
+  }
 
-    private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
-        console.log('Handling RPC command', command, id, args);
-        const returnValue = await this.localFlightPlanService[command](...args as any[]);
+  private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
+    console.log('Handling RPC command', command, id, args);
+    const returnValue = await this.localFlightPlanService[command](...(args as any[]));
 
-        await this.respondToRpcCommand(id, returnValue);
-    }
+    await this.respondToRpcCommand(id, returnValue);
+  }
 
-    private async respondToRpcCommand(id: string, response: any): Promise<void> {
-        this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response], true);
-    }
+  private async respondToRpcCommand(id: string, response: any): Promise<void> {
+    this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response], true);
+  }
 }

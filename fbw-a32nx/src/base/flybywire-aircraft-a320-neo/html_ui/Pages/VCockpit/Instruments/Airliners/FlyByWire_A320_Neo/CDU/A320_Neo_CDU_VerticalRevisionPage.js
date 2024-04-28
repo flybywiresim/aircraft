@@ -386,7 +386,7 @@ class CDUVerticalRevisionPage {
             case 'C': // AtOrAboveAlt2:
                 return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLvl);
             default:
-                return ''
+                return '';
         }
     }
 

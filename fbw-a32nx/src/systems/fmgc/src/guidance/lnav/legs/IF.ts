@@ -15,85 +15,87 @@ import { Fix, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { distanceTo } from 'msfs-geo';
 
 export class IFLeg extends XFLeg {
-    constructor(
-        fix: Fix,
-        public readonly metadata: Readonly<LegMetadata>,
-        segment: SegmentType,
-    ) {
-        super(fix);
+  constructor(
+    fix: Fix,
+    public readonly metadata: Readonly<LegMetadata>,
+    segment: SegmentType,
+  ) {
+    super(fix);
 
-        this.segment = segment;
+    this.segment = segment;
 
-        // Do not display on map if this is an airport or runway leg
-        const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
+    // Do not display on map if this is an airport or runway leg
+    const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
 
-        this.displayedOnMap = waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
-        // Always compute IF legs that are the runway. If we don't, IF legs at the origin might never be computed because they are before the active leg
-        this.isComputed = waypointDescriptor === WaypointDescriptor.Airport || waypointDescriptor === WaypointDescriptor.Runway;
+    this.displayedOnMap =
+      waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
+    // Always compute IF legs that are the runway. If we don't, IF legs at the origin might never be computed because they are before the active leg
+    this.isComputed =
+      waypointDescriptor === WaypointDescriptor.Airport || waypointDescriptor === WaypointDescriptor.Runway;
+  }
+
+  get predictedPath(): PathVector[] | undefined {
+    return [];
+  }
+
+  getPathStartPoint(): Coordinates | undefined {
+    return this.fix.location;
+  }
+
+  getPathEndPoint(): Coordinates | undefined {
+    return this.fix.location;
+  }
+
+  recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    this.isComputed = true;
+  }
+
+  /** @inheritdoc */
+  setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
+    if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
+      console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
     }
+    super.setNeighboringGuidables(inbound, outbound);
+  }
 
-    get predictedPath(): PathVector[] | undefined {
-        return [];
-    }
+  get inboundCourse(): Degrees | undefined {
+    return undefined;
+  }
 
-    getPathStartPoint(): Coordinates | undefined {
-        return this.fix.location;
-    }
+  get outboundCourse(): Degrees | undefined {
+    return undefined;
+  }
 
-    getPathEndPoint(): Coordinates | undefined {
-        return this.fix.location;
-    }
+  get distance(): NauticalMiles {
+    return 0;
+  }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        this.isComputed = true;
-    }
+  getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
+    return undefined;
+  }
 
-    /** @inheritdoc */
-    setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
-        if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
-            console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
-        }
-        super.setNeighboringGuidables(inbound, outbound);
-    }
+  getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): number {
+    return distanceTo(ppos, this.fix.location);
+  }
 
-    get inboundCourse(): Degrees | undefined {
-        return undefined;
-    }
+  getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
+    return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
+  }
 
-    get outboundCourse(): Degrees | undefined {
-        return undefined;
-    }
+  getNominalRollAngle(_gs): Degrees | undefined {
+    return undefined;
+  }
 
-    get distance(): NauticalMiles {
-        return 0;
-    }
+  getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
+    // If a PWP lies in a discontinuity before an IF leg, the PWP should lie on the fix of the IF.
+    return this.fix.location;
+  }
 
-    getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
-        return undefined;
-    }
+  isAbeam(_ppos: Coordinates): boolean {
+    return false;
+  }
 
-    getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): number {
-        return distanceTo(ppos, this.fix.location);
-    }
-
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
-        return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
-    }
-
-    getNominalRollAngle(_gs): Degrees | undefined {
-        return undefined;
-    }
-
-    getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        // If a PWP lies in a discontinuity before an IF leg, the PWP should lie on the fix of the IF.
-        return this.fix.location;
-    }
-
-    isAbeam(_ppos: Coordinates): boolean {
-        return false;
-    }
-
-    get repr(): string {
-        return `IF AT ${this.fix.ident}`;
-    }
+  get repr(): string {
+    return `IF AT ${this.fix.ident}`;
+  }
 }

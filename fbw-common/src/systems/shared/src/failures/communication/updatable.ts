@@ -1,3 +1,3 @@
 export interface Updatable {
-    update(): void;
+  update(): void;
 }

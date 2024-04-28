@@ -8,20 +8,23 @@ import { AircraftGithubVersionChecker } from '@fbw-common/shared/AircraftGithubV
  * This class is used to check the version of the aircraft and display a warning if it is too old.
  */
 export class VersionCheck {
-    constructor(private readonly aircraftProjectPrefix: string, private readonly bus: EventBus) {
-        console.log('VersionCheck: Created');
-    }
+  constructor(
+    private readonly aircraftProjectPrefix: string,
+    private readonly bus: EventBus,
+  ) {
+    console.log('VersionCheck: Created');
+  }
 
-    public connectedCallback(): void {
-        // empty
-    }
+  public connectedCallback(): void {
+    // empty
+  }
 
-    public startPublish(): void {
-        console.log('VersionCheck: startPublish()');
-        AircraftGithubVersionChecker.checkVersion(this.aircraftProjectPrefix);
-    }
+  public startPublish(): void {
+    console.log('VersionCheck: startPublish()');
+    AircraftGithubVersionChecker.checkVersion(this.aircraftProjectPrefix);
+  }
 
-    public update(): void {
-        // empty
-    }
+  public update(): void {
+    // empty
+  }
 }

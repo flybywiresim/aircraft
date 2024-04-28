@@ -10,41 +10,43 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 
 export class EnrouteSegment extends FlightPlanSegment {
-    class = SegmentClass.Enroute
+  class = SegmentClass.Enroute;
 
-    allLegs: FlightPlanElement[] = []
+  allLegs: FlightPlanElement[] = [];
 
-    isSequencedMissedApproach = false
+  isSequencedMissedApproach = false;
 
-    insertLeg(leg: FlightPlanLeg) {
-        this.allLegs.push(leg);
-    }
+  insertLeg(leg: FlightPlanLeg) {
+    this.allLegs.push(leg);
+  }
 
-    insertLegs(...elements: FlightPlanLeg[]) {
-        this.allLegs.push(...elements);
-    }
+  insertLegs(...elements: FlightPlanLeg[]) {
+    this.allLegs.push(...elements);
+  }
 
-    clone(forPlan: BaseFlightPlan): EnrouteSegment {
-        const newSegment = new EnrouteSegment(forPlan);
+  clone(forPlan: BaseFlightPlan): EnrouteSegment {
+    const newSegment = new EnrouteSegment(forPlan);
 
-        newSegment.strung = this.strung;
-        newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.strung = this.strung;
+    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
 
-        return newSegment;
-    }
+    return newSegment;
+  }
 
-    /**
-     * Sets the contents of this enroute segment using a serialized flight plan segment.
-     *
-     * @param serialized the serialized flight plan segment
-     */
-    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-        this.strung = true;
-        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
-    }
+  /**
+   * Sets the contents of this enroute segment using a serialized flight plan segment.
+   *
+   * @param serialized the serialized flight plan segment
+   */
+  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+    this.strung = true;
+    this.allLegs = serialized.allLegs.map((it) =>
+      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
+    );
+  }
 }
 
 export interface EnrouteElement {
-    airwayIdent?: string,
-    waypoint: Waypoint,
+  airwayIdent?: string;
+  waypoint: Waypoint;
 }

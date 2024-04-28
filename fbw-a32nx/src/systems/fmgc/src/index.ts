@@ -23,42 +23,45 @@ import { NavigationDatabaseService } from './flightplanning/new/NavigationDataba
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>): void {
-    initComponents(baseInstrument, flightPlanService);
+function initFmgcLoop(
+  baseInstrument: BaseInstrument,
+  flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>,
+): void {
+  initComponents(baseInstrument, flightPlanService);
 }
 
 function updateFmgcLoop(deltaTime: number): void {
-    updateComponents(deltaTime);
+  updateComponents(deltaTime);
 }
 
 export {
-    ApproachUtils,
-    RunwayUtils,
-    ApproachType,
-    FlightPlanService,
-    FlightPlanRpcServer,
-    A320FlightPlanPerformanceData,
-    NavigationDatabase,
-    NavigationDatabaseBackend,
-    NavigationDatabaseService,
-    FlightPlanIndex,
-    FlightPhaseManager,
-    getFlightPhaseManager,
-    GuidanceController,
-    initFmgcLoop,
-    updateFmgcLoop,
-    recallMessageById,
-    EfisInterface,
-    EfisSymbols,
-    DescentPathBuilder,
-    Navigation,
-    SelectedNavaidMode,
-    SelectedNavaidType,
-    WaypointFactory,
-    WaypointEntryUtils,
-    SimBriefUplinkAdapter,
-    CoRouteUplinkAdapter,
-    DataManager,
-    EventBus,
-    a320EfisRangeSettings,
+  ApproachUtils,
+  RunwayUtils,
+  ApproachType,
+  FlightPlanService,
+  FlightPlanRpcServer,
+  A320FlightPlanPerformanceData,
+  NavigationDatabase,
+  NavigationDatabaseBackend,
+  NavigationDatabaseService,
+  FlightPlanIndex,
+  FlightPhaseManager,
+  getFlightPhaseManager,
+  GuidanceController,
+  initFmgcLoop,
+  updateFmgcLoop,
+  recallMessageById,
+  EfisInterface,
+  EfisSymbols,
+  DescentPathBuilder,
+  Navigation,
+  SelectedNavaidMode,
+  SelectedNavaidType,
+  WaypointFactory,
+  WaypointEntryUtils,
+  SimBriefUplinkAdapter,
+  CoRouteUplinkAdapter,
+  DataManager,
+  EventBus,
+  a320EfisRangeSettings,
 };

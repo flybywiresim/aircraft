@@ -6,11 +6,11 @@ import { DatabaseItem } from './Common';
 import { SectionCode, AirportSubsectionCode } from './SectionCode';
 
 export interface Gate extends DatabaseItem<SectionCode.Airport> {
-    subSectionCode: AirportSubsectionCode.Gates,
+  subSectionCode: AirportSubsectionCode.Gates;
 
-    /** The airport this gate belongs to */
-    airportIcao: string,
+  /** The airport this gate belongs to */
+  airportIcao: string;
 
-    /** location of the parking position at the gate */
-    location: Coordinates
+  /** location of the parking position at the gate */
+  location: Coordinates;
 }

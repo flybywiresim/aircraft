@@ -6,20 +6,24 @@
 import { Waypoint } from '@flybywiresim/fbw-sdk';
 
 interface FlightPlanDirectTo {
-    flightPlanLegIndex?: number,
-    nonFlightPlanWaypoint?: Waypoint,
+  flightPlanLegIndex?: number;
+  nonFlightPlanWaypoint?: Waypoint;
 }
 
 type CourseInFlightPlanDirectTo = FlightPlanDirectTo & {
-    courseIn: DegreesTrue,
-}
+  courseIn: DegreesTrue;
+};
 
 type CourseOutFlightPlanDirectTo = FlightPlanDirectTo & {
-    courseOut: DegreesTrue,
-}
+  courseOut: DegreesTrue;
+};
 
 type WithAbeamFlightPlanDirectTo = FlightPlanDirectTo & {
-    withAbeam: true,
-}
+  withAbeam: true;
+};
 
-export type DirectTo = FlightPlanDirectTo | CourseInFlightPlanDirectTo | CourseOutFlightPlanDirectTo | WithAbeamFlightPlanDirectTo
+export type DirectTo =
+  | FlightPlanDirectTo
+  | CourseInFlightPlanDirectTo
+  | CourseOutFlightPlanDirectTo
+  | WithAbeamFlightPlanDirectTo;

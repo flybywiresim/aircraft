@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const WING_FUELRATE_GAL_SEC = 4.01;
 const CENTER_MODIFIER = 0.4528;
 
@@ -80,8 +84,7 @@ class A32NX_Refuel {
             SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
             SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
             SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
-        }
-        else {
+        } else {
             let multiplier = 1;
             if (refuelRate == '1') { // fast
                 multiplier = 5;

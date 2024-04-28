@@ -475,7 +475,7 @@ class CDUPerformancePage {
                 } else {
                     scratchpadCallback();
                 }
-            }
+            };
         }
 
         const [toUtcLabel, toDistLabel] = isTakeoffOrClimbActive ? ["\xa0UTC", "DIST"] : ["", ""];
@@ -732,7 +732,7 @@ class CDUPerformancePage {
                 } else {
                     scratchpadCallback();
                 }
-            }
+            };
 
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
@@ -1153,7 +1153,7 @@ class CDUPerformancePage {
         if (selectedSpdMach < 1) {
             return ["SELECTED", `\xa0${selectedSpdMach.toFixed(2).replace('0.', '.')}[color]green`];
         } else {
-            const machAtManualCrossoverAlt = mcdu.casToMachManualCrossoverCurve.evaluate(selectedSpdMach)
+            const machAtManualCrossoverAlt = mcdu.casToMachManualCrossoverCurve.evaluate(selectedSpdMach);
             const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(machAtManualCrossoverAlt);
             const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu.flightPlanService.active.performanceData.cruiseFlightLevel || manualCrossoverAltitude < mcdu.flightPlanService.active.performanceData.cruiseFlightLevel * 100);
 
@@ -1200,7 +1200,6 @@ class CDUPerformancePage {
             ? geometryProfile.computeClimbPredictionToAltitude(altitudeToPredict)
             : geometryProfile.computeDescentPredictionToAltitude(altitudeToPredict);
 
-
         if (predictions) {
             if (Number.isFinite(predictions.distanceFromStart)) {
                 if (printSmall) {
@@ -1212,7 +1211,7 @@ class CDUPerformancePage {
 
             if (Number.isFinite(predictions.secondsFromPresent)) {
                 const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                const predToTimeCellText = FMCMainDisplay.secondsToUTC(utcTime + predictions.secondsFromPresent)
+                const predToTimeCellText = FMCMainDisplay.secondsToUTC(utcTime + predictions.secondsFromPresent);
 
                 if (printSmall) {
                     predToTimeCell = "{small}" + predToTimeCellText + "{end}[color]green";
