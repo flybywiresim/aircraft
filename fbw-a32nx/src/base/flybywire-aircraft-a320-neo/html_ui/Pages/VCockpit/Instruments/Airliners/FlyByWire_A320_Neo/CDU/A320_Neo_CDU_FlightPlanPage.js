@@ -641,11 +641,11 @@ class CDUFlightPlanPage {
             }
         }
 
-        CDUFlightPlanPage.updateVisibleLegs(mcdu, waypointsAndMarkers, offset, forPlan, 'L');
-        CDUFlightPlanPage.updateVisibleLegs(mcdu, waypointsAndMarkers, offset, forPlan, 'R');
+        CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'L');
+        CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'R');
         mcdu.onUnload = () => {
-            CDUFlightPlanPage.updateVisibleLegs(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
-            CDUFlightPlanPage.updateVisibleLegs(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
+            CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
+            CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
         }
 
         // Render scrolling data to text >> add ditto marks
@@ -912,10 +912,9 @@ class CDUFlightPlanPage {
         return true;
     }
 
-    static updateVisibleLegs(mcdu, waypointsAndMarkers, offset, forPlan, side) {
+    static updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, side) {
         const forActiveOrTemporary = forPlan === 0;
         const targetPlan = forActiveOrTemporary ? mcdu.flightPlanService.activeOrTemporary : mcdu.flightPlanService.secondary(1);
-        const scrollWindow = waypointsAndMarkers.slice(offset, offset + 5);
 
         for (let i = 0; i < waypointsAndMarkers.length; i++) {
             const { wp, inAlternate, fpIndex } = waypointsAndMarkers[(offset + i + 1) % waypointsAndMarkers.length];
@@ -924,23 +923,6 @@ class CDUFlightPlanPage {
                 break;
             }
         }
-
-        mcdu.efisInterfaces[side].setAlternateLegVisible(
-            scrollWindow.some(row => row.inAlternate),
-            scrollWindow[1] && scrollWindow[1].inAlternate,
-            forPlan
-        );
-        mcdu.efisInterfaces[side].setMissedLegVisible(
-            targetPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.firstMissedApproachLegIndex),
-            targetPlan && scrollWindow[1] && scrollWindow[1].fpIndex >= targetPlan.firstMissedApproachLegIndex,
-            forPlan
-        );
-        mcdu.efisInterfaces[side].setAlternateMissedLegVisible(
-            targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex),
-            targetPlan && targetPlan.alternateFlightPlan && scrollWindow[1] && scrollWindow[1].inAlternate && scrollWindow[1].fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex,
-            forPlan,
-        );
-        mcdu.efisInterfaces[side].setSecRelatedPageOpen(!forActiveOrTemporary);
     }
 }
 

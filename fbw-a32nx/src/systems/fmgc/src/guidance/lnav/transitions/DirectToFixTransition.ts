@@ -17,6 +17,7 @@ import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { CILeg } from '../legs/CI';
 import {
     arcDistanceToGo,
@@ -29,8 +30,8 @@ import {
 import { CRLeg } from '../legs/CR';
 import { CDLeg } from '../legs/CD';
 
-type PrevLeg = CALeg | CDLeg | CFLeg | CILeg | CRLeg | DFLeg | FDLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
-type NextLeg = CFLeg | DFLeg /* | FALeg | FMLeg */
+type PrevLeg = CALeg | CDLeg | CFLeg | CILeg | CRLeg | DFLeg | FDLeg | /* FALeg | */ FMLeg | HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
+type NextLeg = CFLeg | DFLeg /* | FALeg */ | FMLeg;
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
 const acos = (input: Degrees) => Math.acos(input) * (180 / Math.PI);

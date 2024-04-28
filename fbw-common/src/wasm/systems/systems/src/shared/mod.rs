@@ -1019,6 +1019,16 @@ impl<'a> Average<&'a Ratio> for Ratio {
     }
 }
 
+pub trait Resolution {
+    fn resolution(self, resolution: f64) -> f64;
+}
+
+impl Resolution for f64 {
+    fn resolution(self, resolution: f64) -> f64 {
+        (self / resolution).round() * resolution
+    }
+}
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
@@ -2147,5 +2157,34 @@ mod mach_number_tests {
             MachNumber(0.5),
             0.001
         );
+    }
+}
+
+#[cfg(test)]
+mod resolution_tests {
+    use super::*;
+
+    #[test]
+    fn positive_values_are_returned_to_correct_resolution() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, 20.);
+    }
+
+    #[test]
+    fn negative_values_are_returned_to_correct_resolution() {
+        let value: f64 = -22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, -20.);
+    }
+
+    #[test]
+    fn bigger_resolution_than_twice_value_returns_zero() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(50.);
+
+        assert_eq!(value_after_resolution, 0.);
     }
 }

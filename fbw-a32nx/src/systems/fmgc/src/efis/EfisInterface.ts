@@ -4,27 +4,22 @@
 
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+
+type PlanCentre = {
+    fpIndex: number;
+    index: number;
+    inAlternate: boolean;
+}
 
 export class EfisInterface {
     public version = 0;
 
-    constructor(private side: EfisSide) { }
+    static readonly NUM_LEGS_ON_FPLN_PAGE = 5;
+
+    constructor(private side: EfisSide, private flightPlanService: FlightPlanService) { }
 
     private isSecRelatedPageOpen: boolean = false;
-
-    private visibleLegsInPlanMode: Record<FlightPlanIndex, number> = {
-        [FlightPlanIndex.Active]: 0,
-        [FlightPlanIndex.Temporary]: 0,
-        [FlightPlanIndex.FirstSecondary]: 0,
-        [FlightPlanIndex.Uplink]: 0,
-    }
-
-    private visibleLegsInArcMode: Record<FlightPlanIndex, number> = {
-        [FlightPlanIndex.Active]: 0,
-        [FlightPlanIndex.Temporary]: 0,
-        [FlightPlanIndex.FirstSecondary]: 0,
-        [FlightPlanIndex.Uplink]: 0,
-    }
 
     readonly planCentre: PlanCentre = {
         fpIndex: 0,
@@ -51,60 +46,8 @@ export class EfisInterface {
         }
     }
 
-    setAlternateLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Alternate) > 0;
-        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
-            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.Alternate;
-            this.version++;
-        }
-
-        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Alternate) > 0;
-        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
-            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.Alternate;
-            this.version++;
-        }
-    }
-
-    setMissedLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Missed) > 0;
-        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
-            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.Missed;
-            this.version++;
-        }
-
-        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Missed) > 0;
-        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
-            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.Missed;
-            this.version++;
-        }
-    }
-
-    setAlternateMissedLegVisible(visibleInArcMode: boolean, visibleInPlanMode: boolean, planIndex = FlightPlanIndex.Active): void {
-        const wasPreviouslyVisibleInArcMode = (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
-        if (!!visibleInArcMode !== wasPreviouslyVisibleInArcMode) {
-            this.visibleLegsInArcMode[planIndex] ^= FlightPlanComponents.AlternateMissed;
-            this.version++;
-        }
-
-        const wasPreviouslyVisibleInPlanMode = (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
-        if (!!visibleInPlanMode !== wasPreviouslyVisibleInPlanMode) {
-            this.visibleLegsInPlanMode[planIndex] ^= FlightPlanComponents.AlternateMissed;
-            this.version++;
-        }
-    }
-
     shouldTransmitSecondary(): boolean {
         return this.isSecRelatedPageOpen;
-    }
-
-    shouldTransmitAlternate(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
-        if (planIndex === FlightPlanIndex.FirstSecondary) {
-            return this.isSecRelatedPageOpen;
-        }
-
-        return isArcVsPlanMode
-            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Alternate) > 0
-            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Alternate) > 0;
     }
 
     shouldTransmitMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
@@ -112,9 +55,47 @@ export class EfisInterface {
             return this.isSecRelatedPageOpen;
         }
 
-        return isArcVsPlanMode
-            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.Missed) > 0
-            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.Missed) > 0;
+        const plan = this.flightPlanService.get(planIndex);
+        if (!plan) {
+            return false;
+        }
+
+        if (isArcVsPlanMode) {
+            const legIn1stLineIndex = plan.activeLegIndex - 1;
+            const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+
+            const firstMissedLegIndex = plan.firstMissedApproachLegIndex;
+            const lastMissedLegIndex = plan.legCount - 1;
+
+            // Check that first line is before end of alternate plan and last line is after start of alternate plan
+            return legIn1stLineIndex <= lastMissedLegIndex && legInLastLineIndex >= firstMissedLegIndex;
+        }
+
+        return planIndex === this.planCentre.fpIndex && this.planCentre.index <= plan.legCount && this.planCentre.index >= plan.firstMissedApproachLegIndex;
+    }
+
+    shouldTransmitAlternate(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
+        if (planIndex === FlightPlanIndex.FirstSecondary) {
+            return this.isSecRelatedPageOpen;
+        }
+
+        const plan = this.flightPlanService.get(planIndex);
+        if (!plan || !plan.alternateFlightPlan) {
+            return false;
+        }
+
+        if (isArcVsPlanMode) {
+            const legIn1stLineIndex = plan.activeLegIndex - 1;
+            const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+
+            const firstAlternateLegIndex = plan.legCount + 1;
+            const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
+
+            // Check that first line is before end of alternate plan and last line is after start of alternate plan
+            return legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateLegIndex;
+        }
+
+        return planIndex === this.planCentre.fpIndex && this.planCentre.inAlternate;
     }
 
     shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
@@ -122,20 +103,22 @@ export class EfisInterface {
             return this.isSecRelatedPageOpen;
         }
 
-        return isArcVsPlanMode
-            ? (this.visibleLegsInArcMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0
-            : (this.visibleLegsInPlanMode[planIndex] & FlightPlanComponents.AlternateMissed) > 0;
+        const plan = this.flightPlanService.get(planIndex);
+        if (!plan || !plan.alternateFlightPlan) {
+            return false;
+        }
+
+        if (isArcVsPlanMode) {
+            const legIn1stLineIndex = plan.activeLegIndex - 1;
+            const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+
+            const firstAlternateMissedLegIndex = plan.legCount + 1 + plan.alternateFlightPlan.firstMissedApproachLegIndex;
+            const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
+
+            // Check that first line is before end of alternate missed plan and last line is after start of alternate missed plan
+            return legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateMissedLegIndex;
+        }
+
+        return planIndex === this.planCentre.fpIndex && this.planCentre.inAlternate && this.planCentre.index >= plan.alternateFlightPlan.firstMissedApproachLegIndex;
     }
-}
-
-enum FlightPlanComponents {
-    Missed = 1 << 0,
-    Alternate = 1 << 1,
-    AlternateMissed = 1 << 2,
-}
-
-type PlanCentre = {
-    fpIndex: number;
-    index: number;
-    inAlternate: boolean;
 }

@@ -110,6 +110,10 @@ export class PseudoFWC {
 
     private readonly acsc2DiscreteWord2 = Arinc429Register.empty();
 
+    private readonly cpc1DiscreteWord = Arinc429Register.empty();
+
+    private readonly cpc2DiscreteWord = Arinc429Register.empty();
+
     private readonly apuBleedValveOpen = Subject.create(false);
 
     private readonly cabAltSetReset1 = new NXLogicMemoryNode();
@@ -125,6 +129,10 @@ export class PseudoFWC {
     private readonly cabFanHasFault2 = Subject.create(false);
 
     private readonly excessPressure = Subject.create(false);
+
+    private readonly excessResidualPr = Subject.create(false);
+
+    private readonly lowDiffPress = Subject.create(false);
 
     private readonly acsc1Lane1Fault = Subject.create(false);
 
@@ -183,6 +191,32 @@ export class PseudoFWC {
     private readonly packOffNotFailed2 = new NXLogicConfirmNode(60);
 
     private readonly packOffNotFailed2Status = Subject.create(false);
+
+    private readonly cpc1Fault = Subject.create(false);
+
+    private readonly cpc2Fault = Subject.create(false);
+
+    private readonly bothCpcFault = new NXLogicConfirmNode(3, false);
+
+    private readonly bothCpcFaultOutput = Subject.create(false);
+
+    private readonly pressurizationAuto = Subject.create(false);
+
+    private readonly outflowValveOpenAmount = Subject.create(0);
+
+    private readonly outflowValveNotOpen = new NXLogicConfirmNode(70);
+
+    private readonly outflowValveResetCondition = new NXLogicConfirmNode(30);
+
+    private readonly outflowValveNotOpenOutput = Subject.create(false);
+
+    private readonly outflowValveNotOpenSetReset = new NXLogicMemoryNode();
+
+    private readonly safetyValveNotClosedAir = new NXLogicConfirmNode(60);
+
+    private readonly safetyValveNotClosedOutput = Subject.create(false);
+
+    private readonly cabinDeltaPressure = Subject.create(0);
 
     /* 22 - AUTOFLIGHT */
 
@@ -525,9 +559,9 @@ export class PseudoFWC {
 
     private readonly brakesHot = Subject.create(false);
 
-    private readonly landingLight2Retracted = Subject.create(false);
+    private readonly leftLandingLightExtended = Subject.create(false);
 
-    private readonly landingLight3Retracted = Subject.create(false);
+    private readonly rightlandingLightExtended = Subject.create(false);
 
     private readonly lgciu1Fault = Subject.create(false);
 
@@ -751,7 +785,7 @@ export class PseudoFWC {
 
     private readonly ndXfrKnob = Subject.create(0);
 
-    private readonly manLandingElevation = Subject.create(0);
+    private readonly manLandingElevation = Subject.create(false);
 
     private readonly noSmoking = Subject.create(0);
 
@@ -1081,8 +1115,11 @@ export class PseudoFWC {
         this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
         this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
         this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
-        this.landingLight2Retracted.set(SimVar.GetSimVarValue('L:LANDING_2_Retracted', 'bool'));
-        this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
+        // FIX ME ldg lt extended signal should come from SDAC
+        const leftLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_2_POSITION', 'number');
+        const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
+        this.leftLandingLightExtended.set(leftLdgLtPosition >= 30);
+        this.rightlandingLightExtended.set(rightLdgLtPosition >= 30);
         this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
         this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
         this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
@@ -1155,7 +1192,6 @@ export class PseudoFWC {
 
         /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        // FIXME: Should take both words
         this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
         this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
         this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
@@ -1204,7 +1240,23 @@ export class PseudoFWC {
         this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
         this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
-        this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
+        this.cpc1DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
+        this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
+
+        const activeCpcNumber = this.cpc1DiscreteWord.bitValueOr(11, false) ? 1 : 2;
+        const activeCpc = activeCpcNumber === 1 ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
+
+        this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
+        this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
+        this.bothCpcFaultOutput.set(this.bothCpcFault.write(this.cpc1Fault.get() && this.cpc2Fault.get(), deltaTime));
+
+        const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
+        this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
+        this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
+        this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
+
+        this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));
+
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write((pressureAltitude ?? 0) > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
@@ -1217,13 +1269,28 @@ export class PseudoFWC {
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
+        const manOutflowValueOpenPercentage = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent');
+        this.outflowValveOpenAmount.set(Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_OUTFLOW_VALVE_OPEN_PERCENTAGE`).valueOr(manOutflowValueOpenPercentage));
+        this.outflowValveNotOpenOutput.set(
+            this.outflowValveNotOpenSetReset.write(this.outflowValveNotOpen.write((this.outflowValveOpenAmount.get() < 85) && [8, 9, 10].includes(this.fwcFlightPhase.get()), deltaTime),
+                this.outflowValveOpenAmount.get() > 95 || this.outflowValveResetCondition.write(this.fwcFlightPhase.get() === 1, deltaTime)),
+        );
+
+        const safetyValveNotClosed = SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0;
+        this.safetyValveNotClosedAir.write(safetyValveNotClosed, deltaTime);
+        this.safetyValveNotClosedOutput.set((safetyValveNotClosed && [1, 2, 3].includes(this.fwcFlightPhase.get()))
+            || (this.safetyValveNotClosedAir.read() && this.fwcFlightPhase.get() === 6));
+
+        const manCabinDeltaPressure = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'percent');
+        this.cabinDeltaPressure.set(Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`).valueOr(manCabinDeltaPressure));
+
         /* OTHER STUFF */
 
         this.airKnob.set(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum'));
         this.attKnob.set(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum'));
         this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
         this.dmcSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum'));
-        this.manLandingElevation.set(SimVar.GetSimVarValue('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number'));
+        this.manLandingElevation.set(activeCpc.bitValueOr(17, false));
         this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
         this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
         this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
@@ -2375,6 +2442,99 @@ export class PseudoFWC {
             sysPage: 2,
             side: 'LEFT',
         },
+        2131222: { // SYS 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => cpc1Fault && !cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['213122201'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131223: { // SYS 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cpc1Fault, cpc2Fault]) => !cpc1Fault && cpc2Fault, this.cpc1Fault, this.cpc2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['213122301'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131224: { // SYS 1+2 FAULT
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: this.bothCpcFaultOutput,
+            whichCodeToReturn: () => [
+                0,
+                this.pressurizationAuto.get() ? 1 : null,
+                2,
+            ],
+            codesToReturn: ['213122401', '213122402', '213122403'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131231: { // LO DIFF PR
+            flightPhaseInhib: [2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.lowDiffPress,
+            whichCodeToReturn: () => [0, 1, 2],
+            codesToReturn: ['213123101', '213123102', '213123103'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131232: { // OFV NOT OPEN
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+            simVarIsActive: this.outflowValveNotOpenOutput,
+            whichCodeToReturn: () => [
+                0,
+                this.pressurizationAuto.get() ? 1 : null,
+                this.outflowValveOpenAmount.get() < 95 ? 2 : null,
+                (this.pack1On.get() || this.pack2On.get()) ? 3 : null,
+                this.pack1On.get() ? 4 : null,
+                this.pack2On.get() ? 5 : null,
+            ],
+            codesToReturn: ['213123201', '213123202', '213123203', '213123204', '213123205', '213123206'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131233: { // SAFETY VALVE OPEN
+            flightPhaseInhib: [4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.safetyValveNotClosedOutput,
+            whichCodeToReturn: () => [
+                0,
+                this.cabinDeltaPressure.get() < 1 ? 1 : null,
+                this.cabinDeltaPressure.get() < 1 ? 2 : null,
+                (this.cabinDeltaPressure.get() < 1 && !this.excessPressure.get()) ? 3 : null,
+                (this.cabinDeltaPressure.get() > 4 && this.pressurizationAuto.get()) ? 4 : null,
+                this.cabinDeltaPressure.get() > 4 ? 5 : null,
+                this.cabinDeltaPressure.get() > 4 ? 6 : null,
+                this.cabinDeltaPressure.get() > 4 ? 7 : null,
+                this.cabinDeltaPressure.get() > 4 ? 8 : null,
+            ],
+            codesToReturn: ['213123301', '213123302', '213123303', '213123304', '213123305',
+                '213123306', '213123307', '213123308', '213123309'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 2,
+            side: 'LEFT',
+        },
+        2131235: { // EXCES RESIDUAL PR
+            flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: this.excessResidualPr,
+            whichCodeToReturn: () => [0, this.pack1On.get() ? 1 : null,
+                this.pack2On.get() ? 2 : null, 3],
+            codesToReturn: ['213123501', '213123502', '213123503', '213123504'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 2,
+            side: 'LEFT',
+        },
         2161206: { // PACK 1+2 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: this.pack1And2Fault,
@@ -3273,7 +3433,7 @@ export class PseudoFWC {
         '0000190': { // LDG LT
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(
-                ([landingLight2Retracted, landingLight3Retracted]) => !landingLight2Retracted || !landingLight3Retracted, this.landingLight2Retracted, this.landingLight3Retracted,
+                ([leftLandingLightExtended, rightLandingLightExtended]) => leftLandingLightExtended || rightLandingLightExtended, this.leftLandingLightExtended, this.rightlandingLightExtended,
             ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000019001'],
@@ -3324,7 +3484,7 @@ export class PseudoFWC {
         },
         '0000230': { // MAN LANDING ELEVATION
             flightPhaseInhib: [],
-            simVarIsActive: this.manLandingElevation.map((v) => v > 0),
+            simVarIsActive: this.manLandingElevation,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000023001'],
             memoInhibit: () => false,

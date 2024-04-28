@@ -128,7 +128,7 @@ export class HoldEntryTransition extends Transition {
         case EntryState.Turn2:
             dtg = arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
             const refFrameOffset = MathUtils.diffAngle(0, this.outboundCourse);
-            const trackAngleError = this.turn2.sweepAngle < 0 ? MathUtils.clampAngle(refFrameOffset - trueTrack) : MathUtils.clampAngle(trueTrack - refFrameOffset);
+            const trackAngleError = this.turn2.sweepAngle < 0 ? MathUtils.normalise360(refFrameOffset - trueTrack) : MathUtils.normalise360(trueTrack - refFrameOffset);
             if (trackAngleError < 130) {
                 this.state = EntryState.Capture;
             }
@@ -423,7 +423,7 @@ export class HoldEntryTransition extends Transition {
             radius,
         );
         this.turn1.sweepAngle = turnSign * 180 + trackChange;
-        const bearing1 = MathUtils.clampAngle(this.nextLeg.inboundCourse + turnSign * 90);
+        const bearing1 = MathUtils.normalise360(this.nextLeg.inboundCourse + turnSign * 90);
         this.turn1.ftp = placeBearingDistance(this.turn1.arcCentre, bearing1, radius);
 
         this.computedPath.length = 0;
@@ -453,7 +453,7 @@ export class HoldEntryTransition extends Transition {
             radius,
         );
         this.turn1.sweepAngle = turnSign * 180 + trackChange;
-        const bearing1 = MathUtils.clampAngle(this.nextLeg.inboundCourse + turnSign * 90);
+        const bearing1 = MathUtils.normalise360(this.nextLeg.inboundCourse + turnSign * 90);
         this.turn1.ftp = placeBearingDistance(this.turn1.arcCentre, bearing1, radius);
 
         this.computedPath.length = 0;
@@ -500,7 +500,7 @@ export class HoldEntryTransition extends Transition {
 
         const turnSign = this.nextLeg.turnDirection === TurnDirection.Right ? +1 : -1;
 
-        this.straightCourse = MathUtils.clampAngle(this.outboundCourse + 150 * turnSign);
+        this.straightCourse = MathUtils.normalise360(this.outboundCourse + 150 * turnSign);
         this.turn1.sweepAngle = MathUtils.diffAngle(this.inboundCourse, this.straightCourse);
         const turn1Clockwise = this.turn1.sweepAngle >= 0;
         this.turn1.itp = this.nextLeg.fix.location;
@@ -509,7 +509,7 @@ export class HoldEntryTransition extends Transition {
             this.inboundCourse + (turn1Clockwise ? 90 : -90),
             radius,
         );
-        const bearing1 = MathUtils.clampAngle(this.inboundCourse + this.turn1.sweepAngle + (turn1Clockwise ? -90 : 90));
+        const bearing1 = MathUtils.normalise360(this.inboundCourse + this.turn1.sweepAngle + (turn1Clockwise ? -90 : 90));
         this.turn1.ftp = placeBearingDistance(this.turn1.arcCentre, bearing1, radius);
 
         this.computedPath.length = 0;
@@ -681,7 +681,7 @@ export class HoldEntryTransition extends Transition {
             radius,
         );
         this.turn1.sweepAngle = MathUtils.diffAngle(this.inboundCourse, reciprocal(this.outboundCourse));
-        const bearing1 = MathUtils.clampAngle(this.inboundCourse + this.turn1.sweepAngle + (this.nextLeg.turnDirection === TurnDirection.Right ? 90 : -90));
+        const bearing1 = MathUtils.normalise360(this.inboundCourse + this.turn1.sweepAngle + (this.nextLeg.turnDirection === TurnDirection.Right ? 90 : -90));
         this.turn1.ftp = placeBearingDistance(this.turn1.arcCentre, bearing1, radius);
 
         this.computedPath.length = 0;

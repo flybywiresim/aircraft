@@ -391,7 +391,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
             'CF',
             runway.thresholdLocation,
             5,
-            MathUtils.clampAngle(runway.bearing + 180),
+            MathUtils.normalise360(runway.bearing + 180),
         );
 
         return new FlightPlanLeg(segment, {
