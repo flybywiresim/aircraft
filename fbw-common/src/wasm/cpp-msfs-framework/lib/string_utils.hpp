@@ -4,9 +4,11 @@
 #ifndef FLYBYWIRE_AIRCRAFT_STRING_UTILS_HPP
 #define FLYBYWIRE_AIRCRAFT_STRING_UTILS_HPP
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 namespace helper {
 
@@ -29,7 +31,7 @@ class StringUtils {
    *       The function can handle both positive and negative input numbers.
    */
   template <typename T>
-  static std::string insertThousandsSeparator(T n, const std::string_view separator = ",") {
+  static inline std::string insertThousandsSeparator(T n, const std::string_view separator = ",") {
     static_assert(std::is_integral<T>::value, "T must be an integral type");
 
     // Handle negative numbers
@@ -68,14 +70,112 @@ class StringUtils {
    * @return A string representation of the number, padded with leading zeros to reach the specified total length.
    */
   template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-  static std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
-    std::string str = std::to_string(value);
+  static inline std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
+    bool isNegative = value < 0;
+    T    absValue   = isNegative ? -value : value;
+
+    std::string str = std::to_string(absValue);
     if (str.length() >= total_length) {
-      return str;
+      return isNegative ? "-" + str : str;
     }
+
     std::ostringstream oss;
-    oss << std::setw(total_length) << std::setfill('0') << value;
-    return oss.str();
+    oss << std::setw(total_length) << std::setfill('0') << absValue;
+
+    return isNegative ? "-" + oss.str() : oss.str();
+  }
+
+  // splits a string or string view into a vector of parts at each delimiter
+  /**
+   * @brief splits a string or string view into a vector of parts at each delimiter
+   * @tparam StringType
+   * @param str the string to split
+   * @param container the container to store the split parts
+   * @param delims the delimiters to split the string at (default is " ")
+   */
+  template <typename StringType>
+  static inline void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delims = " ") {
+    for (auto first = str.data(), second = str.data(), end = first + str.size(); second != end && first != end; first = second + 1) {
+      second = std::find_first_of(first, end, std::cbegin(delims), std::cend(delims));
+      if (first != second) {
+        container.emplace_back(first, second - first);
+      }
+    }
+  }
+
+  /**
+   * @brief Removes whitespace characters from beginning and end of string s<br/>
+   *          Whitespaces are defined as:   ' ',  '\\t', '\\n', '\\v', '\\f', '\\r'
+   * @tparam StringType std::string or std::string_view
+   * @param s the string to trim
+   * @return StringType the trimmed string
+   */
+  template <typename StringType>
+  static inline StringType trimFast(const StringType& s) {
+    const int l = static_cast<int>(s.length());
+    int       a = 0, b = l - 1;
+    char      c;
+    while (a < l && ((c = s[a]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) {
+      a++;
+    }
+    while (b > a && ((c = s[b]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) {
+      b--;
+    }
+    return s.substr(a, 1 + b - a);
+  }
+
+  /**
+   * @brief removes trailing parts of a string after a given commentMarker
+   * @tparam StringType std::string or std::string_view
+   * @param s the string to remove trailing comments from
+   * @param commentMarker the comment marker to search for
+   * @return StringType the string with trailing comments removed
+   */
+  template <typename StringType>
+  static inline StringType removeTrailingComments(const StringType& s, const std::string& commentMarker) {
+    const auto pos = s.find(commentMarker);
+    if (pos != StringType::npos) {
+      return s.substr(0, pos);
+    }
+    return s;
+  }
+
+  /**
+   * @brief transforms the given string to lower case
+   * @param s the string to transform
+   * @return std::string the transformed string
+   */
+  static inline std::string toLowerCase(const std::string& s) {
+    std::string str(s);
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    return str;
+  }
+
+  /**
+   * @brief transforms the given string to lower case in place
+   * @param str the string to transform in place
+   */
+  static inline void toLowerCase(std::string& str) {
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  }
+
+  /**
+   * @brief transforms the given string to upper case
+   * @param s the string to transform
+   * @return std::string the transformed string
+   */
+  static inline std::string toUpperCase(const std::string& s) {
+    std::string str(s);
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+    return str;
+  }
+
+  /**
+   * @brief transforms the given string to upper case in place
+   * @param str the string to transform in place
+   */
+  static inline void toUpperCase(std::string& str) {
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
   }
 };
 
