@@ -219,7 +219,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new Fmgc.DataManager(this);
 
-        this.efisInterfaces = { L: new Fmgc.EfisInterface('L'), R: new Fmgc.EfisInterface('R') };
+        this.efisInterfaces = { L: new Fmgc.EfisInterface('L', this.currFlightPlanService), R: new Fmgc.EfisInterface('R', this.currFlightPlanService) };
         this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings);
         this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(
@@ -1591,9 +1591,6 @@ class FMCMainDisplay extends BaseAirliners {
             const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
             this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
-
-            // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
-            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
         }
 
         if (this.destinationLatitude !== latitude) {

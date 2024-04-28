@@ -4,6 +4,7 @@
 /* eslint-disable no-await-in-loop */
 
 import { Coordinates, NauticalMiles } from 'msfs-geo';
+// FIXME remove msfs-sdk dependency
 import {
     FacilitySearchType,
     NearestAirportSearchSession,

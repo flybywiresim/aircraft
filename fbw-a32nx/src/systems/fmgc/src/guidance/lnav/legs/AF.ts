@@ -35,7 +35,7 @@ export class AFLeg extends XFLeg {
         this.centre = navaid;
         this.radius = distanceTo(navaid, this.fix.location);
         this.terminationRadial = this.theta;
-        this.bearing = MathUtils.clampAngle(bearingTo(this.centre, this.fix.location) + 90 * this.turnDirectionSign);
+        this.bearing = MathUtils.normalise360(bearingTo(this.centre, this.fix.location) + 90 * this.turnDirectionSign);
         this.arcStartPoint = placeBearingDistance(this.centre, this.boundaryRadial, this.radius);
         this.arcEndPoint = placeBearingDistance(this.centre, this.terminationRadial, this.radius);
 

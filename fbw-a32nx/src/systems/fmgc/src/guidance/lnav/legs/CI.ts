@@ -95,7 +95,7 @@ export class CILeg extends Leg {
                     this.intercept,
                     reciprocal(this.outboundCourse),
                     this.nextLeg.getPathEndPoint(),
-                    MathUtils.clampAngle(this.nextLeg.outboundCourse + 90),
+                    MathUtils.normalise360(this.nextLeg.outboundCourse + 90),
                 );
 
                 const d1 = distanceTo(this.intercept, one);

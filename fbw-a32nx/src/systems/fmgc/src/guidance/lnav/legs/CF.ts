@@ -16,14 +16,23 @@ import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
-import { FixedRadiusTransition } from '../transitions/FixedRadiusTransition';
 
 export class CFLeg extends XFLeg {
     private computedPath: PathVector[] = [];
 
+    /**
+     * A course-to-fix leg.
+     * This leg specifies a leg of a specified distance on a specified inbound course to a fix.
+     * @param fix The fix the leg terminates at.
+     * @param course Course to the fix in degrees tree.
+     * @param length Leg length in nautical miles.
+     * @param metadata Leg metadata.
+     * @param segment Segment the leg belongs to.
+     */
     constructor(
         fix: Fix,
         public readonly course: DegreesTrue,
+        public readonly length: number,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
@@ -64,17 +73,11 @@ export class CFLeg extends XFLeg {
                 this.getPathEndPoint(),
                 inverseCourse,
                 prevLegTerm,
-                MathUtils.clampAngle(inverseCourse + 90),
+                MathUtils.normalise360(inverseCourse + 90),
             )[0];
         }
 
-        // We start the leg at (tad + 0.1) from the fix if we have a fixed radius transition outbound. This allows showing a better looking path after sequencing.
-        let distance = 1;
-        if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
-            distance = this.outboundGuidable.tad + 0.1;
-        }
-
-        return placeBearingDistance(this.fix.location, inverseCourse, distance);
+        return placeBearingDistance(this.fix.location, inverseCourse, this.length);
     }
 
     get predictedPath(): PathVector[] {

@@ -18,11 +18,12 @@ import { Geo } from '@fmgc/utils/Geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { PathVector, PathVectorType } from '../PathVector';
 import { CFLeg } from '../legs/CF';
 
 type PrevLeg = CILeg | CFLeg | DFLeg | FDLeg | TFLeg;
-type NextLeg = CFLeg | FDLeg | /* FALeg | FMLeg | */ PILeg | TFLeg;
+type NextLeg = CFLeg | FDLeg | /* FALeg | */ FMLeg | PILeg | TFLeg;
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
@@ -255,7 +256,7 @@ export class FixedRadiusTransition extends Transition {
 
         this.centre = placeBearingDistance(
             inbound,
-            MathUtils.clampAngle(this.previousLeg.outboundCourse + (this.clockwise ? 90 : -90)),
+            MathUtils.normalise360(this.previousLeg.outboundCourse + (this.clockwise ? 90 : -90)),
             this.radius,
         );
 

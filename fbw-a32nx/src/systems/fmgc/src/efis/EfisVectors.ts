@@ -151,7 +151,7 @@ export class EfisVectors {
 
     private transmitFlightPlan(plan: ReadonlyFlightPlan, side: EfisSide, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
         const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-        const isArcVsPlanMode = mode === EfisNdMode.ARC;
+        const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
 
         if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
             this.transmit(null, mainGroup, side);

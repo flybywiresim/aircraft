@@ -27,6 +27,7 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { HALeg, HFLeg, HMLeg } from '../lnav/legs/HX';
 
 function getFacilities(): typeof Facilities {
@@ -248,7 +249,7 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
     case LegType.VD: // TODO FA, VA legs in geometry
         return new CDLeg(trueCourse, length, recommendedNavaid, metadata, SegmentType.Departure);
     case LegType.CF:
-        return new CFLeg(waypoint, trueCourse, metadata, SegmentType.Departure);
+        return new CFLeg(waypoint, trueCourse, length, metadata, SegmentType.Departure);
     case LegType.CI:
     case LegType.VI: { // TODO VI leg in geometry
         if (!nextGeometryLeg) {
@@ -271,6 +272,8 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
     case LegType.FC:
     case LegType.FD:
         return new FDLeg(trueCourse, length, waypoint, legType === LegType.FC ? waypoint : recommendedNavaid, metadata, SegmentType.Departure);
+    case LegType.FM:
+        return new FMLeg(flightPlanLeg.terminationWaypoint(), trueCourse, metadata, SegmentType.Departure);
     case LegType.IF:
         return new IFLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.PI:
@@ -297,7 +300,6 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
 
         return new TFLeg(prevWaypoint, waypoint, metadata, SegmentType.Departure);
     }
-    case LegType.FM:
     case LegType.VM: {
         return new VMLeg(trueCourse, metadata, SegmentType.Departure);
     }

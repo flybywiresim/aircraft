@@ -25,9 +25,9 @@ export class Geo {
     static distanceToLeg(from: Coordinates, leg: Leg): NauticalMiles {
         const intersections1 = placeBearingIntersection(
             from,
-            MathUtils.clampAngle(leg.outboundCourse - 90),
+            MathUtils.normalise360(leg.outboundCourse - 90),
             leg.initialLegTermPoint,
-            MathUtils.clampAngle(leg.outboundCourse - 180),
+            MathUtils.normalise360(leg.outboundCourse - 180),
         );
 
         const d1 = distanceTo(from, intersections1[0]);
@@ -50,9 +50,9 @@ export class Geo {
 
         const intersections2 = placeBearingIntersection(
             from,
-            MathUtils.clampAngle(leg.outboundCourse - 90),
+            MathUtils.normalise360(leg.outboundCourse - 90),
             legStartReference,
-            MathUtils.clampAngle(leg.outboundCourse - 180),
+            MathUtils.normalise360(leg.outboundCourse - 180),
         );
 
         const d3 = distanceTo(from, intersections2[0]);
@@ -82,9 +82,9 @@ export class Geo {
 
         const intersections1 = placeBearingIntersection(
             from,
-            MathUtils.clampAngle(bearing),
+            MathUtils.normalise360(bearing),
             leg instanceof XFLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
-            MathUtils.clampAngle(leg.outboundCourse - 180),
+            MathUtils.normalise360(leg.outboundCourse - 180),
         );
 
         const d1 = distanceTo(from, intersections1[0]);
@@ -99,9 +99,9 @@ export class Geo {
 
         const intersections2 = placeBearingIntersection(
             from,
-            MathUtils.clampAngle(bearing),
+            MathUtils.normalise360(bearing),
             leg.getPathStartPoint(),
-            MathUtils.clampAngle(leg.outboundCourse - 180),
+            MathUtils.normalise360(leg.outboundCourse - 180),
         );
 
         const d3 = distanceTo(from, intersections2[0]);
