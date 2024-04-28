@@ -78,14 +78,26 @@ void Arinc429LvarConverter::readVarFile() {
 
   arinc429Vars.clear();
 
-  // try to open the work vars file - if it does not exist, create it
-  std::ifstream work_vars(WORK_VARS_FILE);
+  std::ifstream               work_vars(WORK_VARS_FILE);
+  std::map<std::string, bool> workVars;
+  std::string                 line;
+
+  // try to open the work vars file - if it does not exist, create it later when writing to it
   if (work_vars.fail()) {
-    std::cerr << "Vars file does not exist: creating now" << std::endl;
-    auto workFile = std::ofstream(WORK_VARS_FILE);
-    if (workFile.fail()) {
-      std::cerr << "Could not create work vars file" << std::endl;
-      return;
+    std::cerr << "Vars file does not exist: creating new one" << std::endl;
+  } else {
+    // read all vars from the work file into a map with unique keys and true/false values
+    while (std::getline(work_vars, line)) {
+      line = helper::StringUtils::removeTrailingComments(line, "#");
+      line = helper::StringUtils::trimFast(line);
+      if (line.size() > 0) {
+        // if a var is marked with a "-" at the beginning exclude it from the conversion by setting the map value to false
+        if (line[0] == '-') {
+          workVars[line.substr(1)] = false;
+        } else {
+          workVars[line] = true;
+        }
+      }
     }
   }
 
@@ -94,22 +106,6 @@ void Arinc429LvarConverter::readVarFile() {
   if (default_vars.fail()) {
     std::cerr << "Default vars file does not exist" << std::endl;
     return;
-  }
-
-  // read all vars from the work file into a map with unique keys and true/false values
-  std::map<std::string, bool> workVars;
-  std::string                 line;
-  while (std::getline(work_vars, line)) {
-    line = helper::StringUtils::removeTrailingComments(line, "#");
-    line = helper::StringUtils::trimFast(line);
-    if (line.size() > 0) {
-      // if a var is marked with a "-" at the beginning exclude it from the conversion by setting the map value to false
-      if (line[0] == '-') {
-        workVars[line.substr(1)] = false;
-      } else {
-        workVars[line] = true;
-      }
-    }
   }
 
   // read the default vars file and copy all vars which are not in the work to var list from the work file
@@ -121,10 +117,11 @@ void Arinc429LvarConverter::readVarFile() {
       workVars[line] = true;
     }
   }
+  default_vars.close();
 
   // Write the new var list to the work file sorted alphabetically by the var name and close the file
   // add a some comments to the first lines of the work file and ignore them when reading the file
-  std::ofstream workFile(WORK_VARS_FILE);
+  std::ofstream workFile(WORK_VARS_FILE, std::ios::trunc);
   workFile << "# This file contains the list of LVars that are converted to raw values for the ARINC429 bridge" << std::endl;
   workFile << "# Lines starting with a '-' are excluded from the conversion" << std::endl;
   workFile << "# This files will be rewritten at every start of the aircraft to include potential new LVars" << std::endl;
@@ -137,9 +134,7 @@ void Arinc429LvarConverter::readVarFile() {
       workFile << "-" << key << std::endl;
     }
   }
-
   workFile.close();
-  default_vars.close();
 
   // now rebuild the arinc429Vars vector with the vars from the work map marked as to be included in the conversion
   for (const auto& [key, value] : workVars) {
