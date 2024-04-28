@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include "elac_computer_types.h"
+#include "logging.h"
 
 enum Arinc429SignStatus {
   FailureWarning  = 0b00,
@@ -39,6 +40,10 @@ class Arinc429Word {
   }
 
   void setFromData(T data, Arinc429SignStatus ssm) {
+    // Ensure T is an integer or a float with a maximum size of 32 bits
+    static_assert((std::is_integral<T>::value || std::is_floating_point<T>::value), "T must be an integer or a float.");
+    static_assert(sizeof(T) <= 4, "T must be at most 32 bits (4 bytes).");
+
     rawSsm  = ssm;
     rawData = data;
   }
@@ -52,7 +57,13 @@ class Arinc429Word {
 
   void setSsm(Arinc429SignStatus ssm) { rawSsm = static_cast<uint32_t>(ssm); }
 
-  void setData(T data) { rawData = data; }
+  void setData(T data) {
+    // Ensure T is an integer or a float with a maximum size of 32 bits
+    static_assert((std::is_integral<T>::value || std::is_floating_point<T>::value), "T must be an integer or a float.");
+    static_assert(sizeof(T) <= 4, "T must be at most 32 bits (4 bytes).");
+
+    rawData = data;
+  }
 
   bool isFw() const { return static_cast<Arinc429SignStatus>(rawSsm) == Arinc429SignStatus::FailureWarning; }
 
@@ -61,6 +72,10 @@ class Arinc429Word {
   T value() const { return rawData; }
 
   T valueOr(T defaultVal) const {
+    // Ensure T is an integer or a float with a maximum size of 32 bits
+    static_assert((std::is_integral<T>::value || std::is_floating_point<T>::value), "T must be an integer or a float.");
+    static_assert(sizeof(T) <= 4, "T must be at most 32 bits (4 bytes).");
+
     if (rawSsm == NormalOperation || rawSsm == FunctionalTest) {
       return rawData;
     } else {
@@ -86,17 +101,40 @@ class Arinc429DiscreteWord : public Arinc429Word<float> {
    */
   explicit Arinc429DiscreteWord(double simVar) { setFromSimVar(simVar); }
 
-  bool bitFromValue(int bit) const { return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01; }
+  bool bitFromValue(int bit) const {
+    if (bit < 1 || bit > 32) {
+#ifdef __cpp_exceptions
+      throw std::out_of_range("Invalid bit number: " + std::to_string(bit));
+#else
+      LOG_ERROR("Invalid bit number: " + std::to_string(bit));
+#endif
+    }
+    return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01;
+  }
 
   bool bitFromValueOr(int bit, bool defaultVal) const {
+    if (bit < 1 || bit > 32) {
+#ifdef __cpp_exceptions
+      throw std::out_of_range("Invalid bit number: " + std::to_string(bit));
+#else
+      LOG_ERROR("Invalid bit number: " + std::to_string(bit));
+#endif
+    }
     if (rawSsm == NormalOperation || rawSsm == FunctionalTest) {
-      return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01;
+      return bitFromValue(bit);
     } else {
       return defaultVal;
     }
   }
 
   void setBit(int bit, bool value) {
+    if (bit < 1 || bit > 32) {
+#ifdef __cpp_exceptions
+      throw std::out_of_range("Invalid bit number: " + std::to_string(bit));
+#else
+      LOG_ERROR("Invalid bit number: " + std::to_string(bit));
+#endif
+    }
     rawData = static_cast<float>((static_cast<uint32_t>(rawData) & ~(1 << (bit - 1))) | (value << (bit - 1)));
   }
 };
