@@ -4,33 +4,31 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export interface FlightPlanDefinition {
+  originIcao: string;
 
-    originIcao: string,
+  originRunwayIdent?: string;
 
-    originRunwayIdent?: string,
+  originDepartureIdent?: string;
 
-    originDepartureIdent?: string,
+  originEnrouteTransitionIdent?: string;
 
-    originEnrouteTransitionIdent?: string,
+  enrouteSegments?: EnrouteSegmentDefinition[];
 
-    enrouteSegments?: EnrouteSegmentDefinition[],
+  arrivalEnrouteTransitionIDent?: string;
 
-    arrivalEnrouteTransitionIDent?: string,
+  arrivalIdent?: string;
 
-    arrivalIdent?: string,
+  arrivalRunwayTransitionIdent?: string;
 
-    arrivalRunwayTransitionIdent?: string,
+  approachIdent?: string;
 
-    approachIdent?: string,
+  destinationRunwayIdent?: string;
 
-    destinationRunwayIdent?: string,
-
-    destinationIcao: string,
-
+  destinationIcao: string;
 }
 
 export interface EnrouteSegmentDefinition {
-    airwayIdent?: string,
+  airwayIdent?: string;
 
-    via?: string,
+  via?: string;
 }

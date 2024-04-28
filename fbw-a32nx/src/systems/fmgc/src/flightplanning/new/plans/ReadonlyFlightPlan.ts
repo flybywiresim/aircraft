@@ -8,73 +8,73 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
 
 export interface ReadonlyFlightPlan {
-    get index(): number;
+  get index(): number;
 
-    get legCount(): number;
+  get legCount(): number;
 
-    get lastIndex(): number;
+  get lastIndex(): number;
 
-    get firstMissedApproachLegIndex(): number;
+  get firstMissedApproachLegIndex(): number;
 
-    get firstApproachLegIndex(): number;
+  get firstApproachLegIndex(): number;
 
-    get activeLegIndex(): number;
+  get activeLegIndex(): number;
 
-    get activeLeg(): ReadonlyFlightPlanElement;
+  get activeLeg(): ReadonlyFlightPlanElement;
 
-    get isApproachActive(): boolean;
+  get isApproachActive(): boolean;
 
-    findLegIndexByFixIdent(ident: string): number;
+  findLegIndexByFixIdent(ident: string): number;
 
-    get version(): number;
+  get version(): number;
 
-    get originLeg(): ReadonlyFlightPlanElement;
+  get originLeg(): ReadonlyFlightPlanElement;
 
-    get originLegIndex(): number;
+  get originLegIndex(): number;
 
-    get destinationLeg(): ReadonlyFlightPlanElement;
+  get destinationLeg(): ReadonlyFlightPlanElement;
 
-    get destinationLegIndex(): number;
+  get destinationLegIndex(): number;
 
-    get endsAtRunway(): boolean;
+  get endsAtRunway(): boolean;
 
-    hasElement(index: number): boolean;
+  hasElement(index: number): boolean;
 
-    elementAt(index: number): ReadonlyFlightPlanElement;
+  elementAt(index: number): ReadonlyFlightPlanElement;
 
-    legElementAt(index: number): ReadonlyFlightPlanLeg;
+  legElementAt(index: number): ReadonlyFlightPlanLeg;
 
-    maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
+  maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
 
-    get originAirport(): Airport | undefined;
+  get originAirport(): Airport | undefined;
 
-    get originRunway(): Runway | undefined;
+  get originRunway(): Runway | undefined;
 
-    get departureRunwayTransition(): ProcedureTransition | undefined;
+  get departureRunwayTransition(): ProcedureTransition | undefined;
 
-    get originDeparture(): Departure | undefined;
+  get originDeparture(): Departure | undefined;
 
-    get departureEnrouteTransition(): ProcedureTransition | undefined;
+  get departureEnrouteTransition(): ProcedureTransition | undefined;
 
-    get arrivalEnrouteTransition(): ProcedureTransition | undefined;
+  get arrivalEnrouteTransition(): ProcedureTransition | undefined;
 
-    get arrival(): Arrival | undefined;
+  get arrival(): Arrival | undefined;
 
-    get arrivalRunwayTransition(): ProcedureTransition | undefined;
+  get arrivalRunwayTransition(): ProcedureTransition | undefined;
 
-    get approachVia(): ProcedureTransition | undefined;
+  get approachVia(): ProcedureTransition | undefined;
 
-    get approach(): Approach | undefined;
+  get approach(): Approach | undefined;
 
-    get destinationAirport(): Airport | undefined;
+  get destinationAirport(): Airport | undefined;
 
-    get destinationRunway(): Runway | undefined;
+  get destinationRunway(): Runway | undefined;
 
-    segmentPositionForIndex(index: number): readonly [segment: FlightPlanSegment, indexInSegment: number];
+  segmentPositionForIndex(index: number): readonly [segment: FlightPlanSegment, indexInSegment: number];
 
-    autoConstraintTypeForLegIndex(index: number): WaypointConstraintType;
+  autoConstraintTypeForLegIndex(index: number): WaypointConstraintType;
 
-    glideslopeIntercept(): number | undefined;
+  glideslopeIntercept(): number | undefined;
 
-    allLegs: readonly ReadonlyFlightPlanElement[];
+  allLegs: readonly ReadonlyFlightPlanElement[];
 }

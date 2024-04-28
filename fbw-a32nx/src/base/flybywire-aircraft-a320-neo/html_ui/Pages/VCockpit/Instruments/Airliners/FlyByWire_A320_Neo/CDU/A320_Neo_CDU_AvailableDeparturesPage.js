@@ -167,7 +167,7 @@ class CDUAvailableDeparturesPage {
                                     await mcdu.flightPlanService.setDepartureProcedure(null, forPlan, inAlternate);
                                 } else {
                                     await mcdu.flightPlanService.setDepartureProcedure(sid.databaseId, forPlan, inAlternate);
-                               }
+                                }
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);

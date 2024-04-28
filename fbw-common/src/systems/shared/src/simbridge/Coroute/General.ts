@@ -1,3 +1,3 @@
 export interface General {
-    route: string
+  route: string;
 }

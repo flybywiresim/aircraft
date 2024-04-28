@@ -1,9 +1,8 @@
 'use strict';
 
 module.exports = {
-    extends: '../../.eslintrc.js',
+  extends: '../../../../.eslintrc.js',
 
-    // overrides airbnb, use sparingly
-    rules: { 'arrow-body-style': 'off', 'camelcase': 'off' },
-
+  // overrides airbnb, use sparingly
+  rules: { 'arrow-body-style': 'off', camelcase: 'off' },
 };

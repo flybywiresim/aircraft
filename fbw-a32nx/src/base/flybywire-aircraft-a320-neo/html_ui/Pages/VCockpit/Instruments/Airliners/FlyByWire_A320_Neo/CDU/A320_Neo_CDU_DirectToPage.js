@@ -64,7 +64,7 @@ class CDUDirectToPage {
                         }).catch(err => {
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                             console.error(err);
-                        })
+                        });
                     });
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -122,7 +122,7 @@ class CDUDirectToPage {
                             }).catch(err => {
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                                 console.error(err);
-                            })
+                            });
                         });
                     };
                 }

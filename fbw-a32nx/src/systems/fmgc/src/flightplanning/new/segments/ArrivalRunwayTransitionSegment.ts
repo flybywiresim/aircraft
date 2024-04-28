@@ -11,59 +11,68 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 
 export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
-    class = SegmentClass.Arrival
+  class = SegmentClass.Arrival;
 
-    allLegs: FlightPlanElement[] = []
+  allLegs: FlightPlanElement[] = [];
 
-    public get procedure(): ProcedureTransition | undefined {
-        return this.arrivalRunwayTransition;
+  public get procedure(): ProcedureTransition | undefined {
+    return this.arrivalRunwayTransition;
+  }
+
+  private arrivalRunwayTransition: ProcedureTransition | undefined = undefined;
+
+  async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+    const existingArrival = this.flightPlan.arrival;
+
+    if (existingArrival) {
+      const matchingTransition =
+        runwayIdent !== undefined
+          ? existingArrival.runwayTransitions.find((it) => it.ident === runwayIdent)
+          : undefined;
+
+      this.arrivalRunwayTransition = matchingTransition;
+    } else {
+      this.arrivalRunwayTransition = undefined;
     }
 
-    private arrivalRunwayTransition: ProcedureTransition | undefined = undefined
+    if (!skipUpdateLegs) {
+      const legs =
+        this.arrivalRunwayTransition?.legs.map((it) =>
+          FlightPlanLeg.fromProcedureLeg(this, it, existingArrival?.ident ?? '', WaypointConstraintType.DES),
+        ) ?? [];
 
-    async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        const existingArrival = this.flightPlan.arrival;
+      const firstArrivalRunwayTransitionLeg = legs[0];
 
-        if (existingArrival) {
-            const matchingTransition = runwayIdent !== undefined ? existingArrival.runwayTransitions.find((it) => it.ident === runwayIdent) : undefined;
+      // Add an IF at the start if first leg of the transition is an FX
+      if (firstArrivalRunwayTransitionLeg?.isFX()) {
+        const newLeg = FlightPlanLeg.fromEnrouteFix(
+          this,
+          firstArrivalRunwayTransitionLeg.definition.waypoint,
+          undefined,
+          LegType.IF,
+        );
 
-            this.arrivalRunwayTransition = matchingTransition;
-        } else {
-            this.arrivalRunwayTransition = undefined;
-        }
+        this.allLegs.push(newLeg);
+      }
 
-        if (!skipUpdateLegs) {
-            const legs = this.arrivalRunwayTransition?.legs.map(
-                (it) => FlightPlanLeg.fromProcedureLeg(this, it, existingArrival?.ident ?? '', WaypointConstraintType.DES),
-            ) ?? [];
+      this.allLegs.length = 0;
+      this.allLegs.push(...legs);
+      this.strung = false;
 
-            const firstArrivalRunwayTransitionLeg = legs[0];
+      this.flightPlan.syncSegmentLegsChange(this);
 
-            // Add an IF at the start if first leg of the transition is an FX
-            if (firstArrivalRunwayTransitionLeg?.isFX()) {
-                const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstArrivalRunwayTransitionLeg.definition.waypoint, undefined, LegType.IF);
-
-                this.allLegs.push(newLeg);
-            }
-
-            this.allLegs.length = 0;
-            this.allLegs.push(...legs);
-            this.strung = false;
-
-            this.flightPlan.syncSegmentLegsChange(this);
-
-            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
-            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
-        }
+      this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
+      this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
     }
+  }
 
-    clone(forPlan: BaseFlightPlan): ArrivalRunwayTransitionSegment {
-        const newSegment = new ArrivalRunwayTransitionSegment(forPlan);
+  clone(forPlan: BaseFlightPlan): ArrivalRunwayTransitionSegment {
+    const newSegment = new ArrivalRunwayTransitionSegment(forPlan);
 
-        newSegment.strung = this.strung;
-        newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
-        newSegment.arrivalRunwayTransition = this.arrivalRunwayTransition;
+    newSegment.strung = this.strung;
+    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.arrivalRunwayTransition = this.arrivalRunwayTransition;
 
-        return newSegment;
-    }
+    return newSegment;
+  }
 }

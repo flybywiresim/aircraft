@@ -13,121 +13,123 @@ import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegm
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class DestinationSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival
+  class = SegmentClass.Arrival;
 
-    allLegs: FlightPlanElement[] = []
+  allLegs: FlightPlanElement[] = [];
 
-    private airport: Airport;
+  private airport: Airport;
 
-    public get destinationAirport() {
-        return this.airport;
+  public get destinationAirport() {
+    return this.airport;
+  }
+
+  public async setDestinationIcao(icao: string | undefined) {
+    if (icao === undefined) {
+      this.airport = undefined;
+      this.runway = undefined;
+
+      await this.refresh();
+      return;
     }
 
-    public async setDestinationIcao(icao: string | undefined) {
-        if (icao === undefined) {
-            this.airport = undefined;
-            this.runway = undefined;
+    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-            await this.refresh();
-            return;
-        }
+    const airports = await db.getAirports([icao]);
+    const airport = airports.find((a) => a.ident === icao);
 
-        const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-        const airports = await db.getAirports([icao]);
-        const airport = airports.find((a) => a.ident === icao);
-
-        if (!airport) {
-            throw new Error(`[FMS/FPM] Can't find airport with ICAO '${icao}'`);
-        }
-
-        this.airport = airport;
-
-        this.flightPlan.availableDestinationRunways = await loadAllRunways(this.destinationAirport);
-
-        // TODO do we clear arrival/via/approach ...?
-        await this.refresh();
-
-        this.flightPlan.availableArrivals = await loadAllArrivals(this.destinationAirport);
-        this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
+    if (!airport) {
+      throw new Error(`[FMS/FPM] Can't find airport with ICAO '${icao}'`);
     }
 
-    private runway?: Runway;
+    this.airport = airport;
 
-    public get destinationRunway() {
-        return this.runway;
+    this.flightPlan.availableDestinationRunways = await loadAllRunways(this.destinationAirport);
+
+    // TODO do we clear arrival/via/approach ...?
+    await this.refresh();
+
+    this.flightPlan.availableArrivals = await loadAllArrivals(this.destinationAirport);
+    this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
+  }
+
+  private runway?: Runway;
+
+  public get destinationRunway() {
+    return this.runway;
+  }
+
+  public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
+    const oldRunwayIdent = this.runway?.ident;
+
+    if (runwayIdent === undefined) {
+      this.runway = undefined;
+
+      this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
+    } else {
+      if (!this.airport) {
+        throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
+      }
+
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+      const runways = await db.getRunways(this.airport.ident);
+
+      const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
+
+      if (!matchingRunway) {
+        throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${this.airport.ident}`);
+      }
+
+      this.runway = matchingRunway;
+
+      await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
     }
 
-    public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
-        const oldRunwayIdent = this.runway?.ident;
+    await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+  }
 
-        if (runwayIdent === undefined) {
-            this.runway = undefined;
+  async refresh(doRemoveApproach = true) {
+    this.allLegs.length = 0;
 
-            this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
-        } else {
-            if (!this.airport) {
-                throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
-            }
+    const { approachSegment } = this.flightPlan;
 
-            const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-            const runways = await db.getRunways(this.airport.ident);
-
-            const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
-
-            if (!matchingRunway) {
-                throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${this.airport.ident}`);
-            }
-
-            this.runway = matchingRunway;
-
-            await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
-        }
-
-        await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+    // We remove the approach if the runway ident changed and the runway was not set by the approach
+    if (doRemoveApproach) {
+      await approachSegment.setProcedure(undefined);
     }
 
-    async refresh(doRemoveApproach = true) {
-        this.allLegs.length = 0;
-
-        const { approachSegment } = this.flightPlan;
-
-        // We remove the approach if the runway ident changed and the runway was not set by the approach
-        if (doRemoveApproach) {
-            await approachSegment.setProcedure(undefined);
-        }
-
-        if (this.airport && approachSegment.allLegs.length === 0) {
-            this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, '', this.airport));
-        } else {
-            this.allLegs.length = 0;
-        }
-
-        this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
-
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
-        this.flightPlan.syncSegmentLegsChange(this);
+    if (this.airport && approachSegment.allLegs.length === 0) {
+      this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, '', this.airport));
+    } else {
+      this.allLegs.length = 0;
     }
 
-    clone(forPlan: BaseFlightPlan): DestinationSegment {
-        const newSegment = new DestinationSegment(forPlan);
+    this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
 
-        newSegment.strung = this.strung;
-        newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
-        newSegment.airport = this.airport;
-        newSegment.runway = this.runway;
+    this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
+    this.flightPlan.syncSegmentLegsChange(this);
+  }
 
-        return newSegment;
-    }
+  clone(forPlan: BaseFlightPlan): DestinationSegment {
+    const newSegment = new DestinationSegment(forPlan);
 
-    /**
-     * Sets the contents of this segment using a serialized flight plan segment.
-     *
-     * @param serialized the serialized flight plan segment
-     */
-    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-        // TODO sync the airport
-        // TODO sync the runway
-        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
-    }
+    newSegment.strung = this.strung;
+    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.airport = this.airport;
+    newSegment.runway = this.runway;
+
+    return newSegment;
+  }
+
+  /**
+   * Sets the contents of this segment using a serialized flight plan segment.
+   *
+   * @param serialized the serialized flight plan segment
+   */
+  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+    // TODO sync the airport
+    // TODO sync the runway
+    this.allLegs = serialized.allLegs.map((it) =>
+      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
+    );
+  }
 }
