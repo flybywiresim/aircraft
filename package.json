@@ -40,12 +40,10 @@
     "build-a32nx:metadata": "node scripts/metadata.js fbw-a32nx/out/flybywire-aircraft-a320-neo a32nx",
     "build-a32nx:manifest": "node scripts/build_a32nx.js",
     "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
-
     "=======deprecated========================================================": "========================================================",
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
-
     "====== A380 =============================================================": "========================================================",
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
     "build-a380x:copy-large-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a --exclude='texture-4k' --exclude='texture' large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || (cp -a -u large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ && rm -rf fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k))",
@@ -65,11 +63,9 @@
     "build-a380x:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh --a380x && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm",
     "build-a380x:metadata": "node scripts/metadata.js fbw-a380x/out/flybywire-aircraft-a380-842 a380x",
     "build-a380x:manifest": "node scripts/build_a380x.js flybywire-aircraft-a380-842",
-
     "====== LVar Provider =========": "==========================================",
     "build-arinc429-lvar-bridge:copy-base-files": "mkdir -p fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge && (rsync -a fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/ || cp -a -u fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/)",
     "build-arinc429-lvar-bridge:manifest": "node scripts/build_arinc429-lvar-bridge.js",
-
     "====== INGAMEPANELS CHECKLIST FIX =======================================": "========================================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",

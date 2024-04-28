@@ -273,6 +273,86 @@ class StringUtils {
 
     return os.str();
   }
+
+  /**
+   * @brief Helper function to convert a bit integer to a string showing all bits grouped in bytes
+   *
+   * The most significant bit is on the left (bit 63) and the least significant bit is on the right (bit 0).
+   *
+   * @tparam T the type of the integer to convert
+   * @param b the 64 bit integer to convert
+   * @return std::string the string representation of the bits
+   */
+  template <typename T>
+  static std::string strBitsGroupedInteger(const T b) {
+    // Ensure the template parameter is an integral type
+    static_assert(std::is_integral<T>::value, "Template parameter must be an integral type.");
+
+    std::ostringstream os;
+    // Determine the number of bits for the given type
+    const size_t numBits = sizeof(T) * 8;
+    T            one     = 1;  // Define `one` as a constant of the same type
+
+    // Loop through the bits and group them by 8 with dots in between
+    for (size_t i = 0; i < numBits; i++) {
+      if (i > 0 && i % 8 == 0) {
+        os << ".";
+      }
+      // Check if the corresponding bit is set
+      os << ((b & (one << (numBits - 1 - i))) ? "1" : "0");
+    }
+
+    // Append the integer representation to the output string
+    os << " (" + std::to_string(b) + ")";
+    return os.str();
+  }
+
+  // Templated function for floating-point types only
+  template <typename T>
+  static std::string strBitsGroupedFloatingpoint(const T& value) {
+    // Ensure the template parameter is an integral type
+    static_assert(std::is_floating_point<T>::value, "Template parameter must be a floating-point type.");
+
+    std::ostringstream os;
+
+    // Union to reinterpret float/double as raw bits
+    union {
+      T        float_value;
+      uint64_t integer_value;  // Can hold the bits for both float and double
+    };
+
+    float_value = value;
+
+    // Determine the number of bits based on the type (32 bits for float, 64 bits for double)
+    const size_t numBits = sizeof(T) * 8;
+
+    // Constants for sign, exponent, and fraction bit counts
+    size_t signBitCount     = 1;
+    size_t exponentBitCount = (numBits == 32) ? 8 : 11;
+    size_t fractionBitCount = numBits - signBitCount - exponentBitCount;
+
+    // Get the sign bit
+    os << ((integer_value & (1ULL << (numBits - 1))) ? "1" : "0");
+
+    os << ".";  // Separator for sign and exponent
+
+    // Get the exponent bits
+    for (size_t i = 0; i < exponentBitCount; i++) {
+      os << ((integer_value & (1ULL << (numBits - 2 - i))) ? "1" : "0");
+    }
+
+    os << ".";  // Separator for exponent and fraction
+
+    // Get the fraction bits
+    for (size_t i = 0; i < fractionBitCount; i++) {
+      os << ((integer_value & (1ULL << (fractionBitCount - 1 - i))) ? "1" : "0");
+    }
+
+    // Add the value in parentheses for context
+    os << " (" << std::setprecision(17) << float_value << ")";
+
+    return os.str();
+  }
 };
 
 }  // namespace helper

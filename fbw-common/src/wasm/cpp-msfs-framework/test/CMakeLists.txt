@@ -65,5 +65,3 @@ add_executable(${testExeName} ${SOURCE_FILES} ${INCLUDE_FILES})
 target_link_libraries(${testExeName} PUBLIC gtest gtest_main)
 
 gtest_discover_tests(${testExeName})
-
-
