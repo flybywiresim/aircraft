@@ -18,6 +18,8 @@ set(SOURCE_FILES
     src/math_utils-tests.cpp
     src/ProfileBuffer-tests.cpp
     src/quantity-tests.cpp
+    src/fingerprint-tests.cpp
+    src/arinc429-tests.cpp
 )
 
 # ====================================================================
