@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include <gtest/gtest.h>
-#include "arinc429/arinc429.hpp"
+#include "arinc429.hpp"
 
 class Arinc429NumericWordTests : public ::testing::Test {};
 
@@ -20,6 +20,12 @@ TEST_F(Arinc429NumericWordTests, SetFromSimVarCorrectlySetsRawDataAndSsm) {
   word2.setFromSimVar(word.toSimVar());
   ASSERT_FLOAT_EQ(word.value(), 1234.56789);
   ASSERT_EQ(word.ssm(), Arinc429SignStatus::FailureWarning);
+}
+
+TEST_F(Arinc429NumericWordTests, SetFromDataNegativeValue) {
+  Arinc429NumericWord word;
+  word.setFromData(-1234.56789, Arinc429SignStatus::FailureWarning);
+  ASSERT_FLOAT_EQ(word.value(), -1234.56789);
 }
 
 class Arinc429DiscreteWordTests : public ::testing::Test {};
