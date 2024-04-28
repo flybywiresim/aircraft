@@ -323,7 +323,7 @@ export class EfisSymbols<T extends number> {
                 // ACTIVE ALTN
                 if (this.flightPlanService.active.alternateFlightPlan.legCount > 0
                     && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
-                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.ARC)
+                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV)
                 ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
@@ -389,7 +389,7 @@ export class EfisSymbols<T extends number> {
                 // SEC ALTN
                 if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0
                     && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)
-                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.ARC)
+                    && this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV)
                 ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
@@ -478,9 +478,11 @@ export class EfisSymbols<T extends number> {
         const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
         const flightPhase = getFlightPhaseManager().phase;
 
+        const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+
         const transmitMissed = isAlternate
-            ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, mode === EfisNdMode.ARC)
-            : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, mode === EfisNdMode.ARC);
+            ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isArcVsPlanMode)
+            : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isArcVsPlanMode);
 
         const ret: NdSymbol[] = [];
 
