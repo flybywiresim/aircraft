@@ -69,7 +69,6 @@ class NavSystem extends BaseInstrument {
         return this.currFlightPhaseManager;
     }
 
-
     get flightPlanService() {
         return this.currFlightPlanService;
     }

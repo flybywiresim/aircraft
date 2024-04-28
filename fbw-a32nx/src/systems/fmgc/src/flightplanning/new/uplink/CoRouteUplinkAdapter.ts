@@ -15,334 +15,383 @@ import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { DataInterface } from '../interface/DataInterface';
 
 export interface OfpRoute {
-    from: string,
-    to: string,
-    altn: string,
-    chunks: OfpRouteChunk[],
+  from: string;
+  to: string;
+  altn: string;
+  chunks: OfpRouteChunk[];
 }
 
 export interface BaseOfpRouteChunk {
-    instruction: string,
+  instruction: string;
 }
 
 interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'airway',
-    ident: string,
-    locationHint: {
-        lat: number,
-        long: number,
-    },
+  instruction: 'airway';
+  ident: string;
+  locationHint: {
+    lat: number;
+    long: number;
+  };
 }
 
 interface AirwayTerminationOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'airwayTermination',
-    ident: string,
+  instruction: 'airwayTermination';
+  ident: string;
 }
 
 interface WaypointOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'waypoint',
-    ident: string,
-    locationHint: {
-        lat: number,
-        long: number,
-    },
+  instruction: 'waypoint';
+  ident: string;
+  locationHint: {
+    lat: number;
+    long: number;
+  };
 }
 
 interface LatLongOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'latlong',
-    lat: number,
-    long: number,
+  instruction: 'latlong';
+  lat: number;
+  long: number;
 }
 
 interface DctOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'dct',
+  instruction: 'dct';
 }
 
 interface ProcedureOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'procedure',
-    ident: string,
+  instruction: 'procedure';
+  ident: string;
 }
 
 interface SidEnrouteTransitionOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'sidEnrouteTransition',
-    ident: string,
-    locationHint: {
-        lat: number,
-        long: number,
-    },
+  instruction: 'sidEnrouteTransition';
+  ident: string;
+  locationHint: {
+    lat: number;
+    long: number;
+  };
 }
 
 interface StarEnrouteTransitionOfpRouteChunk extends BaseOfpRouteChunk {
-    instruction: 'starEnrouteTransition',
-    ident: string,
+  instruction: 'starEnrouteTransition';
+  ident: string;
 }
 
 type OfpRouteChunk =
-    | AirwayOfpRouteChunk
-    | AirwayTerminationOfpRouteChunk
-    | WaypointOfpRouteChunk
-    | LatLongOfpRouteChunk
-    | DctOfpRouteChunk
-    | ProcedureOfpRouteChunk
-    | SidEnrouteTransitionOfpRouteChunk
-    | StarEnrouteTransitionOfpRouteChunk
+  | AirwayOfpRouteChunk
+  | AirwayTerminationOfpRouteChunk
+  | WaypointOfpRouteChunk
+  | LatLongOfpRouteChunk
+  | DctOfpRouteChunk
+  | ProcedureOfpRouteChunk
+  | SidEnrouteTransitionOfpRouteChunk
+  | StarEnrouteTransitionOfpRouteChunk;
 
 type CoRoute = {
-    routeNumber: string,
-    originIcao: string,
-    destinationIcao: string,
-    route: string,
-    /* eslint-disable camelcase */
-    alternateIcao?: string
-    navlog: CoRouteFix[],
-}
+  routeNumber: string;
+  originIcao: string;
+  destinationIcao: string;
+  route: string;
+  /* eslint-disable camelcase */
+  alternateIcao?: string;
+  navlog: CoRouteFix[];
+};
 
 export class CoRouteUplinkAdapter {
-    static async uplinkFlightPlanFromCoRoute(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: CoRoute) {
-        const route = this.getRouteFromOfp(ofp);
+  static async uplinkFlightPlanFromCoRoute(
+    fms: DataInterface & DisplayInterface,
+    flightPlanService: FlightPlanService,
+    ofp: CoRoute,
+  ) {
+    const route = this.getRouteFromOfp(ofp);
 
-        fms.onUplinkInProgress();
+    fms.onUplinkInProgress();
 
-        await flightPlanService.newCityPair(route.from, route.to, route.altn, FlightPlanIndex.Uplink);
+    await flightPlanService.newCityPair(route.from, route.to, route.altn, FlightPlanIndex.Uplink);
 
-        let insertHead = -1;
+    let insertHead = -1;
 
-        const setInsertHeadToEndOfEnroute = () => {
-            insertHead = flightPlanService.uplink.originSegment.legCount
-                + flightPlanService.uplink.departureRunwayTransitionSegment.legCount
-                + flightPlanService.uplink.departureSegment.legCount
-                + flightPlanService.uplink.departureEnrouteTransitionSegment.legCount
-                + flightPlanService.uplink.enrouteSegment.legCount
-                - 1;
+    const setInsertHeadToEndOfEnroute = () => {
+      insertHead =
+        flightPlanService.uplink.originSegment.legCount +
+        flightPlanService.uplink.departureRunwayTransitionSegment.legCount +
+        flightPlanService.uplink.departureSegment.legCount +
+        flightPlanService.uplink.departureEnrouteTransitionSegment.legCount +
+        flightPlanService.uplink.enrouteSegment.legCount -
+        1;
 
-            if (flightPlanService.uplink.enrouteSegment.legCount > 1) {
-                const lastElement = flightPlanService.uplink.allLegs[insertHead];
+      if (flightPlanService.uplink.enrouteSegment.legCount > 1) {
+        const lastElement = flightPlanService.uplink.allLegs[insertHead];
 
-                if (lastElement?.isDiscontinuity === true) {
-                    insertHead--;
-                }
-            }
-        };
+        if (lastElement?.isDiscontinuity === true) {
+          insertHead--;
+        }
+      }
+    };
+
+    setInsertHeadToEndOfEnroute();
+
+    const ensureAirwaysFinalized = () => {
+      if (flightPlanService.uplink.pendingAirways) {
+        flightPlanService.uplink.pendingAirways.finalize();
+        flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
+      }
+    };
 
-        const ensureAirwaysFinalized = () => {
-            if (flightPlanService.uplink.pendingAirways) {
-                flightPlanService.uplink.pendingAirways.finalize();
-                flightPlanService.uplink.pendingAirways = undefined;
+    const pickFix = (fixes: Fix[], locationHint: Coordinates): Fix => {
+      let minDistance = Number.MAX_SAFE_INTEGER;
+      let minDistanceIndex = -1;
 
-                setInsertHeadToEndOfEnroute();
-            }
-        };
+      for (let i = 0; i < fixes.length; i++) {
+        const fix = fixes[i];
 
-        const pickFix = (fixes: Fix[], locationHint: Coordinates): Fix => {
-            let minDistance = Number.MAX_SAFE_INTEGER;
-            let minDistanceIndex = -1;
+        const distance = distanceTo(fix.location, locationHint);
 
-            for (let i = 0; i < fixes.length; i++) {
-                const fix = fixes[i];
+        if (distance < minDistance) {
+          minDistance = distance;
+          minDistanceIndex = i;
+        }
+      }
 
-                const distance = distanceTo(fix.location, locationHint);
+      return fixes[minDistanceIndex];
+    };
 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    minDistanceIndex = i;
-                }
-            }
+    const pickAirway = (airways: Airway[], locationHint: Coordinates): Airway => {
+      let minDistance = Number.MAX_SAFE_INTEGER;
+      let minDistanceIndex = -1;
 
-            return fixes[minDistanceIndex];
-        };
+      for (let i = 0; i < airways.length; i++) {
+        const airway = airways[i];
 
-        const pickAirway = (airways: Airway[], locationHint: Coordinates): Airway => {
-            let minDistance = Number.MAX_SAFE_INTEGER;
-            let minDistanceIndex = -1;
+        const distance = distanceTo(airway.fixes[0].location, locationHint);
 
-            for (let i = 0; i < airways.length; i++) {
-                const airway = airways[i];
+        if (distance < minDistance) {
+          minDistance = distance;
+          minDistanceIndex = i;
+        }
+      }
 
-                const distance = distanceTo(airway.fixes[0].location, locationHint);
+      return airways[minDistanceIndex];
+    };
 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    minDistanceIndex = i;
-                }
-            }
+    const pickAirwayFix = (airway: Airway, fixes: Fix[]): Fix =>
+      fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
 
-            return airways[minDistanceIndex];
-        };
+    for (let i = 0; i < route.chunks.length; i++) {
+      const chunk = route.chunks[i];
 
-        const pickAirwayFix = (airway: Airway, fixes: Fix[]): Fix => fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
+      switch (chunk.instruction) {
+        case 'procedure': {
+          continue;
+        }
+        case 'sidEnrouteTransition': {
+          const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
-        for (let i = 0; i < route.chunks.length; i++) {
-            const chunk = route.chunks[i];
+          if (fixes.length > 0) {
+            await flightPlanService.nextWaypoint(
+              insertHead,
+              fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
+              FlightPlanIndex.Uplink,
+            );
+            insertHead++;
+          } else {
+            throw new Error(
+              `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
+            );
+          }
 
-            switch (chunk.instruction) {
-            case 'procedure': {
-                continue;
-            }
-            case 'sidEnrouteTransition': {
-                const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
+          continue;
+        }
+        case 'waypoint': {
+          if (insertHead === -1) {
+            setInsertHeadToEndOfEnroute();
+          }
 
-                if (fixes.length > 0) {
-                    await flightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
-                    insertHead++;
-                } else {
-                    throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`);
-                }
+          const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
-                continue;
-            }
-            case 'waypoint': {
-                if (insertHead === -1) {
-                    setInsertHeadToEndOfEnroute();
-                }
+          if (fixes.length > 0) {
+            await flightPlanService.nextWaypoint(
+              insertHead,
+              fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
+              FlightPlanIndex.Uplink,
+            );
+            insertHead++;
+          } else {
+            throw new Error(
+              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
+            );
+          }
 
-                const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
-
-                if (fixes.length > 0) {
-                    await flightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
-                    insertHead++;
-                } else {
-                    throw new Error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "waypoint" chunk: ${chunk.ident}`);
-                }
-
-                break;
-            }
-
-            case 'latlong': {
-                if (insertHead === -1) {
-                    setInsertHeadToEndOfEnroute();
-                }
-
-                const storedWaypoint = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
-
-                await flightPlanService.nextWaypoint(insertHead, storedWaypoint.waypoint, FlightPlanIndex.Uplink);
-                insertHead++;
-                break;
-            }
-            case 'airway': {
-                const plan = flightPlanService.uplink;
-
-                let airwaySearchFix: Fix;
-                if (!plan.pendingAirways) {
-                    plan.startAirwayEntry(insertHead);
-
-                    const legAtInsertHead = plan.elementAt(insertHead);
-
-                    if (legAtInsertHead.isDiscontinuity === false) {
-                        airwaySearchFix = legAtInsertHead.terminationWaypoint();
-                    }
-                } else {
-                    const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
-
-                    airwaySearchFix = tailElement.to ?? tailElement.airway?.fixes[tailElement.airway.fixes.length - 1];
-                }
-
-                if (airwaySearchFix) {
-                    const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
-
-                    if (airways.length > 0) {
-                        plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
-                    } else {
-                        throw new Error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for "airway" chunk: ${chunk.ident}`);
-                    }
-                } else {
-                    throw new Error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no search fix for "airway" chunk: ${chunk.ident}`);
-                }
-
-                break;
-            }
-            case 'airwayTermination': {
-                const plan = flightPlanService.uplink;
-
-                if (!plan.pendingAirways) {
-                    plan.startAirwayEntry(insertHead);
-                }
-
-                const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
-
-                const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
-
-                if (fixes.length > 0) {
-                    plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
-
-                    ensureAirwaysFinalized();
-                } else {
-                    throw new Error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}`);
-                }
-
-                break;
-            }
-            default:
-                console.error(`Unknown route instruction: ${chunk.instruction}`);
-            }
+          break;
         }
 
-        fms.onUplinkDone();
+        case 'latlong': {
+          if (insertHead === -1) {
+            setInsertHeadToEndOfEnroute();
+          }
+
+          const storedWaypoint = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
+
+          await flightPlanService.nextWaypoint(insertHead, storedWaypoint.waypoint, FlightPlanIndex.Uplink);
+          insertHead++;
+          break;
+        }
+        case 'airway': {
+          const plan = flightPlanService.uplink;
+
+          let airwaySearchFix: Fix;
+          if (!plan.pendingAirways) {
+            plan.startAirwayEntry(insertHead);
+
+            const legAtInsertHead = plan.elementAt(insertHead);
+
+            if (legAtInsertHead.isDiscontinuity === false) {
+              airwaySearchFix = legAtInsertHead.terminationWaypoint();
+            }
+          } else {
+            const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
+
+            airwaySearchFix = tailElement.to ?? tailElement.airway?.fixes[tailElement.airway.fixes.length - 1];
+          }
+
+          if (airwaySearchFix) {
+            const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
+
+            if (airways.length > 0) {
+              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+            } else {
+              throw new Error(
+                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for "airway" chunk: ${chunk.ident}`,
+              );
+            }
+          } else {
+            throw new Error(
+              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no search fix for "airway" chunk: ${chunk.ident}`,
+            );
+          }
+
+          break;
+        }
+        case 'airwayTermination': {
+          const plan = flightPlanService.uplink;
+
+          if (!plan.pendingAirways) {
+            plan.startAirwayEntry(insertHead);
+          }
+
+          const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
+
+          const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
+
+          if (fixes.length > 0) {
+            plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
+
+            ensureAirwaysFinalized();
+          } else {
+            throw new Error(
+              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}`,
+            );
+          }
+
+          break;
+        }
+        default:
+          console.error(`Unknown route instruction: ${chunk.instruction}`);
+      }
     }
 
-    static getRouteFromOfp(ofp: CoRoute): OfpRoute {
-        return {
-            from: ofp.originIcao,
-            to: ofp.destinationIcao,
-            altn: ofp.alternateIcao,
-            chunks: this.generateRouteInstructionsFromNavlog(ofp),
-        };
-    }
+    fms.onUplinkDone();
+  }
 
-    static generateRouteInstructionsFromNavlog(ofp: CoRoute): OfpRouteChunk[] {
-        const instructions: OfpRouteChunk[] = [];
+  static getRouteFromOfp(ofp: CoRoute): OfpRoute {
+    return {
+      from: ofp.originIcao,
+      to: ofp.destinationIcao,
+      altn: ofp.alternateIcao,
+      chunks: this.generateRouteInstructionsFromNavlog(ofp),
+    };
+  }
 
-        for (let i = 0; i < ofp.navlog.length; i++) {
-            const lastFix = ofp.navlog[i - 1];
-            const fix = ofp.navlog[i];
+  static generateRouteInstructionsFromNavlog(ofp: CoRoute): OfpRouteChunk[] {
+    const instructions: OfpRouteChunk[] = [];
 
-            if (fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
-                continue;
-            }
+    for (let i = 0; i < ofp.navlog.length; i++) {
+      const lastFix = ofp.navlog[i - 1];
+      const fix = ofp.navlog[i];
 
-            const lastInstruction = instructions[instructions.length - 1];
+      if (fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
+        continue;
+      }
 
-            if (fix.is_sid_star === '1') {
-                // SID/STAR
+      const lastInstruction = instructions[instructions.length - 1];
 
-                if (!lastInstruction) {
-                    instructions.push({ instruction: 'procedure', ident: fix.via_airway.toString() });
-                } else if (lastInstruction.instruction !== 'procedure') {
-                    instructions.push({ instruction: 'procedure', ident: fix.via_airway.toString() });
-                }
-            } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
-                // SID TRANS
-                instructions.push(
-                    { instruction: 'sidEnrouteTransition', ident: fix.ident.toString(), locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) } },
-                );
-            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/) || instructions.length === 0) {
-                if (fix.type === 'ltlg') {
-                    // LAT/LONG Waypoint
-                    instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) });
-                } else {
-                    // DCT Waypoint
-                    instructions.push(
-                        { instruction: 'waypoint', ident: fix.ident.toString(), locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) } },
-                    );
-                }
-            } else if (!(lastInstruction && lastInstruction.instruction === 'airway' && lastInstruction.ident === fix.via_airway)) {
-                if (lastFix && lastInstruction && lastInstruction.instruction === 'airway' && fix.via_airway !== lastFix.via_airway) {
-                    instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident.toString() });
-                }
+      if (fix.is_sid_star === '1') {
+        // SID/STAR
 
-                // Airway
-                instructions.push(
-                    { instruction: 'airway', ident: fix.via_airway.toString(), locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) } },
-                );
-            }
-
-            if (instructions[instructions.length - 1]?.instruction === 'airway' && ofp.navlog[i + 1]?.via_airway !== fix.via_airway.toString()) {
-                // End of airway
-                instructions.push({ instruction: 'airwayTermination', ident: fix.ident.toString() });
-            }
+        if (!lastInstruction) {
+          instructions.push({ instruction: 'procedure', ident: fix.via_airway.toString() });
+        } else if (lastInstruction.instruction !== 'procedure') {
+          instructions.push({ instruction: 'procedure', ident: fix.via_airway.toString() });
+        }
+      } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
+        // SID TRANS
+        instructions.push({
+          instruction: 'sidEnrouteTransition',
+          ident: fix.ident.toString(),
+          locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) },
+        });
+      } else if (
+        fix.via_airway === 'DCT' ||
+        fix.via_airway === 'DCT*' ||
+        fix.via_airway.match(/^NAT[A-Z]$/) ||
+        instructions.length === 0
+      ) {
+        if (fix.type === 'ltlg') {
+          // LAT/LONG Waypoint
+          instructions.push({
+            instruction: 'latlong',
+            lat: parseFloat(fix.pos_lat.toString()),
+            long: parseFloat(fix.pos_long.toString()),
+          });
+        } else {
+          // DCT Waypoint
+          instructions.push({
+            instruction: 'waypoint',
+            ident: fix.ident.toString(),
+            locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) },
+          });
+        }
+      } else if (
+        !(lastInstruction && lastInstruction.instruction === 'airway' && lastInstruction.ident === fix.via_airway)
+      ) {
+        if (
+          lastFix &&
+          lastInstruction &&
+          lastInstruction.instruction === 'airway' &&
+          fix.via_airway !== lastFix.via_airway
+        ) {
+          instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident.toString() });
         }
 
-        return instructions;
+        // Airway
+        instructions.push({
+          instruction: 'airway',
+          ident: fix.via_airway.toString(),
+          locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) },
+        });
+      }
+
+      if (
+        instructions[instructions.length - 1]?.instruction === 'airway' &&
+        ofp.navlog[i + 1]?.via_airway !== fix.via_airway.toString()
+      ) {
+        // End of airway
+        instructions.push({ instruction: 'airwayTermination', ident: fix.ident.toString() });
+      }
     }
+
+    return instructions;
+  }
 }

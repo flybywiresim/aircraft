@@ -6,15 +6,12 @@ import { Waypoint, WaypointArea } from './Waypoint';
 import { NdbNavaid } from './NdbNavaid';
 
 export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
-    location: Coordinates,
+  location: Coordinates;
 
-    area: WaypointArea,
+  area: WaypointArea;
 }
 
 /**
  * Union of all possible fix interfaces
  */
-export type Fix =
-    | VhfNavaid
-    | NdbNavaid
-    | Waypoint
+export type Fix = VhfNavaid | NdbNavaid | Waypoint;

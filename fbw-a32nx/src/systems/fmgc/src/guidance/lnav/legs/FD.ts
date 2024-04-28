@@ -15,127 +15,138 @@ import { LegMetadata } from './index';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '../CommonGeometry';
 
 export class FDLeg extends Leg {
-    predictedPath: PathVector[] = [];
+  predictedPath: PathVector[] = [];
 
-    inboundCourse;
+  inboundCourse;
 
-    outboundCourse;
+  outboundCourse;
 
-    intercept: Coordinates;
+  intercept: Coordinates;
 
-    constructor(
-        private readonly course: DegreesTrue,
-        private readonly dmeDistance: NauticalMiles,
-        private readonly fix: Waypoint | VhfNavaid | NdbNavaid,
-        private readonly navaid: Waypoint | VhfNavaid | NdbNavaid,
-        public readonly metadata: Readonly<LegMetadata>,
-        segment: SegmentType,
-    ) {
-        super();
+  constructor(
+    private readonly course: DegreesTrue,
+    private readonly dmeDistance: NauticalMiles,
+    private readonly fix: Waypoint | VhfNavaid | NdbNavaid,
+    private readonly navaid: Waypoint | VhfNavaid | NdbNavaid,
+    public readonly metadata: Readonly<LegMetadata>,
+    segment: SegmentType,
+  ) {
+    super();
 
-        this.segment = segment;
+    this.segment = segment;
 
-        this.inboundCourse = course;
-        this.outboundCourse = course;
+    this.inboundCourse = course;
+    this.outboundCourse = course;
 
-        // FD legs can be statically computed the first time
+    // FD legs can be statically computed the first time
 
-        this.predictedPath.length = 0;
+    this.predictedPath.length = 0;
 
-        const intersect = firstSmallCircleIntersection(
-            this.navaid.location,
-            this.dmeDistance,
-            this.fix.location,
-            this.course,
-        );
+    const intersect = firstSmallCircleIntersection(
+      this.navaid.location,
+      this.dmeDistance,
+      this.fix.location,
+      this.course,
+    );
 
-        this.intercept = intersect;
+    this.intercept = intersect;
 
-        this.predictedPath.push({
-            type: PathVectorType.Line,
-            startPoint: this.getPathStartPoint(),
-            endPoint: this.getPathEndPoint(),
-        });
+    this.predictedPath.push({
+      type: PathVectorType.Line,
+      startPoint: this.getPathStartPoint(),
+      endPoint: this.getPathEndPoint(),
+    });
 
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
-            this.predictedPath.push({
-                type: PathVectorType.DebugPoint,
-                startPoint: this.getPathStartPoint(),
-                annotation: 'FD START',
-            }, {
-                type: PathVectorType.DebugPoint,
-                startPoint: this.getPathEndPoint(),
-                annotation: 'FD END',
-            });
-        }
-
-        this.isComputed = true;
+    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      this.predictedPath.push(
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.getPathStartPoint(),
+          annotation: 'FD START',
+        },
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.getPathEndPoint(),
+          annotation: 'FD END',
+        },
+      );
     }
 
-    get terminationWaypoint(): Waypoint | Coordinates | undefined {
-        return this.intercept;
+    this.isComputed = true;
+  }
+
+  get terminationWaypoint(): Waypoint | Coordinates | undefined {
+    return this.intercept;
+  }
+
+  getPathStartPoint(): Coordinates | undefined {
+    if (this.inboundGuidable instanceof FixedRadiusTransition && this.inboundGuidable.isComputed) {
+      return this.inboundGuidable.getPathEndPoint();
     }
 
-    getPathStartPoint(): Coordinates | undefined {
-        if (this.inboundGuidable instanceof FixedRadiusTransition && this.inboundGuidable.isComputed) {
-            return this.inboundGuidable.getPathEndPoint();
-        }
+    return this.fix.location;
+  }
 
-        return this.fix.location;
+  getPathEndPoint(): Coordinates | undefined {
+    return this.intercept;
+  }
+
+  recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    this.predictedPath.length = 0;
+    this.predictedPath.push({
+      type: PathVectorType.Line,
+      startPoint: this.getPathStartPoint(),
+      endPoint: this.getPathEndPoint(),
+    });
+
+    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      this.predictedPath.push(
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.getPathStartPoint(),
+          annotation: 'FD START',
+        },
+        {
+          type: PathVectorType.DebugPoint,
+          startPoint: this.getPathEndPoint(),
+          annotation: 'FD END',
+        },
+      );
     }
 
-    getPathEndPoint(): Coordinates | undefined {
-        return this.intercept;
-    }
+    this.isComputed = true;
+  }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        this.predictedPath.length = 0;
-        this.predictedPath.push({
-            type: PathVectorType.Line,
-            startPoint: this.getPathStartPoint(),
-            endPoint: this.getPathEndPoint(),
-        });
+  get distanceToTermination(): NauticalMiles {
+    const startPoint = this.getPathStartPoint();
 
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
-            this.predictedPath.push({
-                type: PathVectorType.DebugPoint,
-                startPoint: this.getPathStartPoint(),
-                annotation: 'FD START',
-            }, {
-                type: PathVectorType.DebugPoint,
-                startPoint: this.getPathEndPoint(),
-                annotation: 'FD END',
-            });
-        }
+    return distanceTo(startPoint, this.intercept);
+  }
 
-        this.isComputed = true;
-    }
+  isAbeam(ppos: Coordinates): boolean {
+    const dtg = this.getDistanceToGo(ppos);
 
-    get distanceToTermination(): NauticalMiles {
-        const startPoint = this.getPathStartPoint();
+    return dtg >= 0 && dtg <= this.distance;
+  }
 
-        return distanceTo(startPoint, this.intercept);
-    }
+  getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
+    return courseToFixDistanceToGo(ppos, this.course, this.intercept);
+  }
 
-    isAbeam(ppos: Coordinates): boolean {
-        const dtg = this.getDistanceToGo(ppos);
+  getGuidanceParameters(
+    ppos: Coordinates,
+    trueTrack: Degrees,
+    _tas: Knots,
+    _gs: Knots,
+  ): GuidanceParameters | undefined {
+    return fixToFixGuidance(ppos, trueTrack, this.getPathStartPoint(), this.intercept);
+  }
 
-        return dtg >= 0 && dtg <= this.distance;
-    }
+  getNominalRollAngle(_gs: MetresPerSecond): Degrees | undefined {
+    return 0;
+  }
 
-    getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
-        return courseToFixDistanceToGo(ppos, this.course, this.intercept);
-    }
-
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots, _gs: Knots): GuidanceParameters | undefined {
-        return fixToFixGuidance(ppos, trueTrack, this.getPathStartPoint(), this.intercept);
-    }
-
-    getNominalRollAngle(_gs: MetresPerSecond): Degrees | undefined {
-        return 0;
-    }
-
-    get repr(): string {
-        return `FD(${this.dmeDistance.toFixed(1)}NM, ${this.course.toFixed(1)})`;
-    }
+  get repr(): string {
+    return `FD(${this.dmeDistance.toFixed(1)}NM, ${this.course.toFixed(1)})`;
+  }
 }

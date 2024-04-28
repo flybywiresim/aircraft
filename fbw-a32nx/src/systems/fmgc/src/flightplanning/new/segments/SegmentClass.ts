@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export enum SegmentClass {
-    Departure,
-    Enroute,
-    Arrival,
+  Departure,
+  Enroute,
+  Arrival,
 }

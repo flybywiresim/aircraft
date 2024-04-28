@@ -9,23 +9,23 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
 export class MissedApproachSegment extends FlightPlanSegment {
-    class = SegmentClass.Arrival
+  class = SegmentClass.Arrival;
 
-    allLegs: FlightPlanElement[] = []
+  allLegs: FlightPlanElement[] = [];
 
-    setMissedApproachLegs(legs: FlightPlanElement[]) {
-        this.allLegs.length = 0;
-        this.allLegs.push(...legs);
+  setMissedApproachLegs(legs: FlightPlanElement[]) {
+    this.allLegs.length = 0;
+    this.allLegs.push(...legs);
 
-        this.flightPlan.syncSegmentLegsChange(this);
-    }
+    this.flightPlan.syncSegmentLegsChange(this);
+  }
 
-    clone(forPlan: BaseFlightPlan): MissedApproachSegment {
-        const newSegment = new MissedApproachSegment(forPlan);
+  clone(forPlan: BaseFlightPlan): MissedApproachSegment {
+    const newSegment = new MissedApproachSegment(forPlan);
 
-        newSegment.strung = this.strung;
-        newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.strung = this.strung;
+    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
 
-        return newSegment;
-    }
+    return newSegment;
+  }
 }

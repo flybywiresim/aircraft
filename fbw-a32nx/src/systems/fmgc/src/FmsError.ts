@@ -7,18 +7,16 @@
  * Possible FMS errors
  */
 export enum FmsErrorType {
-    NotInDatabase,
-    NotYetImplemented,
-    FormatError,
-    EntryOutOfRange,
-    ListOf99InUse,
-    AwyWptMismatch,
+  NotInDatabase,
+  NotYetImplemented,
+  FormatError,
+  EntryOutOfRange,
+  ListOf99InUse,
+  AwyWptMismatch,
 }
 
 export class FmsError extends Error {
-    constructor(
-        public type: FmsErrorType,
-    ) {
-        super();
-    }
+  constructor(public type: FmsErrorType) {
+    super();
+  }
 }

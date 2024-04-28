@@ -187,7 +187,7 @@ class CDUAvailableArrivalsPage {
                         rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
                     }
 
-                    mcdu.onLeftInput[i + 2] = async(_, scratchpadCallback) => {
+                    mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
                         // Clicking the already selected approach is not allowed
                         if (!isSelected) {
                             await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
@@ -196,7 +196,7 @@ class CDUAvailableArrivalsPage {
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
-                            scratchpadCallback()
+                            scratchpadCallback();
                         }
                     };
                 } else if (runway) {
@@ -370,7 +370,7 @@ class CDUAvailableArrivalsPage {
                         CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
                     };
                 }
-             }
+            }
         }
 
         let bottomLine = ["<RETURN"];
@@ -537,7 +537,7 @@ class CDUAvailableArrivalsPage {
         }
 
         const isNoViaSelected = selectedApproachVia === null;
-        const color = isNoViaSelected && !isTemporary ? "green" : "cyan"
+        const color = isNoViaSelected && !isTemporary ? "green" : "cyan";
 
         mcdu.setTemplate([
             ["APPROACH VIAS"],

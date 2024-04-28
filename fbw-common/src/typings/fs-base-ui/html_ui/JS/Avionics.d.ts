@@ -100,8 +100,11 @@ declare global {
             constructor(spacing: number, notched?: number);
 
             allTexts: SVGTextElement[];
+
             posX: number;
+
             posY: number;
+
             spacing: number;
 
             construct(parent: Node, posX: number, posY: number, width: number, fontFamily: string,
@@ -114,8 +117,11 @@ declare global {
             constructor(nbItems: number, spacing: number, increment: number, moduloValue: number, notched: number);
 
             allTexts: SVGTextElement[];
+
             posX: number;
+
             posY: number;
+
             spacing: number;
 
             construct(parent: Node, posX: number, posY: number, width: number, fontFamily: string,
@@ -128,19 +134,31 @@ declare global {
             static radiansPerPercent: number;
 
             percent: number;
+
             angle: number;
+
             gaugeCenterX: number;
+
             gaugeCenterY: number;
+
             gaugeCloseThreshold: number;
+
             computedStartX: number;
+
             computedStartY: number;
+
             computedEndX: number;
+
             computedEndY: number;
+
             computedEndAngle: number;
 
             arc?: SVGPathElement;
+
             arcRadius?: number;
+
             arcSize?: number;
+
             arcColor?: string;
 
             init(arcName: string, radius: number, size: number, color: string): void;
@@ -166,6 +184,7 @@ declare global {
             constructor(time: number, value: any);
 
             time: number;
+
             value: any;
         }
 
@@ -182,11 +201,13 @@ declare global {
 
         class DictionaryItem {
             key?: any;
+
             value?: any;
         }
 
         class Dictionary {
             items: DictionaryItem[];
+
             changed: boolean;
 
             set(key: any, value: any): void;
@@ -198,42 +219,79 @@ declare global {
 
     declare class BaseInstrument extends TemplateElement {
         static allInstrumentsLoaded: boolean;
+
         static useSvgImages: boolean;
+
         dataMetaManager: DataReadMetaManager;
+
         urlConfig: URLConfig;
+
         xmlConfig: Document;
+
         instrumentXmlConfig: Element;
+
         protected startTime: number;
+
         private _frameCount;
+
         protected electricity: HTMLElement;
+
         protected electricalLogic: CompositeLogicXMLElement;
+
         protected electricityAvailable: boolean;
+
         protected initDuration: number;
+
         protected hasBeenOff: boolean;
+
         protected isStarted: boolean;
+
         protected needValidationAfterInit: boolean;
+
         protected initAcknowledged: boolean;
+
         protected screenState: ScreenState;
+
         protected reversionaryMode: boolean;
+
         protected highlightSvg: HTMLElement;
+
         protected highlightList: Array<HighlightedElement>;
+
         protected backgroundList: Array<Element>;
+
         private _instrumentId;
+
         private _lastTime;
+
         private _deltaTime;
+
         private _frameLastTime;
+
         private _frameDeltaTime;
+
         private _isConnected;
+
         private _isInitialized;
+
         private _xmlConfigFile;
+
         private _quality;
+
         private _gameState;
+
         private _alwaysUpdate;
+
         private _alwaysUpdateList;
+
         private _pendingCalls;
+
         private _pendingCallUId;
+
         private _facilityLoader;
+
         private _mainLoopFuncInstance;
+
         constructor();
         get initialized(): boolean;
         get instrumentIdentifier(): string;
@@ -266,14 +324,19 @@ declare global {
         protected onQualityChanged(_quality: Quality): void;
         protected onGameStateChanged(_oldState: GameState, _newState: GameState): void;
         private loadDocumentAttributes;
+
         protected parseXMLConfig(): void;
         protected parseURLAttributes(): void;
         private beforeUpdate;
+
         protected Update(): void;
         private afterUpdate;
+
         doUpdate(): void;
         private CanUpdate;
+
         private canUpdate;
+
         protected updateElectricity(): void;
         protected isElectricityAvailable(): boolean;
         onShutDown(): void;
@@ -284,10 +347,15 @@ declare global {
         wasTurnedOff(): boolean;
         playInstrumentSound(soundId: string): boolean;
         private createMainLoop;
+
         private mainLoop;
+
         private killMainLoop;
+
         private loadXMLConfig;
+
         private loadURLAttributes;
+
         getTimeSinceStart(): number;
         getAspectRatio(): number;
         isComputingAspectRatio(): boolean;
@@ -297,6 +365,7 @@ declare global {
         protected updateHighlight(): void;
         highlightGetState(_valueMin: number, _valueMax: number, _period: number): number;
         private initTransponder;
+
         requestCall(_func: Function, _timeout?: number): number;
         removeCall(_uid: number): void;
         protected updatePendingCalls(): void;
@@ -306,18 +375,18 @@ declare global {
         protected clearAlwaysList(): void;
         registerInstrument(_instrumentName: string, _instrumentClass: CustomElementConstructor): void;
         guidanceController?: any;
+
         navigation?: any;
     }
     declare function registerInstrument(_instrumentName: string, _instrumentClass: CustomElementConstructor): void;
 
     declare enum GameState {
-        "mainmenu" = 0,
-        "loading" = 1,
-        "briefing" = 2,
-        "ingame" = 3
+        'mainmenu' = 0,
+        'loading' = 1,
+        'briefing' = 2,
+        'ingame' = 3
     }
 
 }
-
 
 export {};

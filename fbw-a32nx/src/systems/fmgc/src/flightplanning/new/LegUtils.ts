@@ -9,59 +9,59 @@
  * Returns an array of final merged legs if a matching waypoint is found, or undefined if one isn't (discontinuity)
  */
 export function mergeLegSets(
-    existingLegs: { icaoCode: string }[],
-    incomingLegs: { icaoCode: string }[],
-    downstream: boolean,
+  existingLegs: { icaoCode: string }[],
+  incomingLegs: { icaoCode: string }[],
+  downstream: boolean,
 ): { icaoCode: string }[] {
-    let finalLegs: { icaoCode: string }[];
+  let finalLegs: { icaoCode: string }[];
 
-    if (downstream) {
-        let connectionFound = false;
-        for (let i = 0; i < existingLegs.length; i++) {
-            const existingLeg = existingLegs[i];
+  if (downstream) {
+    let connectionFound = false;
+    for (let i = 0; i < existingLegs.length; i++) {
+      const existingLeg = existingLegs[i];
 
-            if (connectionFound && finalLegs) {
-                finalLegs.push(existingLeg);
-                continue;
-            }
+      if (connectionFound && finalLegs) {
+        finalLegs.push(existingLeg);
+        continue;
+      }
 
-            const matchingLegIndex = incomingLegs.findIndex((leg) => leg.icaoCode === existingLeg.icaoCode);
+      const matchingLegIndex = incomingLegs.findIndex((leg) => leg.icaoCode === existingLeg.icaoCode);
 
-            if (matchingLegIndex !== -1) {
-                finalLegs = [...incomingLegs];
+      if (matchingLegIndex !== -1) {
+        finalLegs = [...incomingLegs];
 
-                connectionFound = true;
+        connectionFound = true;
 
-                finalLegs.splice(matchingLegIndex);
+        finalLegs.splice(matchingLegIndex);
 
-                finalLegs.push(existingLeg);
-            }
-        }
-    } else {
-        const connectionFound = false;
-        for (let i = existingLegs.length - 1; i >= 0; i--) {
-            const existingLeg = existingLegs[i];
-
-            if (connectionFound && finalLegs) {
-                finalLegs.push(existingLeg);
-                continue;
-            }
-
-            const matchingLegIndex = incomingLegs.findIndex((leg) => leg.icaoCode === existingLeg.icaoCode);
-
-            if (matchingLegIndex !== -1) {
-                finalLegs = [...existingLegs];
-
-                finalLegs.splice(i + 1);
-
-                finalLegs.push(...incomingLegs.slice(matchingLegIndex + 1));
-
-                break;
-            }
-        }
+        finalLegs.push(existingLeg);
+      }
     }
+  } else {
+    const connectionFound = false;
+    for (let i = existingLegs.length - 1; i >= 0; i--) {
+      const existingLeg = existingLegs[i];
 
-    return finalLegs;
+      if (connectionFound && finalLegs) {
+        finalLegs.push(existingLeg);
+        continue;
+      }
+
+      const matchingLegIndex = incomingLegs.findIndex((leg) => leg.icaoCode === existingLeg.icaoCode);
+
+      if (matchingLegIndex !== -1) {
+        finalLegs = [...existingLegs];
+
+        finalLegs.splice(i + 1);
+
+        finalLegs.push(...incomingLegs.slice(matchingLegIndex + 1));
+
+        break;
+      }
+    }
+  }
+
+  return finalLegs;
 }
 
 /*

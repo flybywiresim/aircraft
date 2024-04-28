@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /*
     Displays blank waypoint field, when waypoint inputted, LAT, LONG will show.
     Derives from Data Index PG2
@@ -17,7 +21,7 @@ class CDUWaypointPage {
 
         if (waypoint) {
             identValue = `${waypoint.ident}[color]cyan`;
-            latLongLabel = '\xa0\xa0\xa0\xa0LAT/LONG';;
+            latLongLabel = '\xa0\xa0\xa0\xa0LAT/LONG'; ;
             latLongValue = `${new LatLong(waypoint.location.lat, waypoint.location.long).toShortDegreeString()}[color]green`;
         }
 

@@ -15,15 +15,15 @@ const Markers = {
 const Altitude = Object.freeze({
     Empty: "\xa0\xa0\xa0\xa0\xa0",
     NoPrediction: "-----",
-})
+});
 const Speed = Object.freeze({
     Empty: "\xa0\xa0\xa0",
     NoPrediction: "---",
-})
+});
 const Time = Object.freeze({
     Empty: "\xa0\xa0\xa0\xa0",
     NoPrediction: "----",
-})
+});
 
 class CDUFlightPlanPage {
 
@@ -133,7 +133,7 @@ class CDUFlightPlanPage {
 
                 // No PWP on FROM leg
                 if (!isBeforeActiveLeg) {
-                    waypointsAndMarkers.push({ pwp, fpIndex: i, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && j === 0 })
+                    waypointsAndMarkers.push({ pwp, fpIndex: i, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && j === 0 });
                 }
             }
 
@@ -387,7 +387,7 @@ class CDUFlightPlanPage {
                             altSize = "small";
                         } else if (legIsAirport(wp) && targetPlan.alternateFlightPlan.destinationAirport && Number.isFinite(targetPlan.alternateFlightPlan.destinationAirport.location.alt)) {
                             altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt);
-                            altColor = color
+                            altColor = color;
                             altSize = "small";
                         }
                     } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.originLegIndex) {
@@ -405,7 +405,7 @@ class CDUFlightPlanPage {
                             altSize = "small";
                         } else if (legIsAirport(wp) && targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
                             altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt);
-                            altColor = color
+                            altColor = color;
                             altSize = "small";
                         }
                     } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
@@ -646,7 +646,7 @@ class CDUFlightPlanPage {
         mcdu.onUnload = () => {
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
-        }
+        };
 
         // Render scrolling data to text >> add ditto marks
 
@@ -731,7 +731,7 @@ class CDUFlightPlanPage {
                     mcdu.tryUpdateRouteTrip(isFlying);
                 }
 
-                const destDist = mcdu.guidanceController.alongTrackDistanceToDestination
+                const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
 
                 if (Number.isFinite(destDist)) {
                     destDistCell = Math.round(destDist).toFixed(0);
@@ -1023,7 +1023,7 @@ function legHasAltConstraint(leg) {
  * @return {boolean}
  */
 function legIsRunway(leg) {
-    return leg.definition && leg.definition.waypointDescriptor === 4 /* Runway */;
+    return leg.definition && leg.definition.waypointDescriptor === 4;
 }
 
 /**
@@ -1031,7 +1031,7 @@ function legIsRunway(leg) {
  * @return {boolean}
  */
 function legIsAirport(leg) {
-    return leg.definition && leg.definition.waypointDescriptor === 1 /* Airport */;
+    return leg.definition && leg.definition.waypointDescriptor === 1;
 }
 
 /**
@@ -1100,7 +1100,7 @@ function formatAltConstraint(mcdu, constraint, useTransAlt) {
         case 'Y': // AtOrBelowAlt1AngleAlt2
             return '-' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
         case 'B': // BetweenAlt1Alt2
-            return 'WINDOW'
+            return 'WINDOW';
         case 'C': // AtOrAboveAlt2:
             return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude2, useTransAlt);
         default:

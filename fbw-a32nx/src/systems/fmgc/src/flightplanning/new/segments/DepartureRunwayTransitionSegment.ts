@@ -12,57 +12,68 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 
 export class DepartureRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
-    class = SegmentClass.Departure
+  class = SegmentClass.Departure;
 
-    allLegs: FlightPlanElement[] = []
+  allLegs: FlightPlanElement[] = [];
 
-    get procedure(): ProcedureTransition | undefined {
-        return this.departureRunwayTransition;
+  get procedure(): ProcedureTransition | undefined {
+    return this.departureRunwayTransition;
+  }
+
+  private departureRunwayTransition: ProcedureTransition | undefined = undefined;
+
+  async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+    const existingDeparture = this.flightPlan.originDeparture;
+
+    if (existingDeparture) {
+      const matchingTransition =
+        runwayIdent !== undefined
+          ? existingDeparture.runwayTransitions.find((it) => it.ident === runwayIdent)
+          : undefined;
+
+      this.departureRunwayTransition = matchingTransition;
+    } else {
+      this.departureRunwayTransition = undefined;
     }
 
-    private departureRunwayTransition: ProcedureTransition | undefined = undefined
+    if (!skipUpdateLegs) {
+      const legs =
+        this.departureRunwayTransition?.legs.map((it) =>
+          FlightPlanLeg.fromProcedureLeg(this, it, existingDeparture?.ident ?? '', WaypointConstraintType.CLB),
+        ) ?? [];
 
-    async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
-        const existingDeparture = this.flightPlan.originDeparture;
+      const firstDepartureRunwayTransitionLeg = legs[0];
 
-        if (existingDeparture) {
-            const matchingTransition = runwayIdent !== undefined ? existingDeparture.runwayTransitions.find((it) => it.ident === runwayIdent) : undefined;
+      // Add an IF at the start if first leg of the transition is an FX
+      if (firstDepartureRunwayTransitionLeg?.isFX() && !firstDepartureRunwayTransitionLeg.isRunway()) {
+        const newLeg = FlightPlanLeg.fromEnrouteFix(
+          this,
+          firstDepartureRunwayTransitionLeg.definition.waypoint,
+          undefined,
+          LegType.IF,
+        );
 
-            this.departureRunwayTransition = matchingTransition;
-        } else {
-            this.departureRunwayTransition = undefined;
-        }
+        this.allLegs.push(newLeg);
+      }
 
-        if (!skipUpdateLegs) {
-            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, existingDeparture?.ident ?? '', WaypointConstraintType.CLB)) ?? [];
+      this.allLegs.length = 0;
+      this.allLegs.push(...legs);
+      this.strung = false;
 
-            const firstDepartureRunwayTransitionLeg = legs[0];
+      await this.flightPlan.originSegment.refreshOriginLegs();
 
-            // Add an IF at the start if first leg of the transition is an FX
-            if (firstDepartureRunwayTransitionLeg?.isFX() && !firstDepartureRunwayTransitionLeg.isRunway()) {
-                const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstDepartureRunwayTransitionLeg.definition.waypoint, undefined, LegType.IF);
-
-                this.allLegs.push(newLeg);
-            }
-
-            this.allLegs.length = 0;
-            this.allLegs.push(...legs);
-            this.strung = false;
-
-            await this.flightPlan.originSegment.refreshOriginLegs();
-
-            this.flightPlan.syncSegmentLegsChange(this);
-            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
-        }
+      this.flightPlan.syncSegmentLegsChange(this);
+      this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
     }
+  }
 
-    clone(forPlan: BaseFlightPlan): DepartureRunwayTransitionSegment {
-        const newSegment = new DepartureRunwayTransitionSegment(forPlan);
+  clone(forPlan: BaseFlightPlan): DepartureRunwayTransitionSegment {
+    const newSegment = new DepartureRunwayTransitionSegment(forPlan);
 
-        newSegment.strung = this.strung;
-        newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
-        newSegment.departureRunwayTransition = this.departureRunwayTransition;
+    newSegment.strung = this.strung;
+    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.departureRunwayTransition = this.departureRunwayTransition;
 
-        return newSegment;
-    }
+    return newSegment;
+  }
 }
