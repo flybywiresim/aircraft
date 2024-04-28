@@ -2,77 +2,90 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, VNode, MapSubject, Subscribable, Subscription, SubscribableUtils } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  DisplayComponent,
+  VNode,
+  MapSubject,
+  Subscribable,
+  Subscription,
+  SubscribableUtils,
+} from '@microsoft/msfs-sdk';
 
 import './ContextMenu.scss';
 import { ContextMenuItemData } from '@flybywiresim/oanc';
 
 export interface ContextMenuProps {
-    isVisible: Subscribable<boolean>,
+  isVisible: Subscribable<boolean>;
 
-    x: Subscribable<number>,
+  x: Subscribable<number>;
 
-    y: Subscribable<number>,
+  y: Subscribable<number>;
 
-    items: ContextMenuItemData[],
+  items: ContextMenuItemData[];
 
-    closeMenu: () => void,
+  closeMenu: () => void;
 }
 
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
-    private readonly subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
-    private readonly style = MapSubject.create<string, string>();
+  private readonly style = MapSubject.create<string, string>();
 
-    onAfterRender() {
-        this.subscriptions.push(
-            this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
-            this.props.x.sub((it) => this.style.setValue('left', `${it.toFixed(0)}px`), true),
-            this.props.y.sub((it) => this.style.setValue('top', `${it.toFixed(0)}px`), true),
-        );
-    }
+  onAfterRender() {
+    this.subscriptions.push(
+      this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
+      this.props.x.sub((it) => this.style.setValue('left', `${it.toFixed(0)}px`), true),
+      this.props.y.sub((it) => this.style.setValue('top', `${it.toFixed(0)}px`), true),
+    );
+  }
 
-    private readonly handleItemPressed = (item: ContextMenuItemData) => {
-        item.onPressed?.();
+  private readonly handleItemPressed = (item: ContextMenuItemData) => {
+    item.onPressed?.();
 
-        this.props.closeMenu();
-    };
+    this.props.closeMenu();
+  };
 
-    render(): VNode | null {
-        return (
-            <div class="oanc-context-menu" style={this.style}>
-                {this.props.items.map((it) => (
-                    <ContextMenuItem
-                        name={it.name}
-                        disabled={SubscribableUtils.toSubscribable(it.disabled, true)}
-                        onPressed={() => this.handleItemPressed(it)}
-                    />
-                ))}
-            </div>
-        );
-    }
+  render(): VNode | null {
+    return (
+      <div class="oanc-context-menu" style={this.style}>
+        {this.props.items.map((it) => (
+          <ContextMenuItem
+            name={it.name}
+            disabled={SubscribableUtils.toSubscribable(it.disabled, true)}
+            onPressed={() => this.handleItemPressed(it)}
+          />
+        ))}
+      </div>
+    );
+  }
 }
 
 export interface ContextMenuItemProps {
-    name: string,
+  name: string;
 
-    disabled: Subscribable<boolean>,
+  disabled: Subscribable<boolean>;
 
-    onPressed: () => void,
+  onPressed: () => void;
 }
 
 export class ContextMenuItem extends DisplayComponent<ContextMenuItemProps> {
-    private readonly root = FSComponent.createRef<HTMLSpanElement>();
+  private readonly root = FSComponent.createRef<HTMLSpanElement>();
 
-    onAfterRender() {
-        this.root.instance.addEventListener('click', this.handlePressed);
-    }
+  onAfterRender() {
+    this.root.instance.addEventListener('click', this.handlePressed);
+  }
 
-    private handlePressed = () => this.props.onPressed();
+  private handlePressed = () => this.props.onPressed();
 
-    render(): VNode | null {
-        return (
-            <span ref={this.root} class={{ 'oanc-context-menu-item': true, 'oanc-context-menu-item-disabled': this.props.disabled }}>{this.props.name}</span>
-        );
-    }
+  render(): VNode | null {
+    return (
+      <span
+        ref={this.root}
+        class={{ 'oanc-context-menu-item': true, 'oanc-context-menu-item-disabled': this.props.disabled }}
+      >
+        {this.props.name}
+      </span>
+    );
+  }
 }

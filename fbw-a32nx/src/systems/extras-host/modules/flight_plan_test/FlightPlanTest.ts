@@ -7,11 +7,11 @@ import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcC
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 
 export class FlightPlanTest {
-    private readonly flightPlanRpcClient = new FlightPlanRpcClient(this.bus);
+  private readonly flightPlanRpcClient = new FlightPlanRpcClient(this.bus);
 
-    constructor(private readonly bus: EventBus) {
-        setInterval(() => {
-            console.log('Active FP', this.flightPlanRpcClient.get(FlightPlanIndex.Active));
-        }, 5_00);
-    }
+  constructor(private readonly bus: EventBus) {
+    setInterval(() => {
+      console.log('Active FP', this.flightPlanRpcClient.get(FlightPlanIndex.Active));
+    }, 5_00);
+  }
 }
