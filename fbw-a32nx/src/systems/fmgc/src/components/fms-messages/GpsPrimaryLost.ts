@@ -11,37 +11,37 @@ import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
  * first-frame value, as the ADIRS module might not have run yet.
  */
 export class GpsPrimaryLost implements FMMessageSelector {
-    message: FMMessage = FMMessageTypes.GpsPrimaryLost;
+  message: FMMessage = FMMessageTypes.GpsPrimaryLost;
 
-    private confLost = new ConfirmationNode(1_000);
+  private confLost = new ConfirmationNode(1_000);
 
-    private trigLost = new Trigger(true);
+  private trigLost = new Trigger(true);
 
-    private confRegained = new ConfirmationNode(1_000);
+  private confRegained = new ConfirmationNode(1_000);
 
-    private trigRegained = new Trigger(true);
+  private trigRegained = new Trigger(true);
 
-    process(deltaTime: number): FMMessageUpdate {
-        const lostNow = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 0;
+  process(deltaTime: number): FMMessageUpdate {
+    const lostNow = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 0;
 
-        this.confLost.input = lostNow;
-        this.confLost.update(deltaTime);
-        this.trigLost.input = this.confLost.output;
-        this.trigLost.update(deltaTime);
+    this.confLost.input = lostNow;
+    this.confLost.update(deltaTime);
+    this.trigLost.input = this.confLost.output;
+    this.trigLost.update(deltaTime);
 
-        this.confRegained.input = !lostNow;
-        this.confRegained.update(deltaTime);
-        this.trigRegained.input = this.confRegained.output;
-        this.trigRegained.update(deltaTime);
+    this.confRegained.input = !lostNow;
+    this.confRegained.update(deltaTime);
+    this.trigRegained.input = this.confRegained.output;
+    this.trigRegained.update(deltaTime);
 
-        if (this.trigLost.output) {
-            return FMMessageUpdate.SEND;
-        }
-
-        if (this.trigRegained.output) {
-            return FMMessageUpdate.RECALL;
-        }
-
-        return FMMessageUpdate.NO_ACTION;
+    if (this.trigLost.output) {
+      return FMMessageUpdate.SEND;
     }
+
+    if (this.trigRegained.output) {
+      return FMMessageUpdate.RECALL;
+    }
+
+    return FMMessageUpdate.NO_ACTION;
+  }
 }

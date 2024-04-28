@@ -3,18 +3,18 @@ import { ProcedureLeg } from './ProcedureLeg';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
 
 export interface Departure extends DatabaseItem<SectionCode.Airport> {
-    subSectionCode: AirportSubsectionCode.SIDs,
+  subSectionCode: AirportSubsectionCode.SIDs;
 
-    /**
-     * RNP-AR departure?
-     */
-    authorisationRequired: boolean,
+  /**
+   * RNP-AR departure?
+   */
+  authorisationRequired: boolean;
 
-    runwayTransitions: ProcedureTransition[],
+  runwayTransitions: ProcedureTransition[];
 
-    commonLegs: ProcedureLeg[],
+  commonLegs: ProcedureLeg[];
 
-    enrouteTransitions: ProcedureTransition[],
+  enrouteTransitions: ProcedureTransition[];
 
-    engineOutLegs: ProcedureLeg[],
+  engineOutLegs: ProcedureLeg[];
 }

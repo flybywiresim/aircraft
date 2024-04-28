@@ -5,12 +5,12 @@
  * Navigation flight areas
  */
 export enum FlightArea {
-    Terminal,
-    Takeoff,
-    Enroute,
-    Oceanic,
-    VorApproach,
-    GpsApproach,
-    PrecisionApproach,
-    NonPrecisionApproach,
+  Terminal,
+  Takeoff,
+  Enroute,
+  Oceanic,
+  VorApproach,
+  GpsApproach,
+  PrecisionApproach,
+  NonPrecisionApproach,
 }

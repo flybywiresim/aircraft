@@ -6,8 +6,8 @@ import { BaseFix } from './BaseFix';
  * Waypoint area
  */
 export enum WaypointArea {
-    Enroute,
-    Terminal,
+  Enroute,
+  Terminal,
 }
 
 /**
@@ -16,19 +16,19 @@ export enum WaypointArea {
 export type Waypoint = EnrouteWaypoint | TerminalWaypoint;
 
 export interface EnrouteWaypoint extends BaseWaypoint<SectionCode.Enroute> {
-    area: WaypointArea.Enroute,
+  area: WaypointArea.Enroute;
 }
 
 export interface TerminalWaypoint extends BaseWaypoint<SectionCode.Airport> {
-    area: WaypointArea.Terminal,
+  area: WaypointArea.Terminal;
 }
 
 interface BaseWaypoint<T extends SectionCode> extends BaseFix<T> {
-    name?: string,
-    // TODO more...
+  name?: string;
+  // TODO more...
 
-    /**
-     * Distance from centre location for nearby airport query
-    */
-   distance?: NauticalMiles,
+  /**
+   * Distance from centre location for nearby airport query
+   */
+  distance?: NauticalMiles;
 }

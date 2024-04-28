@@ -12,34 +12,34 @@ import { NavigationDatabaseService } from '../../NavigationDatabaseService';
  * @throws if no results are found or none have the specified database ID
  */
 export async function loadSingleWaypoint(waypointIdent: string, databaseId: string): Promise<Fix> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const waypoints = await db.getWaypoints([waypointIdent]);
+  const waypoints = await db.getWaypoints([waypointIdent]);
 
-    if (waypoints.length === 0) {
-        throw new Error(`[FMS/FPM] Found no waypoints with ident '${waypointIdent}'`);
-    }
+  if (waypoints.length === 0) {
+    throw new Error(`[FMS/FPM] Found no waypoints with ident '${waypointIdent}'`);
+  }
 
-    const matchingWaypoint = waypoints.find((waypoint) => waypoint.databaseId === databaseId);
+  const matchingWaypoint = waypoints.find((waypoint) => waypoint.databaseId === databaseId);
 
-    if (!matchingWaypoint) {
-        throw new Error(`[FMS/FPM] None of the waypoints with ident '${waypointIdent}' had database id '${databaseId}'`);
-    }
+  if (!matchingWaypoint) {
+    throw new Error(`[FMS/FPM] None of the waypoints with ident '${waypointIdent}' had database id '${databaseId}'`);
+  }
 
-    return matchingWaypoint;
+  return matchingWaypoint;
 }
 
 /**
  * Loads fixes (either a waypoint, VHF navaid, NDB, ILS or GLS) with a specified ident from the nav database, returning all matches
  */
 export async function loadFixes(fixIDent: string): Promise<Fix[]> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-    const navaids = await db.getNavaids([fixIDent]);
-    const ndbs = await db.getNDBs([fixIDent]);
-    const waypoints = await db.getWaypoints([fixIDent]);
+  const navaids = await db.getNavaids([fixIDent]);
+  const ndbs = await db.getNDBs([fixIDent]);
+  const waypoints = await db.getWaypoints([fixIDent]);
 
-    return [...navaids, ...ndbs, ...waypoints];
+  return [...navaids, ...ndbs, ...waypoints];
 }
 
 /**
@@ -48,17 +48,17 @@ export async function loadFixes(fixIDent: string): Promise<Fix[]> {
  * @throws if no results are found or none have the specified database ID
  */
 export async function loadSingleFix(fixIdent: string, databaseId: string): Promise<Fix> {
-    const results = await loadFixes(fixIdent);
+  const results = await loadFixes(fixIdent);
 
-    if (results.length === 0) {
-        throw new Error(`[FMS/FPM] Found no fixes with ident '${fixIdent}'`);
-    }
+  if (results.length === 0) {
+    throw new Error(`[FMS/FPM] Found no fixes with ident '${fixIdent}'`);
+  }
 
-    const matchingFix = results.find((fix) => fix.databaseId === databaseId);
+  const matchingFix = results.find((fix) => fix.databaseId === databaseId);
 
-    if (!matchingFix) {
-        throw new Error(`[FMS/FPM] None of the fixes with ident '${fixIdent}' had database id '${databaseId}'`);
-    }
+  if (!matchingFix) {
+    throw new Error(`[FMS/FPM] None of the fixes with ident '${fixIdent}' had database id '${databaseId}'`);
+  }
 
-    return matchingFix;
+  return matchingFix;
 }
