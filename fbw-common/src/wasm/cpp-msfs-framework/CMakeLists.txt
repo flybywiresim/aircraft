@@ -23,10 +23,7 @@ set(INCLUDE_FILES
     MsfsHandler/MsfsHandler.h
     MsfsHandler/SimconnectExceptionStrings.h
     MsfsHandler/SimUnits.h
-    lib/arinc429/arinc429.hpp
-    lib/arinc429/arinc429_utils.hpp
-    lib/arinc429/elac_computer_types.h
-    lib/arinc429/rtwtypes.h
+    lib/arinc429.hpp
     lib/Callback.h
     lib/IDGenerator.h
     lib/fingerprint.hpp
