@@ -24,6 +24,18 @@ TEST_F(StringUtilsTest, TestSplitFast) {
   StringUtils::splitFast(std::string("Hello World"), result);
   EXPECT_EQ(result[0], "Hello");
   EXPECT_EQ(result[1], "World");
+  result.clear();
+  StringUtils::splitFast(std::string("This;is;a;test!"), result, ";");
+  EXPECT_EQ(result[0], "This");
+  EXPECT_EQ(result[1], "is");
+  EXPECT_EQ(result[2], "a");
+  EXPECT_EQ(result[3], "test!");
+  result.clear();
+  StringUtils::splitFast("This;:is;:a;:test!", result, ";:");
+  EXPECT_EQ(result[0], "This");
+  EXPECT_EQ(result[1], "is");
+  EXPECT_EQ(result[2], "a");
+  EXPECT_EQ(result[3], "test!");
 }
 
 TEST_F(StringUtilsTest, TestTrimFast) {
@@ -33,6 +45,7 @@ TEST_F(StringUtilsTest, TestTrimFast) {
 
 TEST_F(StringUtilsTest, TestRemoveTrailingComments) {
   EXPECT_EQ(StringUtils::removeTrailingComments(std::string("Hello World // Comment"), "//"), "Hello World ");
+  EXPECT_EQ(StringUtils::removeTrailingComments(std::string("Hello World // ; Comment"), ";"), "Hello World // ");
 }
 
 TEST_F(StringUtilsTest, TestToLowerCase) {

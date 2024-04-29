@@ -86,22 +86,32 @@ class StringUtils {
     return isNegative ? "-" + oss.str() : oss.str();
   }
 
-  // splits a string or string view into a vector of parts at each delimiter
   /**
    * @brief splits a string or string view into a vector of parts at each delimiter
    * @tparam StringType
    * @param str the string to split
    * @param container the container to store the split parts
-   * @param delims the delimiters to split the string at (default is " ")
+   * @param delim the delimiters to split the string at (default is " ")
    */
   template <typename StringType>
-  static inline void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delims = " ") {
+  static inline void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delim = " ") {
     for (auto first = str.data(), second = str.data(), end = first + str.size(); second != end && first != end; first = second + 1) {
-      second = std::find_first_of(first, end, std::cbegin(delims), std::cend(delims));
+      second = std::find_first_of(first, end, std::cbegin(delim), std::cend(delim));
       if (first != second) {
         container.emplace_back(first, second - first);
       }
     }
+  }
+
+  /**
+   * @brief splits a string or string view into a vector of parts at each delimiter
+   * @tparam StringType
+   * @param str the string to split
+   * @param container the container to store the split parts
+   * @param delim the delimiters to split the string at (default is " ")
+   */
+  static inline void splitFast(const char* str, std::vector<std::string>& container, const char* delim = " ") {
+    splitFast(std::string(str), container, std::string(delim));
   }
 
   /**
