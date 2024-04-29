@@ -14,12 +14,13 @@ set(COMPILER_FLAGS "-g -O0 -Wall -Wextra -Werror -Wshadow -fprofile-arcs -ftest-
 # Source files
 # ====================================================================
 set(SOURCE_FILES
-    src/string_utils-tests.cpp
-    src/math_utils-tests.cpp
-    src/ProfileBuffer-tests.cpp
-    src/quantity-tests.cpp
-    src/fingerprint-tests.cpp
-    src/arinc429-tests.cpp
+    src/lib/string_utils-tests.cpp
+    src/lib/math_utils-tests.cpp
+    src/lib/ProfileBuffer-tests.cpp
+    src/lib/quantity-tests.cpp
+    src/lib/fingerprint-tests.cpp
+    src/lib/arinc429-tests.cpp
+    src/lib/DampingController-tests.cpp
 )
 
 # ====================================================================
@@ -27,6 +28,7 @@ set(SOURCE_FILES
 # ====================================================================
 set(INCLUDE_FILES
     ../lib
+    ../../extra-backend/Pushback
 )
 
 # ====================================================================
@@ -60,7 +62,7 @@ include_directories(
 # Google Test executable
 set(testExeName cpp-framework-test)
 include(GoogleTest)
-add_executable(${testExeName} ${SOURCE_FILES})
+add_executable(${testExeName} ${SOURCE_FILES} ${INCLUDE_FILES})
 target_link_libraries(${testExeName} PUBLIC gtest gtest_main)
 
 gtest_discover_tests(${testExeName})
