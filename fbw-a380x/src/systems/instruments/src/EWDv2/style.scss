@@ -1,5 +1,23 @@
-@import "../Common/definitions";
-@import "../Common/gauges";
+@import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/gauges";
+
+
+@font-face {
+    font-family: "Ecam";
+    //noinspection CssUnknownTarget
+    src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  .ewd-svg {
+    position: absolute;
+    width: 768px;
+    height: 1024px;
+    background: $display-background;
+    font-family: "Ecam", monospace !important;
+  }
+
 
 .EWDWarningTextLeft {
     fill: white;
@@ -79,7 +97,7 @@ text, tspan {
         font-size: 24px;
         letter-spacing: 1.75px;
     }
-    
+
     &.Cyan {
         fill: $display-cyan !important;
     }
@@ -210,7 +228,3 @@ text, tspan {
     fill: $display-light-grey;
     opacity: 0.2
 }
-
-
-
-

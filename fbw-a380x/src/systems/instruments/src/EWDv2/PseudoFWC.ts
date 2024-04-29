@@ -25,7 +25,7 @@ import {
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -71,7 +71,7 @@ export class PseudoFWC {
 
   private static readonly ewdMessageSimVarsLeft = Array.from(
     { length: PseudoFWC.EWD_MESSAGE_LINES },
-    (_, i) => `L:A32NX_EWD_LOWER_LEFT_LINE_${i + 1}`,
+    (_, i) => `L:A380X_EWD_LEFT_LINE_${i + 1}`,
   );
 
   private readonly ewdMessageLinesLeft = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
@@ -80,7 +80,7 @@ export class PseudoFWC {
 
   private static readonly ewdMessageSimVarsRight = Array.from(
     { length: PseudoFWC.EWD_MESSAGE_LINES },
-    (_, i) => `L:A32NX_EWD_LOWER_RIGHT_LINE_${i + 1}`,
+    (_, i) => `L:A380X_EWD_RIGHT_LINE_${i + 1}`,
   );
 
   private readonly ewdMessageLinesRight = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
