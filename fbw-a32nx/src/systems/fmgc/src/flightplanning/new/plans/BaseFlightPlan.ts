@@ -375,20 +375,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       const [operation, param] = this.queuedOperations[i];
 
       switch (operation) {
-        case FlightPlanQueuedOperation.Restring:
+        case FlightPlanQueuedOperation.Restring: {
           const options = param as RestringOptions;
 
           this.restring(options);
           break;
+        }
         case FlightPlanQueuedOperation.RebuildArrivalAndApproach:
-          // eslint-disable-next-line no-await-in-loop
           await this.rebuildArrivalAndApproachSegments();
           break;
-        case FlightPlanQueuedOperation.SyncSegmentLegs:
+        case FlightPlanQueuedOperation.SyncSegmentLegs: {
           const segment = param as FlightPlanSegment;
 
           this.syncSegmentLegsChange(segment);
           break;
+        }
         default:
           console.error(`Unknown queue operation: ${operation}`);
       }
@@ -1163,7 +1164,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   async addOrEditManualHold(
     atIndex: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData | undefined,
+    modifiedHold: HoldData,
     defaultHold: HoldData,
   ): Promise<number> {
     const targetLeg = this.elementAt(atIndex);

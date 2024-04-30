@@ -7,6 +7,7 @@ import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
 import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
@@ -109,7 +110,7 @@ export class LnavDriver implements GuidanceComponent {
       const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
 
       if (!activeLeg) {
-        if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
+        if (LnavConfig.DEBUG_GUIDANCE) {
           console.log('[FMS/LNAV] No leg at activeLegIdx!');
         }
         return;
@@ -198,7 +199,7 @@ export class LnavDriver implements GuidanceComponent {
         SimVar.SetSimVarValue('L:A32NX_FG_PHI_LIMIT', 'Degrees', bankLimit);
 
         switch (params.law) {
-          case ControlLaw.LATERAL_PATH:
+          case ControlLaw.LATERAL_PATH: {
             let { crossTrackError, trackAngleError, phiCommand } = params;
 
             // Update and take into account turn state; only guide using phi during a forced turn
@@ -240,7 +241,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.HEADING:
+          }
+          case ControlLaw.HEADING: {
             const { heading, phiCommand: forcedPhiHeading } = params;
 
             if (!this.lastAvail) {
@@ -295,7 +297,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.TRACK:
+          }
+          case ControlLaw.TRACK: {
             const { course, phiCommand: forcedPhiCourse } = params;
 
             if (!this.lastAvail) {
@@ -345,6 +348,7 @@ export class LnavDriver implements GuidanceComponent {
               }
             }
             break;
+          }
           default:
             break;
         }
@@ -354,7 +358,7 @@ export class LnavDriver implements GuidanceComponent {
         console.error('[FMS/LNAV] Guidance parameters from geometry are null.');
       }
 
-      if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
+      if (LnavConfig.DEBUG_GUIDANCE) {
         SimVar.SetSimVarValue('L:A32NX_FM_TURN_STATE', 'Enum', this.turnState);
       }
 
