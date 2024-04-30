@@ -151,7 +151,7 @@ class CDUFlightPlanPage {
             }
 
             if (i === targetPlan.lastIndex) {
-                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i, inAlternate: false, inMissedApproach: false });
+                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i + 1, inAlternate: false, inMissedApproach: false });
             }
         }
 
@@ -181,7 +181,7 @@ class CDUFlightPlanPage {
                 }
 
                 if (i === targetPlan.alternateFlightPlan.lastIndex) {
-                    waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i, inAlternate: true, inMissedApproach: false });
+                    waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i + 1, inAlternate: true, inMissedApproach: false });
                 }
             }
         } else if (targetPlan.legCount > 0) {
@@ -583,7 +583,11 @@ class CDUFlightPlanPage {
                         return;
                     }
 
-                    mcdu.insertWaypoint(value, forPlan, inAlternate, fpIndex, true, (success) => {
+                    // Insert after last leg if we click on a marker after the flight plan
+                    const insertionIndex = fpIndex < targetPlan.legCount ? fpIndex : targetPlan.legCount - 1;
+                    const insertBeforeVsAfterIndex = fpIndex < targetPlan.legCount;
+
+                    mcdu.insertWaypoint(value, forPlan, inAlternate, insertionIndex, insertBeforeVsAfterIndex, (success) => {
                         if (!success) {
                             scratchpadCallback();
                         }
