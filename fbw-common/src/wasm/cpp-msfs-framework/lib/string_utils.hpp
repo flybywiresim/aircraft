@@ -222,7 +222,12 @@ class StringUtils {
     return os.str();
   }
 
-  // Templated function for floating-point types only
+  /**
+   * @brief Helper function to convert a floating-point number to a string showing all bits grouped in sign, exponent, and fraction
+   * @tparam T the type of the floating-point number to convert
+   * @param value the floating-point number to convert
+   * @return std::string the string representation of the bits
+   */
   template <typename T>
   static std::string strBitsGroupedFloatingpoint(const T& value) {
     // Ensure the template parameter is an integral type
