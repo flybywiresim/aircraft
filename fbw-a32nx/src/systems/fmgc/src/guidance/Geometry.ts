@@ -22,6 +22,7 @@ import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
@@ -602,7 +603,7 @@ export class Geometry {
     const nextLeg = this.legs.get(discoIndex + 1);
 
     if (nextLeg instanceof IFLeg && previousLeg) {
-      if (previousLeg instanceof VMLeg) {
+      if (previousLeg instanceof VMLeg || previousLeg instanceof FMLeg) {
         if (previousLeg.getPathStartPoint()) {
           return distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location);
         }
