@@ -62,6 +62,7 @@ export interface VnavConfig {
   MAXIMUM_FUEL_ESTIMATE: number;
 }
 
+/** Only covers aircraft specific configs, no debug switches */
 export interface LnavConfig {
   /* ========== PATHGEN CONFIG ========== */
 
@@ -79,53 +80,6 @@ export interface LnavConfig {
    * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
    */
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: number;
-
-  /* ========== DEBUG INFO ========== */
-
-  /**
-   * Whether to print geometry generation / update debug info
-   */
-  DEBUG_GEOMETRY: boolean;
-
-  /**
-   * Whether to use the L:A32NX_DEBUG_TAS and L:A32NX_DEBUG_GS LVar for prediction speeds
-   */
-  DEBUG_USE_SPEED_LVARS: boolean;
-
-  /**
-   * Whether to force the drawing of course reversal (hold, proc turn) vectors at any point in the path
-   */
-  DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS: boolean;
-
-  /**
-   * Whether to print guidance debug information on the ND
-   */
-  DEBUG_GUIDANCE: boolean;
-
-  /**
-   * Whether to print guidable recomputation info
-   */
-  DEBUG_GUIDABLE_RECOMPUTATION: boolean;
-
-  /**
-   * Whether to draw path debug points and print them out
-   */
-  DEBUG_PREDICTED_PATH: boolean;
-
-  /**
-   * Whether to print SVG path generation debug info
-   */
-  DEBUG_PATH_DRAWING: boolean;
-
-  /**
-   * Whether to print FMS timing information
-   */
-  DEBUG_PERF: boolean;
-
-  /**
-   * Whether to save the flight plan to local storage (keeps flight plan over instrument reload)
-   */
-  DEBUG_SAVE_FPLN_LOCAL_STORAGE: boolean;
 }
 
 export interface EngineModelParameters {

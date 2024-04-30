@@ -7,6 +7,7 @@ import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
 import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
@@ -19,6 +20,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
@@ -108,7 +110,7 @@ export class LnavDriver implements GuidanceComponent {
       const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
 
       if (!activeLeg) {
-        if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
+        if (LnavConfig.DEBUG_GUIDANCE) {
           console.log('[FMS/LNAV] No leg at activeLegIdx!');
         }
         return;
@@ -197,7 +199,7 @@ export class LnavDriver implements GuidanceComponent {
         SimVar.SetSimVarValue('L:A32NX_FG_PHI_LIMIT', 'Degrees', bankLimit);
 
         switch (params.law) {
-          case ControlLaw.LATERAL_PATH:
+          case ControlLaw.LATERAL_PATH: {
             let { crossTrackError, trackAngleError, phiCommand } = params;
 
             // Update and take into account turn state; only guide using phi during a forced turn
@@ -239,7 +241,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.HEADING:
+          }
+          case ControlLaw.HEADING: {
             const { heading, phiCommand: forcedPhiHeading } = params;
 
             if (!this.lastAvail) {
@@ -294,7 +297,8 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             break;
-          case ControlLaw.TRACK:
+          }
+          case ControlLaw.TRACK: {
             const { course, phiCommand: forcedPhiCourse } = params;
 
             if (!this.lastAvail) {
@@ -344,6 +348,7 @@ export class LnavDriver implements GuidanceComponent {
               }
             }
             break;
+          }
           default:
             break;
         }
@@ -353,7 +358,7 @@ export class LnavDriver implements GuidanceComponent {
         console.error('[FMS/LNAV] Guidance parameters from geometry are null.');
       }
 
-      if (this.acConfig.lnavConfig.DEBUG_GUIDANCE) {
+      if (LnavConfig.DEBUG_GUIDANCE) {
         SimVar.SetSimVarValue('L:A32NX_FM_TURN_STATE', 'Enum', this.turnState);
       }
 
@@ -421,7 +426,7 @@ export class LnavDriver implements GuidanceComponent {
     // This will typically be an IF leg
     for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
       const leg = geometry.legs.get(i);
-      if (!leg || leg instanceof VMLeg) {
+      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
         continue;
       }
 
