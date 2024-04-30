@@ -127,11 +127,17 @@ export class EfisVectors {
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
 
+        // FIXME implement
+        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
+
         const transmitActive =
           engagedLateralMode === LateralMode.NAV ||
           engagedLateralMode === LateralMode.LOC_CPT ||
           engagedLateralMode === LateralMode.LOC_TRACK ||
-          navArmed;
+          engagedLateralMode === LateralMode.LAND ||
+          engagedLateralMode === LateralMode.FLARE ||
+          engagedLateralMode === LateralMode.ROLL_OUT ||
+          (navArmed && doesPreNavEngagePathExist);
 
         if (transmitActive) {
           this.transmitFlightPlan(
