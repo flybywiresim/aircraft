@@ -79,7 +79,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     private fmsUpdateThrottler = new UpdateThrottler(250);
 
-    private efisInterfaces = { L: new EfisInterface('L'), R: new EfisInterface('R') };
+    private efisInterfaces = { L: new EfisInterface('L', this.flightPlanService), R: new EfisInterface('R', this.flightPlanService) };
 
     #guidanceController: GuidanceController;
 
@@ -856,35 +856,11 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     updateEfisPlanCentre(side: EfisSide, planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
-        const numLinesPerPage = this.flightPlanService.hasTemporary ? 7 : 8;
-        // How many pseudo waypoints?
-        // eslint-disable-next-line max-len
-        const numPseudoDisplayed = this.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.filter((wpt) => wpt.displayedOnMcdu && wpt.alongLegIndex > planDisplayLegIndex && wpt.alongLegIndex < (planDisplayLegIndex + numLinesPerPage)).length;
-        const flightPlan = this.flightPlanService.get(planDisplayForPlan);
+        // const numLinesPerPage = this.flightPlanService.hasTemporary ? 7 : 8;
+        // FIXME make EfisInterface numLinesPerPage adaptable
 
         // Update ND map center
         this.efisInterfaces[side].setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
-        this.efisInterfaces[side].setMissedLegVisible(
-            (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= flightPlan.firstMissedApproachLegIndex,
-            (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= flightPlan.firstMissedApproachLegIndex,
-            planDisplayForPlan,
-        );
-        this.efisInterfaces[side].setAlternateLegVisible(planDisplayInAltn
-            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
-            planDisplayInAltn
-            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
-        planDisplayForPlan);
-        this.efisInterfaces[side].setAlternateMissedLegVisible((planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
-            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
-            (planDisplayInAltn && (planDisplayLegIndex + numLinesPerPage) >= flightPlan.alternateFlightPlan.firstMissedApproachLegIndex)
-            || (flightPlan.alternateFlightPlan && (planDisplayLegIndex + numLinesPerPage - numPseudoDisplayed)
-            >= (flightPlan.alternateFlightPlan.firstMissedApproachLegIndex + flightPlan.legCount + 1)), // Account for "END OF F-PLN line"
-        planDisplayForPlan);
         this.efisInterfaces[side].setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
     }
 
