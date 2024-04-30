@@ -1285,7 +1285,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private async insertElementBefore(index: number, element: FlightPlanElement, insertDiscontinuity = false) {
-    if (index < 1 || index > this.allLegs.length) {
+    if (index < 1 || index >= this.allLegs.length) {
       throw new Error(`[FMS/FPM] Tried to insert waypoint out of bounds (index=${index})`);
     }
 
