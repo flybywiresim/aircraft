@@ -581,11 +581,21 @@ class CDUFlightPlanPage {
                     if (value === FMCMainDisplay.clrValue) {
                         CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                         return;
+                    } else if (value === "") {
+                        return;
                     }
 
                     // Insert after last leg if we click on a marker after the flight plan
                     const insertionIndex = fpIndex < targetPlan.legCount ? fpIndex : targetPlan.legCount - 1;
                     const insertBeforeVsAfterIndex = fpIndex < targetPlan.legCount;
+
+                    // Cannot insert after MANUAL leg
+                    const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
+                    if (previousElement && previousElement.isDiscontinuity === false && previousElement.isVectors()) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                        scratchpadCallback();
+                        return;
+                    }
 
                     mcdu.insertWaypoint(value, forPlan, inAlternate, insertionIndex, insertBeforeVsAfterIndex, (success) => {
                         if (!success) {
