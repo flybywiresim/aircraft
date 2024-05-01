@@ -56,6 +56,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private armedVerticalModeSub = Subject.create(0);
 
+  private autobrakeMode = 0;
+
   private athrModeMessage = 0;
 
   private machPreselVal = 0;
@@ -101,8 +103,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.checkSpeedMode,
       )[0] !== null;
 
-    const engineMessage = this.athrModeMessage;
-    const AB3Message = (this.machPreselVal !== -1 || this.speedPreselVal !== -1) && !BC3Message && engineMessage === 0;
+    const preselVisible = (this.machPreselVal !== -1 || this.speedPreselVal !== -1) && this.autobrakeMode !== 3;
+    const AB3Message = preselVisible && !BC3Message && this.athrModeMessage === 0;
 
     let secondBorder: string;
     if (sharedModeActive && !this.props.isAttExcessive.get()) {
@@ -225,6 +227,22 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       .whenChanged()
       .handle((csm) => {
         this.checkSpeedMode = csm;
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('athrModeMessage')
+      .whenChanged()
+      .handle((athr) => {
+        this.athrModeMessage = athr;
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('autoBrakeMode')
+      .whenChanged()
+      .handle((ab) => {
+        this.autobrakeMode = ab;
         this.handleFMABorders();
       });
   }
@@ -663,7 +681,6 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       default:
         text = '';
     }
-
     this.textSub.set(text);
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
   }
@@ -728,6 +745,8 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
   private athrModeMessage = 0;
 
+  private autobrakeMode = 0;
+
   private textSub = Subject.create('');
 
   private text2Sub = Subject.create('');
@@ -735,7 +754,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
   private textXPosSub = Subject.create(0);
 
   private getText() {
-    if (this.athrModeMessage === 0) {
+    if (this.athrModeMessage === 0 && this.autobrakeMode !== 3) {
       /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
                 vertical bar is mapped to ":" aligned to bottom in font file
                  */
@@ -784,6 +803,14 @@ class AB3Cell extends DisplayComponent<CellProps> {
       .whenChanged()
       .handle((m) => {
         this.athrModeMessage = m;
+        this.getText();
+      });
+
+    sub
+      .on('autoBrakeMode')
+      .whenChanged()
+      .handle((ab) => {
+        this.autobrakeMode = ab;
         this.getText();
       });
   }
