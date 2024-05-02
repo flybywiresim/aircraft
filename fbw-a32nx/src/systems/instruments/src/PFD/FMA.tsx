@@ -82,8 +82,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private secondBorderSub = Subject.create('');
 
-  private AB3Message = Subject.create(false);
-
   private handleFMABorders() {
     const sharedModeActive =
       this.activeLateralMode === 32 ||
@@ -103,8 +101,11 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.checkSpeedMode,
       )[0] !== null;
 
-    const preselVisible = (this.machPreselVal !== -1 || this.speedPreselVal !== -1) && this.autobrakeMode !== 3;
-    const AB3Message = preselVisible && !BC3Message && this.athrModeMessage === 0;
+    const AB3Message =
+      this.athrModeMessage === 0 &&
+      this.autobrakeMode !== 3 &&
+      (this.machPreselVal !== -1 || this.speedPreselVal !== -1) &&
+      !BC3Message;
 
     let secondBorder: string;
     if (sharedModeActive && !this.props.isAttExcessive.get()) {
@@ -122,7 +123,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       firstBorder = 'm33.117 0.33732v20.864';
     }
 
-    this.AB3Message.set(AB3Message);
     this.firstBorderSub.set(firstBorder);
     this.secondBorderSub.set(secondBorder);
   }
@@ -259,7 +259,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-        <Row3 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} AB3Message={this.AB3Message} />
+        <Row3 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
       </g>
     );
   }
@@ -411,7 +411,6 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 class Row3 extends DisplayComponent<{
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
-  AB3Message: Subscribable<boolean>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -430,7 +429,7 @@ class Row3 extends DisplayComponent<{
   render(): VNode {
     return (
       <g>
-        <A3Cell bus={this.props.bus} AB3Message={this.props.AB3Message} />
+        <A3Cell bus={this.props.bus} />
         <g ref={this.cellsToHide}>
           <AB3Cell bus={this.props.bus} />
           <D3Cell bus={this.props.bus} />
@@ -641,23 +640,19 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-interface A3CellProps extends CellProps {
-  AB3Message: Subscribable<boolean>;
-}
-
-class A3Cell extends DisplayComponent<A3CellProps> {
+class A3Cell extends DisplayComponent<CellProps> {
   private classSub = Subject.create('');
 
   private textSub = Subject.create('');
 
   private autobrakeMode = 0;
 
-  private AB3Message = false;
+  private athrMessage = 0;
 
-  private onUpdateAthrModeMessage(message: number) {
+  private handleAthrMessageAndAutobrakeMode() {
     let text: string = '';
     let className: string = '';
-    switch (message) {
+    switch (this.athrMessage) {
       case 1:
         text = 'THR LK';
         className = 'Amber BlinkInfinite';
@@ -679,19 +674,17 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         className = 'Amber';
         break;
       default:
-        text = '';
+        switch (this.autobrakeMode) {
+          case 3:
+            text = 'BRK MAX';
+            className = 'Cyan';
+            break;
+          default:
+            text = '';
+        }
     }
     this.textSub.set(text);
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
-  }
-
-  private handleAutobrakeMode() {
-    if (this.autobrakeMode === 3 && !this.AB3Message) {
-      this.textSub.set('BRK MAX');
-      this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
-    } else {
-      this.textSub.set('');
-    }
   }
 
   onAfterRender(node: VNode): void {
@@ -703,7 +696,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .on('athrModeMessage')
       .whenChanged()
       .handle((m) => {
-        this.onUpdateAthrModeMessage(m);
+        this.athrMessage = m;
+        this.handleAthrMessageAndAutobrakeMode();
       });
 
     sub
@@ -711,13 +705,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .whenChanged()
       .handle((am) => {
         this.autobrakeMode = am;
-        this.handleAutobrakeMode();
+        this.handleAthrMessageAndAutobrakeMode();
       });
-
-    this.props.AB3Message.sub((ab3) => {
-      this.AB3Message = ab3;
-      this.handleAutobrakeMode();
-    });
 
     sub
       .on('autoBrakeActive')
