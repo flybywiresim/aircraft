@@ -1,10 +1,10 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, ArincEventBus } from 'index-no-react';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429Word } from 'index-no-react';
 import { FmsOansData } from 'instruments/src/OANC';
 import { RopRowOansSimVars } from '../../MsfsAvionicsCommon/providers';
 
 export interface RwyAheadAdvisoryProps {
-  bus: ArincEventBus;
+  bus: EventBus;
 }
 
 export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
@@ -15,8 +15,9 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    this.props.bus
-      .getSubscriber<RopRowOansSimVars>()
+    const sub = this.props.bus.getSubscriber<RopRowOansSimVars & FmsOansData>();
+
+    sub
       .on('oansWord1Raw')
       .whenChanged()
       .handle((it) => {
@@ -24,8 +25,7 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
         this.flagRef.instance.style.display = w.getBitValueOr(11, false) ? 'block' : 'none';
       });
 
-    this.props.bus
-      .getSubscriber<FmsOansData>()
+    sub
       .on('ndRwyAheadQfu')
       .whenChanged()
       .handle((it) => this.qfu.set(it));
