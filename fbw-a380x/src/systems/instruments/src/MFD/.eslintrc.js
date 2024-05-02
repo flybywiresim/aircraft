@@ -1,10 +1,82 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 'use strict';
 
 module.exports = {
+  env: { browser: true },
+  root: true,
+  extends: [
+    'eslint:recommended',
+    'plugin:prettier/recommended',
+    // 'plugin:@typescript-eslint/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit
+    'plugin:@typescript-eslint/eslint-recommended',
+    // 'plugin:react-hooks/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit, and we are moving away from react
+    // 'plugin:react/recommended', -- Disabled as it is complex to fix, needs to be done bit by bit, and we are moving away from react
+  ],
+  plugins: ['@typescript-eslint', 'prettier', 'react-hooks', 'react', 'tailwindcss'],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2021,
+    sourceType: 'script',
+    requireConfigFile: false,
+  },
+  overrides: [
+    {
+      files: [
+        '.eslintrc.js',
+        'scripts/**/*.js',
+        '**/mach.config.js',
+        '**/rollup.config.js',
+        '**/tailwind.config.js',
+        '**/jest.config.js',
+      ],
+      env: {
+        node: true,
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['fbw-common/src/jest/**/*.js'],
+      env: {
+        node: true,
+      },
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended'],
+    },
+  ],
+  settings: {
+    tailwindcss: { groupByResponsive: true },
+    react: { version: 'detect' },
+  },
+  rules: {
+    'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
-    extends: '../../../../.eslintrc.js',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        varsIgnorePattern: 'FSComponent|_.*',
+        argsIgnorePattern: '_.*',
+      },
+    ],
 
-    // overrides airbnb, use sparingly
-    rules: { 'react/no-unknown-property': 'off', 'react/style-prop-object': 'off' },
-
+    'tailwindcss/classnames-order': 'error',
+    'tailwindcss/enforces-negative-arbitrary-values': 'error',
+    'tailwindcss/enforces-shorthand': 'error',
+    'tailwindcss/migration-from-tailwind-2': 'error',
+    'tailwindcss/no-contradicting-classname': 'error',
+  },
+  globals: {
+    Simplane: 'readonly',
+    SimVar: 'readonly',
+    Utils: 'readonly',
+    JSX: 'readonly',
+    Coherent: 'readonly',
+    ViewListener: 'readonly',
+    RegisterViewListener: 'readonly',
+  },
 };

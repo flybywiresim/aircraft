@@ -27,221 +27,91 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 
-export function pageForUrl(url: string, bus: EventBus, mfd: DisplayInterface & MfdDisplayInterface, fmcService: FmcServiceInterface): VNode {
-    switch (url) {
+export function pageForUrl(
+  url: string,
+  bus: EventBus,
+  mfd: DisplayInterface & MfdDisplayInterface,
+  fmcService: FmcServiceInterface,
+): VNode {
+  switch (url) {
     case 'fms/active/perf':
     case 'fms/sec1/perf':
     case 'fms/sec2/perf':
     case 'fms/sec3/perf':
-        return (
-            <MfdFmsPerf
-                pageTitle="PERF"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsPerf pageTitle="PERF" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/init':
     case 'fms/sec1/init':
     case 'fms/sec2/init':
     case 'fms/sec3/init':
-        return (
-            <MfdFmsInit
-                pageTitle="INIT"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsInit pageTitle="INIT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/fuel-load':
     case 'fms/sec1/fuel-load':
     case 'fms/sec2/fuel-load':
     case 'fms/sec3/fuel-load':
-        return (
-            <MfdFmsFuelLoad
-                pageTitle="FUEL&LOAD"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFuelLoad pageTitle="FUEL&LOAD" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln':
     case 'fms/sec1/f-pln':
     case 'fms/sec2/f-pln':
     case 'fms/sec3/f-pln':
-        return (
-            <MfdFmsFpln
-                pageTitle="F-PLN"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFpln pageTitle="F-PLN" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-airways':
     case 'fms/sec1/f-pln-airways':
     case 'fms/sec2/f-pln-airways':
     case 'fms/sec3/f-pln-airways':
-        return (
-            <MfdFmsFplnAirways
-                pageTitle="F-PLN/AIRWAYS"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnAirways pageTitle="F-PLN/AIRWAYS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-departure':
     case 'fms/sec1/f-pln-departure':
     case 'fms/sec2/f-pln-departure':
     case 'fms/sec3/f-pln-departure':
-        return (
-            <MfdFmsFplnDep
-                pageTitle="F-PLN/DEPARTURE"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnDep pageTitle="F-PLN/DEPARTURE" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-arrival':
     case 'fms/sec1/f-pln-arrival':
     case 'fms/sec2/f-pln-arrival':
     case 'fms/sec3/f-pln-arrival':
-        return (
-            <MfdFmsFplnArr
-                pageTitle="F-PLN/ARRIVAL"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-direct-to':
-        return (
-            <MfdFmsFplnDirectTo
-                pageTitle="F-PLN/DIRECT-TO"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnDirectTo pageTitle="F-PLN/DIRECT-TO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-vert-rev':
     case 'fms/sec1/f-pln-vert-rev':
     case 'fms/sec2/f-pln-vert-rev':
     case 'fms/sec3/f-pln-vert-rev':
-        return (
-            <MfdFmsFplnVertRev
-                pageTitle="F-PLN/VERT REV"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnVertRev pageTitle="F-PLN/VERT REV" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-hold':
     case 'fms/sec1/f-pln-hold':
     case 'fms/sec2/f-pln-hold':
     case 'fms/sec3/f-pln-hold':
-        return (
-            <MfdFmsFplnHold
-                pageTitle="F-PLN/HOLD"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
-        return (
-            <MfdFmsPositionIrs
-                pageTitle="IRS"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/navaids':
-        return (
-            <MfdFmsPositionNavaids
-                pageTitle="NAVAIDS"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsPositionNavaids pageTitle="NAVAIDS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/status':
-        return (
-            <MfdFmsDataStatus
-                pageTitle="STATUS"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/debug':
-        return (
-            <MfdFmsDataDebug
-                pageTitle="DEBUG"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
+      return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
-        return (
-            <MfdNotFound
-                pageTitle="NOT FOUND"
-                bus={bus}
-                mfd={mfd}
-                fmcService={fmcService}
-            />
-        );
-    }
+      return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
+  }
 }
 
 export function headerForSystem(
-    sys: string,
-    bus: EventBus,
-    atcCallsign: Subscribable<string>,
-    activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
-    uiService: MfdUiService,
+  sys: string,
+  bus: EventBus,
+  atcCallsign: Subscribable<string>,
+  activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
+  uiService: MfdUiService,
 ): VNode {
-    switch (sys) {
+  switch (sys) {
     case 'fms':
-        return (
-            <FmsHeader
-                callsign={atcCallsign}
-                activeFmsSource={activeFmsSource}
-                uiService={uiService}
-            />
-        );
+      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
     case 'atccom':
-        return (
-            <AtccomHeader
-                callsign={atcCallsign}
-                activeFmsSource={activeFmsSource}
-                uiService={uiService}
-            />
-        );
+      return <AtccomHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
     case 'surv':
-        return (
-            <SurvHeader
-                callsign={atcCallsign}
-                activeFmsSource={activeFmsSource}
-                uiService={uiService}
-            />
-        );
+      return <SurvHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
     case 'fcubkup':
-        return (
-            <FcuBkupHeader
-                callsign={atcCallsign}
-                activeFmsSource={activeFmsSource}
-                uiService={uiService}
-            />
-        );
+      return <FcuBkupHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
     default:
-        return (
-            <FmsHeader
-                callsign={atcCallsign}
-                activeFmsSource={activeFmsSource}
-                uiService={uiService}
-            />
-        );
-    }
+      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+  }
 }

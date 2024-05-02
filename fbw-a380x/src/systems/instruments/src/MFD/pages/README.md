@@ -92,12 +92,8 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | ------------- | ------------- |
 | PERF | PRED TO not functional |
 | PERF | DES: MANAGED speed or mach can't be set |
-| PERF | MSG LIST: All messages are persistent in msg list, type I / type II not modeled right now |
 | AIRWAYS | Can't delete pending airways (RL behavior to be checked) |
 | FMS-v2 | Can't start airway with DCT via if first entry (set VIA to DCT, enter desired WPT as TO, submit --> nothing happens) |
-| FMS-v2 | NEXT WPT revision if waypoint already in route: Waypoints in between are not deleted, next wpt is just inserted after revised wpt (need to manually delete the waypoints after) |
-| FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
-| FMS-v2 | Add option to delete flight plans (at least the uplink one) to FlightPlanService |
 
 ## (Open) questions
 | Page / component | Question | Answer |
