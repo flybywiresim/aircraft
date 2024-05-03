@@ -121,7 +121,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
         <text
           x="69"
           y="70.25"
-          class="FontIntermediate Amber MiddleAlign Blink9Seconds TextOutline"
+          class="FontMediumSmaller Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([ifWetTooShort, tooShort, stall]) => ifWetTooShort && !tooShort && !stall,
