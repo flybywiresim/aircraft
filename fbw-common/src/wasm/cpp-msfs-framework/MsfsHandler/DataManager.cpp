@@ -238,7 +238,6 @@ KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const
   return id;
 }
 
-// FIXME: Double check if this is correct
 bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
   const auto eventPair = keyEventCallbacks.find(keyEventId);
   if (eventPair != keyEventCallbacks.end()) {
