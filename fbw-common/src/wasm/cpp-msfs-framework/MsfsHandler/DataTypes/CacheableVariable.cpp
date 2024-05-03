@@ -26,7 +26,6 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
     return cachedValue.value();
   }
   LOG_TRACE("CacheableVariable::updateFromSim() - read from sim " + this->name + " " + str());
-  // update the value from the sim
   updateStamps(timeStamp, tickCounter);
   return readFromSim();
 }
@@ -47,7 +46,7 @@ void CacheableVariable::set(FLOAT64 value) {
     return;
   }
   cachedValue = value;
-  dirty = true;
+  dirty       = true;
   setChanged(true);
 }
 
