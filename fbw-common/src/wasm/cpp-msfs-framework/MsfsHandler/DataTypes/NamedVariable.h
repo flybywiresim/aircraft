@@ -65,8 +65,8 @@ class NamedVariable : public CacheableVariable {
   [[nodiscard]] std::string str() const override;
 
   /**
-   * Sets the aircraft prefix for all NamedVariables.
-   * This will usually be set by the MsfsHandler constructor.
+   * @brief Sets the aircraft prefix as a static class variable for all NamedVariables.<p/>
+   *        This will usually be set by the MsfsHandler constructor.
    * @param aircraftPrefix The aircraft prefix to use.
    */
   static void setAircraftPrefix(const std::string& aircraftPrefix) {
@@ -74,7 +74,7 @@ class NamedVariable : public CacheableVariable {
   }
 
   /**
-   * Returns the aircraft prefix for all NamedVariables.
+   * @brief  Returns the static aircraft prefix for all NamedVariables.
    * @return The aircraft prefix.
    */
   static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
