@@ -88,7 +88,7 @@ class DataManager {
   // Map over the event id to quickly find the event - make creating an event a bit less efficient.
   std::map<SIMCONNECT_CLIENT_EVENT_ID, ClientEventPtr> clientEvents{};
 
-  // Map of callback vectors to be called when a key event is triggered in the sim.
+  // Map of callback maps to be called when a key event is triggered in the sim.
   std::map<KeyEventID, std::map<KeyEventCallbackID, KeyEventCallbackFunction>> keyEventCallbacks{};
 
   // Flag to indicate if the data manager is initialized.
@@ -177,22 +177,25 @@ class DataManager {
    * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
    * can be used to store and retrieve custom numeric data from the sim.<p/>
    *
-   * OBS: A prefix will be added to the variable name depending on aircraft type.
-   * E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
+   * OBS: If defined at Module creation time a prefix will be added to the variable name depending
+   * on aircraft type. E.g. "A32NX_" for the A32NX. If the varName already contains the prefix it
+   * will not be added again.<p/>
    *
    * @param varName Name of the variable in the sim
    * @param unit optional SimUnit of the variable (default=Number)
    * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
+   * @param noPrefix optional if the aircraft prefix should not be added to the variable name (default=false)
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
   [[nodiscard]] NamedVariablePtr make_named_var(const std::string& varName,
-                                                SimUnit            unit        = UNITS.Number,
-                                                UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
-                                                FLOAT64            maxAgeTime  = 0.0,
-                                                UINT64             maxAgeTicks = 0);
+                                                SimUnit unit = UNITS.Number,
+                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
+                                                FLOAT64 maxAgeTime = 0.0,
+                                                UINT64             maxAgeTicks = 0,
+                                                bool               noPrefix    = false);
 
   /**
    * @brief Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
