@@ -137,8 +137,8 @@ const BigQuickSettingsUpDown: FC<BigQuickSettingsUpDownProps> = forwardRef<
         ref={ref}
         type="button"
         onClick={onDownClick}
-        className={`bg-theme-accent text-theme-text mr-5 flex flex-col
-                        items-center justify-center rounded-md border-2 border-transparent px-4 py-2 transition duration-100 hover:border-current
+        className={`bg-theme-accent text-theme-text border-t-10 mr-5 flex
+                        flex-col items-center justify-center rounded-md border-4 border-x-0 border-b-0 border-transparent px-4 py-2 transition duration-100 hover:border-current
                         ${className ?? ''}`}
         {...rest}
       >
@@ -154,8 +154,8 @@ const BigQuickSettingsUpDown: FC<BigQuickSettingsUpDownProps> = forwardRef<
         ref={ref}
         type="button"
         onClick={onUpClick}
-        className={`bg-theme-accent text-theme-text ml-5 flex flex-col items-center
-                        justify-center rounded-md border-2 border-transparent px-4 py-2 transition duration-100 hover:border-current
+        className={`bg-theme-accent text-theme-text border-t-10 ml-5 flex flex-col
+                        items-center justify-center rounded-md border-4 border-x-0 border-b-0 border-transparent px-4 py-2 transition duration-100 hover:border-current
                         ${className ?? ''}`}
         {...rest}
       >
@@ -367,9 +367,9 @@ export const QuickControlsPane = ({
             <button
               type="button"
               onClick={handleAutoBrightness}
-              className={`bg-theme-body text-theme-text ml-4 flex
-                                                    items-center justify-center rounded-md border-2
-                                                    border-transparent transition duration-100 hover:border-current ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+              className={`bg-theme-body text-theme-text border-t-10 ml-4
+                                                    flex items-center justify-center rounded-md border-8 border-x-0 border-b-0
+                                                    border-transparent transition duration-100 hover:border-current ${usingAutobrightness === 1 ? 'border-utility-green text-theme-body' : ''}`}
               style={{ width: '80px', height: '50px' }}
             >
               <BrightnessHigh size={24} />
