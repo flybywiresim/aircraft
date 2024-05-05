@@ -49,12 +49,12 @@ import {
 } from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
-import { OansControlEvents } from 'instruments/src/OANC/OansControlEventPublisher';
+import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FcuSimVars } from 'instruments/src/OANC/FcuBusPublisher';
-import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
-import { FmsDataStore } from 'instruments/src/OANC/OancControlPanelUtils';
-import { BrakeToVacateUtils } from 'instruments/src/OANC/BrakeToVacateUtils';
+import { FcuSimVars } from './FcuBusPublisher';
+import { FmsOansData } from './FmsOansPublisher';
+import { FmsDataStore } from './OancControlPanelUtils';
+import { BrakeToVacateUtils } from './BrakeToVacateUtils';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';

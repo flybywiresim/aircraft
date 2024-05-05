@@ -6,7 +6,7 @@ import { clampAngle } from 'msfs-geo';
 import { Feature, LineString } from '@turf/turf';
 import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { FmsDataStore } from 'instruments/src/OANC';
+import { FmsDataStore } from './';
 import { filterLabel, labelStyle, OancLabelFilter } from './OancLabelFilter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';

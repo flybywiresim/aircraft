@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, ConsumerSubject, DmsFormatter2, EventBus, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { AmdbAirportSearchResult } from '@shared/amdb';
-import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
+import { FmsOansData } from './FmsOansPublisher';
+import { AmdbAirportSearchResult } from '@flybywiresim/fbw-sdk';
 
 export enum ControlPanelAirportSearchMode {
   Icao,

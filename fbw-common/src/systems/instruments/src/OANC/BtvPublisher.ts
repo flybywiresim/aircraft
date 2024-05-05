@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, Instrument, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Arinc429Word, ArincEventBus } from 'index-no-react';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 export interface BtvData {
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */

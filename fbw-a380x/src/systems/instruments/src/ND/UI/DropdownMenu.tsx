@@ -11,8 +11,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { InputField } from 'instruments/src/ND/UI/InputField';
-import { DropdownFieldFormat } from 'instruments/src/ND/UI/DataEntryFormats';
+import { InputField } from './InputField';
+import { DropdownFieldFormat } from './DataEntryFormats';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;

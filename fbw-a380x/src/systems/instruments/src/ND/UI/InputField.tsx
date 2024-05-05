@@ -9,7 +9,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { DataEntryFormat } from 'instruments/src/ND/UI/DataEntryFormats';
+import { DataEntryFormat } from './DataEntryFormats';
 
 // eslint-disable-next-line max-len
 export const emptyMandatoryCharacter = (selected: boolean) =>

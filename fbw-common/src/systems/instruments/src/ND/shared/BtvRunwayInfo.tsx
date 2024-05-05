@@ -4,8 +4,8 @@
 
 import { FSComponent, DisplayComponent, Subject, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { BtvDataArinc429, FmsOansData, FmsOansDataArinc429 } from 'instruments/src/OANC';
-import { Arinc429Word, ArincEventBus } from '@shared/index';
+import { BtvDataArinc429, FmsOansData, FmsOansDataArinc429 } from '@flybywiresim/oanc';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {

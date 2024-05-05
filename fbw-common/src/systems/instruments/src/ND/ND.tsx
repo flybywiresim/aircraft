@@ -15,8 +15,8 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { clampAngle } from 'msfs-geo';
-import { BtvRunwayInfo } from 'instruments/src/ND/shared/BtvRunwayInfo';
-import { RwyAheadAdvisory } from 'instruments/src/ND/shared/RwyAheadAdvisory';
+import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
+import { RwyAheadAdvisory } from './shared/RwyAheadAdvisory';
 import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { VnavStatus } from './shared/VnavStatus';
 import { LnavStatus } from './shared/LnavStatus';

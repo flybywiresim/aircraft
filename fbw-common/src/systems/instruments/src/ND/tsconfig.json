@@ -24,7 +24,6 @@
       "@localization/*": ["../localization/*"],
       "@sentry/*": ["./sentry-client/src/*"],
       "@simbridge/*": ["./simbridge-client/src/*"],
-      "@shared/*": ["./shared/src/*"],
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],

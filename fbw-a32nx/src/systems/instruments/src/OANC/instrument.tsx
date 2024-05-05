@@ -21,7 +21,7 @@ import {
   a320EfisZoomRangeSettings,
 } from '@flybywiresim/oanc';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
-import { ContextMenu } from 'instruments/src/OANC/Components/ContextMenu';
+import { ContextMenu } from './Components/ContextMenu';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { ControlPanel } from './Components/ControlPanel';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';

@@ -1,5 +1,5 @@
-import { FeatureType } from 'index-no-react';
-import { FmsDataStore } from 'instruments/src/OANC/OancControlPanelUtils';
+import { FeatureType } from '@flybywiresim/fbw-sdk';
+import { FmsDataStore } from './OancControlPanelUtils';
 import { Label, LabelStyle } from './Oanc';
 
 export interface BaseOancLabelFilter {

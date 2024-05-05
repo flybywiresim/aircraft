@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from 'index-no-react';
-import { FmsOansData } from 'instruments/src/OANC';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { FmsOansData } from '@flybywiresim/oanc';
 import { RopRowOansSimVars } from '../../MsfsAvionicsCommon/providers';
 
 export interface RwyAheadAdvisoryProps {

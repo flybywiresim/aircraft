@@ -38,8 +38,8 @@ import {
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
-import { Button } from 'instruments/src/ND/UI/Button';
-import { OansRunwayInfoBox } from 'instruments/src/ND/OANSRunwayInfoBox';
+import { Button } from './UI/Button';
+import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
 import { DropdownMenu } from './UI/DropdownMenu';
 import { RadioButtonGroup } from './UI/RadioButtonGroup';
 import { InputField } from './UI/InputField';

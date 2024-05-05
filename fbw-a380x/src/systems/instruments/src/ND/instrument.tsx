@@ -35,10 +35,10 @@ import {
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
 
-import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/ND/UI/ContextMenu';
-import { OansControlPanel } from 'instruments/src/ND/OansControlPanel';
-import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
+import { VerticalDisplayDummy } from './VerticalDisplay';
+import { ContextMenu, ContextMenuElement } from './UI/ContextMenu';
+import { OansControlPanel } from './OansControlPanel';
+import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';

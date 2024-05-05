@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties } from '@shared/amdb';
+import { AmdbProperties } from '@flybywiresim/fbw-sdk';
 import {
   Feature,
   FeatureCollection,
@@ -16,18 +16,18 @@ import {
   lineString,
   polygon,
 } from '@turf/turf';
-import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from 'index-no-react';
-import { Label, LabelStyle } from 'instruments/src/OANC';
-import { BtvData } from 'instruments/src/OANC/BtvPublisher';
-import { FmsOansData } from 'instruments/src/OANC/FmsOansPublisher';
-import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
+import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Label, LabelStyle } from './';
+import { BtvData } from './BtvPublisher';
+import { FmsOansData } from './FmsOansPublisher';
+import { OancLabelManager } from './OancLabelManager';
 import {
   fractionalPointAlongLine,
   globalToAirportCoordinates,
   pointAngle,
   pointDistance,
   pointToLineDistance,
-} from 'instruments/src/OANC/OancMapUtils';
+} from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
 import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
 
