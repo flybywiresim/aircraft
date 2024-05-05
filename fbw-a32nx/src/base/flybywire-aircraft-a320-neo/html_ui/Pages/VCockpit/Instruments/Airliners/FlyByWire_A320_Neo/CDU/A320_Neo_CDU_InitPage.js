@@ -218,6 +218,9 @@ class CDUInitPage {
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);
                             }
+                        }).catch((error) => {
+                            console.error(error);
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                         });
                     });
             }
