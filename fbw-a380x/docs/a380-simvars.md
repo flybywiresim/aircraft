@@ -6,6 +6,7 @@
   - [Uncategorized](#uncategorized)
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
+  - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
@@ -501,6 +502,88 @@
         - 2
         - 3
         - 4
+
+## Fire and Smoke Protection ATA 26
+
+- A32NX_{zone}_ON_FIRE
+    - Bool
+    - True when a fire is present in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_FIRE_DETECTED_ENG{number}
+    - Bool
+    - True when fire is detected on engine
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_DETECTED_{zone}
+    - Bool
+    - True when fire is detected in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_OVHD_FIRE_AGENT_{bottle}_{zone}_{number}_IS_PRESSED
+    - Bool
+    - True when the overhead pushbutton for the corresponding fire extinguishing bottle agent is pressed. Momentary PB. Note APU uses 1_APU_1
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_ARMED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle squibs are armed.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_DISCHARGED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle has been discharged into the engine.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_BUTTON_ENG{number}
+    - Bool
+    - True when the overhead fire pushbutton has been released
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - True when the overhead apu pushbutton has been released
+
+- A32NX_FIRE_TEST_ENG1
+    - Bool
+    - True when the overhead fire test pushbutton is pressed
 
 ## Indicating-Recording ATA 31
 
