@@ -80,7 +80,7 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
   ),
 );
 
-interface BigQuickSettingsToggleProps {
+interface LargeQuickSettingsToggleProps {
   onClick: () => void;
   icon: React.ReactElement;
   className?: string;
@@ -88,9 +88,9 @@ interface BigQuickSettingsToggleProps {
   infoBox?: React.ReactElement;
 }
 
-const BigQuickSettingsToggle: FC<BigQuickSettingsToggleProps> = forwardRef<
+const LargeQuickSettingsToggle: FC<LargeQuickSettingsToggleProps> = forwardRef<
   HTMLButtonElement,
-  BigQuickSettingsToggleProps
+  LargeQuickSettingsToggleProps
 >(({ onClick, icon, className, children, width, infoBox, ...rest }, ref) => (
   <button
     ref={ref}
@@ -112,7 +112,7 @@ const BigQuickSettingsToggle: FC<BigQuickSettingsToggleProps> = forwardRef<
   </button>
 ));
 
-interface BigQuickSettingsUpDownProps {
+interface LargeQuickSettingsIncrementerProps {
   onDownClick?: () => void;
   onUpClick?: () => void;
   icon: React.ReactElement;
@@ -121,9 +121,9 @@ interface BigQuickSettingsUpDownProps {
   infoBox?: React.ReactElement;
 }
 
-const BigQuickSettingsUpDown: FC<BigQuickSettingsUpDownProps> = forwardRef<
+const LargeQuickSettingsIncrementer: FC<LargeQuickSettingsIncrementerProps> = forwardRef<
   HTMLButtonElement,
-  BigQuickSettingsUpDownProps
+  LargeQuickSettingsIncrementerProps
 >(({ icon, className, children, width, infoBox, onDownClick, onUpClick, ...rest }, ref) => (
   <div
     className={`bg-theme-body text-theme-text flex flex-col
@@ -411,24 +411,24 @@ export const QuickControlsPane = ({
         {/* Second Row */}
         <div className="flex flex-row items-center justify-between">
           <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
-            <BigQuickSettingsToggle
+            <LargeQuickSettingsToggle
               onClick={handleTogglePauseAtTod}
               icon={<PiAirplaneLandingFill size={42} />}
               className={pauseAtTodStyle}
             >
               {t('QuickControls.PauseAtTod')} <br />
               {pauseAtTodString}
-            </BigQuickSettingsToggle>
+            </LargeQuickSettingsToggle>
           </TooltipWrapper>
           <TooltipWrapper text={t('QuickControls.TT.Simrate')}>
-            <BigQuickSettingsUpDown
+            <LargeQuickSettingsIncrementer
               onDownClick={decreaseSimrate}
               onUpClick={increaseSimrate}
               icon={<ClockHistory size={42} />}
               infoBox={<span>{`${simRate}x`}</span>}
             >
               {t('QuickControls.Simrate')}
-            </BigQuickSettingsUpDown>
+            </LargeQuickSettingsIncrementer>
           </TooltipWrapper>
         </div>
       </div>
