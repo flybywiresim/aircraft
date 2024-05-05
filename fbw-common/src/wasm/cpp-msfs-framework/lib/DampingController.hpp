@@ -28,9 +28,9 @@ class DampingController {
    *               is returned.
    */
   DampingController(double startValue, double accelStepSize, double epsilon) {
-    this->lastValue = startValue;
+    this->lastValue     = startValue;
     this->accelStepSize = accelStepSize;
-    this->epsilon = epsilon;
+    this->epsilon       = epsilon;
   };
 
   /**

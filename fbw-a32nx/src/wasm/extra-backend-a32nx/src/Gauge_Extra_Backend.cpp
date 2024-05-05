@@ -33,8 +33,8 @@ ExampleModule exampleModule(msfsHandler);
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A32NX lightingPresets(msfsHandler);
-Pushback_A32NX pushback(msfsHandler);
-AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
+Pushback_A32NX        pushback(msfsHandler);
+AircraftPresets       aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
 
 /**
  * Gauge Callback
@@ -65,4 +65,3 @@ MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext
   return false;
 }
 }
-

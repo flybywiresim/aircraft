@@ -191,9 +191,9 @@ class DataManager {
    * @see SimUnits.h for available units
    */
   [[nodiscard]] NamedVariablePtr make_named_var(const std::string& varName,
-                                                SimUnit unit = UNITS.Number,
-                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                FLOAT64 maxAgeTime = 0.0,
+                                                SimUnit            unit        = UNITS.Number,
+                                                UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                                                FLOAT64            maxAgeTime  = 0.0,
                                                 UINT64             maxAgeTicks = 0,
                                                 bool               noPrefix    = false);
 
@@ -294,9 +294,9 @@ class DataManager {
    *
    * @note When reusing a DataDefinitionVariable make sure to know how this DataDefinition is updated and DO NOT CHANGE the update mode
    *       or periodic update settings of the DataDefinitionVariable. This could lead to unexpected behavior in other modules sharing the
-   *       same DataDefinitionVariable. Especially as the periodic update settings cannot be retrieved from the sim and the DataDefinitionVariable
-   *       does not store the the periodic update settings as these could get easily out of sync (e.g. by using SimConnect directly to change
-   *       them) which would be worse than not having them at all.
+   *       same DataDefinitionVariable. Especially as the periodic update settings cannot be retrieved from the sim and the
+   * DataDefinitionVariable does not store the the periodic update settings as these could get easily out of sync (e.g. by using SimConnect
+   * directly to change them) which would be worse than not having them at all.
    *
    * @tparam T The type of the DataDefinitionVariable to retrieve.
    * @param name The name of the DataDefinitionVariable to retrieve.

@@ -43,11 +43,11 @@ bool AircraftPresets::initialize() {
 
   // LVARs
   loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
-  progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
-  progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
+  progressAircraftPreset    = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
+  progressAircraftPresetId  = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
 
-  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetVerbose  = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpediteDelay =
       dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250);
@@ -100,11 +100,11 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
       // initialize a new loading process
       currentProcedureID = loadAircraftPresetRequest->getAsInt64();
-      currentProcedure = requestedProcedure.value();
+      currentProcedure   = requestedProcedure.value();
       currentLoadingTime = 0;
-      currentDelay = 0;
-      currentStep = 0;
-      loadingIsActive = true;
+      currentDelay       = 0;
+      currentStep        = 0;
+      loadingIsActive    = true;
       progressAircraftPreset->setAndWriteToSim(0);
       progressAircraftPresetId->setAndWriteToSim(0);
       LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
@@ -140,8 +140,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
 
     // prepare return values for execute_calculator_code
-    FLOAT64 fvalue = 0.0;
-    SINT32 ivalue = 0;
+    FLOAT64   fvalue = 0.0;
+    SINT32    ivalue = 0;
     PCSTRINGZ svalue = nullptr;
 
     // check if the current step is a condition step and check the condition
@@ -224,4 +224,3 @@ void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const 
   std::string buffer = oss.str();
   fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer.c_str(), buffer.size() + 1, FsCommBusBroadcast_JS);
 }
-

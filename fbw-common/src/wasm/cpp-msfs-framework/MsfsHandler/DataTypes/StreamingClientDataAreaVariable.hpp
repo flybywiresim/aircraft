@@ -60,14 +60,14 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
    *                    the requestUpdateFromSim() method.
    */
-  StreamingClientDataAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
-                                                const std::string& clientDataName,
-                                                SIMCONNECT_CLIENT_DATA_ID clientDataId,
+  StreamingClientDataAreaVariable<T, ChunkSize>(HANDLE                               hSimConnect,
+                                                const std::string&                   clientDataName,
+                                                SIMCONNECT_CLIENT_DATA_ID            clientDataId,
                                                 SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
-                                                SIMCONNECT_DATA_REQUEST_ID requestId,
-                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                                                FLOAT64 maxAgeTime = 0.0,
-                                                UINT64 maxAgeTicks = 0)
+                                                SIMCONNECT_DATA_REQUEST_ID           requestId,
+                                                UpdateMode                           updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                                                FLOAT64                              maxAgeTime  = 0.0,
+                                                UINT64                               maxAgeTicks = 0)
       : ClientDataAreaVariable<T>(hSimConnect,
                                   clientDataName,
                                   clientDataId,
@@ -80,7 +80,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
         content() {}
 
  public:
-  StreamingClientDataAreaVariable<T, ChunkSize>() = delete;                                        // no default constructor
+  StreamingClientDataAreaVariable<T, ChunkSize>()                                       = delete;  // no default constructor
   StreamingClientDataAreaVariable<T, ChunkSize>(const StreamingClientDataAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
   StreamingClientDataAreaVariable<T, ChunkSize>& operator=(const StreamingClientDataAreaVariable<T, ChunkSize>&) = delete;
@@ -107,8 +107,8 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
   void reserve(std::size_t expectedByteCnt) {
     this->setChanged(false);
     this->content.clear();
-    this->receivedBytes = 0;
-    this->receivedChunks = 0;
+    this->receivedBytes     = 0;
+    this->receivedChunks    = 0;
     this->expectedByteCount = expectedByteCnt;
     this->content.reserve(expectedByteCnt);
   }
@@ -141,9 +141,9 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * @return true if successful, false otherwise
    */
   bool writeDataToSim() override {
-    [[maybe_unused]] int chunkCount = 0;  // for debugging output only
-    std::size_t sentBytes = 0;
-    std::size_t remainingBytes = this->content.size();
+    [[maybe_unused]] int chunkCount     = 0;  // for debugging output only
+    std::size_t          sentBytes      = 0;
+    std::size_t          remainingBytes = this->content.size();
 
     while (sentBytes < this->content.size()) {
       if (remainingBytes >= ChunkSize) {

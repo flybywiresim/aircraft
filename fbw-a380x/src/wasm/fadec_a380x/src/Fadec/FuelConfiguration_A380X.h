@@ -59,7 +59,6 @@ class FuelConfiguration_A380X {
   std::string configFilename{"A380X-default-fuel-config.ini"};
 
  public:
-
   /**
    * @brief Returns the filename of the INI file to use for loading and saving the fuel configuration.
    */
