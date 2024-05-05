@@ -474,7 +474,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.addOrUpdateCruiseStep(atIndex, toAltitude);
   }
 
-  async removeCruiseStep(atIndex: number, planIndex?: FlightPlanIndex): Promise<void> {
+  async removeCruiseStep(atIndex: number, planIndex: FlightPlanIndex = FlightPlanIndex.Active): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);

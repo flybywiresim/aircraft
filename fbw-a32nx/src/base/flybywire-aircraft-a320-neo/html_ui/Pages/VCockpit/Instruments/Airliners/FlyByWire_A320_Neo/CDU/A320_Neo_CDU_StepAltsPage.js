@@ -225,7 +225,7 @@ class CDUStepAltsPage {
         const clickedStep = stepWaypoint.cruiseStep;
 
         if (input === FMCMainDisplay.clrValue) {
-            mcdu.flightPlanService.removeCruiseStep(stepWaypoint);
+            mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
 
             return true;
         }
@@ -267,7 +267,7 @@ class CDUStepAltsPage {
             if (rawAltitudeInput === "") {
                 // /Waypoint
                 mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, clickedStep.toAltitude);
-                mcdu.flightPlanService.removeCruiseStep(index);
+                mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
             } else {
                 // Altitude/waypoint
                 const altitude = this.tryParseAltitude(rawAltitudeInput);
@@ -279,7 +279,7 @@ class CDUStepAltsPage {
                 }
 
                 mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, altitude);
-                mcdu.flightPlanService.removeCruiseStep(index);
+                mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
 
                 if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
                     mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
