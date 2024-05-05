@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "math_utils.hpp"
 #include "gtest/gtest.h"
+#include "math_utils.hpp"
 
 using helper::Math;
 

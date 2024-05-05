@@ -15,7 +15,7 @@
 class AircraftPresetProcedures_A32NX {
  public:
   const inline static PresetProceduresDefinition aircraftProcedureDefinition{
-      // clang-format off
+  // clang-format off
       // @formatter:off
 
       .POWERED_CONFIG_ON {
@@ -219,7 +219,7 @@ class AircraftPresetProcedures_A32NX {
       }
 
       // @formatter:on
-      // clang-format on
+  // clang-format on
   };
 };
 

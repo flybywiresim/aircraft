@@ -14,17 +14,18 @@
  * @field isConditional True if the procedure step is a pure condition check to wait for a certain state
  * @field delayAfter Time to delay next step of execution of action - will be skipped if expected state is already set
  * @field expectedStateCheckCode Check if desired state is already set so the action can be skipped
- * @field actionCode Calculator code to achieve the desired state. If it is a conditional this calculator code needs to eval to true or false
+ * @field actionCode Calculator code to achieve the desired state. If it is a conditional this calculator code needs to eval to true or
+ *        false
  * @field noExpedite If true, the step will not be expedited even if expedite is set (default: false)
  */
 struct ProcedureStep {
   std::string description;
-  int id;
-  bool isConditional;
-  double delayAfter;
+  int         id;
+  bool        isConditional;
+  double      delayAfter;
   std::string expectedStateCheckCode;
   std::string actionCode;
-  bool noExpedite = false;
+  bool        noExpedite = false;
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_H

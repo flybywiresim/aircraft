@@ -31,11 +31,11 @@ class DataManager;
  *                 when using the SIMCONNECT_DATA_REQUEST_FLAG_CHANGED flag (default: 0)
  */
 struct DataDefinition {
-  std::string name;
-  int index{0};
-  SimUnit unit{UNITS.Number};
+  std::string         name;
+  int                 index{0};
+  SimUnit             unit{UNITS.Number};
   SIMCONNECT_DATATYPE dataType{SIMCONNECT_DATATYPE_FLOAT64};
-  float epsilon{0.0};
+  float               epsilon{0.0};
 };
 
 /**
@@ -105,14 +105,14 @@ class DataDefinitionVariable : public SimObjectBase {
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
-  DataDefinitionVariable<T>(HANDLE hSimConnect,
-                            const std::string& varName,
+  DataDefinitionVariable<T>(HANDLE                             hSimConnect,
+                            const std::string&                 varName,
                             const std::vector<DataDefinition>& dataDefinitions,
-                            SIMCONNECT_DATA_DEFINITION_ID dataDefId,
-                            SIMCONNECT_DATA_REQUEST_ID requestId,
-                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                            FLOAT64 maxAgeTime = 0.0,
-                            UINT64 maxAgeTicks = 0)
+                            SIMCONNECT_DATA_DEFINITION_ID      dataDefId,
+                            SIMCONNECT_DATA_REQUEST_ID         requestId,
+                            UpdateMode                         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                            FLOAT64                            maxAgeTime  = 0.0,
+                            UINT64                             maxAgeTicks = 0)
       : SimObjectBase(hSimConnect, varName, dataDefId, requestId, updateMode, maxAgeTime, maxAgeTicks),
         dataDefinitions(dataDefinitions),
         dataStruct{} {
@@ -128,11 +128,11 @@ class DataDefinitionVariable : public SimObjectBase {
   }
 
  public:
-  DataDefinitionVariable<T>() = delete;                                          // no default constructor
-  DataDefinitionVariable<T>(const DataDefinitionVariable&) = delete;             // no copy constructor
+  DataDefinitionVariable<T>()                                         = delete;  // no default constructor
+  DataDefinitionVariable<T>(const DataDefinitionVariable&)            = delete;  // no copy constructor
   DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;  // no copy assignment
-  DataDefinitionVariable<T>(DataDefinitionVariable&&) = delete;                  // no move constructor
-  DataDefinitionVariable<T>& operator=(DataDefinitionVariable&&) = delete;       // no move assignment
+  DataDefinitionVariable<T>(DataDefinitionVariable&&)                 = delete;  // no move constructor
+  DataDefinitionVariable<T>& operator=(DataDefinitionVariable&&)      = delete;  // no move assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
@@ -180,10 +180,10 @@ class DataDefinitionVariable : public SimObjectBase {
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_PERIOD.htm
    */
   bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period,
-                                  DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
-                                  DWORD origin = 0,
-                                  DWORD interval = 0,
-                                  DWORD limit = 0) const {
+                                  DWORD             periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
+                                  DWORD             origin      = 0,
+                                  DWORD             interval    = 0,
+                                  DWORD             limit       = 0) const {
     if (isAutoRead() && period >= SIMCONNECT_PERIOD_ONCE) {
       LOG_ERROR("DataDefinitionVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;

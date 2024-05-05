@@ -6,7 +6,7 @@ set(SOURCE_FILES
     MsfsHandler/DataTypes/ClientEvent.cpp
     MsfsHandler/DataTypes/NamedVariable.cpp
     MsfsHandler/MsfsHandler.cpp
-    )
+)
 set(INCLUDE_FILES
     MsfsHandler/DataManager.h
     MsfsHandler/DataTypes/AircraftVariable.h
