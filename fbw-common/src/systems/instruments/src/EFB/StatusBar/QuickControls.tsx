@@ -69,8 +69,8 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
       type="button"
       onClick={onClick}
       className={`bg-theme-body text-theme-text relative flex flex-col
-                   items-center justify-center rounded-md border-8 border-transparent transition duration-100 hover:border-current
-                   ${className ?? ''} border-t-10 border-x-0 border-b-0`}
+                   items-center justify-center rounded-md border-2 border-transparent transition duration-100 hover:border-current
+                   ${className ?? ''}`}
       style={{ width: `${width ?? 130}px`, height: '100px' }}
       {...rest}
     >
@@ -97,8 +97,8 @@ const LargeQuickSettingsToggle: FC<LargeQuickSettingsToggleProps> = forwardRef<
     type="button"
     onClick={onClick}
     className={`bg-theme-body text-theme-text relative flex flex-col
-                   items-center justify-center rounded-md border-8 border-transparent transition duration-100 hover:border-current
-                   ${className ?? ''} border-t-10 border-x-0 border-b-0`}
+                   items-center justify-center rounded-md border-2 border-transparent transition duration-100 hover:border-current
+                   ${className ?? ''}`}
     style={{ width: `${width ?? 275}px`, height: '100px' }}
     {...rest}
   >
@@ -137,10 +137,9 @@ const LargeQuickSettingsIncrementer: FC<LargeQuickSettingsIncrementerProps> = fo
         ref={ref}
         type="button"
         onClick={onDownClick}
-        className={`bg-theme-accent text-theme-text border-t-10 mr-5 flex
-                        flex-col items-center justify-center rounded-md border-4 border-x-0 border-b-0 border-transparent px-4 py-2 transition duration-100 hover:border-current
+        className={`bg-theme-accent text-theme-text mr-5 flex
+                        flex-col items-center justify-center rounded-md border-2 border-transparent px-4 py-2 transition duration-100 hover:border-current
                         ${className ?? ''}`}
-        {...rest}
       >
         <ChevronCompactDown size={24} />
       </button>
@@ -154,10 +153,9 @@ const LargeQuickSettingsIncrementer: FC<LargeQuickSettingsIncrementerProps> = fo
         ref={ref}
         type="button"
         onClick={onUpClick}
-        className={`bg-theme-accent text-theme-text border-t-10 ml-5 flex flex-col
-                        items-center justify-center rounded-md border-4 border-x-0 border-b-0 border-transparent px-4 py-2 transition duration-100 hover:border-current
+        className={`bg-theme-accent text-theme-text ml-5 flex flex-col
+                        items-center justify-center rounded-md border-2 border-transparent px-4 py-2 transition duration-100 hover:border-current
                         ${className ?? ''}`}
-        {...rest}
       >
         <ChevronCompactUp size={24} />
       </button>
@@ -266,11 +264,11 @@ export const QuickControlsPane = ({
   const simBridgeButtonStyle = useMemo<string>((): string => {
     switch (simBridgeClientState) {
       case SimBridgeClientState.CONNECTED:
-        return 'border-utility-green text-theme-body';
+        return 'bg-utility-green text-theme-body';
       case SimBridgeClientState.CONNECTING:
-        return 'border-utility-amber text-theme-body';
+        return 'bg-utility-amber text-theme-body';
       case SimBridgeClientState.OFFLINE:
-        return 'border-utility-red text-theme-body';
+        return 'bg-utility-red text-theme-body';
       default:
         return '';
     }
@@ -289,14 +287,14 @@ export const QuickControlsPane = ({
     }
   }, [simBridgeClientState]);
 
-  const pauseAtTodStyle = useMemo<string>((): string => (pauseAtTod ? 'border-utility-green' : ''), [pauseAtTod]);
+  const pauseAtTodStyle = useMemo<string>((): string => (pauseAtTod ? 'bg-utility-green' : ''), [pauseAtTod]);
 
   const pauseAtTodString = useMemo<string>((): string => {
     return pauseAtTod ? t('QuickControls.PauseAtTodArmed') : t('QuickControls.PauseAtTodInactive');
   }, [pauseAtTod]);
 
   const oskButtonStyle = useMemo<string>(
-    (): string => (autoOSK ? 'border-utility-green text-theme-body' : 'text-theme-text'),
+    (): string => (autoOSK ? 'bg-utility-green text-theme-body' : 'text-theme-text'),
     [autoOSK],
   );
 
@@ -367,9 +365,9 @@ export const QuickControlsPane = ({
             <button
               type="button"
               onClick={handleAutoBrightness}
-              className={`bg-theme-body text-theme-text border-t-10 ml-4
-                                                    flex items-center justify-center rounded-md border-8 border-x-0 border-b-0
-                                                    border-transparent transition duration-100 hover:border-current ${usingAutobrightness === 1 ? 'border-utility-green text-theme-body' : ''}`}
+              className={`bg-theme-body text-theme-text ml-4
+                                                    flex items-center justify-center rounded-md border-2
+                                                    border-transparent transition duration-100 hover:border-current ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
               style={{ width: '80px', height: '50px' }}
             >
               <BrightnessHigh size={24} />
