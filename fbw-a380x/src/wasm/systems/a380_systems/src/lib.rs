@@ -175,6 +175,7 @@ impl Aircraft for A380 {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
+            self.fire_and_smoke_protection.apu_fire_on_ground(),
             &self.apu_fire_overhead,
             self.pneumatic_overhead.apu_bleed_is_on(),
             // This will be replaced when integrating the whole electrical system.

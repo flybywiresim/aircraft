@@ -4,7 +4,10 @@ use systems::{
     accept_iterable,
     failures::Failure,
     overhead::{FirePushButton, MomentaryPushButton},
-    shared::{ElectricalBusType, ElectricalBuses, EngineFirePushButtons, LgciuWeightOnWheels},
+    shared::{
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons,
+        LgciuWeightOnWheels,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -49,6 +52,10 @@ impl A380FireAndSmokeProtection {
         self.a380_fire_protection_system
             .update(context, engine_fire_push_buttons, lgciu);
     }
+
+    pub fn apu_fire_on_ground(&self) -> bool {
+        self.a380_fire_protection_system.apu_fire_on_ground()
+    }
 }
 
 impl SimulationElement for A380FireAndSmokeProtection {
@@ -65,9 +72,11 @@ struct FireProtectionSystem {
 
     fire_test_pushbutton_id: VariableIdentifier,
     fire_test_pushbutton_is_pressed: bool,
+    fire_test_pushbutton_signal: DelayedTrueLogicGate,
 }
 
 impl FireProtectionSystem {
+    const DELAY_FIRE_TEST_MILLIS: Duration = Duration::from_millis(500);
     fn new(context: &mut InitContext) -> Self {
         Self {
             fire_detection_unit: FireDetectionUnit::new(context),
@@ -76,6 +85,7 @@ impl FireProtectionSystem {
             // TODO: Is this the right naming for the a380?
             fire_test_pushbutton_id: context.get_identifier("FIRE_TEST_ENG1".to_owned()),
             fire_test_pushbutton_is_pressed: false,
+            fire_test_pushbutton_signal: DelayedTrueLogicGate::new(Self::DELAY_FIRE_TEST_MILLIS),
         }
     }
 
@@ -85,14 +95,21 @@ impl FireProtectionSystem {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
+        // We add a delay between button press and response based on references
+        self.fire_test_pushbutton_signal
+            .update(context, self.fire_test_pushbutton_is_pressed);
         self.fire_detection_unit
-            .update(context, self.fire_test_pushbutton_is_pressed, lgciu);
+            .update(context, self.fire_test_pushbutton_signal.output(), lgciu);
         self.fire_extinguishing_system.update(
             context,
             engine_fire_push_buttons,
-            self.fire_test_pushbutton_is_pressed,
+            self.fire_test_pushbutton_signal.output(),
             self.fire_detection_unit.should_extinguish_apu_fire(),
         )
+    }
+
+    fn apu_fire_on_ground(&self) -> bool {
+        self.fire_detection_unit.should_extinguish_apu_fire()
     }
 }
 
@@ -709,6 +726,11 @@ mod a380_fire_and_smoke_protection_tests {
             self
         }
 
+        fn run_with_no_delta(mut self) -> Self {
+            self.run_with_delta(Duration::ZERO);
+            self
+        }
+
         fn set_on_ground(mut self, on_ground: bool) -> Self {
             self.command(|a| a.set_on_ground(on_ground));
             self
@@ -925,6 +947,19 @@ mod a380_fire_and_smoke_protection_tests {
             assert!(test_bed.engine_on_fire_detected(1));
             assert!(test_bed.apu_on_fire_detected());
             assert!(test_bed.mlg_on_fire_detected());
+        }
+
+        #[test]
+        fn test_does_not_trigger_immidatelly() {
+            let mut test_bed = test_bed()
+                .with()
+                .set_test_pushbutton(true)
+                .and()
+                .run_with_no_delta();
+
+            assert!(!test_bed.engine_on_fire_detected(1));
+            assert!(!test_bed.apu_on_fire_detected());
+            assert!(!test_bed.mlg_on_fire_detected());
         }
 
         #[test]
