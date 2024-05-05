@@ -157,7 +157,7 @@ impl FireDetectionUnit {
         zone_id: FireDetectionZone,
     ) -> VariableIdentifier {
         if matches!(zone_id, FireDetectionZone::Engine(_)) {
-            context.get_identifier(format!("FIRE_DETECTED_ENGINE_{}", zone_id))
+            context.get_identifier(format!("FIRE_DETECTED_ENG{}", zone_id))
         } else {
             context.get_identifier(format!("FIRE_DETECTED_{}", zone_id))
         }
@@ -173,9 +173,14 @@ impl FireDetectionUnit {
 
         self.fire_detected = self.fire_detection_determination(fire_test_pushbutton_is_pressed);
 
+        self.fire_detection_loop
+            .iter_mut()
+            .for_each(|l| l.update_was_powered());
+
         // If a fire is detected in the APU while the aircraft is on the ground, the extinguishim system is automatically activated
-        self.should_extinguish_apu_fire =
-            self.fire_detected[4] && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true));
+        self.should_extinguish_apu_fire = self.fire_detected[4]
+            && !fire_test_pushbutton_is_pressed
+            && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true));
     }
 
     fn fire_detection_determination(&self, fire_test_pushbutton_is_pressed: bool) -> [bool; 6] {
@@ -232,6 +237,7 @@ impl SimulationElement for FireDetectionUnit {
 struct FireDetectionLoop {
     powered_by: ElectricalBusType,
     is_powered: bool,
+    was_powered_before: bool,
     failure: Option<Failure>,
 
     fire_detectors: [FireDetector; 6],
@@ -246,6 +252,7 @@ impl FireDetectionLoop {
         Self {
             powered_by,
             is_powered: false,
+            was_powered_before: false,
             failure: None, // TODO: Add failures
 
             fire_detectors: fire_detection_zones.map(|zone| FireDetector::new(context, zone)),
@@ -272,7 +279,12 @@ impl FireDetectionLoop {
         self.failure
             .as_ref()
             .map_or(false, |failure| failure.is_active())
-            || !self.is_powered
+            || (!self.is_powered && self.was_powered_before)
+    }
+
+    /// This is to avoid a fire detection on initial load
+    fn update_was_powered(&mut self) {
+        self.was_powered_before = self.is_powered
     }
 }
 
@@ -359,10 +371,10 @@ impl FireExtinguishingSystem {
                 ExtinguishingAgentBottle::new(context, "2_ENG_3", powered_by),
                 ExtinguishingAgentBottle::new(context, "1_ENG_4", powered_by),
                 ExtinguishingAgentBottle::new(context, "2_ENG_4", powered_by),
-                ExtinguishingAgentBottle::new(context, "APU", powered_by),
+                ExtinguishingAgentBottle::new(context, "1_APU_1", powered_by),
             ],
 
-            apu_fire_push_button: FirePushButton::new(context, "APU1"),
+            apu_fire_push_button: FirePushButton::new(context, "APU"),
         }
     }
 
@@ -475,14 +487,15 @@ impl ExtinguishingAgentBottle {
         self.system_test = fire_test_pushbutton_is_pressed;
         self.squib_is_armed = self.is_powered && engine_fire_push_button_is_pressed;
         if self.is_powered
-            && ((self.squib_is_armed && self.timer >= Duration::from_secs(1))
-                || should_extinguish_fire.unwrap_or(false))
+            && ((self.squib_is_armed || should_extinguish_fire.unwrap_or(false))
+                && self.timer >= Duration::from_secs(1))
         {
             // Once the bottle is discharged, it can't be recharged
             self.bottle_is_discharged = true
         } else if self.is_powered
-            && self.squib_is_armed
-            && (self.agent_pb.is_pressed() || self.timer > Duration::ZERO)
+            && (((self.squib_is_armed)
+                && (self.agent_pb.is_pressed() || self.timer > Duration::ZERO))
+                || should_extinguish_fire.unwrap_or(false))
             && self.timer <= Duration::from_secs(1)
         {
             self.timer += context.delta()
@@ -648,10 +661,6 @@ mod a380_fire_and_smoke_protection_tests {
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            println!(
-                "fire pb released: {}",
-                self.engine_fire_overhead_panel.is_released(1)
-            );
             self.a380_fire_and_smoke_protection.update(
                 context,
                 &self.engine_fire_overhead_panel,
@@ -730,8 +739,8 @@ mod a380_fire_and_smoke_protection_tests {
             self
         }
 
-        fn set_test_pushbutton(mut self) -> Self {
-            self.write_by_name("FIRE_TEST_ENG1", true);
+        fn set_test_pushbutton(mut self, test_pb: bool) -> Self {
+            self.write_by_name("FIRE_TEST_ENG1", test_pb);
             self
         }
 
@@ -769,7 +778,7 @@ mod a380_fire_and_smoke_protection_tests {
         }
 
         fn engine_on_fire_detected(&mut self, engine_number: usize) -> bool {
-            self.read_by_name(&format!("FIRE_DETECTED_ENGINE_{}", engine_number))
+            self.read_by_name(&format!("FIRE_DETECTED_ENG{}", engine_number))
         }
 
         fn apu_on_fire_detected(&mut self) -> bool {
@@ -785,7 +794,7 @@ mod a380_fire_and_smoke_protection_tests {
         }
 
         fn squib_apu_is_armed(&mut self) -> bool {
-            self.read_by_name("FIRE_SQUIB_APU_IS_ARMED")
+            self.read_by_name("FIRE_SQUIB_1_APU_1_IS_ARMED")
         }
 
         fn squib_engine_is_discharged(&mut self, engine_number: usize) -> bool {
@@ -793,7 +802,7 @@ mod a380_fire_and_smoke_protection_tests {
         }
 
         fn squib_apu_is_discharged(&mut self) -> bool {
-            self.read_by_name("FIRE_SQUIB_APU_IS_DISCHARGED")
+            self.read_by_name("FIRE_SQUIB_1_APU_1_IS_DISCHARGED")
         }
     }
     impl TestBed for FireProtectionTestBed {
@@ -825,6 +834,7 @@ mod a380_fire_and_smoke_protection_tests {
         #[test]
         fn when_an_engine_is_on_fire_the_detection_works_if_only_one_loop_unpowered() {
             let mut test_bed = test_bed()
+                .and_run()
                 .with()
                 .unpowered_dc_ess_bus()
                 .set_engine_on_fire(1)
@@ -838,6 +848,7 @@ mod a380_fire_and_smoke_protection_tests {
             // If both loops are unpowered at the same time the fire warning will trigger
             // We need to add a delay between the two unpowering systems
             let mut test_bed = test_bed()
+                .and_run()
                 .with()
                 .unpowered_dc_ess_bus()
                 .run_with_delta_of(Duration::from_secs(6))
@@ -851,6 +862,7 @@ mod a380_fire_and_smoke_protection_tests {
         #[test]
         fn returning_power_to_loop_makes_it_operational() {
             let mut test_bed = test_bed()
+                .and_run()
                 .with()
                 .unpowered_dc_ess_bus()
                 .run_with_delta_of(Duration::from_secs(6))
@@ -868,6 +880,7 @@ mod a380_fire_and_smoke_protection_tests {
         #[test]
         fn unpowering_both_loops_simultaneously_triggers_fire_detection() {
             let mut test_bed = test_bed()
+                .and_run()
                 .with()
                 .unpowered_dc_ess_bus()
                 .unpowered_dc_2_bus()
@@ -879,6 +892,7 @@ mod a380_fire_and_smoke_protection_tests {
         #[test]
         fn after_power_triggering_returning_power_clears_fire_detection() {
             let mut test_bed = test_bed()
+                .and_run()
                 .with()
                 .unpowered_dc_ess_bus()
                 .unpowered_dc_2_bus()
@@ -906,7 +920,7 @@ mod a380_fire_and_smoke_protection_tests {
 
         #[test]
         fn all_zones_detect_fire_when_test_pressed() {
-            let mut test_bed = test_bed().with().set_test_pushbutton().and_run();
+            let mut test_bed = test_bed().with().set_test_pushbutton(true).and_run();
 
             assert!(test_bed.engine_on_fire_detected(1));
             assert!(test_bed.apu_on_fire_detected());
@@ -1037,10 +1051,43 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(true)
                 .with()
                 .set_apu_on_fire()
+                .and_run()
                 .and_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(test_bed.squib_apu_is_discharged());
+        }
+
+        #[test]
+        fn apu_bottle_does_not_discharge_on_ground_when_testing() {
+            let mut test_bed = test_bed()
+                .set_on_ground(true)
+                .set_test_pushbutton(true)
+                .and_run()
+                .and_run()
+                .then()
+                .set_test_pushbutton(false)
+                .and_run()
+                .and_run();
+
+            assert!(!test_bed.squib_apu_is_armed());
+            assert!(!test_bed.squib_apu_is_discharged());
+        }
+
+        #[test]
+        fn apu_bottle_starts_charged_on_ground() {
+            let mut test_bed = test_bed().set_on_ground(true).and_run().and_run();
+
+            assert!(!test_bed.squib_apu_is_armed());
+            assert!(!test_bed.squib_apu_is_discharged());
+        }
+
+        #[test]
+        fn apu_bottle_starts_charged_in_flight() {
+            let mut test_bed = test_bed().set_on_ground(false).and_run().and_run();
+
+            assert!(!test_bed.squib_apu_is_armed());
+            assert!(!test_bed.squib_apu_is_discharged());
         }
 
         #[test]
@@ -1049,6 +1096,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(false)
                 .with()
                 .set_apu_on_fire()
+                .and_run()
                 .and_run();
 
             assert!(!test_bed.squib_apu_is_armed());
@@ -1080,7 +1128,7 @@ mod a380_fire_and_smoke_protection_tests {
 
         #[test]
         fn squibs_show_armed_and_discharged_when_test() {
-            let mut test_bed = test_bed().with().set_test_pushbutton().and_run();
+            let mut test_bed = test_bed().with().set_test_pushbutton(true).and_run();
 
             assert!(test_bed.squib_engine_is_armed(1));
             assert!(test_bed.squib_engine_is_discharged(1));

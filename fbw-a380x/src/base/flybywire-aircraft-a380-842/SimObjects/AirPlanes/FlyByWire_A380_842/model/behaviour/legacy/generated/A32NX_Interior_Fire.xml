@@ -28,14 +28,12 @@
 
     <Template Name="FBW_Airbus_FIRE_AGENT">
         <UseTemplate Name="FBW_Push_Toggle">
-            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
-            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge) or</SEQ2_CODE>
-            <LEFT_SINGLE_CODE>
-                (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) if{
-                1 (&gt;L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge)
-                }
-            </LEFT_SINGLE_CODE>
-
+            <SEQ1_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_ARMED, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_DISCHARGED, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>1
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE>0
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_LEAVE_CODE>
             <MOMENTARY/>
         </UseTemplate>
     </Template>
@@ -49,7 +47,7 @@
             <LEFT_LEAVE_CODE/>
             <LEFT_SINGLE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
-            <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#TYPE##ID#</TOGGLE_VAR>
+            <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#BUTTON_ID#</TOGGLE_VAR>
             <EMISSIVE_POWERED>1</EMISSIVE_POWERED>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -75,7 +73,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_FIRE_DETECTED_#BUTTON_ID#, Bool) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -130,7 +128,7 @@
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
+                    (L:A32NX_FIRE_BUTTON_#BUTTON_ID#) 0 == if{
                         (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
