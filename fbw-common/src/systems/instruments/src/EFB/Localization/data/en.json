@@ -479,6 +479,7 @@
     "Simrate": "Simrate",
     "PauseAtTod": "Pause at Top of Descent",
     "PauseAtTodArmed": "Armed",
+    "PauseAtTodStandby": "Standby",
     "PauseAtTodInactive": "Inactive",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",

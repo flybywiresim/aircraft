@@ -176,6 +176,7 @@ export const QuickControlsPane = ({
   const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
   const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
   const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
+  const [todArmed] = useSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', 500);
 
   const simRate = useGlobalVar('SIMULATION RATE', 'number', 500);
 
@@ -287,11 +288,23 @@ export const QuickControlsPane = ({
     }
   }, [simBridgeClientState]);
 
-  const pauseAtTodStyle = useMemo<string>((): string => (pauseAtTod ? 'bg-utility-green' : ''), [pauseAtTod]);
+  const pauseAtTodStyle = useMemo<string>((): string => {
+    if (pauseAtTod && todArmed) {
+      return 'bg-utility-green';
+    } else if (pauseAtTod) {
+      return 'bg-utility-amber';
+    }
+  }, [pauseAtTod, todArmed]);
 
   const pauseAtTodString = useMemo<string>((): string => {
-    return pauseAtTod ? t('QuickControls.PauseAtTodArmed') : t('QuickControls.PauseAtTodInactive');
-  }, [pauseAtTod]);
+    if (pauseAtTod && todArmed) {
+      return t('QuickControls.PauseAtTodArmed');
+    } else if (pauseAtTod) {
+      return t('QuickControls.PauseAtTodStandby');
+    } else {
+      return t('QuickControls.PauseAtTodInactive');
+    }
+  }, [pauseAtTod, todArmed]);
 
   const oskButtonStyle = useMemo<string>(
     (): string => (autoOSK ? 'bg-utility-green text-theme-body' : 'text-theme-text'),

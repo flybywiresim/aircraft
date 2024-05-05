@@ -16,6 +16,8 @@ export class TodGuidance {
 
   private tdPaused: boolean;
 
+  private tdArmed: boolean;
+
   private apEngaged: boolean;
 
   private cooldown: number;
@@ -29,6 +31,7 @@ export class TodGuidance {
     this.apEngaged = false;
     this.tdReached = false;
     this.tdPaused = false;
+    this.tdArmed = false;
   }
 
   showPausePopup(title: string, message: string) {
@@ -46,7 +49,52 @@ export class TodGuidance {
     this.updateTdReached(deltaTime);
     this.updateTdPause(deltaTime);
   }
+  /***
+    reset flags on turnaround
 
+    t/d is armed is
+    (
+      pause at t/d enabled
+      and not back off timer > 0
+      and !paused at t/d
+      and CLB/CRZ
+      and A/P managed
+    )
+
+    if t/d is armed:
+      if t/d < config t/d distance:
+          PAUSE
+          back off timer +10s
+      elif current alt > transition alt:
+          if a/p engaged but not a/p active:
+            PAUSE
+            back off timer +10s
+          a/p engaged = a/p active
+
+    decrease back off timer until 0
+   */
+
+  /***
+    if pause at t/d enabled and not back off timer > 0:
+      if !paused at t/d and CLB/CRZ and A/P managed:
+        t/d is armed
+        if t/d < config t/d distance:
+            PAUSE
+            back off timer +10s
+        elif current alt > transition alt:
+            if ap engaged but not a/p active:
+              PAUSE
+              back off timer +10s
+            a/p engaged is a/p active
+      else:
+        t/d is not armed
+
+      reset flags on turnaround
+    else:
+      t/d is not armed
+
+    decrease back off timer until 0
+   */
   updateTdPause(deltaTime: number) {
     if (this.cooldown <= 0 && NXDataStore.get('PAUSE_AT_TOD', 'DISABLED') === 'ENABLED') {
       // Only watching if T/D pause untriggered + between flight phase CLB and CRZ
@@ -56,7 +104,13 @@ export class TodGuidance {
         this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
         Simplane.getAutoPilotAirspeedManaged()
       ) {
-        // Check T/D pause first, then AP mode reversion
+        // Pause at T/D is in an armed state
+        if (!this.tdArmed) {
+          this.tdArmed = true;
+          SimVar.SetSimVarValue('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', true);
+        }
+
+        // Check T/D pause first
         if (
           (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
           parseFloat(NXDataStore.get('PAUSE_AT_TOD_DISTANCE', '10'))
@@ -66,8 +120,9 @@ export class TodGuidance {
             'TOP OF DESCENT',
             `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
           );
-          // Only guard AP above transitional altitude
+          // Check AP mode reversion
         } else if (
+          // Only guard AP above transitional altitude
           this.atmosphericConditions.currentAltitude
             ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
             : false
@@ -86,7 +141,11 @@ export class TodGuidance {
           if (this.apEngaged !== apActive) {
             this.apEngaged = apActive;
           }
+          // Else T/D pause is not triggered but armed
         }
+      } else if (this.tdArmed) {
+        this.tdArmed = false;
+        SimVar.SetSimVarValue('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', false);
       }
 
       // Reset flags on turnaround
@@ -97,6 +156,9 @@ export class TodGuidance {
         this.tdPaused = false;
         this.apEngaged = false;
       }
+    } else if (this.tdArmed) {
+      this.tdArmed = false;
+      SimVar.SetSimVarValue('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', false);
     }
 
     if (this.cooldown > 0) {
