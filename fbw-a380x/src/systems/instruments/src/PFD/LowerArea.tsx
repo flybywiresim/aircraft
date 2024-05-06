@@ -1,13 +1,13 @@
-import { Arinc429Values, ArincValueProvider } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-export class LowerArea extends DisplayComponent<{ bus: EventBus }> {
+export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
     render(): VNode {
         return (
             <g>
-                <path class='ThickStroke White' d='M 2.1 157.7 h 154.4' />
-                <path class='ThickStroke White' d='M 67 158 v 51.8' />
+                <path class="ThickStroke White" d="M 2.1 157.7 h 154.4" />
+                <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
                 <Memos />
                 <Limitations />
@@ -19,7 +19,7 @@ export class LowerArea extends DisplayComponent<{ bus: EventBus }> {
 
 const circlePath = (r: number, cx: number, cy: number) => `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
+class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private targetClass = Subject.create('');
 
     private targetText = Subject.create('');
@@ -67,7 +67,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values>();
 
         sub.on('slatsFlapsStatus').whenChanged().handle((s) => {
             this.configClean = s.getBitValue(17);
@@ -110,6 +110,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
 
             this.slatsOut = slats > 6.1;
 
+            // Slats and flaps should align with future implementation; do not change
             const xFactor = -0.43;
             const yFactor = 0.09;
             const synchroFactor = 0.081;
@@ -153,6 +154,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
 
             this.flapsOut = flaps > 73.1;
 
+            // Slats and flaps should align with future implementation; do not change
             const xFactor = 0.87;
             const yFactor = 0.365;
             const synchroFactor = 0.22;
@@ -213,22 +215,38 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
         return (
             <g>
                 <g visibility={this.targetVisible}>
-                    <path d={circlePath(0.8, 14.1, 194.5)} class='NormalStroke Stroke Fill Cyan' visibility={this.slatsTargetPos.map((i) => (i == 0 ? 'visible' : 'hidden'))} />
-                    <path d={circlePath(0.8, 9.6, 195.4)} class={this.slatsTargetPos.map((i) => (i == 1 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
-                    <path d={circlePath(0.8, 5, 196.4)} class={this.slatsTargetPos.map((i) => (i == 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
+                    <path d={circlePath(0.8, 14.1, 194.5)} class="NormalStroke Stroke Fill Cyan" visibility={this.slatsTargetPos.map((i) => (i === 0 ? 'visible' : 'hidden'))} />
+                    <path d={circlePath(0.8, 9.6, 195.4)} class={this.slatsTargetPos.map((i) => (i === 1 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
+                    <path d={circlePath(0.8, 5, 196.4)} class={this.slatsTargetPos.map((i) => (i === 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
 
-                    <path d='M 32.3 193.7 v 1.7 h 1.9 z' class='Fill Stroke NormalStroke Cyan CornerRound' visibility={this.flapsTargetPos.map((i) => (i == 0 ? 'visible' : 'hidden'))} />
-                    <path d='M 39.9 196.8 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 47.3 199.9 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 54.7 203 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 62.1 206.1 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
+                    <path
+                        d="M 32.3 193.7 v 1.7 h 1.9 z"
+                        class="Fill Stroke NormalStroke Cyan CornerRound"
+                        visibility={this.flapsTargetPos.map((i) => (i === 0 ? 'visible' : 'hidden'))}
+                    />
+                    <path
+                        d="M 39.9 196.8 v 1.7 h 1.9 z"
+                        class={this.flapsTargetPos.map((i) => (i === 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))}
+                    />
+                    <path
+                        d="M 47.3 199.9 v 1.7 h 1.9 z"
+                        class={this.flapsTargetPos.map((i) => (i === 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))}
+                    />
+                    <path
+                        d="M 54.7 203 v 1.7 h 1.9 z"
+                        class={this.flapsTargetPos.map((i) => (i === 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))}
+                    />
+                    <path
+                        d="M 62.1 206.1 v 1.7 h 1.9 z"
+                        class={this.flapsTargetPos.map((i) => (i === 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))}
+                    />
 
                     <text x={23.7} y={202.3} class={this.targetClass}>{this.targetText}</text>
-                    <path visibility={this.targetBoxVisible} class='NormalStroke Cyan CornerRound' d='M 15.4 196.8 v 6.2 h 16.2 v -6.2 z' />
-                    <text x={3.8} y={191.1} class='FontSmall White'>S</text>
-                    <text x={47.2} y={210.8} class='FontSmall White'>F</text>
+                    <path visibility={this.targetBoxVisible} class="NormalStroke Cyan CornerRound" d="M 15.4 196.8 v 6.2 h 16.2 v -6.2 z" />
+                    <text x={3.8} y={191.1} class="FontSmall White">S</text>
+                    <text x={47.2} y={210.8} class="FontSmall White">F</text>
                 </g>
-                <text class='Green FontSmallest' x={0} y={190} visibility={this.alphaLockEngaged.map((v) => (v ? 'visible' : 'hidden'))}>A LOCK</text>
+                <text class="Green FontSmallest" x={0} y={190} visibility={this.alphaLockEngaged.map((v) => (v ? 'visible' : 'hidden'))}>A LOCK</text>
 
                 <path class={this.flapSlatIndexClass} d={this.slatsPath} />
                 <path class={this.flapSlatIndexClass} d={this.slatsLinePath} />
@@ -236,32 +254,49 @@ class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
                 <path class={this.flapSlatIndexClass} d={this.flapsPath} />
                 <path class={this.flapSlatIndexClass} d={this.flapsLinePath} />
 
-                <path class='NormalStroke White CornerRound' d='M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z' />
+                <path class="NormalStroke White CornerRound" d="M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z" />
+
+                <GearIndicator bus={this.props.bus} />
             </g>
         );
     }
 }
 
-// THS and gear indications waiting for systems implementations
-class GearIndicator extends DisplayComponent<{ bus: EventBus }> {
+class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+    private landingGearDownAndLocked = Subject.create('hidden');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
+        // TODO change to proper LGCIS input once LGCIS is implemented
+        sub.on('lgciuDiscreteWord1').handle((word) => {
+            const gearDownAndLocked = word.getBitValue(23) && word.getBitValue(24) && word.getBitValue(25);
+            this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
+        });
+    }
+
     render(): VNode {
         return (
-            <g>
-                <path class='NormalStroke Green CornerRound' d='M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6' />
+            <g visibility={this.landingGearDownAndLocked}>
+                <path class="NormalStroke Green CornerRound" d="M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6" />
             </g>
         );
     }
 }
 
+// THS indications waiting for systems implementations
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode {
         return (
             <>
                 <g>
-                    <text x={68.7} y={186.5} class='FontSmallest White'>T.O THS FOR</text>
-                    <text x={101} y={186.5} class='FontIntermediate White'>42.6</text>
-                    <text x={115} y={186.5} class='FontSmallest Cyan'>%</text>
-                    <image xlinkHref='/Images/TRIM_INDICATOR.png' x={106} y={158.6} width={49} height={52} />
+                    <text x={68.7} y={186.5} class="FontSmallest White">T.O THS FOR</text>
+                    <text x={101} y={186.5} class="FontIntermediate White">42.6</text>
+                    <text x={115} y={186.5} class="FontSmallest Cyan">%</text>
+                    <image xlinkHref="/Images/TRIM_INDICATOR.png" x={106} y={158.6} width={49} height={52} />
                 </g>
             </>
         );
@@ -272,7 +307,7 @@ class Limitations extends DisplayComponent<{}> {
     render(): VNode {
         return (
             <g>
-                <text x={76} y={184} class='FontIntermediate Amber'>LIMITATIONS NOT AVAIL</text>
+                <text x={76} y={184} class="FontIntermediate Amber">LIMITATIONS NOT AVAIL</text>
             </g>
         );
     }
@@ -282,7 +317,7 @@ class Memos extends DisplayComponent<{}> {
     render(): VNode {
         return (
             <g>
-                <text x={12} y={170} class='FontIntermediate Amber'>MEMO NOT AVAIL</text>
+                <text x={12} y={170} class="FontIntermediate Amber">MEMO NOT AVAIL</text>
             </g>
         );
     }

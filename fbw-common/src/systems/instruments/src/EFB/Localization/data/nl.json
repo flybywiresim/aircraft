@@ -1,0 +1,703 @@
+{
+  "AirTrafficControl": {
+    "Active": "Actief",
+    "ChangeATISATCSourceButton": "ATIS/ATC-bron wijzigen",
+    "ConnectHoppieACARS": "Verbindt Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Geen informatie beschikbaar voor deze frequentie",
+    "SearchPlaceholder": "Zoeken",
+    "SelectCorrectATISATCSource": "Deze pagina is alleen beschikbaar wanneer IVAO of VATSIM is geselecteerd als de ATIS/ATC-bron op de instellingenpagina.",
+    "SetActive": "Actief instellen",
+    "SetStandby": "Stand-by instellen",
+    "ShowAll": "Alle",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Grond",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
+    "Standby": "Stand-by",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
+    "Title": "Luchtverkeersleiding"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Weet je zeker dat je alle checklists wilt resetten?",
+    "AreYouSureYouWantToResetChecklists": "Weet je zeker dat je alle checklists wilt resetten?",
+    "ChecklistResetWarning": "Waarschuwing voor resetten checklist",
+    "MarkChecklistAsComplete": "Markeer checklist als voltooid",
+    "MarkItemAsComplete": "Markeer item als compleet",
+    "ProceedToNextChecklist": "Ga verder naar de volgende checklist",
+    "ResetAll": "Alles resetten",
+    "ResetChecklist": "Checklist resetten",
+    "TheLastChecklistIsComplete": "De laatste checklist is compleet",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Er zijn nog items in de checklist die nog niet zijn voltooid",
+    "Title": "Checklists"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Geen relevante checklists",
+        "Title": "Checklists"
+      },
+      "GoToPage": "Ga naar pagina",
+      "Maintenance": {
+        "NoActiveFailures": "Geen actieve storingen",
+        "Title": "Onderhoud"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Geen vastgezette charts",
+        "Title": "Vastgezette charts"
+      },
+      "TT": {
+        "RearrangeWidgets": "Widgets herschikken"
+      },
+      "Title": "Belangrijke informatie",
+      "Weather": {
+        "AirPressure": "Luchtdruk",
+        "DewPoint": "Dauwpunt",
+        "IcaoInvalid": "ICAO ongeldig of geen METAR beschikbaar",
+        "Loading": "Laden...",
+        "MetarParsingError": "Ontvangen METAR kon niet worden ontcijferd",
+        "NoIcaoProvided": "Er is geen ICAO verstrekt",
+        "NotAvailableShort": "n.v.t",
+        "Raw": "Onbewerkt",
+        "TT": {
+          "SwitchToIconView": "Overschakelen naar pictogramweergave",
+          "SwitchToRawMetarView": "Overschakelen naar onbewerkte METAR weergave"
+        },
+        "Temperature": "Temperatuur",
+        "Title": "Weer",
+        "WindSpeed": "Windsnelheid"
+      }
+    },
+    "Title": "Overzicht",
+    "YourFlight": {
+      "Alternate": "Alternatief",
+      "AverageWind": "Gemiddelde wind",
+      "CompanyRoute": "Company Route",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "Kruishoogte",
+      "ImportSimBriefData": "SimBrief gegevens importeren",
+      "Route": "Route",
+      "SimBriefDataNotYetLoaded": "SimBrief gegevens zijn nog niet geladen.",
+      "Title": "Jouw Vlucht",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "SimBrief gegevens importeren",
+      "TT": {
+        "IncreaseFontSize": "Lettergrootte vergroten",
+        "ReduceFontSize": "Lettergrootte verkleinen"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Je hebt nog geen SimBrief-gegevens geïmporteerd."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Motoren",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maximale Vracht",
+      "MaximumFuelCapacity": "Maximale brandstofcapaciteit",
+      "MaximumPassengers": "Maximaal aantal passagiers",
+      "Model": "Model",
+      "Range": "Bereik",
+      "Title": "Overzicht"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Comfort"
+    },
+    "Compact": {
+      "Title": "Compact"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Volledige simulatie van onderstaande storingen is nog niet gegarandeerd.",
+    "Search": "Zoeken",
+    "Title": "Storingen"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Middelste tank",
+      "Completed": "Voltooid",
+      "Defueling": "Defueling",
+      "EstimatedDuration": "Geschatte duur (minuten)",
+      "EstimatedTime": "Geschatte tijdsduur",
+      "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "LeftInnerTank": "Linker binnentank",
+      "LeftOuterTank": "Linker buitentank",
+      "ReadyToStart": "Klaar om te starten",
+      "Refuel": "Tanken",
+      "RefuelTime": "Bijtank tijd",
+      "Refueling": "Tanken",
+      "RightInnerTank": "Rechter binnentank",
+      "RightOuterTank": "Rechter buitentank",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Wijziging van de bijtanktijd alleen op de grond met uitgeschakelde motoren",
+        "FillBlockFuelFromSimBrief": "Vul blokbrandstof van SimBrief"
+      },
+      "Title": "Brandstof",
+      "TotalFuel": "Totale brandstof",
+      "Unavailable": "Niet beschikbaar"
+    },
+    "Payload": {
+      "BoardingTime": "Instaptijd",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "GW": "GW",
+      "GWCG": "GW CG",
+      "LoadingTime": "Loading Time",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxGW": "Maximum GW",
+        "MaxGWCG": "Maximum GW CG",
+        "MaxPassengers": "Maximaal aantal passagiers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding",
+        "StartDeboarding": "Begin Deboarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "AirStarterUnit": "Air Starter Unit",
+      "BaggageTruck": "Bagage Truck",
+      "CateringTruck": "Catering Truck",
+      "Cones": "Veiligheidskegels",
+      "DoorAft": "Deur achter",
+      "DoorCargo": "Vrachtdeur",
+      "DoorFwd": "Deur voor",
+      "ExternalPower": "Externe voedingseenheid",
+      "FuelTruck": "Brandstof Wagen",
+      "JetBridge": "Aviobrug",
+      "Title": "Diensten",
+      "WheelChocks": "Wielblokken"
+    },
+    "Title": "Grond"
+  },
+  "Modals": {
+    "Cancel": "Annuleren",
+    "Confirm": "Bevestigen",
+    "Okay": "Oké"
+  },
+  "NavigationAndCharts": {
+    "All": "Alle",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Volledig scherm afsluiten",
+    "From": "Van",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
+    "LocalFiles": {
+      "Both": "Beide",
+      "EstablishingConnection": "Verbinding tot stand brengen...",
+      "FailedToEstablishConnection": "Verbinding tot stand brengen is mislukt.",
+      "FileName": "Bestandsnaam",
+      "Image": "Afbeelding",
+      "Pdf": "Pdf",
+      "Retry": "Opnieuw proberen",
+      "Title": "Lokale Bestanden"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Luchthaven bestaat niet",
+      "AuthenticateWithNavigraph": "Authenticeren met Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
+      "InsufficientEnv": "Incorrect .env-bestand",
+      "IntoYourBrowserAndEnterTheCodeBelow": "in uw browser en voer de onderstaande code in\n",
+      "LoadingMsg": "Laden...",
+      "NoAirportSelected": "Geen luchthaven geselecteerd",
+      "ResetNavigraphAuthentication": "Navigraph-verificatie resetten",
+      "ScanTheQrCodeOrOpen": "Scan de QR-code of Open",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Verwijderen",
+      "Edit": "Bewerken",
+      "NoItemsFound": "Geen items gevonden",
+      "SearchPlaceholder": "Zoeken",
+      "ShowingChartsFromAllProviders": "Charts van alle aanbieders worden weergeven",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetisch - A -> Z",
+        "AlphabeticalZA": "Alfabetisch - Z -> A",
+        "FirstAccessed": "Als eerste gebruikt",
+        "LastAccessed": "Als laatste gebruikt",
+        "None": "Geen"
+      },
+      "TT": {
+        "ChangeChartProvider": "Aanbieder van charts wijzigen",
+        "ChangeChartSortMethod": "Sorteermethode voor charts wijzigen",
+        "RemoveAllPinnedCharts": "Verwijder alle vastgezette charts"
+      },
+      "Title": "Vastgezette Charts",
+      "View": "Weergeven"
+    },
+    "PleaseWait": "Even geduld",
+    "ShowingAllItems": "Alle items worden getoond",
+    "TT": {
+      "FitChartToHeight": "Pas chart aan op hoogte",
+      "FitChartToWidth": "Pas chart aan op breedte",
+      "ResetMovement": "Beweging resetten",
+      "RotateLeft45Degrees": "45 graden links draaien",
+      "RotateRight45Degrees": "45 graden naar rechts draaien",
+      "ZoomIn": "Vergroten",
+      "ZoomOut": "Verkleinen"
+    },
+    "ThereAreNoChartsToDisplay": "Er zijn geen charts om weer te geven.",
+    "ThereIsNoChartToDisplay": "Er is geen chart om weer te geven.",
+    "Title": "Navigatie en charts",
+    "To": "Naar"
+  },
+  "Performance": {
+    "Data": "Gegevens",
+    "Landing": {
+      "AirportIcao": "Luchthaven ICAO",
+      "ApproachSpeed": "Approach Speed",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Berekenen",
+      "Clear": "Wissen",
+      "DropDownNo": "Nee",
+      "DropDownYes": "Ja",
+      "FillDataFrom": "Gegevens invullen van",
+      "FlapsConfiguration": "Welvingskleppen configuratie",
+      "Low": "Laag",
+      "MaximumManual": "Maximum Manual",
+      "Medium": "Medium",
+      "MetarErrorDialogMessage": "De METAR van uw OFP kon niet met succes worden geparseerd. Wilt u in plaats daarvan automatisch gegevens invullen met behulp van een opgehaalde METAR?",
+      "MetarErrorDialogTitle": "Fout bij parseren van OFP METAR",
+      "OverweightProcedure": "Procedure bij overgewicht",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reverse Thrust",
+      "RunwayAltitude": "Hoogte Landingsbaan",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Conditie landingsbaan",
+      "RunwayConditions": {
+        "Dry": "Droog (6)",
+        "Good": "Goed (5)",
+        "GoodMedium": "Goed medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Middel-slecht (2)",
+        "Poor": "Slecht (1)"
+      },
+      "RunwayHeading": "Koers Landingsbaan",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Landingsbaan LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Helling landingsbaan",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "U moet een ICAO-code invoeren om een METAR-verzoek in te dienen",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "U moet SimBrief-gegevens laden om gegevens automatisch in te vullen"
+      },
+      "Temperature": "Temperatuur",
+      "Title": "Landing",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Gewicht",
+      "WindDirection": "Windrichting",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Omvang wind",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "SYNC",
+    "Title": "Prestaties",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Hoek",
+        "CurrentAltitude": "Huidige hoogte",
+        "Distance": "Afstand",
+        "GroundSpeed": "Snelheid op grond",
+        "TargetAltitude": "Hoogte doel",
+        "Title": "Gegevens",
+        "UnitAngleDegrees": "Graden",
+        "UnitFeet": "Voet",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Verticale snelheid"
+      },
+      "GroundSpeed": {
+        "Add": "Toevoegen",
+        "FetchingSpeedFromSimulator": "Snelheid ophalen van simulator",
+        "GroundSpeed": "Snelheid op grond",
+        "ManualInput": "Handmatige invoer",
+        "MinAltitude": "Min. Hoogte",
+        "RemoveLast": "Laatste verwijderen",
+        "Sync": "SYNC",
+        "Title": "Snelheid op grond",
+        "UnitKnots": "knopen",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "voor doel",
+        "DesiredDescentAngle": "Gewenste afdaling hoek",
+        "DesiredVerticalSpeed": "Gewenste verticale snelheid",
+        "StartYourDescentAbout": "Begin je afdaling ongeveer",
+        "Title": "Resultaat"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Invoer desynchroniseren met de huidige hoogte van het vliegtuig",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Invoer synchroniseren met de huidige hoogte van het vliegtuig"
+      },
+      "Title": "Top van afdaling"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Annuleren",
+      "ColdDark": "Volledige Opstart",
+      "ConfirmationDialogMsg": "Bevestig het laden van de voorinstelling.",
+      "CurrentProcedureStep": "Stap van de huidige procedure",
+      "PleaseConfirmLoadingOfPreset": "Bevestig het laden van de voorinstelling.",
+      "Powered": "Powered",
+      "ReadyPushback": "Klaar voor pushback",
+      "ReadyTakeoff": "Klaar voor opstijgen",
+      "ReadyTaxi": "Klaar voor taxi",
+      "SelectAPresetToLoad": "Selecteer een voorinstelling om te laden",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Het vliegtuig moet op de grond staan om een voorinstelling te laden.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Het vliegtuig moet op de grond staan om een voorinstelling te laden.",
+      "Title": "Status van vliegtuig",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Vliegtuig moet voeding hebben om instellingen te kunnen laden",
+      "AircraftNeedsToBePoweredToSavePresets": "Vliegtuig moet voeding hebben om instellingen op te slaan",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "Geen",
+      "LoadPreset": "Voorinstelling laden",
+      "LoadingPreset": "Voorinstelling laden...",
+      "NewNameConfirmationDialogMsg": "Bevestig de nieuwe naam voor de voorinstelling voor interieurverlichting",
+      "NoName": "Geen naam",
+      "PleaseConfirmSavingPreset": "Bevestig het opslaan van voorinstelling",
+      "SavePreset": "Voorinstelling opslaan",
+      "SavingPreset": "Voorinstelling opslaan...",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Selecteer een vooraf ingestelde binnenverlichting om te laden of op te slaan.",
+      "TT": {
+        "AircraftMustBePowered": "Vliegtuig moet worden aangedreven",
+        "ClickTextToChangeThePresetsName": "Klik op Tekst om de naam van de preset te wijzigen",
+        "LoadThisPreset": "Deze voorinstelling laden",
+        "SaveTheCurrentLightingLevels": "De huidige verlichtingsniveaus opslaan"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Het vliegtuig moet worden aangedreven  voor de instellingen voor binnenverlichting.",
+      "Title": "Interieurverlichting"
+    },
+    "Title": "Voorinstellingen"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback-bedieningen zijn alleen beschikbaar op de grond",
+    "Backward": "Achterwaarts",
+    "CallTug": "Bel sleper",
+    "DisableSystemMessageBody": "Weet u zeker dat u het pushback-systeem wilt uitschakelen? Hierdoor wordt ook de pushback truck losgelaten.",
+    "DisableSystemMessageTitle": "Pushback-systeem uitschakelen",
+    "EnableSystemMessageBody": "Het nieuwe flyPadOS 3 Pushback-systeem is nog niet afgerond. Het is niet compatibel met andere Pushback-add-ons en kan andere problemen veroorzaken.",
+    "EnableSystemMessageTitle": "Pushback-systeem inschakelen",
+    "Forward": "Voorwaarts",
+    "Halt": "Gepauzeerd",
+    "LeavePageMessage": "Pushback pauzeren",
+    "Left": "Links",
+    "Moving": "In beweging",
+    "ParkingBrake": {
+      "Off": "Uit",
+      "On": "Aan",
+      "Title": "Parkeerrem"
+    },
+    "Right": "Rechts",
+    "SystemEnabledOff": "Pushback-systeem uit",
+    "SystemEnabledOn": "Pushback-systeem aan",
+    "TT": {
+      "CallReleaseTug": "Pushback truck aanvragen of loslaten",
+      "CenterPlaneMode": "Centreer kaart op vliegtuig Aan/Uit",
+      "DecreaseSpeed": "Achterwaarts of langzamer voorwaarts",
+      "IncreaseSpeed": "Voorwaarts of langzamer achteruit",
+      "Left": "Ga links",
+      "PausePushback": "Pauzeer of hervat pushback",
+      "Right": "Ga rechts",
+      "SetReleaseParkingBrake": "Parkeerrem vast/los",
+      "SliderDirection": "Beweeg voor de gewenste richting",
+      "SliderSpeed": "Beweeg voor de gewenste snelheid",
+      "SystemEnabledOff": "Klik hierop om het pushback-systeem in te schakelen.",
+      "SystemEnabledOn": "Klik hierop om het pushback-systeem volledig uit te schakelen.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "ZoomIn": "Zoom in +",
+      "ZoomOut": "Zoom uit -"
+    },
+    "TugAttached": "Sleper is gekoppeld",
+    "TugDirection": "Sleep richting",
+    "TugInTransit": "Sleper is onderweg",
+    "TugSpeed": "Sleep snelheid",
+    "UseControllerInput": "Use Controller Input"
+  },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Over"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Acceleratiehoogte (ft)",
+      "EngineOutAccelerationHeight": "Motor-uit versnelling hoogte (ft)",
+      "IsisBaroUnit": "ISIS Baro-eenheid",
+      "IsisMetricAltitude": "ISIS Metrische hoogte",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-indeling",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "RMP VHF Afstand",
+      "Satcom": "Satcom",
+      "Select": "Select",
+      "ThrustReductionHeight": "Hoogte stuwkrachtreductie (ft)",
+      "Title": "Vliegtuig Opties / Pin Programma's",
+      "WeightUnit": "Gewichtseenheid"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC-bron",
+      "AutomaticallyImportSimBriefData": "SimBrief-gegevens automatisch importeren",
+      "Enable": "Inschakelen",
+      "EnableTelex": "TELEX inschakelen",
+      "ErrorReporting": "Fout rapportage",
+      "HoppieEnabled": "Hoppie ingeschakeld",
+      "HoppieUserId": "Hoppie gebruikers-ID",
+      "MetarSource": "METAR-bron",
+      "OptionalA32nxErrorReporting": "Optionele A32NX-foutrapportage",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Controleer of je jouw SimBrief gebruikersnaam of pilot-ID correct hebt ingevoerd.",
+      "SimBriefUsernamePilotId": "SimBrief gebruikersnaam/pilot-ID",
+      "TafSource": "TAF-bron",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX maakt vrije tekst en live kaart mogelijk. Indien ingeschakeld, worden de positiegegevens van het vliegtuig gepubliceerd voor de duur van de vlucht. Berichten zijn openbaar en worden niet gemodereerd. GEBRUIK DEZE FUNCTIE OP EIGEN RISICO. Ga naar https://docs.flybywiresim.com/telex voor meer informatie over TELEX en de functies die het mogelijk maakt.",
+      "TelexWarning": "TELEX-waarschuwing",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Er is een fout opgetreden bij het valideren van je Hoppie-ID",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "U kunt kiezen voor anonieme foutrapportage waarmee wij sneller problemen kunnen diagnosticeren, monitoren en verhelpen. Deze functie is volledig optioneel en wij zullen nooit uw persoonlijke gegevens verzamelen, maar kan u in staat stellen om gemakkelijker ondersteuning te krijgen en de problemen die u tegenkomt sneller te laten oplossen.",
+      "YourHoppieIdHasBeenRemoved": "Uw hopie-ID is verwijderd",
+      "YourHoppieIdHasBeenValidated": "Uw hopie-ID is gevalideerd",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Uw SimBrief PilotID is gevalideerd en bijgewerkt naar"
+    },
+    "Audio": {
+      "Announcements": "Aankondigingen",
+      "BoardingMusic": "Boarding Muziek",
+      "EngineInteriorVolume": "Motor Interieur Volume",
+      "ExteriorMasterVolume": "Exterior Master Volume",
+      "PassengerAmbience": "Passagiers ambiance",
+      "PtuAudibleInCockpit": "PTU hoorbaar in cockpit",
+      "Title": "Audio",
+      "WindInteriorVolume": "Volume wind in cabine"
+    },
+    "AutomaticCallOuts": {
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "Reset": "Reset",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Title": "Automatic Call Outs"
+    },
+    "Fast": "Snel",
+    "Instant": "Direct",
+    "Real": "Echt",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS-uitlijntijd",
+      "AutofillChecklists": "Checklists automatisch invullen",
+      "BoardingTime": "Instaptijd",
+      "DmcSelfTestTime": "DMC zelf testtijd",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "HomeCockpitMode": "Home Cockpit Modus",
+      "McduFocusTimeout": "MCDU Focus Time-out (seconden)",
+      "McduKeyboardInput": "MCDU Toetsenbordinvoer",
+      "PauseAtTod": "T/D-pauze",
+      "PauseAtTodDistance": "T/D pauze afstand (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
+      "SeparateTillerFromRudderInputs": "Scheid Tiller van Roer invoer",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "Title": "Realisme"
+    },
+    "SimOptions": {
+      "Active": "Actief",
+      "Auto": "Auto",
+      "Both": "Synchronized",
+      "Calibrate": "Kalibreren",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "ConesEnabled": "Veiligheidskegels",
+      "Copilot": "Copilot",
+      "DefaultBarometerUnit": "Standaard barometer-eenheid",
+      "DynamicRegistrationDecal": "Dynamische Registratie Sticker",
+      "EnableSimBridge": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
+      "ExternalMcduServerPort": "Externe MCDU Serverpoort",
+      "Hpa": "hPa",
+      "Inactive": "Inactief",
+      "LoadOnly": "Alleen laden",
+      "None": "Geen",
+      "Off": "Uit",
+      "Save": "Opslaan",
+      "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgePort": "Externe MCDU Serverpoort",
+      "SyncMsfsFlightPlan": "MSFS-vluchtplan synchroniseren",
+      "ThrottleDetents": "Throttle Detents",
+      "Title": "Sim-opties",
+      "UseCalculatedIlsSignals": "Gebruik berekende ILS-signalen",
+      "WheelChocksEnabled": "Wielkeggen",
+      "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unknown": "Unknown",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "3rd Party Options",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+    },
+    "ThrottleConfig": {
+      "Apply": "Toepassen",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Weet u zeker dat u uw huidige instellingen voor de throttle configuratie wilt resetten naar hun standaardstatus? Deze actie is onomkeerbaar.",
+      "Axis": "As",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "Back": "Terug",
+      "ConfigureEnd": "Einde configureren",
+      "ConfigureStart": "Start configureren",
+      "CurrentValue": "Huidige waarde",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "overlapt met",
+      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "IndependentAxis": "Onafhankelijke as",
+      "LoadFromFile": "Laden vanuit bestand",
+      "PleaseEnterAValidDeadzone": "Voer een geldige deadzone in",
+      "ResetToDefaults": "Standaardwaarden herstellen",
+      "ReverseFull": "Vol reverse",
+      "ReverseIdle": "Reverse inactief",
+      "ReverserOnAxis": "Reverse op as",
+      "SaveAndApply": "Opslaan en toepassen",
+      "SetFromThrottle": "Zet van throttle",
+      "ThrottleConfigurationReset": "Throttle configuratie herstellen",
+      "TogaOnAxis": "TOGA On Axis"
+    },
+    "Title": "Instellingen",
+    "Unrealistic": "Onrealistisch",
+    "flyPad": {
+      "AutoBrightness": "Auto helderheid",
+      "AutomaticallyShowOnscreenKeyboard": "Automatisch toetsenbord op scherm weergeven",
+      "BatteryLifeEnabled": "Levensduur batterij gesimuleerd",
+      "Blue": "Blauw",
+      "Brightness": "Helderheid",
+      "Dark": "Donker",
+      "Language": "Taal",
+      "Light": "Licht",
+      "Local": "Lokaal",
+      "LocalTimeFormat": "Indeling voor lokale tijd",
+      "OnscreenKeyboardLayout": "Toetsenbordindeling op het scherm",
+      "ShowColoredRawMetar": "Toon gekleurde ruwe METAR",
+      "ShowStatusBarFlightProgressIndicator": "Toon statusbalk vluchtvoortgang",
+      "Theme": "Thema",
+      "TimeDisplayed": "Weergegeven tijd",
+      "Title": "flyPad",
+      "TwelveHours": "12u",
+      "TwentyFourHours": "24u",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC en lokaal"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Apr.",
+    "Aug": "Aug.",
+    "Dec": "Dec.",
+    "Feb": "Feb.",
+    "Fri": "Vr.",
+    "Jan": "Jan.",
+    "Jul": "Jul",
+    "Jun": "Jun.",
+    "Mar": "Mrt",
+    "May": "Mei",
+    "Mon": "Ma",
+    "Nov": "Nov",
+    "Oct": "Okt",
+    "Sat": "Za",
+    "Sep": "Sep",
+    "Sun": "Zon",
+    "TT": {
+      "Brightness": "Click to change Brightness",
+      "ConnectedToLocalApi": "Verbonden met Lokale API",
+      "DisconnectedFromLocalApi": "Losgekoppeld van Lokale API",
+      "QuickControls": "Click to open Quick Controls",
+      "TurnOffOrShutdownEfb": "EFB uitschakelen of afsluiten"
+    },
+    "Thu": "Do.",
+    "Tue": "Di.",
+    "Wed": "Woe."
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
+    "Title": "New Version Available"
+  }
+}

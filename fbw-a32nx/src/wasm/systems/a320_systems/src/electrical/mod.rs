@@ -14,7 +14,6 @@ use uom::si::{angular_velocity::revolution_per_minute, f64::*};
 #[cfg(test)]
 use systems::electrical::Battery;
 
-use systems::simulation::VariableIdentifier;
 use systems::{
     accept_iterable,
     electrical::{
@@ -22,18 +21,20 @@ use systems::{
         EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter,
         TransformerRectifier,
     },
+    engine::Engine,
     overhead::{
-        AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
-        NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
+        AutoOffFaultPushButton, FaultDisconnectReleasePushButton, FaultIndication,
+        MomentaryPushButton, NormalAltnFaultPushButton, OnOffAvailablePushButton,
+        OnOffFaultPushButton,
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
-        EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        EngineFirePushButtons, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        Write,
+        VariableIdentifier, Write,
     },
 };
 
@@ -76,7 +77,7 @@ impl A320Electrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 2],
+        engines: [&impl Engine; 2],
         gcu: &impl EmergencyGeneratorControlUnit,
         lgciu1: &impl LgciuWeightOnWheels,
     ) {
@@ -231,7 +232,7 @@ trait A320AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
 
 pub(super) struct A320ElectricalOverheadPanel {
     batteries: [AutoOffFaultPushButton; 2],
-    idgs: [FaultReleasePushButton; 2],
+    idgs: [FaultDisconnectReleasePushButton; 2],
     generators: [OnOffFaultPushButton; 2],
     apu_gen: OnOffFaultPushButton,
     bus_tie: AutoOffFaultPushButton,
@@ -248,8 +249,8 @@ impl A320ElectricalOverheadPanel {
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_2"),
             ],
             idgs: [
-                FaultReleasePushButton::new_in(context, "ELEC_IDG_1"),
-                FaultReleasePushButton::new_in(context, "ELEC_IDG_2"),
+                FaultDisconnectReleasePushButton::new_in(context, "ELEC_IDG_1"),
+                FaultDisconnectReleasePushButton::new_in(context, "ELEC_IDG_2"),
             ],
             generators: [
                 OnOffFaultPushButton::new_on(context, "ELEC_ENG_GEN_1"),
@@ -427,12 +428,12 @@ mod a320_electrical_circuit_tests {
         electrical::{
             ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
             Electricity, ElectricitySource, ExternalPowerSource, Potential, ProvideFrequency,
-            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
         },
         failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            PotentialOrigin,
+            EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -441,8 +442,13 @@ mod a320_electrical_circuit_tests {
     };
 
     use uom::si::{
-        angular_velocity::revolution_per_minute, electric_potential::volt, frequency::hertz,
-        length::foot, power::watt, ratio::percent, velocity::knot,
+        angular_velocity::revolution_per_minute,
+        electric_potential::volt,
+        frequency::hertz,
+        length::foot,
+        power::watt,
+        ratio::{percent, ratio},
+        velocity::knot,
     };
 
     #[test]
@@ -2223,9 +2229,42 @@ mod a320_electrical_circuit_tests {
             self.is_running = false;
         }
     }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
     impl EngineCorrectedN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
             Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
+        }
+    }
+    impl EngineUncorrectedN2 for TestEngine {
+        fn uncorrected_n2(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
+    impl Engine for TestEngine {
+        fn hydraulic_pump_output_speed(&self) -> AngularVelocity {
+            unimplemented!()
+        }
+
+        fn oil_pressure_is_low(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn is_above_minimum_idle(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn net_thrust(&self) -> Mass {
+            unimplemented!()
+        }
+
+        fn gearbox_speed(&self) -> AngularVelocity {
+            AngularVelocity::new::<revolution_per_minute>(
+                self.corrected_n2().get::<ratio>() * 16000.,
+            )
         }
     }
 
@@ -2503,9 +2542,7 @@ mod a320_electrical_circuit_tests {
             self.command(|a| a.running_engine(number));
 
             self = self.without_triggering_emergency_elec(|x| {
-                x.run_waiting_for(Duration::from_millis(
-                    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
-                ))
+                x.run_waiting_for(INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME)
             });
 
             self

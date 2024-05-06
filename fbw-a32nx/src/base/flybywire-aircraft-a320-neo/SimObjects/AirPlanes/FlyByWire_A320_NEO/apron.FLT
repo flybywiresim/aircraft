@@ -41,7 +41,7 @@ AudioMarkerListen=True
 AudioDmeListen=False
 AudioAdfListen=False
 AudioAdf2Listen=False
-AvionicsSwitch=False
+AvionicsSwitch=True
 
 [Engine Parameters.1.0]
 ThrottleLeverPct=0
@@ -82,6 +82,9 @@ Afterburner=0
 FuelValveOpen=False
 
 [FuelSystem.0]
+Tank.1=0
+Tank.4=0 // Tank 2 & 3 are set through FADEC wasm
+Tank.5=0
 Valve.1=False
 Valve.2=False
 Valve.3=False
@@ -273,6 +276,7 @@ A32NX_ISIS_BUGS_SPD_ACTIVE:2=0
 A32NX_ISIS_BUGS_SPD_ACTIVE:3=0
 A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO = 1
 A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH = 1
+A32NX_OVHD_PRESS_LDG_ELEV_KNOB=-4000
 XMLVAR_A320_WeatherRadar_Sys=1
 A32NX_SWITCH_ATC_ALT = 1
 A32NX_GEAR_CENTER_POSITION = 100
@@ -284,12 +288,7 @@ A32NX_GEAR_LEVER_POSITION_REQUEST = 1
 KollsmanSetting=29.921342849731445313
 
 [BleedAir.0]
-BleedAirSource=1
-EngineAirBleed.1=0
-EngineAirBleed.2=0
-APUAirBleed=0
-EngineRecievesAPUAirBleed.1=0
-EngineRecievesAPUAirBleed.2=0
+BleedAirSource=0
 
 [Switches.0]
 PitotHeat=False

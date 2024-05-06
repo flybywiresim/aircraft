@@ -37,9 +37,9 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateMachine,
+void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
-                                AutothrustModelClass* autoThrust,
+                                Autothrust* autoThrust,
                                 const EngineData& engineData,
                                 const AdditionalData& additionalData) {
   // check if enabled

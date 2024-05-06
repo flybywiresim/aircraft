@@ -1,7 +1,6 @@
 #include "Autothrust.h"
-#include "Autothrust_private.h"
 
-AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P{
+Autothrust::Parameters_Autothrust_T Autothrust::Autothrust_P{
 
   {
     {
@@ -87,7 +86,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       false,
       false,
       false,
-      0.0
+      0.0,
+      false
     },
 
     {
@@ -99,13 +99,13 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       0.0,
       false,
       false,
-      athr_thrust_limit_type_NONE,
+      athr_thrust_limit_type::NONE,
       0.0,
       0.0,
       0.0,
-      athr_status_DISENGAGED,
-      athr_mode_NONE,
-      athr_mode_message_NONE,
+      athr_status::DISENGAGED,
+      athr_mode::NONE,
+      athr_mode_message::NONE,
       false,
       false
     }
@@ -180,13 +180,13 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   0.0,
 
-  -20.0,
+  -100.0,
 
   -2.0,
 
   0.0,
 
-  -20.0,
+  -100.0,
 
 
   { 1.8, 1.8, 1.0, 1.2, 1.2 },
@@ -217,17 +217,15 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   0.1,
 
-  athr_mode_A_FLOOR,
+  athr_mode::A_FLOOR,
 
-  athr_mode_TOGA_LK,
+  athr_mode::TOGA_LK,
 
-  athr_mode_A_FLOOR,
+  athr_mode::A_FLOOR,
 
-  athr_mode_TOGA_LK,
+  athr_mode::TOGA_LK,
 
-  athr_status_ENGAGED_ACTIVE,
-
-  false,
+  athr_status::ENGAGED_ACTIVE,
 
   false,
 
@@ -235,7 +233,7 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   false,
 
-  0.0,
+  false,
 
   3.0,
 
@@ -273,27 +271,31 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   -10.0,
 
-  -1.0,
-
-  -1.0,
-
-  2.0,
-
-  1.0,
-
-  1.0,
-
-  0.0,
-
-  2.0,
-
-  1.0,
-
-  0.0,
-
   4.0,
 
   1.0,
+
+  -1.0,
+
+  -1.0,
+
+  2.0,
+
+  1.0,
+
+  1.0,
+
+  0.0,
+
+  2.0,
+
+  1.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
 
   0.017453292519943295,
 

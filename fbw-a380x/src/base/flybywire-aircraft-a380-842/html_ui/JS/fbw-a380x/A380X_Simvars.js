@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 /**
  * taken from the AAU1 G3000
  * The purpose is to reduce the amount of string allocations caused by `.toLowerCase()`

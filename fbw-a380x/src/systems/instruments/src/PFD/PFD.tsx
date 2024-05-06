@@ -1,7 +1,7 @@
-import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { A380Failure } from '@flybywiresim/failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { LowerArea } from 'instruments/src/PFD/LowerArea';
+import {Arinc429Word, ArincEventBus, FailuresConsumer} from '@flybywiresim/fbw-sdk';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -13,8 +13,6 @@ import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
-import { LowerArea } from 'instruments/src/PFD/LowerArea';
-import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 import './style.scss';
 
@@ -26,12 +24,12 @@ export const getDisplayIndex = () => {
     const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
 
     switch (duId) {
-        case 0:
-            return 1;
-        case 3:
-            return 2;
-        default:
-            return 0;
+    case 0:
+        return 1;
+    case 3:
+        return 2;
+    default:
+        return 0;
     }
 };
 
@@ -67,7 +65,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.failuresConsumer.register(getDisplayIndex() === 1 ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
+        this.failuresConsumer.register(getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay);
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents>();
 
@@ -87,7 +85,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
         sub.on('realTime').atFrequency(1).handle((_t) => {
             this.failuresConsumer.update();
-            this.displayFailed.set(this.failuresConsumer.isActive(getDisplayIndex() === 1 ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay));
+            this.displayFailed.set(this.failuresConsumer.isActive(getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay));
             if (!this.isAttExcessive.get() && ((this.pitch.isNormalOperation()
                 && (this.pitch.value > 25 || this.pitch.value < -13)) || (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))) {
                 this.isAttExcessive.set(true);

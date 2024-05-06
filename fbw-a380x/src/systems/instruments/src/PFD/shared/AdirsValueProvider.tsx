@@ -1,13 +1,14 @@
-import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from '../PFD';
 import { PFDSimvarPublisher, PFDSimvars } from './PFDSimvarPublisher';
 
-export class AdirsValueProvider {
+export class AdirsValueProvider implements Instrument {
     constructor(private readonly bus: EventBus, private readonly pfdSimvar: PFDSimvarPublisher) {
 
     }
 
-    public start() {
+    /** @inheritdoc */
+    public init(): void {
         const sub = this.bus.getSubscriber<PFDSimvars>();
         const displayIndex = getDisplayIndex();
 
@@ -26,9 +27,14 @@ export class AdirsValueProvider {
             const airSource = getSupplier(displayIndex, a);
             this.pfdSimvar.updateSimVarSource('speed', { name: `L:A32NX_ADIRS_ADR_${airSource}_COMPUTED_AIRSPEED`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('vsBaro', { name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`, type: SimVarValueType.Number });
-            this.pfdSimvar.updateSimVarSource('altitude', { name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('baroCorrectedAltitude', { name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_1`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('mach', { name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`, type: SimVarValueType.Number });
         });
+    }
+
+    /** @inheritdoc */
+    public onUpdate(): void {
+        // noop
     }
 }
 

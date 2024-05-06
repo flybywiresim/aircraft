@@ -1,19 +1,11 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable max-len */
-import React, { useState, useEffect } from 'react';
-import { MemoryRouter as Router } from 'react-router-dom';
-import { customAlphabet } from 'nanoid';
-import { NXDataStore, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { Provider } from 'react-redux';
+import React from 'react';
+
 import { render } from '@instruments/common/index';
-import { ErrorBoundary } from 'react-error-boundary';
-import { SentryConsentState, SENTRY_CONSENT_KEY } from '@sentry/FbwAircraftSentryClient';
-import { ModalProvider } from './UtilComponents/Modals/Modals';
-import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
-import Efb from './Efb';
+import { EfbWrapper } from '@flybywiresim/flypad';
+import { A320FailureDefinitions } from '@failures';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';

@@ -111,8 +111,8 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  AutopilotStateMachineModelClass autopilotStateMachine;
-  AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
+  AutopilotStateMachine autopilotStateMachine;
+  AutopilotStateMachine::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
   ap_raw_laws_input autopilotStateMachineOutput;
 
   AutopilotLawsModelClass autopilotLaws;
@@ -566,6 +566,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEhaBusPowered;
   std::unique_ptr<LocalVariable> idElecDc1BusPowered;
+  std::unique_ptr<LocalVariable> idRatContactorClosed;
+  std::unique_ptr<LocalVariable> idRatPosition;
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;

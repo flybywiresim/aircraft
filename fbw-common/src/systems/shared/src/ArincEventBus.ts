@@ -7,11 +7,11 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { ArincEventSubscriber } from './ArincEventBusSubscriber';
 
 export class ArincEventBus extends EventBus {
-    /**
-     * Gets a typed subscriber from the event bus.
-     * @returns The typed subscriber.
-     */
-    public getArincSubscriber<E>(): ArincEventSubscriber<E> {
-        return new ArincEventSubscriber(this);
-    }
+  /**
+   * Gets a typed subscriber from the event bus.
+   * @returns The typed subscriber.
+   */
+  public getArincSubscriber<E>(): ArincEventSubscriber<E> {
+    return new ArincEventSubscriber(this);
+  }
 }

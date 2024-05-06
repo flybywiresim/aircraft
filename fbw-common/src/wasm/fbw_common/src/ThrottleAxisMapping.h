@@ -12,7 +12,24 @@
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 
+
+
 class ThrottleAxisMapping {
+  static constexpr double THROTTLE_STEPSIZE = 0.05;
+  static constexpr double THROTTLE_STEPSIZE_SMALL = 0.05;
+  static constexpr double THROTTLE_REV_LO = -1.00;  // reverse low
+  static constexpr double THROTTLE_REV_HI = -0.95;  // reverse high
+  static constexpr double THROTTLE_REV_IDLE_LO = -0.85;  // reverse idle low
+  static constexpr double THROTTLE_REV_IDLE_HI = -0.75;  // reverse idle high
+  static constexpr double THROTTLE_IDLE_LO = -0.55;  // idle low
+  static constexpr double THROTTLE_IDLE_HI  = -0.45;  // idle high
+  static constexpr double THROTTLE_CLB_LO  = -0.05;  // climb low
+  static constexpr double THROTTLE_CLB_HI  = +0.05;  // climb high
+  static constexpr double THROTTLE_FLX_LO  = +0.45;  // flex/mct low
+  static constexpr double THROTTLE_FLX_HI  = +0.55;  // flex/mct high
+  static constexpr double THROTTLE_TOGA_LO =  +0.95;  // toga low
+  static constexpr double THROTTLE_TOGA_HI =  +1.00;  // toga high
+
  public:
   ThrottleAxisMapping(unsigned int id);
 
@@ -50,6 +67,7 @@ class ThrottleAxisMapping {
  private:
   struct Configuration {
     bool useReverseOnAxis;
+    bool useTogaOnAxis;
     double incrementNormal;
     double incrementSmall;
     double reverseLow;
@@ -85,12 +103,14 @@ class ThrottleAxisMapping {
   void decreaseThrottleBy(double value);
 
   bool useReverseOnAxis = false;
+  bool useTogaOnAxis = false;
   double incrementNormal = 0.0;
   double incrementSmall = 0.0;
 
   bool inFlight = false;
   bool isReverseToggleActive = false;
   bool isReverseToggleKeyActive = false;
+  bool isTogaActive = false;
 
   double idleValue = 0.0;
   double currentValue = 0.0;
@@ -103,6 +123,7 @@ class ThrottleAxisMapping {
 
   std::unique_ptr<LocalVariable> idUsingConfig;
   std::unique_ptr<LocalVariable> idUseReverseOnAxis;
+  std::unique_ptr<LocalVariable> idUseTogaOnAxis;
   std::unique_ptr<LocalVariable> idIncrementNormal;
   std::unique_ptr<LocalVariable> idIncrementSmall;
   std::unique_ptr<LocalVariable> idDetentReverseLow;
@@ -122,6 +143,7 @@ class ThrottleAxisMapping {
   std::string LVAR_THRUST_LEVER_ANGLE = "A32NX_AUTOTHRUST_TLA:";
   std::string LVAR_LOAD_CONFIG = "A32NX_THROTTLE_MAPPING_LOADED_CONFIG:";
   std::string LVAR_USE_REVERSE_ON_AXIS = "A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:";
+  std::string LVAR_USE_TOGA_ON_AXIS = "A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:";
   std::string LVAR_INCREMENT_NORMAL = "A32NX_THROTTLE_MAPPING_INCREMENT_NORMAL";
   std::string LVAR_INCREMENT_SMALL = "A32NX_THROTTLE_MAPPING_INCREMENT_SMALL";
   std::string LVAR_DETENT_REVERSE_LOW = "A32NX_THROTTLE_MAPPING_REVERSE_LOW:";
