@@ -6,7 +6,6 @@ import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
-import { t } from '../../../Localization/translation';
 import { pathify } from '../../../Utils/routing';
 import { AtaChapterPage } from './AtaChapterPage';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
@@ -21,15 +20,15 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
   const { activeFailures, allFailures } = useFailuresOrchestrator();
 
   const hasActiveFailure = allFailures
-    .filter((it) => it.ata === ataNumber)
-    .some((it) => activeFailures.has(it.identifier));
+    .filter((it: Failure) => it.ata === ataNumber)
+    .some((it: Failure) => activeFailures.has(it.identifier));
 
   return (
     <Link
-      to={`/failures/comfort/${pathify(ataNumber.toString())}`}
+      to={`/failures/failure-list/comfort/${pathify(ataNumber.toString())}`}
       className="hover:border-theme-highlight flex flex-row space-x-4 rounded-md border-2 border-transparent p-2 transition duration-100"
     >
-      <div className="bg-theme-accent font-title flex w-1/5 items-center justify-center rounded-md text-5xl font-bold">
+      <div className="font-title bg-theme-accent flex w-1/5 items-center justify-center rounded-md text-5xl font-bold">
         {`ATA ${ataNumber}`}
 
         <div className="text-utility-red relative -right-7 bottom-16 inline-block h-0 w-0 fill-current">
@@ -57,11 +56,10 @@ interface ComfortUIProps {
 
 export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
   <>
-    <Route exact path="/failures/comfort">
+    <Route exact path="/failures/failure-list/comfort">
       <ScrollableContainer height={48}>
         {filteredChapters.map((chapter) => (
           <ATAChapterCard
-            key={chapter}
             ataNumber={chapter}
             title={AtaChaptersTitle[chapter]}
             description={AtaChaptersDescription[chapter]}
@@ -79,7 +77,7 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
     </Route>
 
     {allChapters.map((chapter) => (
-      <Route key={chapter} path={`/failures/comfort/${chapter.toString()}`}>
+      <Route key={chapter} path={`/failures/failure-list/comfort/${chapter.toString()}`}>
         <AtaChapterPage chapter={chapter} failures={failures} />
       </Route>
     ))}

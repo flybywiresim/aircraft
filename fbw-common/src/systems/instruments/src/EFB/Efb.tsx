@@ -48,7 +48,7 @@ import { Performance } from './Performance/Performance';
 import { Navigation } from './Navigation/Navigation';
 import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
-import { Failures } from './Failures/Failures';
+import { FailuresHome } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
@@ -62,6 +62,7 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
+import { EventBusContextProvider } from 'instruments/src/EFB/event-bus-provider';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -436,7 +437,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                     <Route path="/performance" component={Performance} />
                     <Route path="/navigation" component={Navigation} />
                     <Route path="/atc" component={ATC} />
-                    <Route path="/failures" component={Failures} />
+                    <Route path="/failures" component={FailuresHome} />
                     <Route path="/checklists" component={Checklists} />
                     <Route path="/presets" component={Presets} />
                     <Route path="/settings" component={Settings} />
@@ -508,13 +509,15 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
 
   return (
     <FailuresOrchestratorProvider failures={failures}>
-      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-        <Router>
-          <ModalProvider>
-            <Efb aircraftChecklistsProp={aircraftChecklists} />
-          </ModalProvider>
-        </Router>
-      </ErrorBoundary>
+      <EventBusContextProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+          <Router>
+            <ModalProvider>
+              <Efb aircraftChecklistsProp={aircraftChecklists} />
+            </ModalProvider>
+          </Router>
+        </ErrorBoundary>
+      </EventBusContextProvider>
     </FailuresOrchestratorProvider>
   );
 };
