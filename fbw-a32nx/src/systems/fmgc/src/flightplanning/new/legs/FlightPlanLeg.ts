@@ -235,12 +235,11 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
    * @param waypoint the specified waypoint
    */
   terminatesWithWaypoint(waypoint: Fix) {
-    if (!this.isXF()) {
+    if (!this.isXF() && !(this.definition.type === LegType.HF || this.definition.type === LegType.HM)) {
       return false;
     }
 
-    // FIXME use databaseId when tracer fixes it
-    return this.definition.waypoint.ident === waypoint.ident && this.definition.waypoint.icaoCode === waypoint.icaoCode;
+    return this.definition.waypoint.databaseId === waypoint.databaseId;
   }
 
   hasPilotEnteredAltitudeConstraint(): boolean {
@@ -283,8 +282,17 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.pilotEnteredSpeedConstraint = from.pilotEnteredSpeedConstraint;
     this.constraintType = from.constraintType;
     this.cruiseStep = from.cruiseStep;
-    this.defaultHold = from.defaultHold;
-    this.modifiedHold = from.modifiedHold;
+    /**
+     * Don't copy holds. When we string the arrival to the upstream plan, the upstream plan may have a hold
+     * and the downstream leg doesn't, but the upstream leg is the one that's kept. In this case, we don't want to remove the hold
+     *
+     * e.g
+     * Upstream: WPT1 (CF) -> WPT2 (HM)
+     * Downstream: WPT2 (IF) -> WPT3 (CF)
+     *
+     * strings at WPT2 to yield
+     * WPT1 (CF) -> WPT2 (HM) -> WPT3 (CF)
+     */
 
     return this;
   }
