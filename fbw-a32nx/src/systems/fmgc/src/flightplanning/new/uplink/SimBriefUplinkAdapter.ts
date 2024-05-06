@@ -276,9 +276,14 @@ export class SimBriefUplinkAdapter {
               );
               insertHead++;
             } else {
-              throw new Error(
+              console.warn(
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
               );
+
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
             }
 
             continue;
@@ -311,9 +316,14 @@ export class SimBriefUplinkAdapter {
             );
             insertHead++;
           } else {
-            throw new Error(
+            console.warn(
               `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
+
+            if (plan.elementAt(insertHead).isDiscontinuity === false) {
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+              insertHead++;
+            }
           }
 
           break;
@@ -334,13 +344,17 @@ export class SimBriefUplinkAdapter {
 
           let airwaySearchFix: Fix;
           if (!plan.pendingAirways) {
-            plan.startAirwayEntry(insertHead);
-
             const legAtInsertHead = plan.elementAt(insertHead);
 
             if (legAtInsertHead.isDiscontinuity === false) {
               airwaySearchFix = legAtInsertHead.terminationWaypoint();
+            } else {
+              // In this case, the waypoint that the airway started at was probably not found in that database,
+              // so we don't care about the airway
+              continue;
             }
+
+            plan.startAirwayEntry(insertHead);
           } else {
             const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
 
@@ -375,21 +389,25 @@ export class SimBriefUplinkAdapter {
 
           if (fixes.length > 0) {
             if (!plan.pendingAirways) {
-              // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
-              // we add the termination fix with a disco in between
               console.warn(
-                `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
+                `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk.`,
               );
 
+              // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
+              // just add the termination as a fix
               await flightPlanService.nextWaypoint(
                 insertHead,
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
                 FlightPlanIndex.Uplink,
               );
-              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
 
-              insertHead += 2;
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                // It's possible we already have a disco here, if the start of the airway was not found
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
 
+              insertHead++;
               break;
             }
 
@@ -399,9 +417,17 @@ export class SimBriefUplinkAdapter {
 
             ensureAirwaysFinalized();
           } else {
-            throw new Error(
-              `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "airwayTermination" chunk: ${chunk.ident}`,
+            console.warn(
+              `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
+
+            plan.pendingAirways = undefined;
+
+            if (plan.elementAt(insertHead).isDiscontinuity === false) {
+              // It's possible we already have a disco here, if the start of the airway was not found
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+              insertHead++;
+            }
           }
 
           break;

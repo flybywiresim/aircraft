@@ -28,6 +28,7 @@ class CDULateralRevisionPage {
         const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
         const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
         const isWaypoint = !isDeparture && !isDestination && !isPpos;
+        const isManual = leg && leg.isVectors();
 
         let waypointIdent = isPpos ? "PPOS" : '---';
 
@@ -77,7 +78,7 @@ class CDULateralRevisionPage {
         let nextWptLabel = "";
         let nextWpt = "";
         const isPreflight = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
-        if ((isDeparture && isPreflight) || isWaypoint || isDestination) {
+        if ((isDeparture && isPreflight) || (isWaypoint && !isManual) || isDestination) {
             nextWptLabel = "NEXT WPT{sp}";
             nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
 
@@ -144,7 +145,7 @@ class CDULateralRevisionPage {
 
         let newDestLabel = "";
         let newDestCell = "";
-        if (!isDestination && !isPpos) {
+        if (!isDestination && !isPpos && !isManual) {
             newDestLabel = "NEW DEST{sp}";
             newDestCell = "[{sp}{sp}][color]cyan";
 

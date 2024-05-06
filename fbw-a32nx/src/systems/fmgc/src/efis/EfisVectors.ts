@@ -12,6 +12,8 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 const UPDATE_TIMER = 2_500;
 
@@ -126,12 +128,21 @@ export class EfisVectors {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
+        const flightPhase = getFlightPhaseManager().phase;
+
+        // FIXME implement
+        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
 
         const transmitActive =
+          // In preflight phase, the flight plan line is solid even when NAV is not armed
+          flightPhase === FmgcFlightPhase.Preflight ||
           engagedLateralMode === LateralMode.NAV ||
           engagedLateralMode === LateralMode.LOC_CPT ||
           engagedLateralMode === LateralMode.LOC_TRACK ||
-          navArmed;
+          engagedLateralMode === LateralMode.LAND ||
+          engagedLateralMode === LateralMode.FLARE ||
+          engagedLateralMode === LateralMode.ROLL_OUT ||
+          (navArmed && doesPreNavEngagePathExist);
 
         if (transmitActive) {
           this.transmitFlightPlan(
