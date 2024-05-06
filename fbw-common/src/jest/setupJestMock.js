@@ -1,23 +1,24 @@
 let values;
 
 global.beforeEach(() => {
-    values = {};
-    global.SimVar = {};
-    // MSFS SDK overrides those with a custom implementation, hence need to recreate it before every test
-    global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
-        if (values.hasOwnProperty(name)) {
-            return values[name];
-        } else {
-            return 0;
-        }
-});
+  values = {};
+  global.SimVar = {};
+  // MSFS SDK overrides those with a custom implementation, hence need to recreate it before every test
+  global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
+    // eslint-disable-next-line no-prototype-builtins
+    if (values.hasOwnProperty(name)) {
+      return values[name];
+    } else {
+      return 0;
+    }
+  });
 
-global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
+  global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
     return new Promise((resolve, _) => {
-        values[name] = value;
-        resolve();
+      values[name] = value;
+      resolve();
     });
-});
+  });
 
   values = {};
 });
@@ -49,5 +50,5 @@ global.Simplane.getGroundSpeed = jest.fn();
 global.Avionics.Utils = jest.mock();
 global.document = jest.mock();
 global.document.getElementById = jest.fn();
-global.GetStoredData = jest.fn(() => "hi");
+global.GetStoredData = jest.fn(() => 'hi');
 global.BaseInstrument = jest.fn();
