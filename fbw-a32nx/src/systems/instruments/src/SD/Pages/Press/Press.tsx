@@ -54,6 +54,7 @@ export const PressPage: FC = () => {
   }, [cabinAlt]);
 
   const deltaPress = splitDecimals(MathUtils.clamp(deltaPsi, -9.9, 9.9));
+  const deltaPressNotAvail = arincDeltaPsi.isNoComputedData();
   const cax = 455;
   const dpx = 110;
   const y = 165;
@@ -77,18 +78,25 @@ export const PressPage: FC = () => {
         <text className="Medium Center Cyan" x={dpx - 5} y="100">
           PSI
         </text>
-        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 38} y={y + 25}>
+        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={dpx + 38} y={y + 25}>
           {deltaPress[0]}
         </text>
-        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 53} y={y + 25}>
+        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={dpx + 53} y={y + 25}>
           .
         </text>
         <text
-          className={`Standard End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`}
+          className={`Standard End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`}
           x={dpx + 63}
           y={y + 25}
         >
           {deltaPress[1]}
+        </text>
+        <text
+          className={`Standard End Amber ${deltaPressNotAvail ? 'show' : 'hide'}`}
+          x={dpx + 53}
+          y={y + 25}
+        >
+          XX
         </text>
         <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
           <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} visible className="Gauge Amber" />
@@ -148,7 +156,7 @@ export const PressPage: FC = () => {
             radius={radius}
             startAngle={210}
             endAngle={50}
-            className={`GaugeIndicator ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''}`}
+            className={`GaugeIndicator ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''} ${deltaPressNotAvail ? 'hide' : 'show'}`}
             indicator
           />
         </GaugeComponent>

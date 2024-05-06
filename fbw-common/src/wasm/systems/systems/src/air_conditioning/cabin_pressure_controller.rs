@@ -56,6 +56,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     pressure_schedule_manager: Option<PressureScheduleManager>,
     manual_partition: Option<CpcManualPartition>,
     outflow_valve_controller: OutflowValveController,
+    adirs_data_is_valid: bool,
     exterior_pressure: LowPassFilter<Pressure>,
     exterior_flight_altitude: Length,
     exterior_vertical_speed: LowPassFilter<Velocity>,
@@ -124,6 +125,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 Self::OFV_CONTROLLER_KP,
                 Self::OFV_CONTROLLER_KI,
             ),
+            adirs_data_is_valid: false,
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
@@ -172,6 +174,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         safety_valve: &SafetyValve,
         is_active: bool,
     ) {
+        self.adirs_data_is_valid = [1, 2, 3]
+            .iter()
+            .any(|&adr| adirs.ambient_static_pressure(adr).is_normal_operation());
         let (adirs_airspeed, _) = self.adirs_values_calculation(adirs);
 
         self.cabin_pressure = cabin_simulation.cabin_pressure();
@@ -255,17 +260,20 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
         let new_exterior_altitude: Length;
 
+        // If the ADIRUS are not aligned we take the ambient pressure from context
+        // This is to avoid the safety valve opening and the cabin delta pressure having to "adjust"
+        // after alignment. While they are not aligned we send No Computed Signal so the data is not displayed
+        // it's only used in internal calculations
         if !self.is_initialised {
-            self.exterior_pressure.reset(
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
-            );
+            self.exterior_pressure
+                .reset(adirs_ambient_pressure.unwrap_or(context.ambient_pressure()));
             new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
             self.is_initialised = true;
         } else {
             self.exterior_pressure.update(
                 context.delta(),
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
+                adirs_ambient_pressure.unwrap_or(context.ambient_pressure()),
             );
 
             new_exterior_altitude =
@@ -682,13 +690,26 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
             SignStatus::NormalOperation
         };
 
+        // Delta P is no computed data if the adirs are not sending ambient pressure information
+        let delta_p_ssm = if self.failure.is_active() {
+            SignStatus::FailureWarning
+        } else if !self.adirs_data_is_valid {
+            SignStatus::NoComputedData
+        } else {
+            SignStatus::NormalOperation
+        };
+
         // Safety valve open percentage is not sent by the CPC in real life
         writer.write(
             &self.safety_valve_open_percentage_id,
             self.safety_valve_open_amount,
         );
 
-        writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
+        writer.write_arinc429(
+            &self.cabin_delta_pressure_id,
+            self.cabin_delta_p_out(),
+            delta_p_ssm,
+        );
         writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
         writer.write_arinc429(
             &self.outflow_valve_open_percentage_id,
