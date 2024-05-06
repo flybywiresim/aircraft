@@ -78,10 +78,18 @@ export const PressPage: FC = () => {
         <text className="Medium Center Cyan" x={dpx - 5} y="100">
           PSI
         </text>
-        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={dpx + 38} y={y + 25}>
+        <text
+          className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`}
+          x={dpx + 38}
+          y={y + 25}
+        >
           {deltaPress[0]}
         </text>
-        <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={dpx + 53} y={y + 25}>
+        <text
+          className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'} ${deltaPressNotAvail ? 'hide' : 'show'}`}
+          x={dpx + 53}
+          y={y + 25}
+        >
           .
         </text>
         <text
@@ -91,11 +99,7 @@ export const PressPage: FC = () => {
         >
           {deltaPress[1]}
         </text>
-        <text
-          className={`Standard End Amber ${deltaPressNotAvail ? 'show' : 'hide'}`}
-          x={dpx + 53}
-          y={y + 25}
-        >
+        <text className={`Standard End Amber ${deltaPressNotAvail ? 'show' : 'hide'}`} x={dpx + 53} y={y + 25}>
           XX
         </text>
         <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
