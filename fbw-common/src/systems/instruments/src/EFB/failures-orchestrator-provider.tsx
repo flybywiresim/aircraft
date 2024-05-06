@@ -28,7 +28,6 @@ const Context = React.createContext<FailuresOrchestratorContext>({
 export interface FailuresOrchestratorProviderProps {
   failures: FailureDefinition[];
 }
-
 export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOrchestratorProviderProps>> = ({
   failures,
   children,

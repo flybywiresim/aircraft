@@ -231,21 +231,21 @@ export function setNewSetting(
 }
 
 export function sendRefresh(bus: EventBus) {
-  bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
+  bus.getPublisher<FailureGenEvent>().pub('refreshData', true);
   // console.info('requesting refresh');
 }
 
 export function sendFailurePool(generatorType: string, generatorNumber: number, failureString: string, bus: EventBus) {
   // console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
-  bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
+  bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString });
 }
 
 export function sendSettings(generatorType: string, stringTosend: string, bus: EventBus) {
   let settingsString: string;
   if (stringTosend === undefined) settingsString = '';
   else settingsString = stringTosend;
-  // console.info(`settings sent: ${generatorType} - ${settingsString}`);
-  bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString }, true);
+  bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString });
+  //console.info(`settings sent: ${generatorType} - ${settingsString}`);
 }
 
 export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) => {

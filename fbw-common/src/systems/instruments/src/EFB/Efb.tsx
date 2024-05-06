@@ -62,7 +62,7 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
-import { EventBusContextProvider } from 'instruments/src/EFB/event-bus-provider';
+import { FailureGeneratorsInit } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorsInit';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -405,7 +405,11 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
   switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-      return <div className="h-screen w-screen" onClick={offToLoaded} />;
+      return (
+        <div className="h-screen w-screen" onClick={offToLoaded}>
+          <FailureGeneratorsInit />
+        </div>
+      );
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
       return <LoadingScreen />;
@@ -509,15 +513,13 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
 
   return (
     <FailuresOrchestratorProvider failures={failures}>
-      <EventBusContextProvider>
-        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-          <Router>
-            <ModalProvider>
-              <Efb aircraftChecklistsProp={aircraftChecklists} />
-            </ModalProvider>
-          </Router>
-        </ErrorBoundary>
-      </EventBusContextProvider>
+      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+        <Router>
+          <ModalProvider>
+            <Efb aircraftChecklistsProp={aircraftChecklists} />
+          </ModalProvider>
+        </Router>
+      </ErrorBoundary>
     </FailuresOrchestratorProvider>
   );
 };

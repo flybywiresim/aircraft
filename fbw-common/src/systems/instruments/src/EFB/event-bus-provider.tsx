@@ -8,8 +8,9 @@ import React, { useContext } from 'react';
 
 const Context = React.createContext<EventBus>(undefined as any);
 
-export const EventBusContextProvider: React.FC = ({ children }) => (
-  <Context.Provider value={new EventBus()}>{children}</Context.Provider>
-);
+export const EventBusContextProvider: React.FC = ({ children }) => {
+  const bus = new EventBus();
+  return <Context.Provider value={bus}>{children}</Context.Provider>;
+};
 
 export const useEventBus = () => useContext(Context);

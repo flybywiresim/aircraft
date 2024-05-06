@@ -84,20 +84,19 @@ export abstract class GenericGenerator {
     }
     return failureIDs;
   }
-
   constructor(
     private readonly randomFailuresGen: RandomFailureGen,
     protected readonly bus: EventBus,
   ) {
-    if (bus != null) {
-      bus
+    if (this.bus != null) {
+      this.bus
         .getSubscriber<FailureGenEvent>()
         .on('refreshData')
         .handle((_value) => {
           this.refreshRequest = true;
           // console.info(`refresh request received: ${this.uniqueGenPrefix}`);
         });
-      bus
+      this.bus
         .getSubscriber<FailureGenEvent>()
         .on('settings')
         .handle(({ generatorType, settingsString }) => {
@@ -107,12 +106,13 @@ export abstract class GenericGenerator {
             this.settings = settingsString.split(',').map((it) => parseFloat(it));
           }
         });
-      bus
+      this.bus
         .getSubscriber<FailureGenFailureList>()
         .on('failurePool')
         .handle(({ generatorType, generatorNumber, failureString }) => {
           if (generatorType === this.uniqueGenPrefix) {
-            // console.info(`failure pool received ${generatorType}${generatorNumber}: ${failureString}`);
+            console.info(`failure pool received ${generatorType}${generatorNumber}: ${failureString}`);
+
             this.failurePool[generatorNumber] = failureString;
           }
         });
