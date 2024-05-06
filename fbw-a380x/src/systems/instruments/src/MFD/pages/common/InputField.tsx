@@ -51,6 +51,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
+  private readonly guid = `InputField-${Utils.generateGUID()}`;
+
   public topRef = FSComponent.createRef<HTMLDivElement>();
 
   public containerRef = FSComponent.createRef<HTMLDivElement>();
@@ -208,9 +210,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
       this.onInput();
     } else {
-      // Enter was pressed
-      ev.preventDefault();
-
       if (this.props.handleFocusBlurExternally === true) {
         this.onBlur(true);
       } else {
@@ -226,8 +225,15 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.props.disabled?.get() === false &&
       this.props.inactive?.get() === false
     ) {
+      Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
       this.isFocused.set(true);
-      Coherent.trigger('FOCUS_INPUT_FIELD');
+
+      // After 30s, unfocus field, as long as unexplainable
+      setTimeout(() => {
+        if (this.isFocused.get() === true) {
+          Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
+        }
+      }, 30_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
       if (this.props.mandatory?.get() === true) {
@@ -241,8 +247,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   public async onBlur(validateAndUpdate: boolean = true) {
     if (this.props.disabled?.get() === false && this.props.inactive?.get() === false && this.isFocused.get() === true) {
+      Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
       this.isFocused.set(false);
-      Coherent.trigger('UNFOCUS_INPUT_FIELD');
       this.textInputRef.instance.classList.remove('valueSelected');
       this.caretRef.instance.style.display = 'none';
       this.updateDisplayElement();

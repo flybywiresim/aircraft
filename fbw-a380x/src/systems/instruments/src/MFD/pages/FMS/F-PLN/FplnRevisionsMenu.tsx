@@ -99,7 +99,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
           };
           await fpln.props.fmcService.master?.flightPlanService.addOrEditManualHold(
             legIndex,
-            { ...defaultHold },
+            Object.assign({}, defaultHold),
             undefined,
             defaultHold,
             planIndex,
