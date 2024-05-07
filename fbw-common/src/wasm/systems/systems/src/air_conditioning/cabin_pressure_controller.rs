@@ -260,10 +260,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
         let new_exterior_altitude: Length;
 
-        // If the ADIRUS are not aligned we take the ambient pressure from context
+        // If the ADIRS is not powered, we take the ambient pressure from context and we send
+        // No Computed Data SSM so delta P is not displayed on the ECAM.
         // This is to avoid the safety valve opening and the cabin delta pressure having to "adjust"
-        // after alignment. While they are not aligned we send No Computed Signal so the data is not displayed
-        // it's only used in internal calculations
+        // after power up.
         if !self.is_initialised {
             self.exterior_pressure
                 .reset(adirs_ambient_pressure.unwrap_or(context.ambient_pressure()));
