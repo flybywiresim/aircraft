@@ -84,7 +84,7 @@ struct SlatFlapControlComputer {
 impl SlatFlapControlComputer {
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
     const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
-    const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
+    const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 212.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
