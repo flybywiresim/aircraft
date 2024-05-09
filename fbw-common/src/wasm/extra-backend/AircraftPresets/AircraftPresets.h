@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFTPRESETS_H
@@ -14,8 +14,23 @@
 class MsfsHandler;
 
 /**
- * This module is responsible for loading aircraft presets.
- * It uses the AircraftProcedures.h definition of procedures to load the presets.
+ * @brief This module is responsible for loading aircraft presets.
+ *        It reads the procedures from an XML file and creates the presets with the correct procedure steps.
+ *
+ * The module is initialized with the MsfsHandler instance and the path to the XML file containing the procedure definitions.
+ *
+ * The module is updated in the update method.
+ * It uses various control variables to manage the loading process and the progress of the loading.
+ * It checks if a preset load is requested and if so, it initializes the loading process.
+ * It executes the steps in the procedures in the correct order and sends the progress to the Lvars and the flyPad via COMM_BUS.
+ *
+ * The control variables are:
+ * - "<prefix>AIRCRAFT_PRESET_LOAD": The LVAR that is used to request a preset load. It is a number between 1 and 5 and is set to 0 to reset
+ *   the request.
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_PROGRESS": The LVAR that is used to track the progress of the preset load.
+ * - "<prefix>AIRCRAFT_PRESET_VERBOSE": The LVAR that is used to set the verbose mode of the preset load (outputs to the MSFS console).
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE": The LVAR that is used to set the expedited mode of the preset load.
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY": The LVAR that is used to set a delay in ms for the expedited mode of the preset load.
  */
 class AircraftPresets : public Module {
  private:
