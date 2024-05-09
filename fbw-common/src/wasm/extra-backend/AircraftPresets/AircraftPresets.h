@@ -14,23 +14,24 @@
 class MsfsHandler;
 
 /**
- * @brief This module is responsible for loading aircraft presets.
- *        It reads the procedures from an XML file and creates the presets with the correct procedure steps.
+ * AircraftPresets is responsible for loading aircraft presets. It reads the procedures from an XML file and creates the presets with the
+ * correct procedure steps.
  *
- * The module is initialized with the MsfsHandler instance and the path to the XML file containing the procedure definitions.
+ * The module is initialized with the MsfsHandler instance and the path to the XML file containing the procedure definitions.<p/>
  *
- * The module is updated in the update method.
- * It uses various control variables to manage the loading process and the progress of the loading.
- * It checks if a preset load is requested and if so, it initializes the loading process.
- * It executes the steps in the procedures in the correct order and sends the progress to the Lvars and the flyPad via COMM_BUS.
+ * The module is updated in the update method.<br/>
+ * It uses various control variables to manage the loading process and the progress of the loading.<br/>
+ * It checks if a preset load is requested and if so, it initializes the loading process.<br/>
+ * It executes the steps in the procedures in the correct order and sends the progress to the Lvars and the flyPad via COMM_BUS.<p/>
  *
- * The control variables are:
+ * The control variables are:<br/>
  * - "<prefix>AIRCRAFT_PRESET_LOAD": The LVAR that is used to request a preset load. It is a number between 1 and 5 and is set to 0 to reset
- *   the request.
- * - "<prefix>AIRCRAFT_PRESET_LOAD_PROGRESS": The LVAR that is used to track the progress of the preset load.
- * - "<prefix>AIRCRAFT_PRESET_VERBOSE": The LVAR that is used to set the verbose mode of the preset load (outputs to the MSFS console).
- * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE": The LVAR that is used to set the expedited mode of the preset load.
- * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY": The LVAR that is used to set a delay in ms for the expedited mode of the preset load.
+ *   the request.<br/>
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_PROGRESS": The LVAR that is used to track the progress of the preset load.<br/>
+ * - "<prefix>AIRCRAFT_PRESET_VERBOSE": The LVAR that is used to set the verbose mode of the preset load (outputs to the MSFS console).<br/>
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE": The LVAR that is used to set the expedited mode of the preset load.<br/>
+ * - "<prefix>AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY": The LVAR that is used to set a delay in ms for the expedited mode of the preset
+ *   load.<br/>
  */
 class AircraftPresets : public Module {
  private:
@@ -125,7 +126,7 @@ class AircraftPresets : public Module {
    * selecting the appropriate procedure from the preset definitions and initializing state variables
    * for the loading process.
    *
-   * @param requestedProcedure An optional containing the requested procedure. If no procedure is
+   * @param requestedProcedure An point to a Preset containing the requested procedure. If no procedure is
    * found, the optional will be empty.
    */
   void initializeNewLoadingProcess(const Preset* requestedProcedure);
