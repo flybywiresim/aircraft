@@ -109,26 +109,28 @@ impl SlatFlapControlComputer {
     }
 
     // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
+    // Interpolated from A320 FPPU references, assuming we're using the A320 FPPU
     fn demanded_flaps_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
             FlapsConf::Conf1 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1F => Angle::new::<degree>(120.22),
-            FlapsConf::Conf2 => Angle::new::<degree>(145.51),
-            FlapsConf::Conf3 => Angle::new::<degree>(168.35),
-            FlapsConf::ConfFull => Angle::new::<degree>(251.97),
+            FlapsConf::Conf1F => Angle::new::<degree>(108.28),
+            FlapsConf::Conf2 => Angle::new::<degree>(154.65),
+            FlapsConf::Conf3 => Angle::new::<degree>(194.03),
+            FlapsConf::ConfFull => Angle::new::<degree>(218.91),
         }
     }
 
     // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
+    // Interpolated from A320 FPPU references, assuming we're using the A320 FPPU
     fn demanded_slats_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(222.27),
-            FlapsConf::Conf1F => Angle::new::<degree>(222.27),
-            FlapsConf::Conf2 => Angle::new::<degree>(272.27),
-            FlapsConf::Conf3 => Angle::new::<degree>(272.27),
-            FlapsConf::ConfFull => Angle::new::<degree>(334.16),
+            FlapsConf::Conf1 => Angle::new::<degree>(247.27),
+            FlapsConf::Conf1F => Angle::new::<degree>(247.27),
+            FlapsConf::Conf2 => Angle::new::<degree>(247.27),
+            FlapsConf::Conf3 => Angle::new::<degree>(284.65),
+            FlapsConf::ConfFull => Angle::new::<degree>(284.65),
         }
     }
 
@@ -224,12 +226,12 @@ impl SlatFlapControlComputer {
         );
         word.set_bit(
             13,
-            self.slats_feedback_angle > Angle::new::<degree>(210.4)
+            self.slats_feedback_angle > Angle::new::<degree>(234.7)
                 && self.slats_feedback_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(
             14,
-            self.slats_feedback_angle > Angle::new::<degree>(321.8)
+            self.slats_feedback_angle > Angle::new::<degree>(272.2)
                 && self.slats_feedback_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(
@@ -247,22 +249,22 @@ impl SlatFlapControlComputer {
         );
         word.set_bit(
             20,
-            self.flaps_feedback_angle > Angle::new::<degree>(140.7)
+            self.flaps_feedback_angle > Angle::new::<degree>(98.2)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             21,
-            self.flaps_feedback_angle > Angle::new::<degree>(163.7)
+            self.flaps_feedback_angle > Angle::new::<degree>(150.)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             22,
-            self.flaps_feedback_angle > Angle::new::<degree>(247.8)
+            self.flaps_feedback_angle > Angle::new::<degree>(189.8)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             23,
-            self.flaps_feedback_angle > Angle::new::<degree>(250.)
+            self.flaps_feedback_angle > Angle::new::<degree>(214.8)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);

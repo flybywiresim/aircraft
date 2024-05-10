@@ -162,7 +162,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .handle((s) => {
         const flaps = s.valueOr(0);
 
-        this.flapsOut = flaps > 73.1;
+        this.flapsOut = flaps > 54.0;
 
         // Slats and flaps should align with future implementation; do not change
         const xFactor = 0.87;
@@ -173,19 +173,19 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         let synchroOffset = 0;
         let positionFactor = 0;
         let positionOffset = 0;
-        if (flaps >= 0 && flaps < 120.5) {
+        if (flaps >= 0 && flaps < 131.5) {
           synchroOffset = 0;
           positionFactor = 0.97;
           positionOffset = 0;
-        } else if (flaps >= 120.5 && flaps < 145.5) {
+        } else if (flaps >= 131.5 && flaps < 174.5) {
           synchroOffset = 10.63;
           positionFactor = 1.4;
           positionOffset = 10.34;
-        } else if (flaps >= 145.5 && flaps < 168.3) {
+        } else if (flaps >= 174.5 && flaps < 206.5) {
           synchroOffset = 16.3;
           positionFactor = 1.62;
           positionOffset = 18.27;
-        } else if (flaps >= 168.3 && flaps < 355) {
+        } else if (flaps >= 206.5 && flaps < 355) {
           synchroOffset = 21.19;
           positionFactor = 0.43;
           positionOffset = 26.21;
@@ -200,15 +200,15 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         this.flapsPath.set(`M${x},${y} v 2.6 h 3.9 z`);
         this.flapsLinePath.set(`M 31.8 193.1 L ${x},${y}`);
 
-        if ((this.configClean || this.flaps1AutoRetract) && flaps > 73.1) {
+        if ((this.configClean || this.flaps1AutoRetract) && flaps > 54.0) {
           this.flapsTargetPos.set(0);
-        } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 113.1 || flaps > 122.2)) {
+        } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 103.7 || flaps > 112.8)) {
           this.flapsTargetPos.set(1);
-        } else if (this.config2 && (flaps < 140.4 || flaps > 149.5)) {
+        } else if (this.config2 && (flaps < 150.1 || flaps > 159.2)) {
           this.flapsTargetPos.set(2);
-        } else if (this.config3 && (flaps < 163.1 || flaps > 172.2)) {
+        } else if (this.config3 && (flaps < 189.5 || flaps > 198.6)) {
           this.flapsTargetPos.set(3);
-        } else if (this.configFull && (flaps < 246.8 || flaps > 257.2)) {
+        } else if (this.configFull && (flaps < 214.3 || flaps > 223.4)) {
           this.flapsTargetPos.set(4);
         } else {
           this.flapsTargetPos.set(null);
