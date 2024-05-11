@@ -616,7 +616,7 @@ export class EfisSymbols<T extends number> {
       const isCourseReversal =
         leg.type === LegType.HA || leg.type === LegType.HF || leg.type === LegType.HM || leg.type === LegType.PI;
 
-      if (i === flightPlan.activeLegIndex) {
+      if (i === flightPlan.activeLegIndex && !isAlternate) {
         type |= NdSymbolTypeFlags.ActiveLegTermination;
       } else if (
         isCourseReversal &&
