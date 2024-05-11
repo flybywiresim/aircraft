@@ -473,23 +473,23 @@ class A32NX_GPWS {
         const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
 
         // Mode 4 A
-        if (!gearExtended && this.Mode4MaxRAAlt >= 2400) {
+        if (!gearExtended && (!FlapsInLandingConfig && !FlapModeOff) && this.Mode4MaxRAAlt >= 2400) {
             if (speed < 190 && radioAlt < 500) {
                 mode.current = 1;
             } else if (speed >= 190) {
                 const maxWarnAlt = Math.min(8.333 * speed - 1083.333, 1000);
-                mode.current = radioAlt < maxWarnAlt ? 3 : 0;
+                mode.current = radioAlt < maxWarnAlt ? 3 : 0; // TOO LOW TERRAIN
             }
         // Mode 4 B
-        } else if (!FlapsInLandingConfig && !FlapModeOff && this.Mode4MaxRAAlt >= 2400) {
+        } else if (((!FlapsInLandingConfig && !FlapModeOff) || !gearExtended) && this.Mode4MaxRAAlt >= 2400) {
             if (speed < 159 && radioAlt < 245) {
-                mode.current = 2;
+                mode.current = !gearExtended ? 1 : 2;
             } else if (speed >= 159) {
                 const maxWarnAlt = 8.2967 * speed - 1074.18;
                 mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
         // Mode 4 C
-        } else if (!FlapsInLandingConfig || !gearExtended) {
+        } else if ((!FlapsInLandingConfig && !FlapModeOff) || !gearExtended) {
             const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
             const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
 
