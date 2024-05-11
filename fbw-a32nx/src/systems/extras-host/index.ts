@@ -7,7 +7,7 @@ import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPu
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import { getSimBridgeUrl } from "@simbridge/common";
+import { getSimBridgeUrl } from '@simbridge/common';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -27,94 +27,94 @@ import { getSimBridgeUrl } from "@simbridge/common";
  * - `update` is called in every update call of the simulator, but only after `startPublish` is called
  */
 class ExtrasHost extends BaseInstrument {
-    private readonly bus: EventBus;
+  private readonly bus: EventBus;
 
-    private readonly notificationManager: NotificationManager;
+  private readonly notificationManager: NotificationManager;
 
-    private readonly hEventPublisher: HEventPublisher;
+  private readonly hEventPublisher: HEventPublisher;
 
-    private readonly simVarPublisher: ExtrasSimVarPublisher;
+  private readonly simVarPublisher: ExtrasSimVarPublisher;
 
-    private readonly pushbuttonCheck: PushbuttonCheck;
+  private readonly pushbuttonCheck: PushbuttonCheck;
 
-    private readonly versionCheck: VersionCheck;
+  private readonly versionCheck: VersionCheck;
 
-    private readonly keyInterceptor: KeyInterceptor;
+  private readonly keyInterceptor: KeyInterceptor;
 
-    private readonly remoteClient: RemoteClient;
+  private readonly remoteClient: RemoteClient;
 
-    /**
-     * "mainmenu" = 0
-     * "loading" = 1
-     * "briefing" = 2
-     * "ingame" = 3
-     */
-    private gameState = 0;
+  /**
+   * "mainmenu" = 0
+   * "loading" = 1
+   * "briefing" = 2
+   * "ingame" = 3
+   */
+  private gameState = 0;
 
-    constructor() {
-        super();
+  constructor() {
+    super();
 
-        this.bus = new EventBus();
-        this.hEventPublisher = new HEventPublisher(this.bus);
-        this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
+    this.bus = new EventBus();
+    this.hEventPublisher = new HEventPublisher(this.bus);
+    this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
 
-        this.notificationManager = new NotificationManager();
+    this.notificationManager = new NotificationManager();
 
-        this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-        this.versionCheck = new VersionCheck(this.bus);
-        this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+    this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
+    this.versionCheck = new VersionCheck(this.bus);
+    this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
-        this.remoteClient = new RemoteClient({
-            websocketUrl: () => `${getSimBridgeUrl('ws')}/interfaces/v1/remote-app`,
-            airframeName: 'A320-251N',
-            clientName: 'A32NX',
-            instrumentsMetadataFile: '/VFS/a32nx_instruments_metadata.json',
-            fileDownloadBasePath: '/Pages/VCockpit/Instruments/A32NX/',
-        });
+    this.remoteClient = new RemoteClient({
+      websocketUrl: () => `${getSimBridgeUrl('ws')}/interfaces/v1/remote-app`,
+      airframeName: 'A320-251N',
+      clientName: 'A32NX',
+      instrumentsMetadataFile: '/VFS/a32nx_instruments_metadata.json',
+      fileDownloadBasePath: '/Pages/VCockpit/Instruments/A32NX/',
+    });
 
-        console.log('A32NX_EXTRASHOST: Created');
+    console.log('A32NX_EXTRASHOST: Created');
+  }
+
+  get templateID(): string {
+    return 'A32NX_EXTRASHOST';
+  }
+
+  public getDeltaTime() {
+    return this.deltaTime;
+  }
+
+  public onInteractionEvent(args: string[]): void {
+    this.hEventPublisher.dispatchHEvent(args[0]);
+  }
+
+  public connectedCallback(): void {
+    super.connectedCallback();
+
+    this.pushbuttonCheck.connectedCallback();
+    this.versionCheck.connectedCallback();
+    this.keyInterceptor.connectedCallback();
+  }
+
+  public Update(): void {
+    super.Update();
+
+    if (this.gameState !== GameState.ingame) {
+      const gs = this.getGameState();
+      if (gs === GameState.ingame) {
+        this.hEventPublisher.startPublish();
+        this.versionCheck.startPublish();
+        this.keyInterceptor.startPublish();
+        this.simVarPublisher.startPublish();
+      }
+      this.gameState = gs;
+    } else {
+      this.simVarPublisher.onUpdate();
     }
 
-    get templateID(): string {
-        return 'A32NX_EXTRASHOST';
-    }
-
-    public getDeltaTime() {
-        return this.deltaTime;
-    }
-
-    public onInteractionEvent(args: string[]): void {
-        this.hEventPublisher.dispatchHEvent(args[0]);
-    }
-
-    public connectedCallback(): void {
-        super.connectedCallback();
-
-        this.pushbuttonCheck.connectedCallback();
-        this.versionCheck.connectedCallback();
-        this.keyInterceptor.connectedCallback();
-    }
-
-    public Update(): void {
-        super.Update();
-
-        if (this.gameState !== GameState.ingame) {
-            const gs = this.getGameState();
-            if (gs === GameState.ingame) {
-                this.hEventPublisher.startPublish();
-                this.versionCheck.startPublish();
-                this.keyInterceptor.startPublish();
-                this.simVarPublisher.startPublish();
-            }
-            this.gameState = gs;
-        } else {
-            this.simVarPublisher.onUpdate();
-        }
-
-        this.versionCheck.update();
-        this.keyInterceptor.update();
-        this.remoteClient.update();
-    }
+    this.versionCheck.update();
+    this.keyInterceptor.update();
+    this.remoteClient.update();
+  }
 }
 
 registerInstrument('extras-host', ExtrasHost);
