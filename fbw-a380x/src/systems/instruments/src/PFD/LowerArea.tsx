@@ -49,6 +49,8 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private alphaLockEngaged = Subject.create(false);
 
+  private flapReliefActive = Subject.create(false);
+
   private configClean: boolean = false;
 
   private config1: boolean = false;
@@ -83,6 +85,8 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
         const alphaLockEngaged = s.getBitValue(24);
         this.alphaLockEngaged.set(alphaLockEngaged);
+
+        this.flapReliefActive.set(s.getBitValue(22));
 
         if (this.configClean) {
           this.targetText.set('0');
@@ -294,6 +298,14 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           visibility={this.alphaLockEngaged.map((v) => (v ? 'visible' : 'hidden'))}
         >
           A LOCK
+        </text>
+        <text
+          class="GreenPulse FontSmallest"
+          x={38}
+          y={190}
+          visibility={this.flapReliefActive.map((v) => (v ? 'visible' : 'hidden'))}
+        >
+          F RELIEF
         </text>
 
         <path class={this.flapSlatIndexClass} d={this.slatsPath} />

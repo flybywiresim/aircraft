@@ -81,6 +81,7 @@ struct SlatFlapControlComputer {
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
     flaps_conf: FlapsConf,
+    flap_load_relief_active: bool,
 }
 
 impl SlatFlapControlComputer {
@@ -107,6 +108,7 @@ impl SlatFlapControlComputer {
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
+            flap_load_relief_active: false,
         }
     }
 
@@ -167,9 +169,45 @@ impl SlatFlapControlComputer {
             }
             (_, 1) => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
+            (1 | 2, 2) if context.indicated_airspeed().get::<knot>() > 222.5 => FlapsConf::Conf1F,
+            (2, 2) if self.flaps_conf == FlapsConf::Conf1F => {
+                if context.indicated_airspeed().get::<knot>() < 217.5 {
+                    FlapsConf::Conf2
+                } else {
+                    FlapsConf::Conf1F
+                }
+            }
+            (2 | 3, 3) if context.indicated_airspeed().get::<knot>() > 198.5 => FlapsConf::Conf2S,
+            (3, 3) if self.flaps_conf == FlapsConf::Conf2S => {
+                if context.indicated_airspeed().get::<knot>() < 193.5 {
+                    FlapsConf::Conf3
+                } else {
+                    FlapsConf::Conf2S
+                }
+            }
+            (3 | 4, 4) if context.indicated_airspeed().get::<knot>() > 184.5 => FlapsConf::Conf3,
+            (4, 4) if self.flaps_conf == FlapsConf::Conf3 => {
+                if context.indicated_airspeed().get::<knot>() < 179.5 {
+                    FlapsConf::ConfFull
+                } else {
+                    FlapsConf::Conf3
+                }
+            }
             (from, 2) if from != 2 => FlapsConf::from(3),
             (from, to) if from != to => FlapsConf::from(to + 2),
             (_, _) => self.flaps_conf,
+        }
+    }
+
+    fn flap_load_relief_active(&self, flaps_handle: &FlapsHandle) -> bool {
+        if flaps_handle.position() == 2 && self.flaps_conf != FlapsConf::Conf2 {
+            return true;
+        } else if flaps_handle.position() == 3 && self.flaps_conf != FlapsConf::Conf3 {
+            return true;
+        } else if flaps_handle.position() == 4 && self.flaps_conf != FlapsConf::ConfFull {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -185,6 +223,7 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
+        self.flap_load_relief_active = self.flap_load_relief_active(flaps_handle);
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
@@ -209,7 +248,7 @@ impl SlatFlapControlComputer {
         word.set_bit(19, self.flaps_conf == FlapsConf::Conf2);
         word.set_bit(20, self.flaps_conf == FlapsConf::Conf3);
         word.set_bit(21, self.flaps_conf == FlapsConf::ConfFull);
-        word.set_bit(22, false);
+        word.set_bit(22, self.flap_load_relief_active);
         word.set_bit(23, false);
         word.set_bit(24, false);
         word.set_bit(25, false);
