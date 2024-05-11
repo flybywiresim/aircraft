@@ -8,37 +8,47 @@ import { EfisSide, NdSymbol, NdTraffic, GenericDataListenerSync } from '@flybywi
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 
 export interface FmsSymbolsData {
-    symbols: NdSymbol[],
-    vectorsActive: PathVector[],
-    vectorsDashed: PathVector[],
-    vectorsTemporary: PathVector[],
-    traffic: NdTraffic[],
+  symbols: NdSymbol[];
+  vectorsActive: PathVector[];
+  vectorsDashed: PathVector[];
+  vectorsTemporary: PathVector[];
+  traffic: NdTraffic[];
 }
 
 export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
-    private readonly events: GenericDataListenerSync[] = [];
+  private readonly events: GenericDataListenerSync[] = [];
 
-    constructor(bus: EventBus, side: EfisSide) {
-        super(bus);
+  constructor(bus: EventBus, side: EfisSide) {
+    super(bus);
 
-        this.events.push(new GenericDataListenerSync((ev, data) => {
-            this.publish('symbols', data);
-        }, `A32NX_EFIS_${side}_SYMBOLS`));
+    this.events.push(
+      new GenericDataListenerSync((ev, data) => {
+        this.publish('symbols', data);
+      }, `A32NX_EFIS_${side}_SYMBOLS`),
+    );
 
-        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
-            this.publish('vectorsActive', data);
-        }, `A32NX_EFIS_VECTORS_${side}_ACTIVE`));
+    this.events.push(
+      new GenericDataListenerSync((ev, data: PathVector[]) => {
+        this.publish('vectorsActive', data);
+      }, `A32NX_EFIS_VECTORS_${side}_ACTIVE`),
+    );
 
-        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
-            this.publish('vectorsDashed', data);
-        }, `A32NX_EFIS_VECTORS_${side}_DASHED`));
+    this.events.push(
+      new GenericDataListenerSync((ev, data: PathVector[]) => {
+        this.publish('vectorsDashed', data);
+      }, `A32NX_EFIS_VECTORS_${side}_DASHED`),
+    );
 
-        this.events.push(new GenericDataListenerSync((ev, data: PathVector[]) => {
-            this.publish('vectorsTemporary', data);
-        }, `A32NX_EFIS_VECTORS_${side}_TEMPORARY`));
+    this.events.push(
+      new GenericDataListenerSync((ev, data: PathVector[]) => {
+        this.publish('vectorsTemporary', data);
+      }, `A32NX_EFIS_VECTORS_${side}_TEMPORARY`),
+    );
 
-        this.events.push(new GenericDataListenerSync((ev, data: NdTraffic[]) => {
-            this.publish('traffic', data);
-        }, 'A32NX_TCAS_TRAFFIC'));
-    }
+    this.events.push(
+      new GenericDataListenerSync((ev, data: NdTraffic[]) => {
+        this.publish('traffic', data);
+      }, 'A32NX_TCAS_TRAFFIC'),
+    );
+  }
 }

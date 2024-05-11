@@ -7,7 +7,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
  * This class is used to check the version of the aircraft and display a warning if it is too old.
  */
 export class VersionCheck {
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly aircraftProjectPrefix: string, private readonly bus: EventBus) {
         console.log('VersionCheck: Created');
     }
 

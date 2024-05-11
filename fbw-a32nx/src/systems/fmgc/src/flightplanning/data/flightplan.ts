@@ -4,73 +4,73 @@
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
 export interface WaypointStats {
-    /**
-     * Waypoint ident
-     */
-    ident: string;
+  /**
+   * Waypoint ident
+   */
+  ident: string;
 
-    /**
-     * Bearing from previous waypoint in degrees
-     */
-    bearingInFp: number;
+  /**
+   * Bearing from previous waypoint in degrees
+   */
+  bearingInFp: number;
 
-    /**
-     * Distance from previous waypoint in flight plan in nautical miles
-     */
-    distanceInFP: number;
+  /**
+   * Distance from previous waypoint in flight plan in nautical miles
+   */
+  distanceInFP: number;
 
-    /**
-     * Distance from PPOS in nautical miles
-     */
-    distanceFromPpos: number;
+  /**
+   * Distance from PPOS in nautical miles
+   */
+  distanceFromPpos: number;
 
-    /**
-     * Predicted time from PPOS in seconds
-     */
-    timeFromPpos: number;
+  /**
+   * Predicted time from PPOS in seconds
+   */
+  timeFromPpos: number;
 
-    /**
-     * Predicted ETA from PPOS in seconds
-     */
-    etaFromPpos: number;
+  /**
+   * Predicted ETA from PPOS in seconds
+   */
+  etaFromPpos: number;
 
-    /**
-     * Magnetic variation in degrees
-     */
-    magneticVariation: number;
+  /**
+   * Magnetic variation in degrees
+   */
+  magneticVariation: number;
 }
 
 export interface ApproachStats {
-    name: string;
+  name: string;
 
-    /**
-     * Distance from PPOS in nautical miles
-     */
-     distanceFromPpos: number;
+  /**
+   * Distance from PPOS in nautical miles
+   */
+  distanceFromPpos: number;
 }
 
 export interface HoldData {
-    inboundMagneticCourse?: number,
+  inboundMagneticCourse?: number;
 
-    turnDirection?: TurnDirection,
+  turnDirection?: TurnDirection;
 
-    distance?: number,
+  distance?: number;
 
-    time?: number,
+  time?: number;
 
-    type: HoldType,
+  type: HoldType;
 }
 
 export enum HoldType {
-    Computed = 0,
-    Database = 1,
-    Pilot = 2,
+  Computed = 0,
+  Database = 1,
+  Pilot = 2,
 }
 
 export interface StepData {
-    distanceBeforeTermination: NauticalMiles,
+  distanceBeforeTermination: NauticalMiles;
 
-    toAltitude: Feet,
+  toAltitude: Feet;
 
-    ident: string,
+  ident: string;
 }

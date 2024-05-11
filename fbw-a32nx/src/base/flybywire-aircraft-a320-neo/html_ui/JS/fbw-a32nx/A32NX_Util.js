@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const A32NX_Util = {};
 
 let nxNotificationsListener;
@@ -174,14 +178,14 @@ A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.g
 * @param {WayPoint} wp The waypoint.
 */
 A32NX_Util.getRadialMagVar = (wp) => {
-   if (wp.infos.icao.charAt(0) === "V") {
-       if (wp.infos.magneticVariation !== undefined) {
-           return 360 - wp.infos.magneticVariation;
-       }
-   }
+    if (wp.infos.icao.charAt(0) === "V") {
+        if (wp.infos.magneticVariation !== undefined) {
+            return 360 - wp.infos.magneticVariation;
+        }
+    }
 
-   return Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
-}
+    return Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+};
 
 /**
  * Utility class to throttle instrument updates

@@ -14,9 +14,9 @@ interface EngineColumnProps {
 }
 
 const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnProps> = ({ x, y, engine, ignition, anyEngineRunning }) => {
-    const [N2] = useSimVar(`L:A32NX_ENGINE_N2:${engine}`, 'percent', 100); // TODO: Update with correct SimVars
-    const [N3] = useSimVar(`L:A32NX_ENGINE_N3:${engine}`, 'percent', 100); // TODO: Update with correct SimVars
-    const [starterValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_STARTER_VALVE_OPEN`, 'percent', 500); // TODO: Update with correct SimVars
+    const [N2] = useSimVar(`L:A32NX_ENGINE_N2:${engine}`, 'number', 100); // TODO: Update with correct SimVars
+    const [N3] = useSimVar(`L:A32NX_ENGINE_N3:${engine}`, 'number', 100); // TODO: Update with correct SimVars
+    const [starterValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_STARTER_VALVE_OPEN`, 'number', 500); // TODO: Update with correct SimVars
     const starting = !!(N2 < 58.5 && ignition && starterValveOpen); // TODO Should be N3
 
     const engineRunningOrIgnitionOn = ignition || anyEngineRunning;
