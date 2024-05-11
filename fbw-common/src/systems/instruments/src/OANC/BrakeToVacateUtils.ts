@@ -10,10 +10,11 @@ import {
   Geometry,
   Polygon,
   Position,
+  booleanContains,
   booleanDisjoint,
-  circle,
   lineOffset,
   lineString,
+  point,
   polygon,
 } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
@@ -646,6 +647,7 @@ export class BrakeToVacateUtils<T extends number> {
     aircraftBearing: number,
     runwayFeatures: FeatureCollection<Geometry, AmdbProperties>,
   ): void {
+    // Only update every 10 position update, computation is around 4ms
     this.skip++;
     if (this.skip % 10 !== 0) {
       return;
@@ -663,7 +665,6 @@ export class BrakeToVacateUtils<T extends number> {
       Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', this.rwyAheadArinc.value, this.rwyAheadArinc.ssm);
 
       this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
-
       return;
     }
 
@@ -702,41 +703,31 @@ export class BrakeToVacateUtils<T extends number> {
       }) as Position,
     ];
 
-    const aircraftPolygon = circle([globalPos.lat, globalPos.long], 73 / 2, {
-      steps: 10,
-      units: 'meters',
-    });
-
-    const aircraftPolygonLocalCoords = aircraftPolygon.geometry.coordinates[0].map(
-      (it) =>
-        globalToAirportCoordinates(airportRefPos, {
-          lat: it[0],
-          long: it[1],
-        }) as Position,
-    );
-
     // From here on comparing local to local coords
     const predictionVolume = polygon([volumeCoords]);
-    const aircraftVolume = polygon([aircraftPolygonLocalCoords]);
+    const acLocalCoords = globalToAirportCoordinates(airportRefPos, globalPos);
 
     const insideRunways = [];
-    const willEnterRunways = [];
-
     runwayFeatures.features.forEach((feat) => {
       if (feat.properties.idrwy) {
-        const intersects = !booleanDisjoint(predictionVolume, feat.geometry as Polygon);
-        const inside = !booleanDisjoint(aircraftVolume, feat.geometry as Polygon);
-        if (intersects && !inside) {
-          willEnterRunways.push(feat.properties.idrwy.replace('.', ' - '));
-        }
-
+        const inside = booleanContains(feat.geometry as Polygon, point(acLocalCoords));
         if (inside) {
           insideRunways.push(feat.properties.idrwy.replace('.', ' - '));
         }
       }
     });
 
-    const willEnterRunwaysNotInside = willEnterRunways.filter((it) => !insideRunways.includes(it));
+    const willEnterRunwaysNotInside = [];
+    for (const feat of runwayFeatures.features) {
+      if (feat.properties.idrwy) {
+        const qfu = feat.properties.idrwy.replace('.', ' - ');
+        const intersects = !booleanDisjoint(predictionVolume, feat.geometry as Polygon); // very costly
+        if (intersects && !insideRunways.includes(qfu)) {
+          willEnterRunwaysNotInside.push(qfu);
+          break;
+        }
+      }
+    }
 
     // Set rwyAhead to false (i.e. suppress), if:
     // More than 30s since rwyAheadTriggeredTime, or
@@ -762,6 +753,6 @@ export class BrakeToVacateUtils<T extends number> {
     this.rwyAheadArinc.setBitValue(11, this.rwyAheadTriggered && this.rwyAheadQfu !== '');
     Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', this.rwyAheadArinc.value, this.rwyAheadArinc.ssm);
 
-    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu);
+    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu, true);
   }
 }
