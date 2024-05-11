@@ -146,7 +146,7 @@ impl SlatFlapControlComputer {
         context: &UpdateContext,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (0, 1)
+            (0 | 1, 1)
                 if context.indicated_airspeed().get::<knot>()
                     < Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS
                     || context.is_on_ground() =>
@@ -239,7 +239,10 @@ impl SlatFlapControlComputer {
             18,
             self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F,
         );
-        word.set_bit(19, self.flaps_conf == FlapsConf::Conf2);
+        word.set_bit(
+            19,
+            self.flaps_conf == FlapsConf::Conf2 || self.flaps_conf == FlapsConf::Conf2S,
+        );
         word.set_bit(20, self.flaps_conf == FlapsConf::Conf3);
         word.set_bit(21, self.flaps_conf == FlapsConf::ConfFull);
         word.set_bit(22, self.flap_load_relief_active);
