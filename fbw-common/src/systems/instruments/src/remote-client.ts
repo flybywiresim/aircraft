@@ -229,7 +229,7 @@ export class RemoteClient {
           },
         });
         break;
-      case 'remoteRequestDataStorage':
+      case 'remoteRequestDataStorage': {
         const data = GetDataStorage().searchData('A32NX');
 
         const values: Record<string, string> = {};
@@ -243,6 +243,7 @@ export class RemoteClient {
 
         this.sendMessage({ type: 'aircraftSendDataStorage', values, fromClientID: this.clientID });
         break;
+      }
       case 'remoteSetDataStorageKey':
         if (!EXCLUDED_DATA_STORAGE_KEYS.includes(msg.key)) {
           NXDataStore.set(msg.key, msg.value);
