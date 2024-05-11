@@ -15,6 +15,7 @@ enum FlapsConf {
     Conf1,
     Conf1F,
     Conf2,
+    Conf2S,
     Conf3,
     ConfFull,
 }
@@ -26,8 +27,9 @@ impl From<u8> for FlapsConf {
             1 => FlapsConf::Conf1,
             2 => FlapsConf::Conf1F,
             3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf3,
-            5 => FlapsConf::ConfFull,
+            4 => FlapsConf::Conf2S,
+            5 => FlapsConf::Conf3,
+            6 => FlapsConf::ConfFull,
             i => panic!("Cannot convert from {} to FlapsConf.", i),
         }
     }
@@ -116,6 +118,7 @@ impl SlatFlapControlComputer {
             FlapsConf::Conf1 => Angle::new::<degree>(0.),
             FlapsConf::Conf1F => Angle::new::<degree>(108.28),
             FlapsConf::Conf2 => Angle::new::<degree>(154.65),
+            FlapsConf::Conf2S => Angle::new::<degree>(154.65),
             FlapsConf::Conf3 => Angle::new::<degree>(194.03),
             FlapsConf::ConfFull => Angle::new::<degree>(218.91),
         }
@@ -129,6 +132,7 @@ impl SlatFlapControlComputer {
             FlapsConf::Conf1 => Angle::new::<degree>(247.27),
             FlapsConf::Conf1F => Angle::new::<degree>(247.27),
             FlapsConf::Conf2 => Angle::new::<degree>(247.27),
+            FlapsConf::Conf2S => Angle::new::<degree>(284.65),
             FlapsConf::Conf3 => Angle::new::<degree>(284.65),
             FlapsConf::ConfFull => Angle::new::<degree>(284.65),
         }
@@ -163,7 +167,8 @@ impl SlatFlapControlComputer {
             }
             (_, 1) => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
-            (from, to) if from != to => FlapsConf::from(to + 1),
+            (from, 2) if from != 2 => FlapsConf::from(3),
+            (from, to) if from != to => FlapsConf::from(to + 2),
             (_, _) => self.flaps_conf,
         }
     }
