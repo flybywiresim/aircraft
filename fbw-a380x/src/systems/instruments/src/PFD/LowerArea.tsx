@@ -125,18 +125,14 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         let synchroOffset = 0;
         let positionFactor = 0;
         let positionOffset = 0;
-        if (slats >= 0 && slats < 222.8) {
+        if (slats >= 0 && slats < 247.1) {
           synchroOffset = 0;
-          positionFactor = 0.43;
+          positionFactor = 0.57;
           positionOffset = 0;
-        } else if (slats >= 222.8 && slats < 272.8) {
-          synchroOffset = 18;
-          positionFactor = 1.8;
-          positionOffset = 7.71;
-        } else if (slats >= 272.8 && slats < 346) {
-          synchroOffset = 22;
-          positionFactor = 1.44;
-          positionOffset = 14.92;
+        } else if (slats >= 247.1 && slats < 355) {
+          synchroOffset = 20.02;
+          positionFactor = 3.7;
+          positionOffset = 11.5;
         }
 
         const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
@@ -147,9 +143,9 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
         if (this.configClean && slats > 6.1) {
           this.slatsTargetPos.set(0);
-        } else if ((this.config1 || this.config2) && (slats < 209.9 || slats > 234.6)) {
+        } else if ((this.config1 || this.config2) && (slats < 234.92 || slats > 259.62)) {
           this.slatsTargetPos.set(1);
-        } else if ((this.config3 || this.configFull) && (slats < 327.2 || slats > 339.5)) {
+        } else if ((this.config3 || this.configFull) && (slats < 272.3 || slats > 297.0)) {
           this.slatsTargetPos.set(2);
         } else {
           this.slatsTargetPos.set(null);
@@ -173,22 +169,22 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         let synchroOffset = 0;
         let positionFactor = 0;
         let positionOffset = 0;
-        if (flaps >= 0 && flaps < 131.5) {
+        if (flaps >= 0 && flaps < 108.2) {
           synchroOffset = 0;
-          positionFactor = 0.97;
+          positionFactor = 1.1;
           positionOffset = 0;
-        } else if (flaps >= 131.5 && flaps < 174.5) {
-          synchroOffset = 10.63;
-          positionFactor = 1.4;
-          positionOffset = 10.34;
-        } else if (flaps >= 174.5 && flaps < 206.5) {
-          synchroOffset = 16.3;
-          positionFactor = 1.62;
-          positionOffset = 18.27;
-        } else if (flaps >= 206.5 && flaps < 355) {
-          synchroOffset = 21.19;
-          positionFactor = 0.43;
-          positionOffset = 26.21;
+        } else if (flaps >= 108.2 && flaps < 154.5) {
+          synchroOffset = 7.92;
+          positionFactor = 0.85;
+          positionOffset = 8.7;
+        } else if (flaps >= 154.5 && flaps < 194.0) {
+          synchroOffset = 18.11;
+          positionFactor = 1.0;
+          positionOffset = 17.4;
+        } else if (flaps >= 194.0 && flaps < 355) {
+          synchroOffset = 26.8;
+          positionFactor = 1.55;
+          positionOffset = 26.1;
         }
 
         const value = Math.max(
