@@ -83,7 +83,7 @@ struct SlatFlapControlComputer {
 
 impl SlatFlapControlComputer {
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
-    const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
+    const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 205.;
     const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 212.;
 
     fn new(context: &mut InitContext) -> Self {
@@ -142,7 +142,8 @@ impl SlatFlapControlComputer {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
             (0, 1)
                 if context.indicated_airspeed().get::<knot>()
-                    <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
+                    < Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS
+                    || context.is_on_ground() =>
             {
                 FlapsConf::Conf1F
             }
@@ -1161,7 +1162,7 @@ mod tests {
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
-            .set_indicated_airspeed(110.)
+            .set_indicated_airspeed(210.)
             .set_flaps_handle_position(1)
             .run_one_tick();
 
