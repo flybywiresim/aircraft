@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { NotificationManager } from '@flybywiresim/fbw-sdk';
+import { NotificationManager, NXDataStore, RemoteClient } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
+import { getSimBridgeUrl } from "../../../../fbw-a32nx/src/systems/simbridge-client/src/common";
 
 /**
  * This is the main class for the extras-host instrument.
@@ -41,7 +41,7 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly keyInterceptor: KeyInterceptor;
 
-    private readonly aircraftSync: AircraftSync;
+    private readonly remoteClient: RemoteClient;
 
     /**
      * "mainmenu" = 0
@@ -61,9 +61,16 @@ class ExtrasHost extends BaseInstrument {
         this.notificationManager = new NotificationManager();
 
         this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
+        this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
-        this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
-        this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+
+        this.remoteClient = new RemoteClient({
+            websocketUrl: () => `${getSimBridgeUrl('ws')}/interfaces/v1/remote-app`,
+            airframeName: 'A380-842',
+            clientName: 'A380X',
+            instrumentsMetadataFile: '/VFS/a380x_instruments_metadata.json',
+            fileDownloadBasePath: '/Pages/VCockpit/Instruments/A380X/',
+        });
 
         console.log('A380X_EXTRASHOST: Created');
     }
@@ -84,12 +91,6 @@ class ExtrasHost extends BaseInstrument {
         super.connectedCallback();
 
         this.pushbuttonCheck.connectedCallback();
-        this.aircraftSync.connectedCallback();
-    }
-
-    public parseXMLConfig(): void {
-        super.parseXMLConfig();
-        this.aircraftSync.parseXMLConfig(this.xmlConfig);
     }
 
     public Update(): void {
@@ -103,7 +104,6 @@ class ExtrasHost extends BaseInstrument {
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
                 this.simVarPublisher.startPublish();
-                this.aircraftSync.startPublish();
 
                 // Signal that the aircraft is ready via L:A32NX_IS_READY
                 SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
@@ -114,6 +114,9 @@ class ExtrasHost extends BaseInstrument {
             this.simVarPublisher.onUpdate();
         }
 
+        this.versionCheck.update();
+        this.keyInterceptor.update();
+        this.remoteClient.update();
         // Call module update() methods here if they have one
     }
 }

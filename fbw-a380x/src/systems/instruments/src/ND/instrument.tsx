@@ -109,11 +109,11 @@ class NDInstrument implements FsInstrument {
                     rangeValues={a380EfisRangeSettings}
                 />
             </CdsDisplayUnit>,
-            document.getElementById('ND_CONTENT'),
+            document.getElementById('INSTRUMENT_CONTENT'),
         );
 
         // Remove "instrument didn't load" text
-        document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('INSTRUMENT_CONTENT').querySelector(':scope > h1').remove();
     }
 
     /**

@@ -3,7 +3,16 @@ const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
-const { typecheckingPlugin } = require("#build-utils");
+const { typecheckingPlugin, generateInstrumentsMetadata, getMachInstrumentBuilders} = require("#build-utils");
+const path = require("path");
+
+const {
+    msfsAvionicsInstrument,
+    reactInstrument,
+} = getMachInstrumentBuilders({
+    templateIDPrefix: 'A380X',
+    reactImports: ['/JS/dataStorage.js','/JS/fbw-a380x/A380X_Simvars.js'],
+});
 
 /** @type { import('@synaptic-simulations/mach').MachConfig } */
 module.exports = {
@@ -28,43 +37,18 @@ module.exports = {
         typecheckingPlugin(),
     ],
     instruments: [
-        msfsAvionicsInstrument('PFD'),
-        msfsAvionicsInstrument('ND'),
-        msfsAvionicsInstrument('Clock'),
+        msfsAvionicsInstrument('PFD', [768, 1024], true),
+        msfsAvionicsInstrument('ND', [768, 1024], true),
+        msfsAvionicsInstrument('Clock', [512, 512], false),
 
-        reactInstrument('BAT'),
-        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
-        reactInstrument('EWD'),
-        reactInstrument('MFD'),
-        reactInstrument('OIT'),
-        reactInstrument('RMP'),
-        reactInstrument('SD'),
+        reactInstrument('BAT', [], [256, 128], false),
+        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html'], [1430, 1000], true),
+        reactInstrument('EWD', [], [768, 1024], true),
+        reactInstrument('MFD', [], [768, 1024], false),
+        reactInstrument('OIT', [], [1024, 768], false),
+        reactInstrument('RMP', [], [600, 400], false),
+        reactInstrument('SD', [], [768, 1024], true),
     ],
 };
 
-function msfsAvionicsInstrument(name, folder = name) {
-    return {
-        name,
-        index: `src/systems/instruments/src/${folder}/instrument.tsx`,
-        simulatorPackage: {
-            type: 'baseInstrument',
-            templateId: `A380X_${name}`,
-            mountElementId: `${name}_CONTENT`,
-            fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js'],
-        },
-    };
-}
-
-function reactInstrument(name, additionalImports) {
-    return {
-        name,
-        index: `src/systems/instruments/src/${name}/index.tsx`,
-        simulatorPackage: {
-            type: 'react',
-            isInteractive: false,
-            fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js','/JS/fbw-a380x/A380X_Simvars.js', ...(additionalImports ?? [])],
-        },
-    };
-}
+generateInstrumentsMetadata(module.exports.instruments, 'A380X', path.join(__dirname, 'out/flybywire-aircraft-a380-842/'));

@@ -3,6 +3,7 @@
 
 /* eslint-disable no-console */
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Health } from './Health';
 
 /**
@@ -41,7 +42,9 @@ export class ClientState {
   private maxSimBridgeConnectionAttempts: number = 60;
 
   // Indicates the state of the client connection to the SimBridge server
-  private simBridgeState: SimBridgeClientState = SimBridgeClientState.OFF;
+  private readonly simBridgeState = Subject.create(SimBridgeClientState.OFF);
+
+  public readonly simBridgeConnectionState: Subscribable<SimBridgeClientState> = this.simBridgeState;
 
   /**
    * Private constructor for the singleton. Start checking the server availability regularly
@@ -106,14 +109,14 @@ export class ClientState {
    * @returns {SimBridgeClientState}
    */
   public getSimBridgeClientState(): SimBridgeClientState {
-    return this.simBridgeState;
+    return this.simBridgeState.get();
   }
 
   /**
    * Returns true if the SimBridgeClientState is CONNECTED
    */
   public isConnected(): boolean {
-    return this.simBridgeState === SimBridgeClientState.CONNECTED;
+    return this.simBridgeState.get() === SimBridgeClientState.CONNECTED;
   }
 
   /**
@@ -123,18 +126,18 @@ export class ClientState {
    */
   private setSimBridgeState() {
     if (this.available) {
-      this.simBridgeState = SimBridgeClientState.CONNECTED;
+      this.simBridgeState.set(SimBridgeClientState.CONNECTED);
       return;
     }
     switch (this.simBridgeEnabledSetting) {
       case 'AUTO ON':
-        this.simBridgeState = SimBridgeClientState.CONNECTING;
+        this.simBridgeState.set(SimBridgeClientState.CONNECTING);
         break;
       case 'AUTO OFF':
-        this.simBridgeState = SimBridgeClientState.OFFLINE;
+        this.simBridgeState.set(SimBridgeClientState.OFFLINE);
         break;
       default:
-        this.simBridgeState = SimBridgeClientState.OFF;
+        this.simBridgeState.set(SimBridgeClientState.OFF);
     }
   }
 

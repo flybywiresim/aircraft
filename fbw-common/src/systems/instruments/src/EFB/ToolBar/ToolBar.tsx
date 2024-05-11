@@ -23,14 +23,16 @@ import FbwTail from '../Assets/FBW-Tail.svg';
 interface ToolBarButtonProps {
   to: string;
   tooltipText: string;
+  disabled?: boolean;
 }
 
-const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) => (
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- temporary
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children, disabled = false }) => (
   <TooltipWrapper text={tooltipText}>
     <NavLink
       to={to}
       activeClassName="bg-theme-accent !text-theme-text"
-      className="text-theme-unselected hover:bg-theme-accent hover:text-theme-text flex items-center justify-center rounded-md p-3.5 transition duration-100"
+      className="flex items-center justify-center rounded-md p-3.5 text-theme-unselected transition duration-100 hover:bg-theme-accent hover:text-theme-text"
     >
       {children}
     </NavLink>
@@ -58,7 +60,7 @@ export const ToolBar = () => (
       <ToolBarButton to="/atc" tooltipText={t('AirTrafficControl.Title')}>
         <BroadcastPin size={35} />
       </ToolBarButton>
-      <ToolBarButton to="/failures" tooltipText={t('Failures.Title')}>
+      <ToolBarButton to="/failures" tooltipText={t('Failures.Title')} disabled={window.FBW_REMOTE}>
         <ExclamationDiamond size={35} />
       </ToolBarButton>
       <ToolBarButton to="/checklists" tooltipText={t('Checklists.Title')}>
@@ -70,7 +72,7 @@ export const ToolBar = () => (
     </div>
 
     <div className="flex flex-col items-center">
-      <div className="bg-theme-accent my-4 h-1.5 w-14 rounded-full" />
+      <div className="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
       <ToolBarButton to="/settings" tooltipText={t('Settings.Title')}>
         <Gear color="currentColor" size={35} />
       </ToolBarButton>

@@ -61,7 +61,7 @@ class A380X_PFD extends BaseInstrument {
 
         this.bus.getSubscriber<DmcEvents>().on('trueRefActive').handle(console.log);
 
-        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('INSTRUMENT_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();

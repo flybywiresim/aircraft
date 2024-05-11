@@ -9,8 +9,8 @@ export const getSimBridgeIp = (): string =>
     ? 'localhost'
     : NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost');
 
-export const getSimBridgeUrl = (): string =>
-  `http://${getSimBridgeIp()}:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
+export const getSimBridgeUrl = (protocol = 'http'): string =>
+  `${protocol}://${getSimBridgeIp()}:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
 
 export const fetchWithTimeout = (resource: RequestInfo, options?: object, timeout: number = 2000): Promise<Response> =>
   new Promise((resolve, reject) => {

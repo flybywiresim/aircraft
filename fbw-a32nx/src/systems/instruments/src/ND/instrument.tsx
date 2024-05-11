@@ -143,11 +143,11 @@ class NDInstrument implements FsInstrument {
       >
         <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a320EfisRangeSettings} />
       </DisplayUnit>,
-      document.getElementById('ND_CONTENT'),
+      document.getElementById('INSTRUMENT_CONTENT'),
     );
 
     // Remove "instrument didn't load" text
-    document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();
+    document.getElementById('INSTRUMENT_CONTENT').querySelector(':scope > h1').remove();
   }
 
   /**
