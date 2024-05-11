@@ -200,15 +200,9 @@ impl SlatFlapControlComputer {
     }
 
     fn flap_load_relief_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        if flaps_handle.position() == 2 && self.flaps_conf != FlapsConf::Conf2 {
-            return true;
-        } else if flaps_handle.position() == 3 && self.flaps_conf != FlapsConf::Conf3 {
-            return true;
-        } else if flaps_handle.position() == 4 && self.flaps_conf != FlapsConf::ConfFull {
-            return true;
-        } else {
-            return false;
-        }
+        flaps_handle.position() == 2 && self.flaps_conf != FlapsConf::Conf2
+            || flaps_handle.position() == 3 && self.flaps_conf != FlapsConf::Conf3
+            || flaps_handle.position() == 4 && self.flaps_conf != FlapsConf::ConfFull
     }
 
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -999,11 +993,11 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 154.65, 284.65, FlapsConf::Conf2S, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
     }
 
     //Tests regular transition 2->1 below and above 212 knots

@@ -216,7 +216,10 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       });
 
     sub.on('realTime').handle((_t) => {
-      const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
+      const inMotion =
+        this.flapsTargetPos.get() !== null ||
+        this.slatsTargetPos.get() !== null ||
+        this.flapReliefActive.get() === true;
       this.targetVisible.set(this.slatsOut || this.flapsOut || !this.configClean ? 'visible' : 'hidden');
       this.flapSlatIndexClass.set(
         this.slatsOut || this.flapsOut || !this.configClean
