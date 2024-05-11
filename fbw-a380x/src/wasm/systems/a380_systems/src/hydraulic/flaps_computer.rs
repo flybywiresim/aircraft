@@ -219,52 +219,61 @@ impl SlatFlapControlComputer {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
+        // Slats retracted
         word.set_bit(
             12,
             self.slats_feedback_angle > Angle::new::<degree>(-5.0)
                 && self.slats_feedback_angle < Angle::new::<degree>(6.2),
         );
+        // Slats >= 19°
         word.set_bit(
             13,
             self.slats_feedback_angle > Angle::new::<degree>(234.7)
                 && self.slats_feedback_angle < Angle::new::<degree>(337.),
         );
+        // Slats >= 22°
         word.set_bit(
             14,
             self.slats_feedback_angle > Angle::new::<degree>(272.2)
                 && self.slats_feedback_angle < Angle::new::<degree>(337.),
         );
+        // Slats extended 23°
         word.set_bit(
             15,
-            self.slats_feedback_angle > Angle::new::<degree>(327.4)
+            self.slats_feedback_angle > Angle::new::<degree>(280.)
                 && self.slats_feedback_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
         word.set_bit(18, true);
+        // Flaps retracted
         word.set_bit(
             19,
             self.flaps_feedback_angle > Angle::new::<degree>(-5.0)
                 && self.flaps_feedback_angle < Angle::new::<degree>(2.5),
         );
+        // Flaps >= 16°
         word.set_bit(
             20,
-            self.flaps_feedback_angle > Angle::new::<degree>(98.2)
-                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
-        );
-        word.set_bit(
-            21,
             self.flaps_feedback_angle > Angle::new::<degree>(150.)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
+        // Flaps >= 25°
         word.set_bit(
-            22,
+            21,
             self.flaps_feedback_angle > Angle::new::<degree>(189.8)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
+        // Flaps >= 31°
+        word.set_bit(
+            22,
+            self.flaps_feedback_angle > Angle::new::<degree>(212.)
+                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
+        );
+        // Flaps extended 32°
         word.set_bit(
             23,
-            self.flaps_feedback_angle > Angle::new::<degree>(214.8)
+            self.flaps_feedback_angle > Angle::new::<degree>(218.)
                 && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);
@@ -748,7 +757,7 @@ mod tests {
             .set_green_hyd_pressure()
             .set_yellow_hyd_pressure()
             .set_blue_hyd_pressure()
-            .set_indicated_airspeed(200.)
+            .set_indicated_airspeed(215.)
             .set_flaps_handle_position(1)
             .run_one_tick();
 
@@ -759,7 +768,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(60));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -789,7 +798,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(60));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -819,7 +828,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(60));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -849,12 +858,12 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(60));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
+        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(14));
+        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(15));
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(19));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(20));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(21));
@@ -879,7 +888,7 @@ mod tests {
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(45));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(60));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -894,9 +903,9 @@ mod tests {
 
     // Tests flaps configuration and angles for regular
     // increasing handle transitions, i.e 0->1->2->3->4 in sequence
-    // below 100 knots
+    // below 205 knots
     #[test]
-    fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_below_100() {
+    fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_below_205() {
         let angle_delta: f64 = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
@@ -907,52 +916,52 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 120.22, 222.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 145.51, 272.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 168.35, 272.27, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 251.97, 334.16, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
     // increasing handle transitions, i.e 0->1->2->3->4 in sequence
-    // above 100 knots
+    // above 205 knots
     #[test]
-    fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_above_100() {
+    fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_above_205() {
         let angle_delta: f64 = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
-            .set_indicated_airspeed(150.)
+            .set_indicated_airspeed(215.)
             .run_one_tick();
 
         test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 222.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 145.51, 272.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 168.35, 272.27, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 251.97, 334.16, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
     }
 
-    //Tests regular transition 2->1 below and above 210 knots
+    //Tests regular transition 2->1 below and above 212 knots
     #[test]
     fn flaps_test_regular_handle_transition_pos_2_to_1() {
         let mut test_bed = test_bed_with()
@@ -978,7 +987,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
     }
 
-    //Tests transition between Conf1F to Conf1 above 210 knots
+    //Tests transition between Conf1F to Conf1 above 212 knots
     #[test]
     fn flaps_test_regular_handle_transition_pos_1_to_1() {
         let mut test_bed = test_bed_with()
@@ -1000,9 +1009,9 @@ mod tests {
 
     // Tests flaps configuration and angles for regular
     // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
-    // below 210 knots
+    // below 212 knots
     #[test]
-    fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_below_210() {
+    fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_below_212() {
         let angle_delta: f64 = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
@@ -1011,19 +1020,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 251.97, 334.16, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 168.35, 272.27, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 145.51, 272.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 120.22, 222.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
@@ -1034,7 +1043,7 @@ mod tests {
     // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
     // above 210 knots
     #[test]
-    fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_above_210() {
+    fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_above_212() {
         let angle_delta: f64 = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
@@ -1043,19 +1052,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 251.97, 334.16, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 168.35, 272.27, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 145.51, 272.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 222.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
@@ -1166,7 +1175,7 @@ mod tests {
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
-            .set_indicated_airspeed(110.)
+            .set_indicated_airspeed(205.)
             .set_flaps_handle_position(1)
             .run_one_tick();
 
@@ -1241,7 +1250,7 @@ mod tests {
     fn flaps_test_irregular_handle_transition_init_pos_3() {
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
-            .set_indicated_airspeed(150.)
+            .set_indicated_airspeed(205.)
             .set_flaps_handle_position(3)
             .run_one_tick();
 
@@ -1286,7 +1295,7 @@ mod tests {
     fn flaps_test_irregular_handle_transition_init_pos_4() {
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
-            .set_indicated_airspeed(150.)
+            .set_indicated_airspeed(205.)
             .set_flaps_handle_position(4)
             .run_one_tick();
 
@@ -1367,7 +1376,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(35));
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -1430,7 +1439,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(30));
+            .run_waiting_for(Duration::from_secs(60));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -1452,7 +1461,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(30));
+            .run_waiting_for(Duration::from_secs(60));
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -1477,7 +1486,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(40));
+            .run_waiting_for(Duration::from_secs(60));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -1498,7 +1507,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(40));
+            .run_waiting_for(Duration::from_secs(60));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
