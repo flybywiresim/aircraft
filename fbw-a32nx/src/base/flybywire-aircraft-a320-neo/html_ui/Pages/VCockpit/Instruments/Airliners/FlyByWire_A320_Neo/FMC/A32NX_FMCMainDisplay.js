@@ -1413,7 +1413,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         let constraintAlt = 0;
         if (constraints) {
-            if ((this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE || this.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) && isFinite(constraints.climbAltitude) && constraints.climbAltitude < fcuSelAlt) {
+            // Altitude constraints are not sent in GA phase. While we cannot engage CLB anyways, ALT counts as a managed mode, so we don't want to show
+            // a magenta altitude in ALT due to a constraint
+            if ((this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE) && isFinite(constraints.climbAltitude) && constraints.climbAltitude < fcuSelAlt) {
                 constraintAlt = constraints.climbAltitude;
             }
 
