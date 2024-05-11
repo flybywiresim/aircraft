@@ -662,7 +662,7 @@ export class BrakeToVacateUtils<T extends number> {
       this.rwyAheadArinc.setBitValue(11, false);
       Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', this.rwyAheadArinc.value, this.rwyAheadArinc.ssm);
 
-      this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '');
+      this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
 
       return;
     }
