@@ -211,7 +211,7 @@ class A32NX_GPWS {
             if (phase === FmgcFlightPhases.CRUISE) {
                 this.Mode4MaxRAAlt = 2450;
             }
-            
+
             if (onGround || (radioAltValid && radioAlt < 10)) {
                 this.Mode4MaxRAAlt = NaN;
             }
