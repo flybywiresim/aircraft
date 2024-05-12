@@ -225,7 +225,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
             this.targetVisible.set((this.slatsOut || this.flapsOut || !this.configClean) ? 'visible' : 'hidden');
             this.flapExtensionVisible.set(((this.flapsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
-            this.flapExtensionVisible.set(((this.slatsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
+            this.slatExtensionVisible.set(((this.slatsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
 
             if (this.slatsFault.get()) {
                 this.slatIndexClass.set('NormalStroke Amber CornerRound');
@@ -257,18 +257,18 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
                 </g>
 
                 <g visibility={this.slatExtensionVisible}>
-                    <path d={circlePath(0.8, 14.1, 194.5)} class="NormalStroke Stroke Fill Cyan" visibility={this.slatsTargetPos.map((i) => (i === 0 ? 'visible' : 'hidden'))} />
+                    <path d={circlePath(0.8, 14.1, 194.5)} class="NormalStroke Stroke Fill Cyan" visibility={this.slatsTargetPos.map((i) => (i === 0 ? 'inherit' : 'hidden'))} />
                     <path d={circlePath(0.8, 9.6, 195.4)} class={this.slatsTargetPos.map((i) => (i === 1 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
                     <path d={circlePath(0.8, 5, 196.4)} class={this.slatsTargetPos.map((i) => (i === 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
 
-                    <text x={3.8} y={191.1} class={this.slatsFault.get() ? 'FontSmall Amber' : 'FontSmall White'} visibility={this.alphaLockEngaged.map((v) => (v ? 'hidden' : 'visible'))}>S</text>
+                    <text x={3.8} y={191.1} class={this.slatsFault.get() ? 'FontSmall Amber' : 'FontSmall White'} visibility={this.alphaLockEngaged.map((v) => (v ? 'hidden' : 'inherit'))}>S</text>
                 </g>
 
                 <g visibility={this.flapExtensionVisible}>
                     <path
                         d="M 32.3 193.7 v 1.7 h 1.9 z"
                         class="Fill Stroke NormalStroke Cyan CornerRound"
-                        visibility={this.flapsTargetPos.map((i) => (i === 0 ? 'visible' : 'hidden'))}
+                        visibility={this.flapsTargetPos.map((i) => (i === 0 ? 'inherit' : 'hidden'))}
                     />
                     <path
                         d="M 39.9 196.8 v 1.7 h 1.9 z"
@@ -287,13 +287,13 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
                         class={this.flapsTargetPos.map((i) => (i === 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))}
                     />
 
-                    <text x={47.2} y={210.8} class={this.flapsFault.get() ? 'FontSmall Amber' : 'FontSmall White'} visibility={this.flapReliefEngaged.map((v) => (v ? 'hidden' : 'visible'))}>F</text>
+                    <text x={47.2} y={210.8} class={this.flapsFault.get() ? 'FontSmall Amber' : 'FontSmall White'} visibility={this.flapReliefEngaged.map((v) => (v ? 'hidden' : 'inherit'))}>F</text>
                 </g>
-                <text class="GreenPulse FontSmallest" x={0} y={190} visibility={this.alphaLockEngaged.map((v) => (v ? 'visible' : 'hidden'))}>A LOCK</text>
-                <text class="GreenPulse FontSmallest" x={38} y={190} visibility={this.flapReliefEngaged.map((v) => (v ? 'visible' : 'hidden'))}>F RELIEF</text>
+                <text class="GreenPulse FontSmallest" x={0} y={190} visibility={this.alphaLockEngaged.map((v) => (v ? 'inherit' : 'hidden'))}>A LOCK</text>
+                <text class="GreenPulse FontSmallest" x={38} y={190} visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}>F RELIEF</text>
 
-                <text class="Amber FontSmallest" x={0} y={195} visibility={this.slatsDataValid.map((v) => (v ? 'hidden' : 'visible'))}>XX</text>
-                <text class="Amber FontSmallest" x={37} y={195} visibility={this.flapsDataValid.map((v) => (v ? 'hidden' : 'visible'))}>XX</text>
+                <text class="Amber FontSmallest" x={9} y={195.5} visibility={this.slatsDataValid.map((v) => (v ? 'hidden' : 'inherit'))}>XX</text>
+                <text class="Amber FontSmallest" x={32.6} y={195.5} visibility={this.flapsDataValid.map((v) => (v ? 'hidden' : 'inherit'))}>XX</text>
 
                 <path class={this.slatIndexClass} d={this.slatsPath} visibility={this.slatsDataValid.map((v) => (v ? 'visible' : 'hidden'))} />
                 <path class={this.slatIndexClass} d={this.slatsLinePath} />

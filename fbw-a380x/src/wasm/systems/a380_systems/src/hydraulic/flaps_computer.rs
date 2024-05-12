@@ -203,18 +203,17 @@ impl SlatFlapControlComputer {
                 {
                     FlapsConf::Conf0
                 } else {
-                    FlapsConf::Conf1
+                    self.flaps_conf
                 }
             }
             (1..=4, 0)
                 if context.is_in_flight()
-                    && !self.alpha_speed_lock_active
                     && (context.indicated_airspeed().get::<knot>()
                         < Self::ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS
                         || context.angle_of_attack().get::<degree>()
                             > Self::ALPHA_SPEED_LOCK_IN_AOA_THRESHOLD_DEGREES) =>
             {
-                FlapsConf::Conf1
+                FlapsConf::Conf1F
             }
             (_, 0) => FlapsConf::Conf0,
             (1 | 2, 2)
@@ -279,7 +278,8 @@ impl SlatFlapControlComputer {
     }
 
     fn alpha_speed_lock_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.position() == 0 && self.flaps_conf == FlapsConf::Conf1
+        flaps_handle.position() == 0
+            && (self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F)
     }
 
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -1214,13 +1214,13 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1); // alpha lock
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F); // alpha lock
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F); // alpha lock
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
@@ -1366,7 +1366,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1); // alpha lock
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F); // alpha lock
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
@@ -1411,7 +1411,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1); // alpha lock
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F); // alpha lock
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
@@ -1456,7 +1456,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1); // alpha lock
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F); // alpha lock
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
@@ -1747,7 +1747,7 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(24));
 
         test_bed = test_bed.set_indicated_airspeed(200.).run_one_tick();
@@ -1771,7 +1771,7 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(24));
 
         test_bed = test_bed
