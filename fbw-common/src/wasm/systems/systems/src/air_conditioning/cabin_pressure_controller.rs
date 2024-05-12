@@ -13,8 +13,8 @@ use crate::{
 };
 
 use super::{
-    pressure_valve::{OutflowValve, PressureValveSignal, SafetyValve},
-    AdirsToAirCondInterface, OutflowValveSignal, PressurizationConstants,
+    pressure_valve::{OutflowValve, SafetyValve},
+    AdirsToAirCondInterface, Air, OutflowValveSignal, PressurizationConstants,
     PressurizationOverheadShared,
 };
 
@@ -260,20 +260,17 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
         let new_exterior_altitude: Length;
 
-        // If the ADIRS is not powered, we take the ambient pressure from context and we send
-        // No Computed Data SSM so delta P is not displayed on the ECAM.
-        // This is to avoid the safety valve opening and the cabin delta pressure having to "adjust"
-        // after power up.
-        if !self.is_initialised {
-            self.exterior_pressure
-                .reset(adirs_ambient_pressure.unwrap_or(context.ambient_pressure()));
+        if !self.is_initialised && adirs_ambient_pressure.is_some() {
+            self.exterior_pressure.reset(
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
+            );
             new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
             self.is_initialised = true;
         } else {
             self.exterior_pressure.update(
                 context.delta(),
-                adirs_ambient_pressure.unwrap_or(context.ambient_pressure()),
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
             );
 
             new_exterior_altitude =
@@ -646,39 +643,6 @@ impl<C: PressurizationConstants> ControllerSignal<OutflowValveSignal>
 {
     fn signal(&self) -> Option<OutflowValveSignal> {
         self.outflow_valve_controller.signal()
-    }
-}
-
-// Safety valve signal
-impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
-    for CabinPressureController<C>
-{
-    fn signal(&self) -> Option<PressureValveSignal> {
-        let open = Some(PressureValveSignal::Open(
-            Ratio::new::<percent>(100.),
-            Duration::from_secs(1),
-        ));
-        let closed = Some(PressureValveSignal::Close(
-            Ratio::new::<percent>(0.),
-            Duration::from_secs(1),
-        ));
-        if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
-            if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
-                open
-            } else {
-                Some(PressureValveSignal::Neutral)
-            }
-        } else if self.cabin_delta_p() < Pressure::new::<psi>(-0.5) {
-            if self.cabin_delta_p() < Pressure::new::<psi>(-1.) {
-                open
-            } else {
-                Some(PressureValveSignal::Neutral)
-            }
-        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
-            closed
-        } else {
-            Some(PressureValveSignal::Neutral)
-        }
     }
 }
 
