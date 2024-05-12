@@ -5,7 +5,7 @@
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/new/FpmConfig';
-import { FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -603,9 +603,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.setPerformanceData(key, value);
   }
 
-  async stringMissedApproach(planIndex = FlightPlanIndex.Active) {
+  async stringMissedApproach(
+    onConstraintsDeleted = (_: FlightPlanLeg): void => {},
+    planIndex = FlightPlanIndex.Active,
+  ) {
     const plan = this.flightPlanManager.get(planIndex);
 
-    return plan.stringMissedApproach();
+    return plan.stringMissedApproach(onConstraintsDeleted);
   }
 }

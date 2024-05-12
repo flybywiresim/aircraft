@@ -12,6 +12,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -306,5 +307,5 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
 
-  stringMissedApproach(planIndex?: number): Promise<void>;
+  stringMissedApproach(onConstraintsDeleted?: (map: FlightPlanLeg) => void, planIndex?: number): Promise<void>;
 }

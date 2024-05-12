@@ -774,7 +774,9 @@ class FMCMainDisplay extends BaseAirliners {
             case FmgcFlightPhases.GOAROUND: {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
 
-                this.flightPlanService.stringMissedApproach();
+                this.flightPlanService.stringMissedApproach(/** @type {FlightPlanLeg} */ (map) => {
+                    this.addMessageToQueue(NXSystemMessages.cstrDelUpToWpt.getModifiedMessage(map.ident));
+                });
 
                 const activePlan = this.flightPlanService.active;
                 if (activePlan.performanceData.missedAccelerationAltitude === undefined) {
@@ -966,7 +968,6 @@ class FMCMainDisplay extends BaseAirliners {
          * @type {BaseFlightPlan}
          */
         const plan = this.flightPlanService.active;
-
         const currentLegIndex = plan.activeLegIndex;
         const nextLegIndex = currentLegIndex + 1;
         const currentLegConstraints = this.managedProfile.get(currentLegIndex) || {};
