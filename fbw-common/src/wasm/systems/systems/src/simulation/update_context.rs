@@ -224,6 +224,7 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
+    angle_of_attack_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
@@ -261,6 +262,7 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+    angle_of_attack: Angle,
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
@@ -306,6 +308,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
+    pub(crate) const ANGLE_OF_ATTACK_KEY: &'static str = "ANGLE OF ATTACK INDICATOR";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
@@ -343,6 +346,7 @@ impl UpdateContext {
         bank: Angle,
         mach_number: MachNumber,
         latitude: Angle,
+        angle_of_attack: Angle,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -374,6 +378,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
+            angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
@@ -431,6 +436,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
+            angle_of_attack,
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
@@ -470,6 +476,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
+            angle_of_attack_id: context.get_identifier("ANGLE OF ATTACK INDICATOR".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
@@ -524,6 +531,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
+            angle_of_attack: Default::default(),
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
@@ -590,6 +598,8 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        self.angle_of_attack = Angle::new::<radian>(reader.read(&self.angle_of_attack_id));
 
         self.total_weight = reader.read(&self.total_weight_id);
 
@@ -815,6 +825,10 @@ impl UpdateContext {
 
     pub fn true_heading_rotation_transform(&self) -> Rotation3<f64> {
         Rotation3::from_axis_angle(&Vector3::y_axis(), self.true_heading.get::<radian>())
+    }
+
+    pub fn angle_of_attack(&self) -> Angle {
+        self.angle_of_attack
     }
 
     pub fn plane_height_over_ground(&self) -> Length {
