@@ -40,6 +40,7 @@ export class TemporaryCheckpointSequence {
       altitude: step.finalAltitude,
       secondsFromPresent: this.lastCheckpoint.secondsFromPresent + step.timeElapsed,
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard - step.fuelBurned,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       speed: step.speed,
       mach: this.lastCheckpoint.mach,
     });

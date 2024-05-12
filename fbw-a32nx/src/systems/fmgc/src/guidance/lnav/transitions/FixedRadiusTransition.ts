@@ -32,16 +32,20 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
 export class FixedRadiusTransition extends Transition {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public radius: NauticalMiles;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public tad: NauticalMiles;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public clockwise: boolean;
 
   public isFrozen: boolean = false;
 
   private computedPath: PathVector[] = [];
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private sweepAngle: Degrees;
 
   private centre: Coordinates | undefined = undefined;
@@ -52,6 +56,7 @@ export class FixedRadiusTransition extends Transition {
     public previousLeg: PrevLeg, // FIXME temporary
     public nextLeg: NextLeg, // FIXME temporary
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -85,6 +90,7 @@ export class FixedRadiusTransition extends Transition {
 
   recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue) {
     if (this.isFrozen) {
+      // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
       if (DEBUG) {
         console.log('[FMS/Geometry] Not recomputing Type I transition as it is frozen.');
       }
@@ -110,6 +116,7 @@ export class FixedRadiusTransition extends Transition {
 
     // Check what the distance from the fix to the next leg is (to avoid being not lined up in some XF -> CF cases)
     const prevLegTermDistanceToNextLeg = Geo.distanceToLeg(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.previousLeg instanceof XFLeg ? this.previousLeg.fix.location : this.previousLeg.intercept,
       this.nextLeg,
     );
@@ -149,9 +156,11 @@ export class FixedRadiusTransition extends Transition {
         reverted.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack);
 
         const reversionTad = reverted.tad;
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         const fixDtg = this.previousLeg.getDistanceToGo(ppos) + this.tad;
 
         // See if there is enough space left for the reverted transition
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (fixDtg > reversionTad) {
           this.revertTo = reverted;
           this.isComputed = this.revertTo.isComputed;
@@ -168,6 +177,7 @@ export class FixedRadiusTransition extends Transition {
     // Try to de-revert if needed
     if (this.revertTo) {
       // We assume we are inactive here
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       const fixDtg = this.previousLeg.getDistanceToGo(ppos) + this.revertTo.tad;
 
       // Only de-revert if there is space for the fixed radius TAD
@@ -185,8 +195,11 @@ export class FixedRadiusTransition extends Transition {
     this.computedPath.length = 0;
     this.computedPath.push({
       type: PathVectorType.Arc,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       startPoint: this.getTurningPoints()[0],
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       centrePoint: this.centre,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       endPoint: this.getTurningPoints()[1],
       sweepAngle: this.sweepAngle,
     });
@@ -242,16 +255,20 @@ export class FixedRadiusTransition extends Transition {
     if (!this.getTurningPoints()) {
       return 0;
     }
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(this.previousLeg.getPathEndPoint(), this.getTurningPoints()[0]);
   }
 
+  // @ts-expect-error TS7008 -- TODO fix this manually (strict mode migration)
   private turningPoints;
 
   private computeTurningPoints(): [Coordinates, Coordinates] {
     const coords = this.previousLeg instanceof XFLeg ? this.previousLeg.fix.location : this.previousLeg.intercept;
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const inbound = placeBearingDistance(coords, mod(this.previousLeg.outboundCourse + 180, 360), this.tad);
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const outbound = placeBearingDistance(coords, this.nextLeg.inboundCourse, this.tad);
 
     this.centre = placeBearingDistance(
@@ -263,6 +280,7 @@ export class FixedRadiusTransition extends Transition {
     return [inbound, outbound];
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   getTurningPoints(): [Coordinates, Coordinates] | undefined {
     if (this.revertTo) {
       return this.revertTo.getTurningPoints();
@@ -284,8 +302,10 @@ export class FixedRadiusTransition extends Transition {
       return this.revertTo.getDistanceToGo(ppos);
     }
 
+    // @ts-expect-error TS2488 -- TODO fix this manually (strict mode migration)
     const [itp] = this.getTurningPoints();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcDistanceToGo(ppos, itp, this.centre, this.sweepAngle);
   }
 
@@ -304,6 +324,7 @@ export class FixedRadiusTransition extends Transition {
 
     const [itp] = this.getTurningPoints();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcGuidance(ppos, trueTrack, itp, this.centre, this.sweepAngle);
   }
 

@@ -60,6 +60,7 @@ export class LnavDriver implements GuidanceComponent {
 
   public ppos: LatLongAlt = new LatLongAlt();
 
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   constructor(
@@ -67,10 +68,15 @@ export class LnavDriver implements GuidanceComponent {
     guidanceController: GuidanceController,
   ) {
     this.guidanceController = guidanceController;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastAvail = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastLaw = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastXTE = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastTAE = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastPhi = null;
   }
 
@@ -130,11 +136,14 @@ export class LnavDriver implements GuidanceComponent {
         this.ppos,
         activeLeg,
         inboundTrans,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         outboundTrans,
       );
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.activeLegDtg = dtg;
       this.guidanceController.activeLegCompleteLegPathDtg = completeLegPathDtg;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.displayActiveLegCompleteLegPathDtg = completeDisplayLegPathDtg;
 
       // Update activeTransIndex in GuidanceController
@@ -352,6 +361,7 @@ export class LnavDriver implements GuidanceComponent {
         }
 
         available = true;
+        // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
       } else if (DEBUG) {
         console.error('[FMS/LNAV] Guidance parameters from geometry are null.');
       }
@@ -369,7 +379,9 @@ export class LnavDriver implements GuidanceComponent {
       const canSequence = !activeLeg.disableAutomaticSequencing && flightPhase >= FmgcFlightPhase.Takeoff;
 
       let withinSequencingArea = true;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (params.law === ControlLaw.LATERAL_PATH) {
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         withinSequencingArea = Math.abs(params.crossTrackError) < 7 && Math.abs(params.trackAngleError) < 90;
       }
 
@@ -383,9 +395,11 @@ export class LnavDriver implements GuidanceComponent {
 
         if (nextLeg) {
           this.sequenceLeg(activeLeg, outboundTransition);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         } else {
           this.sequenceDiscontinuity(activeLeg, followingLeg);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         }
       }
@@ -400,8 +414,11 @@ export class LnavDriver implements GuidanceComponent {
       SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
 
       this.lastAvail = false;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastTAE = null;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastXTE = null;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastPhi = null;
       this.turnState = LnavTurnState.Normal;
     }
@@ -442,6 +459,7 @@ export class LnavDriver implements GuidanceComponent {
       return completeLegAlongTrackPathDtg;
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 
@@ -514,10 +532,12 @@ export class LnavDriver implements GuidanceComponent {
       Coherent.call('PLAY_INSTRUMENT_SOUND', '3click').catch(console.error);
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.sequenceLeg(_leg, null);
 
     // The leg after the disco should become the active leg, so we sequence again
     if (followingLeg) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.sequenceLeg(null, null);
     }
   }

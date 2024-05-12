@@ -32,6 +32,7 @@ export class ApproachUtils {
 
   public static parseApproach(approach: Approach): ApproachNameComponents | undefined {
     const type = ApproachUtils.approachTypeString(approach.type);
+    // @ts-expect-error TS2345
     const runway = RunwayUtils.runwayString(approach.runwayIdent);
     const designator = approach.multipleIndicator;
 
@@ -62,9 +63,12 @@ export class ApproachUtils {
 
   private static formatLongApproachName(approach: Approach): string {
     const appr = ApproachUtils.parseApproach(approach);
+    // @ts-expect-error TS18048
     const runway = appr.runway;
+    // @ts-expect-error TS18048
     const suffix = appr.designator ? `-${appr.designator}` : '';
 
+    // @ts-expect-error TS18048
     return `${appr.type}${runway}${suffix}`;
   }
 

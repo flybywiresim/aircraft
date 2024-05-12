@@ -29,6 +29,7 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
 
   private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
     console.log('Handling RPC command', command, id, args);
+    // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
     const returnValue = await this.localFlightPlanService[command](...(args as any[]));
 
     await this.respondToRpcCommand(id, returnValue);

@@ -99,8 +99,11 @@ export class LandingSystemSelectionManager {
 
     if (runway?.lsIdent) {
       const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this._selectedIls = ils;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       this._selectedLocCourse = ils.locBearing !== -1 ? ils.locBearing : null;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       this._selectedGsSlope = ils.gsSlope ?? null;
       this._selectedApproachBackcourse = false;
       return true;
@@ -115,6 +118,7 @@ export class LandingSystemSelectionManager {
     const approach = this.flightPlanService.active.approach;
 
     if (this.isTunableApproach(approach?.type)) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return this.setIlsFromApproach(airport, approach, true);
     }
 
@@ -151,6 +155,7 @@ export class LandingSystemSelectionManager {
 
         this._selectedIls = frequency;
         this._selectedLocCourse = frequency.locBearing !== -1 ? frequency.locBearing : null;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         this._selectedGsSlope = Number.isFinite(frequency.gsSlope) ? frequency.gsSlope : null;
 
         return true;
@@ -176,10 +181,12 @@ export class LandingSystemSelectionManager {
   ): Promise<boolean> {
     const finalLeg = approach.legs[approach.legs.length - 1];
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if ((finalLeg?.waypoint.databaseId.trim() ?? '').length === 0) {
       return false;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (finalLeg.waypoint.databaseId === this._selectedIls?.databaseId) {
       return true;
     }
@@ -188,6 +195,7 @@ export class LandingSystemSelectionManager {
       const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
       const runway = runways.find((it) => it.ident === approach.runwayIdent);
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (runway && (await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId))) {
         return true;
       }

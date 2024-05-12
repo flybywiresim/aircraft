@@ -50,11 +50,13 @@ const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
 /**
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
+// @ts-expect-error TS2415 -- TODO fix this manually (strict mode migration)
 export class CourseCaptureTransition extends Transition {
   constructor(
     public previousLeg: PrevLeg,
     public nextLeg: NextLeg | TFLeg, // FIXME temporary
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -74,6 +76,7 @@ export class CourseCaptureTransition extends Transition {
 
   get deltaTrack(): Degrees {
     return MathUtils.fastToFixedNum(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse),
       1,
     );
@@ -83,18 +86,25 @@ export class CourseCaptureTransition extends Transition {
     return MathUtils.adjustAngleForTurnDirection(this.deltaTrack, this.nextLeg.metadata.turnDirection);
   }
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public isArc: boolean;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public startPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public endPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public center: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public sweepAngle: Degrees;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public radius: NauticalMiles;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public clockwise: boolean;
 
   public predictedPath: PathVector[] = [];
@@ -128,13 +138,16 @@ export class CourseCaptureTransition extends Transition {
     const radius =
       (gs ** 2 / (Constants.G * tan(Math.abs(maxBank(tas, false)))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
     const turnCenter = Geo.computeDestinationPoint(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       initialTurningPoint,
       radius,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.previousLeg.outboundCourse + 90 * Math.sign(courseChange),
     );
     const finalTurningPoint = Geo.computeDestinationPoint(
       turnCenter,
       radius,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.previousLeg.outboundCourse - 90 * Math.sign(courseChange) + courseChange,
     );
 
@@ -145,7 +158,9 @@ export class CourseCaptureTransition extends Transition {
 
     if (courseChange === 0) {
       this.isArc = false;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.startPoint = this.previousLeg.getPathEndPoint();
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.endPoint = this.previousLeg.getPathEndPoint();
 
       this.terminator = this.endPoint;
@@ -168,6 +183,7 @@ export class CourseCaptureTransition extends Transition {
 
     this.isNull = false;
     this.isArc = true;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.startPoint = initialTurningPoint;
     this.center = turnCenter;
     this.endPoint = finalTurningPoint;
@@ -204,6 +220,7 @@ export class CourseCaptureTransition extends Transition {
       !this.isNull &&
       this.computedTurnDirection !== TurnDirection.Either &&
       !this.forcedTurnComplete &&
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.previousLeg.getDistanceToGo(ppos) <= 0
     );
   }
@@ -246,6 +263,7 @@ export class CourseCaptureTransition extends Transition {
     }
 
     // FIXME PPOS guidance and all...
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
   }
 

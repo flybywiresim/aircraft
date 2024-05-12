@@ -64,11 +64,13 @@ const compareTurnDirections = (sign: number, data: TurnDirection) => {
 /**
  * A type II transition
  */
+// @ts-expect-error TS2415 -- TODO fix this manually (strict mode migration)
 export class PathCaptureTransition extends Transition {
   constructor(
     public previousLeg: PrevLeg | ReversionLeg,
     public nextLeg: NextLeg | NextReversionLeg,
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -84,6 +86,7 @@ export class PathCaptureTransition extends Transition {
 
   get deltaTrack(): Degrees {
     return MathUtils.fastToFixedNum(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse),
       1,
     );
@@ -91,8 +94,10 @@ export class PathCaptureTransition extends Transition {
 
   public predictedPath: PathVector[] = [];
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private itp: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private ftp: Coordinates;
 
   tad: NauticalMiles | undefined;
@@ -114,17 +119,22 @@ export class PathCaptureTransition extends Transition {
 
     const targetTrack = this.inboundGuidable.outboundCourse;
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const naturalTurnDirectionSign = Math.sign(MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse));
 
     this.computedTurnDirection = TurnDirection.Either;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.computedTargetTrack = this.nextLeg.inboundCourse;
 
     let prevLegTermFix: Coordinates;
     if (this.previousLeg instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       prevLegTermFix = this.previousLeg.arcEndPoint;
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     } else if ('lat' in this.previousLeg.terminationWaypoint) {
       prevLegTermFix = this.previousLeg.terminationWaypoint;
     } else {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       prevLegTermFix = this.previousLeg.terminationWaypoint.location;
     }
 
@@ -147,6 +157,7 @@ export class PathCaptureTransition extends Transition {
       } else {
         initialTurningPoint = placeBearingDistance(
           prevLegTermFix,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           reciprocal(this.previousLeg.outboundCourse),
           this.tad,
         );
@@ -156,22 +167,29 @@ export class PathCaptureTransition extends Transition {
       initialTurningPoint = prevLegTermFix;
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const distanceFromItp: NauticalMiles = Geo.distanceToLeg(initialTurningPoint, this.nextLeg);
     // for some legs the turn direction is not for forced turn onto the leg
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const desiredDirection = isCourseReversalLeg(this.nextLeg)
       ? TurnDirection.Either
       : this.nextLeg.metadata.turnDirection;
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const deltaTrack: Degrees = MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse, desiredDirection);
 
     this.predictedPath.length = 0;
 
     if (Math.abs(deltaTrack) < 3 && distanceFromItp < 0.1) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.itp = this.previousLeg.getPathEndPoint();
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.ftp = this.previousLeg.getPathEndPoint();
 
       this.predictedPath.push({
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.previousLeg.getPathEndPoint(),
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.previousLeg.getPathEndPoint(),
       });
 
@@ -202,21 +220,27 @@ export class PathCaptureTransition extends Transition {
     const distanceLimit = radius * cos(48);
 
     // TODO: Turn center is slightly off for some reason, fix
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     let turnCenter = placeBearingDistance(initialTurningPoint, targetTrack + turnDirection * 90, radius);
     let turnCenterDistance =
       Math.sign(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         MathUtils.diffAngle(bearingTo(turnCenter, this.nextLeg.getPathEndPoint()), this.nextLeg.outboundCourse),
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       ) * Geo.distanceToLeg(turnCenter, this.nextLeg);
 
     let courseChange;
     if (Math.abs(deltaTrack) < 45) {
       if ((deltaTrack > 0 && turnCenterDistance >= radius) || (deltaTrack < 0 && turnCenterDistance <= -radius)) {
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         turnCenter = placeBearingDistance(initialTurningPoint, targetTrack - turnDirection * 90, radius);
         turnDirection = -turnDirection;
         // Turn direction is to be flipped, FBW-22-05
         turnCenterDistance =
           Math.sign(
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             MathUtils.diffAngle(bearingTo(turnCenter, this.nextLeg.getPathEndPoint()), this.nextLeg.outboundCourse),
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           ) * Geo.distanceToLeg(turnCenter, this.nextLeg);
         courseChange = CourseChange.acuteFar(turnDirection, turnCenterDistance, deltaTrack);
       } else {
@@ -226,11 +250,14 @@ export class PathCaptureTransition extends Transition {
       Math.abs(deltaTrack) >= 45 &&
       !compareTurnDirections(turnDirection, this.nextLeg.metadata.turnDirection)
     ) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       turnCenter = placeBearingDistance(initialTurningPoint, targetTrack - turnDirection * 90, radius);
       turnDirection = -turnDirection;
       turnCenterDistance =
         Math.sign(
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           MathUtils.diffAngle(bearingTo(turnCenter, this.nextLeg.getPathEndPoint()), this.nextLeg.outboundCourse),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         ) * Geo.distanceToLeg(turnCenter, this.nextLeg);
     }
 
@@ -260,27 +287,33 @@ export class PathCaptureTransition extends Transition {
           }
         }
       } else {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         intercept = firstSmallCircleIntersection(
           turnCenter,
           radius,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.nextLeg.getPathEndPoint(),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           reciprocal(this.nextLeg.outboundCourse),
         );
       }
 
       // If the difference between the radius and turnCenterDistance is very small, we might not find an intercept using the circle.
       // Do a direct intercept instead.
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       if (!intercept && radiusToLeg < 0.1) {
         this.computeDirectIntercept();
         this.isComputed = true;
         return;
       }
 
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       if (intercept && !Number.isNaN(intercept.lat)) {
         const bearingTcFtp = bearingTo(turnCenter, intercept);
 
         const angleToLeg = MathUtils.diffAngle(
           MathUtils.normalise360(bearingTcFtp - (turnDirection > 0 ? -90 : 90)),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.nextLeg.outboundCourse,
         );
 
@@ -343,8 +376,10 @@ export class PathCaptureTransition extends Transition {
       }
     }
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     this.computedTargetTrack = (360 + this.previousLeg.outboundCourse + courseChange) % 360;
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const finalTurningPoint = placeBearingDistance(turnCenter, targetTrack + courseChange - 90 * turnDirection, radius);
 
     let intercept;
@@ -354,6 +389,7 @@ export class PathCaptureTransition extends Transition {
     if ('from' in this.nextLeg) {
       const intersections = placeBearingIntersection(
         finalTurningPoint,
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         MathUtils.normalise360(targetTrack + courseChange),
         this.nextLeg.from.location,
         this.nextLeg.outboundCourse,
@@ -369,10 +405,12 @@ export class PathCaptureTransition extends Transition {
         }
       }
     } else {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       intercept = Geo.legIntercept(finalTurningPoint, targetTrack + courseChange, this.nextLeg);
     }
 
     const overshot =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       sideOfPointOnCourseToFix(finalTurningPoint, targetTrack + courseChange, intercept) === PointSide.Before;
 
     this.itp = initialTurningPoint;
@@ -392,10 +430,12 @@ export class PathCaptureTransition extends Transition {
       this.predictedPath.push({
         type: PathVectorType.Line,
         startPoint: finalTurningPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: intercept,
       });
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.distance = arcLength(radius, courseChange) + (overshot ? 0 : distanceTo(finalTurningPoint, intercept));
 
     if (LnavConfig.DEBUG_PREDICTED_PATH) {
@@ -417,6 +457,7 @@ export class PathCaptureTransition extends Transition {
         },
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: intercept,
           annotation: 'PATH CAPTURE INTCPT',
         },
@@ -432,16 +473,19 @@ export class PathCaptureTransition extends Transition {
    */
   private computeDirectIntercept() {
     const intercept = Geo.legIntercept(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.previousLeg.getPathEndPoint(),
       this.previousLeg.outboundCourse,
       this.nextLeg,
     );
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.itp = this.previousLeg.getPathEndPoint();
     this.ftp = intercept;
 
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.previousLeg.getPathEndPoint(),
       endPoint: intercept,
     });
@@ -450,6 +494,7 @@ export class PathCaptureTransition extends Transition {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.previousLeg.getPathEndPoint(),
           annotation: 'PATH CAPTURE START',
         },
@@ -461,6 +506,7 @@ export class PathCaptureTransition extends Transition {
       );
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.distance = distanceTo(this.previousLeg.getPathEndPoint(), intercept);
   }
 
@@ -477,6 +523,7 @@ export class PathCaptureTransition extends Transition {
       !this.isNull &&
       this.computedTurnDirection !== TurnDirection.Either &&
       !this.forcedTurnComplete &&
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.previousLeg.getDistanceToGo(ppos) <= 0
     );
   }
@@ -510,6 +557,7 @@ export class PathCaptureTransition extends Transition {
       this.forcedTurnComplete = true;
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
   }
 

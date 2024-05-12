@@ -30,6 +30,7 @@ export class TaskQueue {
     }
 
     if (this.currentTask) {
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       const done = this.currentTaskExecutor.next().done;
 
       if (done) {

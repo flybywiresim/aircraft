@@ -98,6 +98,7 @@ export class TacticalDescentPathBuilder {
     );
 
     const phaseTable = new PhaseTable(this.observer.get(), windProfile);
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     phaseTable.start = start;
     phaseTable.phases = [
       new DescendToAltitude(profile.finalAltitude).withReasonAfter(VerticalCheckpointReason.Landing),
@@ -159,6 +160,7 @@ export class TacticalDescentPathBuilder {
     );
 
     const phaseTable = new PhaseTable(this.observer.get(), windProfile);
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     phaseTable.start = start;
     phaseTable.phases = [
       new DescendToAltitude(finalAltitude).withReasonAfter(VerticalCheckpointReason.CrossingFcuAltitudeDescent),
@@ -182,7 +184,9 @@ export class TacticalDescentPathBuilder {
     // the final altitude through a different segment. In this case, we need to make sure we still get the level off arrow.
     // One scenario where this happens is if the final altitude is the speed limit alt (e.g 10000). In this case, we insert a deceleration segment, which might end just
     // slightly below the speed limit alt (= final alt), and the phase table will not execute the last phase because we're already below the final alt.
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     if (sequence.lastCheckpoint.reason === VerticalCheckpointReason.AtmosphericConditions) {
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       sequence.lastCheckpoint.reason = VerticalCheckpointReason.CrossingFcuAltitudeDescent;
     }
 
@@ -284,6 +288,7 @@ export class TacticalDescentPathBuilder {
       phaseTable.phases.splice(
         violatingPhaseIndex,
         0,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendToDistance(speedChange.distanceFromStart),
         // Use deceleration reason as before
         new DescendingDeceleration(speedChange.targetSpeed).withReasonBefore(speedChange.reason),
@@ -302,6 +307,7 @@ export class TacticalDescentPathBuilder {
       // If we are already decelerating, make sure we decelerate to the correct speed
       violatingPhase.toSpeed = Math.min(speedChange.targetSpeed, violatingPhase.toSpeed);
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const overshoot = violatingPhase.lastResult.altitude - speedChange.altitude;
 
       // Try to find a previous phase that we can shorten to allow more deceleration
@@ -311,6 +317,7 @@ export class TacticalDescentPathBuilder {
         if (previousPhase instanceof DescendToAltitude) {
           previousPhase.toAltitude -= overshoot;
         } else if (previousPhase instanceof DescendToDistance) {
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           phaseTable.phases.splice(i, 1, new DescendToAltitude(previousPhase.lastResult.altitude - overshoot));
         }
 
@@ -321,6 +328,7 @@ export class TacticalDescentPathBuilder {
         violatingPhaseIndex,
         0,
         new DescendToAltitude(speedChange.altitude),
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendingDeceleration(speedChange.targetSpeed).withReasonBefore(
           VerticalCheckpointReason.StartDecelerationToLimit,
         ),
@@ -340,6 +348,7 @@ export class TacticalDescentPathBuilder {
       // If we are already decelerating, make sure we decelerate to the correct speed
       violatingPhase.toSpeed = Math.min(speedConstraint.maxSpeed, violatingPhase.toSpeed);
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const overshoot = violatingPhase.lastResult.distanceFromStart - speedConstraint.distanceFromStart;
 
       // Try to find a previous phase that we can shorten to allow more deceleration
@@ -352,6 +361,7 @@ export class TacticalDescentPathBuilder {
 
         if (previousPhase instanceof DescendToAltitude) {
           // If we need to decelerate earlier, then replace the altitude segment with a distance segment
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           phaseTable.phases.splice(i, 1, new DescendToDistance(previousPhase.lastResult.distanceFromStart - overshoot));
 
           return;
@@ -367,6 +377,7 @@ export class TacticalDescentPathBuilder {
       phaseTable.phases.splice(
         violatingPhaseIndex,
         0,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendToDistance(speedConstraint.distanceFromStart - 3),
         new DescendingDeceleration(speedConstraint.maxSpeed).withReasonBefore(
           VerticalCheckpointReason.StartDecelerationToConstraint,
@@ -386,6 +397,7 @@ export class TacticalDescentPathBuilder {
       phaseTable.phases.splice(
         violatingPhaseIndex,
         0,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendingDeceleration(violatingPhase.toSpeed)
           .withReasonBefore(violatingPhase.reasonBefore)
           .withMinAltitude(altitudeConstraint.minimumAltitude)
@@ -404,6 +416,7 @@ export class TacticalDescentPathBuilder {
         new DescendToAltitude(altitudeConstraint.minimumAltitude).withReasonAfter(
           VerticalCheckpointReason.LevelOffForDescentConstraint,
         ),
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendToDistance(altitudeConstraint.distanceFromStart).asLevelSegment(),
       );
     } else if (violatingPhase instanceof DescendToDistance) {
@@ -416,6 +429,7 @@ export class TacticalDescentPathBuilder {
           new DescendToAltitude(altitudeConstraint.minimumAltitude).withReasonAfter(
             VerticalCheckpointReason.LevelOffForDescentConstraint,
           ),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           new DescendToDistance(altitudeConstraint.distanceFromStart).asLevelSegment(),
         );
       } else {
@@ -426,6 +440,7 @@ export class TacticalDescentPathBuilder {
           new DescendToAltitude(altitudeConstraint.minimumAltitude).withReasonAfter(
             VerticalCheckpointReason.LevelOffForDescentConstraint,
           ),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           new DescendToDistance(violatingPhase.toDistance).asLevelSegment(),
         );
       }
@@ -438,6 +453,7 @@ export class TacticalDescentPathBuilder {
     if (violatingPhase instanceof DescendingDeceleration) {
       violatingPhase.toSpeed = Math.min(speedLimit.speed, violatingPhase.toSpeed);
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const overshoot = violatingPhase.lastResult.altitude - speedLimit.underAltitude; // This is typically negative
 
       for (let i = violatingPhaseIndex - 1; i >= 0; i--) {
@@ -466,6 +482,7 @@ export class TacticalDescentPathBuilder {
         violatingPhaseIndex,
         0,
         new DescendToAltitude(speedLimit.underAltitude + 100),
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendingDeceleration(speedLimit.speed).withReasonBefore(
           VerticalCheckpointReason.StartDecelerationToLimit,
         ),
@@ -487,6 +504,7 @@ export class TacticalDescentPathBuilder {
       phaseTable.phases.splice(
         violatingPhaseIndex,
         0,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         new DescendToDistance(approachPoint.distanceFromStart),
         new DescendingDeceleration(approachPoint.targetSpeed),
       );
@@ -495,6 +513,7 @@ export class TacticalDescentPathBuilder {
 
   private doesPhaseViolateApproachPoint(phase: SubPhase, approachPoint: ApproachCheckpoint) {
     // We're still before the point
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (phase.lastResult.distanceFromStart <= approachPoint.distanceFromStart) {
       return false;
     }
@@ -503,14 +522,17 @@ export class TacticalDescentPathBuilder {
       return phase.toSpeed > approachPoint.targetSpeed;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return phase.lastResult.speed > approachPoint.targetSpeed;
   }
 
   private doesPhaseViolateSpeedChange(phase: SubPhase, speedChange: VerticalCheckpointForDeceleration) {
     if (speedChange.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (phase.lastResult.altitude >= speedChange.altitude) {
         return false;
       }
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     } else if (phase.lastResult.distanceFromStart <= speedChange.distanceFromStart) {
       return false;
     }
@@ -519,6 +541,7 @@ export class TacticalDescentPathBuilder {
       return phase.toSpeed > speedChange.targetSpeed;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return phase.lastResult.speed > speedChange.targetSpeed;
   }
 
@@ -528,6 +551,7 @@ export class TacticalDescentPathBuilder {
     speedConstraint: MaxSpeedConstraint,
   ) {
     // We're still before the constraint
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (phase.lastResult.distanceFromStart < speedConstraint.distanceFromStart) {
       return false;
     }
@@ -542,10 +566,14 @@ export class TacticalDescentPathBuilder {
 
     // Now that we're sure, we pass the constraint on this exact segment, check what speed we were at
     const speedChangePerDistance =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       (previousResult.speed - phase.lastResult.speed) /
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       (previousResult.distanceFromStart - phase.lastResult.distanceFromStart);
     const speedAtConstraint =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       phase.lastResult.speed +
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       speedChangePerDistance * (speedConstraint.distanceFromStart - phase.lastResult.distanceFromStart);
 
     return speedAtConstraint - speedConstraint.maxSpeed > 1;
@@ -557,6 +585,7 @@ export class TacticalDescentPathBuilder {
     altitudeConstraint: MinimumDescentAltitudeConstraint,
   ) {
     if (
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       phase.lastResult.altitude - altitudeConstraint.minimumAltitude >= -1 || // We're still above the constraint
       previousResult.altitude - altitudeConstraint.minimumAltitude < -100 || // We were already more than 100 ft below the constraint before this subphase
       previousResult.distanceFromStart >= altitudeConstraint.distanceFromStart || // We're already behind the constraint
@@ -566,7 +595,9 @@ export class TacticalDescentPathBuilder {
     }
 
     const gradient =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       (previousResult.altitude - phase.lastResult.altitude) /
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       (previousResult.distanceFromStart - phase.lastResult.distanceFromStart);
     const altAtConstraint =
       previousResult.altitude + gradient * (altitudeConstraint.distanceFromStart - previousResult.distanceFromStart);
@@ -576,6 +607,7 @@ export class TacticalDescentPathBuilder {
 
   private doesPhaseViolateSpeedLimit(previousResult: VerticalCheckpoint, phase: SubPhase, speedLimit: SpeedLimit) {
     // We're still above the limit
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (phase.lastResult.altitude > speedLimit.underAltitude) {
       return false;
     }
@@ -590,8 +622,10 @@ export class TacticalDescentPathBuilder {
 
     // Now that we're sure, we pass the limit on this exact segment, check what speed we were at
     const speedChangePerAltitude =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       (previousResult.speed - phase.lastResult.speed) / (previousResult.altitude - phase.lastResult.altitude);
     const speedAtSpeedLimitAlt =
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       phase.lastResult.speed + speedChangePerAltitude * (speedLimit.underAltitude - phase.lastResult.altitude);
 
     return speedAtSpeedLimitAlt - speedLimit.speed > 1;
@@ -599,6 +633,7 @@ export class TacticalDescentPathBuilder {
 }
 
 class PhaseTable {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   start: VerticalCheckpoint;
 
   phases: SubPhase[] = [];
@@ -641,6 +676,7 @@ class PhaseTable {
 
         phase.lastResult = sequence.lastCheckpoint;
       } else {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         phase.lastResult = null;
       }
     }
@@ -650,6 +686,7 @@ class PhaseTable {
 }
 
 abstract class SubPhase {
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   lastResult?: VerticalCheckpoint = null;
 
   protected isLevelSegment = false;
@@ -673,6 +710,7 @@ abstract class SubPhase {
     step.fuelBurned *= scaling;
     step.timeElapsed *= scaling;
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
 
@@ -724,6 +762,7 @@ class DescendingDeceleration extends SubPhase {
     );
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   override execute(strategy: DescentStrategy) {
     return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
       const step = strategy.predictToSpeed(
@@ -790,6 +829,7 @@ class DescendToDistance extends SubPhase {
     return start.distanceFromStart < this.toDistance;
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   override execute(strategy: DescentStrategy) {
     return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
       const step = strategy.predictToDistance(

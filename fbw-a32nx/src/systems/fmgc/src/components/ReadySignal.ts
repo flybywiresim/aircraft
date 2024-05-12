@@ -7,6 +7,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 
 export class ReadySignal implements FmgcComponent {
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   private baseInstrument: BaseInstrument = null;
 
   private updateThrottler = new UpdateThrottler(1000);

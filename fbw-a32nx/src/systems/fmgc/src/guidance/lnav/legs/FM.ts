@@ -39,6 +39,7 @@ export class FMLeg extends Leg {
   }
 
   get terminationWaypoint(): Waypoint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 
@@ -56,7 +57,9 @@ export class FMLeg extends Leg {
     this.predictedPath.length = 0;
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.getPathStartPoint(),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
     });
 
@@ -85,6 +88,7 @@ export class FMLeg extends Leg {
   }
 
   getGuidanceParameters(ppos: LatLongData, trueTrack: Track, _tas: Knots, _gs: Knots): GuidanceParameters {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return fixToFixGuidance(ppos, trueTrack, this.fix.location, this.getPathEndPoint());
   }
 
@@ -93,6 +97,7 @@ export class FMLeg extends Leg {
   }
 
   getDistanceToGo(_ppos: LatLongData): NauticalMiles {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 

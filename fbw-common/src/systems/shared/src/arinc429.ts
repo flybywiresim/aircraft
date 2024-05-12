@@ -76,6 +76,7 @@ export class Arinc429Word implements Arinc429WordData {
   }
 
   getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    // @ts-expect-error TS2322
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
@@ -95,8 +96,10 @@ export class Arinc429Register implements Arinc429WordData {
 
   f32View = new Float32Array(this.u32View.buffer);
 
+  // @ts-expect-error TS2564
   ssm: Arinc429SignStatusMatrix;
 
+  // @ts-expect-error TS2564
   value: number;
 
   static empty() {
@@ -146,6 +149,7 @@ export class Arinc429Register implements Arinc429WordData {
   }
 
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    // @ts-expect-error TS2322
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 }

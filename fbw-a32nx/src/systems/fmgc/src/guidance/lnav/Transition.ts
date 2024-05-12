@@ -52,8 +52,10 @@ export abstract class Transition extends Guidable {
     // Default impl.
   }
 
+  // @ts-expect-error TS7010 -- TODO fix this manually (strict mode migration)
   abstract getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots);
 
+  // @ts-expect-error TS7010 -- TODO fix this manually (strict mode migration)
   abstract getDistanceToGo(ppos: Coordinates);
 
   abstract getTurningPoints(): [Coordinates, Coordinates];

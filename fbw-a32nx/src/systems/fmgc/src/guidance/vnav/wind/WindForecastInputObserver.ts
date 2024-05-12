@@ -60,8 +60,10 @@ export class WindForecastInputObserver {
       vector: new WindVector(direction, speed),
     });
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.inputs.climbWinds = fmcWinds.climb.map(parseFmcWindEntry);
     // TODO: Cruise winds
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.inputs.descentWinds = fmcWinds.des.map(parseFmcWindEntry);
   }
 }

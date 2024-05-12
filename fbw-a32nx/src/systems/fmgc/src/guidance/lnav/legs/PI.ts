@@ -103,6 +103,7 @@ export class PILeg extends Leg {
       tp = this.nextLeg.fix.location;
     } else {
       // find an intercept on the CF at min dist
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       [tp] = smallCircleGreatCircleIntersection(
         this.fix.location,
         minStraightDist,
@@ -113,10 +114,13 @@ export class PILeg extends Leg {
       this.straight.course = bearingTo(this.fix.location, tp);
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.turn1.sweepAngle = turn1Sign * Math.abs(MathUtils.diffAngle(this.straight.course, this.outbound.course));
     const tpT1FtpDist = this.radius * Math.tan((Math.abs(this.turn1.sweepAngle) * Math.PI) / 360);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.turn1.ftp = Avionics.Utils.bearingDistanceToCoordinates(this.outbound.course, tpT1FtpDist, tp.lat, tp.long);
     this.turn1.arcCentre = Avionics.Utils.bearingDistanceToCoordinates(
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       (360 + this.outbound.course + turn1Sign * 90) % 360,
       this.radius,
       this.turn1.ftp.lat,
@@ -164,17 +168,20 @@ export class PILeg extends Leg {
     }
 
     const theta =
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       (Math.abs(MathUtils.diffAngle(this.outbound.course, (this.nextLeg.course + 180) % 360)) * Math.PI) / 180;
     this.outbound.length = this.radius * (1 / Math.tan(theta / 2));
     this.outbound.itp = this.turn1.ftp;
 
     this.turn2.itp = Avionics.Utils.bearingDistanceToCoordinates(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.outbound.course,
       this.outbound.length + tpT1FtpDist,
       tp.lat,
       tp.long,
     );
     this.turn2.arcCentre = Avionics.Utils.bearingDistanceToCoordinates(
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       (360 + this.outbound.course + turn2Sign * 90) % 360,
       this.radius,
       this.turn2.itp.lat,
@@ -182,6 +189,7 @@ export class PILeg extends Leg {
     );
     this.turn2.sweepAngle = turn2Sign * 180;
     this.turn2.ftp = Avionics.Utils.bearingDistanceToCoordinates(
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       (360 + this.outbound.course + turn2Sign * 90) % 360,
       this.radius,
       this.turn2.arcCentre.lat,
@@ -217,6 +225,7 @@ export class PILeg extends Leg {
     this.intercept.itp = this.turn2.ftp;
     this.intercept.ftp = placeBearingIntersection(
       this.turn2.ftp,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       (this.outbound.course + 180) % 360,
       tp,
       cfInverseCrs,
@@ -228,14 +237,17 @@ export class PILeg extends Leg {
   }
 
   get initialLegTermPoint(): Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.turn1.itp;
   }
 
   get distanceToTermination(): NauticalMiles {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.straight.length;
   }
 
   get distance(): NauticalMiles {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.intercept.length + this.turn2.length + this.outbound.length + this.turn1.length + this.straight.length;
   }
 
@@ -247,38 +259,54 @@ export class PILeg extends Leg {
       return false;
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const maxExcursion = distanceTo(this.fix.location, this.turn2.arcCentre) + this.radius;
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return maxExcursion > this.metadata.flightPlanLegDefinition.length;
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
     switch (this.state) {
       case PiState.Intercept:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return courseToFixDistanceToGo(ppos, this.intercept.course, this.intercept.ftp);
       case PiState.Turn2:
         return (
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.intercept.length + arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle)
         );
       case PiState.Outbound:
         return (
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.intercept.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn2.length +
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           courseToFixDistanceToGo(ppos, this.outbound.course, this.outbound.ftp)
         );
       case PiState.Turn1:
         return (
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.intercept.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn2.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.outbound.length +
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           arcDistanceToGo(ppos, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle)
         );
       case PiState.Straight:
         return (
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.intercept.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn2.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.outbound.length +
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn1.length +
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           courseToFixDistanceToGo(ppos, this.straight.course, this.straight.ftp)
         );
       default:
@@ -289,14 +317,19 @@ export class PILeg extends Leg {
   private dtgCurrentSegment(ppos: Coordinates): NauticalMiles {
     switch (this.state) {
       case PiState.Intercept:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return courseToFixDistanceToGo(ppos, this.intercept.course, this.intercept.ftp);
       case PiState.Turn2:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
       case PiState.Outbound:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return courseToFixDistanceToGo(ppos, this.outbound.course, this.outbound.ftp);
       case PiState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return arcDistanceToGo(ppos, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
       case PiState.Straight:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return courseToFixDistanceToGo(ppos, this.straight.course, this.straight.ftp);
       default:
         return 0;
@@ -343,16 +376,21 @@ export class PILeg extends Leg {
     let params;
     switch (this.state) {
       case PiState.Intercept:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return this.nextLeg?.getGuidanceParameters(ppos, trueTrack, tas);
       case PiState.Turn2:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return arcGuidance(ppos, trueTrack, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
       case PiState.Outbound:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = courseToFixGuidance(ppos, trueTrack, this.outbound.course, this.outbound.ftp);
         break;
       case PiState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = arcGuidance(ppos, trueTrack, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
         break;
       case PiState.Straight:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = courseToFixGuidance(ppos, trueTrack, this.straight.course, this.straight.ftp);
         break;
       default:
@@ -364,6 +402,7 @@ export class PILeg extends Leg {
       params.phiCommand = nextBank;
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return params;
   }
 
@@ -372,14 +411,17 @@ export class PILeg extends Leg {
   }
 
   getPathStartPoint(): Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.location;
   }
 
   getPathEndPoint(): Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.intercept.ftp;
   }
 
   get terminationWaypoint(): Waypoint | Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.intercept.ftp;
   }
 
@@ -399,31 +441,45 @@ export class PILeg extends Leg {
     return [
       {
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.fix.location,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.turn1.itp,
       },
       {
         type: PathVectorType.Arc,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn1.itp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         centrePoint: this.turn1.arcCentre,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.turn1.ftp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         sweepAngle: this.turn1.sweepAngle,
       },
       {
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn1.ftp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.turn2.itp,
       },
       {
         type: PathVectorType.Arc,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn2.itp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         centrePoint: this.turn2.arcCentre,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.turn2.ftp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         sweepAngle: this.turn2.sweepAngle,
       },
       {
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn2.ftp,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.intercept.ftp,
       },
       ...this.debugPoints,

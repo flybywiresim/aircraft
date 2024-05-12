@@ -25,6 +25,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   navigationDatabase: NavigationDatabase;
 
   constructor(
@@ -53,14 +54,17 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.has(index);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get active() {
     return this.flightPlanManager.get(FlightPlanIndex.Active);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get temporary() {
     return this.flightPlanManager.get(FlightPlanIndex.Temporary);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get activeOrTemporary() {
     if (this.hasTemporary) {
       return this.flightPlanManager.get(FlightPlanIndex.Temporary);
@@ -68,6 +72,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.get(FlightPlanIndex.Active);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get uplink() {
     return this.flightPlanManager.get(FlightPlanIndex.Uplink);
   }
@@ -75,6 +80,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   /**
    * Obtains the specified secondary flight plan, 1-indexed
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   secondary(index: number) {
     return this.flightPlanManager.get(FlightPlanIndex.FirstSecondary + index - 1);
   }
@@ -127,7 +133,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     // Update T-P
     if (fromLeg?.isDiscontinuity === false && fromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint) {
       // TODO fm pos
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       fromLeg.definition.waypoint.location.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       fromLeg.definition.waypoint.location.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
     }
 
@@ -441,11 +449,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex?: FlightPlanIndex,
     alternate?: boolean,
   ): Promise<void> {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
     const plan = alternate
-      ? this.flightPlanManager.get(finalIndex).alternateFlightPlan
-      : this.flightPlanManager.get(finalIndex);
+      ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+        this.flightPlanManager.get(finalIndex).alternateFlightPlan
+      : // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+        this.flightPlanManager.get(finalIndex);
 
     plan.setPilotEnteredAltitudeConstraintAt(atIndex, isDescentConstraint, constraint);
   }
@@ -457,11 +468,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex?: FlightPlanIndex,
     alternate?: boolean,
   ): Promise<void> {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
     const plan = alternate
-      ? this.flightPlanManager.get(finalIndex).alternateFlightPlan
-      : this.flightPlanManager.get(finalIndex);
+      ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+        this.flightPlanManager.get(finalIndex).alternateFlightPlan
+      : // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+        this.flightPlanManager.get(finalIndex);
 
     plan.setPilotEnteredSpeedConstraintAt(atIndex, isDescentConstraint, speed);
   }

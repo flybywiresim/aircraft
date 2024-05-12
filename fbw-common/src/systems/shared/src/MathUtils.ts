@@ -23,6 +23,7 @@ export class MathUtils {
 
     let coefficient = MathUtils.optiPow10[fraction];
     if (!coefficient || Number.isNaN(coefficient)) {
+      // @ts-expect-error TS2322
       coefficient = 10 ** fraction;
       MathUtils.optiPow10[fraction] = coefficient;
     }
@@ -37,6 +38,7 @@ export class MathUtils {
 
     let coefficient = MathUtils.optiPow10[fraction];
     if (!coefficient || Number.isNaN(coefficient)) {
+      // @ts-expect-error TS2322
       coefficient = 10 ** fraction;
       MathUtils.optiPow10[fraction] = coefficient;
     }
@@ -285,6 +287,7 @@ export class MathUtils {
    * @param pressure current pressure hpa
    * @returns True Air Speed
    */
+  // @ts-expect-error TS7006
   public static convertKCasToKTAS(kcas, oat, pressure): number {
     return (
       1479.1 *
@@ -522,6 +525,7 @@ export class MathUtils {
    * @param lower lowest boundary value
    * @param upper highest boundary value
    */
+  // @ts-expect-error TS7006
   public static clamp(value, lower, upper) {
     return Math.min(Math.max(value, lower), upper);
   }

@@ -25,6 +25,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
    */
   private approachVia: ProcedureTransition | undefined | null;
 
+  // @ts-expect-error TS2366 -- TODO fix this manually (strict mode migration)
   setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
     if (databaseId === undefined || databaseId === null) {
       this.approachVia = databaseId === undefined ? undefined : null;
@@ -37,6 +38,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this);
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -57,6 +59,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
     this.approachVia = matchingApproachVia;
 
     if (skipUpdateLegs) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -70,6 +73,7 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
 
     // Add an IF at the start if first leg of the VIA is a PI or FX
     if (firstApproachViaLeg.type === LegType.PI || firstApproachViaLeg.isFX()) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachViaLeg.definition.waypoint, undefined, LegType.IF);
 
       this.allLegs.push(newLeg);

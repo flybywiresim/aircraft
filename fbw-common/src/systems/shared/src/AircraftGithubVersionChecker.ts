@@ -169,6 +169,7 @@ export class AircraftGithubVersionChecker {
    */
   private static checkOutdated(versionInfo: VersionInfoData): boolean {
     // Set branchName to the long versions of the aircraft edition names
+    // @ts-expect-error TS7053
     const branchName = KnowBranchNames[versionInfo.branch] || versionInfo.branch;
 
     // Check if main version is outdated
@@ -213,6 +214,7 @@ export class AircraftGithubVersionChecker {
    * @param days
    * @private
    */
+  // @ts-expect-error TS7006
   private static addDays(date: Date, days): Date {
     const result = new Date(date);
     result.setDate(date.getDate() + days);
@@ -248,6 +250,7 @@ export class AircraftGithubVersionChecker {
    * @param releaseVersion
    * @private
    */
+  // @ts-expect-error TS7006
   private static showVersionPopup(branchName, currentVersion, releaseVersion) {
     // TODO: Make translation work - move translation from EFB to shared
     const dialog = new PopUpDialog();

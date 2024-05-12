@@ -373,6 +373,7 @@ export class NavaidTuner {
   private writeNavDiscreteToBus(): void {
     Arinc429Word.toSimVarValue('L:A32NX_FM1_NAV_DISCRETE', this.arincNavDiscrete.value, this.arincNavDiscrete.ssm);
     // Arinc429Word.toSimVarValue('L:A32NX_FM2_NAV_DISCRETE', this.arincNavDiscrete.value, this.arincNavDiscrete.ssm);
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lastArincNavDiscreteValueWritten = this.arincNavDiscrete.value;
   }
 
@@ -387,6 +388,7 @@ export class NavaidTuner {
           (autoReason === VorSelectionReason.Navigation || autoReason === VorSelectionReason.Procedure) &&
           !NavRadioUtils.vhfFrequenciesAreEqual(autoFacility?.frequency, vor.frequency)
         ) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           tuneNavaidMessage = [autoFacility?.frequency, autoFacility?.ident];
         }
       } else if (vor.facility?.databaseId !== autoFacility?.databaseId) {
@@ -450,6 +452,7 @@ export class NavaidTuner {
   private async tuneVorFrequency(index: 1 | 2, frequency: number | null): Promise<unknown> {
     // FIXME tune through RMP (or direct for off-side)
     if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastVorFrequencies[index - 1], frequency)) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastVorFrequencies[index - 1] = frequency;
       this.navaidVersion++;
       return Coherent.call('TRIGGER_KEY_EVENT', `NAV${index}_RADIO_SET_HZ`, true, (frequency ?? 0) * 1_000_000, 0, 0);
@@ -465,7 +468,9 @@ export class NavaidTuner {
    */
   private async tuneVorCourse(index: 1 | 2, course: number | null): Promise<unknown> {
     // FIXME tune through RMP (or direct for off-side)
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     if (Math.round(this.lastVorCourses[index - 1]) !== Math.round(course)) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastVorCourses[index - 1] = course;
       return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index}_SET`, true, course ?? 0, 0, 0);
     }
@@ -485,6 +490,7 @@ export class NavaidTuner {
 
     // FIXME tune through RMP (or direct for off-side)
     if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastMmrFrequencies[index - 1], frequency)) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastMmrFrequencies[index - 1] = frequency;
       this.navaidVersion++;
       return Coherent.call(
@@ -511,7 +517,9 @@ export class NavaidTuner {
     }
 
     // FIXME tune through RMP (or direct for off-side)
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     if (Math.round(this.lastMmrCourses[index - 1]) !== Math.round(course)) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastMmrCourses[index - 1] = course;
       return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index + 2}_SET`, true, course ?? 0, 0, 0);
     }
@@ -527,6 +535,7 @@ export class NavaidTuner {
   private async tuneAdf(index: 1 | 2, frequency: number | null): Promise<unknown> {
     // FIXME tune through RMP (or direct for off-side)
     if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastAdfFrequencies[index - 1], frequency)) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastAdfFrequencies[index - 1] = frequency;
       this.navaidVersion++;
       return Coherent.call(
@@ -580,10 +589,12 @@ export class NavaidTuner {
   }
 
   public get tunedVors(): VhfNavaid[] {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.vorTuningStatus.map((vorStatus) => vorStatus.facility).filter((fac) => fac !== undefined);
   }
 
   public get tunedNdbs(): NdbNavaid[] {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 

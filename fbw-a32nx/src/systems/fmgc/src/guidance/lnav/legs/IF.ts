@@ -82,6 +82,7 @@ export class IFLeg extends XFLeg {
     return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   getNominalRollAngle(_gs): Degrees | undefined {
     return undefined;
   }

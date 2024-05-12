@@ -13,6 +13,7 @@ import { ChecklistItem, ChecklistJsonDefinition } from './ChecklistInterfaces';
 export class ChecklistProvider {
   private readonly configFilename: string;
 
+  // @ts-expect-error TS2322
   private static instance: ChecklistProvider = undefined;
 
   private checklists: ChecklistJsonDefinition[] = [];
@@ -88,6 +89,7 @@ export class ChecklistProvider {
     const checklists: ChecklistJsonDefinition[] = json.checklists;
     // check each checklist's items for validity and add valid checklists to the checklist's array
     checklists.forEach((checklist, _) => {
+      // @ts-expect-error TS7034
       const checklistItems = [];
       const items: ChecklistItem[] = checklist.items;
       items.forEach((checklistItem, _) => {
@@ -99,6 +101,7 @@ export class ChecklistProvider {
       });
       this.checklists.push({
         name: checklist.name,
+        // @ts-expect-error TS7005
         items: checklistItems,
         flightphase: checklist.flightphase,
       });

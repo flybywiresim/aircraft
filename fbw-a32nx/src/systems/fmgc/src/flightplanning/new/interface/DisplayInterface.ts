@@ -10,11 +10,13 @@ export interface DisplayInterface {
   /**
    * Called when a flight plan uplink is in progress
    */
+  // @ts-expect-error TS7010 -- TODO fix this manually (strict mode migration)
   onUplinkInProgress();
 
   /**
    * Called when a flight plan uplink is done
    */
+  // @ts-expect-error TS7010 -- TODO fix this manually (strict mode migration)
   onUplinkDone();
 
   /**
@@ -24,6 +26,7 @@ export interface DisplayInterface {
    *
    * @param errorType the message to show
    */
+  // @ts-expect-error TS7010 -- TODO fix this manually (strict mode migration)
   showFmsErrorMessage(errorType: FmsErrorType);
 
   /**

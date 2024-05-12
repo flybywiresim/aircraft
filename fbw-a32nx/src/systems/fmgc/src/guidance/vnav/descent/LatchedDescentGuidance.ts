@@ -46,6 +46,7 @@ export class LatchedDescentGuidance {
 
   private todGuidance: TodGuidance;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private speedTarget: Knots | Mach;
 
   // An "overspeed condition" just means we are above the speed margins, not that we are in the red band.
@@ -290,6 +291,7 @@ export class LatchedDescentGuidance {
 
   public getLinearDeviation(): Feet {
     if (!this.aircraftToDescentProfileRelation.isValid) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return undefined;
     }
 

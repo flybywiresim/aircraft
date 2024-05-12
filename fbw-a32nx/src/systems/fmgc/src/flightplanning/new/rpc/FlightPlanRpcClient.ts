@@ -108,22 +108,27 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.flightPlanManager.has(index);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get active(): FlightPlan<P> {
     return this.flightPlanManager.get(FlightPlanIndex.Active);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get temporary(): FlightPlan<P> {
     return this.flightPlanManager.get(FlightPlanIndex.Temporary);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get activeOrTemporary(): FlightPlan<P> {
     return this.hasTemporary ? this.temporary : this.active;
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get uplink(): FlightPlan<P> {
     return this.flightPlanManager.get(FlightPlanIndex.Uplink);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   secondary(index: number): FlightPlan<P> {
     return this.flightPlanManager.get(FlightPlanIndex.FirstSecondary + index);
   }

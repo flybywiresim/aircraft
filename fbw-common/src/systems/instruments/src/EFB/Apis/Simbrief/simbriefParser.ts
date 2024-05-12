@@ -32,9 +32,11 @@ export const getSimbriefData = async (
   // try/catch here is an extra safety measure in case the configuration files are not found
   try {
     const airframeInfo = await UniversalConfigProvider.fetchAirframeInfo(
+      // @ts-expect-error TS2345
       process.env.AIRCRAFT_PROJECT_PREFIX,
       process.env.AIRCRAFT_VARIANT,
     );
+    // @ts-expect-error TS2345
     const versionInfo = await AircraftGithubVersionChecker.getBuildInfo(process.env.AIRCRAFT_PROJECT_PREFIX);
     simbriefApiParams.append(
       'client',

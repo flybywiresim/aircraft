@@ -439,6 +439,7 @@ export class Predictions {
         FlightModel.gravityConstKNS,
       ); // in kts/s
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (Math.abs(acceleration) < minimumAbsoluteAcceleration) {
         error = VnavStepError.TOO_LOW_DECELERATION;
 
@@ -460,12 +461,18 @@ export class Predictions {
 
     return {
       pathAngle: pathAngleRadians * MathUtils.RADIANS_TO_DEGREES,
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       verticalSpeed,
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       timeElapsed: stepTime,
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       distanceTraveled,
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       fuelBurned,
       initialAltitude,
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       finalAltitude,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       error,
       speed: finalCAS,
     };

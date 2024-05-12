@@ -20,6 +20,7 @@ export function mergeLegSets(
     for (let i = 0; i < existingLegs.length; i++) {
       const existingLeg = existingLegs[i];
 
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       if (connectionFound && finalLegs) {
         finalLegs.push(existingLeg);
         continue;
@@ -42,6 +43,7 @@ export function mergeLegSets(
     for (let i = existingLegs.length - 1; i >= 0; i--) {
       const existingLeg = existingLegs[i];
 
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       if (connectionFound && finalLegs) {
         finalLegs.push(existingLeg);
         continue;
@@ -61,6 +63,7 @@ export function mergeLegSets(
     }
   }
 
+  // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
   return finalLegs;
 }
 

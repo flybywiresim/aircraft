@@ -125,6 +125,7 @@ export class DescentPathBuilder {
       this.tryGetAnticipatedTarget(
         sequence,
         profile.descentSpeedConstraints,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         speedProfile.shouldTakeDescentSpeedLimitIntoAccount() ? descentSpeedLimit : null,
       ) ??
       speedProfile.getTarget(
@@ -268,6 +269,7 @@ export class DescentPathBuilder {
     step.fuelBurned *= scaling;
     step.timeElapsed *= scaling;
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
 
@@ -298,6 +300,7 @@ export class GeometricPathPlanner {
     end: GeometricPathPoint,
     segments: PlannedGeometricSegment[] = [],
     tolerance: number,
+    // @ts-expect-error TS2366 -- TODO fix this manually (strict mode migration)
   ): PlannedGeometricSegment[] {
     // A "gradient" is just a quantity of units Feet / NauticalMiles
     const gradient = calculateGradient(start, end);
@@ -325,6 +328,7 @@ export class GeometricPathPlanner {
         this.planDescentSegments(constraints, start, center, segments, tolerance);
         this.planDescentSegments(constraints, center, end, segments, tolerance);
 
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return;
       }
     }
@@ -346,9 +350,11 @@ function evaluateAltitudeConstraint(constraint: AltitudeConstraint, altitude: Fe
     case AltitudeDescriptor.AtOrAboveAlt1:
     case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
     case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return [isAltitudeConstraintMet(constraint, altitude, tol), Math.max(altitude, constraint.altitude1)];
     case AltitudeDescriptor.AtOrBelowAlt1:
     case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return [isAltitudeConstraintMet(constraint, altitude, tol), Math.min(altitude, constraint.altitude1)];
     case AltitudeDescriptor.BetweenAlt1Alt2:
       return [
@@ -356,6 +362,7 @@ function evaluateAltitudeConstraint(constraint: AltitudeConstraint, altitude: Fe
         MathUtils.clamp(altitude, constraint.altitude2, constraint.altitude1),
       ];
     case AltitudeDescriptor.AtOrAboveAlt2:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return [isAltitudeConstraintMet(constraint, altitude, tol), Math.max(altitude, constraint.altitude2)];
     default:
       return [true, altitude];
@@ -367,17 +374,22 @@ export const isAltitudeConstraintMet = (constraint: AltitudeConstraint, altitude
     case AltitudeDescriptor.AtAlt1:
     case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
     case AltitudeDescriptor.AtAlt1AngleAlt2:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return Math.abs(altitude - constraint.altitude1) < tol;
     case AltitudeDescriptor.AtOrAboveAlt1:
     case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
     case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return altitude - constraint.altitude1 > -tol;
     case AltitudeDescriptor.AtOrBelowAlt1:
     case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return altitude - constraint.altitude1 < tol;
     case AltitudeDescriptor.BetweenAlt1Alt2:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return altitude - constraint.altitude2 > -tol && altitude - constraint.altitude1 < tol;
     case AltitudeDescriptor.AtOrAboveAlt2:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return altitude - constraint.altitude2 > -tol;
     default:
       return true;

@@ -129,6 +129,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
       // Add an IF at the start if first leg of the approach is an FX
       if (firstApproachLeg && firstApproachLeg.isDiscontinuity === false && firstApproachLeg.isFX()) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachLeg.definition.waypoint, undefined, LegType.IF);
 
         legs.push(newLeg);
@@ -136,6 +137,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
       const lastLeg = approachLegs[approachLegs.length - 1];
       const lastLegIsRunway =
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         lastLeg && lastLeg.isDiscontinuity === false && areDatabaseItemsEqual(lastLeg.terminationWaypoint(), runway);
 
       if (lastLegIsRunway) {
@@ -160,6 +162,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
   private findRunwayFromRunwayLeg(leg: FlightPlanLeg): Runway | undefined {
     return this.flightPlan.availableDestinationRunways.find((it) =>
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       areDatabaseItemsEqual(leg.terminationWaypoint(), it),
     );
   }

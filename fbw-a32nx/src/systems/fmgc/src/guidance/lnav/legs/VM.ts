@@ -31,6 +31,7 @@ export class VMLeg extends Leg {
   }
 
   get terminationWaypoint(): Waypoint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 
@@ -41,6 +42,7 @@ export class VMLeg extends Leg {
   }
 
   getPathEndPoint(): Coordinates | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return placeBearingDistance(this.getPathStartPoint(), this.heading, VM_LEG_SIZE);
   }
 
@@ -50,7 +52,9 @@ export class VMLeg extends Leg {
     this.predictedPath.length = 0;
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.getPathStartPoint(),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
     });
 
@@ -92,6 +96,7 @@ export class VMLeg extends Leg {
   }
 
   getDistanceToGo(_ppos: LatLongData): NauticalMiles {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 

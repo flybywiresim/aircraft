@@ -153,6 +153,7 @@ export class McduSpeedProfile implements SpeedProfile {
   }
 
   getMaxClimbSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let activeConstraint: MaxSpeedConstraint = null;
 
     for (const constraint of this.climbSpeedConstraints) {
@@ -168,6 +169,7 @@ export class McduSpeedProfile implements SpeedProfile {
   }
 
   getMaxDescentSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let activeConstraint: MaxSpeedConstraint = null;
 
     for (const constraint of this.descentSpeedConstraints) {
@@ -253,10 +255,12 @@ export class ExpediteSpeedProfile implements SpeedProfile {
   }
 
   getMaxClimbSpeedConstraint(_distanceFromStart: number): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return null;
   }
 
   getMaxDescentSpeedConstraint(_distanceFromStart: number): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return null;
   }
 }
@@ -368,6 +372,7 @@ export class NdSpeedProfile implements SpeedProfile {
   }
 
   getMaxClimbSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let activeConstraint: MaxSpeedConstraint = null;
 
     for (const constraint of this.maxSpeedConstraints) {
@@ -383,6 +388,7 @@ export class NdSpeedProfile implements SpeedProfile {
   }
 
   getMaxDescentSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let activeConstraint: MaxSpeedConstraint = null;
 
     // TODO: I think this is unnecessarily complex, we can probably just return the first constraint that is in front of us.
@@ -399,6 +405,7 @@ export class NdSpeedProfile implements SpeedProfile {
   }
 
   private findMaxDescentSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let activeConstraint: MaxSpeedConstraint = null;
 
     // TODO: I think this is unnecessarily complex, we can probably just return the first constraint that is in front of us.

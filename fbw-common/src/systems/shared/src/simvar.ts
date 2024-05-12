@@ -5,9 +5,11 @@ export class SimVarCache {
     this.simVarCache = {};
   }
 
+  // @ts-expect-error TS7006
   getCachedSimVar(_simvar: string, _unit, force: boolean = false): number {
     const key: string = `${_simvar}:${_unit}`;
     if (this.simVarCache[key] !== null && !force) {
+      // @ts-expect-error TS2322
       return this.simVarCache[key];
     }
     const value = SimVar.GetSimVarValue(_simvar, _unit);
@@ -27,6 +29,7 @@ export class LocalSimVar<T> {
 
   constructor(
     public simvar: string,
+    // @ts-expect-error TS7006
     public unit,
   ) {
     this.localVar = SimVar.GetSimVarValue(this.simvar, this.unit);
@@ -58,6 +61,7 @@ export class SimVarString {
   static pack(value: string, maxLength?: number): number[] {
     let word = -1;
     const ret = [];
+    // @ts-expect-error TS2345
     for (let i = 0; i < Math.min(maxLength, value.length); i++) {
       const char = i % 8;
       if (char === 0) {

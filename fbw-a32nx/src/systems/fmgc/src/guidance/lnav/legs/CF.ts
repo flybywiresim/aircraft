@@ -70,6 +70,7 @@ export class CFLeg extends XFLeg {
       const prevLegTerm = this.inboundGuidable.getPathEndPoint();
 
       return placeBearingIntersection(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.getPathEndPoint(),
         inverseCourse,
         prevLegTerm,
@@ -90,7 +91,9 @@ export class CFLeg extends XFLeg {
       this.computedPath = [
         {
           type: PathVectorType.Line,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathEndPoint(),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           endPoint: this.getPathEndPoint(),
         },
       ];
@@ -98,7 +101,9 @@ export class CFLeg extends XFLeg {
       this.computedPath = [
         {
           type: PathVectorType.Line,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           endPoint: this.getPathEndPoint(),
         },
       ];
@@ -110,6 +115,7 @@ export class CFLeg extends XFLeg {
       this.computedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
           annotation: 'CF START',
         },
@@ -131,10 +137,12 @@ export class CFLeg extends XFLeg {
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixGuidance(ppos, trueTrack, this.course, this.getPathEndPoint());
   }
 
@@ -143,6 +151,7 @@ export class CFLeg extends XFLeg {
   }
 
   isAbeam(ppos: Coordinates): boolean {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
     return dtg >= 0 && dtg <= this.distance;

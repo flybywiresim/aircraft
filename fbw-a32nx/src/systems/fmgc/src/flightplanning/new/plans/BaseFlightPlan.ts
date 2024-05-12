@@ -255,6 +255,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         continue;
       }
 
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       if (element.terminationWaypoint().ident !== ident) {
         continue;
       }
@@ -405,6 +406,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.bus.getPublisher<FlightPlanEvents>().pub(topic, data, true, false);
     this.bus
       .getPublisher<SyncFlightPlanEvents>()
+      // @ts-expect-error TS2352 -- TODO fix this manually (strict mode migration)
       .pub(`SYNC_${topic}`, data as SyncFlightPlanEvents[`SYNC_${typeof topic}`], true, false);
     this.ignoreSync = false;
   }
@@ -479,6 +481,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   availableApproachVias: ProcedureTransition[] = [];
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get originLeg() {
     const originLegIndex = this.originLegIndex;
     return originLegIndex >= 0 ? this.allLegs[originLegIndex] : undefined;
@@ -493,6 +496,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLegIndex() {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let targetSegment: FlightPlanSegment = undefined;
 
     if (this.destinationSegment.allLegs.length > 0) {
@@ -569,6 +573,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (this.lastAllLegsVersion !== this.version) {
       this.lastAllLegsVersion = this.version;
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.cachedAllLegs = [
         ...this.originSegment.allLegs,
         ...this.departureRunwayTransitionSegment.allLegs,
@@ -744,6 +749,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get originRunway(): Runway {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.originSegment.originRunway;
   }
 
@@ -755,10 +761,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get departureRunwayTransition(): ProcedureTransition {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.departureRunwayTransitionSegment.procedure;
   }
 
   get originDeparture(): Departure {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.departureSegment.procedure;
   }
 
@@ -770,6 +778,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get departureEnrouteTransition(): ProcedureTransition {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.departureEnrouteTransitionSegment.procedure;
   }
 
@@ -786,6 +795,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get arrivalEnrouteTransition(): ProcedureTransition {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.arrivalEnrouteTransitionSegment.procedure;
   }
 
@@ -801,6 +811,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get arrival() {
     return this.arrivalSegment.procedure;
   }
@@ -816,6 +827,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return this.arrivalRunwayTransitionSegment.procedure;
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get approachVia() {
     return this.approachViaSegment.procedure;
   }
@@ -860,6 +872,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationRunway(): Runway {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.destinationSegment.destinationRunway;
   }
 
@@ -900,6 +913,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             prevSegment.allLegs.splice(prevIndexInSegment, 1);
           }
         } else if (nextElement.isDiscontinuity === false) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           if (previousElement.terminatesWithWaypoint(nextElement.terminationWaypoint())) {
             // Disco with same point before and after it
             this.mergeConstraints(previousElement, nextElement);
@@ -1191,6 +1205,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
 
     manualHoldLeg.modifiedHold = modifiedHold;
@@ -1575,14 +1590,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     for (const segment of this.orderedSegments) {
       indexAccumulator += segment.allLegs.length;
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (indexAccumulator > afterIndex) {
         const dupeIndexInSegment = segment.findIndexOfWaypoint(
           waypoint,
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           afterIndex - (indexAccumulator - segment.allLegs.length),
         );
 
         const planIndex = indexAccumulator - segment.allLegs.length + dupeIndexInSegment;
 
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (planIndex <= afterIndex) {
           continue;
         }
@@ -1601,6 +1619,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     let result = null;
 
     for (const segment of this.orderedSegments) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (indexAccumulator >= beforeIndex) {
         break;
       }
@@ -1609,6 +1628,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       const dupeIndexInSegment = segment.findLastIndexOfWaypoint(
         waypoint,
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         beforeIndex - (indexAccumulator - segment.allLegs.length),
       );
 
@@ -1620,6 +1640,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       result = [segment, dupeIndexInSegment, planIndex];
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return result;
   }
 
@@ -1926,6 +1947,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const bothXf = lastLegInFirst.isXF() && element.isXF();
 
         if (bothXf) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           if (element.terminatesWithWaypoint(lastLegInFirst.terminationWaypoint())) {
             // Transfer leg type from lastLegInFirst definition onto element
             element.type = lastLegInFirst.definition.type;
@@ -1949,6 +1971,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         const xfToFx = lastLegInFirst.isXF() && element.isFX();
 
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         if (xfToFx && lastLegInFirst.terminatesWithWaypoint(element.terminationWaypoint())) {
           if (LnavConfig.VERBOSE_FPM_LOG) {
             console.log(`[fpm] stringSegmentsForwards - cutBefore (xfToFx) = ${i}`);
@@ -1973,6 +1996,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
               throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
             }
 
+            // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
             const track = bearingTo(prevElement.terminationWaypoint().location, element.terminationWaypoint().location);
             element.type = LegType.CF;
             element.definition.magneticCourse = track;
@@ -2048,6 +2072,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     let firstElementInSecondIndex = 0;
+    // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
     const firstElementInSecond = second[0];
 
     if (firstElementInSecond?.isDiscontinuity === true) {
@@ -2076,6 +2101,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       const bothXf = firstLegInSecond.isXF() && element.isXF();
 
       if (bothXf) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
           // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
           second.allLegs.shift();
@@ -2087,6 +2113,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       const xfToFx = element.isXF() && firstLegInSecond.isFX();
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       if (xfToFx && element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
         cutBefore = i;
         break;
@@ -2136,6 +2163,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (lastDepartureLeg.isXF()) {
       // Check if same point occurs downroute
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const duplicate = this.findDuplicate(lastDepartureLeg.terminationWaypoint(), lastDepartureLegIndexInPlan);
       if (duplicate) {
         // If it does, remove everything inbetween
@@ -2173,6 +2201,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     // Check if same point occurs downroute
     if (firstArrivalLeg.isXF()) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const duplicate = this.findDuplicateReverse(firstArrivalLeg.terminationWaypoint(), firstArrivalLegIndexInPlan);
       if (duplicate) {
         // If it does, remove everything inbetween
@@ -2211,6 +2240,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     for (let segment = this.previousSegment(this.enrouteSegment); segment; segment = this.previousSegment(segment)) {
       const lastLegIndex = segment.lastLegIndex;
       if (lastLegIndex < 0) {
@@ -2222,10 +2252,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return [segment, lastLegIndex, totalIndex];
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return [undefined, -1, -1];
   }
 
   private findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     for (let segment = this.nextSegment(this.enrouteSegment); segment; segment = this.nextSegment(segment)) {
       if (segment.legCount < 0) {
         continue;
@@ -2237,6 +2269,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return [segment, firstLegIndex, totalIndex];
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return [undefined, -1, -1];
   }
 
@@ -2476,7 +2509,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       const climbConstraint =
         leg.constraintType === WaypointConstraintType.CLB
-          ? ConstraintUtils.maximumAltitude(leg.altitudeConstraint)
+          ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+            ConstraintUtils.maximumAltitude(leg.altitudeConstraint)
           : Infinity;
       if (climbConstraint < lowestClimbConstraint) {
         lowestClimbConstraint = climbConstraint;
@@ -2492,6 +2526,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       throw new Error('[FMS/FPM] Can only deduplicate XF, FX or HX legs');
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const duplicate = this.findDuplicate(leg.terminationWaypoint(), atIndex);
     if (!duplicate) {
       return;

@@ -49,11 +49,14 @@ export class FDLeg extends Leg {
       this.course,
     );
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.intercept = intersect;
 
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.getPathStartPoint(),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
     });
 
@@ -61,6 +64,7 @@ export class FDLeg extends Leg {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
           annotation: 'FD START',
         },
@@ -95,7 +99,9 @@ export class FDLeg extends Leg {
     this.predictedPath.length = 0;
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.getPathStartPoint(),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
     });
 
@@ -103,6 +109,7 @@ export class FDLeg extends Leg {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
           annotation: 'FD START',
         },
@@ -120,12 +127,14 @@ export class FDLeg extends Leg {
   get distanceToTermination(): NauticalMiles {
     const startPoint = this.getPathStartPoint();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(startPoint, this.intercept);
   }
 
   isAbeam(ppos: Coordinates): boolean {
     const dtg = this.getDistanceToGo(ppos);
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return dtg >= 0 && dtg <= this.distance;
   }
 
@@ -139,6 +148,7 @@ export class FDLeg extends Leg {
     _tas: Knots,
     _gs: Knots,
   ): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return fixToFixGuidance(ppos, trueTrack, this.getPathStartPoint(), this.intercept);
   }
 

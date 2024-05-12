@@ -60,15 +60,18 @@ export enum DirectToFixTransitionGuidanceState {
 /**
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
+// @ts-expect-error TS2415 -- TODO fix this manually (strict mode migration)
 export class DirectToFixTransition extends Transition {
   public state = DirectToFixTransitionGuidanceState.Straight;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private straightCourse: Degrees;
 
   constructor(
     public previousLeg: PrevLeg,
     public nextLeg: NextLeg,
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -94,24 +97,34 @@ export class DirectToFixTransition extends Transition {
     return this.deltaTrack;
   }
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public hasArc: boolean;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public center: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public radius: NauticalMiles;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public clockwise: boolean;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public lineStartPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public lineEndPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public arcStartPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public arcCentrePoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public arcEndPoint: Coordinates;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   public arcSweepAngle: Degrees;
 
   private computedPath: PathVector[] = [];
@@ -134,6 +147,7 @@ export class DirectToFixTransition extends Transition {
 
     let trackChange = MathUtils.diffAngle(
       this.previousLeg.outboundCourse,
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       bearingTo(this.previousLeg.getPathEndPoint(), nextFix),
       this.nextLeg.metadata.turnDirection,
     );
@@ -154,8 +168,10 @@ export class DirectToFixTransition extends Transition {
 
     let itp =
       rollAnticipationDistance >= 0.05
-        ? placeBearingDistance(termFix, this.previousLeg.outboundCourse, rollAnticipationDistance)
+        ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+          placeBearingDistance(termFix, this.previousLeg.outboundCourse, rollAnticipationDistance)
         : termFix;
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     let turnCentre = placeBearingDistance(itp, this.previousLeg.outboundCourse + turnDirectionSign * 90, this.radius);
 
     let distanceToFix = distanceTo(turnCentre, nextFix);
@@ -165,13 +181,16 @@ export class DirectToFixTransition extends Transition {
         Math.abs(
           MathUtils.diffAngle(
             this.previousLeg.outboundCourse,
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             bearingTo(termFix, nextFix),
             this.nextLeg.metadata.turnDirection,
           ),
         ) < 60
       ) {
         this.hasArc = false;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         this.lineStartPoint = termFix;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         this.lineEndPoint = termFix;
         this.terminator = this.lineEndPoint;
 
@@ -203,11 +222,13 @@ export class DirectToFixTransition extends Transition {
         distanceToFix * Math.cos(((tcFixBearing - this.previousLeg.outboundCourse) * Math.PI) / 180) +
         0.3;
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       itp = placeBearingDistance(itp, this.previousLeg.outboundCourse, extendDist);
       turnCentre = placeBearingDistance(turnCentre, this.previousLeg.outboundCourse, extendDist);
       distanceToFix = distanceTo(turnCentre, nextFix);
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const bearingTcItp = bearingTo(turnCentre, itp);
     const bearingTcFix = bearingTo(turnCentre, nextFix);
     const angleFtpFix = acos(this.radius / distanceToFix);
@@ -224,9 +245,12 @@ export class DirectToFixTransition extends Transition {
       this.radius,
     );
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lineStartPoint = this.previousLeg.getPathEndPoint();
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.lineEndPoint = itp;
     this.hasArc = true;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.arcStartPoint = itp;
     this.arcCentrePoint = turnCentre;
     this.arcEndPoint = ftp;
@@ -395,6 +419,7 @@ export class DirectToFixTransition extends Transition {
 
         const rad = getRollAnticipationDistance(tas, 0, bankNext);
 
+        // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
         if (dtg <= rad) {
           params.phiCommand = bankNext;
         }
@@ -406,6 +431,7 @@ export class DirectToFixTransition extends Transition {
         break;
       default:
     }
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     return params;
   }
 

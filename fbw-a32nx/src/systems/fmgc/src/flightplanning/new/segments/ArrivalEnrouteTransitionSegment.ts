@@ -25,6 +25,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
    */
   private arrivalEnrouteTransition: ProcedureTransition | undefined | null;
 
+  // @ts-expect-error TS2366 -- TODO fix this manually (strict mode migration)
   setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
     if (databaseId === undefined || databaseId === null) {
       this.arrivalEnrouteTransition = databaseId === undefined ? undefined : null;
@@ -35,6 +36,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
         this.flightPlan.syncSegmentLegsChange(this);
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -59,6 +61,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
     this.arrivalEnrouteTransition = matchingArrivalEnrouteTransition;
 
     if (skipUpdateLegs) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -74,6 +77,7 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
     if (firstArrivalEnrouteTransitionLeg?.isFX()) {
       const newLeg = FlightPlanLeg.fromEnrouteFix(
         this,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         firstArrivalEnrouteTransitionLeg.definition.waypoint,
         undefined,
         LegType.IF,

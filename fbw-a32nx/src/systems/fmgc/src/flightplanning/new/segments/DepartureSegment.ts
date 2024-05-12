@@ -78,6 +78,7 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
 
     // Add an IF at the start if first leg of the departure is an FX
     if (firstDepartureLeg?.isFX() && !firstDepartureLeg.isRunway()) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstDepartureLeg.definition.waypoint, undefined, LegType.IF);
 
       this.allLegs.push(newLeg);

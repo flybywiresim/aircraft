@@ -17,6 +17,7 @@ export class DestinationSegment extends FlightPlanSegment {
 
   allLegs: FlightPlanElement[] = [];
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private airport: Airport;
 
   public get destinationAirport() {
@@ -25,6 +26,7 @@ export class DestinationSegment extends FlightPlanSegment {
 
   public async setDestinationIcao(icao: string | undefined) {
     if (icao === undefined) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.airport = undefined;
       this.runway = undefined;
 

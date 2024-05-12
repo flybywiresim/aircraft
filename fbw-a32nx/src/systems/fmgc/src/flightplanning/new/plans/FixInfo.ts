@@ -42,7 +42,9 @@ export class FixInfoEntry implements FixInfoData {
   public clone(): FixInfoEntry {
     return new FixInfoEntry(
       this.fix,
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.radii.map((radius) => ({ ...radius })),
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.radials.map((radial) => ({ ...radial })),
     );
   }

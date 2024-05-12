@@ -14,6 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/perfor
  * An alternate flight plan shares its origin with the destination of a regular flight plan
  */
 export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   override originSegment: AlternateOriginSegment = undefined;
 
   constructor(
@@ -22,9 +23,11 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   ) {
     super(index, mainFlightPlan.bus);
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   get originAirport(): Airport | undefined {
     return this.mainFlightPlan.destinationAirport;
   }
@@ -34,16 +37,27 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.departureSegment = this.departureSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.approachSegment = this.approachSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.destinationSegment = this.destinationSegment.clone(newPlan);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
@@ -82,12 +96,15 @@ export class AlternateOriginSegment extends OriginSegment {
     return this.mainDestinationSegment.destinationAirport;
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   clone(forPlan: AlternateFlightPlan<FlightPlanPerformanceData>): AlternateOriginSegment {
     // Important that we don't pass in `this.mainDestinationSegment` here, since this will be of the old plan.
     // Instead, pass in `mainDestinationSegment` on the origin of the new plan
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const newSegment = new AlternateOriginSegment(forPlan, forPlan.originSegment.mainDestinationSegment);
 
     newSegment.strung = this.strung;
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
     newSegment.airport = this.airport;
     newSegment.runway = this.runway;

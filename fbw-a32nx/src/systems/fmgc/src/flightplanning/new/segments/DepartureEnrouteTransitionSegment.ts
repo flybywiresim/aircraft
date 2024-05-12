@@ -22,6 +22,7 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
   // The departure enroute transition. If undefined, no departure enroute transition is set. If null, NO TRANS was explicitly selected.
   private departureEnrouteTransition: ProcedureTransition | undefined | null;
 
+  // @ts-expect-error TS2366 -- TODO fix this manually (strict mode migration)
   setProcedure(databaseId: string | undefined | null, skipUpdateLegs?: boolean): Promise<void> {
     if (databaseId === undefined || databaseId === null) {
       this.departureEnrouteTransition = databaseId === undefined ? undefined : null;
@@ -32,6 +33,7 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
         this.flightPlan.syncSegmentLegsChange(this);
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -56,6 +58,7 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
     this.departureEnrouteTransition = matchingOriginEnrouteTransition;
 
     if (skipUpdateLegs) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return;
     }
 
@@ -71,6 +74,7 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
     if (firstDepartureEnrouteTransitionLeg?.isFX() && !firstDepartureEnrouteTransitionLeg.isRunway()) {
       const newLeg = FlightPlanLeg.fromEnrouteFix(
         this,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         firstDepartureEnrouteTransitionLeg.definition.waypoint,
         undefined,
         LegType.IF,

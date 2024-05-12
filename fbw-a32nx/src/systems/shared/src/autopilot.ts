@@ -57,6 +57,7 @@ enum ArmedVerticalMode {
   TCAS = 6,
 }
 
+// @ts-expect-error TS7006
 function isArmed(bitmask, armedBit: ArmedVerticalMode | ArmedLateralMode): boolean {
   return ((bitmask >> armedBit) & 1) === 1;
 }

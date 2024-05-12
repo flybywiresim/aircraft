@@ -18,7 +18,9 @@ import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
 
 function canInitiateDes(distanceToDestination: number): boolean {
+  // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
   const fl = Math.round(Simplane.getAltitude() / 100);
+  // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
   const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
@@ -154,6 +156,7 @@ export class FlightPhaseManager {
       const accAlt = isAllEngineOn()
         ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_ACC_ALT')
         : Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_EO_ACC_ALT');
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       if (Simplane.getAltitude() > accAlt.valueOr(0)) {
         this.changePhase(FmgcFlightPhase.Climb);
       }

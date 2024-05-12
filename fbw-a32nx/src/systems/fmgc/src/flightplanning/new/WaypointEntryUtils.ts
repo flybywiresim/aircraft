@@ -74,6 +74,7 @@ export class WaypointEntryUtils {
     // In this case, we only want to return the actual VOR facility
     const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return fms.deduplicateFacilities(items);
   }
 

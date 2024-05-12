@@ -142,6 +142,7 @@ export class SimBriefUplinkAdapter {
       destinationTransitionLevel: route.to.transLevel / 100,
       costIndex: route.costIndex,
       cruiseFlightLevel: ofp.cruiseAltitude / 100,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
 
@@ -218,6 +219,7 @@ export class SimBriefUplinkAdapter {
     };
 
     const pickAirwayFix = (airway: Airway, fixes: Fix[]): Fix =>
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
 
     for (let i = 0; i < route.chunks.length; i++) {
@@ -347,6 +349,7 @@ export class SimBriefUplinkAdapter {
             const legAtInsertHead = plan.elementAt(insertHead);
 
             if (legAtInsertHead.isDiscontinuity === false) {
+              // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
               airwaySearchFix = legAtInsertHead.terminationWaypoint();
             } else {
               // In this case, the waypoint that the airway started at was probably not found in that database,
@@ -358,6 +361,7 @@ export class SimBriefUplinkAdapter {
           } else {
             const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
 
+            // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
             airwaySearchFix = tailElement.to ?? tailElement.airway?.fixes[tailElement.airway.fixes.length - 1];
           }
 
@@ -365,6 +369,7 @@ export class SimBriefUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
+              // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
               plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
             } else {
               console.warn(
@@ -413,6 +418,7 @@ export class SimBriefUplinkAdapter {
 
             const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
 
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
 
             ensureAirwaysFinalized();

@@ -37,6 +37,7 @@ export abstract class XFLeg extends Leg {
   }
 
   get overflyTermFix(): boolean {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.metadata.isOverfly;
   }
 
@@ -44,6 +45,7 @@ export abstract class XFLeg extends Leg {
    * Returns `true` if the inbound transition has overshot the leg
    */
   get overshot(): boolean {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const side = sideOfPointOnCourseToFix(this.fix.location, this.outboundCourse, this.getPathStartPoint());
 
     return side === PointSide.After;
@@ -64,6 +66,7 @@ export abstract class XFLeg extends Leg {
       return 0;
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(startPoint, this.fix.location);
   }
 }

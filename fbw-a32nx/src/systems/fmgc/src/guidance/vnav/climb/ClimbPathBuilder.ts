@@ -68,9 +68,12 @@ export class ClimbPathBuilder {
         break;
       }
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       if (constraintAltitude > profile.lastCheckpoint.altitude) {
         // Continue climb
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         if (profile.lastCheckpoint.reason === VerticalCheckpointReason.AltitudeConstraint) {
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           profile.lastCheckpoint.reason = VerticalCheckpointReason.ContinueClimb;
         }
 
@@ -82,17 +85,21 @@ export class ClimbPathBuilder {
           climbStrategy,
           speedProfile,
           windProfile,
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           profile.lastCheckpoint.altitude,
           constraintAltitude,
         );
 
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         let currentSpeedConstraint = speedProfile.getMaxClimbSpeedConstraint(profile.lastCheckpoint.distanceFromStart);
         for (
           let i = 0;
           i++ < 10 && currentSpeedConstraint;
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           currentSpeedConstraint = speedProfile.getMaxClimbSpeedConstraint(profile.lastCheckpoint.distanceFromStart)
         ) {
           // This means we did not pass a constraint during the climb
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           if (currentSpeedConstraint.distanceFromStart > profile.lastCheckpoint.distanceFromStart) {
             break;
           }
@@ -105,6 +112,7 @@ export class ClimbPathBuilder {
             profile,
             climbStrategy,
             windProfile,
+            // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
             currentSpeedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
             managedClimbSpeedMach,
             VerticalCheckpointReason.SpeedConstraint,
@@ -117,29 +125,36 @@ export class ClimbPathBuilder {
             climbStrategy,
             speedProfile,
             windProfile,
+            // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
             profile.lastCheckpoint.altitude,
             constraintAltitude,
           );
         }
 
         // We reach the target altitude before the constraint, so we insert a level segment.
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         if (profile.lastCheckpoint.distanceFromStart < constraintDistanceFromStart) {
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           profile.lastCheckpoint.reason = VerticalCheckpointReason.LevelOffForClimbConstraint;
 
           this.addLevelSegmentSteps(profile, speedProfile, constraintDistanceFromStart);
         }
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       } else if (Math.abs(profile.lastCheckpoint.altitude - constraintAltitude) < 250) {
         // Continue in level flight to the next constraint
         this.addLevelSegmentSteps(profile, speedProfile, constraintDistanceFromStart);
       }
     }
 
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     if (profile.lastCheckpoint.reason === VerticalCheckpointReason.AltitudeConstraint) {
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.reason = VerticalCheckpointReason.ContinueClimb;
     }
 
     // We get here if there are still waypoints with speed constrainst after all the altitude constraints
     for (const speedConstraint of profile.maxClimbSpeedConstraints) {
+      // @ts-expect-error TS2339 -- TODO fix this manually (strict mode migration)
       const { distanceFromStart, altitude, speed, remainingFuelOnBoard } = profile.lastCheckpoint;
 
       if (distanceFromStart > speedConstraint.distanceFromStart) {
@@ -162,28 +177,35 @@ export class ClimbPathBuilder {
         // If we shoot through the final altitude trying to accelerate, pretend we didn't accelerate all the way
         if (accelerationStep.finalAltitude > finalAltitude) {
           const scaling =
+            // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
             accelerationStep.finalAltitude - accelerationStep.initialAltitude !== 0
-              ? (finalAltitude - accelerationStep.initialAltitude) /
+              ? // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
+                (finalAltitude - accelerationStep.initialAltitude) /
+                // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
                 (accelerationStep.finalAltitude - accelerationStep.initialAltitude)
               : 0;
 
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.scaleStepBasedOnLastCheckpoint(profile.lastCheckpoint, accelerationStep, scaling);
         }
 
         this.addCheckpointFromStep(profile, accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
       }
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       if (speedConstraint.distanceFromStart > profile.lastCheckpoint.distanceFromStart) {
         this.buildIteratedDistanceStep(
           profile,
           climbStrategy,
           windProfile,
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
           managedClimbSpeedMach,
           VerticalCheckpointReason.SpeedConstraint,
         );
 
         // This occurs if we somehow overshot the target altitude
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         if (profile.lastCheckpoint.altitude > finalAltitude) {
           // Remove all checkpoints that are above the final altitude
           profile.checkpoints = profile.checkpoints.filter((c) => c.altitude <= finalAltitude);
@@ -194,6 +216,7 @@ export class ClimbPathBuilder {
             climbStrategy,
             speedProfile,
             windProfile,
+            // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
             profile.lastCheckpoint.altitude,
             finalAltitude,
           );
@@ -207,9 +230,11 @@ export class ClimbPathBuilder {
       climbStrategy,
       speedProfile,
       windProfile,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.altitude,
       finalAltitude,
     );
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     profile.lastCheckpoint.reason = finalAltitudeReason;
   }
 
@@ -226,6 +251,7 @@ export class ClimbPathBuilder {
     // This is just to prevent a potential infinite loop
     let i = 0;
     for (let altitude = startingAltitude; i++ < 100 && altitude < targetAltitude; ) {
+      // @ts-expect-error TS2339 -- TODO fix this manually (strict mode migration)
       const { speed, remainingFuelOnBoard, distanceFromStart } = profile.lastCheckpoint;
 
       const speedTarget = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Climb);
@@ -256,9 +282,12 @@ export class ClimbPathBuilder {
 
       if (step.finalAltitude - targetAltitude > 10) {
         const scaling =
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           step.finalAltitude - step.initialAltitude !== 0
-            ? (targetAltitude - step.initialAltitude) / (step.finalAltitude - step.initialAltitude)
+            ? // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
+              (targetAltitude - step.initialAltitude) / (step.finalAltitude - step.initialAltitude)
             : 0;
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.scaleStepBasedOnLastCheckpoint(profile.lastCheckpoint, step, scaling);
       }
 
@@ -302,6 +331,7 @@ export class ClimbPathBuilder {
     reason: VerticalCheckpointReason,
   ) {
     const { managedClimbSpeedMach } = this.computationParametersObserver.get();
+    // @ts-expect-error TS2339 -- TODO fix this manually (strict mode migration)
     const { distanceFromStart, altitude, speed: initialSpeed, remainingFuelOnBoard } = profile.lastCheckpoint;
 
     const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
@@ -323,20 +353,24 @@ export class ClimbPathBuilder {
     toDistanceFromStart: NauticalMiles,
   ): void {
     // The only reason we have to build this iteratively is because there could be speed constraints along the way
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     const altitude = profile.lastCheckpoint.altitude;
 
     // Go over all constraints
     for (const speedConstraint of profile.maxClimbSpeedConstraints) {
       // Ignore constraint since we're already past it
       if (
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         profile.lastCheckpoint.distanceFromStart >= speedConstraint.distanceFromStart ||
         toDistanceFromStart <= speedConstraint.distanceFromStart
       ) {
         continue;
       }
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       const currentSpeed = profile.lastCheckpoint.speed;
       const speedTarget = speedProfile.getTarget(
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         profile.lastCheckpoint.distanceFromStart,
         altitude,
         ManagedSpeedType.Climb,
@@ -347,14 +381,18 @@ export class ClimbPathBuilder {
           altitude,
           currentSpeed,
           speedTarget,
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           profile.lastCheckpoint.remainingFuelOnBoard,
         );
 
         // We could not accelerate in time
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         if (profile.lastCheckpoint.distanceFromStart + step.distanceTraveled > speedConstraint.distanceFromStart) {
           const scaling =
+            // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
             step.distanceTraveled / (speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart);
 
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.scaleStepBasedOnLastCheckpoint(profile.lastCheckpoint, step, scaling);
           this.addCheckpointFromStep(profile, step, VerticalCheckpointReason.AtmosphericConditions);
 
@@ -367,9 +405,12 @@ export class ClimbPathBuilder {
 
       // Compute step after accelerating to next constraint
       const levelStepToConstraint = this.computeLevelFlightSegmentPrediction(
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
         altitude,
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         profile.lastCheckpoint.speed,
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         profile.lastCheckpoint.remainingFuelOnBoard,
       );
 
@@ -377,8 +418,10 @@ export class ClimbPathBuilder {
     }
 
     // TODO: This exact piece of code appears a couple of lines above, extract to function!
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     const currentSpeed = profile.lastCheckpoint.speed;
     const speedTarget = speedProfile.getTarget(
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.distanceFromStart,
       altitude,
       ManagedSpeedType.Climb,
@@ -389,13 +432,17 @@ export class ClimbPathBuilder {
         altitude,
         currentSpeed,
         speedTarget,
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         profile.lastCheckpoint.remainingFuelOnBoard,
       );
 
       // We could not accelerate in time
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       if (profile.lastCheckpoint.distanceFromStart + accelerationStep.distanceTraveled > toDistanceFromStart) {
         const scaling =
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           accelerationStep.distanceTraveled / (toDistanceFromStart - profile.lastCheckpoint.distanceFromStart);
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.scaleStepBasedOnLastCheckpoint(profile.lastCheckpoint, accelerationStep, scaling);
         this.addCheckpointFromStep(profile, accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
 
@@ -407,9 +454,12 @@ export class ClimbPathBuilder {
     }
 
     const levelStepToConstraint = this.computeLevelFlightSegmentPrediction(
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       toDistanceFromStart - profile.lastCheckpoint.distanceFromStart,
       altitude,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.speed,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.remainingFuelOnBoard,
     );
 
@@ -526,6 +576,7 @@ export class ClimbPathBuilder {
     step.fuelBurned *= scaling;
     step.timeElapsed *= scaling;
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
 }

@@ -35,6 +35,7 @@ export class GeometricPathBuilder {
     windProfile: HeadwindProfile,
   ) {
     const accelerationTargets = this.buildAccelerationTargets(sequence.lastCheckpoint, segments, speedConstraints);
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     const lastTarget: AccelerationTarget = null;
 
     for (const segment of segments) {
@@ -199,6 +200,7 @@ export class GeometricPathBuilder {
     step.fuelBurned *= scaling;
     step.timeElapsed *= scaling;
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
 
@@ -216,6 +218,7 @@ export class GeometricPathBuilder {
     );
     let shouldAddSpeedLimit = distanceAtSpeedLimitCrossing !== null;
     const speedLimitTarget: AccelerationTarget = {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       distanceFromStart: distanceAtSpeedLimitCrossing,
       speed: descentSpeedLimit.speed,
       isSpeedLimit: true,
@@ -225,6 +228,7 @@ export class GeometricPathBuilder {
     for (let i = speedConstraints.length - 1; i >= 0; i--) {
       const sc = speedConstraints[i];
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       if (shouldAddSpeedLimit && sc.distanceFromStart < distanceAtSpeedLimitCrossing) {
         targets.push(speedLimitTarget);
         shouldAddSpeedLimit = false;

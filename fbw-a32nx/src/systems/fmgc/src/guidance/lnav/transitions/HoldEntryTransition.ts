@@ -50,6 +50,7 @@ export enum EntryState {
   Done,
 }
 
+// @ts-expect-error TS2415 -- TODO fix this manually (strict mode migration)
 export class HoldEntryTransition extends Transition {
   private entry = EntryType.Null;
 
@@ -61,6 +62,7 @@ export class HoldEntryTransition extends Transition {
 
   private turn3: EntryTurn = {};
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private straightCourse: Degrees;
 
   public state: EntryState = EntryState.Turn1;
@@ -77,6 +79,7 @@ export class HoldEntryTransition extends Transition {
     public nextLeg: HALeg | HFLeg | HMLeg,
     _predictWithCurrentSpeed: boolean = true, // TODO we don't need this?
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -119,21 +122,25 @@ export class HoldEntryTransition extends Transition {
     // update state
     switch (this.state) {
       case EntryState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = arcDistanceToGo(ppos, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
         if (dtg <= 0) {
           this.state = EntryState.Straight1;
         }
         break;
       case EntryState.Straight1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = courseToFixDistanceToGo(ppos, this.straightCourse, this.turn2.itp);
         if (dtg <= 0) {
           this.state = EntryState.Turn2;
         }
         break;
       case EntryState.Turn2: {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
         const refFrameOffset = MathUtils.diffAngle(0, this.outboundCourse);
         const trackAngleError =
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn2.sweepAngle < 0
             ? MathUtils.normalise360(refFrameOffset - trueTrack)
             : MathUtils.normalise360(trueTrack - refFrameOffset);
@@ -157,15 +164,19 @@ export class HoldEntryTransition extends Transition {
     // compute guidance
     switch (this.state) {
       case EntryState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = arcGuidance(ppos, trueTrack, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
         break;
       case EntryState.Straight1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = courseToFixGuidance(ppos, trueTrack, this.straightCourse, this.turn2.itp);
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         bankNext = this.turn2.sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
         break;
       case EntryState.Turn2: {
         // force the initial part of the turn to ensure correct direction
         const phiCommand =
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.turn2.sweepAngle > 0 ? maxBank(tas, true /* FIXME false */) : -maxBank(tas, true /* FIXME false */);
         bankNext = phiCommand;
         params = {
@@ -185,16 +196,19 @@ export class HoldEntryTransition extends Transition {
       }
       case EntryState.Done:
         params = this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         bankNext = params.phiCommand;
         break;
       default:
     }
 
     const rad = Geometry.getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     if (rad > 0 && dtg <= rad) {
       (params as LateralPathGuidance).phiCommand = bankNext;
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return params;
   }
 
@@ -203,18 +217,21 @@ export class HoldEntryTransition extends Transition {
 
     switch (this.state) {
       case EntryState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = arcDistanceToGo(ppos, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
         if (dtg <= 0) {
           this.state = EntryState.Straight1;
         }
         break;
       case EntryState.Straight1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = courseToFixDistanceToGo(ppos, this.straightCourse, this.turn2.itp);
         if (dtg <= 0) {
           this.state = EntryState.Turn2;
         }
         break;
       case EntryState.Turn2:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dtg = arcDistanceToGo(ppos, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
         if (dtg <= 0) {
           this.state = EntryState.Capture;
@@ -233,14 +250,18 @@ export class HoldEntryTransition extends Transition {
     let bankNext: Degrees;
     switch (this.state) {
       case EntryState.Turn1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = arcGuidance(ppos, trueTrack, this.turn1.itp, this.turn1.arcCentre, this.turn1.sweepAngle);
         bankNext = 0;
         break;
       case EntryState.Straight1:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = courseToFixGuidance(ppos, trueTrack, this.straightCourse, this.turn2.itp);
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         bankNext = this.turn2.sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
         break;
       case EntryState.Turn2:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         params = arcGuidance(ppos, trueTrack, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);
         bankNext = 0;
         break;
@@ -251,10 +272,14 @@ export class HoldEntryTransition extends Transition {
       default:
     }
 
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     const rad = Geometry.getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     if (rad > 0 && dtg <= rad) {
+      // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
       (params as LateralPathGuidance).phiCommand = bankNext;
     }
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     return params;
   }
 
@@ -287,10 +312,12 @@ export class HoldEntryTransition extends Transition {
       return this.nextLeg.getNominalRollAngle(gs);
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     if (Math.abs(this.turn1.sweepAngle) <= 3) {
       return 0;
     }
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.turn1.sweepAngle > 0 ? maxBank(gs /* FIXME tas */, true) : -maxBank(gs /* FIXME tas */, true);
   }
 
@@ -298,9 +325,11 @@ export class HoldEntryTransition extends Transition {
     switch (this.entry) {
       case EntryType.Parallel:
       case EntryType.Teardrop:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return [this.nextLeg.fix.location, this.turn3.ftp];
       case EntryType.DirectTurn:
       case EntryType.DirectOutbound:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return [this.nextLeg.fix.location, this.turn1.ftp];
       case EntryType.Null:
       default:
@@ -310,6 +339,7 @@ export class HoldEntryTransition extends Transition {
 
   isAbeam(ppos: Coordinates) {
     // major hack
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     if (!this.wasAbeam && this.previousLeg.getDistanceToGo(ppos) <= 0) {
       this.wasAbeam = true;
       return true;
@@ -326,6 +356,7 @@ export class HoldEntryTransition extends Transition {
   }
 
   get inboundCourse(): Degrees {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.previousLeg.outboundCourse;
   }
 
@@ -356,11 +387,13 @@ export class HoldEntryTransition extends Transition {
     const debugPoints: PathVector[] = [
       {
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn1.arcCentre,
         annotation: 'AC1',
       },
       {
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn1.ftp,
         annotation: 'FTP1',
       },
@@ -369,6 +402,7 @@ export class HoldEntryTransition extends Transition {
     if (this.entry === EntryType.Parallel || this.entry === EntryType.Teardrop) {
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn2.itp,
         annotation: 'ITP2',
         colour: DebugPointColour.Magenta,
@@ -376,6 +410,7 @@ export class HoldEntryTransition extends Transition {
 
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn2.arcCentre,
         annotation: 'AC2',
         colour: DebugPointColour.Magenta,
@@ -383,6 +418,7 @@ export class HoldEntryTransition extends Transition {
 
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn2.ftp,
         annotation: 'FTP2',
         colour: DebugPointColour.Magenta,
@@ -390,6 +426,7 @@ export class HoldEntryTransition extends Transition {
 
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn3.itp,
         annotation: 'ITP3',
         colour: DebugPointColour.Yellow,
@@ -397,6 +434,7 @@ export class HoldEntryTransition extends Transition {
 
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn3.arcCentre,
         annotation: 'AC3',
         colour: DebugPointColour.Yellow,
@@ -404,6 +442,7 @@ export class HoldEntryTransition extends Transition {
 
       debugPoints.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.turn3.ftp,
         annotation: 'FTP3',
         colour: DebugPointColour.Yellow,

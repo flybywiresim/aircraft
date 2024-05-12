@@ -85,6 +85,7 @@ export class NXLogicConfirmNode {
 
   previousOutput: any;
 
+  // @ts-expect-error TS7006
   constructor(t, risingEdge = true) {
     this.t = t;
     this.risingEdge = risingEdge;
@@ -93,6 +94,7 @@ export class NXLogicConfirmNode {
     this.previousOutput = null;
   }
 
+  // @ts-expect-error TS7006
   write(value, deltaTime) {
     if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousInput = value;
@@ -163,6 +165,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
+  // @ts-expect-error TS7006
   write(set, reset) {
     if (set && reset) {
       this.value = this.setStar;
@@ -200,12 +203,14 @@ export class NXLogicClockNode {
 
   dir: string;
 
+  // @ts-expect-error TS2564
   timer: number;
 
   flag: boolean;
 
   output: number;
 
+  // @ts-expect-error TS7006
   constructor(from, to, inc = 1, dir = 'DN') {
     this.from = from;
     this.to = to;
@@ -215,6 +220,7 @@ export class NXLogicClockNode {
     this.flag = false;
   }
 
+  // @ts-expect-error TS7006
   write(value, deltaTime) {
     if (!value) {
       this.timer = 0;

@@ -184,6 +184,7 @@ export class CoRouteUplinkAdapter {
     };
 
     const pickAirwayFix = (airway: Airway, fixes: Fix[]): Fix =>
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
 
     for (let i = 0; i < route.chunks.length; i++) {
@@ -260,18 +261,22 @@ export class CoRouteUplinkAdapter {
             const legAtInsertHead = plan.elementAt(insertHead);
 
             if (legAtInsertHead.isDiscontinuity === false) {
+              // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
               airwaySearchFix = legAtInsertHead.terminationWaypoint();
             }
           } else {
             const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
 
+            // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
             airwaySearchFix = tailElement.to ?? tailElement.airway?.fixes[tailElement.airway.fixes.length - 1];
           }
 
+          // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
           if (airwaySearchFix) {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
+              // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
               plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
             } else {
               console.warn(
@@ -314,6 +319,7 @@ export class CoRouteUplinkAdapter {
 
             const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
 
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
 
             ensureAirwaysFinalized();
@@ -345,6 +351,7 @@ export class CoRouteUplinkAdapter {
     return {
       from: ofp.originIcao,
       to: ofp.destinationIcao,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       altn: ofp.alternateIcao,
       chunks: this.generateRouteInstructionsFromNavlog(ofp),
     };

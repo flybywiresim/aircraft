@@ -17,6 +17,7 @@ export class McduServerClient {
 
   private state: ClientState = ClientState.getInstance();
 
+  // @ts-expect-error TS2322
   private socket: WebSocket = undefined;
 
   /**
@@ -63,6 +64,7 @@ export class McduServerClient {
   public disconnect() {
     if (this.socket) {
       this.socket.close();
+      // @ts-expect-error TS2322
       this.socket = undefined;
     }
   }

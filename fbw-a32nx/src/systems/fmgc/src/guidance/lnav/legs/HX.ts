@@ -72,6 +72,7 @@ abstract class HXLeg extends XFLeg {
   /**
    * Wind velocity along the inbound leg
    */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   protected inboundWindSpeed: Knots;
 
   /**
@@ -90,6 +91,7 @@ abstract class HXLeg extends XFLeg {
   }
 
   get inboundLegCourse(): DegreesTrue {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.metadata.flightPlanLegDefinition.magneticCourse;
   }
 
@@ -98,6 +100,7 @@ abstract class HXLeg extends XFLeg {
   }
 
   get turnDirection(): TurnDirection {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.metadata.flightPlanLegDefinition.turnDirection;
   }
 
@@ -435,6 +438,7 @@ abstract class HXLeg extends XFLeg {
 
 export class HMLeg extends HXLeg {
   // TODO only reset this on crossing the hold fix (so exit/resume/exit keeps the existing shortened path)
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private immExitLength: NauticalMiles;
 
   /**
@@ -488,6 +492,7 @@ export class HMLeg extends HXLeg {
   }
 
   get repr(): string {
+    // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
     return `HM '${this.fix.ident}' ${TurnDirection[this.turnDirection]}`;
   }
 }
@@ -517,6 +522,7 @@ export class HALeg extends HXLeg {
       );
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.targetAltitude = this.metadata.flightPlanLegDefinition.altitude1;
   }
 
@@ -562,11 +568,13 @@ export class HALeg extends HXLeg {
   }
 
   get repr(): string {
+    // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
     return `HA '${this.fix.ident}' ${TurnDirection[this.turnDirection]} - ${this.targetAltitude.toFixed(0)}`;
   }
 }
 
 export class HFLeg extends HXLeg {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private entryTransition: HoldEntryTransition;
 
   getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters {
@@ -605,6 +613,7 @@ export class HFLeg extends HXLeg {
   }
 
   get repr(): string {
+    // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
     return `HF '${this.fix.ident}' ${TurnDirection[this.turnDirection]}`;
   }
 }

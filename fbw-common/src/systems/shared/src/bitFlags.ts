@@ -1,4 +1,5 @@
 export class BitFlags {
+  // @ts-expect-error TS2564
   flags: number[];
 
   static f64View = new Float64Array(1);

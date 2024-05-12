@@ -14,6 +14,7 @@ export class WindProfileFactory {
 
   private windInputObserver: WindForecastInputObserver;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private aircraftDistanceFromStart: NauticalMiles;
 
   constructor(fmgc: Fmgc, fmgcSide: number) {

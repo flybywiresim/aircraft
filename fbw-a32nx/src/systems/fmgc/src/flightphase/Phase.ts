@@ -21,6 +21,7 @@ export abstract class Phase {
 
   abstract shouldActivateNextPhase(time: any): boolean;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   nextPhase: FmgcFlightPhase;
 }
 
@@ -31,6 +32,7 @@ export class PreFlightPhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Takeoff;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     this.takeoffConfirmation.input = conditionTakeOff();
     this.takeoffConfirmation.update(_deltaTime);
@@ -39,8 +41,10 @@ export class PreFlightPhase extends Phase {
 }
 
 export class TakeOffPhase extends Phase {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   accelerationAltitudeMsl: number;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   accelerationAltitudeMslEo: number;
 
   init() {
@@ -48,16 +52,20 @@ export class TakeOffPhase extends Phase {
     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
 
     const accAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.accelerationAltitudeMsl = accAlt.valueOr(
       SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
     );
     const eoAccAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT');
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.accelerationAltitudeMslEo = eoAccAlt.valueOr(
       SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
     );
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     return Simplane.getAltitude() > (isAllEngineOn() ? this.accelerationAltitudeMsl : this.accelerationAltitudeMslEo);
   }
 }
@@ -67,6 +75,7 @@ export class ClimbPhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Cruise;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
     const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
@@ -80,6 +89,7 @@ export class CruisePhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Cruise;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     return false;
   }
@@ -90,8 +100,10 @@ export class DescentPhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Approach;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
     const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
@@ -113,6 +125,7 @@ export class ApproachPhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Done;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     if (getAutopilotVerticalMode() === VerticalMode.SRS_GA) {
       this.nextPhase = FmgcFlightPhase.GoAround;
@@ -131,6 +144,7 @@ export class GoAroundPhase extends Phase {
     this.nextPhase = FmgcFlightPhase.GoAround;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     // there is no automatic switch from this phase
     return false;
@@ -143,6 +157,7 @@ export class DonePhase extends Phase {
     this.nextPhase = FmgcFlightPhase.Done;
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   shouldActivateNextPhase(_deltaTime) {
     // there is no automatic switch from this phase
     return false;

@@ -54,6 +54,7 @@ export class TransitionPicker {
       return TransitionPicker.fromFA(from, to);
     }
     if (from instanceof FDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return TransitionPicker.fromFD(from, to);
     }
     if (from instanceof FMLeg) {
@@ -80,33 +81,43 @@ export class TransitionPicker {
 
   private static fromCA(from: CALeg, to: Leg): Transition | null {
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence CALeg -> ${to.constructor.name}`);
     }
@@ -116,30 +127,39 @@ export class TransitionPicker {
 
   private static fromCD(from: CDLeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
@@ -148,40 +168,51 @@ export class TransitionPicker {
 
   private static fromAF(from: AFLeg, to: Leg): Transition | null {
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
       // FIXME fixed radius / revert to path capture
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof FDLeg) {
       // FIXME here we might wanna do a DmeArcTransition; need to check ARINC 424 and IRL FMS to see if this would actually happen
       // (waypoint would need to lie on DME arc)
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FMLeg) {
       // FIXME proper DME arc transition
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new HoldEntryTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence AFLEg -> ${to.constructor.name}`);
     }
@@ -191,49 +222,64 @@ export class TransitionPicker {
 
   private static fromCF(from: CFLeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
       // FIXME fixed radius / revert to path capture
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof FDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new HoldEntryTransition(from, to);
     }
     if (to instanceof PILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence CFLeg -> ${to.constructor.name}`);
     }
@@ -243,18 +289,23 @@ export class TransitionPicker {
 
   private static fromCI(from: CILeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof CFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof FDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence CILeg -> ${to.constructor.name}`);
     }
@@ -264,48 +315,63 @@ export class TransitionPicker {
 
   private static fromDF(from: DFLeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof FDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new HoldEntryTransition(from, to);
     }
     if (to instanceof PILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG && !(to instanceof RFLeg)) {
       console.error(`Illegal sequence DFLeg -> ${to.constructor.name}`);
     }
@@ -315,36 +381,47 @@ export class TransitionPicker {
 
   private static fromHX(from: HALeg | HFLeg | HMLeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG && !(to instanceof RFLeg)) {
       console.error(`Illegal sequence DFLeg -> ${to.constructor.name}`);
     }
@@ -362,21 +439,27 @@ export class TransitionPicker {
 
   private static fromRF(from: RFLeg, to: Leg): Transition | null {
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FDLeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new HoldEntryTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG && !(to instanceof RFLeg) && !(to instanceof TFLeg)) {
       console.error(`Illegal sequence RFLeg -> ${to.constructor.name}`);
     }
@@ -386,55 +469,72 @@ export class TransitionPicker {
 
   private static fromTF(from: TFLeg, to: Leg): Transition | null {
     if (to instanceof AFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DmeArcTransition(from, to);
     }
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
       // FIXME / revert to fixed radius
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FDLeg) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const fromLegWaypointID = from.metadata.flightPlanLegDefinition.waypoint.databaseId;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const toLegWaypointID = to.metadata.flightPlanLegDefinition.waypoint.databaseId;
 
       // If the FD leg starts at the same fix as the one on which the TF leg ends, we can use a fixed radius transition
       // instead to get a cleaner turn
       if (fromLegWaypointID === toLegWaypointID) {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new FixedRadiusTransition(from, to);
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new HoldEntryTransition(from, to);
     }
     if (to instanceof PILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof TFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new FixedRadiusTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG && !(to instanceof RFLeg)) {
       console.error(`Illegal sequence TFLeg -> ${to.constructor.name}`);
     }
@@ -444,34 +544,44 @@ export class TransitionPicker {
 
   private static fromCR(from: CRLeg, to: Leg): Transition | null {
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
       // FIXME / revert to fixed radius
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof FMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new PathCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof VMLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence CRLeg -> ${to.constructor.name}`);
     }
@@ -490,14 +600,18 @@ export class TransitionPicker {
         // case to instanceof VDLeg:
         // case to instanceof VILeg:
         // case to instanceof VRLeg:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new CourseCaptureTransition(from, to);
       case to instanceof CFLeg:
       case to instanceof FALeg:
       case to instanceof FMLeg:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new PathCaptureTransition(from, to);
       case to instanceof DFLeg:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new DirectToFixTransition(from, to);
       default:
+        // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
         if (DEBUG) {
           console.error(`Illegal sequence FMLeg -> ${to.constructor.name}`);
         }
@@ -534,6 +648,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence FDLEg -> ${to.constructor.name}`);
     }
@@ -553,14 +668,17 @@ export class TransitionPicker {
         // case to instanceof VDLeg:
         // case to instanceof VILeg:
         // case to instanceof VRLeg:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new CourseCaptureTransition(from, to);
       case to instanceof CFLeg:
       case to instanceof FALeg:
       case to instanceof FMLeg:
         return null;
       case to instanceof DFLeg:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new DirectToFixTransition(from, to);
       default:
+        // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
         if (DEBUG) {
           console.error(`Illegal sequence FMLeg -> ${to.constructor.name}`);
         }
@@ -570,24 +688,30 @@ export class TransitionPicker {
 
   private static fromVM(from: VMLeg, to: Leg): Transition | null {
     if (to instanceof CALeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CDLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CILeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof DFLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new DirectToFixTransition(from, to);
     }
     if (to instanceof CRLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof FALeg || to instanceof FMLeg) {
       return null;
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`Illegal sequence VMLeg -> ${to.constructor.name}`);
     }

@@ -9,6 +9,7 @@ export class NXDataStore {
 
   private static get listener() {
     if (this.mListener === undefined) {
+      // @ts-expect-error TS2345
       this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
     }
     return this.mListener;
@@ -51,6 +52,7 @@ export class NXDataStore {
   }
 
   static getAndSubscribe(key: string, callback: SubscribeCallback, defaultVal?: string): SubscribeCancellation {
+    // @ts-expect-error TS2345
     callback(key, NXDataStore.get(key, defaultVal));
     return NXDataStore.subscribe(key, callback);
   }

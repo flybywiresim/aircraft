@@ -36,6 +36,7 @@ import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
 
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   private currentMcduSpeedProfile: McduSpeedProfile;
@@ -51,12 +52,15 @@ export class VnavDriver implements GuidanceComponent {
   private profileManager: VerticalProfileManager;
 
   // We cache this here, so we don't have to recompute it every guidance step
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   private decelPoint: VerticalCheckpoint = null;
 
   // Saved variables to check for changes
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private previousManagedDescentSpeedTarget: Knots;
 
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   private lastParameters: VerticalProfileComputationParameters = null;
 
   // Here, we keep a copy of the whatever legs we used to update the descent profile last. We compare it with the legs we get from any new geometries to figure out
@@ -164,7 +168,9 @@ export class VnavDriver implements GuidanceComponent {
       this.profileManager.computeDescentPath();
 
       // TODO: This doesn't really do much, the profile is automatically updated by reference.
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.descentGuidance.updateProfile(this.profileManager.descentProfile);
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
     }
 
@@ -186,10 +192,13 @@ export class VnavDriver implements GuidanceComponent {
       this.aircraftToDescentProfileRelation.reset();
       this.descentGuidance.reset();
       this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.decelPoint = null;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.lastParameters = null;
       this.oldLegs.clear();
       this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.previousManagedDescentSpeedTarget = undefined;
     }
   }
@@ -275,7 +284,9 @@ export class VnavDriver implements GuidanceComponent {
       newSpeedTarget = Math.min(newSpeedTarget, targetFromProfile);
     }
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     for (let i = 0; i < this.profileManager.ndProfile.checkpoints.length - 2; i++) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       const checkpoint = this.profileManager.ndProfile.checkpoints[i];
 
       if (checkpoint.distanceFromStart - currentDistanceFromStart > 1) {
@@ -345,6 +356,7 @@ export class VnavDriver implements GuidanceComponent {
         const holdValue = Simplane.getAutoPilotMachHoldValue();
         holdSpeedCas = this.atmosphericConditions.computeCasFromMach(
           this.atmosphericConditions.currentAltitude,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           holdValue,
         );
       } else {
@@ -416,6 +428,7 @@ export class VnavDriver implements GuidanceComponent {
   public getDestinationPrediction(): VerticalWaypointPrediction | null {
     const destLegIndex = this.flightPlanService.active.destinationLegIndex;
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
   }
 
@@ -468,7 +481,9 @@ export class VnavDriver implements GuidanceComponent {
         ? this.currentMcduSpeedProfile.getTarget(distanceToPresentPosition, presentPosition.alt, ManagedSpeedType.Climb)
         : SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     for (let i = 1; i < this.profileManager.ndProfile.checkpoints.length - 1; i++) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       const checkpoint = this.profileManager.ndProfile.checkpoints[i];
 
       if (checkpoint.distanceFromStart < distanceToPresentPosition) {
@@ -487,10 +502,12 @@ export class VnavDriver implements GuidanceComponent {
             checkpoint.speed,
             this.atmosphericConditions.computeCasFromMach(checkpoint.altitude, checkpoint.mach),
           ) -
+            // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
             Math.max(this.profileManager.ndProfile.checkpoints[i - 1].speed, speedTarget) >
           1
         ) {
           // Candiate for a climb speed change
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           return this.profileManager.ndProfile.checkpoints[i - 1].distanceFromStart;
         }
       } else if (
@@ -534,12 +551,16 @@ export class VnavDriver implements GuidanceComponent {
     const geometry = this.guidanceController.activeGeometry;
     const activeLegIndex = this.guidanceController.activeLegIndex;
 
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     for (let i = activeLegIndex; geometry.legs.get(i) || geometry.legs.get(i + 1); i++) {
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       const leg = geometry.legs.get(i);
       if (!leg) {
         continue;
       } else if (!leg.calculated) {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         leg.predictedTas = undefined;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         leg.predictedGs = undefined;
 
         continue;
@@ -580,7 +601,9 @@ export class VnavDriver implements GuidanceComponent {
   private updateDistanceToDestination(): void {
     const geometry = this.guidanceController.activeGeometry;
     if (!geometry || geometry.legs.size <= 0) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.alongTrackDistanceToDestination = undefined;
 
       return;
@@ -602,7 +625,9 @@ export class VnavDriver implements GuidanceComponent {
     const referenceLeg = geometry.legs.get(referenceLegIndex);
 
     if (!referenceLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.guidanceController.alongTrackDistanceToDestination = undefined;
 
       return;
@@ -620,10 +645,12 @@ export class VnavDriver implements GuidanceComponent {
     );
 
     this.guidanceController.activeLegAlongTrackCompletePathDtg = completeLegAlongTrackPathDtg;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.guidanceController.alongTrackDistanceToDestination = Number.isFinite(
       referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions,
     )
-      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
+      ? // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
+        completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
       : undefined;
   }
 }

@@ -87,6 +87,7 @@ export class AircraftToDescentProfileRelation {
   }
 
   isPastTopOfDescent(): boolean {
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     return this.distanceToTopOfDescent() < 0;
   }
 
@@ -99,6 +100,7 @@ export class AircraftToDescentProfileRelation {
   }
 
   isOnGeometricPath(): boolean {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.distanceFromStart > this.geometricPathStart.distanceFromStart;
   }
 
@@ -110,10 +112,12 @@ export class AircraftToDescentProfileRelation {
   }
 
   currentTargetAltitude(): Feet {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.currentProfile.interpolateAltitudeAtDistance(this.distanceFromStart);
   }
 
   currentTargetPathAngle(): Degrees {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.currentProfile.interpolatePathAngleAtDistance(this.distanceFromStart);
   }
 

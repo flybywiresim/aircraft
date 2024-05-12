@@ -192,11 +192,13 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * Cruise FL
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   cruiseFlightLevel: AltitudeValue = undefined;
 
   /**
    * Cost index
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   costIndex: CostIndexValue = undefined;
 
   /**
@@ -221,16 +223,19 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * V1 speed
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   v1: VSpeedValue = undefined;
 
   /**
    * VR speed
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   vr: VSpeedValue = undefined;
 
   /**
    * V2 speed
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   v2: VSpeedValue = undefined;
 
   // THR RED
@@ -398,11 +403,13 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * TRANS ALT from NAV database
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   databaseTransitionAltitude: AltitudeValue = undefined;
 
   /**
    * TRANS ALT from pilot entry
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   pilotTransitionAltitude: AltitudeValue = undefined;
 
   /**
@@ -423,11 +430,13 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * TRANS LVL from NAV database
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   databaseTransitionLevel: AltitudeValue = undefined;
 
   /**
    * TRANS LVL from pilot entry
    */
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   pilotTransitionLevel: AltitudeValue = undefined;
 
   /**
@@ -450,6 +459,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       cruiseFlightLevel: this.cruiseFlightLevel,
       costIndex: this.costIndex,
       pilotTropopause: this.pilotTropopause,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       defaultTropopause: this.defaultTropopause,
       v1: this.v1,
       vr: this.vr,

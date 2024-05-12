@@ -44,6 +44,7 @@ export class QueuedSimVarWriter implements Writer {
 
   update() {
     if (this.isWriting()) {
+      // @ts-expect-error TS2532
       if (this.context.isWritten && this.isReadByConsumer()) {
         this.finaliseWriting();
       }
@@ -58,15 +59,18 @@ export class QueuedSimVarWriter implements Writer {
 
   private writeNext() {
     const write = this.messageQueue.dequeue();
+    // @ts-expect-error TS2722
     this.context = write();
   }
 
   private finaliseWriting() {
+    // @ts-expect-error TS2532
     this.context.resolve();
     this.context = undefined;
   }
 
   private isReadByConsumer() {
+    // @ts-expect-error TS2532
     return this.simVar.read() !== this.context.value;
   }
 

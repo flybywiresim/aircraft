@@ -5,20 +5,28 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { Common } from './common';
 
 export class AtmosphericConditions {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private ambientTemperatureFromSim: Celsius;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private altitudeFromSim: Feet;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private casFromSim: Knots;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private tasFromSim: Knots;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private windSpeedFromSim: Knots;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private windDirectionFromSim: DegreesTrue;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private computedIsaDeviation: Celsius;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private pressureAltFromSim: Feet;
 
   constructor(private observer: VerticalProfileComputationParametersObserver) {

@@ -62,6 +62,7 @@ export class EfisSymbols<T extends number> {
 
   private lastTrueHeading: number = -1;
 
+  // @ts-expect-error TS7008 -- TODO fix this manually (strict mode migration)
   private lastNearbyFacilitiesVersion;
 
   private lastFpVersions: Record<number, number> = {};
@@ -216,6 +217,7 @@ export class EfisSymbols<T extends number> {
       const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
 
       // eslint-disable-next-line no-loop-func
+      // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
       const withinEditArea = (ll): boolean => {
         if (!termination) {
           return true;
@@ -238,6 +240,7 @@ export class EfisSymbols<T extends number> {
       // we reverse the array at the end to make sure symbols are drawn in the correct order
       // eslint-disable-next-line no-loop-func
       const upsertSymbol = (symbol: NdSymbol): void => {
+        // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
         if (DEBUG) {
           console.time(`upsert symbol ${symbol.databaseId}`);
         }
@@ -348,6 +351,7 @@ export class EfisSymbols<T extends number> {
         const symbols = this.getFlightPlanSymbols(
           false,
           this.flightPlanService.active,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.guidanceController.activeGeometry,
           range,
           efisOption,
@@ -373,6 +377,7 @@ export class EfisSymbols<T extends number> {
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             this.flightPlanService.active.alternateFlightPlan,
             this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true),
             range,
@@ -398,6 +403,7 @@ export class EfisSymbols<T extends number> {
         const symbols = this.getFlightPlanSymbols(
           false,
           this.flightPlanService.temporary,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.guidanceController.temporaryGeometry,
           range,
           efisOption,
@@ -422,6 +428,7 @@ export class EfisSymbols<T extends number> {
         const symbols = this.getFlightPlanSymbols(
           false,
           this.flightPlanService.secondary(1),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.guidanceController.secondaryGeometry,
           range,
           efisOption,
@@ -447,6 +454,7 @@ export class EfisSymbols<T extends number> {
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             this.flightPlanService.secondary(1).alternateFlightPlan,
             this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
             range,
@@ -522,6 +530,7 @@ export class EfisSymbols<T extends number> {
     efisOption: EfisOption,
     mode: EfisNdMode,
     side: EfisSide,
+    // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
     withinEditArea: (ll) => boolean,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
@@ -666,22 +675,28 @@ export class EfisSymbols<T extends number> {
           case AltitudeDescriptor.AtAlt1:
           case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
           case AltitudeDescriptor.AtAlt1AngleAlt2:
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
             break;
           case AltitudeDescriptor.AtOrAboveAlt1:
           case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
           case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
             break;
           case AltitudeDescriptor.AtOrBelowAlt1:
           case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
             break;
           case AltitudeDescriptor.BetweenAlt1Alt2:
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
             break;
           case AltitudeDescriptor.AtOrAboveAlt2:
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
             break;
           default:
@@ -692,6 +707,7 @@ export class EfisSymbols<T extends number> {
         const speedConstraint = leg.speedConstraint;
 
         if (speedConstraint) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           constraints.push(formatConstraintSpeed(speedConstraint.speed));
         }
       }
@@ -702,6 +718,7 @@ export class EfisSymbols<T extends number> {
       }
 
       ret.push({
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         databaseId,
         ident: leg.ident,
         location,
@@ -780,7 +797,9 @@ export class EfisSymbols<T extends number> {
           ident: fixInfo.fix.ident,
           location: fixInfo.fix.location,
           type: NdSymbolTypeFlags.FixInfo,
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           radials: fixInfo.radials.map((it) => it.trueBearing),
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           radii: fixInfo.radii.map((it) => it.radius),
         });
       }
@@ -893,6 +912,7 @@ export class EfisSymbols<T extends number> {
     }
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
     if (!matchingGeometryLeg?.terminationWaypoint) {

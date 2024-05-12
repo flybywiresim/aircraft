@@ -248,8 +248,11 @@ export class ApproachPathBuilder {
     // This should be positive
     const desiredDistanceToCover = distanceFromStart - constraint.distanceFromStart;
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let decelerationSequence: TemporaryCheckpointSequence = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let descentSegment: StepResults = null;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     let secondDecelerationSequence: TemporaryCheckpointSequence = null;
 
     // `decelerationSegmentDistance` should be positive
@@ -325,6 +328,7 @@ export class ApproachPathBuilder {
     step.fuelBurned *= scaling;
     step.timeElapsed *= scaling;
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
 

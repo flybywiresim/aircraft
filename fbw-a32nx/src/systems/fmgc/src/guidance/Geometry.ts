@@ -62,6 +62,7 @@ export class Geometry {
 
   public version = 0;
 
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   public isComputed = false;
@@ -103,6 +104,7 @@ export class Geometry {
       const transmitCourseReversal =
         LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS ||
         index === activeLegIndex ||
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         index === activeLegIndex + 1;
 
       if (activeLegIndex !== undefined) {
@@ -116,6 +118,7 @@ export class Geometry {
       const legInboundTransition = leg.inboundGuidable instanceof Transition ? leg.inboundGuidable : null;
 
       if (legInboundTransition && !legInboundTransition.isNull && (!isHold(leg) || transmitHoldEntry)) {
+        // @ts-expect-error TS2488 -- TODO fix this manually (strict mode migration)
         ret.push(...legInboundTransition.predictedPath);
       }
 
@@ -125,9 +128,11 @@ export class Geometry {
     }
 
     if (missedApproach) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.missedCachedVectors = ret;
       this.missedCachedVectorsVersion = this.version;
     } else {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.cachedVectors = ret;
       this.cachedVectorsVersion = this.version;
     }
@@ -166,11 +171,13 @@ export class Geometry {
       }
 
       const leg = this.legs.get(i);
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const wasNull = leg.isNull;
 
       this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
 
       // If a leg became null/not null, we immediately recompute it to calculate the new guidables and transitions
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if ((!wasNull && leg.isNull) || (wasNull && !leg.isNull)) {
         this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
       }
@@ -205,7 +212,9 @@ export class Geometry {
     const inboundTransition = this.transitions.get(index - 1);
     const outboundTransition = this.transitions.get(index);
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const legPredictedTas = Geometry.getLegPredictedTas(leg, tas);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const legPredictedGs = Geometry.getLegPredictedGs(leg, gs);
 
     // If the leg is null, we compute the following:
@@ -219,6 +228,7 @@ export class Geometry {
           LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE === -1 ||
           index - activeLegIdx < LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE
         ) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           newInboundTransition = TransitionPicker.forLegs(prevLeg, nextLeg);
         }
 
@@ -227,9 +237,11 @@ export class Geometry {
           (nextNextLeg && LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE === -1) ||
           index + 1 - activeLegIdx < LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE
         ) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           newOutboundTransition = TransitionPicker.forLegs(nextLeg, nextNextLeg);
         }
 
+        // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
         if (newInboundTransition && prevLeg) {
           const prevLegPredictedLegTas = Geometry.getLegPredictedTas(prevLeg, tas);
           const prevLegPredictedLegGs = Geometry.getLegPredictedGs(prevLeg, gs);
@@ -247,6 +259,7 @@ export class Geometry {
         const nextLegPredictedLegTas = Geometry.getLegPredictedTas(nextLeg, tas);
         const nextLegPredictedLegGs = Geometry.getLegPredictedGs(nextLeg, gs);
 
+        // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
         nextLeg.setNeighboringGuidables(newInboundTransition ?? prevLeg, newOutboundTransition ?? nextNextLeg);
         nextLeg.recomputeWithParameters(
           activeLegIdx === index,
@@ -256,7 +269,9 @@ export class Geometry {
           trueTrack,
         );
 
+        // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
         if (newOutboundTransition) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           newOutboundTransition.setNeighboringGuidables(nextLeg, nextNextLeg);
           newOutboundTransition.recomputeWithParameters(
             activeLegIdx === index + 1,
@@ -281,7 +296,9 @@ export class Geometry {
       const prevLegPredictedLegTas = Geometry.getLegPredictedTas(prevLeg, tas);
       const prevLegPredictedLegGs = Geometry.getLegPredictedGs(prevLeg, gs);
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       inboundTransition.setNeighboringGuidables(prevLeg, leg);
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       inboundTransition.setNeighboringLegs(prevLeg, leg);
       inboundTransition.recomputeWithParameters(
         activeLegIdx === index,
@@ -294,11 +311,15 @@ export class Geometry {
 
     // Compute leg and outbound if previous leg isn't null (we already computed 1 leg forward the previous iteration)
     if (!(prevLeg && prevLeg.isNull)) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition ?? nextLeg);
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
 
       if (outboundTransition && nextLeg) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         outboundTransition.setNeighboringGuidables(leg, nextLeg);
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         outboundTransition.setNeighboringLegs(leg, nextLeg);
         outboundTransition.recomputeWithParameters(
           activeLegIdx === index + 1,
@@ -309,7 +330,9 @@ export class Geometry {
         );
 
         // Since the outbound transition can have TAD, we recompute the leg again to make sure the end point is at the right place for this cycle
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition);
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
     }
@@ -349,9 +372,12 @@ export class Geometry {
       // Since CA leg CourseCaptureTransition inbound starts at PPOS, we always consider the CA leg as the active guidable
       if (fromTransition instanceof CourseCaptureTransition && activeLeg instanceof CALeg) {
         activeGuidable = activeLeg;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         nextGuidable = toTransition;
       } else {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         activeGuidable = fromTransition;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         nextGuidable = activeLeg;
       }
     } else if (toTransition && !toTransition.isNull && autoSequencing) {
@@ -361,7 +387,9 @@ export class Geometry {
           toTransition.freeze();
         }
 
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         activeGuidable = toTransition;
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         nextGuidable = nextLeg;
       } else if (activeLeg) {
         activeGuidable = activeLeg;
@@ -380,6 +408,7 @@ export class Geometry {
     let dtg;
     if (activeGuidable) {
       const phiLimit = maxBank(tas, isGuidableCapturingPath(activeGuidable));
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       guidanceParams = {
         ...activeGuidable.getGuidanceParameters(ppos, trueTrack, tas, gs),
         phiLimit,
@@ -388,9 +417,11 @@ export class Geometry {
 
       if (activeGuidable && nextGuidable) {
         rad = this.getGuidableRollAnticipationDistance(gs, activeGuidable, nextGuidable);
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (rad > 0 && dtg <= rad) {
           const nextGuidanceParams = nextGuidable.getGuidanceParameters(ppos, trueTrack, tas, gs);
 
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           if (nextGuidanceParams.law === ControlLaw.LATERAL_PATH) {
             (guidanceParams as LateralPathGuidance).phiCommand = nextGuidanceParams?.phiCommand ?? 0;
           }
@@ -403,8 +434,11 @@ export class Geometry {
         'A32NX_FM_DEBUG_LNAV_STATUS',
         // eslint-disable-next-line prefer-template
         'A32NX FMS LNAV STATUS\n' +
+          // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
           `XTE ${(guidanceParams as LateralPathGuidance).crossTrackError?.toFixed(3) ?? '(NO DATA)'}\n` +
+          // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
           `TAE ${(guidanceParams as LateralPathGuidance).trackAngleError?.toFixed(3) ?? '(NO DATA)'}\n` +
+          // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
           `PHI ${(guidanceParams as LateralPathGuidance).phiCommand?.toFixed(5) ?? '(NO DATA)'}\n` +
           '---\n' +
           `CURR GUIDABLE ${activeGuidable?.repr ?? '---'}\n` +
@@ -424,6 +458,7 @@ export class Geometry {
       );
     }
 
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     return guidanceParams;
   }
 
@@ -438,6 +473,7 @@ export class Geometry {
 
     // TODO consider case where RAD > transition distance
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return Geometry.getRollAnticipationDistance(gs, phiNominalFrom, phiNominalTo);
   }
 
@@ -456,6 +492,7 @@ export class Geometry {
   getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | null {
     const activeLeg = this.legs.get(activeLegIdx);
     if (activeLeg) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return activeLeg.getDistanceToGo(ppos);
     }
 
@@ -467,17 +504,21 @@ export class Geometry {
     const inboundTransition = this.transitions.get(activeLegIdx - 1);
 
     // Restrict sequencing in cases where we are still in inbound transition. Make an exception for very short legs as the transition could be overshooting.
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (!inboundTransition?.isNull && inboundTransition?.isAbeam(ppos) && activeLeg.distance > 0.01) {
       return false;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const dtg = activeLeg.getDistanceToGo(ppos);
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (dtg <= 0 || activeLeg.isNull) {
       return true;
     }
 
     if (activeLeg) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       return activeLeg.getDistanceToGo(ppos) < 0.001;
     }
 
@@ -518,6 +559,7 @@ export class Geometry {
       const geometryLeg = this.legs.get(i);
 
       if (i === fromIndex || i === plan.firstMissedApproachLegIndex) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
       } else if (flightPlanLeg.isDiscontinuity === true) {
         const directDistance = this.computeDistanceInDiscontinuity(i);
@@ -535,6 +577,7 @@ export class Geometry {
       } else {
         const [distance, distanceWithTransitions] = this.computeLegDistances(
           geometryLeg,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transitions.get(i - 1),
           this.transitions.get(i),
         );
@@ -547,7 +590,9 @@ export class Geometry {
           distanceWithTransitions,
           cumulativeDistance,
           cumulativeDistanceWithTransitions,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           cumulativeDistanceToEnd: undefined,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           cumulativeDistanceToEndWithTransitions: undefined,
         };
 
@@ -569,7 +614,9 @@ export class Geometry {
       distanceWithTransitions: 0,
       cumulativeDistance: 0,
       cumulativeDistanceWithTransitions: 0,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       cumulativeDistanceToEnd: undefined,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       cumulativeDistanceToEndWithTransitions: undefined,
     };
 
@@ -605,9 +652,11 @@ export class Geometry {
     if (nextLeg instanceof IFLeg && previousLeg) {
       if (previousLeg instanceof VMLeg || previousLeg instanceof FMLeg) {
         if (previousLeg.getPathStartPoint()) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           return distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location);
         }
       } else if (previousLeg.getPathEndPoint()) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         return distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
       }
     }
@@ -654,6 +703,7 @@ export class Geometry {
     }
 
     return (
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       leg.getDistanceToGo(ppos) -
       (outbound && outbound instanceof FixedRadiusTransition ? outbound.unflownDistance : 0) +
       outboundTransLength
@@ -678,14 +728,17 @@ export class Geometry {
     const [, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(leg, inbound, outbound);
 
     if (outbound && outbound.isAbeam(ppos)) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       return outbound.getAlongTrackDistanceToGo(ppos, trueTrack) - outbound.distance / 2; // Remove half of the transition length, since it is split (Type I)
     }
 
     if (inbound && inbound.isAbeam(ppos)) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       return inbound.getAlongTrackDistanceToGo(ppos, trueTrack) + legPartLength + outboundTransLength;
     }
 
     return (
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       leg.getAlongTrackDistanceToGo(ppos, trueTrack) -
       (outbound && outbound instanceof FixedRadiusTransition ? outbound.unflownDistance : 0) +
       outboundTransLength

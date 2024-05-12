@@ -36,8 +36,10 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private baseInstrument: BaseInstrument;
 
   private ndMessageFlags: Record<'L' | 'R', number> = {
@@ -87,12 +89,15 @@ export class FmsMessages implements FmgcComponent {
             this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
           }
 
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           if (message.ndFlag > 0) {
             if (selector.efisSide) {
+              // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
               this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
             } else {
               for (const side in this.ndMessageFlags) {
                 if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                  // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
                   this.ndMessageFlags[side] |= message.ndFlag;
                 }
               }
@@ -105,12 +110,15 @@ export class FmsMessages implements FmgcComponent {
             this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
           }
 
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           if (message.ndFlag > 0) {
             if (selector.efisSide) {
+              // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
               this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
             } else {
               for (const side in this.ndMessageFlags) {
                 if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                  // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
                   this.ndMessageFlags[side] &= ~message.ndFlag;
                 }
               }
@@ -127,6 +135,7 @@ export class FmsMessages implements FmgcComponent {
     if (didMutateNd) {
       for (const side in this.ndMessageFlags) {
         if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
       }
@@ -134,6 +143,7 @@ export class FmsMessages implements FmgcComponent {
   }
 
   send(messageClass: { new (): FMMessageSelector }): void {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
     this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
@@ -141,7 +151,9 @@ export class FmsMessages implements FmgcComponent {
     if (message.ndFlag) {
       for (const side in this.ndMessageFlags) {
         if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           this.ndMessageFlags[side] |= message.ndFlag;
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
       }
@@ -149,6 +161,7 @@ export class FmsMessages implements FmgcComponent {
   }
 
   recall(messageClass: { new (): FMMessageSelector }): void {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
     this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
@@ -156,7 +169,9 @@ export class FmsMessages implements FmgcComponent {
     if (message.ndFlag) {
       for (const side in this.ndMessageFlags) {
         if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           this.ndMessageFlags[side] &= ~message.ndFlag;
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
       }
@@ -164,6 +179,7 @@ export class FmsMessages implements FmgcComponent {
   }
 
   recallId(id: number) {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     const message = this.messageSelectors.find((it) => it.message.id === id).message;
 
     this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
@@ -171,7 +187,9 @@ export class FmsMessages implements FmgcComponent {
     if (message.ndFlag) {
       for (const side in this.ndMessageFlags) {
         if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           this.ndMessageFlags[side] &= ~message.ndFlag;
+          // @ts-expect-error TS7053 -- TODO fix this manually (strict mode migration)
           SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
         }
       }

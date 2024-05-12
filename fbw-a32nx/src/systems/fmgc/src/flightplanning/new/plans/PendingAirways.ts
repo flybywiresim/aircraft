@@ -32,6 +32,7 @@ export class PendingAirways {
       throw new Error('Cannot create a pending airways entry from a non XF or HX leg');
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.revisedWaypoint = revisedLeg.terminationWaypoint();
   }
 
@@ -89,6 +90,7 @@ export class PendingAirways {
       // No airways have been entered. We consider the revised waypoint to be the start of the new entry.
       // OR
       // An airway is entered and has a TO.
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       startWaypointIndex = this.findFixIndexAlongAirway(airway, tailElement ? tailElement.to : this.revisedWaypoint);
       if (startWaypointIndex === -1) {
         return false;
@@ -96,6 +98,7 @@ export class PendingAirways {
     } else {
       // We do not have an end waypoint defined as part of the previous entry. We find an automatic or geographic intersection.
       const [indexAlongTailElement, indexAlongEnteredAirway] = this.findAutomaticAirwayIntersectionIndex(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         tailElement.airway,
         airway,
       );
@@ -105,6 +108,7 @@ export class PendingAirways {
         // No automatic intersection is found, let's try to find a geographic one
         // TODO
         console.error(
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           `No automatic airway intersection found between last airway id=${tailElement.airway.databaseId} and
                     airway id=${airway.databaseId} - geographic intersections not yet implemented`,
         );
@@ -114,8 +118,10 @@ export class PendingAirways {
       tailElement.to = fixAlongEnteredAirway;
       tailElement.isAutoConnected = true;
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const splitLegs = this.sliceAirway(tailElement.airway, tailElement.fromIndex, indexAlongTailElement);
       const mappedSplitLegs = splitLegs.map((it) =>
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, tailElement.airway.ident),
       );
 
@@ -137,6 +143,7 @@ export class PendingAirways {
   thenTo(waypoint: Fix) {
     const tailElement = this.tailElement;
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (tailElement.to) {
       // The tail element is already complete, so we do a DCT entry
 
@@ -149,20 +156,25 @@ export class PendingAirways {
       return true;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const tailAirway = tailElement.airway;
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const endWaypointIndex = this.findFixIndexAlongAirway(tailAirway, waypoint);
     if (endWaypointIndex === -1) {
       return false;
     }
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const splitLegs = this.sliceAirway(tailAirway, tailElement.fromIndex, endWaypointIndex);
     const mappedSplitLegs = splitLegs.map((it) =>
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       FlightPlanLeg.fromEnrouteFix(this.flightPlan.enrouteSegment, it, tailElement.airway.ident),
     );
 
     this.legs.push(...mappedSplitLegs);
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     tailElement.to = waypoint;
 
     this.flightPlan.incrementVersion();

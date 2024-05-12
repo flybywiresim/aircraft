@@ -81,9 +81,11 @@ export function parseMetar(metarString: string): MetarParserType {
     flight_category: '',
   };
 
+  // @ts-expect-error TS7006
   const calcHumidity = (temp, dew) =>
     Math.exp((17.625 * dew) / (243.04 + dew)) / Math.exp((17.625 * temp) / (243.04 + temp));
 
+  // @ts-expect-error TS7006
   const round = (value, toNext = 500) => Math.round(value / toNext) * toNext;
 
   // mode describes which metar part are we expecting next
@@ -152,10 +154,14 @@ export function parseMetar(metarString: string): MetarParserType {
         // Wind
         match = metarPart.match(/^(\d\d\d|VRB)P?(\d+)(?:G(\d+))?(KT|MPS|KPH)/);
         if (match) {
+          // @ts-expect-error TS2322
           match[2] = Number(match[2]);
+          // @ts-expect-error TS2322
           match[3] = match[3] ? Number(match[3]) : match[2];
           if (match[4] === 'KPH') {
+            // @ts-expect-error TS2322
             match[2] = convert.kphToMps(match[2]);
+            // @ts-expect-error TS2322
             match[3] = convert.kphToMps(match[3]);
             match[4] = 'MPS';
           }
@@ -164,9 +170,13 @@ export function parseMetar(metarString: string): MetarParserType {
             degrees: match[1] === 'VRB' ? 180 : Number(match[1]),
             degrees_from: match[1] === 'VRB' ? 0 : Number(match[1]),
             degrees_to: match[1] === 'VRB' ? 359 : Number(match[1]),
+            // @ts-expect-error TS2322
             speed_kts: match[4] === 'MPS' ? convert.mpsToKts(match[2]) : match[2],
+            // @ts-expect-error TS2322
             speed_mps: match[4] === 'MPS' ? match[2] : convert.ktsToMps(match[2]),
+            // @ts-expect-error TS2322
             gust_kts: match[4] === 'MPS' ? convert.mpsToKts(match[3]) : match[3],
+            // @ts-expect-error TS2322
             gust_mps: match[4] === 'MPS' ? match[3] : convert.ktsToMps(match[3]),
           };
 
@@ -279,6 +289,7 @@ export function parseMetar(metarString: string): MetarParserType {
         // Clouds
         match = metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)(CB|TCU)?/);
         if (match) {
+          // @ts-expect-error TS2322
           match[2] = Number(match[2]) * 100;
           const cloud = {
             code: match[1],
@@ -287,11 +298,14 @@ export function parseMetar(metarString: string): MetarParserType {
           };
 
           // only write to the object for the main section
+          // @ts-expect-error TS2345
           if (!trendMode) metarObject.clouds.push(cloud);
 
           // coloring
+          // @ts-expect-error TS2365
           if (cloud.code !== 'VV' && cloud.base_feet_agl <= 300) {
             metarObject.color_codes[index] = ColorCode.Warning;
+            // @ts-expect-error TS2365
           } else if (match[3] || match[2] < 800) {
             // CB or TCU suffix
             metarObject.color_codes[index] = ColorCode.Caution;
@@ -302,7 +316,9 @@ export function parseMetar(metarString: string): MetarParserType {
         // Temperature
         match = metarPart.match(/^(M?\d+)\/(M?\d+)$/);
         if (match) {
+          // @ts-expect-error TS2322
           match[1] = Number(match[1].replace('M', '-'));
+          // @ts-expect-error TS2322
           match[2] = Number(match[2].replace('M', '-'));
           const tmpTemperature = {
             celsius: match[1],
@@ -316,13 +332,17 @@ export function parseMetar(metarString: string): MetarParserType {
 
           // only write to the object for the main section
           if (!trendMode) {
+            // @ts-expect-error TS2322
             metarObject.temperature = tmpTemperature;
+            // @ts-expect-error TS2322
             metarObject.dewpoint = tmpDewpoint;
             metarObject.humidity_percent = tmpHumidityPercent;
           }
 
+          // @ts-expect-error TS2365
           if (tmpTemperature.celsius < -20) {
             metarObject.color_codes[index] = ColorCode.Warning;
+            // @ts-expect-error TS2365
           } else if (tmpTemperature.celsius < 8) {
             metarObject.color_codes[index] = ColorCode.Caution;
           }
@@ -335,13 +355,18 @@ export function parseMetar(metarString: string): MetarParserType {
         // Pressure
         match = metarPart.match(/^([QA])(\d+)$/);
         if (match) {
+          // @ts-expect-error TS2322
           match[2] = Number(match[2]);
+          // @ts-expect-error TS2362
           match[2] /= match[1] === 'Q' ? 10 : 100;
           if (!trendMode) {
             // only update the metar object once
             metarObject.barometer = {
+              // @ts-expect-error TS2322
               hg: match[1] === 'Q' ? convert.kpaToInhg(match[2]) : match[2],
+              // @ts-expect-error TS2322
               kpa: match[1] === 'Q' ? match[2] : convert.inhgToKpa(match[2]),
+              // @ts-expect-error TS2362
               mb: match[1] === 'Q' ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
             };
           }
@@ -424,38 +449,47 @@ export function parseMetar(metarString: string): MetarParserType {
 }
 
 const convert = {
+  // @ts-expect-error TS7006
   celsiusToFahrenheit(celsius) {
     return celsius * 1.8 + 32;
   },
 
+  // @ts-expect-error TS7006
   feetToMeters(feet) {
     return feet * 0.3048;
   },
 
+  // @ts-expect-error TS7006
   milesToMeters(miles) {
     return miles * 1609.344;
   },
 
+  // @ts-expect-error TS7006
   metersToMiles(meters) {
     return meters / 1609.344;
   },
 
+  // @ts-expect-error TS7006
   inhgToKpa(inHg) {
     return inHg / 0.29529988;
   },
 
+  // @ts-expect-error TS7006
   kpaToInhg(kpa) {
     return kpa * 0.29529988;
   },
 
+  // @ts-expect-error TS7006
   kphToMps(kph) {
     return (kph / 3600) * 1000;
   },
 
+  // @ts-expect-error TS7006
   mpsToKts(mps) {
     return mps * 1.9438445;
   },
 
+  // @ts-expect-error TS7006
   ktsToMps(kts) {
     return kts / 1.9438445;
   },

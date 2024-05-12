@@ -11,8 +11,10 @@ import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 export class StepAhead implements FMMessageSelector {
   message = FMMessageTypes.StepAhead;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private guidanceController: GuidanceController;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private flightPlanService: FlightPlanService;
 
   private lastState = false;

@@ -57,6 +57,7 @@ export interface NotificationData extends Omit<NotificationParameters, 'message'
 export class NotificationManager {
   eventBus: EventBus;
 
+  // @ts-expect-error TS2564
   manager: KeyEventManager;
 
   notifications: Notification[];

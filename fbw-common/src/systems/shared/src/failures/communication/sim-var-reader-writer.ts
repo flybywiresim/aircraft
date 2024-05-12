@@ -37,6 +37,7 @@ export class SimVarReaderWriter implements CallbackReader, Reader, Writer {
   }
 
   private notify(identifier: number) {
+    // @ts-expect-error TS2722
     this.callbacks.get(identifier)();
   }
 }

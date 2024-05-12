@@ -12,6 +12,7 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 export abstract class Leg extends Guidable {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   segment: SegmentType;
 
   abstract metadata: Readonly<LegMetadata>;
@@ -30,8 +31,10 @@ export abstract class Leg extends Guidable {
 
   displayedOnMap = true;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   predictedTas: Knots;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   predictedGs: Knots;
 
   calculated?: LegCalculations;
@@ -53,6 +56,7 @@ export abstract class Leg extends Guidable {
 
   get distance(): NauticalMiles {
     try {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return distanceTo(this.getPathStartPoint(), this.getPathEndPoint());
     } catch {
       return 0;
@@ -66,6 +70,7 @@ export abstract class Leg extends Guidable {
   }
 
   get initialLegTermPoint(): Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.getPathEndPoint();
   }
 }

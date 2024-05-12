@@ -61,6 +61,7 @@ export namespace GeometryFactory {
       }
 
       if (element.isXF()) {
+        // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
         const fixLocation = element.terminationWaypoint().location;
 
         // TODO very sussy... declination/variation does not work like this for terminal procedures
@@ -83,6 +84,7 @@ export namespace GeometryFactory {
       if (previousGeometryLwg && doGenerateTransitions && doGenerateTransitionsForLeg(geometryLeg, i, plan)) {
         const transition = TransitionPicker.forLegs(previousGeometryLwg, geometryLeg);
 
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         transitions.set(i - 1, transition);
       }
 
@@ -110,6 +112,7 @@ export namespace GeometryFactory {
       const planLeg = flightPlan.allLegs[i];
 
       if (planLeg.isDiscontinuity === false && planLeg.isXF()) {
+        // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
         const fixLocation = planLeg.terminationWaypoint().location;
 
         // TODO very sussy... declination/variation does not work like this for terminal procedures
@@ -134,7 +137,8 @@ export namespace GeometryFactory {
 
       const newLeg =
         planLeg?.isDiscontinuity === false
-          ? geometryLegFromFlightPlanLeg(runningMagvar, previousPlanLeg, planLeg, nextLeg)
+          ? // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
+            geometryLegFromFlightPlanLeg(runningMagvar, previousPlanLeg, planLeg, nextLeg)
           : undefined;
 
       if (LnavConfig.DEBUG_GEOMETRY) {
@@ -168,6 +172,7 @@ export namespace GeometryFactory {
           const transitionsMatch = oldInboundTransition?.repr === newInboundTransition?.repr;
 
           if (!transitionsMatch && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             geometry.transitions.set(i - 1, newInboundTransition);
           }
         }
@@ -248,16 +253,20 @@ function geometryLegFromFlightPlanLeg(
 
   const waypoint = flightPlanLeg.terminationWaypoint();
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
+  // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
   const trueCourse = flightPlanLeg.definition.magneticCourse + runningMagvar;
+  // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
   const trueTheta = flightPlanLeg.definition.theta + runningMagvar;
   const length = flightPlanLeg.definition.length;
 
   switch (legType) {
     case LegType.AF: {
       const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const navaid = recommendedNavaid.location;
       const rho = flightPlanLeg.definition.rho;
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new AFLeg(waypoint, navaid, rho, trueTheta, trueCourse, metadata, SegmentType.Departure);
     }
     case LegType.CA:
@@ -265,12 +274,15 @@ function geometryLegFromFlightPlanLeg(
       // TODO FA, VA legs in geometry
       const altitude = flightPlanLeg.definition.altitude1;
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new CALeg(trueCourse, altitude, metadata, SegmentType.Departure);
     }
     case LegType.CD:
     case LegType.VD: // TODO FA, VA legs in geometry
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new CDLeg(trueCourse, length, recommendedNavaid, metadata, SegmentType.Departure);
     case LegType.CF:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new CFLeg(waypoint, trueCourse, length, metadata, SegmentType.Departure);
     case LegType.CI:
     case LegType.VI: {
@@ -285,25 +297,32 @@ function geometryLegFromFlightPlanLeg(
     case LegType.VR: // TODO VR leg in geometry
       return new CRLeg(
         trueCourse,
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         { ident: recommendedNavaid.ident, coordinates: recommendedNavaid.location, theta: trueTheta - runningMagvar },
         trueTheta,
         metadata,
         SegmentType.Departure,
       );
     case LegType.HA:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new HALeg(waypoint, metadata, SegmentType.Departure);
     case LegType.HF:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new HFLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.HM:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new HMLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.DF:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new DFLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.FA:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new FALeg(waypoint, trueCourse, flightPlanLeg.definition.altitude1, metadata, SegmentType.Departure);
     case LegType.FC:
     case LegType.FD:
       return new FDLeg(
         trueCourse,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         length,
         waypoint,
         legType === LegType.FC ? waypoint : recommendedNavaid,
@@ -311,14 +330,17 @@ function geometryLegFromFlightPlanLeg(
         SegmentType.Departure,
       );
     case LegType.FM:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new FMLeg(flightPlanLeg.terminationWaypoint(), trueCourse, metadata, SegmentType.Departure);
     case LegType.IF:
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new IFLeg(waypoint, metadata, SegmentType.Departure);
     case LegType.PI:
       if (!(nextGeometryLeg instanceof CFLeg)) {
         throw new Error('[FMS/Geometry] Cannot create a PI leg before a non-CF leg');
       }
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       return new PILeg(recommendedNavaid, nextGeometryLeg, metadata, SegmentType.Approach);
     case LegType.RF:
     case LegType.TF: {
@@ -333,9 +355,11 @@ function geometryLegFromFlightPlanLeg(
       const center = flightPlanLeg.definition.arcCentreFix;
 
       if (legType === LegType.RF) {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return new RFLeg(prevWaypoint, waypoint, center.location, metadata, SegmentType.Departure);
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return new TFLeg(prevWaypoint, waypoint, metadata, SegmentType.Departure);
     }
     case LegType.VM: {

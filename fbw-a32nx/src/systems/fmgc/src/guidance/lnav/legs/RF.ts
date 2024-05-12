@@ -114,6 +114,7 @@ export class RFLeg extends XFLeg {
   }
 
   // basically straight from type 1 transition... willl need refinement
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, _tas: Knots): GuidanceParameters | null {
     // FIXME should be defined in terms of to fix
     return arcGuidance(ppos, trueTrack, this.from.location, this.center, this.clockwise ? this.angle : -this.angle);

@@ -24,14 +24,17 @@ export class NXUnits {
     return NXUnits.metricWeightVal;
   }
 
+  // @ts-expect-error TS7006
   static userToKg(value) {
     return NXUnits.metricWeight ? value : value / 2.204625;
   }
 
+  // @ts-expect-error TS7006
   static kgToUser(value) {
     return NXUnits.metricWeight ? value : value * 2.204625;
   }
 
+  // @ts-expect-error TS7006
   static poundsToUser(value) {
     return NXUnits.metricWeight ? value / 2.204625 : value;
   }
@@ -45,6 +48,7 @@ export class NXUnits {
    * @param value {number} in unit Meters
    * @returns {number} in metric or ft
    */
+  // @ts-expect-error TS7006
   static mToUser(value) {
     return NXUnits.metricWeight ? value : value * 3.28084;
   }

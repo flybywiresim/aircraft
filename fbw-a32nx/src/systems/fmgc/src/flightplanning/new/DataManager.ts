@@ -100,9 +100,13 @@ export class DataManager {
           type: PilotWaypointType.Pbx,
           storedIndex,
           waypoint: WaypointFactory.fromLocation(ident, coordinates),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbxPlace1: wp.pbxPlace1,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbxBearing1: wp.pbxBearing1,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbxPlace2: wp.pbxPlace2,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbxBearing2: wp.pbxBearing2,
         };
       case PilotWaypointType.Pbd:
@@ -110,11 +114,15 @@ export class DataManager {
           type: PilotWaypointType.Pbd,
           storedIndex,
           waypoint: WaypointFactory.fromLocation(ident, coordinates),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbdPlace: wp.pbdPlace,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbdBearing: wp.pbdBearing,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           pbdDistance: wp.pbdDistance,
         };
       default:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return undefined;
     }
   }
@@ -240,6 +248,7 @@ export class DataManager {
    * @param ident The ident of the waypoint, if undefined it will be generated
    * @returns The created waypoint
    */
+  // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
   createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident: string = undefined): LatLonWaypoint {
     const index = stored ? this.generateStoredWaypointIndex() : -1;
 
@@ -283,6 +292,7 @@ export class DataManager {
     place2: Waypoint,
     bearing2: DegreesTrue,
     stored = false,
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     ident: string = undefined,
   ): PbxWaypoint {
     const coordinates = A32NX_Util.greatCircleIntersection(place1.location, bearing1, place2.location, bearing2);
@@ -323,6 +333,7 @@ export class DataManager {
     bearing: DegreesTrue,
     distance: NauticalMiles,
     stored = false,
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     ident: string = undefined,
   ): PbdWaypoint {
     const coordinates = Avionics.Utils.bearingDistanceToCoordinates(

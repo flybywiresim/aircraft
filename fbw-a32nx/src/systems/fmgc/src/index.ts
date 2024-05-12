@@ -25,8 +25,10 @@ import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/perfor
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,
+  // @ts-expect-error TS2344 -- TODO fix this manually (strict mode migration)
   flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>,
 ): void {
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   initComponents(baseInstrument, flightPlanService);
 }
 

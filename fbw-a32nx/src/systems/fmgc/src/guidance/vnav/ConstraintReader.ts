@@ -104,6 +104,7 @@ export class ConstraintReader {
             case 'B': // between alt 1 and alt 2
               this.climbAlitudeConstraints.push({
                 distanceFromStart: legDistanceFromStart,
+                // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
                 maxAltitude: altConstraint.altitude1,
               });
               break;
@@ -112,9 +113,11 @@ export class ConstraintReader {
           }
         }
 
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (speedConstraint && speedConstraint.speed > 100) {
           this.climbSpeedConstraints.push({
             distanceFromStart: legDistanceFromStart,
+            // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
             maxSpeed: speedConstraint.speed,
           });
         }
@@ -139,7 +142,9 @@ export class ConstraintReader {
           }
         }
 
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (speedConstraint && speedConstraint.speed > 100) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           maxSpeed = Math.min(maxSpeed, speedConstraint.speed);
 
           this.descentSpeedConstraints.push({
@@ -173,6 +178,7 @@ export class ConstraintReader {
           leg.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint &&
           Number.isFinite(leg.altitude1)
         ) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           this.finalAltitude = leg.altitude1;
 
           return;

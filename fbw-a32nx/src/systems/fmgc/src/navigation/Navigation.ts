@@ -150,6 +150,7 @@ export class Navigation implements NavigationProvider {
     this.currentPerformance =
       this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     const accuracyHigh = this.currentPerformance <= this.requiredPerformance.activeRnp;
     if (accuracyHigh !== this.accuracyHigh) {
       this.accuracyHigh = accuracyHigh;
@@ -246,9 +247,12 @@ export class Navigation implements NavigationProvider {
       } else if (this.navaidSelectionManager.displayVorReason === VorSelectionReason.Navigation) {
         const navaid = this.navaidSelectionManager.displayVor;
         const selected = this.selectedNavaids[1];
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         selected.type = this.getSelectedNavaidType(navaid);
         selected.mode = SelectedNavaidMode.Auto;
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         selected.ident = Icao.getIdent(navaid.databaseId);
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         selected.frequency = navaid.frequency;
         selected.facility = navaid;
         this.resetSelectedNavaid(2);

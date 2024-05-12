@@ -15,22 +15,29 @@ export function procedureLegIdentAndAnnotation(
   switch (legType) {
     case LegType.AF:
       return [
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         procedureLeg.waypoint.ident,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${Math.round(procedureLeg.rho).toString().padStart(2, ' ')} ${procedureLeg.recommendedNavaid.ident.substring(0, 3)}`,
       ];
     case LegType.CF:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return [procedureLeg.waypoint.ident, `C${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`];
     case LegType.IF:
     case LegType.DF:
     case LegType.TF:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return [procedureLeg.waypoint.ident, procedureIdent ?? null];
     case LegType.RF:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return [procedureLeg.waypoint.ident, `${Math.round(procedureLeg.length).toString().padStart(2, ' ')} ARC`];
     case LegType.CA:
     case LegType.FA:
     case LegType.VA:
       return [
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         Math.round(procedureLeg.altitude1).toString().substring(0, 9),
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${legType === LegType.VA ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ]; // TODO fix for VA
     case LegType.CD:
@@ -40,7 +47,9 @@ export function procedureLegIdentAndAnnotation(
       const targetFix = legType === LegType.FC ? procedureLeg.waypoint : procedureLeg.recommendedNavaid;
 
       return [
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         `${targetFix.ident.substring(0, 3)}/${Math.round(procedureLeg.length).toString().padStart(2, '0')}`,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${legType === LegType.VD ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ];
     }
@@ -48,25 +57,32 @@ export function procedureLegIdentAndAnnotation(
     case LegType.VI:
       return [
         'INTCPT',
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${legType === LegType.CI ? 'C' : 'H'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ]; // TODO fix for VI
     case LegType.CR:
     case LegType.VR:
       return [
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         `${procedureLeg.recommendedNavaid.ident.substring(0, 3)}${Math.round(procedureLeg.theta).toString().padStart(3, '0')}`,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${legType === LegType.VR ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ]; // TODO fix for VR
     case LegType.HA:
       return [
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         Math.round(procedureLeg.altitude1).toString(),
         `HOLD ${procedureLeg.turnDirection === TurnDirection.Left ? 'L' : 'R'}`,
       ];
     case LegType.HF:
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       return [procedureLeg.waypoint.ident, `HOLD ${procedureLeg.turnDirection === TurnDirection.Left ? 'L' : 'R'}`];
     case LegType.HM:
       return [
         // TODO leg before
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         procedureLeg.waypoint.ident,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `C${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ];
     case LegType.PI:
@@ -75,6 +91,7 @@ export function procedureLegIdentAndAnnotation(
     case LegType.VM:
       return [
         'MANUAL',
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         `${legType === LegType.FM ? 'C' : 'H'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
       ]; // TODO fix for VM
     default:

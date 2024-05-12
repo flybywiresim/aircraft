@@ -60,6 +60,7 @@ export class NavHeadingProfile implements AircraftHeadingProfile {
 
       const legDistance = Geometry.completeLegPathLengths(
         leg,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         inboundTransition?.isNull || !inboundTransition?.isComputed ? null : inboundTransition,
         transitions.get(i),
       ).reduce((sum, el) => sum + (!Number.isNaN(el) ? el : 0), 0);
@@ -76,6 +77,7 @@ export class NavHeadingProfile implements AircraftHeadingProfile {
 
       this.courses.push({
         distanceFromStart,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         course: leg.outboundCourse,
       });
     }

@@ -84,6 +84,7 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
     // Add an IF at the start if first leg of the arrival is an XF
     if (firstArrivalLeg?.isFX()) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstArrivalLeg.definition.waypoint, undefined, LegType.IF);
 
       this.allLegs.push(newLeg);

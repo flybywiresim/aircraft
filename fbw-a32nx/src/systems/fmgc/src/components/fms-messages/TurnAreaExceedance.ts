@@ -18,8 +18,10 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private guidanceController: GuidanceController;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private navigation: Navigation;
 
   init(baseInstrument: BaseInstrument): void {
@@ -36,6 +38,7 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
     // if within 1.5 min of PI and it's path goes outside the coded distance limit
     const turnAreaExceeded = ttg <= 90 && nextLeg && nextLeg instanceof PILeg && nextLeg.turnAreaExceeded;
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.trigRising.input = turnAreaExceeded;
     this.trigRising.update(deltaTime);
 

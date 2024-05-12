@@ -159,6 +159,7 @@ export class Common {
       return 1 + 0.7 * mach ** 2 * phi;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return 1 + 0.7 * mach ** 2 * (phi - 0.190263 * tempRatio);
   }
 
@@ -167,6 +168,7 @@ export class Common {
       return 1;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return 1 - 0.13318 * mach ** 2 * tempRatio;
   }
 

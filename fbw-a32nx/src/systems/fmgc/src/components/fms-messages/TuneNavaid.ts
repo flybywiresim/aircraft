@@ -15,6 +15,7 @@ abstract class TuneNavaid implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private navaidTuner: NavaidTuner;
 
   init(baseInstrument: BaseInstrument): void {
@@ -31,8 +32,10 @@ abstract class TuneNavaid implements FMMessageSelector {
     this.trigFalling.update(deltaTime);
 
     if (this.trigRising.output) {
+      // @ts-expect-error TS2488 -- TODO fix this manually (strict mode migration)
       const [freqeuncy, ident] = message;
       const baseMessage = FMMessageTypes.TuneNavaid.text;
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       this.message.text = baseMessage.replace('BBB', ident).replace('FFF.FF', freqeuncy.toFixed(2));
       return FMMessageUpdate.SEND;
     }

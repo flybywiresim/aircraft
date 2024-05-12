@@ -65,13 +65,17 @@ export class TFLeg extends XFLeg {
     if (this.overshot) {
       this.computedPath.push({
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: endPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint,
       });
     } else {
       this.computedPath.push({
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint,
       });
     }
@@ -79,6 +83,7 @@ export class TFLeg extends XFLeg {
     if (LnavConfig.DEBUG_PREDICTED_PATH) {
       this.computedPath.push({
         type: PathVectorType.DebugPoint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: endPoint,
         annotation: 'TF END',
       });
@@ -89,12 +94,14 @@ export class TFLeg extends XFLeg {
 
   getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
     return getIntermediatePoint(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.getPathStartPoint(),
       this.getPathEndPoint(),
       (this.distance - distanceBeforeTerminator) / this.distance,
     );
   }
 
+  // @ts-expect-error TS2416 -- TODO fix this manually (strict mode migration)
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null {
     return fixToFixGuidance(ppos, trueTrack, this.from.location, this.to.location);
   }
@@ -104,6 +111,7 @@ export class TFLeg extends XFLeg {
   }
 
   getDistanceToGo(ppos: LatLongData): NauticalMiles {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
   }
 

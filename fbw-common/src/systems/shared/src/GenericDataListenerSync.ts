@@ -31,9 +31,11 @@ export class GenericDataListenerSync {
   private recvEventCb: (topic: string, data: any) => void;
 
   constructor(recvEventCb?: (topic: string, data: any) => void, topic?: string) {
+    // @ts-expect-error TS2322
     this.topic = topic;
     this.dataPackageQueue = [];
     this.isRunning = true;
+    // @ts-expect-error TS2322
     this.recvEventCb = recvEventCb;
 
     this.listener = RegisterGenericDataListener(() => {

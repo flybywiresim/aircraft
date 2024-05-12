@@ -38,6 +38,7 @@ export class TodGuidance {
     popup.showInformation(title, message, 'small', () => {
       SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 0);
       this.cooldown = TIMEOUT;
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       popup = null;
     });
   }
@@ -69,7 +70,8 @@ export class TodGuidance {
           // Only guard AP above transitional altitude
         } else if (
           this.atmosphericConditions.currentAltitude
-            ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
+            ? // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
+              this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
             : false
         ) {
           const apActive =

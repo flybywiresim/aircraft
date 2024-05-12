@@ -42,8 +42,10 @@ export class DFLeg extends XFLeg {
   private estimateStartPoint(): Coordinates {
     let bearing = 0;
     if (this.outboundGuidable instanceof Transition) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       bearing = this.outboundGuidable.nextLeg.inboundCourse + 180;
     } else if (this.outboundGuidable instanceof Leg) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       bearing = this.outboundGuidable.inboundCourse + 180;
     }
 
@@ -65,7 +67,9 @@ export class DFLeg extends XFLeg {
     this.computedPath = [
       {
         type: PathVectorType.Line,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         startPoint: this.start,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.getPathEndPoint(),
       },
     ];
@@ -74,6 +78,7 @@ export class DFLeg extends XFLeg {
       this.computedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.start,
           annotation: 'DF START',
         },
@@ -89,22 +94,27 @@ export class DFLeg extends XFLeg {
   }
 
   get inboundCourse(): Degrees {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return bearingTo(this.start, this.fix.location);
   }
 
   get outboundCourse(): Degrees {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return bearingTo(this.start, this.fix.location);
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixDistanceToGo(ppos, this.outboundCourse, this.getPathEndPoint());
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return fixToFixGuidance(ppos, trueTrack, this.start, this.fix.location);
   }
 
   getNominalRollAngle(_gs: Knots): Degrees {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 

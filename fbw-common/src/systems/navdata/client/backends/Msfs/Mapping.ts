@@ -139,6 +139,7 @@ export class MsfsMapping {
       subSectionCode: AirportSubsectionCode.ReferencePoints,
       ident: this.mapAirportIdent(msAirport),
       icaoCode: msAirport.icao.substring(1, 3), // TODO
+      // @ts-expect-error TS2322
       name: Utils.Translate(msAirport.name),
       location: { lat: msAirport.lat, long: msAirport.lon, alt: elevation },
       longestRunwayLength: longestRunway[0],

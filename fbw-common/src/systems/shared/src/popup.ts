@@ -89,6 +89,7 @@ export class PopUpDialog {
     if (callbackYes) {
       const yes = typeof callbackYes === 'function' ? callbackYes : () => callbackYes;
       Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
+        // @ts-expect-error TS2345
         Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
         yes();
       });
@@ -96,6 +97,7 @@ export class PopUpDialog {
     if (callbackNo) {
       const no = typeof callbackNo === 'function' ? callbackNo : () => callbackNo;
       Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
+        // @ts-expect-error TS2345
         Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
         no();
       });
@@ -133,6 +135,7 @@ export class PopUpDialog {
     if (callback) {
       const yes = typeof callback === 'function' ? callback : () => callback;
       Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
+        // @ts-expect-error TS2345
         Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
         yes();
       });

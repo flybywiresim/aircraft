@@ -21,9 +21,12 @@ export const emptyNavigraphCharts = {
 };
 
 function formatFormBody(body: Object) {
-  return Object.keys(body)
-    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(body[key])}`)
-    .join('&');
+  return (
+    Object.keys(body)
+      // @ts-expect-error TS7053
+      .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(body[key])}`)
+      .join('&')
+  );
 }
 
 export class NavigraphClient {
@@ -31,8 +34,10 @@ export class NavigraphClient {
 
   private static clientSecret = process.env.CLIENT_SECRET;
 
+  // @ts-expect-error TS2564
   private pkce: ReturnType<typeof pkce>;
 
+  // @ts-expect-error TS2564
   private deviceCode: string;
 
   private refreshToken: string | null = null;
@@ -106,6 +111,7 @@ export class NavigraphClient {
     NXDataStore.set('NAVIGRAPH_USERNAME', '');
   }
 
+  // @ts-expect-error TS7006
   private async tokenCall(body): Promise<void> {
     if (this.deviceCode || !this.auth.disabled) {
       try {
@@ -153,6 +159,7 @@ export class NavigraphClient {
         }
       } catch (e) {
         console.log('Token Authentication Failed. #NV102');
+        // @ts-expect-error TS18046
         if (e.message === 'Access Denied') {
           throw e;
         }
@@ -235,6 +242,7 @@ export class NavigraphClient {
       if (chartJsonResp.ok) {
         const chartJson = await chartJsonResp.json();
 
+        // @ts-expect-error TS7006
         const chartArray: NavigraphChart[] = chartJson.charts.map((chart) => ({
           fileDay: chart.file_day,
           fileNight: chart.file_night,
@@ -334,6 +342,7 @@ export class NavigraphClient {
 
   public async fetchSubscriptionStatus(): Promise<NavigraphSubscriptionStatus> {
     if (this.hasToken) {
+      // @ts-expect-error TS2531
       const decodedToken = JSON.parse(atob(this.accessToken.split('.')[1]));
 
       const subscriptionTypes = decodedToken.subscriptions as string[];

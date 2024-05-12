@@ -47,6 +47,7 @@ export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTr
       if (firstArrivalRunwayTransitionLeg?.isFX()) {
         const newLeg = FlightPlanLeg.fromEnrouteFix(
           this,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           firstArrivalRunwayTransitionLeg.definition.waypoint,
           undefined,
           LegType.IF,

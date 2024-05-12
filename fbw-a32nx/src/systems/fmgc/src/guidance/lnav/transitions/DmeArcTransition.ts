@@ -28,6 +28,7 @@ export type DmeArcTransitionNextLeg = AFLeg | CALeg | CFLeg | FALeg | FMLeg | TF
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
 
+// @ts-expect-error TS2415 -- TODO fix this manually (strict mode migration)
 export class DmeArcTransition extends Transition {
   predictedPath: PathVector[] = [];
 
@@ -35,6 +36,7 @@ export class DmeArcTransition extends Transition {
     public previousLeg: DmeArcTransitionPreviousLeg,
     public nextLeg: DmeArcTransitionNextLeg,
   ) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     super(previousLeg, nextLeg);
   }
 
@@ -72,19 +74,25 @@ export class DmeArcTransition extends Transition {
     this.radius = gs ** 2 / (9.81 * tan(maxBank(tas, true))) / 6080.2;
 
     if (this.previousLeg instanceof AFLeg) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
       const nextLegReference = this.nextLeg.getPathStartPoint(); // FIXME FX legs
       const reference = placeBearingDistance(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         nextLegReference,
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         this.nextLeg.inboundCourse + 90 * turnDirection,
         this.radius,
       );
       const dme = this.previousLeg.centre;
 
       const turnCentre = closestSmallCircleIntersection(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         dme,
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         this.previousLeg.radius + this.radius * turnDirection * -this.previousLeg.turnDirectionSign,
         reference,
+        // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
         this.nextLeg.inboundCourse - 180,
       );
 
@@ -97,10 +105,13 @@ export class DmeArcTransition extends Transition {
       this.itp = placeBearingDistance(
         turnCentre,
         turnDirection * -this.previousLeg.turnDirectionSign === 1
-          ? bearingTo(turnCentre, dme)
-          : bearingTo(dme, turnCentre),
+          ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+            bearingTo(turnCentre, dme)
+          : // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+            bearingTo(dme, turnCentre),
         this.radius,
       );
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.ftp = placeBearingDistance(turnCentre, this.nextLeg.inboundCourse - 90 * turnDirection, this.radius);
 
       this.sweepAngle = MathUtils.diffAngle(bearingTo(turnCentre, this.itp), bearingTo(turnCentre, this.ftp));
@@ -121,8 +132,10 @@ export class DmeArcTransition extends Transition {
         this.addDebugPoints();
       }
     } else if (this.nextLeg instanceof AFLeg) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
       const reference = placeBearingDistance(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.previousLeg.getPathEndPoint(),
         this.previousLeg.outboundCourse + 90 * turnDirection,
         this.radius,
@@ -132,7 +145,9 @@ export class DmeArcTransition extends Transition {
       let turnCentre;
       if (this.previousLeg instanceof XFLeg && !(this.previousLeg instanceof AFLeg)) {
         const intersection = closestSmallCircleIntersection(
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           dme,
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
           reference,
           this.previousLeg.outboundCourse,
@@ -150,11 +165,14 @@ export class DmeArcTransition extends Transition {
           this.ftp = placeBearingDistance(
             turnCentre,
             turnDirection * -this.nextLeg.turnDirectionSign === 1
-              ? bearingTo(turnCentre, dme)
-              : bearingTo(dme, turnCentre),
+              ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+                bearingTo(turnCentre, dme)
+              : // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+                bearingTo(dme, turnCentre),
             this.radius,
           );
         } else {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.ftp = placeBearingDistance(dme, this.nextLeg.boundaryRadial, this.nextLeg.radius);
 
           const turnSign = turnDirection > 0 ? 1 : -1;
@@ -173,7 +191,9 @@ export class DmeArcTransition extends Transition {
         }
       } else {
         turnCentre = closestSmallCircleIntersection(
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           dme,
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
           reference,
           this.previousLeg.outboundCourse,
@@ -188,8 +208,10 @@ export class DmeArcTransition extends Transition {
         this.ftp = placeBearingDistance(
           turnCentre,
           turnDirection * -this.nextLeg.turnDirectionSign === 1
-            ? bearingTo(turnCentre, dme)
-            : bearingTo(dme, turnCentre),
+            ? // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+              bearingTo(turnCentre, dme)
+            : // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
+              bearingTo(dme, turnCentre),
           this.radius,
         );
       }
@@ -244,6 +266,7 @@ export class DmeArcTransition extends Transition {
   }
 
   getTurningPoints(): [Coordinates, Coordinates] {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return [this.itp, this.ftp];
   }
 
@@ -261,14 +284,17 @@ export class DmeArcTransition extends Transition {
 
   getNominalRollAngle(gs: MetresPerSecond): Degrees | undefined {
     const gsMs = gs * (463 / 900);
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return (this.clockwise ? 1 : -1) * Math.atan(gsMs ** 2 / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcGuidance(ppos, trueTrack, this.getPathStartPoint(), this.centre, this.sweepAngle);
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcDistanceToGo(ppos, this.getPathStartPoint(), this.centre, this.sweepAngle);
   }
 
@@ -281,9 +307,11 @@ export class DmeArcTransition extends Transition {
     const [inbound, outbound] = turningPoints;
 
     const inBearingAc = bearingTo(inbound, ppos);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, inBearingAc));
 
     const outBearingAc = bearingTo(outbound, ppos);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.inboundCourse, outBearingAc));
 
     return inHeadingAc <= 90 && outHeadingAc >= 90;

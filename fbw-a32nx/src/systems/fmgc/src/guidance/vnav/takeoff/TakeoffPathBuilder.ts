@@ -49,6 +49,7 @@ export class TakeoffPathBuilder {
 
     const lastCheckpoint = profile.lastCheckpoint;
 
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     const startingAltitude = lastCheckpoint.altitude;
     const predictedN1 = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'Number');
     const speed = v2Speed + 10;
@@ -60,6 +61,7 @@ export class TakeoffPathBuilder {
       this.atmosphericConditions.computeMachFromCas((thrustReductionAltitude + startingAltitude) / 2, speed),
       predictedN1,
       zeroFuelWeight,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       profile.lastCheckpoint.remainingFuelOnBoard,
       0,
       this.atmosphericConditions.isaDeviation,
@@ -72,9 +74,12 @@ export class TakeoffPathBuilder {
 
     profile.checkpoints.push({
       reason: VerticalCheckpointReason.ThrustReductionAltitude,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       distanceFromStart: profile.lastCheckpoint.distanceFromStart + distanceTraveled,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       secondsFromPresent: profile.lastCheckpoint.secondsFromPresent + timeElapsed,
       altitude: thrustReductionAltitude,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       remainingFuelOnBoard: profile.lastCheckpoint.remainingFuelOnBoard - fuelBurned,
       speed,
       mach: managedClimbSpeedMach,
@@ -87,6 +92,7 @@ export class TakeoffPathBuilder {
       this.observer.get();
 
     const speed = v2Speed + 10;
+    // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
     const startingAltitude = lastCheckpoint.altitude;
     const midwayAltitude = (startingAltitude + accelerationAltitude) / 2;
 
@@ -105,6 +111,7 @@ export class TakeoffPathBuilder {
       1, // We never want to compute this in Mach, so we set the critical Mach to 1
       predictedN1,
       zeroFuelWeight,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       lastCheckpoint.remainingFuelOnBoard,
       0,
       this.atmosphericConditions.isaDeviation,
@@ -117,9 +124,12 @@ export class TakeoffPathBuilder {
 
     profile.checkpoints.push({
       reason: VerticalCheckpointReason.AccelerationAltitude,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       distanceFromStart: lastCheckpoint.distanceFromStart + distanceTraveled,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       secondsFromPresent: lastCheckpoint.secondsFromPresent + timeElapsed,
       altitude: accelerationAltitude,
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       remainingFuelOnBoard: lastCheckpoint.remainingFuelOnBoard - fuelBurned,
       speed,
       mach: managedClimbSpeedMach,

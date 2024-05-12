@@ -363,6 +363,7 @@ export class VerticalProfileManager {
       const interceptReason = isDesActive
         ? VerticalCheckpointReason.InterceptDescentProfileManaged
         : VerticalCheckpointReason.InterceptDescentProfileSelected;
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
 
       const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
@@ -393,6 +394,7 @@ export class VerticalProfileManager {
               distanceFromStart: checkpoint.distanceFromStart + offset,
             }),
           )
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           .filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
       );
 
@@ -416,6 +418,7 @@ export class VerticalProfileManager {
               distanceFromStart: checkpoint.distanceFromStart + offset,
             }),
           )
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           .filter(({ distanceFromStart }) => distanceFromStart > ndProfile.lastCheckpoint.distanceFromStart),
       );
     }
@@ -530,8 +533,10 @@ export class VerticalProfileManager {
     if (index >= 0) {
       // If we have an intercept, adjust the fuel predictions/time predictions based on the current aircraft state
       const { secondsFromPresent: tacticalTimeAtIntercept, remainingFuelOnBoard: tacticalFuelAtIntercept } =
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         mcduProfile.interpolateEverythingFromStart(interceptDistance, false);
       const { secondsFromPresent: guidanceTimeAtIntercept, remainingFuelOnBoard: guidanceFuelAtIntercept } =
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, false);
 
       // How much more fuel is predicted in the tactical profile vs the guidance profile
@@ -548,6 +553,7 @@ export class VerticalProfileManager {
             remainingFuelOnBoard: checkpoint.remainingFuelOnBoard + fuelOffset,
             secondsFromPresent: checkpoint.secondsFromPresent + timeOffset,
           }))
+          // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
           .filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
       );
     }
@@ -556,6 +562,7 @@ export class VerticalProfileManager {
     if (!decelPointInMcdu) {
       const decelPointInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
 
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       mcduProfile.addInterpolatedCheckpoint(decelPointInGuidanceProfile.distanceFromStart + offset, {
         reason: VerticalCheckpointReason.Decel,
       });

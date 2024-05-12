@@ -19,6 +19,7 @@ export class OriginSegment extends FlightPlanSegment {
 
   allLegs: FlightPlanElement[] = [];
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   protected airport: Airport;
 
   public runway?: Runway;
@@ -99,6 +100,7 @@ export class OriginSegment extends FlightPlanSegment {
 
       if (currentSidCompatibleWithNewRunway) {
         const currentSidNewRunwayTransition = this.flightPlan.originDeparture.runwayTransitions.find(
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           (transition) => transition.ident === this.runway.ident,
         );
 
@@ -140,12 +142,14 @@ export class OriginSegment extends FlightPlanSegment {
       }
 
       if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.type === LegType.IF) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
           // TODO should this stuff go into DepartureRunwayTransitionSegment?
           firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
 
           addOriginLeg = false;
         } else {
+          // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
           const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
           const diff = FbwMathUtils.normalise180(MsMathUtils.diffAngleDeg(bearing, this.runway.bearing));
 
@@ -177,6 +181,7 @@ export class OriginSegment extends FlightPlanSegment {
         throw new Error('[FMS/FPM] Runway leg was discontinuity');
       }
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.allLegs.push(FlightPlanLeg.originExtendedCenterline(this, this.runway, runwayLeg));
     }
 

@@ -23,12 +23,14 @@ export abstract class Guidable {
    * The first valid guidable that precedes this one. This takes into account the `isNull` property, meaning other
    * guidables can exist before this one but would not be referred to by this property if they were to be null.
    */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   inboundGuidable: Guidable;
 
   /**
    * The first valid guidable that succeeds this one. This takes into account the `isNull` property, meaning other
    * guidables can exist after this one but would not be referred to by this property if they were to be null.
    */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   outboundGuidable: Guidable;
 
   protected constructor() {}
@@ -132,6 +134,7 @@ export abstract class Guidable {
    */
   getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
     let accumulator = 0;
+    // @ts-expect-error TS2488 -- TODO fix this manually (strict mode migration)
     for (const vector of [...this.predictedPath].reverse()) {
       const length = pathVectorLength(vector);
 

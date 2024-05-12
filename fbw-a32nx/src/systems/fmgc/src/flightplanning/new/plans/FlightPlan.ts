@@ -116,6 +116,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   async deleteAlternateFlightPlan() {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     await this.alternateFlightPlan.setOriginRunway(undefined);
     await this.alternateFlightPlan.setDeparture(undefined);
     await this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
@@ -145,6 +146,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
     const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
 
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
@@ -236,6 +238,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       if (xfLegAfterDiscontinuity.type !== LegType.IF && xfLegAfterDiscontinuity.type !== LegType.CF) {
         const iFLegAfterDiscontinuity = FlightPlanLeg.fromEnrouteFix(
           segment,
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           xfLegAfterDiscontinuity.definition.waypoint,
           '',
           LegType.IF,
@@ -311,6 +314,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
     const planFixInfo = this.fixInfos as FixInfoEntry[];
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
 
     if (notify) {
@@ -543,6 +547,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.performanceData.thrustReductionAltitude > lowestClimbConstraint
     ) {
       this.setPerformanceData(
@@ -570,6 +575,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   reconcileAccelerationWithConstraints(): boolean {
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
       this.setPerformanceData(
         'defaultAccelerationAltitude',

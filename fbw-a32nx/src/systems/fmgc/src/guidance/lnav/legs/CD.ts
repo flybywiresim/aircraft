@@ -20,6 +20,7 @@ export class CDLeg extends Leg {
 
   outboundCourse;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   pbdPoint: Coordinates;
 
   constructor(
@@ -59,15 +60,19 @@ export class CDLeg extends Leg {
     const intersect = firstSmallCircleIntersection(
       this.origin.location,
       this.dmeDistance,
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.getPathStartPoint(),
       this.course,
     );
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.pbdPoint = intersect;
 
     this.predictedPath.push({
       type: PathVectorType.Line,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint: this.getPathStartPoint(),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
     });
 
@@ -75,6 +80,7 @@ export class CDLeg extends Leg {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
           annotation: 'CD START',
         },
@@ -92,12 +98,14 @@ export class CDLeg extends Leg {
   get distanceToTermination(): NauticalMiles {
     const startPoint = this.getPathStartPoint();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(startPoint, this.pbdPoint);
   }
 
   isAbeam(ppos: Coordinates): boolean {
     const dtg = this.getDistanceToGo(ppos);
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return dtg >= 0 && dtg <= this.distance;
   }
 
@@ -111,6 +119,7 @@ export class CDLeg extends Leg {
     _tas: Knots,
     _gs: Knots,
   ): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return fixToFixGuidance(ppos, trueTrack, this.getPathStartPoint(), this.pbdPoint);
   }
 

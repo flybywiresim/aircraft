@@ -17,6 +17,7 @@ export class RateMultiplierKnob {
 
   private previousTimestamp: number;
 
+  // @ts-expect-error TS2564
   public updateValue: UpdateValueCallback;
 
   /**

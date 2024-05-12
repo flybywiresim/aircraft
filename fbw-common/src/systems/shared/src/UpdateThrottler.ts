@@ -15,6 +15,7 @@ export class UpdateThrottler {
   /**
    * @param {number} intervalMs Interval between updates, in milliseconds
    */
+  // @ts-expect-error TS7006
   constructor(intervalMs) {
     this.intervalMs = intervalMs;
     this.currentTime = 0;
@@ -35,6 +36,7 @@ export class UpdateThrottler {
    * @returns -1 if the instrument should not update, or the time elapsed since the last
    *          update in milliseconds
    */
+  // @ts-expect-error TS7006
   canUpdate(deltaTime, forceUpdate = false) {
     this.currentTime += deltaTime;
     const number = Math.floor((this.currentTime + this.refreshOffset) / this.intervalMs);

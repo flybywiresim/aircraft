@@ -43,6 +43,7 @@ export class FailuresConsumer {
   }
 
   private onReadCallback(identifier: number, value: boolean) {
+    // @ts-expect-error TS2722
     this.callbacks.get(identifier)(value);
     this.activeFailures.set(identifier, value);
   }

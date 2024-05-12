@@ -34,6 +34,7 @@ export class CompanyRoute {
 
       return {
         success: false,
+        // @ts-expect-error TS2322
         data: null,
       };
     }
@@ -64,6 +65,7 @@ export class CompanyRoute {
 
       return {
         success: false,
+        // @ts-expect-error TS2322
         data: null,
       };
     }

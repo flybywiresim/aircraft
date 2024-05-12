@@ -32,6 +32,7 @@ export class CALeg extends Leg {
     this.segment = segment;
   }
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private start: Coordinates;
 
   get terminationWaypoint(): Coordinates | undefined {
@@ -90,6 +91,7 @@ export class CALeg extends Leg {
       {
         type: PathVectorType.Line,
         startPoint: this.start,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         endPoint: this.getPathEndPoint(),
       },
     ];
@@ -103,6 +105,7 @@ export class CALeg extends Leg {
         },
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathEndPoint(),
           annotation: 'CA END',
         },
@@ -125,7 +128,9 @@ export class CALeg extends Leg {
     const minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
     let distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     if (!this.wasMovedByPpos && this.extraLength > 0) {
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       distanceToTermination += this.extraLength;
     }
 
@@ -141,6 +146,7 @@ export class CALeg extends Leg {
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixDistanceToGo(ppos, this.course, this.estimatedTermination);
   }
 
@@ -151,16 +157,19 @@ export class CALeg extends Leg {
     //    law: ControlLaw.TRACK,
     //    course: this.course,
     // };
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixGuidance(ppos, trueTrack, this.course, this.estimatedTermination);
   }
 
   getNominalRollAngle(_gs: Knots): Degrees {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return undefined;
   }
 
   get distanceToTermination(): NauticalMiles {
     const startPoint = this.getPathStartPoint();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(startPoint, this.estimatedTermination);
   }
 

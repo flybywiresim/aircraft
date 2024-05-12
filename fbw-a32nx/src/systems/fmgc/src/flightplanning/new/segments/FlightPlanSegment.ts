@@ -120,6 +120,7 @@ export abstract class FlightPlanSegment {
 
       this.flightPlan.syncSegmentLegsChange(this);
       this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       return removed;
     }
 
@@ -199,6 +200,7 @@ export abstract class FlightPlanSegment {
    */
   findIndexOfWaypoint(waypoint: Fix, afterIndex?: number): number {
     for (let i = 0; i < this.allLegs.length; i++) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (i <= afterIndex) {
         continue;
       }
@@ -220,6 +222,7 @@ export abstract class FlightPlanSegment {
    */
   findLastIndexOfWaypoint(waypoint: Fix, beforeIndex?: number): number {
     for (let i = this.allLegs.length - 1; i >= 0; i--) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       if (i >= beforeIndex) {
         continue;
       }

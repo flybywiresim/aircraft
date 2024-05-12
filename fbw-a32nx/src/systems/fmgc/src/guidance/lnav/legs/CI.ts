@@ -40,6 +40,7 @@ export class CILeg extends Leg {
   intercept: Coordinates | undefined = undefined;
 
   get terminationWaypoint(): Coordinates {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.intercept;
   }
 
@@ -71,8 +72,10 @@ export class CILeg extends Leg {
   }
 
   recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.intercept = Geo.legIntercept(this.getPathStartPoint(), this.course, this.nextLeg);
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
     const flipped = side === PointSide.After;
 
@@ -80,6 +83,7 @@ export class CILeg extends Leg {
       this.isNull = false;
 
       const interceptSide = sideOfPointOnCourseToFix(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.nextLeg.getPathEndPoint(),
         this.nextLeg.outboundCourse,
         this.intercept,
@@ -89,7 +93,9 @@ export class CILeg extends Leg {
         const [one, two] = placeBearingIntersection(
           this.intercept,
           reciprocal(this.outboundCourse),
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.nextLeg.getPathEndPoint(),
+          // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
           MathUtils.normalise360(this.nextLeg.outboundCourse + 90),
         );
 
@@ -102,7 +108,9 @@ export class CILeg extends Leg {
       this.computedPath = [
         {
           type: PathVectorType.Line,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           endPoint: this.getPathEndPoint(),
         },
       ];
@@ -113,6 +121,7 @@ export class CILeg extends Leg {
         this.computedPath.push(
           {
             type: PathVectorType.DebugPoint,
+            // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
             startPoint: this.getPathStartPoint(),
             annotation: 'CI START',
           },
@@ -142,10 +151,12 @@ export class CILeg extends Leg {
   get distanceToTermination(): NauticalMiles {
     const startPoint = this.getPathStartPoint();
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return distanceTo(startPoint, this.intercept);
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
   }
 
@@ -161,6 +172,7 @@ export class CILeg extends Leg {
   }
 
   isAbeam(ppos: Coordinates): boolean {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
     return dtg >= 0 && dtg <= this.distance;

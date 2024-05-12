@@ -33,6 +33,7 @@ export class RequiredPerformance {
     this.updateLDev();
   }
 
+  // @ts-expect-error TS7006 -- TODO fix this manually (strict mode migration)
   setPilotRnp(rnp): void {
     this.manualRnp = true;
     this.setActiveRnp(rnp);
@@ -80,6 +81,7 @@ export class RequiredPerformance {
     const ldev =
       area !== FlightArea.Enroute &&
       area !== FlightArea.Oceanic &&
+      // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
       this.activeRnp < 0.305 &&
       getFlightPhaseManager().phase >= FmgcFlightPhase.Takeoff;
     if (ldev !== this.requestLDev) {

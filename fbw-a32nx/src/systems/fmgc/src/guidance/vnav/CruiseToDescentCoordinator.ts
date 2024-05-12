@@ -137,6 +137,7 @@ export class CruiseToDescentCoordinator {
           }
 
           // If there is an intercept, place the T/D wherever we need it
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           const combinedTopOfClimbTopOfDescent = profile.addInterpolatedCheckpoint(climbDescentInterceptDistance, {
             reason: VerticalCheckpointReason.TopOfClimb,
           });

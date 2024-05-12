@@ -131,6 +131,7 @@ export class FacilityCache {
     type: T,
   ): Promise<FacilitySearchTypeToSessionClass[T]> {
     return new Promise((resolve) => {
+      // @ts-expect-error TS2345
       Coherent.call('START_NEAREST_SEARCH_SESSION', type).then((sessionId: number) => {
         const _sessionClass = FacilityCache.FACILITY_SEARCH_TYPE_TO_SESSION_CLASS[type];
         const session = new _sessionClass(sessionId) as any;

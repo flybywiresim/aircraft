@@ -53,6 +53,7 @@ export abstract class BaseGeometryProfile {
   }
 
   addCheckpointFromLast(checkpointBuilder: (lastCheckpoint: VerticalCheckpoint) => Partial<VerticalCheckpoint>) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.checkpoints.push({ ...this.lastCheckpoint, ...checkpointBuilder(this.lastCheckpoint) });
   }
 
@@ -241,10 +242,15 @@ export abstract class BaseGeometryProfile {
 
     return {
       distanceFromStart,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       secondsFromPresent: this.lastCheckpoint.secondsFromPresent,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       altitude: this.lastCheckpoint.altitude,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       speed: this.lastCheckpoint.speed,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       mach: this.lastCheckpoint.mach,
     };
   }
@@ -394,14 +400,20 @@ export abstract class BaseGeometryProfile {
 
     this.checkpoints.push({
       distanceFromStart,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       secondsFromPresent: this.lastCheckpoint.secondsFromPresent,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       altitude: this.lastCheckpoint.altitude,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       speed: this.lastCheckpoint.speed,
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       mach: this.lastCheckpoint.mach,
       ...additionalProperties,
     });
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.lastCheckpoint;
   }
 
@@ -528,10 +540,12 @@ export abstract class BaseGeometryProfile {
       return null;
     }
 
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     if (this.lastCheckpoint.reason !== VerticalCheckpointReason.Landing) {
       return null;
     }
 
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     return this.lastCheckpoint.remainingFuelOnBoard;
   }
 
@@ -540,10 +554,12 @@ export abstract class BaseGeometryProfile {
       return null;
     }
 
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     if (this.lastCheckpoint.reason !== VerticalCheckpointReason.Landing) {
       return null;
     }
 
+    // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
     return this.lastCheckpoint.secondsFromPresent;
   }
 }

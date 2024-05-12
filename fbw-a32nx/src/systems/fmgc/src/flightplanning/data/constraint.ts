@@ -38,8 +38,10 @@ export class ConstraintUtils {
       case AltitudeDescriptor.AtOrAboveAlt1:
       case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
       case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return constraint.altitude1;
       case AltitudeDescriptor.BetweenAlt1Alt2:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return constraint.altitude2;
       default:
         return -Infinity;
@@ -54,6 +56,7 @@ export class ConstraintUtils {
       case AltitudeDescriptor.AtOrBelowAlt1:
       case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
       case AltitudeDescriptor.BetweenAlt1Alt2:
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         return constraint.altitude1;
       default:
         return Infinity;

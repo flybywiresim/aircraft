@@ -15,6 +15,7 @@ import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/c
 export type PathAngleConstraint = Degrees;
 
 export abstract class FXLeg extends Leg {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   from: WayPoint;
 }
 

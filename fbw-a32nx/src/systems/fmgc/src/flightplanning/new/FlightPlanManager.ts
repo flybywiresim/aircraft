@@ -113,6 +113,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       sub.on('flightPlanManager.copy').handle((event) => {
         if (!this.ignoreSync) {
           console.log(`[FpmSync] Copy(${event.planIndex}, ${event.targetPlanIndex})`);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.copy(event.planIndex, event.targetPlanIndex, event.options, false);
         }
       }),
@@ -122,6 +123,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       sub.on('flightPlanManager.swap').handle((event) => {
         if (!this.ignoreSync) {
           console.log(`[FpmSync] Swap(${event.planIndex}, ${event.targetPlanIndex})`);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.swap(event.planIndex, event.targetPlanIndex, false);
         }
       }),
@@ -167,6 +169,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.assertFlightPlanExists(index);
 
     this.plans[index].destroy();
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     this.plans[index] = undefined;
 
     if (notify) {

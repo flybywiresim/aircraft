@@ -61,6 +61,7 @@ export interface VerticalProfileComputationParameters {
 }
 
 export class VerticalProfileComputationParametersObserver {
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private parameters: VerticalProfileComputationParameters;
 
   constructor(
@@ -74,6 +75,7 @@ export class VerticalProfileComputationParametersObserver {
     this.parameters = {
       presentPosition: this.getPresentPosition(),
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       fcuAltitude: Simplane.getAutoPilotDisplayedAltitudeLockValue(),
       fcuVerticalMode: SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum'),
       fcuLateralMode: SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum'),
@@ -84,6 +86,7 @@ export class VerticalProfileComputationParametersObserver {
       fcuArmedLateralMode: SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'number'),
       fcuArmedVerticalMode: SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_ARMED', 'number'),
       fcuExpediteModeActive: SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number'),
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       qnhSettingMillibar: Simplane.getPressureValue('millibar'),
 
       managedClimbSpeed: this.fmgc.getManagedClimbSpeed(),

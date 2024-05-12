@@ -16,6 +16,7 @@ abstract class SpecifiedVorUnavailable implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   private navaidTuner: NavaidTuner;
 
   init(baseInstrument: BaseInstrument): void {

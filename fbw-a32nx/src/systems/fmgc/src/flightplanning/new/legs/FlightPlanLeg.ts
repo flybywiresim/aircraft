@@ -139,6 +139,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.type = serialized.effectiveType;
     leg.modifiedHold = serialized.modifiedHold;
     leg.defaultHold = serialized.defaultHold;
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     leg.constraintType = serialized.constraintType;
     leg.cruiseStep = serialized.cruiseStep;
     leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
@@ -226,6 +227,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       return null;
     }
 
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.definition.waypoint;
   }
 
@@ -239,6 +241,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       return false;
     }
 
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return this.definition.waypoint.databaseId === waypoint.databaseId;
   }
 
@@ -388,6 +391,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, procedureLeg.rnp);
 
     flightPlanLeg.defaultHold = HoldUtils.parseHoldFromProcedureLeg(procedureLeg);
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     flightPlanLeg.constraintType = constraintType;
 
     return flightPlanLeg;
@@ -424,6 +428,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint: WaypointFactory.fromAirport(airport),
         waypointDescriptor: WaypointDescriptor.Airport,
+        // @ts-expect-error TS2339 -- TODO fix this manually (strict mode migration)
         magneticCourse: runway?.magneticBearing,
       },
       airport.ident,
@@ -448,6 +453,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.FA,
         overfly: false,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         waypoint: runwayLeg.terminationWaypoint(),
         magneticCourse: bearing,
         altitude1: altitude,

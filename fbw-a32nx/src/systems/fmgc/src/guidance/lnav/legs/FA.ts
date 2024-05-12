@@ -88,6 +88,7 @@ export class FALeg extends Leg {
       }
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const altitudeDiff = Math.max(0, this.altitude - startingAltitude);
     const distance = Math.max(0.1, altitudeDiff / FALeg.DEFAULT_CLIMB_RATE);
 

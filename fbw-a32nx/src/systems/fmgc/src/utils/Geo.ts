@@ -30,8 +30,10 @@ export class Geo {
   static distanceToLeg(from: Coordinates, leg: Leg): NauticalMiles {
     const intersections1 = placeBearingIntersection(
       from,
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       MathUtils.normalise360(leg.outboundCourse - 90),
       leg.initialLegTermPoint,
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
@@ -55,8 +57,10 @@ export class Geo {
 
     const intersections2 = placeBearingIntersection(
       from,
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       MathUtils.normalise360(leg.outboundCourse - 90),
       legStartReference,
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
@@ -68,11 +72,15 @@ export class Geo {
 
   static legIntercept(from: Coordinates, bearing: DegreesTrue, leg: Leg): Coordinates {
     if (leg instanceof AFLeg) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const intersections = smallCircleGreatCircleIntersection(leg.centre, leg.radius, from, bearing);
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       const d1 = distanceTo(from, intersections[0]);
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       const d2 = distanceTo(from, intersections[1]);
 
+      // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
       return d1 > d2 ? intersections[1] : intersections[0];
     }
 
@@ -83,6 +91,7 @@ export class Geo {
     const intersections1 = placeBearingIntersection(
       from,
       MathUtils.normalise360(bearing),
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       leg instanceof XFLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
       MathUtils.normalise360(leg.outboundCourse - 180),
     );
@@ -100,6 +109,7 @@ export class Geo {
     const intersections2 = placeBearingIntersection(
       from,
       MathUtils.normalise360(bearing),
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       leg.getPathStartPoint(),
       MathUtils.normalise360(leg.outboundCourse - 180),
     );

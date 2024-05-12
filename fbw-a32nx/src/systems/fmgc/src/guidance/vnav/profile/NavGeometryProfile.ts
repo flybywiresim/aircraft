@@ -197,6 +197,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
   }
 
   addCheckpointFromLast(checkpointBuilder: (lastCheckpoint: VerticalCheckpoint) => Partial<VerticalCheckpoint>) {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     this.checkpoints.push({ ...this.lastCheckpoint, ...checkpointBuilder(this.lastCheckpoint) });
   }
 
@@ -224,6 +225,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
 
       const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
       const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } =
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.interpolateEverythingFromStart(distanceFromStart);
 
       const altitudeConstraint = leg.altitudeConstraint;
@@ -231,17 +233,23 @@ export class NavGeometryProfile extends BaseGeometryProfile {
 
       predictions.set(i, {
         waypointIndex: i,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         distanceFromStart,
         secondsFromPresent,
         altitude,
         speed: this.atmosphericConditions.casOrMach(speed, mach, altitude),
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         altitudeConstraint,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         isAltitudeConstraintMet: altitudeConstraint && isAltitudeConstraintMet(altitudeConstraint, altitude, 250),
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         speedConstraint,
         isSpeedConstraintMet: this.isSpeedConstraintMet(speed, speedConstraint),
         altError: this.computeAltError(altitude, altitudeConstraint),
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         distanceToTopOfDescent: topOfDescent ? topOfDescent.distanceFromStart - distanceFromStart : null,
         estimatedFuelOnBoard: remainingFuelOnBoard,
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         distanceFromAircraft: distanceFromStart - distanceToPresentPosition,
       });
     }
@@ -254,6 +262,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       return true;
     }
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return speed - constraint.speed < 5;
   }
 
@@ -266,24 +275,32 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       case AltitudeDescriptor.AtAlt1:
       case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
       case AltitudeDescriptor.AtAlt1AngleAlt2:
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         return predictedAltitude - constraint.altitude1;
       case AltitudeDescriptor.AtOrAboveAlt1:
       case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
       case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         return Math.min(predictedAltitude - constraint.altitude1, 0);
       case AltitudeDescriptor.AtOrBelowAlt1:
       case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         return Math.max(predictedAltitude - constraint.altitude1, 0);
       case AltitudeDescriptor.BetweenAlt1Alt2:
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (predictedAltitude >= constraint.altitude1) {
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           return predictedAltitude - constraint.altitude1;
         }
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (predictedAltitude <= constraint.altitude2) {
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           return predictedAltitude - constraint.altitude1;
         }
 
         return 0;
       case AltitudeDescriptor.AtOrAboveAlt2:
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         return Math.min(predictedAltitude - constraint.altitude2, 0);
       default:
         return 0;

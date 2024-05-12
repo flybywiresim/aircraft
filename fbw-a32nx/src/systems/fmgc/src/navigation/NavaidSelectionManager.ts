@@ -142,8 +142,10 @@ export class NavaidSelectionManager {
     // we need this as a fallback for MSFS-sourced facilities with missing elevation data
     this.heightAboveGround = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
     if (this.filteredHeight === null) {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.filteredHeight = this.heightAboveGround;
     } else {
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       this.filteredHeight = 0.01 * this.heightAboveGround + 0.99 * this.filteredHeight;
     }
   }
@@ -234,10 +236,13 @@ export class NavaidSelectionManager {
   /** Checks if the navaid is able to be received over the horizon */
   private isInLineOfSight(facility: VhfNavaid, distance: number): boolean {
     let heightAboveNavaid: number;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (facility.dmeLocation.alt !== undefined) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       heightAboveNavaid = Math.max(0, this.altitude - facility.dmeLocation.alt) / 6076.12;
     } else {
       // fallback for MSFS navdata with missing navaid elevations
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       heightAboveNavaid = this.filteredHeight;
     }
 
@@ -269,7 +274,9 @@ export class NavaidSelectionManager {
   /** Checks if the navaid is too close to the aircraft overhead it */
   private isWithinConeOfConfusion(facility: VhfNavaid, distance: number): boolean {
     let coneHeight: number;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     if (facility.dmeLocation.alt !== undefined) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       coneHeight = Math.max(0, this.altitude - facility.dmeLocation.alt) / 6076.12;
     } else {
       // fallback for MSFS navdata with missing navaid elevations
@@ -310,7 +317,9 @@ export class NavaidSelectionManager {
       // check the current pair are still valid candidates
       findNewPair =
         findNewPair ||
+        // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
         !this.candidateList.some((v) => v.databaseId === this.selectedDmePair[0].databaseId) ||
+        // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
         !this.candidateList.some((v) => v.databaseId === this.selectedDmePair[1].databaseId);
 
       // FIXME either of the navaid idents don't match expected
@@ -345,12 +354,15 @@ export class NavaidSelectionManager {
       if (geometryCheck) {
         // only select a new pair if they're at least 10° close to the ideal 90°
         const currentPairAngleDiff = Math.abs(
+          // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
           diffAngle(90, this.calcDmePairAngle(this.selectedDmePair[0], this.selectedDmePair[1])),
         );
         if (currentPairAngleDiff - bestAngleDiff >= 10) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           this.selectedDmePair = bestPair;
         }
       } else {
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         this.selectedDmePair = bestPair;
       }
     }
@@ -358,12 +370,15 @@ export class NavaidSelectionManager {
 
   private calcDmePairAngle(a: VhfNavaid, b: VhfNavaid): number {
     // FIXME bearingTo really needs an overload that takes lat and lon as args
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const bearingA = bearingTo(this.ppos, a.dmeLocation);
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const bearingB = bearingTo(this.ppos, b.dmeLocation);
     return Math.abs(diffAngle(bearingA, bearingB));
   }
 
   private getSpecifiedNavaid(): VhfNavaid | null {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     if (NavaidSelectionManager.SPECIFIED_VOR_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
       const segment = this.flightPlanService.active.approachSegment;
 
@@ -442,6 +457,7 @@ export class NavaidSelectionManager {
 
     // closest vor/dme within FoM, with a little bit of stickiness to avoid swapping back and forth
     if (this.vorCandidateList.length > 0 && this.displayVor !== null) {
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       const currentVor = this.vorCandidateList.find((v) => v.databaseId === this.displayVor.databaseId);
       const replaceCurrentVor =
         !currentVor ||
@@ -479,9 +495,12 @@ export class NavaidSelectionManager {
     const candidates = this.candidateList.filter((v) => this.isVorDme(v) && v.distance < 51);
     candidates.sort(
       (a, b) =>
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         distanceTo(destRunway.thresholdLocation, a.dmeLocation) -
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         distanceTo(destRunway.thresholdLocation, b.dmeLocation),
     );
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     if (candidates.length > 0 && distanceTo(destRunway.thresholdLocation, candidates[0].dmeLocation) < 5) {
       return candidates[0];
     }
@@ -489,6 +508,7 @@ export class NavaidSelectionManager {
   }
 
   private getSpecifiedNdb(): NdbNavaid | null {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     if (NavaidSelectionManager.SPECIFIED_NDB_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
       const segment = this.flightPlanService.active.approachSegment;
 

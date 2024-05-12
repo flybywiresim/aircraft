@@ -81,6 +81,7 @@ export class FlightModel {
 
     const spdBrkIncrement = spdBrkDeflected ? 0.01008 : 0;
     const gearIncrement = gearExtended ? 0.0372 : 0;
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     return baseDrag + spdBrkIncrement + gearIncrement;
   }
 

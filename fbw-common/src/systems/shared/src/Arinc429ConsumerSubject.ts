@@ -16,6 +16,7 @@ export class Arinc429ConsumerSubject {
       initialConsumer ?? null,
       Arinc429Register.empty(),
       Arinc429EqualityFunc,
+      // @ts-expect-error TS2345
       Arinc429MutateFunc,
     );
   }

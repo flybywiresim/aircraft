@@ -79,7 +79,9 @@ export class AFLeg extends XFLeg {
 
   recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
     this.sweepAngle = MathUtils.diffAngle(
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       bearingTo(this.centre, this.getPathStartPoint()),
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       bearingTo(this.centre, this.getPathEndPoint()),
     );
     this.clockwise = this.sweepAngle > 0;
@@ -94,8 +96,11 @@ export class AFLeg extends XFLeg {
     this.predictedPath.length = 0;
     this.predictedPath.push({
       type: PathVectorType.Arc,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       startPoint,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       centrePoint: this.centre,
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       endPoint: this.getPathEndPoint(),
       sweepAngle: this.sweepAngle,
     });
@@ -104,6 +109,7 @@ export class AFLeg extends XFLeg {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           startPoint: this.getPathStartPoint(),
           annotation: 'AF ITP',
         },
@@ -134,20 +140,25 @@ export class AFLeg extends XFLeg {
 
   getNominalRollAngle(gs: MetresPerSecond): Degrees | undefined {
     const gsMs = gs * (463 / 900);
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return (this.clockwise ? 1 : -1) * Math.atan(gsMs ** 2 / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcGuidance(ppos, trueTrack, this.getPathStartPoint(), this.centre, this.sweepAngle);
   }
 
   getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     return arcDistanceToGo(ppos, this.getPathStartPoint(), this.centre, this.sweepAngle);
   }
 
   isAbeam(ppos: Coordinates): boolean {
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const bearingPpos = bearingTo(this.centre, ppos);
 
+    // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
     const bearingFrom = bearingTo(this.centre, this.getPathStartPoint());
 
     const trackAngleError = this.clockwise
@@ -158,6 +169,7 @@ export class AFLeg extends XFLeg {
   }
 
   get repr(): string {
+    // @ts-expect-error TS2532 -- TODO fix this manually (strict mode migration)
     return `AF(${this.radius.toFixed(1)}NM) TO ${this.fix.ident}`;
   }
 }

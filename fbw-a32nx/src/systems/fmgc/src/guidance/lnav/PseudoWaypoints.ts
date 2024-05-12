@@ -85,6 +85,7 @@ export class PseudoWaypoints implements GuidanceComponent {
   ) {}
 
   acceptVerticalProfile() {
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new vertical profile.');
     }
@@ -92,6 +93,7 @@ export class PseudoWaypoints implements GuidanceComponent {
   }
 
   acceptMultipleLegGeometry(_geometry: Geometry) {
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new lateral geometry.');
     }
@@ -150,19 +152,25 @@ export class PseudoWaypoints implements GuidanceComponent {
     if (Number.isFinite(firstSpeedChange)) {
       let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
       if (this.guidanceController.vnavDriver.isLatAutoControlActive()) {
+        // @ts-expect-error TS18047 -- TODO fix this manually (strict mode migration)
         const pwp = this.pointFromEndOfPath(geometry, wptCount, totalDistance - firstSpeedChange);
 
         if (pwp) {
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = pwp;
         }
       }
 
       newPseudoWaypoints.push({
         ident: 'Speed change',
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         alongLegIndex,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         distanceFromLegTermination,
         efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.MagentaColor,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         efisSymbolLla,
+        // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
         distanceFromStart: firstSpeedChange,
         displayedOnMcdu: false,
         displayedOnNd: true,
@@ -220,6 +228,7 @@ export class PseudoWaypoints implements GuidanceComponent {
    * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
    */
   sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
     }
@@ -265,6 +274,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       return undefined;
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
     }
@@ -296,6 +306,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         let lla: Coordinates | undefined;
         if (distanceFromEndOfLeg > totalLegPathLength) {
           // PWP in disco
+          // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
           if (DEBUG) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
@@ -307,12 +318,14 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in outbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg;
 
+          // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
           if (DEBUG) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
             );
           }
 
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
         } else if (
           distanceFromEndOfLeg >= outboundTransLength &&
@@ -321,6 +334,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in leg segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
 
+          // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
           if (DEBUG) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
@@ -332,12 +346,14 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in inbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
 
+          // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
           if (DEBUG) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} inbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
           }
 
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           lla = inboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
         }
 
@@ -353,6 +369,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       }
     }
 
+    // @ts-expect-error TS2774 -- TODO fix this manually (strict mode migration)
     if (DEBUG) {
       console.error(`[FMS/PseudoWaypoints] ${distanceFromEnd.toFixed(2)}nm is larger than the total lateral path.`);
     }
@@ -384,6 +401,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         return undefined;
       }
 
+      // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
       [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = pwp;
     }
 
@@ -392,8 +410,11 @@ export class PseudoWaypoints implements GuidanceComponent {
         return {
           ident: 'Level 1',
           efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.MagentaColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -402,9 +423,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.ContinueClimb:
         return {
           ident: 'Start of climb 1',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb | NdSymbolTypeFlags.CyanColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -413,9 +437,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.CrossingClimbSpeedLimit:
         return {
           ident: PWP_IDENT_SPD_LIM,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -426,9 +453,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.CrossingDescentSpeedLimit:
         return {
           ident: PWP_IDENT_SPD_LIM,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -439,9 +469,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.CrossingFcuAltitudeClimb:
         return {
           ident: 'Level 2',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.CyanColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -450,9 +483,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.TopOfClimb:
         return {
           ident: PWP_IDENT_TOC,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: 0,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -462,9 +498,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.StepClimb:
         return {
           ident: PWP_IDENT_STEP_CLIMB,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -474,9 +513,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.StepDescent:
         return {
           ident: PWP_IDENT_TOD,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -487,9 +529,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.ContinueDescent:
         return {
           ident: PWP_IDENT_TOD,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -498,9 +543,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.ContinueDescentArmed:
         return {
           ident: PWP_IDENT_TOD,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent | NdSymbolTypeFlags.CyanColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -510,9 +558,12 @@ export class PseudoWaypoints implements GuidanceComponent {
         return {
           ident: PWP_IDENT_TOD,
           sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -524,9 +575,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.CrossingFcuAltitudeDescent:
         return {
           ident: 'Level 2',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.CyanColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -535,9 +589,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.LevelOffForDescentConstraint:
         return {
           ident: 'Level 1',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.MagentaColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -546,9 +603,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.InterceptDescentProfileSelected:
         return {
           ident: 'Intercept point 1',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -557,9 +617,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.InterceptDescentProfileManaged:
         return {
           ident: 'Intercept point 2',
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile | NdSymbolTypeFlags.CyanColor,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -569,7 +632,9 @@ export class PseudoWaypoints implements GuidanceComponent {
         return {
           ident: PWP_IDENT_DECEL,
           sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           // Decel point is shown in magenta if speed is managed and NAV is armed or active
           efisSymbolFlag:
@@ -577,6 +642,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             (Simplane.getAutoPilotAirspeedManaged() && isLatAutoControlArmedOrActive
               ? NdSymbolTypeFlags.MagentaColor
               : 0),
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -586,9 +652,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.Flaps1:
         return {
           ident: PWP_IDENT_FLAP1,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap1,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -598,9 +667,12 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.Flaps2:
         return {
           ident: PWP_IDENT_FLAP2,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           alongLegIndex,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           distanceFromLegTermination,
           efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap2,
+          // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,

@@ -97,17 +97,23 @@ export class EfisVectors {
 
       switch (planIndex) {
         case FlightPlanIndex.Active:
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.ACTIVE, side);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.DASHED, side);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.MISSED, side);
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.ALTERNATE, side);
           break;
         case FlightPlanIndex.Temporary:
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.TEMPORARY, side);
           break;
         case FlightPlanIndex.FirstSecondary:
         case FlightPlanIndex.Uplink:
         default:
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.SECONDARY, side);
           break;
       }
@@ -146,16 +152,20 @@ export class EfisVectors {
 
         if (transmitActive) {
           this.transmitFlightPlan(
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             plan,
             side,
             EfisVectorsGroup.ACTIVE,
             EfisVectorsGroup.MISSED,
             EfisVectorsGroup.ALTERNATE,
           );
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.DASHED, side);
         } else {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.ACTIVE, side);
           this.transmitFlightPlan(
+            // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
             plan,
             side,
             EfisVectorsGroup.DASHED,
@@ -166,12 +176,15 @@ export class EfisVectors {
         break;
       }
       case FlightPlanIndex.Temporary:
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
         break;
       default:
         if (this.efisInterfaces[side].shouldTransmitSecondary()) {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
         } else {
+          // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
           this.transmit(null, EfisVectorsGroup.SECONDARY, side);
         }
         break;
@@ -189,13 +202,16 @@ export class EfisVectors {
     const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
 
     if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.transmit(null, mainGroup, side);
 
       if (missedApproachGroup !== mainGroup) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.transmit(null, missedApproachGroup, side);
       }
 
       if (alternateGroup !== mainGroup) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.transmit(null, alternateGroup, side);
       }
 
@@ -206,6 +222,7 @@ export class EfisVectors {
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
 
+    // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
     const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
@@ -213,6 +230,7 @@ export class EfisVectors {
     const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isArcVsPlanMode);
 
     if (transmitMissed) {
+      // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
       const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
 
       if (missedApproachGroup === mainGroup) {
@@ -221,6 +239,7 @@ export class EfisVectors {
         this.transmit(missedVectors, missedApproachGroup, side);
       }
     } else if (missedApproachGroup !== mainGroup) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.transmit(null, missedApproachGroup, side);
     }
 
@@ -259,9 +278,11 @@ export class EfisVectors {
           this.transmit(alternateVectors, alternateGroup, side);
         }
       } else if (alternateGroup !== mainGroup) {
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         this.transmit(null, alternateGroup, side);
       }
     } else if (alternateGroup !== mainGroup) {
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.transmit(null, alternateGroup, side);
     }
   }

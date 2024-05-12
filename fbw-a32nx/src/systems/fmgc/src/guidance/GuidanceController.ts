@@ -80,14 +80,17 @@ export class GuidanceController {
   efisVectors: EfisVectors;
 
   get activeGeometry(): Geometry | null {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.getGeometryForFlightPlan(FlightPlanIndex.Active);
   }
 
   get temporaryGeometry(): Geometry | null {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.getGeometryForFlightPlan(FlightPlanIndex.Temporary);
   }
 
   get secondaryGeometry(): Geometry | null {
+    // @ts-expect-error TS2322 -- TODO fix this manually (strict mode migration)
     return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
   }
 
@@ -113,13 +116,17 @@ export class GuidanceController {
 
   temporaryLegIndex: number = -1;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   activeTransIndex: number;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   activeLegDtg: NauticalMiles;
 
   /** Used for lateral guidance */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   activeLegCompleteLegPathDtg: NauticalMiles;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   displayActiveLegCompleteLegPathDtg: NauticalMiles;
 
   /**
@@ -127,9 +134,11 @@ export class GuidanceController {
    * This is distinctly different from {@link activeLegCompleteLegPathDtg}. For example, path capture transitions use dtg = 1 for lateral guidance,
    * but vertical guidance and predictions need an accurate distance.
    */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
   /** * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA */
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   alongTrackDistanceToDestination: NauticalMiles;
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
@@ -138,10 +147,13 @@ export class GuidanceController {
 
   automaticSequencing: boolean = true;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   leftEfisState: EfisState<number>;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   rightEfisState: EfisState<number>;
 
+  // @ts-expect-error TS2564 -- TODO fix this manually (strict mode migration)
   efisStateForSide: { L: EfisState<number>; R: EfisState<number> };
 
   private approachMessage: string = '';
@@ -150,6 +162,7 @@ export class GuidanceController {
 
   verticalProfileComputationParametersObserver: VerticalProfileComputationParametersObserver;
 
+  // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
   viewListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   private windProfileFactory: WindProfileFactory;
@@ -240,7 +253,9 @@ export class GuidanceController {
 
       // Don't compute distance and ETA for XM legs
       const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       const efisEta = isXMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination);
 
       // FIXME should be NCD if no FM position
@@ -312,11 +327,14 @@ export class GuidanceController {
       'A32NX_IMM_EXIT',
       (fpIndex, immExit) => {
         const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
+        // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
         const geometryLeg = this.activeGeometry.legs.get(fpIndex);
 
         const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
 
+        // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
         if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
+          // @ts-expect-error TS18048 -- TODO fix this manually (strict mode migration)
           fpLeg.holdImmExit = immExit;
 
           this.flightPlanService.active.incrementVersion();
@@ -460,17 +478,21 @@ export class GuidanceController {
     if (geometry) {
       GeometryFactory.updateFromFlightPlan(
         geometry,
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         plan,
         !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
       );
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.recomputeGeometry(geometry, plan);
     } else {
       const newGeometry = GeometryFactory.createFromFlightPlan(
+        // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
         plan,
         !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
       );
 
+      // @ts-expect-error TS2345 -- TODO fix this manually (strict mode migration)
       this.recomputeGeometry(newGeometry, plan);
 
       this.flightPlanGeometries.set(geometryPIndex, newGeometry);
@@ -527,11 +549,14 @@ export class GuidanceController {
   setHoldSpeed(tas: Knots) {
     let holdLeg: HMLeg;
     if (this.isManualHoldActive()) {
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       holdLeg = this.activeGeometry.legs.get(this.activeLegIndex) as unknown as HMLeg;
     } else if (this.isManualHoldNext()) {
+      // @ts-expect-error TS2531 -- TODO fix this manually (strict mode migration)
       holdLeg = this.activeGeometry.legs.get(this.activeLegIndex + 1) as unknown as HMLeg;
     }
 
+    // @ts-expect-error TS2454 -- TODO fix this manually (strict mode migration)
     if (holdLeg) {
       holdLeg.setPredictedTas(tas);
     }
