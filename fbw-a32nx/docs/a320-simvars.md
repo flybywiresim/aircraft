@@ -3280,27 +3280,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
-    - | Bit |                Description               |
-      |:---:|:----------------------------------------:|
-      | 11  | Slat Data Valid                          |
-      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
-      | 13  | Slats >= 17° (337° > FPPU > 210.4°)      |
-      | 14  | Slats >= 26° (337° > FPPU > 321.8)       |
-      | 15  | Slats Extended 27° (337° > FPPU > 327.4) |
-      | 16  | Slat WTB Engaged                         |
-      | 17  | Slat Fault                               |
-      | 18  | Flap Data Valid                          |
-      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
-      | 20  | Flaps >= 14° (254° > FPPU > 140.7)       |
-      | 21  | Flaps >= 19° (254° > FPPU > 163.7°)      |
-      | 22  | Flaps >= 39° (254° > FPPU > 247.8°)      |
-      | 23  | Flaps Extended 40° (254° > FPPU > 250°)  |
-      | 24  | Flap WTB engaged                         |
-      | 25  | Flap Fault                               |
-      | 26  | Spoiler Lift Demand                      |
-      | 27  | Spoiler Limit Demand                     |
-      | 28  | Slat System Jam                          |
-      | 29  | Flap System Jam                          |
+    - | Bit |            Description A32NX             |      Description A380X, if different     |
+      |:---:|:----------------------------------------:|:----------------------------------------:|
+      | 11  | Slat Data Valid                          |                                          |
+      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |                                          |
+      | 13  | Slats >= 17° (337° > FPPU > 210.4°)      | Slats >= 19° (337° > FPPU > 234.7°)      |
+      | 14  | Slats >= 26° (337° > FPPU > 321.8)       | Slats >= 22 (337° > FPPU > 272.2°)       |
+      | 15  | Slats Extended 27° (337° > FPPU > 327.4) | Slats Extended 23° (337° > FPPU > 280°)  |
+      | 16  | Slat WTB Engaged                         |                                          |
+      | 17  | Slat Fault                               |                                          |
+      | 18  | Flap Data Valid                          |                                          |
+      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |                                          |
+      | 20  | Flaps >= 14° (254° > FPPU > 140.7)       | Flaps >= 7° (254° > FPPU > 102.1°)       |
+      | 21  | Flaps >= 19° (254° > FPPU > 163.7°)      | Flaps >= 16° (254° > FPPU > 150.0°)      |
+      | 22  | Flaps >= 39° (254° > FPPU > 247.8°)      | Flaps >= 25° (254° > FPPU > 189.8°)      |
+      | 23  | Flaps Extended 40° (254° > FPPU > 250°)  | Flaps Extended 32° (254° > FPPU > 218°)  |
+      | 24  | Flap WTB engaged                         |                                          |
+      | 25  | Flap Fault                               |                                          |
+      | 26  | Spoiler Lift Demand                      |                                          |
+      | 27  | Spoiler Limit Demand                     |                                          |
+      | 28  | Slat System Jam                          |                                          |
+      | 29  | Flap System Jam                          |                                          |
 
 - A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD
     - Slat actual position word of the SFCC bus output

@@ -91,6 +91,19 @@ impl SlatFlapControlComputer {
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
     const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 205.;
     const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 212.;
+    const CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS: f64 = 265.5;
+    const CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET: f64 = 22000.;
+    const ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS: f64 = 155.;
+    const ALPHA_SPEED_LOCK_OUT_AIRSPEED_THRESHOLD_KNOTS: f64 = 161.;
+    const ALPHA_SPEED_LOCK_IN_AOA_THRESHOLD_DEGREES: f64 = 9.5;
+    const ALPHA_SPEED_LOCK_OUT_AOA_THRESHOLD_DEGREES: f64 = 9.2;
+
+    const FLRS_CONFFULL_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS: f64 = 184.5;
+    const FLRS_CONF3_TO_CONF2S_AIRSPEED_THRESHOLD_KNOTS: f64 = 198.5;
+    const FLRS_CONF2_TO_CONF1F_AIRSPEED_THRESHOLD_KNOTS: f64 = 222.5;
+    const FLRS_CONF1F_TO_CONF2_AIRSPEED_THRESHOLD_KNOTS: f64 = 217.5;
+    const FLRS_CONF2S_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS: f64 = 193.5;
+    const FLRS_CONF3_TO_CONFFULL_AIRSPEED_THRESHOLD_KNOTS: f64 = 179.5;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -160,8 +173,10 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (0 | 1, 1)
-                if context.indicated_airspeed().get::<knot>() > 265.5
-                    || context.indicated_altitude().get::<foot>() > 22000. =>
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
+                    || context.indicated_altitude().get::<foot>()
+                        > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET =>
             {
                 FlapsConf::Conf0
             }
@@ -180,43 +195,68 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (_, 1) => FlapsConf::Conf1,
-            (_, 0) if context.is_in_flight() == true && self.alpha_speed_lock_active == true => {
-                if context.indicated_airspeed().get::<knot>() > 161.
-                    || context.angle_of_attack().get::<degree>() < 9.2
+            (_, 0) if context.is_in_flight() && self.alpha_speed_lock_active => {
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::ALPHA_SPEED_LOCK_OUT_AIRSPEED_THRESHOLD_KNOTS
+                    || context.angle_of_attack().get::<degree>()
+                        < Self::ALPHA_SPEED_LOCK_OUT_AOA_THRESHOLD_DEGREES
                 {
                     FlapsConf::Conf0
                 } else {
                     FlapsConf::Conf1
                 }
             }
-            (1 | 2 | 3 | 4, 0)
-                if context.is_in_flight() == true
-                    && self.alpha_speed_lock_active == false
-                    && (context.indicated_airspeed().get::<knot>() < 155.
-                        || context.angle_of_attack().get::<degree>() > 9.5) =>
+            (1..=4, 0)
+                if context.is_in_flight()
+                    && !self.alpha_speed_lock_active
+                    && (context.indicated_airspeed().get::<knot>()
+                        < Self::ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS
+                        || context.angle_of_attack().get::<degree>()
+                            > Self::ALPHA_SPEED_LOCK_IN_AOA_THRESHOLD_DEGREES) =>
             {
                 FlapsConf::Conf1
             }
             (_, 0) => FlapsConf::Conf0,
-            (1 | 2, 2) if context.indicated_airspeed().get::<knot>() > 222.5 => FlapsConf::Conf1F,
+            (1 | 2, 2)
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::FLRS_CONF2_TO_CONF1F_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf1F
+            }
             (2, 2) if self.flaps_conf == FlapsConf::Conf1F => {
-                if context.indicated_airspeed().get::<knot>() < 217.5 {
+                if context.indicated_airspeed().get::<knot>()
+                    < Self::FLRS_CONF1F_TO_CONF2_AIRSPEED_THRESHOLD_KNOTS
+                {
                     FlapsConf::Conf2
                 } else {
                     FlapsConf::Conf1F
                 }
             }
-            (2 | 3, 3) if context.indicated_airspeed().get::<knot>() > 198.5 => FlapsConf::Conf2S,
+            (2 | 3, 3)
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::FLRS_CONF3_TO_CONF2S_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf2S
+            }
             (3, 3) if self.flaps_conf == FlapsConf::Conf2S => {
-                if context.indicated_airspeed().get::<knot>() < 193.5 {
+                if context.indicated_airspeed().get::<knot>()
+                    < Self::FLRS_CONF2S_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS
+                {
                     FlapsConf::Conf3
                 } else {
                     FlapsConf::Conf2S
                 }
             }
-            (3 | 4, 4) if context.indicated_airspeed().get::<knot>() > 184.5 => FlapsConf::Conf3,
+            (3 | 4, 4)
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::FLRS_CONFFULL_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf3
+            }
             (4, 4) if self.flaps_conf == FlapsConf::Conf3 => {
-                if context.indicated_airspeed().get::<knot>() < 179.5 {
+                if context.indicated_airspeed().get::<knot>()
+                    < Self::FLRS_CONF3_TO_CONFFULL_AIRSPEED_THRESHOLD_KNOTS
+                {
                     FlapsConf::ConfFull
                 } else {
                     FlapsConf::Conf3
@@ -1721,7 +1761,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(200.)
-            .set_angle_of_attack(Angle::new::<degree>(9.7).get::<radian>())
+            .set_angle_of_attack(Angle::new::<degree>(10.).get::<radian>())
             .set_on_ground(false)
             .set_flaps_handle_position(1)
             .run_one_tick();
