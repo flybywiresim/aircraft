@@ -82,15 +82,15 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
       this.handleRotatePlane();
     });
 
-    this.pposLatSub.sub(() => {
-      this.pposLatRegister.set(this.pposLatSub.get());
+    this.pposLatSub.sub((lat) => {
+      this.pposLatRegister.set(lat);
 
       this.handlePlaneVisibility();
       this.handleMovePlane();
     });
 
-    this.pposLongSub.sub(() => {
-      this.pposLongRegister.set(this.pposLatSub.get());
+    this.pposLongSub.sub((long) => {
+      this.pposLongRegister.set(long);
 
       this.handlePlaneVisibility();
       this.handleMovePlane();
