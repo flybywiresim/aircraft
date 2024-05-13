@@ -12,12 +12,6 @@ export type MfdSimvars = {
   adirs1MaintWord: number;
   adirs2MaintWord: number;
   adirs3MaintWord: number;
-  kccuDir: number;
-  kccuPerf: number;
-  kccuInit: number;
-  kccuNavaid: number;
-  kccuFpln: number;
-  kccuDest: number;
   leftMfdInView: boolean;
   rightMfdInView: boolean;
 };
@@ -34,12 +28,6 @@ export enum MfdVars {
   adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
   adirs2MaintWord = 'L:A32NX_ADIRS_IR_2_MAINT_WORD',
   adirs3MaintWord = 'L:A32NX_ADIRS_IR_3_MAINT_WORD',
-  kccuDir = 'L:A32NX_KCCU_L_DIR',
-  kccuPerf = 'L:A32NX_KCCU_L_PERF',
-  kccuInit = 'L:A32NX_KCCU_L_INIT',
-  kccuNavaid = 'L:A32NX_KCCU_L_NAVAID',
-  kccuFpln = 'L:A32NX_KCCU_L_FPLN',
-  kccuDest = 'L:A32NX_KCCU_L_DEST',
   leftMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:1',
   rightMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:2',
 }
@@ -58,12 +46,6 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['adirs1MaintWord', { name: MfdVars.adirs1MaintWord, type: SimVarValueType.Number }],
     ['adirs2MaintWord', { name: MfdVars.adirs2MaintWord, type: SimVarValueType.Number }],
     ['adirs3MaintWord', { name: MfdVars.adirs3MaintWord, type: SimVarValueType.Number }],
-    ['kccuDir', { name: MfdVars.kccuDir, type: SimVarValueType.Number }],
-    ['kccuPerf', { name: MfdVars.kccuPerf, type: SimVarValueType.Number }],
-    ['kccuInit', { name: MfdVars.kccuInit, type: SimVarValueType.Number }],
-    ['kccuNavaid', { name: MfdVars.kccuNavaid, type: SimVarValueType.Number }],
-    ['kccuFpln', { name: MfdVars.kccuFpln, type: SimVarValueType.Number }],
-    ['kccuDest', { name: MfdVars.kccuDest, type: SimVarValueType.Number }],
     ['leftMfdInView', { name: MfdVars.leftMfdInView, type: SimVarValueType.Bool }],
     ['rightMfdInView', { name: MfdVars.rightMfdInView, type: SimVarValueType.Bool }],
   ]);

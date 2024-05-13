@@ -1,5 +1,6 @@
 import {
   ComponentProps,
+  Consumer,
   DisplayComponent,
   FSComponent,
   Subject,
@@ -17,19 +18,24 @@ export const emptyMandatoryCharacter = (selected: boolean) =>
   `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
 
 interface InputFieldProps<T> extends ComponentProps {
+  /** Only handles KCCU input for respective side, receives key name only */
+  hEventConsumer: Consumer<string>;
   dataEntryFormat: DataEntryFormat<T>;
-  mandatory?: Subscribable<boolean>; // Renders empty values with orange rectangles
-  inactive?: Subscribable<boolean>; // If inactive, will be rendered as static value (green text)
-  disabled?: Subscribable<boolean>; // Whether value can be set (if disabled, rendered as input field but greyed out)
+  /** Renders empty values with orange rectangles */
+  mandatory?: Subscribable<boolean>;
+  /** If inactive, will be rendered as static value (green text) */
+  inactive?: Subscribable<boolean>;
+  /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
+  disabled?: Subscribable<boolean>;
   canBeCleared?: Subscribable<boolean>;
-  enteredByPilot?: Subscribable<boolean>; // Value will be displayed in smaller font, if not entered by pilot (i.e. computed)
+  /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
+  enteredByPilot?: Subscribable<boolean>;
   canOverflow?: boolean;
   value: Subject<T | null> | Subscribable<T | null>;
-  /**
-   * If defined, this component does not update the value prop, but rather calls this method.
-   */
+  /** If defined, this component does not update the value prop, but rather calls this method. */
   onModified?: (newValue: T | null) => void;
-  onInput?: (newValue: string) => void; // Called for every character that is being typed
+  /** Called for every character that is being typed */
+  onInput?: (newValue: string) => void;
   /**
    * Function which modifies data within flight plan. Called during validation phase, after data entry format has been checked
    * @param newValue to be validated
@@ -195,20 +201,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
     if (ev.keyCode !== KeyCode.KEY_ENTER) {
-      if (this.modifiedFieldValue.get() === null) {
-        this.modifiedFieldValue.set('');
-        this.spanningDivRef.instance.style.justifyContent = 'flex-start';
-      }
-
-      if (
-        (this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits ||
-        this.props.canOverflow === true
-      ) {
-        this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
-        this.caretRef.instance.style.display = 'inline';
-      }
-
-      this.onInput();
+      this.handleKeyInput(key);
     } else {
       if (this.props.handleFocusBlurExternally === true) {
         this.onBlur(true);
@@ -216,6 +209,23 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.textInputRef.instance.blur();
       }
     }
+  }
+
+  private handleKeyInput(key: string) {
+    if (this.modifiedFieldValue.get() === null) {
+      this.modifiedFieldValue.set('');
+      this.spanningDivRef.instance.style.justifyContent = 'flex-start';
+    }
+
+    if (
+      (this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits ||
+      this.props.canOverflow === true
+    ) {
+      this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
+      this.caretRef.instance.style.display = 'inline';
+    }
+
+    this.onInput();
   }
 
   public onFocus() {
@@ -486,6 +496,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.textInputRef.instance.focus();
       });
     }
+
+    this.props.hEventConsumer.handle((key) => {
+      if (this.isFocused.get() && key.match(/^[a-zA-Z0-9_.-]*$/)) {
+        this.handleKeyInput(key);
+      }
+    });
 
     /* if (this.props.inViewEvent) {
             this.subs.push(this.props.inViewEvent.whenChanged().handle((inView) =>
