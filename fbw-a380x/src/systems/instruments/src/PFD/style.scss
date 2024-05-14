@@ -1,4 +1,4 @@
-@import "shared/definitions";
+@import "../Common/definitions";
 @import "animations";
 
 @font-face {
@@ -254,7 +254,7 @@ text.Red {
 }
 
 .TapeBackground {
-  fill: #4A5071;
+  fill: $display-grey;
   stroke: none;
 }
 
