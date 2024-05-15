@@ -7,7 +7,7 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { LocalSimVar, NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 const TIMEOUT = 10_000;
 
@@ -16,7 +16,7 @@ export class TodGuidance {
 
   private tdPaused: boolean;
 
-  private tdArmed: boolean;
+  private tdArmed: LocalSimVar<boolean>;
 
   private apEngaged: boolean;
 
@@ -31,7 +31,7 @@ export class TodGuidance {
     this.apEngaged = false;
     this.tdReached = false;
     this.tdPaused = false;
-    this.tdArmed = false;
+    this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
   }
 
   showPausePopup(title: string, message: string) {
@@ -54,15 +54,13 @@ export class TodGuidance {
 
   updateTdPause(deltaTime: number) {
     // Only armed if all conditions met
-    this.tdArmed =
+    this.tdArmed.setVar(
       this.cooldown <= 0 &&
-      !this.tdPaused &&
-      this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
-      this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
-      Simplane.getAutoPilotAirspeedManaged();
-
-    if (SimVar.GetSimVarValue('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool') !== this.tdArmed)
-      SimVar.SetSimVarValue('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', this.tdArmed);
+        !this.tdPaused &&
+        this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
+        this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
+        Simplane.getAutoPilotAirspeedManaged(),
+    );
 
     if (this.tdArmed) {
       // Check T/D pause first
@@ -96,7 +94,6 @@ export class TodGuidance {
         if (this.apEngaged !== apActive) {
           this.apEngaged = apActive;
         }
-        // Else T/D pause is not triggered but armed
       }
     }
 
