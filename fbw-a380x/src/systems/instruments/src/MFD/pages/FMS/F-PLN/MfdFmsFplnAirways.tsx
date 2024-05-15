@@ -1,7 +1,7 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFplnAirways.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
@@ -14,6 +14,7 @@ import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
@@ -54,6 +55,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         const line = (
           <AirwayLine
             fmc={this.props.fmcService.master}
+            mfd={this.props.mfd}
             pendingAirways={this.loadedFlightPlan.pendingAirways}
             fromFix={fromFix}
             isFirstLine={false}
@@ -87,6 +89,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
       const firstLine = (
         <AirwayLine
           fmc={this.props.fmcService.master}
+          mfd={this.props.mfd}
           pendingAirways={this.loadedFlightPlan.pendingAirways}
           fromFix={revWpt}
           isFirstLine
@@ -172,6 +175,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 
 interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
+  mfd: DisplayInterface & MfdDisplayInterface;
   pendingAirways: PendingAirways;
   fromFix: Fix;
   isFirstLine: boolean;
@@ -239,6 +243,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             disabled={this.viaFieldDisabled}
             alignText="center"
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
+            hEventConsumer={this.props.mfd.hEventConsumer}
+            interactionMode={this.props.mfd.interactionMode}
           />
         </div>
         <div class="fr" style="align-items: center;">
@@ -283,6 +289,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             disabled={this.toFieldDisabled}
             alignText="center"
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
+            hEventConsumer={this.props.mfd.hEventConsumer}
+            interactionMode={this.props.mfd.interactionMode}
           />
         </div>
       </div>

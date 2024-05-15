@@ -235,6 +235,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <Button
                 label="ACFT STATUS"
@@ -276,6 +278,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 alignText="center"
                 disabled={this.fromIcaoDisabled}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div class="mfd-label init-space-lr">TO</div>
               <InputField<string>
@@ -299,6 +303,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.toIcao}
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div class="mfd-label init-space-lr">ALTN</div>
               <InputField<string>
@@ -315,6 +321,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.altnIcao}
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
             <div class="mfd-fms-init-line">
@@ -328,6 +336,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 alignText="center"
                 disabled={Subject.create(true)} // TODO
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <Button
                 disabled={Subject.create(true)}
@@ -347,6 +357,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <Button
                 label="ALTN RTE SEL"
@@ -368,6 +380,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.crzFl}
                 containerStyle="margin-right: 25px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 CRZ TEMP
@@ -384,6 +398,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
 
@@ -400,6 +416,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 TROPO
@@ -415,6 +433,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 onModified={() => {}}
                 alignText="flex-end"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
             <div class="mfd-fms-init-line trip-wind">
@@ -429,6 +449,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <Button
                 disabled={Subject.create(true)}

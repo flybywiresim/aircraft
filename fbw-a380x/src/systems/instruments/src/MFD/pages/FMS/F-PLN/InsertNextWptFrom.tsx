@@ -15,6 +15,8 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FlightPlanIndex } from '@fmgc/index';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 
 export type NextWptInfo = {
   ident: string;
@@ -22,6 +24,7 @@ export type NextWptInfo = {
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
+  mfd: DisplayInterface & MfdDisplayInterface;
   availableWaypoints: SubscribableArray<NextWptInfo>;
   visible: Subject<boolean>;
   contentContainerStyle?: string;
@@ -169,6 +172,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                 alignLabels="flex-start"
                 onModified={(i, text) => this.onModified(i, text)}
                 numberOfDigitsForInputField={7}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
           </div>

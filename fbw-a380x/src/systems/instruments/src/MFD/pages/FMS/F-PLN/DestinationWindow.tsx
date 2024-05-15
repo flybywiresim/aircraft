@@ -93,6 +93,8 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 value={this.newDest}
                 alignText="center"
                 errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
           </div>

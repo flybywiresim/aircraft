@@ -1,3 +1,4 @@
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import {
   ArraySubject,
   DisplayComponent,
@@ -7,6 +8,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 
@@ -14,6 +16,7 @@ interface AbstractMfdHeaderProps {
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
   callsign: Subscribable<string>;
   uiService: MfdUiService;
+  mfd: DisplayInterface & MfdDisplayInterface;
 }
 
 /*
@@ -102,6 +105,8 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
           onModified={(val) => this.changeSystem(val)}
           containerStyle="width: 25%;"
           alignLabels="flex-start"
+          hEventConsumer={this.props.mfd.hEventConsumer}
+          interactionMode={this.props.mfd.interactionMode}
         />
         <span class="mfd-header-callsign">{this.props.callsign}</span>
       </div>

@@ -353,6 +353,8 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
               alignText="flex-end"
               containerStyle="width: 150px; margin-left: 10px;"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              hEventConsumer={this.props.mfd.hEventConsumer}
+              interactionMode={this.props.mfd.interactionMode}
             />
           </div>
           <div class="mfd-position-irs-irs-button-row">

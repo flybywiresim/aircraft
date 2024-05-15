@@ -174,6 +174,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                     }}
                     numberOfDigitsForInputField={7}
                     tmpyActive={this.tmpyActive}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
               </div>

@@ -97,21 +97,21 @@ export function pageForUrl(
 
 export function headerForSystem(
   sys: string,
-  bus: EventBus,
+  mfd: DisplayInterface & MfdDisplayInterface,
   atcCallsign: Subscribable<string>,
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
   uiService: MfdUiService,
 ): VNode {
   switch (sys) {
     case 'fms':
-      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} mfd={mfd} />;
     case 'atccom':
-      return <AtccomHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+      return <AtccomHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} mfd={mfd} />;
     case 'surv':
-      return <SurvHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+      return <SurvHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} mfd={mfd} />;
     case 'fcubkup':
-      return <FcuBkupHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+      return <FcuBkupHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} mfd={mfd} />;
     default:
-      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} />;
+      return <FmsHeader callsign={atcCallsign} activeFmsSource={activeFmsSource} uiService={uiService} mfd={mfd} />;
   }
 }

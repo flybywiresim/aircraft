@@ -345,6 +345,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         alignText="center"
                         containerStyle="width: 175px;"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
                       />
                     </div>
                   </div>
@@ -369,6 +371,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       onModified={(i) => this.onWptDropdownModified(i)}
                       numberOfDigitsForInputField={7}
                       tmpyActive={this.tmpyActive}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
                     />
                   </div>
                   <div class="mfd-vert-rev-spd-cstr-line">
@@ -400,6 +404,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       value={this.speedConstraintInput}
                       alignText="flex-end"
                       errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
                     />
                     <Button
                       label={Subject.create(
@@ -464,6 +470,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       onModified={(i) => this.onWptDropdownModified(i)}
                       numberOfDigitsForInputField={7}
                       tmpyActive={this.tmpyActive}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
                     />
                   </div>
                   <div class="mfd-vert-rev-alt-cstr-line">
@@ -492,6 +500,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         value={this.altitudeConstraintInput}
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
                       />
                       <div ref={this.altWindowValueRef} class="mfd-vert-rev-alt-window-value">
                         <span class="mfd-label-unit bigger mfd-unit-leading">{this.altWindowUnitLeading}</span>

@@ -794,6 +794,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           />
           <InsertNextWptFromWindow
             fmcService={this.props.fmcService}
+            mfd={this.props.mfd}
             availableWaypoints={this.nextWptAvailableWaypoints}
             visible={this.insertNextWptWindowOpened}
             captOrFo={this.props.mfd.uiService.captOrFo}

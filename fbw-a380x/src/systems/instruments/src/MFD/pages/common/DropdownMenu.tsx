@@ -1,6 +1,7 @@
 import {
   ArraySubject,
   ComponentProps,
+  Consumer,
   DisplayComponent,
   FSComponent,
   Subject,
@@ -13,22 +14,25 @@ import {
 import './style.scss';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { InteractionMode } from 'instruments/src/MFD/MFD';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
   selectedIndex: Subject<number | null>;
   freeTextAllowed: boolean;
   idPrefix: string;
-  /**
-   *
-   * If defined, this component does not update the selectedIndex prop by itself, but rather calls this method.
-   */
+  /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
   onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
   inactive?: Subscribable<boolean>;
   containerStyle?: string;
   alignLabels?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
+  /** Defined by the width of the component */
   numberOfDigitsForInputField?: number;
   tmpyActive?: Subscribable<boolean>;
+  /** Only handles KCCU input for respective side, receives key name only */
+  hEventConsumer: Consumer<string>;
+  /** Kccu uses the HW keys, and doesn't focus input fields */
+  interactionMode: Subscribable<InteractionMode>;
 }
 
 /*
@@ -270,6 +274,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               inactive={this.props.inactive}
               handleFocusBlurExternally
               tmpyActive={this.props.tmpyActive}
+              hEventConsumer={this.props.hEventConsumer}
+              interactionMode={this.props.interactionMode}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">

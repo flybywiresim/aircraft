@@ -168,6 +168,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 dataEntryFormat={new InboundCourseFormat()}
                 tmpyActive={this.tmpyActive}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
             <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">
@@ -198,6 +200,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                     value={this.legTime}
                     tmpyActive={this.tmpyActive}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
                 <div ref={this.legDistanceRef}>
@@ -206,6 +210,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                     value={this.legDistance}
                     tmpyActive={this.tmpyActive}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
               </div>

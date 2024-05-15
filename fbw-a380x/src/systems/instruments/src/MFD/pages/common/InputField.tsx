@@ -12,14 +12,13 @@ import {
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { InteractionMode } from 'instruments/src/MFD/MFD';
 
 // eslint-disable-next-line max-len
 export const emptyMandatoryCharacter = (selected: boolean) =>
   `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
 
 interface InputFieldProps<T> extends ComponentProps {
-  /** Only handles KCCU input for respective side, receives key name only */
-  hEventConsumer: Consumer<string>;
   dataEntryFormat: DataEntryFormat<T>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
@@ -47,6 +46,10 @@ interface InputFieldProps<T> extends ComponentProps {
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
   tmpyActive?: Subscribable<boolean>;
+  /** Only handles KCCU input for respective side, receives key name only */
+  hEventConsumer: Consumer<string>;
+  /** Kccu uses the HW keys, and doesn't focus input fields */
+  interactionMode: Subscribable<InteractionMode>;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
 
@@ -182,16 +185,20 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   private onKeyDown(ev: KeyboardEvent) {
     if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
-      if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get() === true) {
-        this.modifiedFieldValue.set('');
-      } else if (this.modifiedFieldValue.get()?.length === 0) {
-        // Do nothing
-      } else {
-        this.modifiedFieldValue.set(this.modifiedFieldValue.get()?.slice(0, -1) ?? '');
-      }
-
-      this.onInput();
+      this.handleBackspace();
     }
+  }
+
+  private handleBackspace() {
+    if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get() === true) {
+      this.modifiedFieldValue.set('');
+    } else if (this.modifiedFieldValue.get()?.length === 0) {
+      // Do nothing
+    } else {
+      this.modifiedFieldValue.set(this.modifiedFieldValue.get()?.slice(0, -1) ?? '');
+    }
+
+    this.onInput();
   }
 
   private onKeyPress(ev: KeyboardEvent) {
@@ -203,11 +210,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (ev.keyCode !== KeyCode.KEY_ENTER) {
       this.handleKeyInput(key);
     } else {
-      if (this.props.handleFocusBlurExternally === true) {
-        this.onBlur(true);
-      } else {
-        this.textInputRef.instance.blur();
-      }
+      this.handleEnter();
     }
   }
 
@@ -228,6 +231,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.onInput();
   }
 
+  private handleEnter() {
+    if (this.props.handleFocusBlurExternally === true) {
+      this.onBlur(true);
+    } else {
+      this.textInputRef.instance.blur();
+    }
+  }
+
   public onFocus() {
     if (
       this.isFocused.get() === false &&
@@ -235,10 +246,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.props.disabled?.get() === false &&
       this.props.inactive?.get() === false
     ) {
-      Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
+      if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
+      }
       this.isFocused.set(true);
 
-      // After 30s, unfocus field, as long as unexplainable
+      // After 30s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
         if (this.isFocused.get() === true) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
@@ -257,7 +270,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   public async onBlur(validateAndUpdate: boolean = true) {
     if (this.props.disabled?.get() === false && this.props.inactive?.get() === false && this.isFocused.get() === true) {
-      Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
+      if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
+        Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
+      }
       this.isFocused.set(false);
       this.textInputRef.instance.classList.remove('valueSelected');
       this.caretRef.instance.style.display = 'none';
@@ -498,8 +513,56 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     this.props.hEventConsumer.handle((key) => {
-      if (this.isFocused.get() && key.match(/^[a-zA-Z0-9_.-]*$/)) {
+      if (!this.isFocused.get()) {
+        return;
+      }
+
+      // Un-select the text
+      this.textInputRef.instance.classList.remove('valueSelected');
+
+      if (key.match(/^[a-zA-Z0-9]{1}$/)) {
         this.handleKeyInput(key);
+      }
+
+      if (key === 'ENT') {
+        this.handleEnter();
+      }
+
+      if (key === 'SP') {
+        this.handleKeyInput(' ');
+      }
+
+      if (key === 'SLASH') {
+        this.handleKeyInput('/');
+      }
+
+      if (key === 'DOT') {
+        this.handleKeyInput('.');
+      }
+
+      if (key === 'PLUSMINUS') {
+        const val = this.modifiedFieldValue.get();
+        if (val && val.substring(0, 1) === '+') {
+          this.modifiedFieldValue.set(`-${val.substring(1)}`);
+        } else if (val && val.substring(0, 1) === '-') {
+          this.modifiedFieldValue.set(`+${val.substring(1)}`);
+        } else {
+          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get()}`);
+        }
+      }
+
+      if (key === 'BACKSPACE') {
+        this.handleBackspace();
+      }
+
+      if (key === 'ESC' || key === 'ESC2') {
+        const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+        this.modifiedFieldValue.set(formatted);
+        this.handleEnter();
+      }
+
+      if (key === 'UP' || key === 'RIGHT' || key === 'DOWN' || key === 'LEFT') {
+        // Unsupported atm
       }
     });
 

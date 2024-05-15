@@ -1,4 +1,4 @@
-@import "../../../MsfsAvionicsCommon/definitions";
+@import "../../../MsfsAvionicsCommon/definitions.scss";
 
 @font-face {
   font-family: "Ecam";
@@ -585,8 +585,8 @@
   z-index: 10;
   overflow: auto;
   position: absolute;
-  background-color: #000000;
-  border: 2px outset lightgray;
+  background-color: $display-background;
+  border: 2px outset $display-light-grey;
   padding: 5px;
   margin: 5px;
 }
@@ -610,7 +610,7 @@
 
 .mfd-title-bar-title {
   flex: 10;
-  background-color: #a0a0a0;
+  background-color: $display-dark-grey;
   padding: 3px 10px 3px 7px;
 }
 
@@ -622,7 +622,7 @@
 .mfd-title-bar-eo-section {
   display: flex;
   width: 70px;
-  background-color: #a0a0a0;
+  background-color: $display-dark-grey;
   margin-left: 2px;
   justify-content: center;
   align-items: center;
@@ -638,7 +638,7 @@
 .mfd-title-bar-tmpy-section {
   display: flex;
   width: 100px;
-  background-color: #a0a0a0;
+  background-color: $display-dark-grey;
   margin-left: 2px;
   justify-content: center;
   align-items: center;

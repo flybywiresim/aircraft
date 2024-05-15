@@ -254,6 +254,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 alignText="flex-end"
                 containerStyle="width: 150px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFWCG</div>
               <InputField<number>
@@ -265,6 +267,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 alignText="center"
                 containerStyle="width: 125px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
             </div>
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
@@ -276,6 +280,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 alignText="flex-end"
                 containerStyle="width: 150px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
               />
               <div style="display: flex; flex: 1; justify-content: center;">
                 <Button
@@ -309,6 +315,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div />
@@ -327,6 +335,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="center"
                   containerStyle="width: 75px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
@@ -352,6 +362,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="center"
                   containerStyle="width: 75px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
@@ -373,6 +385,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div style="margin-bottom: 20px; margin-left: 5px">
@@ -388,6 +402,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="center"
                   containerStyle="width: 120px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">JTSN GW</div>
@@ -398,6 +414,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
@@ -412,6 +430,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -435,6 +455,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div style="margin-bottom: 20px; margin-left: 5px;">
@@ -449,6 +471,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   alignText="center"
                   containerStyle="width: 120px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">LW</div>
@@ -501,6 +525,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     alignText="flex-end"
                     containerStyle="width: 150px;"
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
                 <div class="mfd-label" style="margin-bottom: 5px; text-align: center;">

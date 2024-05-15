@@ -3,11 +3,13 @@ import 'instruments/src/MFD/pages/common/style.scss';
 import {
   ClockEvents,
   ComponentProps,
+  Consumer,
   DisplayComponent,
   EventBus,
   FSComponent,
   HEvent,
   Subject,
+  Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
@@ -24,9 +26,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { MfdSimvars } from './shared/MFDSimvarPublisher';
-
-// Import for pages
+import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -51,7 +51,16 @@ interface MfdComponentProps extends ComponentProps {
 export interface MfdDisplayInterface {
   get uiService(): MfdUiService;
 
+  hEventConsumer: Consumer<string>;
+
+  interactionMode: Subscribable<InteractionMode>;
+
   openMessageList(): void;
+}
+
+export enum InteractionMode {
+  Touchscreen,
+  Kccu,
 }
 
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
@@ -60,6 +69,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   get uiService() {
     return this.#uiService;
   }
+
+  public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
+
+  public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
   private displayBrightness = Subject.create(0);
 
@@ -170,14 +183,21 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     const isCaptainSide = this.props.captOrFo === 'CAPT';
 
     this.props.bus
+      .getSubscriber<MfdSimvars>()
+      .on(isCaptainSide ? 'kccuOnL' : 'kccuOnR')
+      .whenChanged()
+      .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen));
+
+    this.props.bus
       .getSubscriber<HEvent>()
       .on('hEvent')
       .handle((eventName) => {
         this.props.fmcService.master?.acInterface.onEvent(eventName);
-        console.warn(eventName);
 
         if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
           const key = eventName.substring(13);
+
+          this.props.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', key, false);
 
           switch (key) {
             case 'DIR':
@@ -210,6 +230,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
               this.uiService.navigateTo('atccom/connect/notification');
               break;
             case 'ND': // Move cursor to ND
+              break;
+            case 'CLRINFO':
+              this.props.fmcService.master?.clearLatestFmsErrorMessage();
               break;
             default:
               break;
@@ -261,7 +284,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     });
 
     // Navigate to initial page
-    // this.uiService.navigateTo('fms/data/status');
+    this.uiService.navigateTo('fms/data/status');
   }
 
   private activeUriChanged(uri: ActiveUriInformation) {
@@ -293,7 +316,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     // Different systems use different navigation bars
     this.activeHeader = headerForSystem(
       uri.sys,
-      this.props.bus,
+      this,
       this.props.fmcService.master.fmgc.data.atcCallsign,
       this.activeFmsSource,
       this.uiService,
@@ -309,7 +332,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   }
 
   fmcChanged() {
-    // TODO we'll see
+    // Will be called if the FMC providing all the data has changed.
   }
 
   render(): VNode {
