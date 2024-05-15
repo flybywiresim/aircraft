@@ -18,6 +18,8 @@ export class TodGuidance {
 
   private tdArmed: LocalSimVar<boolean>;
 
+  private pauseAtTodDistance: number;
+
   private apEngaged: boolean;
 
   private cooldown: number;
@@ -32,6 +34,19 @@ export class TodGuidance {
     this.tdReached = false;
     this.tdPaused = false;
     this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
+
+    NXDataStore.getAndSubscribe(
+      'PAUSE_AT_TOD_DISTANCE',
+      (_, value: string) => {
+        const pF = parseFloat(value);
+        if (isNaN(pF)) {
+          this.pauseAtTodDistance = 0;
+        } else {
+          this.pauseAtTodDistance = pF;
+        }
+      },
+      '10',
+    );
   }
 
   showPausePopup(title: string, message: string) {
@@ -66,7 +81,7 @@ export class TodGuidance {
       // Check T/D pause first
       if (
         (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
-        parseFloat(NXDataStore.get('PAUSE_AT_TOD_DISTANCE', '10'))
+        this.pauseAtTodDistance
       ) {
         this.tdPaused = true;
         this.showPausePopup(
