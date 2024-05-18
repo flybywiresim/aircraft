@@ -7,24 +7,22 @@ import { FSComponent, DisplayComponent, VNode } from '@microsoft/msfs-sdk';
 import { LocalizedString } from '../shared/translation';
 
 export interface LocalizedTextProps {
-    locKey: string;
+  locKey: string;
 }
 
 export class LocalizedText extends DisplayComponent<LocalizedTextProps> {
-    private readonly locStringSub = LocalizedString.create(this.props.locKey);
+  private readonly locStringSub = LocalizedString.create(this.props.locKey);
 
-    destroy() {
-        super.destroy();
-        this.locStringSub.destroy();
-    }
+  destroy() {
+    super.destroy();
+    this.locStringSub.destroy();
+  }
 
-    render(): VNode {
-        return (
-            <>{this.locStringSub}</>
-        );
-    }
+  render(): VNode {
+    return <>{this.locStringSub}</>;
+  }
 }
 
 export function t(locKey: string): VNode {
-    return <LocalizedText locKey={locKey} />;
+  return <LocalizedText locKey={locKey} />;
 }

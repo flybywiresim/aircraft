@@ -39,8 +39,8 @@ const QuickSettingsButton: FC<QuickSettingsButtonProps> = forwardRef<HTMLButtonE
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`bg-theme-body text-theme-text hover:border-theme-highlight flex h-12 w-12
-                    items-center justify-center rounded-full transition duration-100 hover:border-4
+      className={`bg-theme-body text-theme-text hover:border-theme-highlight flex size-12 items-center
+                    justify-center rounded-full transition duration-100 hover:border-4
                     ${className ?? ''}`}
       {...rest}
     >

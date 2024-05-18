@@ -41,7 +41,7 @@ export const GroundSpeedAuto = () => {
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="bg-theme-accent absolute top-0 flex w-full flex-row items-center space-x-4 p-2">
-        <div className="bg-theme-highlight h-6 w-6 shrink-0 rounded-full" />
+        <div className="bg-theme-highlight size-6 shrink-0 rounded-full" />
         <p>{t('Performance.TopOfDescent.GroundSpeed.FetchingSpeedFromSimulator')}</p>
       </div>
 

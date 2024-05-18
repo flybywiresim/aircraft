@@ -7,17 +7,17 @@ import { EfbV4FsInstrument } from '@flybywiresim/EFBv4';
 
 // eslint-disable-next-line camelcase
 class A32NX_EFBv4 extends FsBaseInstrument<EfbV4FsInstrument> {
-    constructInstrument(): EfbV4FsInstrument {
-        return new EfbV4FsInstrument(this);
-    }
+  constructInstrument(): EfbV4FsInstrument {
+    return new EfbV4FsInstrument(this);
+  }
 
-    get isInteractive(): boolean {
-        return true;
-    }
+  get isInteractive(): boolean {
+    return true;
+  }
 
-    get templateID(): string {
-        return 'A32NX_EFBv4';
-    }
+  get templateID(): string {
+    return 'A32NX_EFBv4';
+  }
 }
 
 registerInstrument('a32nx-efbv4', A32NX_EFBv4);

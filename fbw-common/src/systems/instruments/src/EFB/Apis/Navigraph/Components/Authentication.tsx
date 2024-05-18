@@ -130,7 +130,7 @@ export const NavigraphAuthUI = () => {
   }, []);
 
   return (
-    <div className="bg-theme-accent flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg p-6">
+    <div className="bg-theme-accent flex size-full items-center justify-center overflow-x-hidden rounded-lg p-6">
       <div className="flex flex-col items-center justify-center">
         <ShieldLock className="mr-2" size={40} />
 

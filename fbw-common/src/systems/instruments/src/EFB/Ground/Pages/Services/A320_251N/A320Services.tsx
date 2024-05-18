@@ -555,7 +555,7 @@ export const A320Services: React.FC = () => {
         cabinRightStatus={cabinRightDoorOpen >= 1.0}
         aftLeftStatus={aftLeftDoorOpen >= 1.0}
         aftRightStatus={aftRightDoorOpen >= 1.0}
-        className="text-theme-text inset-x-0 mx-auto h-full w-full"
+        className="text-theme-text inset-x-0 mx-auto size-full"
       />
 
       <ServiceButtonWrapper xr={930} y={24}>

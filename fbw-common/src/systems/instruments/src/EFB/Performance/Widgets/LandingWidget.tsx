@@ -441,7 +441,7 @@ export const LandingWidget = () => {
   return (
     <div className="h-content-section-reduced flex flex-row justify-between space-x-10 overflow-hidden">
       <div className="w-full">
-        <div className="flex h-full w-full flex-col justify-between">
+        <div className="flex size-full flex-col justify-between">
           <div className="mb-4">
             <div className="mb-8 mt-4">
               <p>{t('Performance.Landing.AirportIcao')}</p>

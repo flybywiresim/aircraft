@@ -13,110 +13,105 @@ import { Settings } from './Settings/Settings';
 import { UIVIew, UIVIewUtils } from '../shared/UIVIew';
 
 // Page should be an enum
-export type Pages = [page: number, component: VNode][]
+export type Pages = [page: number, component: VNode][];
 
 interface MainPageProps extends ComponentProps {
-    activePage: Subject<number>;
+  activePage: Subject<number>;
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-    private readonly pages: [page: number, component: DisplayComponent<any>][] = [
-        [PageEnum.MainPage.Dashboard, <Dashboard />],
-        [PageEnum.MainPage.Dispatch, <Dispatch />],
-        [PageEnum.MainPage.Ground, <Ground />],
-        [PageEnum.MainPage.Performance, <Performance />],
-        [PageEnum.MainPage.Navigation, <Navigation />],
-        [PageEnum.MainPage.ATC, <ATC />],
-        [PageEnum.MainPage.Failures, <Failures />],
-        [PageEnum.MainPage.Checklists, <Checklists />],
-        [PageEnum.MainPage.Presets, <Presets />],
-        [PageEnum.MainPage.Settings, <Settings />],
-    ]
+  private readonly pages: [page: number, component: DisplayComponent<any>][] = [
+    [PageEnum.MainPage.Dashboard, <Dashboard />],
+    [PageEnum.MainPage.Dispatch, <Dispatch />],
+    [PageEnum.MainPage.Ground, <Ground />],
+    [PageEnum.MainPage.Performance, <Performance />],
+    [PageEnum.MainPage.Navigation, <Navigation />],
+    [PageEnum.MainPage.ATC, <ATC />],
+    [PageEnum.MainPage.Failures, <Failures />],
+    [PageEnum.MainPage.Checklists, <Checklists />],
+    [PageEnum.MainPage.Presets, <Presets />],
+    [PageEnum.MainPage.Settings, <Settings />],
+  ];
 
-    render(): VNode {
-        return (
-            <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10  pr-6 pt-4" />
-        );
-    }
+  render(): VNode {
+    return <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10  pr-6 pt-4" />;
+  }
 }
 
 interface SwitchProps extends ComponentProps {
-    activePage: Subscribable<number>;
-    pages: Pages;
-    class?: string;
+  activePage: Subscribable<number>;
+  pages: Pages;
+  class?: string;
 }
 
 export class Switch extends DisplayComponent<SwitchProps> {
-    private readonly pageVisibility = (page: number) => this.props.activePage.map((value) => value === page);
+  private readonly pageVisibility = (page: number) => this.props.activePage.map((value) => value === page);
 
-    render(): VNode {
-        return (
-            <div class={`h-full w-full ${this.props.class}`}>
-                {
-                    this.props.pages.map(([page, component]) => (
-                        UIVIewUtils.isUIVIew(component.instance) ? (
-                            <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />
-                        ) : (
-                            <PageWrapper isVisible={this.pageVisibility(page)}>
-                                {component}
-                            </PageWrapper>
-                        )
-                    ))
-                }
-            </div>
-        );
-    }
+  render(): VNode {
+    return (
+      <div class={`size-full ${this.props.class}`}>
+        {this.props.pages.map(([page, component]) =>
+          UIVIewUtils.isUIVIew(component.instance) ? (
+            <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />
+          ) : (
+            <PageWrapper isVisible={this.pageVisibility(page)}>{component}</PageWrapper>
+          ),
+        )}
+      </div>
+    );
+  }
 }
 
 interface PageWrapperProps extends ComponentProps {
-    isVisible: Subscribable<Boolean>;
+  isVisible: Subscribable<Boolean>;
 }
 
 export class PageWrapper extends DisplayComponent<PageWrapperProps> {
-    render(): VNode {
-        return (
-            <div style={{
-                display: this.props.isVisible.map((value) => (value ? 'block' : 'none')),
-                width: '100%',
-                height: '100%',
-            }}
-            >
-                {this.props.children}
-            </div>
-        );
-    }
+  render(): VNode {
+    return (
+      <div
+        style={{
+          display: this.props.isVisible.map((value) => (value ? 'block' : 'none')),
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
 }
 
 interface UIVIewWrapperProps {
-    view: VNode;
+  view: VNode;
 
-    isVisible: Subscribable<boolean>;
+  isVisible: Subscribable<boolean>;
 }
 
 class UIVIewWrapper extends DisplayComponent<UIVIewWrapperProps> {
-    private get view(): UIVIew {
-        return this.props.view.instance as unknown as UIVIew;
-    }
+  private get view(): UIVIew {
+    return this.props.view.instance as unknown as UIVIew;
+  }
 
-    onAfterRender(node: VNode) {
-        super.onAfterRender(node);
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
 
-        this.props.isVisible.sub((visible) => {
-            this.view.rootRef.instance.classList.toggle('view-hidden', !visible);
+    this.props.isVisible.sub((visible) => {
+      this.view.rootRef.instance.classList.toggle('view-hidden', !visible);
 
-            if (!visible) {
-                this.view.pause();
-            } else {
-                this.view.resume();
-            }
-        }, true);
-    }
+      if (!visible) {
+        this.view.pause();
+      } else {
+        this.view.resume();
+      }
+    }, true);
+  }
 
-    destroy() {
-        this.view.destroy();
-    }
+  destroy() {
+    this.view.destroy();
+  }
 
-    render(): VNode | null {
-        return this.props.view;
-    }
+  render(): VNode | null {
+    return this.props.view;
+  }
 }

@@ -4,13 +4,13 @@
 /* eslint-disable no-console */
 
 import {
-    MappedSubject,
-    MappedSubscribable,
-    MutableSubscribable,
-    Subject,
-    Subscribable,
-    SubscribableUtils,
-    Subscription
+  MappedSubject,
+  MappedSubscribable,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
@@ -61,72 +61,72 @@ const allLanguagesMap = new Map<string, Map<string, string>>();
 // property names of the children - essentially flatten the hierarchy:
 // "Dashboard.ImportantInformation.GoToPage" ==> "Go to Page"
 const initMap = (map, ln, path: Array<string>) => {
-    const props = Object.getOwnPropertyNames(ln);
-    if (typeof ln !== 'object') {
-        map.set(path.join('.'), ln);
-        return;
-    }
-    props.forEach((p: string) => {
-        path.push(p);
-        initMap(map, ln[p], path);
-        path.pop();
-    });
+  const props = Object.getOwnPropertyNames(ln);
+  if (typeof ln !== 'object') {
+    map.set(path.join('.'), ln);
+    return;
+  }
+  props.forEach((p: string) => {
+    path.push(p);
+    initMap(map, ln[p], path);
+    path.pop();
+  });
 };
 
 // adds a key-value map to allLanguagesMap and initializes the map
 const init = (lang: string, data): Map<string, string> => {
-    const map = new Map<string, string>();
-    allLanguagesMap.set(lang, map);
-    initMap(allLanguagesMap.get(lang), data, []);
-    return map;
+  const map = new Map<string, string>();
+  allLanguagesMap.set(lang, map);
+  initMap(allLanguagesMap.get(lang), data, []);
+  return map;
 };
 
 interface LanguageOption {
-    langCode: string;
-    langData: any;
-    langName: string;
-    alias: string;
+  langCode: string;
+  langData: any;
+  langName: string;
+  alias: string;
 }
 
 // used to initialize languages and for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
-    // Source language first
-    { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
-    // translations sorted by language code
-    { langCode: 'ar', langData: ar, langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
-    { langCode: 'cs', langData: cs, langName: 'Czech', alias: 'Čeština' },
-    { langCode: 'da', langData: da, langName: 'Dansk', alias: 'Dansk' },
-    { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
-    { langCode: 'el', langData: el, langName: 'Greek', alias: 'Ελληνικά' },
-    { langCode: 'eu', langData: eu, langName: 'Basque', alias: 'Euskara' },
-    { langCode: 'es', langData: es, langName: 'Spanish', alias: 'Español' },
-    { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
-    { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
-    { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
-    { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिंदी' },
-    { langCode: 'hu', langData: hu, langName: 'Hungarian', alias: 'Magyar' },
-    { langCode: 'hr', langData: hr, langName: 'Croatian', alias: 'Hrvatski' },
-    { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
-    { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
-    { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
-    { langCode: 'ko', langData: ko, langName: 'Korean', alias: '한국어' },
-    { langCode: 'lt', langData: lt, langName: 'Lithuanian', alias: 'Lietuvių kalba' },
-    { langCode: 'nb', langData: nb, langName: 'Norwegian', alias: 'Norsk' },
-    { langCode: 'nl', langData: nl, langName: 'Dutch', alias: 'Nederlands' },
-    { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
-    { langCode: 'pt-BR', langData: ptBR, langName: 'Portuguese', alias: 'Português brasileiro' },
-    { langCode: 'pt-PT', langData: ptPT, langName: 'Portuguese', alias: 'Português' },
-    { langCode: 'ro', langData: ro, langName: 'Romanian', alias: 'Română' },
-    { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
-    { langCode: 'sk', langData: sk, langName: 'Slovak', alias: 'Slovenčina' },
-    { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
-    { langCode: 'sv', langData: sv, langName: 'Swedish', alias: 'Svenska' },
-    { langCode: 'th', langData: th, langName: 'Thai', alias: 'ภาษาไทย' },
-    { langCode: 'tr', langData: tr, langName: 'Turkish', alias: 'Türkçe' },
-    { langCode: 'vi', langData: vi, langName: 'Vietnamese', alias: 'Tiếng Việt' },
-    { langCode: 'zh-CN', langData: zhHansCN, langName: 'Chinese - CN', alias: '中国简体' },
-    { langCode: 'zh-HK', langData: zhHantHK, langName: 'Chinese - HK', alias: '香港繁體' },
-    { langCode: 'zh-TW', langData: zhHantTW, langName: 'Chinese - TW', alias: '台灣繁體' },
+  // Source language first
+  { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
+  // translations sorted by language code
+  { langCode: 'ar', langData: ar, langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
+  { langCode: 'cs', langData: cs, langName: 'Czech', alias: 'Čeština' },
+  { langCode: 'da', langData: da, langName: 'Dansk', alias: 'Dansk' },
+  { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
+  { langCode: 'el', langData: el, langName: 'Greek', alias: 'Ελληνικά' },
+  { langCode: 'eu', langData: eu, langName: 'Basque', alias: 'Euskara' },
+  { langCode: 'es', langData: es, langName: 'Spanish', alias: 'Español' },
+  { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
+  { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
+  { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
+  { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिंदी' },
+  { langCode: 'hu', langData: hu, langName: 'Hungarian', alias: 'Magyar' },
+  { langCode: 'hr', langData: hr, langName: 'Croatian', alias: 'Hrvatski' },
+  { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
+  { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
+  { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
+  { langCode: 'ko', langData: ko, langName: 'Korean', alias: '한국어' },
+  { langCode: 'lt', langData: lt, langName: 'Lithuanian', alias: 'Lietuvių kalba' },
+  { langCode: 'nb', langData: nb, langName: 'Norwegian', alias: 'Norsk' },
+  { langCode: 'nl', langData: nl, langName: 'Dutch', alias: 'Nederlands' },
+  { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
+  { langCode: 'pt-BR', langData: ptBR, langName: 'Portuguese', alias: 'Português brasileiro' },
+  { langCode: 'pt-PT', langData: ptPT, langName: 'Portuguese', alias: 'Português' },
+  { langCode: 'ro', langData: ro, langName: 'Romanian', alias: 'Română' },
+  { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
+  { langCode: 'sk', langData: sk, langName: 'Slovak', alias: 'Slovenčina' },
+  { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
+  { langCode: 'sv', langData: sv, langName: 'Swedish', alias: 'Svenska' },
+  { langCode: 'th', langData: th, langName: 'Thai', alias: 'ภาษาไทย' },
+  { langCode: 'tr', langData: tr, langName: 'Turkish', alias: 'Türkçe' },
+  { langCode: 'vi', langData: vi, langName: 'Vietnamese', alias: 'Tiếng Việt' },
+  { langCode: 'zh-CN', langData: zhHansCN, langName: 'Chinese - CN', alias: '中国简体' },
+  { langCode: 'zh-HK', langData: zhHantHK, langName: 'Chinese - HK', alias: '香港繁體' },
+  { langCode: 'zh-TW', langData: zhHantTW, langName: 'Chinese - TW', alias: '台灣繁體' },
 ];
 
 // Init default language
@@ -134,9 +134,9 @@ const defaultLanguage = init('en', en);
 
 // Initialize all translated languages
 languageOptions.forEach((ln) => {
-    if (ln.langCode !== 'en') {
-        init(ln.langCode, ln.langData);
-    }
+  if (ln.langCode !== 'en') {
+    init(ln.langCode, ln.langData);
+  }
 });
 
 // Current flyPad language
@@ -145,32 +145,32 @@ let currentLanguageMap = defaultLanguage;
 
 // Listener to change the currently set language in the flyPad.
 const watchLanguageChanges = () => {
-    NXDataStore.getAndSubscribe(
-        'EFB_LANGUAGE',
-        (_, value) => {
-            currentEfbLanguage = value;
-            currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || defaultLanguage;
-            console.log(`language changed to ${value}`);
-        },
-        'en',
-    );
+  NXDataStore.getAndSubscribe(
+    'EFB_LANGUAGE',
+    (_, value) => {
+      currentEfbLanguage = value;
+      currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || defaultLanguage;
+      console.log(`language changed to ${value}`);
+    },
+    'en',
+  );
 };
 
 if (process.env.VITE_BUILD) {
-    window.addEventListener('AceInitialized', watchLanguageChanges);
+  window.addEventListener('AceInitialized', watchLanguageChanges);
 } else {
-    watchLanguageChanges();
+  watchLanguageChanges();
 }
 
 const placeholderReplace = (translation: string, replacements: Record<string, string>[]): string => {
-    let result = translation;
-    replacements.forEach((replacement: Record<string, string>) => {
-        // Localazy uses $<key> as placeholder - $key will be replaced with the value of key
-        const searchValue = `$${Object.keys(replacement)[0]}`;
-        const replaceValue = Object.values(replacement)[0].toString();
-        result = result.replace(searchValue, replaceValue);
-    });
-    return result;
+  let result = translation;
+  replacements.forEach((replacement: Record<string, string>) => {
+    // Localazy uses $<key> as placeholder - $key will be replaced with the value of key
+    const searchValue = `$${Object.keys(replacement)[0]}`;
+    const replaceValue = Object.values(replacement)[0].toString();
+    result = result.replace(searchValue, replaceValue);
+  });
+  return result;
 };
 
 /**
@@ -195,11 +195,11 @@ const placeholderReplace = (translation: string, replacements: Record<string, st
  *         language, or key string
  */
 export function t(key: string, replacements?: Record<string, string>[]): string {
-    const translation = currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
-    if (replacements) {
-        return placeholderReplace(translation, replacements);
-    }
-    return translation;
+  const translation = currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+  if (replacements) {
+    return placeholderReplace(translation, replacements);
+  }
+  return translation;
 }
 
 // Workaround after simvar hook changes - only required on FlyPadPage.tsx from flypad settings
@@ -207,92 +207,102 @@ export function t(key: string, replacements?: Record<string, string>[]): string 
 // with simvar hook change and the page was refreshing before the t() function had the updated
 // language code.
 export function tt(key: string, lang: string): string {
-    currentEfbLanguage = lang;
-    currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
-    return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+  currentEfbLanguage = lang;
+  currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
+  return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
 }
 
 export class LocalizedString implements MutableSubscribable<string>, Subscription {
-    isSubscribable = true as const;
+  isSubscribable = true as const;
 
-    isAlive = true;
+  isAlive = true;
 
-    isPaused = false;
+  isPaused = false;
 
-    canInitialNotify = true;
+  canInitialNotify = true;
 
-    efbLanguage = Subject.create('en');
+  efbLanguage = Subject.create('en');
 
-    private readonly locKey = Subject.create(this.locKeyProp);
+  private readonly locKey = Subject.create(this.locKeyProp);
 
-    private readonly value = Subject.create(defaultLanguage.get(this.locKey.get()));
+  private readonly value = Subject.create(defaultLanguage.get(this.locKey.get()));
 
-    private readonly nxDataStoreSubscriptionCancelFn: () => void;
+  private readonly nxDataStoreSubscriptionCancelFn: () => void;
 
-    private readonly updateCallback: MappedSubject<any, any>;
+  private readonly updateCallback: MappedSubject<any, any>;
 
-    private constructor(private readonly locKeyProp: string) {
-        this.nxDataStoreSubscriptionCancelFn = NXDataStore.subscribe('EFB_LANGUAGE', (_, value) => {
-            this.efbLanguage.set(value);
-        });
+  private constructor(private readonly locKeyProp: string) {
+    this.nxDataStoreSubscriptionCancelFn = NXDataStore.subscribe('EFB_LANGUAGE', (_, value) => {
+      this.efbLanguage.set(value);
+    });
 
-        this.updateCallback = MappedSubject.create(([efbLanguage, locKey]) => {
-            this.value.set(
-                allLanguagesMap.get(efbLanguage).get(locKey),
-            );
-        }, this.efbLanguage, this.locKey);
+    this.updateCallback = MappedSubject.create(
+      ([efbLanguage, locKey]) => {
+        this.value.set(allLanguagesMap.get(efbLanguage).get(locKey));
+      },
+      this.efbLanguage,
+      this.locKey,
+    );
+  }
+
+  public static create(locKey: string): LocalizedString {
+    return new LocalizedString(locKey);
+  }
+
+  get(): string {
+    return this.value.get();
+  }
+
+  sub(handler: (value: string) => void, initialNotify?: boolean, paused?: boolean): Subscription {
+    return this.value.sub(handler, initialNotify, paused);
+  }
+
+  unsub(handler: (value: string) => void) {
+    return this.value.unsub(handler);
+  }
+
+  map<M>(fn: (input: string, previousVal?: M) => M, equalityFunc?: (a: M, b: M) => boolean): MappedSubscribable<M> {
+    return this.value.map(fn, equalityFunc);
+  }
+
+  public pipe(to: MutableSubscribable<any, string>, paused?: boolean): Subscription;
+
+  public pipe<M>(
+    to: MutableSubscribable<any, M>,
+    map: (fromVal: string, toVal: M) => M,
+    paused?: boolean,
+  ): Subscription;
+  public pipe<M>(
+    to: MutableSubscribable<any, M | string> | MutableSubscribable<any, M>,
+    arg2?: ((fromVal: string, toVal: M) => M) | boolean,
+    arg3?: boolean,
+  ): Subscription {
+    if (typeof arg2 === 'function') {
+      return this.value.pipe(to as MutableSubscribable<any, M>, arg2, arg3);
     }
 
-    public static create(locKey: string): LocalizedString {
-        return new LocalizedString(locKey);
-    }
+    return this.value.pipe(to as MutableSubscribable<any, string>, arg2);
+  }
 
-    get(): string {
-        return this.value.get();
-    }
+  resume(_initialNotify?: boolean): this {
+    // noop
+    return this;
+  }
 
-    sub(handler: (value: string) => void, initialNotify?: boolean, paused?: boolean): Subscription {
-        return this.value.sub(handler, initialNotify, paused);
-    }
+  pause(): this {
+    // noop
+    return this;
+  }
 
-    unsub(handler: (value: string) => void) {
-        return this.value.unsub(handler);
-    }
+  destroy() {
+    this.isAlive = false;
+    this.nxDataStoreSubscriptionCancelFn();
+    this.updateCallback.destroy();
+  }
 
-    map<M>(fn: (input: string, previousVal?: M) => M, equalityFunc?: (a: M, b: M) => boolean): MappedSubscribable<M> {
-        return this.value.map(fn, equalityFunc);
-    }
+  readonly isMutableSubscribable: true;
 
-    public pipe(to: MutableSubscribable<any, string>, paused?: boolean): Subscription;
-
-    public pipe<M>(to: MutableSubscribable<any, M>, map: (fromVal: string, toVal: M) => M, paused?: boolean): Subscription;
-    public pipe<M>(to: MutableSubscribable<any, M | string> | MutableSubscribable<any, M>, arg2?: ((fromVal: string, toVal: M) => M) | boolean, arg3?: boolean): Subscription {
-        if (typeof arg2 === 'function') {
-            return this.value.pipe(to as MutableSubscribable<any, M>, arg2, arg3);
-        }
-
-        return this.value.pipe(to as MutableSubscribable<any, string>, arg2);
-    }
-
-    resume(_initialNotify?: boolean): this {
-        // noop
-        return this;
-    }
-
-    pause(): this {
-        // noop
-        return this;
-    }
-
-    destroy() {
-        this.isAlive = false;
-        this.nxDataStoreSubscriptionCancelFn();
-        this.updateCallback.destroy();
-    }
-
-    readonly isMutableSubscribable: true;
-
-    set(value: string): void {
-        this.locKey.set(value);
-    }
+  set(value: string): void {
+    this.locKey.set(value);
+  }
 }
