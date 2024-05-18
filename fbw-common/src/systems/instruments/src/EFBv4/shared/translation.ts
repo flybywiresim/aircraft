@@ -3,15 +3,7 @@
 
 /* eslint-disable no-console */
 
-import {
-  MappedSubject,
-  MappedSubscribable,
-  MutableSubscribable,
-  Subject,
-  Subscribable,
-  SubscribableUtils,
-  Subscription,
-} from '@microsoft/msfs-sdk';
+import { MappedSubject, MappedSubscribable, MutableSubscribable, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // source language

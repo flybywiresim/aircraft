@@ -10,16 +10,13 @@ import {
   DisplayComponent,
   FSComponent,
   Subject,
-  Subscribable,
-  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ColorCode, MetarParserType, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
-import { WeatherReminder, WeatherWidget } from './Widgets/WeatherWidget';
+import { WeatherReminder } from './Widgets/WeatherWidget';
 import { AbstractUIView } from '../../shared/UIVIew';
-import { Pages } from '../Pages';
 import { PageEnum } from '../../shared/common';
 
 interface ScrollableContainerProps extends ComponentProps {
@@ -90,9 +87,9 @@ export class ChecklistsReminder extends DisplayComponent<any> {
   }
 }
 
-type ReminderKey = 'Weather' | 'Pinned Charts' | 'Maintenance' | 'Checklists';
+type _ReminderKey = 'Weather' | 'Pinned Charts' | 'Maintenance' | 'Checklists';
 
-const TRANSLATIONS: [PageEnum.ReminderWidgets, string][] = [
+const _TRANSLATIONS: [PageEnum.ReminderWidgets, string][] = [
   [PageEnum.ReminderWidgets.Weather, 'Dashboard.ImportantInformation.Weather.Title'],
   [PageEnum.ReminderWidgets.PinnedCharts, 'Dashboard.ImportantInformation.PinnedCharts.Title'],
   [PageEnum.ReminderWidgets.Maintenance, 'Dashboard.ImportantInformation.Maintenance.Title'],

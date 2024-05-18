@@ -42,7 +42,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     return this.getContext(busContext).get();
   }
 
-  onAfterRender(node: VNode): void {
+  onAfterRender(_node: VNode): void {
     SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
 
     // Load user settings

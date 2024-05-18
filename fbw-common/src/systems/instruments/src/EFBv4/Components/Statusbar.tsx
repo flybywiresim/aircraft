@@ -80,13 +80,13 @@ export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
     return (
       <Switch
         pages={[
-          [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700 text-inherit" />],
+          [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700" />],
           [PageEnum.BatteryLevel.Warning, <i class="bi-battery !text-utility-red text-[35px]" />],
-          [PageEnum.BatteryLevel.Low, <i class="bi-battery text-[35px] !text-white text-inherit" />],
-          [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-[35px] !text-white text-inherit" />],
-          [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-[35px] !text-white text-inherit" />],
-          [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-[35px] !text-white text-inherit" />],
-          [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-[35px] !text-white text-inherit" />],
+          [PageEnum.BatteryLevel.Low, <i class="bi-battery text-[35px] !text-white" />],
+          [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-[35px] !text-white" />],
+          [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-[35px] !text-white" />],
+          [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-[35px] !text-white" />],
+          [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-[35px] !text-white" />],
         ]}
         activePage={this.batteryStatus}
       />
