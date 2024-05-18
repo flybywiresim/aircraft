@@ -1,5 +1,5 @@
 export interface GenericTcasEvents {
-    tcasTaOnly: boolean,
-    tcasFault: boolean,
-    tcasMode: number,
+  tcasTaOnly: boolean;
+  tcasFault: boolean;
+  tcasMode: number;
 }
