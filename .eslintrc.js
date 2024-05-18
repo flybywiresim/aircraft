@@ -52,7 +52,12 @@ module.exports = {
     tailwindcss: { groupByResponsive: true },
     react: { version: 'detect' },
   },
-  ignorePatterns: ['fbw-common/src/typings/*', 'fbw-a380x/*', 'fbw-ingamepanels-checklist-fix/*'],
+  ignorePatterns: [
+    'fbw-common/src/typings/*',
+    'fbw-a380x/*',
+    'fbw-ingamepanels-checklist-fix/*',
+    '!fbw-a380x/src/systems/instruments/src/PFD/*',
+  ],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
