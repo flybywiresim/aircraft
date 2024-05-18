@@ -14,6 +14,7 @@
       "@simbridge/*": ["./simbridge-client/src/*"],
       "@shared/*": ["./shared/src/*"],
       "@tcas/*": ["./tcas/src/*"],
+      "@fbw-common/shared/*": ["../../../fbw-common/src/systems/shared/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"]
     }

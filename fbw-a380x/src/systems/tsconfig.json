@@ -10,15 +10,17 @@
       "moduleResolution": "node",
       "allowSyntheticDefaultImports": true,
       "jsx": "react",
-        "paths": {
-            "@shared/*": ["./shared/src/*"],
-            "@instruments/common/*": ["./instruments/src/Common/*"],
-            "@atsu/*": ["./atsu/src/*"],
-            "@fmgc/*": ["./fmgc/src/*"],
-            "@flybywiresim/failures": ["failures"],
-            "@tcas/*": ["./tcas/src/*"],
-            "@typings/*": ["../typings"],
-            "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
-        }
+      "paths": {
+        "@shared/*": ["./shared/src/*"],
+        "@instruments/common/*": ["./instruments/src/Common/*"],
+        "@atsu/*": ["./atsu/src/*"],
+        "@fmgc/*": ["./fmgc/src/*"],
+        "@flybywiresim/failures": ["failures"],
+        "@tcas/*": ["./tcas/src/*"],
+        "@typings/*": ["../typings"],
+        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+        "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
+        "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"]
+      }
     }
 }

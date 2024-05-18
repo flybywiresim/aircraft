@@ -76,7 +76,7 @@ class FlyByWireInterface {
   bool wasPaused = false;
   bool wasInSlew = false;
 
-  double autothrustThrustLimitReverse = -45;
+  double autothrustThrustLimitReversePercentageToga = 0.0;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -116,16 +116,16 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  AutopilotStateMachineModelClass autopilotStateMachine;
-  AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
+  AutopilotStateMachine autopilotStateMachine;
+  AutopilotStateMachine::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
   ap_raw_laws_input autopilotStateMachineOutput;
 
   AutopilotLawsModelClass autopilotLaws;
   AutopilotLawsModelClass::ExternalInputs_AutopilotLaws_T autopilotLawsInput = {};
   ap_raw_output autopilotLawsOutput;
 
-  AutothrustModelClass autoThrust;
-  AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
+  Autothrust autoThrust;
+  Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
   base_ra_bus raBusOutputs[2] = {};

@@ -220,10 +220,10 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
     private readonly radioAvailable = Subject.create(false);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, heading, mode]) => {
+    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, mode]) => {
         // TODO in the future we will get the radio values via ARINC429 so this will no longer be needed
-        return shown && radioAvailable && heading.isNormalOperation() && mode !== EfisNdMode.PLAN;
-    }, this.props.shown, this.radioAvailable, this.props.headingWord, this.props.mode);
+        return shown && radioAvailable && mode !== EfisNdMode.PLAN;
+    }, this.props.shown, this.radioAvailable, this.props.mode);
 
     // eslint-disable-next-line arrow-body-style
     private readonly rotationSub = MappedSubject.create(([relativeBearing, ndMode]) => {

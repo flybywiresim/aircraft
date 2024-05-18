@@ -26,6 +26,7 @@ export function parseMetar(metarString: string): MetarParserType {
     const metarArray = metarString
         .trim()
         .replace(/^METAR\S*?\s/, '')
+        .replace(/=$/, '')
         // convert visibility range like `1 1/2 SM`
         .replace(/(\s)(\d)\s(\d)\/(\d)(SM)/, (all, a, b, c, d, e) => `${a + (Number(b) * Number(d) + Number(c))}/${d}${e}`)
         .split(' ');
@@ -102,7 +103,7 @@ export function parseMetar(metarString: string): MetarParserType {
 
     let mode = Mode.ICAO;
 
-    // as trend can be a complete new metar section we have this mode to not
+    // as trend can be a complete new metar section, we have this mode to not
     // store into the main object but still use coloring.
     let trendMode = false;
     metarArray.forEach((metarPart, index) => {

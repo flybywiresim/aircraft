@@ -1,4 +1,4 @@
-import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
+import { EventBus, KeyEvents, KeyInterceptManager } from '@microsoft/msfs-sdk';
 
 let nxNotificationsListener: ViewListener.ViewListener;
 

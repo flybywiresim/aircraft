@@ -21,6 +21,77 @@
 1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
 1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
 1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
+1. [OVHD] LDG ELEV now has auto position - @tracernz (Mike)
+1. [EFB] Added new F/O camera view, and adjusted captain view to suit new flyPad orientation - @tracernz (Mike)
+1. [OVHD] Fire button LEDs now split by power supply - @tracernz (Mike), @Repsol2k
+1. [OVHD] No PED Label instead of NO SMOKING when selected - @tracernz (Mike)
+1. [FWC/PANEL] GEAR NOT DOWN warnings added including red arrow on panel - @tracernz (Mike)
+1. [MODEL] Fixed some glaring issues with the flight deck model - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Replaced overhead decals - @Repsol2k
+1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Folding armrests - @Repsol2k
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
+1. [EWD] Fixed PACKS indication when no FADECS - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
+1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
+1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
+1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
+1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
+1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
+1. [FCU] Fixed SPD display in MACH mode to include decimal - @budzique (Joe Jackson)
+1. [FMS] Fixed an issue where blank rows were shown on the arrivals page - @tracernz (Mike)
+1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
+1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
+1. [FMS] Fixed PROG page REC MAX upper limit - @tshomas (shomas)
+1. [ND] Fixed manual/RMP tuning flags for ADFs - @tracernz (Mike)
+1. [EFCS] Freeze rudder trim when below 200 ft RA - @aguther (Andreas Guther)
+1. [AP] Tuning of Autoland especially in Crosswind situations - @aguther (Andreas Guther)
+1. [HYD] Updated hydraulic positioning loop for nose steering - @Crocket63 (crocket)
+1. [ND] Fixed asterisk font on ND - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] Fix anti-ice systems by re-enabling engine bleed air source - @ngreatorex (Neil Greatorex)
+1. [GSX/FUEL] Allow Refuel Process to finish when GSX L-Vars go 0 due to SimConnect Issues - @Fragtality (Fragtality)
+1. [EFCS] Reworked, more realistic flare law - @aguther (Andreas Guther)
+1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
+1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
+1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+1. [MCDU] Make dest fuel amber instead of alternate if below min fuel in FUEL PRED page - @BravoMike99 (bruno_pt99)
+1. [AP] Add NAV on GA capability - @lukecologne (luke)
+1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
+1. [EFCS/AP/ATHR] Improved support of Active Pause - @aguther (Andreas Guther)
+1. [EFB] Updated taxi, landing, parking & secure checklists to november 2023 revision - @BravoMike99 (bruno_pt99)
+1. [ND/TCAS] Fixed disappearing TCAS targets - @ArtemisPlayer (ArtemisPlayer)
+1. [FCU] Fix the QFE indicator not illuminating - @BenJuan26 (BenJuan26)
+1. [FCU] Disabled QFE mode - @tracernz (Mike)
+1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
+1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
+1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
+1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
+1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
+1. [FAC] Improve sideslip estimation - @lukecologne (luke)
+1. [FWC] Implement overspeed VMO/MMO warning - @tracernz (Mike)
+1. [MISC] Fixed wrong msfs plane acceleration during reverser use causing autobrake wrong brake inputs - @Crocket63 (crocket)
+1. [EFB] Fix default value for boarding rate - @tracernz (Mike)
+1. [EFB] Added missing localization for SimBridge related settings in SimOptions page - @implasmatbh (Plasma)
+1. [FWC] Implement non-cancellable master warning for overspeed and gear not down - @tracernz (Mike)
+1. [EFB] Checklist restructure to add more capabilities and use json configs - @frankkopp (Frank Kopp)
+1. [FLIGHTMODEL] Landing lights or RAT extended now have drag - @Crocket63 (crocket)
+1. [ATHR/FADEC] Improved reverse thrust limit - @aguther (Andreas Guther)
+1. [GENERAL] Implemented a new unified VFS JSON5 markup standard for A/C configuration for FlyByWire based projects (building block for per-livery configuration) - @2hwk (2Cas)
+1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
+1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
+1. [FADEC] Fadec rewrite/cleanup/commenting using cpp framework - @frankkopp (Frank Kopp)
+1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
+1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
+1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
 
 ## 0.11.0
 
@@ -75,6 +146,7 @@
 1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
+1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 
 ## 0.10.0
 

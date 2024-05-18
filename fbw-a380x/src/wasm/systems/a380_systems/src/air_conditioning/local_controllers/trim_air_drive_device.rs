@@ -1,8 +1,8 @@
 use systems::{
     air_conditioning::{
         acs_controller::{TrimAirPressureRegulatingValveController, TrimAirValveController},
-        AirConditioningOverheadShared, DuctTemperature, OperatingChannel, TrimAirControllers,
-        TrimAirSystem,
+        AirConditioningOverheadShared, Channel, DuctTemperature, OperatingChannel,
+        TrimAirControllers, TrimAirSystem,
     },
     shared::{ElectricalBusType, EngineStartState, PackFlowValveState, PneumaticBleed},
     simulation::{
@@ -23,7 +23,8 @@ pub trait TaddShared {
 }
 
 pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
-    tadd_channel_failure_id: VariableIdentifier,
+    tadd_channel_1_failure_id: VariableIdentifier,
+    tadd_channel_2_failure_id: VariableIdentifier,
 
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
@@ -38,7 +39,10 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
 impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES> {
     pub fn new(context: &mut InitContext, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
-            tadd_channel_failure_id: context.get_identifier("COND_TADD_CHANNEL_FAILURE".to_owned()),
+            tadd_channel_1_failure_id: context
+                .get_identifier("COND_TADD_CHANNEL_1_FAILURE".to_owned()),
+            tadd_channel_2_failure_id: context
+                .get_identifier("COND_TADD_CHANNEL_2_FAILURE".to_owned()),
 
             active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
             stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
@@ -158,12 +162,16 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement
     for TrimAirDriveDevice<ZONES, ENGINES>
 {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_count = match self.fault {
-            None => 0,
-            Some(TaddFault::OneChannelFault) => self.stand_by_channel.id().into(),
-            Some(TaddFault::BothChannelsFault) => 3,
+        let (channel_1_failure, channel_2_failure) = match self.fault {
+            None => (false, false),
+            Some(TaddFault::OneChannelFault) => (
+                self.stand_by_channel.id() == Channel::ChannelOne,
+                self.stand_by_channel.id() == Channel::ChannelTwo,
+            ),
+            Some(TaddFault::BothChannelsFault) => (true, true),
         };
-        writer.write(&self.tadd_channel_failure_id, failure_count);
+        writer.write(&self.tadd_channel_1_failure_id, channel_1_failure);
+        writer.write(&self.tadd_channel_2_failure_id, channel_2_failure);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

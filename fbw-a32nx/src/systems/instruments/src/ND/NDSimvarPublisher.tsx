@@ -16,6 +16,7 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     selectedWaypointLat: Degrees;
     selectedWaypointLong: Degrees;
     selectedHeading: Degrees;
+    showSelectedHeading: boolean;
     pposLat: Degrees;
     pposLong: Degrees;
     absoluteTime: Seconds;
@@ -30,6 +31,7 @@ export enum NDVars {
     selectedWaypointLat = 'L:A32NX_SELECTED_WAYPOINT_LAT',
     selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',
     selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
+    showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
     pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
     absoluteTime = 'E:ABSOLUTE TIME',
@@ -48,6 +50,7 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
         ['selectedWaypointLat', { name: NDVars.selectedWaypointLat, type: SimVarValueType.Degree }],
         ['selectedWaypointLong', { name: NDVars.selectedWaypointLong, type: SimVarValueType.Degree }],
         ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
+        ['showSelectedHeading', { name: NDVars.showSelectedHeading, type: SimVarValueType.Bool }],
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
         ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],

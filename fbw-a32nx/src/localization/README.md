@@ -6,6 +6,16 @@ TOC:
 - [Build Process](#build-process)
 - [Updating the Source File](#update-source-file)
 
+OBS:
+
+<span style="color: red">
+flyPad Localization files are now in the fbw-common EFB section
+The localization files for the flyPad are now in the fbw-common EFB section.
+The process is the same as described here. The only difference is the path
+to the localization files. The path is `fbw-a32nx/src/localization/flypad`
+instead of `fbw-a32nx/src/localization/a32nx`.
+</span>
+
 ## Development Process
 
 - To add something to the localization files simply add the key to the source language files:

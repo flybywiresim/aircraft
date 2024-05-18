@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+
 import { Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
@@ -14,11 +15,11 @@ import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 
-export interface RoseVorProps extends RoseModeProps {
+export interface RoseVorProps<T extends number> extends RoseModeProps<T> {
     index: 1 | 2,
 }
 
-export class RoseVorPage extends RoseMode<RoseVorProps> {
+export class RoseVorPage<T extends number> extends RoseMode<T, RoseVorProps<T>> {
     isVisible = Subject.create(false);
 
     private readonly headingWord = Arinc429ConsumerSubject.create(null);
@@ -68,6 +69,7 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                     bus={this.props.bus}
                     heading={this.props.headingWord}
                     visible={this.isVisible}
+                    rangeValues={this.props.rangeValues}
                 />
 
                 <VorCaptureOverlay
@@ -137,7 +139,7 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
 
     private readonly deviationTransform = MappedSubject.create(([cdiPx]) => {
         return `translate(${cdiPx}, 0)`;
-    }, this.cdiPx)
+    }, this.cdiPx);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);

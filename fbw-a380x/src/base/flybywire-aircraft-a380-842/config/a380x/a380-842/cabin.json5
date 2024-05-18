@@ -1,0 +1,1301 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is the base cabin configuration file for A380-842
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+//
+// NOTE: * This is currently a WIP * ! The override functionality has not been completed yet !
+//
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+//
+// Please follow the instructions in the documentation to create a new configuration file!
+// =======================================================================================
+// Last updated: 2 April 2024
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "defaultPaxWeight": 84,
+    "defaultBagWeight": 20,
+    "_paxDecks": 2,
+    "_decks": 3,
+    "_minPaxWeight": 10,
+    "_maxPaxWeight": 250,
+    "_minBagWeight": 1,
+    "_maxBagWeight": 250,
+    "seatMap": [
+        {
+            "name": "MAIN FWD A",
+            "deck": 0,
+            "capacity": 28,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 8, "yOffset": 3.5 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 77.02 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 18,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8, "yOffset": 1.5 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 81.02 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 84.02 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 1,
+            "position": 70.7,
+            "simVar": "A32NX_PAX_MAIN_FWD_A"
+        },
+        {
+            "name": "MAIN FWD B",
+            "deck": 0,
+            "capacity": 28,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8, "yOffset": 14.73 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 8, "yOffset": 42.01 },
+                        { "type": 8 },
+                        { "type": 8 },
+                        { "type": 8 }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 2,
+            "position": 70.7,
+            "simVar": "A32NX_PAX_MAIN_FWD_B"
+        },
+        {
+            "name": "MAIN MID 1A",
+            "deck": 0,
+            "capacity": 39,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 25,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 66.5 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 3,
+            "position": 25.6,
+            "simVar": "A32NX_PAX_MAIN_MID_1A"
+        },
+        {
+            "name": "MAIN MID 1B",
+            "deck": 0,
+            "capacity": 50,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 4,
+            "position": 25.6,
+            "simVar": "A32NX_PAX_MAIN_MID_1B"
+        },
+        {
+            "name": "MAIN MID 1C",
+            "deck": 0,
+            "capacity": 43,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2, "yOffset": 102.875 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 5,
+            "position": 25.6,
+            "simVar": "A32NX_PAX_MAIN_MID_1C"
+        },
+        {
+            "name": "MAIN MID 2A",
+            "deck": 0,
+            "capacity": 48,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2, "yOffset": 11.52 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 20,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 6,
+            "position": -16.1,
+            "simVar": "A32NX_PAX_MAIN_MID_2A"
+        },
+        {
+            "name": "MAIN MID 2B",
+            "deck": 0,
+            "capacity": 40,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 7,
+            "position": -16.1,
+            "simVar": "A32NX_PAX_MAIN_MID_2B"
+        },
+        {
+            "name": "MAIN MID 2C",
+            "deck": 0,
+            "capacity": 36,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 66.5 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 8,
+            "position": -16.1,
+            "simVar": "A32NX_PAX_MAIN_MID_2C"
+        },
+        {
+            "name": "MAIN AFT A",
+            "deck": 0,
+            "capacity": 42,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 66.5 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 40,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 66.5 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 9,
+            "position": -51.9,
+            "simVar": "A32NX_PAX_MAIN_AFT_A"
+        },
+        {
+            "name": "MAIN AFT B",
+            "deck": 0,
+            "capacity": 40,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 9 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 2, "yOffset": 1.5 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 7.5 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2 },
+                        { "type": 2, "yOffset": 7.5 },
+                        { "type": 2 },
+                        { "type": 2
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 10,
+            "position": -51.9,
+            "simVar": "A32NX_PAX_MAIN_AFT_B"
+        },
+        {
+            "name": "UPPER FWD",
+            "deck": 1,
+            "capacity": 14,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 45,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 62
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 11,
+            "position": 55.8,
+            "simVar": "A32NX_PAX_UPPER_FWD"
+        },
+        {
+            "name": "UPPER MID A",
+            "deck": 1,
+            "capacity": 30,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 45 },
+                        { "type": 5
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 45,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 11,
+            "position": 55.8,
+            "simVar": "A32NX_PAX_UPPER_MID_A"
+        },
+        {
+            "name": "UPPER MID B",
+            "deck": 1,
+            "capacity": 28,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 11,
+            "position": 55.8,
+            "simVar": "A32NX_PAX_UPPER_MID_B"
+        },
+        {
+            "name": "UPPER AFT",
+            "deck": 1,
+            "capacity": 18,
+            "rows": [
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 45 },
+                        { "type": 5
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 40,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 5, "yOffset": 11 },
+                        { "type": 4 },
+                        { "type": 5, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                },
+                {
+                    "seats": [
+                        { "type": 5, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 4, "yOffset": 11
+                        }
+                    ],
+                    "x": 0,
+                    "y": 0,
+                    "xOffset": 0,
+                    "yOffset": 0
+                }
+            ],
+            "stationIndex": 11,
+            "position": 55.8,
+            "simVar": "A32NX_PAX_UPPER_AFT"
+        }
+    ],
+    "cargoMap": [
+        {
+            "name": "FWD BAGGAGE/CONTAINER",
+            "weight": 28577,
+            "stationIndex": 15,
+            "position": 62.4,
+            "progressBarWidth": 160,
+            "simVar": "A32NX_CARGO_FWD"
+        },
+        {
+            "name": "AFT BAGGAGE",
+            "weight": 20310,
+            "stationIndex": 16,
+            "position": -23.5,
+            "progressBarWidth": 160,
+            "simVar": "A32NX_CARGO_AFT"
+        },
+        {
+            "name": "AFT BULK/LOOSE",
+            "weight": 2513,
+            "stationIndex": 17,
+            "position": -57.9,
+            "progressBarWidth": 100,
+            "simVar": "A32NX_CARGO_BULK"
+        }
+    ]
+}

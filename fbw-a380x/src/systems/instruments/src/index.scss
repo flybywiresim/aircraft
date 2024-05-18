@@ -54,7 +54,14 @@
 .Green {
     stroke: $display-green;
 }
-text.Green, tspan.Green, .Green.Fill {
+
+text.Green,
+tspan.Green,
+.GreenFill {
+    fill: $display-green;
+}
+
+.Green.Fill {
     stroke: none;
     fill: $display-green;
 }
@@ -62,7 +69,10 @@ text.Green, tspan.Green, .Green.Fill {
 .Cyan {
     stroke: $display-cyan;
 }
-text.Cyan, tspan.Cyan, .Cyan.Fill {
+
+text.Cyan,
+tspan.Cyan,
+.Cyan.Fill {
     stroke: none;
     fill: $display-cyan;
 }
@@ -75,15 +85,21 @@ text.Cyan, tspan.Cyan, .Cyan.Fill {
     fill: $display-white;
 }
 
-text.White, tspan.White, .White.Fill {
+text.White,
+tspan.White,
+.White.Fill {
     stroke: none;
     fill: $display-white;
+    color: $display-white;
 }
 
 .LightGrey {
     stroke: $display-light-grey;
 }
-text.LightGrey, tspan.LightGrey, .LightGreyFill {
+
+text.LightGrey,
+tspan.LightGrey,
+.LightGreyFill {
     fill: $display-light-grey;
 }
 
@@ -96,21 +112,40 @@ text.LightGrey, tspan.LightGrey, .LightGreyFill {
 .Grey {
     stroke: $display-grey;
 }
-text.Grey, tspan.Grey, .GreyFill {
+
+text.Grey,
+tspan.Grey,
+.GreyFill {
+    fill: $display-grey;
+}
+
+.Grey.Fill {
+    stroke: none;
     fill: $display-grey;
 }
 
 .DarkGrey {
     stroke: $display-dark-grey;
 }
-text.DarkGrey, tspan.DarkGrey, .DarkGreyFill {
+
+text.DarkGrey,
+tspan.DarkGrey,
+.DarkGreyFill {
     fill: $display-dark-grey;
 }
 
 .Amber {
     stroke: $display-amber;
 }
-text.Amber, tspan.Amber, .Amber.Fill {
+
+text.Amber,
+tspan.Amber,
+.AmberFill {
+    fill: $display-amber;
+    color: $display-amber;
+}
+
+.Amber.Fill {
     stroke: none;
     fill: $display-amber;
 }
@@ -123,12 +158,21 @@ text.Amber, tspan.Amber, .Amber.Fill {
     stroke: $display-red;
 }
 
-text.Red, tspan.Red, .Red.Fill {
+text.Red,
+tspan.Red,
+.Red.Fill {
     stroke: none;
     fill: $display-red;
 }
 
+.Transparent {
+    stroke: transparent;
+}
+
+text.Transparent,
+tspan.Transparent,
 .Transparent.Fill {
+    stroke: none;
     fill: transparent;
 }
 
@@ -140,7 +184,8 @@ text.Red, tspan.Red, .Red.Fill {
     stroke: $display-background;
 }
 
-.XSmall, .F19 {
+.XSmall,
+.F19 {
     font-size: 19px !important;
 }
 
@@ -148,19 +193,23 @@ text.Red, tspan.Red, .Red.Fill {
     font-size: 20px !important;
 }
 
-.Small, .F21 {
+.Small,
+.F21 {
     font-size: 21px !important;
 }
 
-.Medium, .F22 {
+.Medium,
+.F22 {
     font-size: 22px !important;
 }
 
-.Large, .F23 {
+.Large,
+.F23 {
     font-size: 23px !important;
 }
 
-.VLarge, .F24 {
+.VLarge,
+.F24 {
     font-size: 24px !important;
 }
 
@@ -172,7 +221,8 @@ text.Red, tspan.Red, .Red.Fill {
     font-size: 26px !important;
 }
 
-.XLarge, .F27 {
+.XLarge,
+.F27 {
     font-size: 27px !important;
 }
 
@@ -184,7 +234,8 @@ text.Red, tspan.Red, .Red.Fill {
     font-size: 29px !important;
 }
 
-.Huge, .F30 {
+.Huge,
+.F30 {
     font-size: 30px !important;
 }
 
@@ -220,12 +271,32 @@ text.Red, tspan.Red, .Red.Fill {
     letter-spacing: -8px !important;
 }
 
+.WS-6 {
+    word-spacing: -6px !important;
+}
+
+.WS-8 {
+    word-spacing: -8px !important;
+}
+
+.WS-10 {
+    word-spacing: -10px !important;
+}
+
+.TextOutline2 {
+    stroke-width: 2px;
+    // currentColor uses the color attribute, so we need to add that to the classes specifying the colors
+    // Important is necessary as some color classes specify stroke:none
+    stroke: currentColor !important;
+}
+
 .MiddleAlign {
     text-anchor: middle;
     dominant-baseline: middle;
 }
 
-.EndAlign, .End {
+.EndAlign,
+.End {
     text-anchor: end !important;
 }
 
@@ -234,14 +305,16 @@ text.Red, tspan.Red, .Red.Fill {
     font-size: 21px;
 }
 
-.EcamPageTitle {
-    fill: $display-white;
-    font-size: 34px;
+.TextUnderline {
     text-decoration: underline;
 }
 
 .LineRound {
     stroke-linecap: round;
+}
+
+.LineJoinRound {
+    stroke-linejoin: round;
 }
 
 .EcamPageMore {
@@ -269,11 +342,13 @@ text.Red, tspan.Red, .Red.Fill {
     stroke-width: 3;
 }
 
-.Line, .SW2 {
+.Line,
+.SW2 {
     stroke-width: 2px;
 }
 
-.ThickLine, .SW3 {
+.ThickLine,
+.SW3 {
     stroke-width: 3px;
 }
 
@@ -281,7 +356,8 @@ text.Red, tspan.Red, .Red.Fill {
     stroke-width: 4px !important;
 }
 
-.VThickLine, .SW6 {
+.VThickLine,
+.SW6 {
     stroke-width: 6px;
 }
 
@@ -307,9 +383,12 @@ text.Red, tspan.Red, .Red.Fill {
     animation: fill-pulse 1s step-end infinite;
 
     @keyframes fill-pulse {
-        0%, 100% {
+
+        0%,
+        100% {
             fill: $display-green;
         }
+
         50% {
             fill: hsl(120, 100%, 20%);
         }
@@ -320,9 +399,12 @@ text.Red, tspan.Red, .Red.Fill {
     animation: line-pulse 1s step-end infinite;
 
     @keyframes line-pulse {
-        0%, 100% {
+
+        0%,
+        100% {
             stroke: $display-green;
         }
+
         50% {
             stroke: hsl(120, 100%, 20%);
         }
@@ -336,11 +418,11 @@ text.Red, tspan.Red, .Red.Fill {
 }
 
 .StrokeRound {
-    stroke-linecap:round;
+    stroke-linecap: round;
 }
 
 .Mitre10 {
-    stroke-miterlimit:10;
+    stroke-miterlimit: 10;
 }
 
 .Show {

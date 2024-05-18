@@ -1,0 +1,865 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+
+    <!--
+    Template for defining continuous knobs with lower and upper bounds
+
+    Main Parameters:
+            - ANIM_SIMVAR           <no default>        The name of the simvar to use for the knob
+            - ANIM_SIMVAR_UNITS     Default: "percent"  The simvar units
+            - ANIM_SIMVAR_MIN       Default: 0          The lower bound of the position
+            - ANIM_SIMVAR_MAX       Default: 100        The upper bound of the position
+            - INCREMENT             Default: 1          The increment for each click / hold update
+
+            OR:
+
+            - POTENTIOMETER         <no default>        The potentiometer index to increment
+    -->
+    <Template Name="FBW_Continuous_Knob_Finite_From_Simvar">
+        <Parameters Type="Default">
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <INCREMENT>1</INCREMENT>
+            <WHEEL_INCREMENT>4</WHEEL_INCREMENT>
+            <EXTRA_INTERACTION/>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_0></ANIMTIP_0>
+            <ANIMTIP_1></ANIMTIP_1>
+            <ANIM_LAG>60</ANIM_LAG>
+            <ANIM_WRAP>True</ANIM_WRAP>
+        </Parameters>
+        <Parameters Type="Default">
+            <DECREMENT>#INCREMENT#</DECREMENT>
+            <WHEEL_DECREMENT>#WHEEL_INCREMENT#</WHEEL_DECREMENT>
+            <SET_CODE>(&gt;#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#)</SET_CODE>
+        </Parameters>
+
+        <Parameters Type="Override">
+            <Condition Valid="POTENTIOMETER">
+                <True>
+                    <ANIM_SIMVAR>#ANIM_SIMVAR#:#POTENTIOMETER#</ANIM_SIMVAR>
+                    <SET_CODE>#POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)</SET_CODE>
+                </True>
+            </Condition>
+        </Parameters>
+
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
+            </ANIM_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+            <!-- If we have INFINITE_ROTATION we allow the knob to rotate 3 times -->
+            <Condition Valid="INFINITE_ROTATION">
+                <True>
+                    <CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
+                    </CLOCKWISE_CODE>
+                    <ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
+                    </ANTICLOCKWISE_CODE>
+                    <Condition Valid="WHEEL_INCREMENT">
+                        <True>
+                            <WHEEL_CLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
+                            </WHEEL_CLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                    <Condition Valid="WHEEL_DECREMENT">
+                        <True>
+                            <WHEEL_ANTICLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
+                            </WHEEL_ANTICLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                </True>
+                <False>
+                    <CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+                    </CLOCKWISE_CODE>
+                    <ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+                    </ANTICLOCKWISE_CODE>
+
+                    <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
+                    <Condition Valid="WHEEL_INCREMENT">
+                        <True>
+                            <WHEEL_CLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+                            </WHEEL_CLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                    <Condition Valid="WHEEL_DECREMENT">
+                        <WHEEL_ANTICLOCKWISE_CODE>
+                            (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+                        </WHEEL_ANTICLOCKWISE_CODE>
+                    </Condition>
+                </False>
+            </Condition>
+        </UseTemplate>
+
+        <Condition Valid="WWISE_EVENT">
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+            </UseTemplate>
+        </Condition>
+    </Template>
+
+    <!-- Not for direct use -->
+    <Template Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+        <DefaultTemplateParameters>
+            <LEFTARROW>TurnLeft</LEFTARROW>
+            <RIGHTARROW>TurnRight</RIGHTARROW>
+            <COOR_DIRECTION>X</COOR_DIRECTION>
+            <UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
+            <UPDATE_DELAY>0.4</UPDATE_DELAY>
+        </DefaultTemplateParameters>
+
+        <!-- We override the wheel code if we have WHEEL_CLOCKWISE_CODE, WHEEL_ANTICLOCKWISE_CODE -->
+        <OverrideTemplateParameters>
+            <Condition Valid="WHEEL_CLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #WHEEL_CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </False>
+            </Condition>
+            <Condition Valid="WHEEL_ANTICLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #WHEEL_ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </False>
+            </Condition>
+        </OverrideTemplateParameters>
+
+        <Update Frequency="#UPDATE_FREQUENCY#">
+            (O:XMLVAR_FirstUpdateTime) (E:SIMULATION TIME, seconds) &lt; if{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+            }
+        </Update>
+
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+            <MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+            <CALLBACKCODE>
+                (M:Event) 'WheelUp'    scmi 0 == if{ #ACTUAL_WHEEL_CLOCKWISE_CODE# } els{
+                (M:Event) 'WheelDown'  scmi 0 == if{ #ACTUAL_WHEEL_ANTICLOCKWISE_CODE# } els{
+                (M:Event) 'LeftSingle' scmi 0 == if{
+                (M:Relative#COOR_DIRECTION#) (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                (E:SIMULATION TIME, seconds) #UPDATE_DELAY# + (&gt;O:XMLVAR_FirstUpdateTime)
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+                } els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+                0 (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                } } } }
+            </CALLBACKCODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging uncovered push buttons
+
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN, for the annotated light test.
+
+    Use SEQ_POWERED when both emissives are powered by the same power source. Use SEQ1_POWERED and SEQ2_POWERED otherwise.
+
+    Main Parameters:
+            - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
+            - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
+            - MOMENTARY             <no default>    If present, the switch returns to it's original position
+                                                    If not present, the switch will stay pressed.
+            - DOWN_CODE             Not present     Provides custom code to test for "pushed in" condition if TOGGLE_SIMVAR is not used
+            - SEQ1_CODE             0               Sequence 1 emissive code
+            - SEQ2_CODE             0               Sequence 2 emissive code
+            - SEQ_POWERED           1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ1_CODE or SEQ2_CODE is true.
+            - SEQ1_POWERED          1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ1_CODE is true.
+            - SEQ2_POWERED          1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ2_CODE is true.
+            - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
+            - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
+            - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
+            - INVERTED_ANIMATION    Not present     If true, the buttons animation will be inverted
+    -->
+    <Template Name="FBW_Push_Toggle">
+        <DefaultTemplateParameters>
+            <SEQ_POWERED>1</SEQ_POWERED>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ3_EMISSIVE_DRIVES_VISIBILITY>False</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ4_EMISSIVE_DRIVES_VISIBILITY>False</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+
+            <Condition Check="MOMENTARY">
+                <True>
+                    <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                </True>
+                <False>
+                    <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
+                </False>
+            </Condition>
+
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+
+            <Condition Check="DOWN_CODE">
+                <True>
+                    <STATUS>True</STATUS>
+                </True>
+                <False>
+                    <STATUS>False</STATUS>
+                </False>
+            </Condition>
+
+            <!-- Setup LEFT_SINGLE_CODE and DOWN_STATE_CODE depending on the presence of custom LEFT_SINGLE_CODE and switch being momentary or not -->
+            <Condition Check="LEFT_SINGLE_CODE">
+                <!-- Custom code - no usage of TOGGLE_SIMVAR, and if not momentary: track switch state ourselves -->
+                <True>
+                    <Condition Check="MOMENTARY">
+                        <True>
+                            <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        </True>
+                        <False>
+                            <LEFT_SINGLE_CODE>
+                                #LEFT_SINGLE_CODE#
+
+                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                            </LEFT_SINGLE_CODE>
+                            <Condition Check="DOWN_CODE">
+                                <True>
+                                    <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
+                                </True>
+                                <False>
+                                    <DOWN_STATE_CODE>(L:XMLVAR_Momentary_#NODE_ID#_Pressed)</DOWN_STATE_CODE>
+                                </False>
+                            </Condition>
+                        </False>
+                    </Condition>
+                </True>
+            </Condition>
+
+            <Condition Check="TOGGLE_SIMVAR">
+                <True>
+                    <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)</LEFT_SINGLE_CODE>
+                    <Condition Check="MOMENTARY">
+                        <False>
+                            <Condition Check="DOWN_CODE">
+                                <True>
+                                    <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
+                                </True>
+                                <False>
+                                    <Condition Check="INVERTED_ANIMATION">
+                                        <True>
+                                            <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#) !</DOWN_STATE_CODE>
+                                        </True>
+                                        <False>
+                                            <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+                                        </False>
+                                    </Condition>
+                                </False>
+                            </Condition>
+                        </False>
+                    </Condition>
+                </True>
+            </Condition>
+
+            <Condition Check="DISABLE_SEQ1">
+                <False>
+                    <Condition Check="SEQ1_CODE">
+                        <True>
+                            <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+                        </True>
+                        <False>
+                            <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+                        </False>
+                    </Condition>
+                </False>
+                <True>
+                    <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+                </True>
+            </Condition>
+
+            <Condition Check="DISABLE_SEQ2">
+                <False>
+                    <Condition Check="SEQ2_CODE">
+                        <True>
+                            <SEQ2_EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+                        </True>
+                        <False>
+                            <Condition Check="TOGGLE_SIMVAR">
+                                <True>
+                                    <Condition Check="INVERTED">
+                                        <True>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+                                        </True>
+                                        <false>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+                                        </false>
+                                    </Condition>
+                                </True>
+                                <False>
+                                    <SEQ2_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+                                </False>
+                            </Condition>
+                        </False>
+                    </Condition>
+                </False>
+                <True>
+                    <SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
+                </True>
+            </Condition>
+
+            <Condition Check="ROUND">
+                <True>
+                    <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
+                </True>
+            </Condition>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Chrono_Push_Toggle">
+        <DefaultTemplateParameters>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <Condition Check="LEFT_SINGLE_CODE">
+                <True>
+                    <Condition Check="MOMENTARY">
+                        <True>
+                            <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        </True>
+                        <False>
+                            <LEFT_SINGLE_CODE>
+                                #LEFT_SINGLE_CODE#
+
+                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                            </LEFT_SINGLE_CODE>
+                        </False>
+                    </Condition>
+                </True>
+            </Condition>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging covered push buttons
+
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN.
+
+    Main Parameters:
+           - NODE_ID            <no default>    Switch node ID                              (anim name will be same)
+           - LOCK_NODE_ID       <no default>    Lock node ID                                (anim name will be same)
+           - TOGGLE_SIMVAR      <no default>    SimVar to contain the toggle state
+           - MOMENTARY          <no default>    If not present, the switch returns to it's original position. (Normal behaviour)
+                                                If present, the switch will stay pressed.
+           - SEQ1_CODE          0               Sequence 1 emissive code
+           - SEQ1_CODE          0               Sequence 2 emissive code
+           - DISABLE_SEQ1       Not present     If present, SEQ1 emissive is disabled
+           - DISABLE_SEQ2       Not present     If present, SEQ2 emissive is disabled
+           - DUMMY_BUTTON       Not present     If true, the button will be a dummy button (not pressable, only emissive)
+    -->
+    <Template Name="FBW_Covered_Push_Toggle">
+        <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+            <NODE_ID>#LOCK_NODE_ID#</NODE_ID>
+            <ANIM_NAME>#LOCK_NODE_ID#</ANIM_NAME>
+            <WWISE_EVENT_1/>
+            <WWISE_EVENT_2/>
+            <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#_LOCK) ! (&gt;#TOGGLE_SIMVAR#_LOCK)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_Push_Toggle"/>
+    </Template>
+
+
+    <!--
+    Template for a held pushbutton
+
+    Main Parameters:
+            - NODE_ID                           <no default>    Button node ID (anim name will be the same)
+            - HOLD_SIMVAR                       <no default>    SimVar to contain the held state
+            - SEQ1_CODE                         Not present     Sequence 1 emissive code. If not present, the SEQ1 emissive will also not respond to the ANN LT TEST
+            - SEQ2_CODE                         Not present     Sequence 2 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ3_CODE                         Not present     Sequence 3 emissive code. If not present, the SEQ3 emissive will also not respond to the ANN LT TEST
+            - SEQ4_CODE                         Not present     Sequence 4 emissive code. If not present, the SEQ4 emissive will also not respond to the ANN LT TEST
+            - SEQ_POWERED                       1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ1_CODE or SEQ2_CODE is true.
+            - SEQ1_POWERED                      1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ1_CODE is true.
+            - SEQ2_POWERED                      1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ2_CODE is true.
+            - SEQ3_POWERED                      1               Whether SEQ3 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ3_CODE is true.
+            - SEQ4_POWERED                      1               Whether SEQ4 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ4_CODE is true.
+            - SEQ1_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ1 emissive drives the visibility of the SEQ1 text
+            - SEQ2_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ2 emissive drives the visibility of the SEQ2 text
+            - SEQ3_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ3 emissive drives the visibility of the SEQ3 text
+            - SEQ4_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ4 emissive drives the visibility of the SEQ4 text
+            - INVERTED                          False           Whether or not the switch is OFF by default
+            - LEFT_SINGLE_CODE                  Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed
+            - LEFT_LEAVE_CODE                   Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is released
+    -->
+    <Template Name="FBW_Push_Held">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
+            <CURSOR>Hand</CURSOR>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ3_EMISSIVE_DRIVES_VISIBILITY>False</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ4_EMISSIVE_DRIVES_VISIBILITY>False</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
+
+            <SEQ1_NODE_ID>#NODE_ID#_SEQ1</SEQ1_NODE_ID>
+            <SEQ2_NODE_ID>#NODE_ID#_SEQ2</SEQ2_NODE_ID>
+            <SEQ3_NODE_ID>#NODE_ID#_SEQ3</SEQ3_NODE_ID>
+            <SEQ4_NODE_ID>#NODE_ID#_SEQ4</SEQ4_NODE_ID>
+
+            <SEQ_POWERED>1</SEQ_POWERED>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+            <SEQ3_POWERED>1</SEQ3_POWERED>
+            <SEQ4_POWERED>1</SEQ4_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <Condition Valid="LEFT_SINGLE_CODE">
+                    <True>
+                        <Condition Valid="LEFT_LEAVE_CODE">
+                            <True>
+                                <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+                            </True>
+                            <False>
+                                <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE/>
+                            </False>
+                        </Condition>
+                    </True>
+                    <False>
+                        <Condition Valid="LEFT_LEAVE_CODE">
+                            <True>
+                                <LEFT_SINGLE_CODE/>
+                                <LEFT_LEAVE_CODE>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+                            </True>
+                            <False>
+                                <LEFT_SINGLE_CODE>1 (&gt;#HOLD_SIMVAR#)</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE>0 (&gt;#HOLD_SIMVAR#)</LEFT_LEAVE_CODE>
+                            </False>
+                        </Condition>
+                    </False>
+                </Condition>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="SEQ1_CODE">
+            <True>
+                <Component ID="#SEQ1_NODE_ID#" Node="#SEQ1_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ1_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ2_CODE">
+            <True>
+                <Component ID="#SEQ2_NODE_ID#" Node="#SEQ2_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ3_CODE">
+            <True>
+                <Component ID="#SEQ3_NODE_ID#" Node="#SEQ3_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ3_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ3_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ3_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ4_CODE">
+            <True>
+                <Component ID="#SEQ4_NODE_ID#" Node="#SEQ4_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ4_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ4_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ4_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+
+
+    <!--
+    Template for defining panel lighting knobs tied to potentiometers
+
+    Main Parameters:
+            - NODE_ID           <no default>    The knob node ID
+            - ANIM_NAME         <no default>    The knob animation name
+            - POTENTIOMETER     <no default>    The potentiometer index
+    -->
+    <Template Name="FBW_Lighting_Knob_With_Potentiometer">
+        <DefaultTemplateParameters>
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_WRAP>0</ANIM_WRAP>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+
+            <WWISE_EVENT/>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_LIGHTING_Knob_SubTemplate">
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for rigging springloaded 3-State switches. (Springloaded both up and down)
+
+    Main Parameters:
+            - ANIM_SIMVAR       <no default>    The Simvar that is controlled via this switch, Prefix (for example L:) must be included
+            - INVERT_ANIM       <0>             If the associated animation should be reversed
+            - NODE_ID           <no default>    The Node ID associated with this switch
+    -->
+    <Template Name="FBW_3State_Springloaded_Switch">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT>lswitch</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UPARROW>UpArrow</UPARROW>
+                <DOWNARROW>DownArrow</DOWNARROW>
+                <LEFTARROW/>
+                <RIGHTARROW/>
+                <CURSOR/>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <CODE_POS_0>0 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_0>
+                <CODE_POS_1>1 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_1>
+                <CODE_POS_2>2 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+                <MOMENTARY_SWITCH/>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+
+    <!--
+    Template for rigging a knob where the animation doesn't match up with the maximum knob travel.
+
+    Main Parameters:
+            - NODE_ID               <no default>        The Node ID associated with this knob
+            - LOCAL_SIMVAR          <no default>        The LVar that will be used for this knob
+            - ANIM_VAR_TYPE         <I>                 Type of the variable used for the animation
+            - ANIM_SIMVAR_MAX       <100>               The maximum percent out of it's animation the knob can rotate
+            - CONVERSION_FORMULA    <optional>          The formula with which the rotation percentage will be transformed into the LOCAL_SIMVAR.
+            - INCREMENT             Default: 1          The increment for each click / hold update
+    -->
+    <Template Name="FBW_Continuous_Knob_Limited_From_Simvar">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <CONVERSION_FORMULA/>
+        </DefaultTemplateParameters>
+
+        <Update Frequency="40">
+            (L:XMLVAR_#NODE_ID#, percent) #ANIM_SIMVAR_MAX# min (&gt;L:XMLVAR_#NODE_ID#, percent)
+            (L:XMLVAR_#NODE_ID#, percent) #CONVERSION_FORMULA# (&gt;#LOCAL_SIMVAR#, #LOCAL_SIMVAR_UNITS#)
+        </Update>
+
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <ANIM_SIMVAR>L:XMLVAR_#NODE_ID#</ANIM_SIMVAR>
+            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+            <ANIM_CODE>#ANIM_CODE#</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for rigging a stepless knob/potentiometer to be used for dimming of lights, emissives and screens.
+
+    Main Parameters:
+            - NODE_ID               <no default>                The Node ID associated with this potentiometer
+            - ANIM_SIMVAR           <A:LIGHT POTENTIOMETER>     The name of the simvar to use for this potentiometer
+            - ANIM_SIMVAR_UNITS     Default: "percent"          The simvar units
+            - ANIM_SIMVAR_MIN       Default: 0                  The lower bound of the position
+            - ANIM_SIMVAR_MAX       Default: 100                The upper bound of the position
+            - INCREMENT             Default: 1                  The increment for each click / hold update
+            - WHEEL_INCREMENT       Default: 5                  The increment for mouse wheel interactions
+            - POTENTIOMETER         <no default>                The light potentiometer index to increment
+            - ANNOTATE_TOOLTIP      Default: True               Turn on tooltip potentiometer % value (#ANIMTIP# (73%))
+    -->
+    <Template Name="FBW_Stepless_Potentiometer">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+            <ANIM_SIMVAR>A:LIGHT POTENTIOMETER</ANIM_SIMVAR>
+            <WHEEL_INCREMENT>5</WHEEL_INCREMENT>
+            <ANNOTATE_TOOLTIP>True</ANNOTATE_TOOLTIP>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                <Condition Valid="ANNOTATE_TOOLTIP">
+                    <True>
+                        <ANIMTIP_0>#ANIMTIP_0# (%((#ANIM_SIMVAR#:#POTENTIOMETER#, #ANIM_SIMVAR_UNITS#))%!d!%%)</ANIMTIP_0>
+                        <ANIMTIP_1>#ANIMTIP_1# (%((#ANIM_SIMVAR#:#POTENTIOMETER#, #ANIM_SIMVAR_UNITS#))%!d!%%)</ANIMTIP_1>
+                    </True>
+                </Condition>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+
+    <!--
+    Template for syncing lights. Works by simultaneously toggling the light circuit buses temporary, given a condition.
+    Requires the lights in *.fx to be synced and timed properly to work, as this template only ensures a common timeline.
+
+    Main Parameters:
+            - SYNC_FREQUENCY        Default: 1          Speed of update loop, N per second.
+            - SYNC_TOGGLE_BUSES     <no default>        The buses for the lights that should be synced.
+            - SYNC_CONDITION        <no default>        The condition to trigger a sync. This is often two or more switches.
+            - SYNC_REQUISITE        <no default>        The required main buses for the circuits.
+    -->
+    <Template Name="FBW_Light_Sync">
+        <DefaultTemplateParameters>
+            <SYNC_FREQUENCY>1</SYNC_FREQUENCY>
+            <SYNC_TOGGLE_BUSES/>
+            <SYNC_CONDITION/>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>#SYNC_FREQUENCY#</FREQUENCY>
+            <UPDATE_CODE>
+                #SYNC_REQUISITE# if{
+                    #SYNC_CONDITION# if{
+                        (O:SYNC_BUS_TMPOFF, bool) 1 == if{
+                            #SYNC_TOGGLE_BUSES#
+                            0 (&gt;O:SYNC_BUS_TMPOFF, bool)
+                            1 (&gt;O:SYNC_BUS_SYNCED, bool)
+                        }
+                        (O:SYNC_BUS_SYNCED, bool) 0 == if{
+                            #SYNC_TOGGLE_BUSES#
+                            1 (&gt;O:SYNC_BUS_TMPOFF, bool)
+                        }
+                    } els{
+                        0 (&gt;O:SYNC_BUS_SYNCED, bool)
+                    }
+                }  els{
+                    0 (&gt;O:SYNC_BUS_SYNCED, bool)
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for delaying LDG LT and sync them with their animation.
+    Works by disabling the LDG LT bus until landing light is fully extended.
+
+    Main Parameters:
+            - DELAY_FREQUENCY       Default: 10         Speed of update loop, N per second.
+            - DELAY_TIME            <no default>        Delay of the bus.
+            - DELAY_LT_INDEX        <no default>        The LDG LT index.
+            - DELAY_CIRCUIT         <no default>        The LDG LT circuit.
+            - DELAY_BUS             <no default>        The LDG LT bus.
+    -->
+    <Template Name="FBW_LDGLT_Delay">
+        <DefaultTemplateParameters>
+            <DELAY_FREQUENCY>10</DELAY_FREQUENCY>
+            <DELAY_TIME/>
+            <DELAY_LT_INDEX/>
+            <DELAY_CIRCUIT/>
+            <DELAY_BUS/>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>#DELAY_FREQUENCY#</FREQUENCY>
+            <UPDATE_CODE>
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 1 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * &lt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 + (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                    #DELAY_BUS# (&gt;A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#DELAY_CIRCUIT#, Bool) if{
+                        #DELAY_CIRCUIT# #DELAY_BUS# (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                    }
+                }
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 2 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 0 &gt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 - (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                }
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 0 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * &lt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 + (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * == if{
+                        #DELAY_BUS# (&gt;A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#DELAY_CIRCUIT#, Bool) ! if{
+                            #DELAY_CIRCUIT# #DELAY_BUS# (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        }
+                    }
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for toggling of light potentiometers that not are bound to a specific lightdef.Type.
+    Needs a condition, requisite and a potentiometer to toggle.
+
+    Main Parameters:
+            - SYNC_FREQUENCY        Default: 1          Speed of update loop, N per second.
+            - TOGGLE_CONDITION      <Boolean>           The condition to trigger a toggle.
+            - TOGGLE_REQUISITE      <Boolean>           The required powered BUS for potentiometer.
+            - POTENTIOMETER         <Number>            The potentiometer index # to toggle.
+    -->
+    <Template Name="FBW_Potentiometer_Toggle">
+        <DefaultTemplateParameters>
+            <SYNC_FREQUENCY>1</SYNC_FREQUENCY>
+            <TOGGLE_REQUISITE/>
+            <TOGGLE_CONDITION/>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>#SYNC_FREQUENCY#</FREQUENCY>
+            <UPDATE_CODE>
+                #TOGGLE_REQUISITE# #TOGGLE_CONDITION# and 100 * #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Wrapper utility template for animation interaction speeds allowing
+    for control of all button, switches and korry's from one place.
+
+    Main parameters:
+            - ANIM_TYPE             <no default>        Type of interaction (KNOB, SWITCH, BUTTON, BUTTON_HELD, BUTTON_2WAY,
+                                                        BUTTON_PROTECTED, KORRY_BUTTON, KORRY_HELD, KORRY_PROTECTED)
+            - ANIM_TEMPLATE         <no default>        The template to call with these animation parameters
+    -->
+    <Template Name="FBW_Anim_Interactions">
+        <Parameters Type="Default">
+            <Switch Param="ANIM_TYPE">
+                <Case Value="KNOB">
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="SWITCH">
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON">
+                    <ANIM_DURATION>0.25</ANIM_DURATION>
+                    <ANIM_LAG>3000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_HELD">
+                    <ANIM_LENGTH>20</ANIM_LENGTH>
+                    <ANIM_DURATION>0.05</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_2WAY">
+                    <ANIM_LAG>2500</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_PROTECTED">
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="KORRY_BUTTON">
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>2000</ANIM_LAG>
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                </Case>
+                <Case Value="KORRY_HELD">
+                    <ANIM_LENGTH>20</ANIM_LENGTH>
+                    <ANIM_DURATION>0.05</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="KORRY_PROTECTED">
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+            </Switch>
+        </Parameters>
+        <UseTemplate Name="#ANIM_TEMPLATE#"/>
+    </Template>
+
+</ModelBehaviors>

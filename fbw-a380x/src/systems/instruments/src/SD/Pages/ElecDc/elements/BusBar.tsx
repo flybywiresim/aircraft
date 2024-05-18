@@ -1,40 +1,53 @@
 import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { Triangle } from '@instruments/common/Shapes';
+
+export enum DcElecBus {
+    Dc1Bus = 1,
+    Dc2Bus = 2,
+    DcEssBus = 3,
+    DcApu = 4,
+}
 
 interface BusBarProps {
     x: number,
     y: number,
-    network: string,
+    bus: DcElecBus,
 }
 
-const BusBar: FC<BusBarProps> = ({ x, y, network }) => {
-    // const sdacDatum = true;
-    // TODO: Add APU bus to DC electrical system
-    const [DCBusBar] = useSimVar(`L:A32NX_ELEC_DC_${network}_BUS_IS_POWERED`, 'bool', 500);
+export const BusBar: FC<BusBarProps> = ({ x, y, bus }) => {
+    const isBus1Or2 = bus <= 2;
 
-    let yposBB = y + 276;
-    let xposBB = x - 18;
-
-    if (network === 'ESS') {
-        yposBB -= 103;
-        xposBB -= 10;
-    } else if (['2', 'APU'].includes(network)) {
-        xposBB += 20;
+    let busName: string;
+    if (isBus1Or2) {
+        busName = bus.toString();
+    } else if (bus === DcElecBus.DcEssBus) {
+        busName = 'ESS';
+    } else {
+        busName = 'APU';
     }
 
+    const [dcBusPowered] = useSimVar(`L:A32NX_ELEC_${busName === 'APU' ? '' : 'DC_'}${busName === 'APU' ? '309PP' : busName}_BUS_IS_POWERED`, 'bool', 500);
+    const staticInverterFault = false;
+
     return (
-        <g id={`electrical-busbar-${network}}`}>
-            <path className='LightGrey GreyFill SW2' d={`M ${xposBB},${yposBB} l 0,30 l 126,0 l 0,-30 l -126,0`} />
-            <text className={`F27 ${DCBusBar ? 'Green' : 'Amber'} Grey`} x={['1', '2'].includes(network) ? xposBB + 30 : xposBB + 8} y={yposBB + 25}>DC</text>
+        <g id={`electrical-busbar-${bus}`} transform={`translate(${x} ${y})`}>
+            <path className='LightGrey GreyFill SW1 LS1' d='M 0,0 l 0,34 l 128,0 l 0,-34 z' />
+            <text className={`F29 ${dcBusPowered ? 'Green' : 'Amber'}`} x={isBus1Or2 ? 32 : 9} y={29}>DC</text>
             <text
-                className={`${['1', '2'].includes(network) ? 'F32' : 'F27'} ${DCBusBar ? 'Green' : 'Amber'}`}
-                x={['1', '2'].includes(network) ? xposBB + 78 : xposBB + 64}
-                y={['1', '2'].includes(network) ? yposBB + 26 : yposBB + 25}
+                className={`${isBus1Or2 ? 'F35' : 'F29'} ${dcBusPowered ? 'Green' : 'Amber'} LS1`}
+                x={isBus1Or2 ? 78 : 65}
+                y={isBus1Or2 ? 31 : 29}
             >
-                {`${network}`}
+                {busName}
             </text>
+            {/* inverter */}
+            {bus === DcElecBus.DcEssBus && (
+                <g id='static-inverter'>
+                    <Triangle x={98} y={53} colour={!staticInverterFault ? 'White' : 'Amber'} fill={0} orientation={180} scale={1} />
+                    <text className={`F22 ${!staticInverterFault ? 'White' : 'Amber'} LS1 WS-8`} x={70} y={77}>STAT INV</text>
+                </g>
+            )}
         </g>
     );
 };
-
-export default BusBar;

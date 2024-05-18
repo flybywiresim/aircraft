@@ -4,7 +4,9 @@ import { PackNumber, Position } from '@instruments/common/types';
 import React from 'react';
 
 const Packs: React.FC<Position & PackNumber> = ({ pack, x, y }) => {
-    const [packOpen] = useSimVar(`L:A32NX_COND_PACK_FLOW_VALVE_${pack}_IS_OPEN`, 'bool', 500);
+    const [packValve1Open] = useSimVar(`L:A32NX_COND_PACK_${pack}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
+    const [packValve2Open] = useSimVar(`L:A32NX_COND_PACK_${pack}_FLOW_VALVE_2_IS_OPEN`, 'bool', 500);
+    const packOpen = packValve1Open || packValve2Open;
     const triangleColour = !packOpen ? 'Amber' : 'Green';
     const packWordColour = !packOpen ? 'AmberFill' : 'WhiteFill';
 

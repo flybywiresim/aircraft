@@ -37,7 +37,7 @@ export type CabinDoorProps = {
 }
 
 export type CargoDoorProps = {
-    label: 'AFT' | 'FWD' | 'BULK' | 'AVNCS',
+    label: 'AFT' | 'FWD' | 'BULK' | 'AVNCS' | 'FWD CARGO' | 'AFT CARGO',
     width: number,
     height: number,
     engineRunning: boolean,

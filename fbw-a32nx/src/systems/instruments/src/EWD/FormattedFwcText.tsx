@@ -20,7 +20,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
             this.linesRef.instance.innerHTML = '';
             this.decorationRef.instance.innerHTML = '';
 
-            let spans: Node[] = [];
+            let spans: VNode[] = [];
             let yOffset = 0;
 
             let color = 'White';
@@ -36,11 +36,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 if (char === '\x1b' || char === '\r') {
                     if (buffer !== '') {
                         // close current part
-                        const s = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-                        s.setAttribute('key', buffer);
-                        s.setAttribute('class', `${color} EWDWarn`);
-                        s.textContent = buffer;
-                        spans.push(s);
+                        spans.push(<tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>{buffer}</tspan>);
                         buffer = '';
 
                         if (underlined) {
@@ -135,7 +131,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                         e.setAttribute('x', this.props.x.toString());
                         e.setAttribute('y', (this.props.y + yOffset).toString());
                         spans.forEach((s) => {
-                            e.appendChild(s);
+                            FSComponent.render(s, e);
                         });
                         this.linesRef.instance.appendChild(e);
                         yOffset += LINE_SPACING;
@@ -152,11 +148,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
             }
 
             if (buffer !== '') {
-                const s = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-                s.setAttribute('key', buffer);
-                s.setAttribute('class', `${color} EWDWarn`);
-                s.textContent = buffer;
-                spans.push(s);
+                spans.push(<tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>{buffer}</tspan>);
             }
 
             if (spans.length) {
@@ -164,7 +156,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 e.setAttribute('x', this.props.x.toString());
                 e.setAttribute('y', (this.props.y + yOffset).toString());
                 spans.forEach((s) => {
-                    e.appendChild(s);
+                    FSComponent.render(s, e);
                 });
                 this.linesRef.instance.appendChild(e);
                 yOffset += LINE_SPACING;

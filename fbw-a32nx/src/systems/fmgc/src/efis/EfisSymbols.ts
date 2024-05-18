@@ -3,13 +3,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-    GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue,
-    efisRangeSettings,
-} from '@flybywiresim/fbw-sdk';
+import { GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
@@ -19,17 +15,11 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
-export class EfisSymbols {
+export class EfisSymbols<T extends number> {
     /** these types of legs are current not integrated into the normal symbol drawing routines */
     static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
 
     private blockUpdate = false;
-
-    private flightPlanManager: FlightPlanManager;
-
-    private guidanceController: GuidanceController;
-
-    private guidanceManager: GuidanceManager;
 
     private nearby: NearbyFacilities;
 
@@ -57,10 +47,12 @@ export class EfisSymbols {
 
     private lastVnavDriverVersion: number = -1;
 
-    constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
-        this.flightPlanManager = flightPlanManager;
-        this.guidanceController = guidanceController;
-        this.guidanceManager = guidanceController.guidanceManager;
+    constructor(
+        private readonly flightPlanManager: FlightPlanManager,
+        private readonly guidanceController: GuidanceController,
+        private readonly navaidTuner: NavaidTuner,
+        private readonly rangeValues: T[],
+    ) {
         this.nearby = NearbyFacilities.getInstance();
     }
 
@@ -126,7 +118,7 @@ export class EfisSymbols {
         };
 
         for (const side of EfisSymbols.sides) {
-            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
@@ -540,7 +532,7 @@ export class EfisSymbols {
         }
     }
 
-    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
+    private calculateEditArea(range: T, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
         case EfisNdMode.ARC:
             if (range <= 10) {

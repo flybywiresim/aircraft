@@ -4,7 +4,7 @@
 /* eslint-disable no-underscore-dangle */
 import { UpdateThrottler } from '@shared/UpdateThrottler';
 import { MathUtils } from '@shared/MathUtils';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { LocalSimVar } from '@shared/simvar';

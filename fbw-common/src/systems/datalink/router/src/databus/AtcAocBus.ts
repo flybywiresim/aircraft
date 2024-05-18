@@ -9,7 +9,7 @@ import {
     FreetextMessage,
     OclMessage,
     WeatherMessage,
-} from '@datalink/common';
+} from '../../../common/src';
 
 export interface AtcAocRouterMessages {
     // streams to send several messages

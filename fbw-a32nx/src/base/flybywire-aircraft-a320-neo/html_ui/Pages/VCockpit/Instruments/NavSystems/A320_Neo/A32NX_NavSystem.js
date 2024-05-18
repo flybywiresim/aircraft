@@ -2279,10 +2279,6 @@ class Cabin_Annunciations extends Annunciations {
                 messages += '<div class="Advisory">' + this.displayAdvisory[i].Text + "</div>";
             }
             this.warningTone = warningOn > 0;
-            if (this.gps.isPrimary) {
-                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", warningOn);
-                SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", cautionOn);
-            }
             if (this.annunciations) {
                 this.annunciations.innerHTML = messages;
             }
@@ -2331,10 +2327,6 @@ class Cabin_Annunciations extends Annunciations {
         this.displayCaution = [];
         this.displayWarning = [];
         this.displayAdvisory = [];
-        if (!this.gps || this.gps.isPrimary) {
-            SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", 0);
-            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", 0);
-        }
         this.firstAcknowledge = true;
         this.needReload = true;
     }

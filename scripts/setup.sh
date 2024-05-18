@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 cd /external
 
@@ -11,4 +11,4 @@ for arg in "$@"; do
   fi
 done
 
-NODE_OPTIONS=--no-network-family-autoselection npm ci
+pnpm i

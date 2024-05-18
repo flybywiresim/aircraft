@@ -100,20 +100,23 @@ const PoweredRadioPanel = (props: Props) => {
         }
     });
 
-    /**
-     * MLS IMPLEMENTED IN THE XML BEHAVIOURS
-     * BUT DISABLED HERE SINCE THERE IS NOT ENOUGH REFERENCES
-     */
-    // useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
-    //     if (navButtonPressed) {
-    //         setPanelMode(8);
-    //         setNavTransceiverType(TransceiverType.ILS);
-    //     }
-    // });
+    useInteractionEvent(`A32NX_RMP_${props.side}_GLS_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(8);
+            setNavTransceiverType(TransceiverType.GLS);
+        }
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(9);
+            setNavTransceiverType(TransceiverType.MLS);
+        }
+    });
 
     useInteractionEvent(`A32NX_RMP_${props.side}_ADF_BUTTON_PRESSED`, () => {
         if (navButtonPressed) {
-            setPanelMode(9);
+            setPanelMode(10);
             setNavTransceiverType(TransceiverType.ADF);
         }
     });

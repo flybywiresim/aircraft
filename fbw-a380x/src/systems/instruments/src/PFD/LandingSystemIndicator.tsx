@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -193,13 +193,13 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode {
         return (
             <g id="LSInfoGroup" ref={this.lsInfoGroup}>
-                <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{this.identText}</text>
-                <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{this.freqTextLeading}</text>
-                <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{this.freqTextTrailing}</text>
+                <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="143.11522">{this.identText}</text>
+                <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="149.11575">{this.freqTextLeading}</text>
+                <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="149.24084">{this.freqTextTrailing}</text>
 
                 <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
-                    <text ref={this.destRef} class="Magenta AlignLeft" x="1.3685881" y="157.26602" />
-                    <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
+                    <text ref={this.destRef} class="Magenta AlignLeft" x="1.3685881" y="155.26602" />
+                    <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="155.22606">NM</text>
                 </g>
 
             </g>

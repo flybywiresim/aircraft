@@ -42,6 +42,9 @@ export class Chrono extends DisplayComponent<ChronoProps> {
         return `${Math.floor(seconds / 60).toString().padStart(2, '0')}'${Math.floor(seconds % 60).toString().padStart(2, '0')}"`;
     });
 
+    // this is a hack to force coherent to re-calculate the layout each time the time changes, avoiding a font-rendering bug
+    private readonly timeMargin = this.displayedTime.map((_, previous) => !previous);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -82,7 +85,11 @@ export class Chrono extends DisplayComponent<ChronoProps> {
 
     render(): VNode | null {
         return (
-            <g class="chrono" visibility={this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))}>
+            <g
+                class="chrono"
+                visibility={this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))}
+                style={{ 'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')) }}
+            >
                 <rect x={0} y={632} width={104} height={30} class="Grey Fill" />
                 <text x={8} y={652} font-size={24} class="Green">{this.displayedTime}</text>
             </g>

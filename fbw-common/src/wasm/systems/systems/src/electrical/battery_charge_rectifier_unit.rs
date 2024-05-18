@@ -188,7 +188,7 @@ impl SimulationElement for BatteryChargeRectifierUnit {
     ) {
         let dc_power =
             consumption.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
-        let current = dc_power.get::<watt>() * 28.;
+        let current = dc_power.get::<watt>() / 28.;
         let resistor_potential = current * Self::INTERNAL_RESISTANCE_OHM;
         let ac_power = dc_power + Power::new::<watt>(current * resistor_potential);
 

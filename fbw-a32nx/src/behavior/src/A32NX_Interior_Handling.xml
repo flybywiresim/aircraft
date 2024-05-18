@@ -501,6 +501,7 @@
             <PART_ID>HANDLING_Wheel_ElevatorTrim</PART_ID>
             <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
             <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
+            <ANIM_NAME2>HANDLING_Wheel_ElevatorTrim_2</ANIM_NAME2>
             <NODE_ID2>HANDLING_Wheel_ElevatorTrim_Pitch_2</NODE_ID2>
             <DRAG_DELTA>0.001</DRAG_DELTA>
             <DRAG_SPEED>0.03</DRAG_SPEED>
@@ -532,6 +533,7 @@
         </Component>
         <Component ID="#NODE_ID2#" Node="#NODE_ID2#">
             <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_NAME>#ANIM_NAME2#</ANIM_NAME>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
                 <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
                 <UP_CODE>#DRAG_CODE#</UP_CODE>
@@ -545,7 +547,7 @@
         </Component>
     </Template>
 
-<Template Name="FBW_HANDLING_Gear_Lever_Template">
+    <Template Name="FBW_HANDLING_Gear_Lever_Template">
         <DefaultTemplateParameters>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPSV2.LANDING_GEAR_LEVER_GEAR_TITLE</TOOLTIPID>
             <ANIM_NAME>lever_landing_gear</ANIM_NAME>
@@ -581,6 +583,15 @@
                 </ANIM_CODE>
                 <UP_CODE>  (&gt;K:GEAR_UP)</UP_CODE>
                 <DOWN_CODE> (&gt;K:GEAR_DOWN)</DOWN_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Gear_Red_Arrow_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="Asobo_GT_Emissive_Gauge">
+                <!-- XMFR-ESS power is CB 28LP from 901XP/A or CB 29LP from 801XP/C (relay switched) -->
+                <EMISSIVE_CODE>(L:A32NX_FWC_1_LG_RED_ARROW) (L:A32NX_FWC_2_LG_RED_ARROW) or (L:A32NX_OVHD_INTLT_ANN, number) s0 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or l0 2 == if{ 0.1 } els{ 1 } * (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED) or *</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>

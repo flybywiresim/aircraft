@@ -231,18 +231,18 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Toggle">
-            <TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
-            <SEQ2_CODE>(A:ENG ANTI ICE:#ID#, Bool)</SEQ2_CODE>
-            <LEFT_SINGLE_CODE>(&gt;K:ANTI_ICE_TOGGLE_ENG#ID#)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_#ID#_POSITION, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
+            <SEQ2_CODE>(L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_#ID#_POSITION, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>(L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_#ID#_POSITION, Bool) ! (&gt;L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_#ID#_POSITION, Bool)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
     <Template Name="FBW_Airbus_AntiIce_Wing">
         <UseTemplate Name="FBW_Push_Toggle">
-            <TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:A32NX_BUTTON_OVHD_ANTI_ICE_WING_POSITION, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
             <SEQ1_CODE>(L:A32NX_PNEU_WING_ANTI_ICE_HAS_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED, Bool)</SEQ2_CODE>
-            <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(L:A32NX_BUTTON_OVHD_ANTI_ICE_WING_POSITION, Bool) ! (&gt;L:A32NX_BUTTON_OVHD_ANTI_ICE_WING_POSITION, Bool)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
@@ -720,6 +720,44 @@ if groundCtl and !groundControlPermissives {
                         (K:FUELSYSTEM_PUMP_TOGGLE) = #PUMP_INDEX, number#;
                     }
                 </UPDATE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_REAR_SEAT">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <ANIM_DURATION>100</ANIM_DURATION>
+            <LEFT_SINGLE_CODE/>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_LAG>50</ANIM_LAG>
+
+            <TOGGLE_VAR>L:A32NX_#NODE_ID#</TOGGLE_VAR>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#_MOUSE" Node="#NODE_ID#_MOUSE">
+            <UseTemplate Name = "ASOBO_GT_Anim">
+                <NODE_ID>#NODE_ID#</NODE_ID>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <ANIM_CODE>(#TOGGLE_VAR#) 100 *</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <NODE_ID>#NODE_ID#_MOUSE</NODE_ID>
+                <ANIM_NAME>#NODE_ID#_MOUSE</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
+                <HIGHLIGHT_NODE_ID>#NODE_ID#</HIGHLIGHT_NODE_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>rear_seat_slide</WWISE_EVENT>
             </UseTemplate>
         </Component>
     </Template>

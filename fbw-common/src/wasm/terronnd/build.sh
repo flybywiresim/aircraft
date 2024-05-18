@@ -11,7 +11,7 @@ else
   WASMLD_ARGS="--strip-debug"
 fi
 
-set -ex
+set -e
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
@@ -73,6 +73,11 @@ wasm-ld \
   --export malloc \
   --export free \
   --export __wasm_call_ctors \
+  --export mallinfo \
+  --export mchunkit_begin \
+  --export mchunkit_next \
+  --export get_pages_state \
+  --export mark_decommit_pages \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, A320EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
-export function withinEditArea(lla: Coordinates, range: EfisNdRangeValue, mode: EfisNdMode, planCentre: Coordinates, trueHeading: DegreesTrue): boolean {
+export function withinEditArea(lla: Coordinates, range: A320EfisNdRangeValue, mode: EfisNdMode, planCentre: Coordinates, trueHeading: DegreesTrue): boolean {
     const [editAhead, editBehind, editBeside] = calculateEditArea(range, mode);
 
     const dist = Avionics.Utils.computeGreatCircleDistance(planCentre, lla);
@@ -22,7 +22,7 @@ export function withinEditArea(lla: Coordinates, range: EfisNdRangeValue, mode: 
     return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
 }
 
-export function calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
+export function calculateEditArea(range: A320EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
     switch (mode) {
     case EfisNdMode.ARC:
         if (range <= 10) {

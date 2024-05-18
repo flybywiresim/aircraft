@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -14,6 +18,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = undefined;
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
+        this.recMaxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
         this.perfTOTemp = undefined;
@@ -65,6 +70,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = undefined;
         this._minDestFob = undefined;
         this._minDestFobEntered = undefined;
+        this._isBelowMinDestFob = undefined;
         this._defaultRouteFinalTime = undefined;
         this._fuelPredDone = undefined;
         this._fuelPlanningPhase = undefined;
@@ -224,9 +230,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, Fmgc.a320EfisRangeSettings, this);
         this.navigation = new Fmgc.Navigation(this.flightPlanManager, this.facilityLoader);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController, this.navigation.getNavaidTuner());
+        this.efisSymbols = new Fmgc.EfisSymbols(
+            this.flightPlanManager,
+            this.guidanceController,
+            this.navigation.getNavaidTuner(),
+            Fmgc.a320EfisRangeSettings,
+        );
 
         Fmgc.initFmgcLoop(this, this.flightPlanManager);
 
@@ -291,9 +302,9 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.updateCurrentApproach();
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
-                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
+                    this.v1Speed = undefined;
+                    this.vRSpeed = undefined;
+                    this.v2Speed = undefined;
                     const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
@@ -346,6 +357,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
+        this.recMaxCruiseFL = 398;
         this.routeIndex = 0;
         this.resetCoroute();
         this._overridenFlapApproachSpeed = NaN;
@@ -403,6 +415,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeAltFuelEntered = false;
         this._minDestFob = 0;
         this._minDestFobEntered = false;
+        this._isBelowMinDestFob = false;
         this._defaultRouteFinalTime = 45;
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
@@ -582,10 +595,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.unconfirmedVRSpeed = undefined;
             this.unconfirmedV2Speed = undefined;
             this._toFlexChecked = true;
-            // Reset SimVars
-            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
         }
 
         this.arincBusOutputs.forEach((word) => {
@@ -636,6 +645,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateMinimums();
             this.updateIlsCourse();
             this.updatePerfPageAltPredictions();
+            this.checkEFOBBelowMin();
         }
 
         this.A32NXCore.update();
@@ -658,7 +668,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
-
         this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
@@ -1650,9 +1659,6 @@ class FMCMainDisplay extends BaseAirliners {
             const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
             this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
-
-            // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
-            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
         }
 
         if (this.destinationLatitude !== latitude) {
@@ -2184,7 +2190,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
-                if (value < this._minDestFob) {
+                if (value < this._routeAltFuelWeight + this.getRouteFinalFuelWeight()) {
                     this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
@@ -2920,6 +2926,33 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincDiscreteWord3.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
+    get v1Speed() {
+        return this._v1Speed;
+    }
+
+    set v1Speed(speed) {
+        this._v1Speed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get vRSpeed() {
+        return this._vRSpeed;
+    }
+
+    set vRSpeed(speed) {
+        this._vRSpeed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
+    }
+
+    get v2Speed() {
+        return this._v2Speed;
+    }
+
+    set v2Speed(speed) {
+        this._v2Speed = speed;
+        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
+    }
+
     //Needs PR Merge #3082
     trySetV1Speed(s) {
         if (s === FMCMainDisplay.clrValue) {
@@ -2938,7 +2971,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV1Speed = undefined;
         this.v1Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
         return true;
     }
 
@@ -2960,7 +2992,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedVRSpeed = undefined;
         this.vRSpeed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
         return true;
     }
 
@@ -2982,7 +3013,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
         this.unconfirmedV2Speed = undefined;
         this.v2Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
         return true;
     }
 
@@ -4246,29 +4276,47 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     checkEFOBBelowMin() {
+        if (this._fuelPredDone) {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
-        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
 
-        if (EFOBBelMin < this._minDestFob) {
-            if (this.isAnEngineOn()) {
-                setTimeout(() => {
-                    this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === true;
-                    }, () => {
-                        this._EfobBelowMinClr = true;
-                    });
-                }, 180000);
+        if (this._minDestFob) {
+            // round & only use 100kgs precision since thats how it is displayed in fuel pred
+            const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
+            const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+            if (!this._isBelowMinDestFob) {
+                if (destEfob < roundedMinDestFob) {
+                    this._isBelowMinDestFob = true;
+                    // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
+                    if (this.isAnEngineOn()) {
+                        setTimeout(() => {
+                            this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                                return this._EfobBelowMinClr === true;
+                            }, () => {
+                                this._EfobBelowMinClr = true;
+                            });
+                        }, 120000);
+                    } else {
+                        this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                            return this._EfobBelowMinClr === true;
+                        }, () => {
+                            this._EfobBelowMinClr = true;
+                        });
+                    }
+                }
             } else {
-                this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                    return this._EfobBelowMinClr === true;
-                }, () => {
-                    this._EfobBelowMinClr = true;
-                });
+                // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
+                if (roundedMinDestFob) {
+                    if (destEfob - roundedMinDestFob >= 0.3) {
+                        this._isBelowMinDestFob = false;
+                        this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
+                    }
+                }
             }
         }
     }
+}
 
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
@@ -4549,7 +4597,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isPdFormat(s) {
-        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
+        const pd = s.match(/^([^\/]+)\/([\-\+]?[0-9]{1,3}(\.[0-9])?)$/);
         return pd !== null && this.isPlaceFormat(pd[1]);
     }
 
@@ -4882,7 +4930,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: can this be an util?
     getMaxFlCorrected(fl = this.getMaxFL()) {
-        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
+        return fl >= this.recMaxCruiseFL ? this.recMaxCruiseFL : fl;
     }
 
     // only used by trySetMinDestFob
@@ -4996,7 +5044,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getV2Speed() {
-        return SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots");
+        return this.v2Speed;
     }
 
     getTropoPause() {

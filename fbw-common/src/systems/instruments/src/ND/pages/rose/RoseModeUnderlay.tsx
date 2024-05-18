@@ -3,18 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, ComponentProps, Subject, Subscribable, VNode, EventBus } from '@microsoft/msfs-sdk';
-import { Arinc429WordData, MathUtils, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
+import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericTcasEvents } from '../../types/GenericTcasEvents';
 
-export interface RoseModeOverlayProps {
+export interface RoseModeOverlayProps<T extends number> {
     bus: EventBus,
     heading: Subscribable<Arinc429WordData>,
     visible: Subscribable<boolean>,
+    rangeValues: T[],
 }
 
-export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
+export class RoseModeUnderlay<T extends number> extends DisplayComponent<RoseModeOverlayProps<T>> {
     private readonly headingValid = this.props.heading.map((it) => it.isNormalOperation());
 
     private readonly rangeValue = Subject.create<number>(10);
@@ -49,7 +51,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
         const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericTcasEvents>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.rangeValue.set(efisRangeSettings[value]);
+            this.rangeValue.set(this.props.rangeValues[value]);
 
             this.handleRingVisibilities();
         });

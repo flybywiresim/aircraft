@@ -3,7 +3,7 @@ use systems::{
     air_conditioning::{
         acs_controller::{AcscId, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
-        cabin_pressure_controller::CabinPressureController,
+        cabin_pressure_controller::{CabinPressureController, CpcId},
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
@@ -70,7 +70,6 @@ impl A320AirConditioning {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_passengers: &impl NumberOfPassengers,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.pressurization_updater.update(context);
@@ -83,7 +82,7 @@ impl A320AirConditioning {
             engine_fire_push_buttons,
             pneumatic,
             &self.a320_pressurization_system,
-            pressurization_overhead,
+            self.a320_pressurization_system.pressurization_overhead(),
             lgciu,
         );
 
@@ -102,7 +101,6 @@ impl A320AirConditioning {
             self.a320_pressurization_system.update(
                 &context.with_delta(cur_time_step),
                 adirs,
-                pressurization_overhead,
                 engines,
                 lgciu,
                 &self.a320_cabin,
@@ -694,13 +692,14 @@ impl<const ZONES: usize> SimulationElement for A320AirConditioningSystemOverhead
 }
 
 struct A320PressurizationSystem {
-    active_cpc_sys_id: VariableIdentifier,
-
     cpc: [CabinPressureController<A320PressurizationConstants>; 2],
+    cpc_interface: [PressurizationSystemInterfaceUnit; 2],
     outflow_valve: [OutflowValve; 1], // Array to prepare for more than 1 outflow valve in A380
     safety_valve: SafetyValve,
     residual_pressure_controller: ResidualPressureController,
     active_system: usize,
+
+    pressurization_overhead: A320PressurizationOverheadPanel,
 }
 
 impl A320PressurizationSystem {
@@ -709,11 +708,13 @@ impl A320PressurizationSystem {
         let active = 2 - (random % 2);
 
         Self {
-            active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
-
             cpc: [
-                CabinPressureController::new(context),
-                CabinPressureController::new(context),
+                CabinPressureController::new(context, CpcId::Cpc1),
+                CabinPressureController::new(context, CpcId::Cpc2),
+            ],
+            cpc_interface: [
+                PressurizationSystemInterfaceUnit::new(context, 1),
+                PressurizationSystemInterfaceUnit::new(context, 2),
             ],
             // Sub-buses 206PP, 401PP (auto) and 301PP (manual)
             outflow_valve: [OutflowValve::new(
@@ -726,6 +727,8 @@ impl A320PressurizationSystem {
             safety_valve: SafetyValve::new(),
             residual_pressure_controller: ResidualPressureController::new(),
             active_system: active as usize,
+
+            pressurization_overhead: A320PressurizationOverheadPanel::new(context),
         }
     }
 
@@ -733,7 +736,6 @@ impl A320PressurizationSystem {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
-        press_overhead: &A320PressurizationOverheadPanel,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         cabin_simulation: &impl CabinSimulation,
@@ -742,16 +744,17 @@ impl A320PressurizationSystem {
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
 
-        for controller in self.cpc.iter_mut() {
+        for (id, controller) in self.cpc.iter_mut().enumerate() {
             controller.update(
                 context,
                 adirs,
                 engines,
                 lgciu_gears_compressed,
-                press_overhead,
+                &self.pressurization_overhead,
                 cabin_simulation,
                 self.outflow_valve.iter().collect(),
                 &self.safety_valve,
+                self.active_system - 1 == id,
             );
         }
 
@@ -759,7 +762,7 @@ impl A320PressurizationSystem {
             context,
             engines,
             self.outflow_valve[0].open_amount(),
-            press_overhead.is_in_man_mode(),
+            self.pressurization_overhead.is_in_man_mode(),
             lgciu_gears_compressed,
             self.cpc[self.active_system - 1].cabin_delta_p(),
         );
@@ -770,19 +773,23 @@ impl A320PressurizationSystem {
                 valve.update(
                     context,
                     &self.residual_pressure_controller,
-                    press_overhead.is_in_man_mode(),
+                    self.pressurization_overhead.is_in_man_mode(),
                 )
             })
-        } else if press_overhead.is_in_man_mode() {
+        } else if self.pressurization_overhead.is_in_man_mode() {
             self.outflow_valve.iter_mut().for_each(|valve| {
-                valve.update(context, press_overhead, press_overhead.is_in_man_mode())
+                valve.update(
+                    context,
+                    &self.pressurization_overhead,
+                    self.pressurization_overhead.is_in_man_mode(),
+                )
             })
         } else {
             self.outflow_valve.iter_mut().for_each(|valve| {
                 valve.update(
                     context,
                     &self.cpc[self.active_system - 1],
-                    press_overhead.is_in_man_mode(),
+                    self.pressurization_overhead.is_in_man_mode(),
                 )
             });
         }
@@ -791,19 +798,29 @@ impl A320PressurizationSystem {
             .update(context, &self.cpc[self.active_system - 1]);
 
         self.switch_active_system();
+
+        for (cpc, cpc_i) in self.cpc.iter().zip(self.cpc_interface.iter_mut()) {
+            cpc_i.update(cpc);
+        }
+
+        self.pressurization_overhead.set_mode_sel_fault(
+            self.cpc.iter().all(|controller| controller.has_fault())
+                && !self.pressurization_overhead.is_in_man_mode(),
+        );
     }
 
     fn switch_active_system(&mut self) {
-        if self
-            .cpc
-            .iter_mut()
-            .any(|controller| controller.should_switch_cpc())
-        {
-            self.active_system = if self.active_system == 1 { 2 } else { 1 };
-        }
-        for controller in &mut self.cpc {
-            if controller.should_switch_cpc() {
-                controller.reset_cpc_switch()
+        // If both CPCs are failed we don't need to swap the system
+        if !self.cpc.iter().all(|controller| controller.has_fault()) {
+            if self.cpc[self.active_system - 1].should_switch_cpc()
+                || self.cpc[self.active_system - 1].has_fault()
+            {
+                self.active_system = if self.active_system == 1 { 2 } else { 1 };
+            }
+            for controller in &mut self.cpc {
+                if controller.should_switch_cpc() {
+                    controller.reset_cpc_switch()
+                }
             }
         }
     }
@@ -825,6 +842,10 @@ impl A320PressurizationSystem {
     fn safety_valve_open_amount(&self) -> Ratio {
         self.safety_valve.open_amount()
     }
+
+    fn pressurization_overhead(&self) -> &A320PressurizationOverheadPanel {
+        &self.pressurization_overhead
+    }
 }
 
 impl CabinAltitude for A320PressurizationSystem {
@@ -834,15 +855,53 @@ impl CabinAltitude for A320PressurizationSystem {
 }
 
 impl SimulationElement for A320PressurizationSystem {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_cpc_sys_id, self.active_system);
-    }
-
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cpc, visitor);
+        accept_iterable!(self.cpc_interface, visitor);
         accept_iterable!(self.outflow_valve, visitor);
+        self.pressurization_overhead.accept(visitor);
+        self.safety_valve.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+struct PressurizationSystemInterfaceUnit {
+    discrete_word_id: VariableIdentifier,
+
+    discrete_word: Arinc429Word<u32>,
+}
+
+impl PressurizationSystemInterfaceUnit {
+    fn new(context: &mut InitContext, cpc_id: u8) -> Self {
+        Self {
+            discrete_word_id: context.get_identifier(format!("PRESS_CPC_{}_DISCRETE_WORD", cpc_id)),
+
+            discrete_word: Arinc429Word::new(0, SignStatus::NoComputedData),
+        }
+    }
+
+    fn update(&mut self, cpc: &CabinPressureController<A320PressurizationConstants>) {
+        if cpc.has_fault() {
+            self.discrete_word = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
+        }
+
+        self.discrete_word.set_bit(11, cpc.is_active());
+        self.discrete_word.set_bit(12, cpc.has_fault());
+        self.discrete_word
+            .set_bit(13, cpc.is_excessive_residual_pressure());
+        self.discrete_word.set_bit(14, cpc.is_excessive_alt());
+        self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
+        self.discrete_word
+            .set_bit(17, !cpc.landing_elevation_is_auto());
+    }
+}
+
+impl SimulationElement for PressurizationSystemInterfaceUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.discrete_word_id, self.discrete_word);
     }
 }
 
@@ -888,13 +947,17 @@ impl A320PressurizationOverheadPanel {
         Self {
             mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
             man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),
-            ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -2000.),
+            ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -4000.),
             ditching: NormalOnPushButton::new_normal(context, "PRESS_DITCHING"),
         }
     }
 
     fn man_vs_switch_position(&self) -> usize {
         self.man_vs_ctl_switch.position()
+    }
+
+    fn set_mode_sel_fault(&mut self, cpc_dual_failure: bool) {
+        self.mode_sel.set_fault(cpc_dual_failure);
     }
 }
 
@@ -935,7 +998,7 @@ impl PressurizationOverheadShared for A320PressurizationOverheadPanel {
 
     fn ldg_elev_is_auto(&self) -> bool {
         let margin = 100.;
-        (self.ldg_elev_knob.value() + 2000.).abs() < margin
+        self.ldg_elev_knob.value() < -(2000. + margin)
     }
 
     fn ldg_elev_knob_value(&self) -> f64 {
@@ -1455,7 +1518,6 @@ mod tests {
         engine_fire_push_buttons: TestEngineFirePushButtons,
         payload: TestPayload,
         pneumatic: TestPneumatic,
-        pressurization_overhead: A320PressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         powered_dc_source_1: TestElectricitySource,
@@ -1487,7 +1549,6 @@ mod tests {
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 payload: TestPayload {},
                 pneumatic: TestPneumatic::new(context),
-                pressurization_overhead: A320PressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 powered_dc_source_1: TestElectricitySource::powered(
@@ -1586,7 +1647,6 @@ mod tests {
                 &self.engine_fire_push_buttons,
                 &self.payload,
                 &self.pneumatic,
-                &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],
             );
         }
@@ -1595,7 +1655,6 @@ mod tests {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.a320_cabin_air.accept(visitor);
             self.pneumatic.accept(visitor);
-            self.pressurization_overhead.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1979,6 +2038,7 @@ mod tests {
 
     mod a320_pressurization_tests {
         use super::*;
+        use systems::failures::FailureType;
 
         #[test]
         fn conversion_from_pressure_to_altitude_works() {
@@ -2172,7 +2232,6 @@ mod tests {
         #[test]
         fn cpc_switches_if_man_mode_is_engaged_for_at_least_10_seconds() {
             let mut test_bed = test_bed();
-
             assert_eq!(test_bed.active_system(), 1);
 
             test_bed = test_bed
@@ -2181,7 +2240,6 @@ mod tests {
                 .run_with_delta_of(Duration::from_secs_f64(11.))
                 .command_mode_sel_pb_auto()
                 .iterate(2);
-
             assert_eq!(test_bed.active_system(), 2);
         }
 
@@ -2245,7 +2303,7 @@ mod tests {
 
             assert_eq!(test_bed.landing_elevation(), Length::new::<foot>(1000.));
 
-            test_bed = test_bed.command_ldg_elev_knob_value(-2000.).and_run();
+            test_bed = test_bed.command_ldg_elev_knob_value(-4000.).and_run();
 
             assert_eq!(test_bed.landing_elevation(), Length::default());
         }
@@ -2669,6 +2727,52 @@ mod tests {
                         A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
                     )
             );
+        }
+
+        #[test]
+        fn outflow_valve_does_not_move_when_failure_active() {
+            let mut test_bed = test_bed().iterate(10);
+
+            test_bed.fail(FailureType::OutflowValveFault);
+
+            test_bed = test_bed
+                .memorize_outflow_valve_open_amount()
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(7000.), Length::new::<foot>(14000.))
+                .iterate(10);
+
+            assert!(
+                (test_bed.outflow_valve_open_amount()
+                    - test_bed.initial_outflow_valve_open_amount())
+                .abs()
+                    < Ratio::new::<percent>(1.)
+            );
+        }
+
+        #[test]
+        fn safety_valve_opens_when_failure_active() {
+            let mut test_bed = test_bed().iterate(10);
+
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
+
+            test_bed.fail(FailureType::SafetyValveFault);
+
+            test_bed = test_bed.iterate(10);
+
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+        }
+
+        #[test]
+        fn cabin_decompresses_when_failure() {
+            let mut test_bed = test_bed_in_cruise().iterate(10);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
+
+            test_bed.fail(FailureType::RapidDecompression);
+
+            test_bed = test_bed.iterate(10);
+
+            assert!(test_bed.cabin_vs().abs() > Velocity::new::<foot_per_minute>(100.));
         }
 
         mod cabin_pressure_controller_tests {

@@ -12,6 +12,8 @@ export enum TransceiverType {
     RADIO_VHF,
     VOR,
     ILS,
+    GLS,
+    MLS,
     ADF
 }
 

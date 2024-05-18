@@ -19,7 +19,7 @@ export const CruisePage = () => {
     const engine3FuelUsedDisplay = fuelForDisplay(engine2FuelUsed, unit, 1, 5);
     const engine4FuelUsedDisplay = engine3FuelUsedDisplay;
 
-    const engineTotalFuelUsedDisplay = engine1FuelUsedDisplay + engine2FuelUsedDisplay + engine3FuelUsedDisplay + engine4FuelUsedDisplay; 
+    const engineTotalFuelUsedDisplay = engine1FuelUsedDisplay + engine2FuelUsedDisplay + engine3FuelUsedDisplay + engine4FuelUsedDisplay;
 
     const [engine1FuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // KG/HR
     const [engine2FuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 1000);
@@ -33,7 +33,7 @@ export const CruisePage = () => {
 
     return (
         <>
-            <PageTitle showMore={false} x={5} y={28}>CRUISE</PageTitle>
+            <PageTitle x={6} y={29}>CRUISE</PageTitle>
             <A380XCruise />
 
             {/* Fuel Flow */}

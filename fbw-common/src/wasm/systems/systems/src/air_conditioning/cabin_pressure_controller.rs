@@ -1,11 +1,14 @@
 use crate::{
+    failures::{Failure, FailureType},
     shared::{
-        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, pid::PidController, AverageExt,
-        CabinSimulation, ControllerSignal, EngineCorrectedN1,
+        arinc429::{Arinc429Word, SignStatus},
+        low_pass_filter::LowPassFilter,
+        pid::PidController,
+        AverageExt, CabinSimulation, ControllerSignal, EngineCorrectedN1, Resolution,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -15,7 +18,7 @@ use super::{
     PressurizationOverheadShared,
 };
 
-use std::{marker::PhantomData, time::Duration};
+use std::{fmt::Display, marker::PhantomData, time::Duration};
 use uom::si::{
     f64::*,
     length::{foot, meter},
@@ -24,20 +27,34 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
+#[derive(Eq, PartialEq, Clone, Copy)]
+pub enum CpcId {
+    Cpc1,
+    Cpc2,
+}
+
+impl Display for CpcId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Cpc1 => write!(f, "1"),
+            Self::Cpc2 => write!(f, "2"),
+        }
+    }
+}
+
 pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
     cabin_vs_id: VariableIdentifier,
     cabin_delta_pressure_id: VariableIdentifier,
-    fwc_excess_cabin_altitude_id: VariableIdentifier,
-    fwc_excess_residual_pressure_id: VariableIdentifier,
-    fwc_low_diff_pressure_id: VariableIdentifier,
     outflow_valve_open_percentage_id: VariableIdentifier,
     safety_valve_open_percentage_id: VariableIdentifier,
+    landing_elevation_id: VariableIdentifier,
 
     auto_landing_elevation_id: VariableIdentifier,
     destination_qnh_id: VariableIdentifier,
 
     pressure_schedule_manager: Option<PressureScheduleManager>,
+    manual_partition: Option<CpcManualPartition>,
     outflow_valve_controller: OutflowValveController,
     exterior_pressure: LowPassFilter<Pressure>,
     exterior_flight_altitude: Length,
@@ -53,13 +70,16 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     safety_valve_open_amount: Ratio,
 
     landing_elevation: Length,
+    landing_elevation_is_auto: bool,
     departure_elevation: Length,
     destination_qnh: Pressure,
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
 
+    is_active: bool,
     is_initialised: bool,
+    failure: Failure,
     constants: PhantomData<C>,
 }
 
@@ -75,19 +95,19 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
+    const OFV_CONTROLLER_KP: f64 = 0.0001;
+    const OFV_CONTROLLER_KI: f64 = 6.5;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, id: CpcId) -> Self {
         Self {
-            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
-            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_altitude_id: context.get_identifier(format!("PRESS_CPC_{}_CABIN_ALTITUDE", id)),
+            cabin_vs_id: context.get_identifier(format!("PRESS_CPC_{}_CABIN_VS", id)),
             cabin_delta_pressure_id: context
-                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
-            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
-            fwc_excess_residual_pressure_id: context
-                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
-            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
+                .get_identifier(format!("PRESS_CPC_{}_CABIN_DELTA_PRESSURE", id)),
             outflow_valve_open_percentage_id: context
-                .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+                .get_identifier(format!("PRESS_CPC_{}_OUTFLOW_VALVE_OPEN_PERCENTAGE", id)),
+            landing_elevation_id: context
+                .get_identifier(format!("PRESS_CPC_{}_LANDING_ELEVATION", id)),
             safety_valve_open_percentage_id: context
                 .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
 
@@ -95,7 +115,15 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
-            outflow_valve_controller: OutflowValveController::new(),
+            manual_partition: if id == CpcId::Cpc1 {
+                Some(CpcManualPartition::new(context))
+            } else {
+                None
+            },
+            outflow_valve_controller: OutflowValveController::new(
+                Self::OFV_CONTROLLER_KP,
+                Self::OFV_CONTROLLER_KI,
+            ),
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
@@ -118,13 +146,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             safety_valve_open_amount: Ratio::new::<percent>(0.),
 
             landing_elevation: Length::default(),
+            landing_elevation_is_auto: false,
             departure_elevation: Length::default(),
             destination_qnh: Pressure::default(),
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
 
+            is_active: false,
             is_initialised: false,
+            failure: Failure::new(FailureType::CpcFault(id)),
             constants: PhantomData,
         }
     }
@@ -139,12 +170,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         cabin_simulation: &impl CabinSimulation,
         outflow_valve: Vec<&OutflowValve>,
         safety_valve: &SafetyValve,
+        is_active: bool,
     ) {
         let (adirs_airspeed, _) = self.adirs_values_calculation(adirs);
 
         self.cabin_pressure = cabin_simulation.cabin_pressure();
 
-        if !press_overhead.ldg_elev_is_auto() {
+        self.landing_elevation_is_auto = press_overhead.ldg_elev_is_auto();
+        if !self.landing_elevation_is_auto {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
         }
 
@@ -153,7 +186,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 context,
                 adirs_airspeed.unwrap_or_default(),
                 self.exterior_pressure.output(),
-                engines,
+                &engines,
                 lgciu_gears_compressed,
                 self.exterior_flight_altitude,
                 self.exterior_vertical_speed.output(),
@@ -172,14 +205,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.reference_pressure = new_reference_pressure;
         self.departure_elevation = self.calculate_departure_elevation();
 
-        self.outflow_valve_controller.update(
-            context,
-            self.cabin_vertical_speed,
-            self.cabin_target_vs,
-            press_overhead,
-            self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
-            self.is_ground() && self.should_open_outflow_valve(),
-        );
+        if !self.has_fault() {
+            self.outflow_valve_controller.update(
+                context,
+                self.cabin_vertical_speed,
+                self.cabin_target_vs,
+                press_overhead,
+                self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
+                self.is_ground() && self.should_open_outflow_valve(),
+            );
+        }
 
         self.outflow_valve_open_amount = outflow_valve
             .iter()
@@ -196,7 +231,18 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.man_mode_duration = Duration::from_secs(0)
         }
 
+        if let Some(partition) = self.manual_partition.take() {
+            self.manual_partition = Some(partition.update(
+                self.cabin_altitude(),
+                self.cabin_delta_p(),
+                self.cabin_vertical_speed(),
+                self.is_excessive_alt(),
+                self.outflow_valve_open_amount,
+            ));
+        }
+
         self.is_in_man_mode = press_overhead.is_in_man_mode();
+        self.is_active = is_active;
     }
 
     /// Separate update function for exterior pressure, exterior altitude and exterior vertical speed
@@ -464,6 +510,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.pressure_schedule_manager
             .as_ref()
             .map_or(false, |manager| manager.should_switch_cpc())
+            || self.has_fault()
     }
 
     pub fn should_open_outflow_valve(&self) -> bool {
@@ -486,6 +533,18 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         )
     }
 
+    pub fn is_active(&self) -> bool {
+        self.is_active
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.failure.is_active()
+    }
+
+    pub fn landing_elevation_is_auto(&self) -> bool {
+        self.landing_elevation_is_auto
+    }
+
     pub fn cabin_vertical_speed(&self) -> Velocity {
         // When on the ground with outflow valve open, V/S is always zero
         // Vertical speed word range is from -6400 to +6400 fpm (AMM)
@@ -502,20 +561,67 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     // FWC warning signals
-    pub(super) fn is_excessive_alt(&self) -> bool {
+    pub fn is_excessive_alt(&self) -> bool {
         self.cabin_alt > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
             && self.cabin_alt > (self.departure_elevation + Length::new::<foot>(1000.))
             && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1000.))
     }
 
-    pub(super) fn is_excessive_residual_pressure(&self) -> bool {
+    pub fn is_excessive_residual_pressure(&self) -> bool {
         self.cabin_delta_p() > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
     }
 
-    pub(super) fn is_low_diff_pressure(&self) -> bool {
+    pub fn is_low_diff_pressure(&self) -> bool {
         self.cabin_delta_p() < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
             && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
+    }
+
+    fn cabin_delta_p_out(&self) -> Pressure {
+        // Correct format for ARINC delta P
+        let delta_p_psi = self
+            .cabin_delta_p()
+            .get::<psi>()
+            .clamp(-6., 12.)
+            .resolution(0.075);
+        Pressure::new::<psi>(delta_p_psi)
+    }
+
+    fn cabin_altitude_out(&self) -> Length {
+        // Correct format for ARINC altitude
+        let altitude_ft = self
+            .cabin_altitude()
+            .get::<foot>()
+            .clamp(-15000., 30000.)
+            .resolution(16.);
+        Length::new::<foot>(altitude_ft)
+    }
+
+    fn cabin_vertical_speed_out(&self) -> Velocity {
+        let vertical_speed_fpm = self
+            .cabin_vertical_speed()
+            .get::<foot_per_minute>()
+            .clamp(-6400., 6400.)
+            .resolution(50.);
+        Velocity::new::<foot_per_minute>(vertical_speed_fpm)
+    }
+
+    fn outflow_valve_open_amount_out(&self) -> Ratio {
+        let outflow_valve_position_pct = self
+            .outflow_valve_open_amount
+            .get::<percent>()
+            .clamp(0., 100.)
+            .resolution(1.);
+        Ratio::new::<percent>(outflow_valve_position_pct)
+    }
+
+    fn landing_elevation_out(&self) -> Length {
+        let landing_elevation_ft = self
+            .landing_elevation
+            .get::<foot>()
+            .clamp(-2000., 14000.)
+            .resolution(32.);
+        Length::new::<foot>(landing_elevation_ft)
     }
 
     pub fn landing_elevation(&self) -> Length {
@@ -570,29 +676,35 @@ impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
 
 impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        // Add check for active cpc only
-        writer.write(&self.cabin_altitude_id, self.cabin_altitude());
-        writer.write(
-            &self.outflow_valve_open_percentage_id,
-            self.outflow_valve_open_amount,
-        );
+        let ssm = if self.failure.is_active() {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+
+        // Safety valve open percentage is not sent by the CPC in real life
         writer.write(
             &self.safety_valve_open_percentage_id,
             self.safety_valve_open_amount,
         );
-        writer.write(
-            &self.cabin_vs_id,
-            self.cabin_vertical_speed().get::<foot_per_minute>(),
-        );
-        writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_p());
 
-        // FWC warning signals
-        writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
-        writer.write(
-            &self.fwc_excess_residual_pressure_id,
-            self.is_excessive_residual_pressure(),
+        writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
+        writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
+        writer.write_arinc429(
+            &self.outflow_valve_open_percentage_id,
+            self.outflow_valve_open_amount_out(),
+            ssm,
         );
-        writer.write(&self.fwc_low_diff_pressure_id, self.is_low_diff_pressure());
+        writer.write_arinc429(
+            &self.cabin_vs_id,
+            self.cabin_vertical_speed_out().get::<foot_per_minute>(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.landing_elevation_id,
+            self.landing_elevation_out(),
+            ssm,
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -601,9 +713,18 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
         self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        if let Some(ref mut partition) = self.manual_partition {
+            partition.accept(visitor);
+        }
+
+        visitor.visit(self);
+    }
 }
 
-struct OutflowValveController {
+pub struct OutflowValveController {
     is_in_man_mode: bool,
     open_allowed: bool,
     should_open: bool,
@@ -611,17 +732,16 @@ struct OutflowValveController {
 }
 
 impl OutflowValveController {
-    fn new() -> Self {
+    pub fn new(kp: f64, ki: f64) -> Self {
         Self {
-            //TODO: add ID for multiple OFV
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
-            pid: PidController::new(0.0001, 6.5, 0., 0., 100., 0., 1.),
+            pid: PidController::new(kp, ki, 0., 0., 100., 0., 1.),
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         cabin_vertical_speed: Velocity,
@@ -664,7 +784,80 @@ impl ControllerSignal<OutflowValveSignal> for OutflowValveController {
     }
 }
 
-enum PressureScheduleManager {
+/// The manual partition of the CPC1 only transmits cabin pressure, vertical speed, OFV open amount
+/// and the signal for excessive cabin altitude. Here we add the cabin altitude and delta pressure as
+/// neither the SDAC nor the DMC are modelled. When that is done, these should be removed from here.
+struct CpcManualPartition {
+    cabin_altitude_man_id: VariableIdentifier,
+    cabin_delta_p_man_id: VariableIdentifier,
+    cabin_vertical_speed_man_id: VariableIdentifier,
+    fwc_excessive_cabin_altitude_man_id: VariableIdentifier,
+    outflow_valve_open_amount_man_id: VariableIdentifier,
+
+    cabin_altitude: Length,
+    cabin_delta_p: Pressure,
+    cabin_vertical_speed: Velocity,
+    fwc_excessive_cabin_altitude: bool,
+    outflow_valve_open_amount: Ratio,
+}
+
+impl CpcManualPartition {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            cabin_altitude_man_id: context.get_identifier("PRESS_MAN_CABIN_ALTITUDE".to_owned()),
+            cabin_delta_p_man_id: context
+                .get_identifier("PRESS_MAN_CABIN_DELTA_PRESSURE".to_owned()),
+            cabin_vertical_speed_man_id: context.get_identifier("PRESS_MAN_CABIN_VS".to_owned()),
+            fwc_excessive_cabin_altitude_man_id: context
+                .get_identifier("PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE".to_owned()),
+            outflow_valve_open_amount_man_id: context
+                .get_identifier("PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+
+            cabin_altitude: Length::default(),
+            cabin_delta_p: Pressure::default(),
+            cabin_vertical_speed: Velocity::default(),
+            fwc_excessive_cabin_altitude: false,
+            outflow_valve_open_amount: Ratio::default(),
+        }
+    }
+
+    fn update(
+        mut self,
+        cabin_altitude: Length,
+        cabin_delta_pressure: Pressure,
+        cabin_vertical_speed: Velocity,
+        fwc_excessive_cabin_altitude: bool,
+        outflow_valve_open_amount: Ratio,
+    ) -> Self {
+        self.cabin_altitude = cabin_altitude;
+        self.cabin_delta_p = cabin_delta_pressure;
+        self.cabin_vertical_speed = cabin_vertical_speed;
+        self.fwc_excessive_cabin_altitude = fwc_excessive_cabin_altitude;
+        self.outflow_valve_open_amount = outflow_valve_open_amount;
+        self
+    }
+}
+
+impl SimulationElement for CpcManualPartition {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.cabin_altitude_man_id, self.cabin_altitude);
+        writer.write(&self.cabin_delta_p_man_id, self.cabin_delta_p);
+        writer.write(
+            &self.cabin_vertical_speed_man_id,
+            self.cabin_vertical_speed.get::<foot_per_minute>(),
+        );
+        writer.write(
+            &self.fwc_excessive_cabin_altitude_man_id,
+            self.fwc_excessive_cabin_altitude,
+        );
+        writer.write(
+            &self.outflow_valve_open_amount_man_id,
+            self.outflow_valve_open_amount,
+        );
+    }
+}
+
+pub enum PressureScheduleManager {
     Ground(PressureSchedule<Ground>),
     TakeOff(PressureSchedule<TakeOff>),
     ClimbInternal(PressureSchedule<ClimbInternal>),
@@ -674,16 +867,16 @@ enum PressureScheduleManager {
 }
 
 impl PressureScheduleManager {
-    fn new() -> Self {
+    pub fn new() -> Self {
         PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
     }
 
-    fn update(
+    pub fn update(
         mut self,
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
         exterior_flight_altitude: Length,
         exterior_vertical_speed: Velocity,
@@ -722,7 +915,7 @@ impl PressureScheduleManager {
         self
     }
 
-    fn should_open_outflow_valve(&self) -> bool {
+    pub fn should_open_outflow_valve(&self) -> bool {
         match self {
             PressureScheduleManager::Ground(schedule) => schedule.should_open_outflow_valve(),
             _ => false,
@@ -766,7 +959,7 @@ macro_rules! transition_with_ctor {
 }
 
 #[derive(Copy, Clone)]
-struct PressureSchedule<S> {
+pub struct PressureSchedule<S> {
     timer: Duration,
     pressure_schedule: S,
 }
@@ -791,7 +984,7 @@ impl<S> PressureSchedule<S> {
 }
 
 #[derive(Copy, Clone)]
-struct Ground {
+pub struct Ground {
     cpc_switch_reset: bool,
 }
 
@@ -821,7 +1014,7 @@ impl PressureSchedule<Ground> {
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -859,14 +1052,14 @@ transition_with_ctor!(DescentInternal, Ground, Ground::reset);
 transition_with_ctor!(Abort, Ground, Ground::reset);
 
 #[derive(Copy, Clone)]
-struct TakeOff;
+pub struct TakeOff;
 
 impl PressureSchedule<TakeOff> {
     fn step(
         self: PressureSchedule<TakeOff>,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -889,7 +1082,7 @@ impl PressureSchedule<TakeOff> {
 transition!(Ground, TakeOff);
 
 #[derive(Copy, Clone)]
-struct ClimbInternal;
+pub struct ClimbInternal;
 
 impl PressureSchedule<ClimbInternal> {
     fn step(
@@ -937,7 +1130,7 @@ transition!(DescentInternal, ClimbInternal);
 transition!(Abort, ClimbInternal);
 
 #[derive(Copy, Clone)]
-struct Cruise;
+pub struct Cruise;
 
 impl PressureSchedule<Cruise> {
     fn step(
@@ -969,7 +1162,7 @@ impl PressureSchedule<Cruise> {
 transition!(ClimbInternal, Cruise);
 
 #[derive(Copy, Clone)]
-struct DescentInternal;
+pub struct DescentInternal;
 
 impl PressureSchedule<DescentInternal> {
     fn step(
@@ -999,7 +1192,7 @@ transition!(ClimbInternal, DescentInternal);
 transition!(Cruise, DescentInternal);
 
 #[derive(Copy, Clone)]
-struct Abort;
+pub struct Abort;
 
 impl PressureSchedule<Abort> {
     fn step(
@@ -1317,7 +1510,7 @@ mod tests {
             let mut test_aircraft = Self {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                cpc: CabinPressureController::new(context),
+                cpc: CabinPressureController::new(context, CpcId::Cpc1),
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
@@ -1448,6 +1641,7 @@ mod tests {
                 &self.cabin_air_simulation,
                 vec![&self.outflow_valve],
                 &self.safety_valve,
+                true,
             );
         }
     }

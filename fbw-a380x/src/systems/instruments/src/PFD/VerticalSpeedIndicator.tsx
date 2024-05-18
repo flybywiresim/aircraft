@@ -1,11 +1,11 @@
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
 interface VerticalSpeedIndicatorProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     instrument: BaseInstrument,
     filteredRadioAltitude: Subscribable<number>,
 }
@@ -50,7 +50,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('tcasState').whenChanged().handle((s) => {
             this.tcasState.tcasState = s;

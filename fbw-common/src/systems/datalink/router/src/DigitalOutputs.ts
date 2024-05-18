@@ -1,8 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { CpdlcMessage, DatalinkModeCode, DatalinkStatusCode, FreetextMessage } from '@datalink/common';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { CpdlcMessage, DatalinkModeCode, DatalinkStatusCode, FreetextMessage } from '../../common/src';
 import { RouterAtcAocMessages, RouterFmsMessages } from './databus';
 
 export class DigitalOutputs {

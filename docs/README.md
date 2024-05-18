@@ -59,3 +59,12 @@ aircraft (repo)                                  <flybywire monorepo>
     └── heapdump
 └── ...                                          <repo config files>
 ```
+
+## Branches
+
+Pull request branches should reside on the developer's fork of the main repository. It is not necessary to push them to the main `flybywiresim/aircraft` repository as GitHub offers the ability for all maintainers to push to pull request branches even when they reside in another user's fork.
+
+Branches to be retained on the main repository are:
+- `master` - The source of truth and main development branch,
+- release branches (e.g. `v0.12`),
+- in special cases some long-running branches requiring collaboration (make a proposal in the #development channel on Discord).

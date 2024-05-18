@@ -22,22 +22,23 @@ use systems::{
         EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource,
         GeneratorControlUnit, RamAirTurbine, StaticInverter, TransformerRectifier,
     },
+    engine::Engine,
     overhead::{
-        AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
-        NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
+        AutoOffFaultPushButton, FaultDisconnectReleasePushButton, FaultIndication,
+        MomentaryPushButton, NormalAltnFaultPushButton, OnOffAvailablePushButton,
+        OnOffFaultPushButton,
     },
     shared::{
         update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AuxiliaryPowerUnitElectrical,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        EmergencyElectricalState, EngineFirePushButtons, LatchedTrueLogicGate, LgciuWeightOnWheels,
         RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        Write,
+        VariableIdentifier, Write,
     },
 };
-use systems::{shared::LatchedTrueLogicGate, simulation::VariableIdentifier};
 
 pub(super) struct A380Electrical {
     galley_is_shed_id: VariableIdentifier,
@@ -54,6 +55,7 @@ pub(super) struct A380Electrical {
     ram_air_turbine: RamAirTurbine,
     rat_controller: A380RamAirTurbineController,
     tefo_condition: LatchedTrueLogicGate,
+    emer_config: LatchedTrueLogicGate,
 }
 impl A380Electrical {
     const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
@@ -89,6 +91,7 @@ impl A380Electrical {
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
             tefo_condition: LatchedTrueLogicGate::default(),
+            emer_config: LatchedTrueLogicGate::default(),
         }
     }
 
@@ -101,7 +104,7 @@ impl A380Electrical {
         emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
         lgciu1: &impl LgciuWeightOnWheels,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
@@ -113,6 +116,7 @@ impl A380Electrical {
             apu,
             engine_fire_push_buttons,
             engines,
+            adirs,
         );
 
         self.emergency_elec
@@ -180,11 +184,12 @@ impl A380Electrical {
         let flt_condition = (!context.is_on_ground() && dc_ess_powered)
             && (adirs.low_speed_warning_1_104kts(1) || adirs.low_speed_warning_1_104kts(3));
 
-        // TEFO(total engine failure) = all engines not running and in flight. Discrete signal from EEC
-        // Represents the value of relay 16XR1 and 16XR2
         if emer_evac {
             self.tefo_condition.reset();
+            self.emer_config.reset();
         }
+        // TEFO(total engine failure) = all engines not running and in flight. Discrete signal from EEC
+        // Represents the value of relay 16XR1 and 16XR2
         self.tefo_condition.update(
             (!engines
                 .iter()
@@ -192,6 +197,21 @@ impl A380Electrical {
                 || !dc_ess_powered
                     && !electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(2)]))
                 && flt_condition,
+        );
+
+        let dc_ess_hot_is_powered =
+            electricity.any_is_powered(&[ElectricalBusType::DirectCurrentHot(3)]);
+
+        // Relays 24XR1 and 24XR2 - EMER/NORM CTL, 1/2
+        self.emer_config
+            .update(dc_ess_hot_is_powered && self.rat_controller.should_deploy());
+
+        self.direct_current.update_subbuses(
+            context,
+            electricity,
+            &self.alternating_current,
+            flt_condition,
+            self.emer_config.output(),
         );
     }
 
@@ -272,6 +292,10 @@ impl A380Electrical {
         self.alternating_current.gen_contactor_open(number)
     }
 
+    pub fn gen_drive_connected(&self, number: usize) -> bool {
+        self.alternating_current.gen_drive_connected(number)
+    }
+
     pub fn in_emergency_elec(&self) -> bool {
         self.emergency_elec.is_in_emergency_elec()
     }
@@ -309,7 +333,7 @@ trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
 
 pub(super) struct A380ElectricalOverheadPanel {
     batteries: [AutoOffFaultPushButton; 4],
-    idgs: [FaultReleasePushButton; 4],
+    idgs: [FaultDisconnectReleasePushButton; 4],
     generators: [OnOffFaultPushButton; 4],
     apu_gens: [OnOffFaultPushButton; 2],
     bus_tie: AutoOffFaultPushButton,
@@ -327,8 +351,9 @@ impl A380ElectricalOverheadPanel {
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_ESS"),
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_APU"),
             ],
-            idgs: [1, 2, 3, 4]
-                .map(|i| FaultReleasePushButton::new_in(context, &format!("ELEC_IDG_{i}"))),
+            idgs: [1, 2, 3, 4].map(|i| {
+                FaultDisconnectReleasePushButton::new_in(context, &format!("ELEC_IDG_{i}"))
+            }),
             generators: [1, 2, 3, 4]
                 .map(|i| OnOffFaultPushButton::new_on(context, &format!("ELEC_ENG_GEN_{i}"))),
             apu_gens: [1, 2]
@@ -356,6 +381,10 @@ impl A380ElectricalOverheadPanel {
             .for_each(|(index, gen)| {
                 gen.set_fault(electrical.gen_contactor_open(index + 1) && gen.is_on());
             });
+
+        self.idgs.iter_mut().enumerate().for_each(|(index, drive)| {
+            drive.set_disconnected(!electrical.gen_drive_connected(index + 1))
+        });
     }
 
     pub fn external_power_is_available(&self, number: usize) -> bool {
@@ -545,23 +574,28 @@ mod a380_electrical_circuit_tests {
         electrical::{
             ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
             Electricity, ElectricitySource, ExternalPowerSource, Potential, ProvideFrequency,
-            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
         },
         failures::FailureType,
         shared::{
             ApuAvailable, ApuMaster, ApuStart, ContactorSignal, ControllerSignal,
-            ElectricalBusType, ElectricalBuses, PotentialOrigin,
+            ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2,
+            EngineUncorrectedN2, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft,
         },
     };
-
     use uom::si::{
-        angular_velocity::revolution_per_minute, electric_potential::volt, frequency::hertz,
-        length::foot, mass_density::slug_per_cubic_foot, ratio::percent,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        angular_velocity::revolution_per_minute,
+        electric_potential::volt,
+        frequency::hertz,
+        length::foot,
+        mass_density::slug_per_cubic_foot,
+        ratio::{percent, ratio},
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     #[test]
@@ -714,7 +748,9 @@ mod a380_electrical_circuit_tests {
             .dc_ess_bus_output()
             .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
         assert!(test_bed.dc_eha_bus_output().is_unpowered());
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
@@ -778,7 +814,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(1)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -855,7 +893,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -919,7 +959,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -995,7 +1037,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1072,7 +1116,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1150,7 +1196,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1224,7 +1272,159 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
+        assert!(test_bed
+            .hot_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .hot_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .hot_bus_output(3)
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
+        assert!(test_bed
+            .hot_bus_output(4)
+            .is_single(PotentialOrigin::Battery(4)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
+    #[test]
+    fn distribution_on_ground_outer_engine_and_same_side_apu_gen() {
+        let test_bed = test_bed_with()
+            .on_the_ground()
+            .all_bats_auto()
+            .running_engine(4)
+            .running_apu()
+            .and()
+            .apu_gen_off(1)
+            .run_waiting_for(Duration::from_secs(5));
+
+        for i in 1..=3 {
+            assert!(test_bed
+                .ac_bus_output(i)
+                .is_single(PotentialOrigin::ApuGenerator(2)));
+        }
+        assert!(test_bed
+            .ac_bus_output(4)
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed
+            .ac_ess_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed
+            .ac_ess_shed_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed
+            .ac_eha_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed.static_inverter_input().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed
+            .tr_1_input()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed
+            .tr_2_input()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed
+            .tr_ess_input()
+            .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed
+            .tr_apu_input()
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed
+            .dc_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .dc_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_ess_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
+        assert!(test_bed
+            .dc_eha_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
+        assert!(test_bed
+            .hot_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .hot_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .hot_bus_output(3)
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
+        assert!(test_bed
+            .hot_bus_output(4)
+            .is_single(PotentialOrigin::Battery(4)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
+    #[test]
+    fn distribution_on_ground_outer_engine_and_other_side_apu_gen() {
+        let test_bed = test_bed_with()
+            .on_the_ground()
+            .all_bats_auto()
+            .running_engine(4)
+            .running_apu()
+            .and()
+            .apu_gen_off(2)
+            .run_waiting_for(Duration::from_secs(5));
+
+        for i in 1..=2 {
+            assert!(test_bed
+                .ac_bus_output(i)
+                .is_single(PotentialOrigin::ApuGenerator(1)));
+        }
+        for i in 3..=4 {
+            assert!(test_bed
+                .ac_bus_output(i)
+                .is_single(PotentialOrigin::EngineGenerator(4)));
+        }
+        assert!(test_bed
+            .ac_ess_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(1)));
+        assert!(test_bed
+            .ac_ess_shed_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(1)));
+        assert!(test_bed
+            .ac_eha_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed.static_inverter_input().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed
+            .tr_1_input()
+            .is_single(PotentialOrigin::ApuGenerator(1)));
+        assert!(test_bed
+            .tr_2_input()
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed
+            .tr_ess_input()
+            .is_single(PotentialOrigin::ApuGenerator(1)));
+        assert!(test_bed
+            .tr_apu_input()
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed
+            .dc_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .dc_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_ess_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
+        assert!(test_bed
+            .dc_eha_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1292,7 +1492,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1369,7 +1571,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1445,7 +1649,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1521,7 +1727,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1598,7 +1806,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1617,9 +1827,8 @@ mod a380_electrical_circuit_tests {
     }
 
     /// # Source
-    /// A380 FCOM
-    /*
-    TODO: check what actually happens in this configuration. The FCOM is contradicting itself.
+    /// A380 FCOM. The configuration shown in the FCOM for this case is wrong.
+    /// The test is checking for the correct behavior.
     #[test]
     fn distribution_one_gen_off_on_each_side_with_apu() {
         let test_bed = test_bed_with()
@@ -1638,7 +1847,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(2)));
         assert!(test_bed
             .ac_bus_output(3)
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .ac_bus_output(4)
             .is_single(PotentialOrigin::EngineGenerator(4)));
@@ -1650,7 +1859,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .ac_eha_bus_output()
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
@@ -1658,7 +1867,7 @@ mod a380_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(2)));
         assert!(test_bed
             .tr_2_input()
-            .is_single(PotentialOrigin::EngineGenerator(4)));
+            .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
             .tr_ess_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1677,7 +1886,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1693,7 +1904,7 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-    }*/
+    }
 
     /// # Source
     /// A380 FCOM
@@ -1742,7 +1953,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -1780,7 +1993,6 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .ac_bus_output(3)
             .is_single(PotentialOrigin::EngineGenerator(3)));
-        println!("{:?}", test_bed.ac_bus_output(4));
         assert!(test_bed
             .ac_bus_output(4)
             .is_single(PotentialOrigin::EngineGenerator(3)));
@@ -1819,7 +2031,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -1871,7 +2085,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
@@ -1928,7 +2144,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(3)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(3)));
@@ -1995,7 +2213,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -2064,7 +2284,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(1)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -2133,7 +2355,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -2143,6 +2367,75 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_output(3)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .hot_bus_output(4)
+            .is_single(PotentialOrigin::Battery(4)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
+    #[test]
+    fn distribution_tr_apu_fault() {
+        let test_bed = test_bed_with()
+            .all_bats_auto()
+            .running_engines()
+            .and()
+            .failed_tr_apu()
+            .run_waiting_for(Duration::from_secs(5));
+
+        for i in 1..=4 {
+            assert!(test_bed
+                .ac_bus_output(i)
+                .is_single(PotentialOrigin::EngineGenerator(i.into())));
+        }
+        assert!(test_bed
+            .ac_ess_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(1)));
+        assert!(test_bed
+            .ac_ess_shed_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(1)));
+        assert!(test_bed
+            .ac_eha_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.static_inverter_input().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed
+            .tr_1_input()
+            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed
+            .tr_2_input()
+            .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed
+            .tr_ess_input()
+            .is_single(PotentialOrigin::EngineGenerator(1)));
+        assert!(test_bed
+            .tr_apu_input()
+            .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed
+            .dc_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .dc_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_ess_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
+        assert!(test_bed
+            .dc_eha_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
+        assert!(test_bed
+            .hot_bus_output(1)
+            .is_single(PotentialOrigin::TransformerRectifier(1)));
+        assert!(test_bed
+            .hot_bus_output(2)
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+        assert!(test_bed
+            .hot_bus_output(3)
+            .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_output(4)
             .is_single(PotentialOrigin::Battery(4)));
@@ -2197,7 +2490,9 @@ mod a380_electrical_circuit_tests {
             .dc_ess_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed.dc_eha_bus_output().is_unpowered());
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::Battery(1)));
@@ -2265,7 +2560,9 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed
             .dc_eha_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(1)));
-        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(4)));
         assert!(test_bed
             .hot_bus_output(1)
             .is_single(PotentialOrigin::TransformerRectifier(1)));
@@ -2707,6 +3004,27 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed.gen_has_fault(number));
     }
 
+    #[test]
+    fn normal_all_of_dc_ess_powered() {
+        let test_bed = test_bed_with()
+            .all_bats_auto()
+            .and()
+            .running_engines()
+            .run();
+        assert!(test_bed
+            .dc_named_bus_output("108PH")
+            .is_powered_by_same_single_source(test_bed.dc_ess_bus_output()));
+    }
+
+    #[test]
+    fn when_only_batteries_powered_dc_ess_108ph_not_powered() {
+        let test_bed = test_bed_with()
+            .on_the_ground()
+            .airspeed(Velocity::default())
+            .run();
+        assert!(test_bed.dc_named_bus_output("108PH").is_unpowered());
+    }
+
     fn test_bed_with() -> A380ElectricalTestBed {
         test_bed()
     }
@@ -2889,9 +3207,42 @@ mod a380_electrical_circuit_tests {
             self.is_running = true;
         }
     }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
     impl EngineCorrectedN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
             Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
+        }
+    }
+    impl EngineUncorrectedN2 for TestEngine {
+        fn uncorrected_n2(&self) -> Ratio {
+            unimplemented!()
+        }
+    }
+    impl Engine for TestEngine {
+        fn hydraulic_pump_output_speed(&self) -> AngularVelocity {
+            unimplemented!()
+        }
+
+        fn oil_pressure_is_low(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn is_above_minimum_idle(&self) -> bool {
+            unimplemented!()
+        }
+
+        fn net_thrust(&self) -> Mass {
+            unimplemented!()
+        }
+
+        fn gearbox_speed(&self) -> AngularVelocity {
+            AngularVelocity::new::<revolution_per_minute>(
+                self.corrected_n2().get::<ratio>() * 12200.,
+            )
         }
     }
 
@@ -3021,7 +3372,7 @@ mod a380_electrical_circuit_tests {
         }
 
         fn low_speed_warning_2_54kts(&self, _adiru_number: usize) -> bool {
-            false
+            self.airspeed.get::<knot>() > 50.
         }
 
         fn low_speed_warning_3_159kts(&self, _adiru_number: usize) -> bool {
@@ -3207,9 +3558,7 @@ mod a380_electrical_circuit_tests {
             self.command(|a| a.running_engine(number));
 
             self = self.without_triggering_emergency_elec(|x| {
-                x.run_waiting_for(Duration::from_millis(
-                    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
-                ))
+                x.run_waiting_for(INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME)
             });
 
             self
@@ -3316,6 +3665,11 @@ mod a380_electrical_circuit_tests {
 
         fn failed_tr_ess(mut self) -> Self {
             self.test_bed.fail(FailureType::TransformerRectifier(3));
+            self
+        }
+
+        fn failed_tr_apu(mut self) -> Self {
+            self.test_bed.fail(FailureType::TransformerRectifier(4));
             self
         }
 

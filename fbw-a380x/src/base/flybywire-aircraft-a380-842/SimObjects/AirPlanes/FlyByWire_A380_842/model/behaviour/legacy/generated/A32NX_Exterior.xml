@@ -1,0 +1,204 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="A32NX_ENGINE_Turbine_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <MIN_N1_PCT_FOR_SLOW>7</MIN_N1_PCT_FOR_SLOW>
+            <MIN_N1_PCT_FOR_BLUR>110</MIN_N1_PCT_FOR_BLUR>
+            <FROSTED>False</FROSTED>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"/>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NODE_ID>ENGINE_Turbine_#ID#</ANIM_NODE_ID>
+            <ANIM_NAME>ENGINE_Turbine_#ID#</ANIM_NAME>
+            <STILL_NODE_ID>ENGINE_Turbine_Still_#ID#</STILL_NODE_ID>
+            <SLOW_NODE_ID>ENGINE_Turbine_Slow_#ID#</SLOW_NODE_ID>
+            <BLURRED_NODE_ID>ENGINE_Turbine_Blurred_#ID#</BLURRED_NODE_ID>
+            <STILL_NODE_ID_COUNT>1</STILL_NODE_ID_COUNT>
+            <SLOW_NODE_ID_COUNT>1</SLOW_NODE_ID_COUNT>
+            <BLURRED_NODE_ID_COUNT>2</BLURRED_NODE_ID_COUNT>
+        </DefaultTemplateParameters>
+        <Component ID="ENGINE_Turbine_#ID#" Node="#ANIM_NODE_ID#">
+            <UseTemplate Name="A32NX_ENGINE_Turbine_Rotation_Template">
+            </UseTemplate>
+        </Component>
+        <Component ID="ENGINE_Turbine_#ID#_Visibility">
+            <DefaultTemplateParameters>
+                <STILL_1_NODE_ID>#STILL_NODE_ID#</STILL_1_NODE_ID>
+                <SLOW_1_NODE_ID>#SLOW_NODE_ID#</SLOW_1_NODE_ID>
+                <BLURRED_1_NODE_ID>#BLURRED_NODE_ID#</BLURRED_1_NODE_ID>
+                <BLURRED_2_NODE_ID>#BLURRED_SPINNER_NODE_ID#</BLURRED_2_NODE_ID>
+            </DefaultTemplateParameters>
+            <OverrideTemplateParameters>
+                <PROCESS_PARAM1>True</PROCESS_PARAM1>
+                <PARAM1>NODE_ID</PARAM1>
+                <PARAM1_SUFFIX>_NODE_ID</PARAM1_SUFFIX>
+                <EXIT_TEMPLATE>A32NX_ENGINE_Turbine_Visibility_Base_Template</EXIT_TEMPLATE>
+            </OverrideTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#STILL_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Still</STATE>
+                <PARAM1_PREFIX>STILL_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#SLOW_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Slow</STATE>
+                <PARAM1_PREFIX>SLOW_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred</STATE>
+                <PARAM1_PREFIX>BLURRED_</PARAM1_PREFIX>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="A32NX_ENGINE_Turbine_Rotation_Template">
+        <UseTemplate Name="ASOBO_GT_Anim">
+            <!-- 3856 is the rated 100% N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
+            <ANIM_CODE>0.01 6 3856 (L:A32NX_ENGINE_N1:#ID#, Number) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
+            <ANIM_LENGTH>360</ANIM_LENGTH>
+            <ANIM_WRAP>1</ANIM_WRAP>
+            <ANIM_DELTA>1</ANIM_DELTA>
+        </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Still_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_SLOW# &lt;</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Slow_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_SLOW# &gt;
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR# &lt; and
+            </VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Blurred_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR# &gt;</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <!-- Base visibility template for turbines -->
+    <Template Name="A32NX_ENGINE_Turbine_Visibility_Base_Template">
+        <Condition NotEmpty="NODE_ID">
+            <True>
+                <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                    <UseTemplate Name="A32NX_ENGINE_Turbine_#STATE#_Visibility_Template">
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_Airbus_Wiper">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>HANDLING_Wipers</ANIM_NAME>
+            <CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS><!-- ID of the circuit powering the wipers -->
+            <MIN_SPEED_PERCENT>0.1</MIN_SPEED_PERCENT>
+            <MAX_SPEED>313</MAX_SPEED><!-- ANIM frames played per second at max speed -->
+            <WWISE_EVENT_1>wipers_forward</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.2</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>wipers_backward</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.8</NORMALIZED_TIME_2>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <ONE_MINUS_MIN_SPEED Process="Float">1 #MIN_SPEED_PERCENT# -</ONE_MINUS_MIN_SPEED>
+            <FAILURE_CODE>
+                (O:AnimCode) 0 &gt; if{
+                (A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, percent over 100) 1 #MIN_SPEED_PERCENT# - * #MIN_SPEED_PERCENT# + #MAX_SPEED# * (&gt;O:_AnimSpeed)
+                (O:_GoForward) if{ 1 (&gt;O:_AnimDirection) } els{ -1 (&gt;O:_AnimDirection) }
+                (O:_AnimDirection) (O:_AnimSpeed) * (A:ANIMATION DELTA TIME, seconds) * (O:AnimCode) + (&gt;O:NewAnimCode)
+                (O:NewAnimCode) 100 &gt; if{
+                100 (O:NewAnimCode) 100 % - (&gt;O:NewAnimCode)
+                1 (&gt;O:_ChangedDirection)
+                }
+                (O:NewAnimCode) 0 &lt; if{
+                0 (&gt;O:NewAnimCode)
+                }
+                (O:_ChangedDirection) if{
+                (O:_GoForward) ! (&gt;O:_GoForward)
+                0 (&gt;O:_ChangedDirection)
+                }
+                (O:NewAnimCode) (&gt;O:AnimCode)
+                }
+                (O:AnimCode)
+            </FAILURE_CODE>
+        </OverrideTemplateParameters>
+        <Update Once="True">
+            0 (&gt;O:AnimCode)
+        </Update>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE>
+                (A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, percent over 100) #ONE_MINUS_MIN_SPEED# * #MIN_SPEED_PERCENT# + #MAX_SPEED# * (&gt;O:_AnimSpeed)
+                (O:_GoForward) if{ 1 (&gt;O:_AnimDirection) } els{ -1 (&gt;O:_AnimDirection) }
+                (O:_AnimDirection) (O:_AnimSpeed) * (A:ANIMATION DELTA TIME, seconds) * (O:AnimCode) + (&gt;O:NewAnimCode)
+                (O:NewAnimCode) 105 &gt; if{
+                105 (O:NewAnimCode) 105 % - (&gt;O:NewAnimCode)
+                1 (&gt;O:_ChangedDirection)
+                }
+                (O:NewAnimCode) 40 &lt; (O:_GoForward) ! and if{
+                (O:NewAnimCode) abs 80 % (&gt;O:NewAnimCode)
+                1 (&gt;O:_ChangedDirection)
+                }
+                (O:NewAnimCode) 0 &lt; if{
+                (O:NewAnimCode) abs 100 % (&gt;O:NewAnimCode)
+                1 (&gt;O:_ChangedDirection)
+                }
+                (O:_ChangedDirection) if{
+                (O:_GoForward) ! (&gt;O:_GoForward)
+                0 (&gt;O:_ChangedDirection)
+                }
+                (O:NewAnimCode)
+            </ANIM_CODE>
+            <FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, Bool)</FAILURE>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents"/>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Aileron_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_aileron_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_AILERON_LEFT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_aileron_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_AILERON_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Elevator_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_elevator_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_ELEVATOR_LEFT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+         <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_elevator_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Rudder_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>rudder_percent_key</ANIM_NAME>
+            <ANIM_CODE>(A:RUDDER TRIM PCT, percent) 0.25 * (L:A32NX_HYD_RUDDER_DEFLECTION, percent) 0.75 * + 0.5 * 50 +</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Spoiler_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_spoiler_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_SPOILERS_LEFT_DEFLECTION, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_spoiler_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_SPOILERS_RIGHT_DEFLECTION, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+</ModelBehaviors>

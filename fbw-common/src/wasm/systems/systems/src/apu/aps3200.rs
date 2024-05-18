@@ -19,7 +19,18 @@ use crate::{
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
-use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
+use super::{ApuConstants, ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
+
+pub struct Aps3200Constants;
+
+impl ApuConstants for Aps3200Constants {
+    const RUNNING_WARNING_EGT: f64 = 682.; // Deg C
+    const BLEED_AIR_COOLDOWN_DURATION: Duration = Duration::from_secs(120);
+    const COOLDOWN_DURATION: Duration = Duration::ZERO;
+    const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 7.;
+    const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = true;
+    const FUEL_LINE_ID: u8 = 18;
+}
 
 pub struct ShutdownAps3200Turbine {
     egt: ThermodynamicTemperature,

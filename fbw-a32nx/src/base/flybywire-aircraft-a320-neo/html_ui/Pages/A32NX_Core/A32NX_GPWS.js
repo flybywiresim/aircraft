@@ -126,6 +126,8 @@ class A32NX_GPWS {
         this.gpws(deltaTime);
     }
     gpws(deltaTime) {
+        // EGPWS receives ADR1 only
+        const baroAlt = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1`);
         const radioAlt1 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_1_RADIO_ALTITUDE`);
         const radioAlt2 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_2_RADIO_ALTITUDE`);
         const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
@@ -178,13 +180,12 @@ class A32NX_GPWS {
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
-            const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
             if (dh >= 0) {
                 minimumsDA = dh;
                 minimumsIA = radioAlt.isNormalOperation() || radioAlt.isFunctionalTest() ? radioAlt.value : NaN;
             } else {
                 minimumsDA = mda;
-                minimumsIA = baroAlt;
+                minimumsIA = baroAlt.isNormalOperation() || baroAlt.isFunctionalTest() ? baroAlt.value : NaN;
             }
             if (isFinite(minimumsDA) && isFinite(minimumsIA)) {
                 this.gpws_minimums(minimumsDA, minimumsIA);

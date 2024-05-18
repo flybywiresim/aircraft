@@ -19,7 +19,7 @@ export const EngPage = () => {
 
     return (
         <>
-            <PageTitle showMore={false} x={5} y={28}>ENGINE</PageTitle>
+            <PageTitle x={6} y={29}>ENGINE</PageTitle>
 
             <EngineColumn x={67} y={68} engine={1} ignition={engSelectorPosition === 2} anyEngineRunning={engineRunning} />
             <EngineColumn x={230} y={68} engine={2} ignition={engSelectorPosition === 2} anyEngineRunning={engineRunning} />

@@ -3,18 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { MathUtils, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericTcasEvents } from '../../types/GenericTcasEvents';
 
-export interface ArcModeOverlayProps {
+export interface ArcModeOverlayProps<T extends number> {
     bus: EventBus,
+    rangeValues: T[],
     ringAvailable: Subscribable<boolean>,
     ringRotation: Subscribable<number>,
 }
 
-export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
+export class ArcModeUnderlay<T extends number> extends DisplayComponent<ArcModeOverlayProps<T>> {
     private readonly rangeValue = Subject.create<number>(10);
 
     private readonly tcasMode = Subject.create<number>(0);
@@ -31,7 +33,7 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
         const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericTcasEvents>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.rangeValue.set(efisRangeSettings[value]);
+            this.rangeValue.set(this.props.rangeValues[value]);
 
             this.handleRingVisibilities();
         });

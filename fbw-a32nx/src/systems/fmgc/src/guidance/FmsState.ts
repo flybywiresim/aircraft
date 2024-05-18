@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode } from '@flybywiresim/fbw-sdk';
 
-export interface FmsState {
-    leftEfisState: EfisState,
+export interface FmsState<T extends number> {
+    leftEfisState: EfisState<T>,
 
-    rightEfisState: EfisState,
+    rightEfisState: EfisState<T>,
 }
 
-export interface EfisState {
+export interface EfisState<T extends number> {
     mode: EfisNdMode,
 
-    range: EfisNdRangeValue,
+    range: T,
 
     dataLimitReached: boolean,
 

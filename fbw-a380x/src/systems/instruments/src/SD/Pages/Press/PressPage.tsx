@@ -13,7 +13,7 @@ import ExtractValve from './elements/ExtractValve';
 
 export const PressPage = () => (
     <>
-        <PageTitle showMore={false} x={5} y={28}>CAB PRESS</PageTitle>
+        <PageTitle x={6} y={29}>CAB PRESS</PageTitle>
 
         {/* Landing Elevation */}
         <LandingElevation x={430} y={32} />

@@ -4,8 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { FbwAircraftSentryClient } from '@sentry/FbwAircraftSentryClient';
-import { getRenderTarget } from '@flybywiresim/fbw-sdk';
+import { getRenderTarget, FbwAircraftSentryClient } from '@flybywiresim/fbw-sdk';
 
 declare const process: any;
 
@@ -16,7 +15,7 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
     const doRender = () => {
         new FbwAircraftSentryClient().onInstrumentLoaded({
             dsn: process.env.SENTRY_DSN,
-            buildInfoFilePrefix: 'a32nx',
+            buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
             enableTracing: enableSentryTracing,
             root: sentryRootClient,
         });

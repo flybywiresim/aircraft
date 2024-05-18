@@ -1,6 +1,6 @@
 const imagePlugin = require('esbuild-plugin-inline-image');
 const postCssPlugin = require('esbuild-style-plugin');
-// const tailwind = require('tailwindcss');
+const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
 const { typecheckingPlugin } = require("#build-utils");
@@ -15,7 +15,7 @@ module.exports = {
             extract: true,
             postcss: {
                 plugins: [
-                    // tailwind('src/systems/instruments/src/EFB/tailwind.config.js'),
+                    tailwind('../fbw-common/src/systems/instruments/src/EFB/tailwind.config.js'),
 
                     // transform: hsl(x y z / alpha) -> hsl(x, y, z, alpha)
                     postCssColorFunctionalNotation(),
@@ -30,7 +30,10 @@ module.exports = {
     instruments: [
         msfsAvionicsInstrument('PFD'),
         msfsAvionicsInstrument('ND'),
+        msfsAvionicsInstrument('Clock'),
 
+        reactInstrument('BAT'),
+        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
         reactInstrument('EWD'),
         reactInstrument('MFD'),
         reactInstrument('OIT'),

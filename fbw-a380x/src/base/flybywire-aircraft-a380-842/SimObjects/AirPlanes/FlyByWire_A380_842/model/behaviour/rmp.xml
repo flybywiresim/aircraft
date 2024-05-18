@@ -1,0 +1,312 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!--
+    Template for rigging RMP generic buttons
+
+    Main Parameters:
+            - NODE_ID                   <no default>    Node-ID of the button
+            - HTML_EVENT_ID             <no default>    HTML-Event that will be fired when the button is pushed
+            - INDICATOR_POWERED         <no default>    Code to determine if the indicator and button are powered
+            - BACKLIGHT_POWERED         <no default>    Code to determine if the backlight is powered
+            - BACKLIGHT_POTENTIOMETER   <no default>    Backlight potentiometer ID
+    -->
+    <Template Name="FBW_Airbus_RMP_Generic_Switch">
+        <DefaultTemplateParameters>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <PLANE_NAME>A380X</PLANE_NAME>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <SEQ1_POWERED>#INDICATOR_POWERED#</SEQ1_POWERED>
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#BACKLIGHT_POTENTIOMETER#, percent) 100 / #SEQ1_POWERED# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>1 #BACKLIGHT_POWERED *</SEQ2_EMISSIVE_CODE>
+
+            <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_#HTML_EVENT_ID#_PRESSED)</LEFT_SINGLE_CODE>
+
+            <CURSOR>Hand</CURSOR>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_A380X_RMP_Template">
+        <Component ID="RMP_#SIDE#">
+            <Component ID="SCREEN_RMP#SIDE#" Node="SCREEN_RMP#SIDE#">
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <EMISSIVE_CODE>0.75</EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+
+            <!-- PUSH_RMP_VHF -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_VHF</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_VHF</HTML_EVENT_ID>
+
+                <TOOLTIPID>SELECT VHF PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RMP_HF -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_HF</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_HF</HTML_EVENT_ID>
+
+                <TOOLTIPID>SELECT HF PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RMP_TEL -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_TEL</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_TEL</HTML_EVENT_ID>
+
+                <TOOLTIPID>SELECT TEL PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RMP_SQWK -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_SQWK</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_SQWK</HTML_EVENT_ID>
+
+                <TOOLTIPID>SELECT SQWK PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RMP_MENU -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_MENU</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_MENU</HTML_EVENT_ID>
+
+                <TOOLTIPID>SELECT MENU PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RMP_NAV -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_NAV</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_NAV</HTML_EVENT_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+
+                <TOOLTIPID>SELECT NAV PAGE ON RMP</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_ADK1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_ADK1</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_ADK1</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_ADK2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_ADK2</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_ADK2</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_ADK3 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_ADK3</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_ADK3</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_LSK1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_LSK1R</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_LSK1R</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_LSK2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_LSK2R</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_LSK2R</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_LSK3 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_LSK3R</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_LSK3R</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_LSK4L (MSG CLR) -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_LSK4</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_LSK4L</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_LSK4R (RST) -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_LSK4R</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_LSK4R</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_0 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_0</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_0</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_1</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_1</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_2</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_2</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_3 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_3</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_3</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_4 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_4</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_4</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_5 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_5</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_5</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_6 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_6</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_6</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_7 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_7</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_7</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_8 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_8</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_8</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_9 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_9</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_9</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_DOT -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_DOT</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_DOT</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_CLR -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_CLR</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_CLR</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_VHF1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_VHF1</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_VHF1</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_VHF2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_VHF2</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_VHF2</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_VHF3 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_VHF3</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_VHF3</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_HF1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_HF1</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_HF1</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_HF2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_HF2</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_HF2</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_TEL1 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_TEL1</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_TEL1</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_TEL2 -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_TEL2</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_TEL2</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_INT (MECH) -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_INT</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_INT</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_CAB (ATT) -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_CAB</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_CAB</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_PA -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_PA</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_PA</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_VOICE -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_VOICE</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_VOICE</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_UP -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_UP</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_UP</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_DOWN -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_DOWN</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_DOWN</HTML_EVENT_ID>
+            </UseTemplate>
+
+            <!-- PUSH_STBY -->
+            <UseTemplate Name="FBW_Airbus_RMP_Generic_Switch">
+                <NODE_ID>PUSH_RMP#SIDE#_STBY</NODE_ID>
+                <HTML_EVENT_ID>RMP#SIDE#_STBY</HTML_EVENT_ID>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_RMP">
+        <UseTemplate Name="FBW_A380X_RMP_Template">
+            <SIDE>L</SIDE>
+        </UseTemplate>
+        <UseTemplate Name="FBW_A380X_RMP_Template">
+            <SIDE>R</SIDE>
+        </UseTemplate>
+        <!-- <UseTemplate Name="FBW_A380X_RMP_Template">
+            <SIDE>T</SIDE>
+        </UseTemplate> -->
+    </Template>
+</ModelBehaviors>

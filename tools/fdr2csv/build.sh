@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 OUTPUT="${DIR}/../../A32NX/"
 
-set -ex
+set -e
 
 # go to right dir
 pushd "${DIR}"
