@@ -54,6 +54,9 @@ export const PressPage: FC = () => {
   }, [cabinAlt]);
 
   const deltaPress = splitDecimals(MathUtils.clamp(deltaPsi, -9.9, 9.9));
+  // TODO: SDAC logic missing. Delta pressure is not available when the SDAC indication is not valid.
+  // This happens when both the CPCs and ADRs are not sending pressure information. Here we only check
+  // for CPC no computed data.
   const deltaPressNotAvail = arincDeltaPsi.isNoComputedData();
   const cax = 455;
   const dpx = 110;
