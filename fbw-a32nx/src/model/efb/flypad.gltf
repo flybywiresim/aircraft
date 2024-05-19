@@ -515,7 +515,8 @@
             "name": "flypad-opaque",
             "normalTexture": { "index": 2 },
             "pbrMetallicRoughness": { "baseColorTexture": { "index": 3 } }
-        }
+        },
+        { "name": "$EFB2" }
     ],
     "meshes": [
         {
@@ -692,6 +693,31 @@
                 }
             ],
             "name": "x0_EFB"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 47,
+                        "NORMAL": 44,
+                        "POSITION": 42,
+                        "TANGENT": 43,
+                        "TEXCOORD_0": 45,
+                        "TEXCOORD_1": 46
+                    },
+                    "indices": 48,
+                    "material": 3,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 18,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_SCREEN_EFB"
         }
     ],
     "nodes": [
@@ -722,7 +748,7 @@
         { "mesh": 2, "name": "PUSH_EFB_UPPER_R" },
         { "mesh": 3, "name": "PUSH_EFB_VOLUME_DOWN_R" },
         { "mesh": 4, "name": "PUSH_EFB_VOLUME_UP_R" },
-        { "mesh": 5, "name": "SCREEN_EFB_R" },
+        { "mesh": 7, "name": "SCREEN_EFB_R" },
         {
         "translation": [-1.0278, 1.78712, 11.3004],
         "rotation": [0.365031, -0.327998, -0.514771, 0.70298],

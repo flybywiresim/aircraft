@@ -108,13 +108,13 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures }) => {
     setSessionId();
 
     // Needed to fetch METARs from the sim
-    RegisterViewListener(
-      'JS_LISTENER_FACILITY',
-      () => {
-        console.log('JS_LISTENER_FACILITY registered.');
-      },
-      true,
-    );
+    // RegisterViewListener(
+    //   'JS_LISTENER_FACILITY',
+    //   () => {
+    //     console.log('JS_LISTENER_FACILITY registered.');
+    //   },
+    //   true,
+    // );
   };
 
   if (process.env.VITE_BUILD) {
