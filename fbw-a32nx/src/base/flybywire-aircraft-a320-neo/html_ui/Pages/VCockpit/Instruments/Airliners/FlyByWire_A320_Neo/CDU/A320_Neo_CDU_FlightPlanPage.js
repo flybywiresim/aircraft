@@ -235,9 +235,9 @@ class CDUFlightPlanPage {
 
             const legAccentColor = (inAlternate || inMissedApproach) ? "cyan" : planAccentColor;
 
-            const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
-            const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
-            const wpActive = (fpIndex >= targetPlan.activeLegIndex);
+            const wpPrev = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex - 1);
+            const wpNext = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex + 1);
+            const wpActive = inAlternate || (fpIndex >= targetPlan.activeLegIndex);
 
             // Bearing/Track
             let bearingTrack = "";
