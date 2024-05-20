@@ -303,7 +303,7 @@ class FMCMainDisplay extends BaseAirliners {
                     long: NaN
                 };
                 const distanceToDestination = this.getDistanceToDestination();
-                if (Number.isFinite(distanceToDestination) && distanceToDestination < 180) {
+                if (Number.isFinite(distanceToDestination) && distanceToDestination !== -1 && distanceToDestination < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
                 }
