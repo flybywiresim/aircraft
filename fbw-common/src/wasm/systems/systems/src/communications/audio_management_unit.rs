@@ -457,7 +457,7 @@ impl AdaptationBoard {
             context,
             !self.mixed_audio.enable_beep && self.mixed_audio.receive_vor2,
         );
-
+        
         self.ils.update(
             context,
             if context.side_controlling() == SideControlling::CAPTAIN {
