@@ -20,23 +20,29 @@ class CDUProgressPage {
         switch (mcdu.flightPhaseManager.phase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF: {
-                if (mcdu.flightPlanService.active.performanceData.cruiseFlightLevel) {
-                    flCrz = "FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                if (mcdu.cruiseLevel) {
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 const altCtn = Math.round(mcdu.constraintAlt / 100);
-                if (!mcdu.flightPlanService.active.performanceData.cruiseFlightLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+                if (!mcdu.cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
                 } else {
-                    flCrz = "FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CRUISE: {
-                flCrz = "FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                // TODO check if this is correct
+                // We can get here by taking off without FROM/TO entered, and climbing to the FCU altitude (which will then be used as cruise altitude)
+                // to enter the cruise phase. We then enter a new FROM/TO which resets the cruise altitude, but I don't know if it puts us in the CLB phase
+                // or keeps us in CRZ.
+                if (mcdu.cruiseLevel) {
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                }
                 break;
             }
             case FmgcFlightPhases.DESCENT: {
@@ -195,8 +201,8 @@ class CDUProgressPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPageReport;
         let altCell = "---";
-        if (isFinite(mcdu.flightPlanService.active.performanceData.cruiseFlightLevel)) {
-            altCell = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0);
+        if (isFinite(mcdu.cruiseLevel)) {
+            altCell = mcdu.cruiseLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = (value, scratchpadCallback) => {
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
