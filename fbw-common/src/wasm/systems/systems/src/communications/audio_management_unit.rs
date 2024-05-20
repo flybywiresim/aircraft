@@ -476,18 +476,30 @@ impl AdaptationBoard {
             self.pilot_transmit_channel = 4;
         }
 
-        for adf in self.adfs.iter_mut() {
-            adf.update(context, !self.mixed_audio.enable_beep);
-        }
-        for vor in self.vors.iter_mut() {
-            vor.update(context, !self.mixed_audio.enable_beep);
-        }
+        self.adfs[0].update(
+            context,
+            !self.mixed_audio.enable_beep && self.mixed_audio.receive_adf1,
+        );
+        self.adfs[1].update(
+            context,
+            !self.mixed_audio.enable_beep && self.mixed_audio.receive_adf2,
+        );
+
+        self.vors[0].update(
+            context,
+            !self.mixed_audio.enable_beep && self.mixed_audio.receive_vor1,
+        );
+        self.vors[1].update(
+            context,
+            !self.mixed_audio.enable_beep && self.mixed_audio.receive_vor2,
+        );
+
         self.ils.update(
             context,
             if context.side_controlling() == SideControlling::CAPTAIN {
-                self.ls_fcu1_pressed
+                self.ls_fcu1_pressed && self.mixed_audio.receive_ils
             } else {
-                self.ls_fcu2_pressed
+                self.ls_fcu2_pressed && self.mixed_audio.receive_ils
             },
         );
     }
@@ -502,6 +514,7 @@ impl SimulationElement for AdaptationBoard {
         for adf in self.adfs.iter_mut() {
             adf.accept(visitor);
         }
+
         for vor in self.vors.iter_mut() {
             vor.accept(visitor);
         }
