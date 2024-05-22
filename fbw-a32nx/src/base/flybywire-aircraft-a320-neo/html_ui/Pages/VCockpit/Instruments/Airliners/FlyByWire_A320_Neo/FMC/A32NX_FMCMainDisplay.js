@@ -4695,7 +4695,7 @@ class FMCMainDisplay extends BaseAirliners {
         const plan = this.currFlightPlanService.active;
 
         if (plan) {
-            return plan.performanceData.costIndex;
+            return plan.performanceData.cruiseFlightLevel;
         }
 
         return undefined;
