@@ -13,7 +13,7 @@ if [ "$1" == "--debug" ]; then
   WASMLD_ARGS=""
   CLANG_ARGS="-g"
 else
-  WASMLD_ARGS="-O2 --lto-O2 --strip-debug"
+  WASMLD_ARGS="-O2 --lto-O2 --strip-debug --gc-sections"
   CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
@@ -79,6 +79,12 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -fwritable-strings \
+  -mbulk-memory \
+  -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${COMMON_DIR}/src" \
@@ -162,7 +168,7 @@ wasm-ld \
   --export get_pages_state \
   --export mark_decommit_pages \
   --export-table \
-  --gc-sections \
+  --stack-guard-page \
   ${WASMLD_ARGS} \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \

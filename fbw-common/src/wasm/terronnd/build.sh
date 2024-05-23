@@ -8,7 +8,7 @@ OUTPUT="${DIR}/out/terronnd.wasm"
 if [ "$1" == "--debug" ]; then
   CLANG_ARGS="-g"
 else
-  WASMLD_ARGS="--strip-debug"
+  WASMLD_ARGS="--strip-debug --gc-sections"
 fi
 
 set -e
@@ -47,6 +47,12 @@ clang++ \
   -fvisibility=hidden \
   -fno-common \
   -fstack-usage \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -fwritable-strings \
+  -mbulk-memory \
+  -Werror=return-type \
   -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
@@ -79,7 +85,7 @@ wasm-ld \
   --export get_pages_state \
   --export mark_decommit_pages \
   --export-table \
-  --gc-sections \
+  --stack-guard-page \
   ${WASMLD_ARGS} \
   -O2 \
   -lc++ -lc++abi \
