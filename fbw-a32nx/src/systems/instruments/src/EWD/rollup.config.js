@@ -13,14 +13,22 @@ const root = join(__dirname, '..', '..', '..', '..', '..', '..');
 console.log('Root: ', root);
 
 export default {
-    input: join(__dirname, 'instrument.tsx'),
-    output: {
-        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EWD/instrument.js'),
-        format: 'es',
-    },
-    plugins: [
-        scss({ output: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EWD/ewd.css') }),
-        resolve(),
-        ts(),
-    ],
+  input: join(__dirname, 'instrument.tsx'),
+  output: {
+    file: join(
+      root,
+      'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EWD/instrument.js',
+    ),
+    format: 'es',
+  },
+  plugins: [
+    scss({
+      output: join(
+        root,
+        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EWD/ewd.css',
+      ),
+    }),
+    resolve(),
+    ts(),
+  ],
 };

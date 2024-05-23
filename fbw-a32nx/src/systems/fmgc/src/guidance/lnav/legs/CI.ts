@@ -18,146 +18,138 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CILeg extends Leg {
-    private computedPath: PathVector[] = [];
+  private computedPath: PathVector[] = [];
 
-    constructor(
-        public readonly course: DegreesTrue,
-        public readonly nextLeg: Leg,
-        public readonly metadata: Readonly<LegMetadata>,
-        segment: SegmentType,
-    ) {
-        super();
+  constructor(
+    public readonly course: DegreesTrue,
+    public readonly nextLeg: Leg,
+    public readonly metadata: Readonly<LegMetadata>,
+    segment: SegmentType,
+  ) {
+    super();
 
-        this.segment = segment;
+    this.segment = segment;
+  }
+
+  intercept: Coordinates | undefined = undefined;
+
+  get terminationWaypoint(): Coordinates {
+    return this.intercept;
+  }
+
+  get distanceToTermFix(): NauticalMiles {
+    return Avionics.Utils.computeGreatCircleDistance(this.getPathStartPoint(), this.intercept);
+  }
+
+  get ident(): string {
+    return 'INTCPT';
+  }
+
+  getPathStartPoint(): Coordinates | undefined {
+    if (this.inboundGuidable instanceof IFLeg) {
+      return this.inboundGuidable.fix.infos.coordinates;
     }
 
-    intercept: Coordinates | undefined = undefined;
-
-    get terminationWaypoint(): Coordinates {
-        return this.intercept;
+    if (this.inboundGuidable && this.inboundGuidable.isComputed) {
+      return this.inboundGuidable.getPathEndPoint();
     }
 
-    get distanceToTermFix(): NauticalMiles {
-        return Avionics.Utils.computeGreatCircleDistance(this.getPathStartPoint(), this.intercept);
+    throw new Error('[CILeg] No computed inbound guidable.');
+  }
+
+  getPathEndPoint(): Coordinates | undefined {
+    if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
+      return this.outboundGuidable.getPathStartPoint();
     }
 
-    get ident(): string {
-        return 'INTCPT';
+    if (this.outboundGuidable instanceof DmeArcTransition && this.outboundGuidable.isComputed) {
+      return this.outboundGuidable.getPathStartPoint();
     }
 
-    getPathStartPoint(): Coordinates | undefined {
-        if (this.inboundGuidable instanceof IFLeg) {
-            return this.inboundGuidable.fix.infos.coordinates;
-        }
+    return this.intercept;
+  }
 
-        if (this.inboundGuidable && this.inboundGuidable.isComputed) {
-            return this.inboundGuidable.getPathEndPoint();
-        }
+  get predictedPath(): PathVector[] {
+    return this.computedPath;
+  }
 
-        throw new Error('[CILeg] No computed inbound guidable.');
-    }
+  recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    this.intercept = Geo.legIntercept(this.getPathStartPoint(), this.course, this.nextLeg);
 
-    getPathEndPoint(): Coordinates | undefined {
-        if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
-            return this.outboundGuidable.getPathStartPoint();
-        }
+    const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
+    const overshot = side === PointSide.After;
 
-        if (this.outboundGuidable instanceof DmeArcTransition && this.outboundGuidable.isComputed) {
-            return this.outboundGuidable.getPathStartPoint();
-        }
+    if (this.intercept && !Number.isNaN(this.intercept.lat) && !overshot) {
+      this.isNull = false;
 
-        return this.intercept;
-    }
+      this.computedPath = [
+        {
+          type: PathVectorType.Line,
+          startPoint: this.getPathStartPoint(),
+          endPoint: this.getPathEndPoint(),
+        },
+      ];
 
-    get predictedPath(): PathVector[] {
-        return this.computedPath;
-    }
+      this.isComputed = true;
 
-    recomputeWithParameters(
-        _isActive: boolean,
-        _tas: Knots,
-        _gs: Knots,
-        _ppos: Coordinates,
-        _trueTrack: DegreesTrue,
-    ) {
-        this.intercept = Geo.legIntercept(
-            this.getPathStartPoint(),
-            this.course,
-            this.nextLeg,
+      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+        this.computedPath.push(
+          {
+            type: PathVectorType.DebugPoint,
+            startPoint: this.getPathStartPoint(),
+            annotation: 'CI START',
+          },
+          {
+            type: PathVectorType.DebugPoint,
+            startPoint: this.getPathEndPoint(),
+            annotation: 'CI END',
+          },
         );
+      }
+    } else {
+      this.computedPath.length = 0;
 
-        const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
-        const overshot = side === PointSide.After;
-
-        if (this.intercept && !Number.isNaN(this.intercept.lat) && !overshot) {
-            this.isNull = false;
-
-            this.computedPath = [{
-                type: PathVectorType.Line,
-                startPoint: this.getPathStartPoint(),
-                endPoint: this.getPathEndPoint(),
-            }];
-
-            this.isComputed = true;
-
-            if (LnavConfig.DEBUG_PREDICTED_PATH) {
-                this.computedPath.push(
-                    {
-                        type: PathVectorType.DebugPoint,
-                        startPoint: this.getPathStartPoint(),
-                        annotation: 'CI START',
-                    },
-                    {
-                        type: PathVectorType.DebugPoint,
-                        startPoint: this.getPathEndPoint(),
-                        annotation: 'CI END',
-                    },
-                );
-            }
-        } else {
-            this.computedPath.length = 0;
-
-            this.isNull = true;
-            this.isComputed = true;
-        }
+      this.isNull = true;
+      this.isComputed = true;
     }
+  }
 
-    get inboundCourse(): Degrees {
-        return this.course;
-    }
+  get inboundCourse(): Degrees {
+    return this.course;
+  }
 
-    get outboundCourse(): Degrees {
-        return this.course;
-    }
+  get outboundCourse(): Degrees {
+    return this.course;
+  }
 
-    get distanceToTermination(): NauticalMiles {
-        const startPoint = this.getPathStartPoint();
+  get distanceToTermination(): NauticalMiles {
+    const startPoint = this.getPathStartPoint();
 
-        return distanceTo(startPoint, this.intercept);
-    }
+    return distanceTo(startPoint, this.intercept);
+  }
 
-    getDistanceToGo(ppos: Coordinates): NauticalMiles {
-        return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
-    }
+  getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
+  }
 
-    getGuidanceParameters(_ppos: Coordinates, _trueTrack: Degrees): GuidanceParameters | undefined {
-        return {
-            law: ControlLaw.TRACK,
-            course: this.course,
-        };
-    }
+  getGuidanceParameters(_ppos: Coordinates, _trueTrack: Degrees): GuidanceParameters | undefined {
+    return {
+      law: ControlLaw.TRACK,
+      course: this.course,
+    };
+  }
 
-    getNominalRollAngle(_gs: Knots): Degrees {
-        return 0;
-    }
+  getNominalRollAngle(_gs: Knots): Degrees {
+    return 0;
+  }
 
-    isAbeam(ppos: Coordinates): boolean {
-        const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
+  isAbeam(ppos: Coordinates): boolean {
+    const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
-        return dtg >= 0 && dtg <= this.distance;
-    }
+    return dtg >= 0 && dtg <= this.distance;
+  }
 
-    get repr(): string {
-        return `CI(${Math.trunc(this.course)}T)`;
-    }
+  get repr(): string {
+    return `CI(${Math.trunc(this.course)}T)`;
+  }
 }

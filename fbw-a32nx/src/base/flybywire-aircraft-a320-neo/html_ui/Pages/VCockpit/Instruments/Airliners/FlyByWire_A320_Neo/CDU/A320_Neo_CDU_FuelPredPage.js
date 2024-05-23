@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUFuelPredPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -168,7 +172,7 @@ class CDUFuelPredPage {
                 if (dest) {
                     destIdentCell = dest.ident;
                 }
-                let efob = mcdu.getDestEFOB(true);
+                const efob = mcdu.getDestEFOB(true);
                 destEFOBCell = (NXUnits.kgToUser(efob)).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
@@ -177,7 +181,7 @@ class CDUFuelPredPage {
                 if (mcdu.altDestination) {
                     if (mcdu.getRouteAltFuelTime()) {
                         altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
-                        : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
+                            : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
                         altTimeCellColor = "[color]green";
                     } else {
                         altTimeCell = "----";
@@ -198,13 +202,12 @@ class CDUFuelPredPage {
                     rteRsvPctColor = "{white}";
                 } else {
                     rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
-                    if (isFlying || (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered()) ) {
+                    if (isFlying || (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered())) {
                         rteRsvPercentCell = "{small}" + rteRsvPercentCell + "{end}";
                     }
-                    rteRsvPctColor = isFlying? "{green}" : "{cyan}";
-                    rteRSvCellColor = isFlying? "[color]green" : "[color]cyan";
+                    rteRsvPctColor = isFlying ? "{green}" : "{cyan}";
+                    rteRSvCellColor = isFlying ? "[color]green" : "[color]cyan";
                 }
-
 
                 mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
                     if (await mcdu.trySetRouteReservedFuel(value)) {
