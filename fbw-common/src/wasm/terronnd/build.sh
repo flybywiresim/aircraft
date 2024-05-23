@@ -85,7 +85,6 @@ wasm-ld \
   --export get_pages_state \
   --export mark_decommit_pages \
   --export-table \
-  --stack-guard-page \
   ${WASMLD_ARGS} \
   -O2 \
   -lc++ -lc++abi \
