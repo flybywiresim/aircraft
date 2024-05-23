@@ -17,6 +17,5 @@ rustflags = [
   "-Clink-arg=--export=mallinfo",
   "-Clink-arg=--export=mchunkit_begin",
   "-Clink-arg=--export=mchunkit_next",
-  "-Clink-arg=--export=get_pages_state",
-  "-Clink-arg=--stack-guard-page"
+  "-Clink-arg=--export=get_pages_state"
 ]
