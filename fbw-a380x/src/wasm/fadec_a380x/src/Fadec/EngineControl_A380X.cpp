@@ -13,6 +13,8 @@
 #include "Table1502_A380X.hpp"
 #include "ThrustLimits_A380X.hpp"
 
+#include <algorithm>
+
 void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
@@ -24,7 +26,7 @@ void EngineControl_A380X::shutdown() {
   LOG_INFO("Fadec::EngineControl_A380X::shutdown()");
 }
 
-void EngineControl_A380X::update(sGaugeDrawData* pData) {
+void EngineControl_A380X::update() {
 #ifdef PROFILING
   profilerUpdate.start();
 #endif
@@ -42,7 +44,7 @@ void EngineControl_A380X::update(sGaugeDrawData* pData) {
     return;
   }
 
-  const double deltaTime          = pData->dt;
+  const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
   const double pressureAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
   const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
@@ -485,7 +487,7 @@ int EngineControl_A380X::updateFF(int    engine,
   // Checking Fuel Logic and final Fuel Flow
   double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
-    outFlow = (std::max)(0.0,                                                                                  //
+    outFlow = std::max(0.0,                                                                                  //
                          (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
                           * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
   }

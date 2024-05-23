@@ -20,7 +20,8 @@ import pushbackReducer from './features/pushback';
 import payloadReducer from './features/payload';
 import configReducer from './features/config';
 
-export const createRootReducer = (history: any) => combineReducers({
+export const createRootReducer = (history: any) =>
+  combineReducers({
     router: connectRouter(history),
     todCalculator: todCalculatorReducer,
     groundServicePage: groundServicePageReducer,
@@ -36,4 +37,4 @@ export const createRootReducer = (history: any) => combineReducers({
     pushback: pushbackReducer,
     payload: payloadReducer,
     config: configReducer,
-});
+  });
