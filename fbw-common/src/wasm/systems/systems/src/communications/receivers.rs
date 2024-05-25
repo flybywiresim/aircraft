@@ -212,9 +212,7 @@ impl Morse {
         if !self.morse.is_empty() {
             // If timedout
             if self.duration_current.as_millis() > self.duration_to_wait as u128 {
-                // After a beep, we have to wait an amount of time
-                // self.beep condition to add short beep time ONLY after a real beep
-                // as equal durations are saved across different variables
+                // After a beep, we have to wait an amount of time equal to a short beep
                 if (self.duration_to_wait == self.duration_short_beep
                     || self.duration_to_wait == self.duration_long_beep)
                     && self.beep
