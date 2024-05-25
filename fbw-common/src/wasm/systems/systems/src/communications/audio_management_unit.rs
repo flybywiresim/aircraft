@@ -440,6 +440,9 @@ impl AdaptationBoard {
         self.vhfs[0].update(self.mixed_audio.receive_com1);
         self.vhfs[1].update(self.mixed_audio.receive_com2);
 
+        self.vhfs[0].update(context, self.mixed_audio.receive_com1);
+        self.vhfs[1].update(context, self.mixed_audio.receive_com2);
+
         self.adfs[0].update(
             context,
             !self.mixed_audio.enable_beep && self.mixed_audio.receive_adf1,
