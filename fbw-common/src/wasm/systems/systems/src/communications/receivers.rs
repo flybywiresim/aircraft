@@ -10,15 +10,23 @@ use std::time::Duration;
 use uom::num::pow;
 
 pub struct CommTransceiver {
+    receive_com_id: VariableIdentifier,
     is_power_supply_powered: bool,
+    receive: bool,
     powered_by: ElectricalBusType,
 }
 impl CommTransceiver {
-    pub fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(context: &mut InitContext, id: usize, powered_by: ElectricalBusType) -> Self {
         Self {
+            receive_com_id: context.get_identifier(format!("COM{}_RECEIVE", id)),
             is_power_supply_powered: false,
+            receive: false,
             powered_by,
         }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, receive: bool) {
+        self.receive = receive;
     }
 
     pub fn is_powered(&self) -> bool {
@@ -30,9 +38,14 @@ impl SimulationElement for CommTransceiver {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_power_supply_powered = buses.is_powered(self.powered_by);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.receive_com_id, self.receive);
+    }
 }
 
 pub struct NavReceiver {
+    receive_nav_id: VariableIdentifier,
     beep_id: VariableIdentifier,
 
     is_power_supply_powered: bool,
@@ -43,17 +56,13 @@ pub struct NavReceiver {
     ok_to_beep: bool,
 }
 impl NavReceiver {
-    pub fn new(
-        context: &mut InitContext,
-        name: &str,
-        id: usize,
-        powered_by: ElectricalBusType,
-    ) -> Self {
+    pub fn new(context: &mut InitContext, name: &str, powered_by: ElectricalBusType) -> Self {
         Self {
-            beep_id: context.get_identifier(format!("ACP_BEEP_IDENT_{}{}", name, id)),
+            receive_nav_id: context.get_identifier(format!("{}_IDENT", name)),
+            beep_id: context.get_identifier(format!("ACP_BEEP_IDENT_{}", name)),
             is_power_supply_powered: false,
             powered_by,
-            morse: Morse::new(context, name, id),
+            morse: Morse::new(context, name),
             // Always true to VORs and ADFs.
             // Used for ILS
             // Called in update()
@@ -61,14 +70,10 @@ impl NavReceiver {
         }
     }
 
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-
     pub fn update(&mut self, context: &UpdateContext, ok_to_beep: bool) {
+        self.ok_to_beep = self.is_power_supply_powered && ok_to_beep;
         // We keep updating the morse even though the receiver is not powered
         // because in real life, the signal is external (obviously)
-        self.ok_to_beep = self.is_power_supply_powered && ok_to_beep;
         self.morse.update(context);
     }
 }
@@ -83,6 +88,8 @@ impl SimulationElement for NavReceiver {
                 false
             },
         );
+
+        writer.write(&self.receive_nav_id, self.ok_to_beep);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -110,13 +117,13 @@ struct Morse {
 }
 
 impl Morse {
-    pub fn new(context: &mut InitContext, name: &str, id: usize) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         // In milliseconds. For 7 words a minute.
         // Use the formula here: https://k7mem.com/Keyer_Speed.html
         let time_base = 171;
 
         Self {
-            ident_id: context.get_identifier(format!("{}{}_IDENT_PACKED", name, id)),
+            ident_id: context.get_identifier(format!("{}_IDENT_PACKED", name)),
             ident_new: 0,
             ident_current: 0,
             morse: "".to_owned(),
@@ -154,7 +161,7 @@ impl Morse {
     fn convert_ident_to_morse(&mut self) -> String {
         let mut copy = "".to_owned();
 
-        for c in "PARIS".chars() {
+        for c in self.unpack(self.ident_new).chars() {
             // elements counts for number of characters + space between them
             let (code, elements) = match c.to_ascii_uppercase() {
                 'A' => ("._", 5),

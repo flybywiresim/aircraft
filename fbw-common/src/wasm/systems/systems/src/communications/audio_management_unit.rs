@@ -206,9 +206,6 @@ pub struct AdaptationBoard {
 
     mixed_audio: MixedAudio,
 
-    receive_com1_id: VariableIdentifier,
-    receive_com2_id: VariableIdentifier,
-
     // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
     // receive_com3_id: VariableIdentifier, deactivated since vPilot needs com3 to be always on
     // receive_hf1_id: VariableIdentifier,
@@ -217,11 +214,6 @@ pub struct AdaptationBoard {
     // receive_att_id: VariableIdentifier,
     // receive_pa_id: VariableIdentifier,
     //
-    receive_adf1_id: VariableIdentifier,
-    receive_adf2_id: VariableIdentifier,
-    receive_vor1_id: VariableIdentifier,
-    receive_vor2_id: VariableIdentifier,
-    receive_ils_id: VariableIdentifier,
     receive_markers_id: VariableIdentifier,
     //receive_gls_id: VariableIdentifier,
     //
@@ -287,13 +279,6 @@ impl AdaptationBoard {
             mixed_audio: Default::default(),
 
             // Needed to update the K events
-            receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
-            receive_com2_id: context.get_identifier("COM2_RECEIVE".to_owned()),
-            receive_adf1_id: context.get_identifier("ADF1_IDENT".to_owned()),
-            receive_adf2_id: context.get_identifier("ADF2_IDENT".to_owned()),
-            receive_vor1_id: context.get_identifier("VOR1_IDENT".to_owned()),
-            receive_vor2_id: context.get_identifier("VOR2_IDENT".to_owned()),
-            receive_ils_id: context.get_identifier("ILS_IDENT".to_owned()),
             receive_markers_id: context.get_identifier("MARKER_IDENT".to_owned()),
             sound_markers_id: context.get_identifier("MARKER SOUND".to_owned()),
 
@@ -335,31 +320,28 @@ impl AdaptationBoard {
             copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT_CHANNEL".to_owned()),
 
             vhfs: [
-                CommTransceiver::new(ElectricalBusType::DirectCurrentEssential),
-                CommTransceiver::new(ElectricalBusType::DirectCurrent(2)),
+                CommTransceiver::new(context, 1, ElectricalBusType::DirectCurrentEssential),
+                CommTransceiver::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
             adfs: [
                 NavReceiver::new(
                     context,
-                    "ADF",
-                    1,
+                    "ADF1",
                     ElectricalBusType::AlternatingCurrentEssentialShed,
                 ),
-                NavReceiver::new(context, "ADF", 2, ElectricalBusType::AlternatingCurrent(2)),
+                NavReceiver::new(context, "ADF2", ElectricalBusType::AlternatingCurrent(2)),
             ],
             vors: [
                 NavReceiver::new(
                     context,
-                    "NAV",
-                    1,
+                    "VOR1",
                     ElectricalBusType::AlternatingCurrentEssential,
                 ),
-                NavReceiver::new(context, "NAV", 2, ElectricalBusType::AlternatingCurrent(2)),
+                NavReceiver::new(context, "VOR2", ElectricalBusType::AlternatingCurrent(2)),
             ],
             ils: NavReceiver::new(
                 context,
-                "NAV",
-                3,
+                "ILS",
                 ElectricalBusType::AlternatingCurrentEssential,
             ),
 
@@ -476,6 +458,9 @@ impl AdaptationBoard {
             self.pilot_transmit_channel = 4;
         }
 
+        self.vhfs[0].update(context, self.mixed_audio.receive_com1);
+        self.vhfs[1].update(context, self.mixed_audio.receive_com2);
+
         self.adfs[0].update(
             context,
             !self.mixed_audio.enable_beep && self.mixed_audio.receive_adf1,
@@ -556,35 +541,6 @@ impl SimulationElement for AdaptationBoard {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pilot_transmit_id, self.pilot_transmit_channel);
         writer.write(&self.copilot_transmit_id, self.copilot_transmit_channel);
-
-        writer.write(
-            &self.receive_com1_id,
-            self.mixed_audio.receive_com1 && self.vhfs[0].is_powered(),
-        );
-        writer.write(
-            &self.receive_com2_id,
-            self.mixed_audio.receive_com2 && self.vhfs[1].is_powered(),
-        );
-        writer.write(
-            &self.receive_adf1_id,
-            self.mixed_audio.receive_adf1 && self.adfs[0].is_powered(),
-        );
-        writer.write(
-            &self.receive_adf2_id,
-            self.mixed_audio.receive_adf2 && self.adfs[1].is_powered(),
-        );
-        writer.write(
-            &self.receive_vor1_id,
-            self.mixed_audio.receive_vor1 && self.vors[0].is_powered(),
-        );
-        writer.write(
-            &self.receive_vor2_id,
-            self.mixed_audio.receive_vor2 && self.vors[1].is_powered(),
-        );
-        writer.write(
-            &self.receive_ils_id,
-            self.mixed_audio.receive_ils && self.ils.is_powered(),
-        );
 
         // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
         // writer.write(&self.receive_gls_id, self.mixed_audio.receive_gls);
