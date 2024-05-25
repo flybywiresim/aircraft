@@ -411,54 +411,54 @@ impl AdaptationBoard {
         // We only take into account VHF1/2/3 as per SDK
         // 4 stands for NONE SDK wise but stand for 4 HF1 for us therefore
         // we need to have some logic here to filter
-        self.pilot_transmit_channel = if acp_to_take_into_account == 1 {
-            self.mixed_audio = self.computer_a.get_mixed_audio_acp();
-
-            let transmission_table = self.computer_a.get_transmission_table_acp();
-            if transmission_table == 0 || transmission_table > 3 {
-                4
-            } else {
-                transmission_table - 1
-            }
-        } else if acp_to_take_into_account == 3 {
-            self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
-
-            let transmission_table = self.computer_b.get_transmission_table_acp3();
-            if transmission_table == 0 || transmission_table > 3 {
-                4
-            } else {
-                transmission_table - 1
-            }
-        } else {
-            4
-        };
-
-        self.copilot_transmit_channel = if acp_to_take_into_account == 2 {
-            self.mixed_audio = self.computer_b.get_mixed_audio_acp();
-
-            let transmission_table = self.computer_b.get_transmission_table_acp();
-            if transmission_table == 0 || transmission_table > 3 {
-                4
-            } else {
-                transmission_table - 1
-            }
-        } else if acp_to_take_into_account == 3 {
-            self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
-
-            let transmission_table = self.computer_a.get_transmission_table_acp3();
-            if transmission_table == 0 || transmission_table > 3 {
-                4
-            } else {
-                transmission_table - 1
-            }
-        } else {
-            4
-        };
-
         // 4 is NONE according to the SDK
         if context.side_controlling() == SideControlling::CAPTAIN {
+            self.pilot_transmit_channel = if acp_to_take_into_account == 1 {
+                self.mixed_audio = self.computer_a.get_mixed_audio_acp();
+
+                let transmission_table = self.computer_a.get_transmission_table_acp();
+                if transmission_table == 0 || transmission_table > 3 {
+                    4
+                } else {
+                    transmission_table - 1
+                }
+            } else if acp_to_take_into_account == 3 {
+                self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
+
+                let transmission_table = self.computer_b.get_transmission_table_acp3();
+                if transmission_table == 0 || transmission_table > 3 {
+                    4
+                } else {
+                    transmission_table - 1
+                }
+            } else {
+                4
+            };
+
             self.copilot_transmit_channel = 4;
         } else {
+            self.copilot_transmit_channel = if acp_to_take_into_account == 2 {
+                self.mixed_audio = self.computer_b.get_mixed_audio_acp();
+
+                let transmission_table = self.computer_b.get_transmission_table_acp();
+                if transmission_table == 0 || transmission_table > 3 {
+                    4
+                } else {
+                    transmission_table - 1
+                }
+            } else if acp_to_take_into_account == 3 {
+                self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
+
+                let transmission_table = self.computer_a.get_transmission_table_acp3();
+                if transmission_table == 0 || transmission_table > 3 {
+                    4
+                } else {
+                    transmission_table - 1
+                }
+            } else {
+                4
+            };
+
             self.pilot_transmit_channel = 4;
         }
 
