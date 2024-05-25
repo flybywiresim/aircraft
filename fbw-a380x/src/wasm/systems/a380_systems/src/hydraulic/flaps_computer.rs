@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::FeedbackPositionPickoffUnit;
+use systems::shared::{AdirsMeasurementOutputs, FeedbackPositionPickoffUnit};
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -163,6 +163,7 @@ impl SlatFlapControlComputer {
         &self,
         flaps_handle: &FlapsHandle,
         context: &UpdateContext,
+        adirs_output: &impl AdirsMeasurementOutputs,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
             (0 | 1, 1)
@@ -198,7 +199,7 @@ impl SlatFlapControlComputer {
             (_, 0) if context.is_in_flight() && self.alpha_speed_lock_active => {
                 if context.indicated_airspeed().get::<knot>()
                     > Self::ALPHA_SPEED_LOCK_OUT_AIRSPEED_THRESHOLD_KNOTS
-                    || context.angle_of_attack().get::<degree>()
+                    || adirs_output.angle_of_attack(1).value().get::<degree>()
                         < Self::ALPHA_SPEED_LOCK_OUT_AOA_THRESHOLD_DEGREES
                 {
                     FlapsConf::Conf0
@@ -210,7 +211,7 @@ impl SlatFlapControlComputer {
                 if context.is_in_flight()
                     && (context.indicated_airspeed().get::<knot>()
                         < Self::ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS
-                        || context.angle_of_attack().get::<degree>()
+                        || adirs_output.angle_of_attack(1).value().get::<degree>()
                             > Self::ALPHA_SPEED_LOCK_IN_AOA_THRESHOLD_DEGREES) =>
             {
                 FlapsConf::Conf1F
@@ -289,12 +290,13 @@ impl SlatFlapControlComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl AdirsMeasurementOutputs,
         flaps_handle: &FlapsHandle,
         flaps_feedback: &impl FeedbackPositionPickoffUnit,
         slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
         self.flaps_handle_position = flaps_handle.position();
-        self.flaps_conf = self.generate_configuration(flaps_handle, context);
+        self.flaps_conf = self.generate_configuration(flaps_handle, context, adirs);
         self.flap_load_relief_active = self.flap_load_relief_active(flaps_handle);
         self.cruise_baulk_active = self.cruise_baulk_active(flaps_handle);
         self.alpha_speed_lock_active = self.alpha_speed_lock_active(flaps_handle);
@@ -488,11 +490,17 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl AdirsMeasurementOutputs,
         flaps_feedback: &impl FeedbackPositionPickoffUnit,
         slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
-        self.sfcc
-            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+        self.sfcc.update(
+            context,
+            adirs,
+            &self.flaps_handle,
+            flaps_feedback,
+            slats_feedback,
+        );
     }
 
     pub fn flap_demand(&self) -> Option<Angle> {
@@ -520,7 +528,7 @@ mod tests {
         Aircraft,
     };
 
-    use uom::si::{angle::radian, angular_velocity::degree_per_second, pressure::psi};
+    use uom::si::{angular_velocity::degree_per_second, pressure::psi};
 
     struct SlatFlapGear {
         current_angle: Angle,
@@ -628,6 +636,8 @@ mod tests {
         green_pressure: Pressure,
         blue_pressure: Pressure,
         yellow_pressure: Pressure,
+
+        adirs: TestAdirs,
     }
 
     impl A380FlapsTestAircraft {
@@ -657,14 +667,20 @@ mod tests {
                 green_pressure: Pressure::new::<psi>(0.),
                 blue_pressure: Pressure::new::<psi>(0.),
                 yellow_pressure: Pressure::new::<psi>(0.),
+
+                adirs: TestAdirs::new(),
             }
+        }
+
+        fn set_angle_of_attack(&mut self, v: Angle) {
+            self.adirs.set_angle_of_attack(v);
         }
     }
 
     impl Aircraft for A380FlapsTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.slat_flap_complex
-                .update(context, &self.flap_gear, &self.slat_gear);
+                .update(context, &self.adirs, &self.flap_gear, &self.slat_gear);
             self.flap_gear.update(
                 context,
                 &self.slat_flap_complex.sfcc,
@@ -695,6 +711,68 @@ mod tests {
         }
     }
 
+    struct TestAdirs {
+        is_aligned: bool,
+        latitude: Arinc429Word<Angle>,
+        longitude: Arinc429Word<Angle>,
+        heading: Arinc429Word<Angle>,
+        vertical_speed: Arinc429Word<Velocity>,
+        altitude: Arinc429Word<Length>,
+        angle_of_attack: Arinc429Word<Angle>,
+    }
+    impl TestAdirs {
+        fn new() -> Self {
+            Self {
+                is_aligned: false,
+                latitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+                longitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+                heading: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+                vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
+                altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
+                angle_of_attack: Arinc429Word::new(
+                    Angle::new::<degree>(0.0),
+                    SignStatus::NormalOperation,
+                ),
+            }
+        }
+
+        fn set_angle_of_attack(&mut self, v: Angle) {
+            self.angle_of_attack = Arinc429Word::new(v, SignStatus::NormalOperation);
+        }
+    }
+    impl AdirsMeasurementOutputs for TestAdirs {
+        fn is_fully_aligned(&self, _adiru_number: usize) -> bool {
+            self.is_aligned
+        }
+
+        fn latitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.latitude
+        }
+
+        fn longitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.longitude
+        }
+
+        fn heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.heading
+        }
+
+        fn true_heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.heading
+        }
+
+        fn vertical_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.vertical_speed
+        }
+
+        fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
+            self.altitude
+        }
+
+        fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.angle_of_attack
+        }
+    }
     struct A380FlapsTestBed {
         test_bed: SimulationTestBed<A380FlapsTestAircraft>,
     }
@@ -741,8 +819,8 @@ mod tests {
             self
         }
 
-        fn set_angle_of_attack(mut self, angle_of_attack: f64) -> Self {
-            self.write_by_name("ANGLE OF ATTACK INDICATOR", angle_of_attack);
+        fn set_angle_of_attack(mut self, angle_of_attack: Angle) -> Self {
+            self.command(|a| a.set_angle_of_attack(angle_of_attack));
             self
         }
 
@@ -1737,7 +1815,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(130.)
-            .set_angle_of_attack(Angle::new::<degree>(5.).get::<radian>())
+            .set_angle_of_attack(Angle::new::<degree>(5.))
             .set_on_ground(false)
             .set_flaps_handle_position(1)
             .run_one_tick();
@@ -1761,7 +1839,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(200.)
-            .set_angle_of_attack(Angle::new::<degree>(10.).get::<radian>())
+            .set_angle_of_attack(Angle::new::<degree>(10.))
             .set_on_ground(false)
             .set_flaps_handle_position(1)
             .run_one_tick();
@@ -1775,7 +1853,7 @@ mod tests {
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(24));
 
         test_bed = test_bed
-            .set_angle_of_attack(Angle::new::<degree>(9.1).get::<radian>())
+            .set_angle_of_attack(Angle::new::<degree>(9.1))
             .run_one_tick();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
