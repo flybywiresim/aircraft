@@ -396,12 +396,16 @@ impl AdaptationBoard {
 
         // 3rd ACP is connected to Board B by default
         // hence if audio switching knob is NOT on FO, data can be wired to default board
+
+        // Appends pretty useless in this case but in real life this is what happens
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo {
             self.bus_acp_3rd.append(&mut self.bus_arinc_3rd);
             self.acp_ovhd.update(context, &mut self.bus_acp_3rd);
+            self.bus_arinc_3rd.append(&mut self.bus_acp_3rd);
         } else {
             self.bus_acp_avncs.append(&mut self.bus_arinc_bay);
             self.acp_ovhd.update(context, &mut self.bus_acp_avncs);
+            self.bus_arinc_bay.append(&mut self.bus_acp_avncs);
         }
 
         // We only take into account VHF1/2/3 as per SDK
