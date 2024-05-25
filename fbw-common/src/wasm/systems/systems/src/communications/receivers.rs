@@ -222,21 +222,21 @@ impl Morse {
                 } else {
                     self.duration_current = Duration::from_millis(0);
 
-                    let symbol = self.morse.pop().unwrap();
-
-                    if symbol == '.' {
-                        self.beep = true;
-
-                        self.duration_to_wait = self.duration_short_beep;
-                    } else if symbol == '_' {
-                        self.beep = true;
-
-                        self.duration_to_wait = self.duration_long_beep;
-                    } else {
-                        // space
-                        self.duration_to_wait = self.duration_long_beep;
-                        self.beep = false;
-                    }
+                    match self.morse.pop().unwrap() {
+                        '.' => {
+                            self.duration_to_wait = self.duration_short_beep;
+                            self.beep = true;
+                        }
+                        '_' => {
+                            self.duration_to_wait = self.duration_long_beep;
+                            self.beep = true;
+                        }
+                        _ => {
+                            // space
+                            self.duration_to_wait = self.duration_long_beep;
+                            self.beep = false;
+                        }
+                    };
                 }
             }
         } else {
