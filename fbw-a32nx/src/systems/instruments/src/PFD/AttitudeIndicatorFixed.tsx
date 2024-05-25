@@ -271,13 +271,13 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private rightMainGearCompressed = false;
 
-  private rollBarVisibleSub = Subject.create('hidden');
+  private lateralRef1 = FSComponent.createRef<SVGPathElement>();
 
-  private rollBarOffsetSub = Subject.create(0);
+  private lateralRef2 = FSComponent.createRef<SVGPathElement>();
 
-  private pitchBarVisibleSub = Subject.create('hidden');
+  private verticalRef1 = FSComponent.createRef<SVGPathElement>();
 
-  private pitchBarOffsetSub = Subject.create(0);
+  private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
   private fdFlagVisibleSub = Subject.create('hidden');
 
@@ -293,10 +293,14 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     if (showRoll) {
       const FDRollOffset = Math.min(Math.max(this.fdRollCommand.value, -45), 45) * 0.44;
 
-      this.rollBarVisibleSub.set('visible');
-      this.rollBarOffsetSub.set(FDRollOffset);
+      this.lateralRef1.instance.setAttribute('visibility', 'visible');
+      this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
+
+      this.lateralRef2.instance.setAttribute('visibility', 'visible');
+      this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
     } else {
-      this.rollBarVisibleSub.set('hidden');
+      this.lateralRef1.instance.setAttribute('visibility', 'hidden');
+      this.lateralRef2.instance.setAttribute('visibility', 'hidden');
     }
 
     const showPitch =
@@ -305,10 +309,14 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     if (showPitch) {
       const FDPitchOffset = Math.min(Math.max(this.fdPitchCommand.value, -22.5), 22.5) * 0.89;
 
-      this.pitchBarVisibleSub.set('visible');
-      this.pitchBarOffsetSub.set(FDPitchOffset);
+      this.verticalRef1.instance.setAttribute('visibility', 'visible');
+      this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
+
+      this.verticalRef2.instance.setAttribute('visibility', 'visible');
+      this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
     } else {
-      this.pitchBarVisibleSub.set('hidden');
+      this.verticalRef1.instance.setAttribute('visibility', 'hidden');
+      this.verticalRef2.instance.setAttribute('visibility', 'hidden');
     }
 
     const onGround = this.leftMainGearCompressed || this.rightMainGearCompressed;
@@ -405,32 +413,14 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <g>
         <g class="ThickOutline">
-          <path
-            visibility={this.rollBarVisibleSub}
-            transform={`translate3d(${this.rollBarOffsetSub}px, 0px, 0px)`}
-            d="m68.903 61.672v38.302"
-          />
+          <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
 
-          <path
-            visibility={this.pitchBarVisibleSub}
-            transform={`translate3d(0px, ${this.pitchBarOffsetSub}px, 0px)`}
-            d="m49.263 80.823h39.287"
-          />
+          <path ref={this.verticalRef1} d="m49.263 80.823h39.287" />
         </g>
         <g class="ThickStroke Green">
-          <path
-            visibility={this.rollBarVisibleSub}
-            transform={`translate3d(${this.rollBarOffsetSub}px, 0px, 0px)`}
-            id="FlightDirectorRoll"
-            d="m68.903 61.672v38.302"
-          />
+          <path ref={this.lateralRef2} id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
 
-          <path
-            visibility={this.pitchBarVisibleSub}
-            transform={`translate3d(0px, ${this.pitchBarOffsetSub}px, 0px)`}
-            id="FlightDirectorPitch"
-            d="m49.263 80.823h39.287"
-          />
+          <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
         </g>
         <text
           display={this.fdFlagVisibleSub}
