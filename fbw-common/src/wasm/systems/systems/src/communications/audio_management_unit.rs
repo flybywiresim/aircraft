@@ -437,9 +437,6 @@ impl AdaptationBoard {
             self.pilot_transmit_channel - 1
         };
 
-        self.vhfs[0].update(self.mixed_audio.receive_com1);
-        self.vhfs[1].update(self.mixed_audio.receive_com2);
-
         self.vhfs[0].update(context, self.mixed_audio.receive_com1);
         self.vhfs[1].update(context, self.mixed_audio.receive_com2);
 
