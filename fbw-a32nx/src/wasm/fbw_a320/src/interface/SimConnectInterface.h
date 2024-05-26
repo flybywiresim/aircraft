@@ -284,6 +284,7 @@ class SimConnectInterface {
 
   bool setClientDataFcuBus(base_fcu_bus output);
 
+  base_fcu_discrete_outputs getClientDataFcuDiscreteOutput();
   base_fcu_bus getClientDataFcuBusOutput();
 
   bool setClientDataFmgcDiscretes(base_fmgc_discrete_inputs output);
@@ -338,6 +339,7 @@ class SimConnectInterface {
     FAC_ANALOG_OUTPUTS,
     FAC_1_BUS_OUTPUT,
     FAC_2_BUS_OUTPUT,
+    FCU_DISCRETE_OUTPUT,
     FCU_BUS_OUTPUT,
     FMGC_DISCRETE_INPUTS,
     FMGC_FMS_INPUTS,
@@ -411,6 +413,7 @@ class SimConnectInterface {
   base_fac_analog_outputs clientDataFacAnalogOutputs = {};
   base_fac_bus clientDataFacBusOutputs = {};
 
+  base_fcu_discrete_outputs clientDataFcuDiscreteOutputs = {};
   base_fcu_bus clientDataFcuBusOutputs = {};
 
   base_fmgc_discrete_outputs clientDataFmgcDiscreteOutputs = {};
@@ -451,7 +454,8 @@ class SimConnectInterface {
    * in the event->dwData field of the SIMCONNECT_RECV_EVENT struct.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
    */
   void simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event);
 
@@ -468,7 +472,8 @@ class SimConnectInterface {
    * all other parameters.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
    */
   void simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT_EX1* event);
 
@@ -496,7 +501,6 @@ class SimConnectInterface {
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 
  private:
-
   /**
    * @brief Process a SimConnect event with one parameter.
    * @param eventId Specifies the ID of the client event.

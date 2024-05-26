@@ -44,21 +44,21 @@ class FcuComputer final
   struct D_Work_FcuComputer_T {
     real32_T DelayInput1_DSTATE[4];
     real32_T pValue;
-    real32_T pValue_g;
     real32_T pValue_e;
-    real32_T pValue_a;
+    real32_T pValue_j;
+    real32_T pValue_n;
     boolean_T Delay_DSTATE;
     boolean_T pValue_not_empty;
     boolean_T prevTrkFpaActive;
     boolean_T prevTrkFpaActive_not_empty;
     boolean_T p_metric_alt_active;
     boolean_T p_trk_fpa_active;
-    boolean_T pValue_not_empty_i;
+    boolean_T pValue_not_empty_l;
     boolean_T prevMachActive;
-    boolean_T pValue_not_empty_o;
-    boolean_T prevTrkFpaActive_g;
-    boolean_T prevTrkFpaActive_not_empty_l;
-    boolean_T pValue_not_empty_g;
+    boolean_T pValue_not_empty_lk;
+    boolean_T prevTrkFpaActive_a;
+    boolean_T prevTrkFpaActive_not_empty_c;
+    boolean_T pValue_not_empty_m;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_je;
     rtDW_MATLABFunction_FcuComputer_l_T sf_MATLABFunction_hk;
