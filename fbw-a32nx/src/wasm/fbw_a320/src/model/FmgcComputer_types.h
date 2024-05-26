@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_FmgcComputer_types_h_
 #define RTW_HEADER_FmgcComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_fmgc_flight_phase_
 #define DEFINED_TYPEDEF_FOR_fmgc_flight_phase_
 
@@ -50,6 +49,41 @@ struct base_ecu_bus
 {
   base_arinc_429 selected_tla_deg;
   base_arinc_429 selected_flex_temp_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
+#define DEFINED_TYPEDEF_FOR_lateral_law_
+
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
+#define DEFINED_TYPEDEF_FOR_vertical_law_
+
+enum class vertical_law
+  : int32_T {
+  NONE = 0,
+  ALT_HOLD,
+  ALT_ACQ,
+  SPD_MACH,
+  VS,
+  FPA,
+  GS,
+  FLARE,
+  SRS,
+  VPATH
 };
 
 #endif
@@ -209,7 +243,7 @@ struct base_fac_bus
   base_arinc_429 center_of_gravity_pos_percent;
   base_arinc_429 sideslip_target_deg;
   base_arinc_429 fac_slat_angle_deg;
-  base_arinc_429 fac_flap_angle;
+  base_arinc_429 fac_flap_angle_deg;
   base_arinc_429 discrete_word_2;
   base_arinc_429 rudder_travel_limit_command_deg;
   base_arinc_429 delta_r_yaw_damper_deg;
@@ -448,43 +482,6 @@ struct fmgc_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_adr_computation_data_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_adr_computation_data_
-
-struct base_fmgc_adr_computation_data
-{
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T mach;
-  real_T alpha_deg;
-  real_T p_s_c_hpa;
-  real_T altitude_corrected_ft;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_ir_computation_data_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_ir_computation_data_
-
-struct base_fmgc_ir_computation_data
-{
-  real_T theta_deg;
-  real_T phi_deg;
-  real_T q_deg_s;
-  real_T r_deg_s;
-  real_T n_x_g;
-  real_T n_y_g;
-  real_T n_z_g;
-  real_T theta_dot_deg_s;
-  real_T phi_dot_deg_s;
-  real_T hdg_deg;
-  real_T trk_deg;
-  real_T vz_bi_ft_min;
-  real_T fpa_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_logic_outputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_logic_outputs_
 
@@ -505,8 +502,8 @@ struct base_fmgc_logic_outputs
   boolean_T double_ir_failure;
   boolean_T all_adr_valid;
   boolean_T all_ir_valid;
-  base_fmgc_adr_computation_data adr_computation_data;
-  base_fmgc_ir_computation_data ir_computation_data;
+  base_adr_bus adr_computation_data;
+  base_ir_bus ir_computation_data;
   real_T ra_computation_data_ft;
   boolean_T dual_ra_failure;
   boolean_T both_ra_valid;
@@ -600,8 +597,13 @@ struct base_fmgc_ap_fd_logic_outputs
   base_fmgc_lateral_modes lateral_modes;
   base_fmgc_longitudinal_modes longitudinal_modes;
   base_fmgc_armed_modes armed_modes;
+  lateral_law active_lateral_law;
+  vertical_law active_longitudinal_law;
   boolean_T auto_spd_control_active;
   boolean_T manual_spd_control_active;
+  boolean_T mach_control_active;
+  real_T spd_target_kts;
+  real_T pfd_spd_target_kts;
   boolean_T fmgc_opp_mode_sync;
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
@@ -624,6 +626,48 @@ struct base_fmgc_ap_fd_logic_outputs
   boolean_T land_2_capacity;
   boolean_T land_3_fail_passive_capacity;
   boolean_T land_3_fail_op_capacity;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+#define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+
+struct ap_raw_output_command
+{
+  real_T Theta_c_deg;
+  real_T Phi_c_deg;
+  real_T Beta_c_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+#define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+
+struct ap_raw_laws_flare
+{
+  boolean_T condition_Flare;
+  real_T H_dot_radio_fpm;
+  real_T H_dot_c_fpm;
+  real_T delta_Theta_H_dot_deg;
+  real_T delta_Theta_bz_deg;
+  real_T delta_Theta_bx_deg;
+  real_T delta_Theta_beta_c_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_
+#define DEFINED_TYPEDEF_FOR_ap_raw_output_
+
+struct ap_raw_output
+{
+  real_T Phi_loc_c;
+  real_T Nosewheel_c;
+  ap_raw_output_command flight_director;
+  ap_raw_output_command autopilot;
+  ap_raw_laws_flare flare_law;
 };
 
 #endif
@@ -689,152 +733,9 @@ struct fmgc_outputs
   fmgc_inputs data;
   base_fmgc_logic_outputs logic;
   base_fmgc_ap_fd_logic_outputs ap_fd_logic;
+  ap_raw_output ap_fd_outer_loops;
   base_fmgc_discrete_outputs discrete_outputs;
   base_fmgc_bus_outputs bus_outputs;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-#define DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-
-struct struct_2OohiAWrazWy5wDS5iisgF
-{
-  real_T SSM;
-  real_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_sTSYrIQee0MGLLzlZbRkQD_
-#define DEFINED_TYPEDEF_FOR_struct_sTSYrIQee0MGLLzlZbRkQD_
-
-struct struct_sTSYrIQee0MGLLzlZbRkQD
-{
-  struct_2OohiAWrazWy5wDS5iisgF runway_heading_deg;
-  struct_2OohiAWrazWy5wDS5iisgF ils_frequency_mhz;
-  struct_2OohiAWrazWy5wDS5iisgF localizer_deviation_deg;
-  struct_2OohiAWrazWy5wDS5iisgF glideslope_deviation_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_5FieiEDq7UUIfrm6T3XMED_
-#define DEFINED_TYPEDEF_FOR_struct_5FieiEDq7UUIfrm6T3XMED_
-
-struct struct_5FieiEDq7UUIfrm6T3XMED
-{
-  boolean_T on_ground;
-  boolean_T gnd_eng_stop_flt_5s;
-  boolean_T ap_fd_athr_common_condition;
-  boolean_T ap_fd_common_condition;
-  boolean_T fd_own_engaged;
-  boolean_T ap_own_engaged;
-  boolean_T athr_own_engaged;
-  boolean_T athr_active;
-  boolean_T ap_inop;
-  boolean_T athr_inop;
-  boolean_T fmgc_opp_priority;
-  boolean_T double_adr_failure;
-  boolean_T double_ir_failure;
-  boolean_T all_adr_valid;
-  boolean_T all_ir_valid;
-  base_fmgc_adr_computation_data adr_computation_data;
-  base_fmgc_ir_computation_data ir_computation_data;
-  real_T ra_computation_data_ft;
-  boolean_T dual_ra_failure;
-  boolean_T both_ra_valid;
-  boolean_T fac_lg_data_failure;
-  boolean_T fac_flap_slat_data_failure;
-  boolean_T flap_position;
-  boolean_T slat_position;
-  boolean_T flap_slat_lever_position;
-  boolean_T fac_speeds_failure;
-  boolean_T fac_weights_failure;
-  boolean_T fcu_failure;
-  boolean_T ils_failure;
-  boolean_T both_ils_valid;
-  struct_sTSYrIQee0MGLLzlZbRkQD ils_computation_data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_AZzDN1joaTge1y2GmVvuYD_
-#define DEFINED_TYPEDEF_FOR_struct_AZzDN1joaTge1y2GmVvuYD_
-
-struct struct_AZzDN1joaTge1y2GmVvuYD
-{
-  struct_2OohiAWrazWy5wDS5iisgF pfd_sel_spd_kts;
-  struct_2OohiAWrazWy5wDS5iisgF runway_hdg_memorized_deg;
-  struct_2OohiAWrazWy5wDS5iisgF preset_mach_from_mcdu;
-  struct_2OohiAWrazWy5wDS5iisgF preset_speed_from_mcdu_kts;
-  struct_2OohiAWrazWy5wDS5iisgF roll_fd_command;
-  struct_2OohiAWrazWy5wDS5iisgF pitch_fd_command;
-  struct_2OohiAWrazWy5wDS5iisgF yaw_fd_command;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_5;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_4;
-  struct_2OohiAWrazWy5wDS5iisgF fm_alt_constraint_ft;
-  struct_2OohiAWrazWy5wDS5iisgF altitude_ft;
-  struct_2OohiAWrazWy5wDS5iisgF mach;
-  struct_2OohiAWrazWy5wDS5iisgF cas_kts;
-  struct_2OohiAWrazWy5wDS5iisgF flx_to_temp_deg_c;
-  struct_2OohiAWrazWy5wDS5iisgF ats_discrete_word;
-  struct_2OohiAWrazWy5wDS5iisgF ats_fma_discrete_word;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_3;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_2;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_6;
-  struct_2OohiAWrazWy5wDS5iisgF synchro_spd_mach_value;
-  struct_2OohiAWrazWy5wDS5iisgF low_target_speed_margin_kts;
-  struct_2OohiAWrazWy5wDS5iisgF high_target_speed_margin_kts;
-  struct_2OohiAWrazWy5wDS5iisgF delta_p_ail_voted_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_p_splr_voted_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_voted_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_nosewheel_voted_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_q_voted_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF track_deg;
-  struct_2OohiAWrazWy5wDS5iisgF heading_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fpa_deg;
-  struct_2OohiAWrazWy5wDS5iisgF n1_command_percent;
-  struct_2OohiAWrazWy5wDS5iisgF vertical_speed_ft_min;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_4xpe111mhgRDizxiF0fNDB_
-#define DEFINED_TYPEDEF_FOR_struct_4xpe111mhgRDizxiF0fNDB_
-
-struct struct_4xpe111mhgRDizxiF0fNDB
-{
-  struct_2OohiAWrazWy5wDS5iisgF fac_weight_lbs;
-  struct_2OohiAWrazWy5wDS5iisgF fm_weight_lbs;
-  struct_2OohiAWrazWy5wDS5iisgF fac_cg_percent;
-  struct_2OohiAWrazWy5wDS5iisgF fm_cg_percent;
-  struct_2OohiAWrazWy5wDS5iisgF fg_radio_height_ft;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_4;
-  struct_2OohiAWrazWy5wDS5iisgF ats_discrete_word;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_3;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_2;
-  struct_2OohiAWrazWy5wDS5iisgF approach_spd_target_kn;
-  struct_2OohiAWrazWy5wDS5iisgF delta_p_ail_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_p_splr_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_nose_wheel_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_q_cmd_deg;
-  struct_2OohiAWrazWy5wDS5iisgF n1_left_percent;
-  struct_2OohiAWrazWy5wDS5iisgF n1_right_percent;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_0Fb2AZNt5ksiPDHGUGmLRC_
-#define DEFINED_TYPEDEF_FOR_struct_0Fb2AZNt5ksiPDHGUGmLRC_
-
-struct struct_0Fb2AZNt5ksiPDHGUGmLRC
-{
-  struct_AZzDN1joaTge1y2GmVvuYD fmgc_a_bus;
-  struct_4xpe111mhgRDizxiF0fNDB fmgc_b_bus;
 };
 
 #endif
