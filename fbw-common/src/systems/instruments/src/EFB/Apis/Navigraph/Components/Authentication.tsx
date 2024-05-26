@@ -10,6 +10,7 @@ import { NavigraphClient, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';
+import { CancelToken } from '@navigraph/auth';
 
 export type NavigraphAuthInfo =
   | {
@@ -47,12 +48,21 @@ interface LoadingProps {
 const Loading: React.FC<LoadingProps> = ({ onNewDeviceFlowParams }) => {
   const navigraph = useNavigraphAuth();
   const [showResetButton, setShowResetButton] = useState(false);
+  const [cancelToken] = useState(CancelToken.source());
 
   const handleResetRefreshToken = () => {
-    navigraph.signIn((params) => onNewDeviceFlowParams(params));
+    cancelToken.cancel('reset requested by user');
+
+    navigraph.signIn((params) => {
+      onNewDeviceFlowParams(params);
+    });
   };
 
   useEffect(() => {
+    navigraph.signIn((params) => {
+      onNewDeviceFlowParams(params);
+    }, cancelToken.token);
+
     const timeout = setTimeout(() => {
       setShowResetButton(true);
     }, 2_000);
@@ -86,12 +96,12 @@ export const NavigraphAuthUI = () => {
   const [displayAuthCode, setDisplayAuthCode] = useState(t('NavigationAndCharts.Navigraph.LoadingMsg').toUpperCase());
 
   useInterval(() => {
-    if (params.user_code) {
+    if (params?.user_code) {
       setDisplayAuthCode(params.user_code);
     }
   }, 1000);
 
-  const hasQr = !!params.verification_uri_complete;
+  const hasQr = !!params?.verification_uri_complete;
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
@@ -104,7 +114,7 @@ export const NavigraphAuthUI = () => {
 
         <p className="mt-6 w-2/3 text-center">
           {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
-          <span className="text-theme-highlight">{params.verification_uri_complete}</span>{' '}
+          <span className="text-theme-highlight">{params?.verification_uri_complete ?? ''}</span>{' '}
           {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
         </p>
 
