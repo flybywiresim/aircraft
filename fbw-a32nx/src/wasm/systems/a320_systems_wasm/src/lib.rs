@@ -24,7 +24,9 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
-use systems::air_conditioning::{acs_controller::AcscId, Channel, ZoneType};
+use systems::air_conditioning::{
+    acs_controller::AcscId, cabin_pressure_controller::CpcId, Channel, ZoneType,
+};
 use systems::failures::FailureType;
 use systems::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
@@ -91,6 +93,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (21_012, FailureType::CabinFan(1)),
         (21_013, FailureType::CabinFan(2)),
         (21_014, FailureType::GalleyFans),
+        (21_015, FailureType::CpcFault(CpcId::Cpc1)),
+        (21_016, FailureType::CpcFault(CpcId::Cpc2)),
+        (21_017, FailureType::OutflowValveFault),
+        (21_018, FailureType::SafetyValveFault),
+        (21_019, FailureType::RapidDecompression),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),

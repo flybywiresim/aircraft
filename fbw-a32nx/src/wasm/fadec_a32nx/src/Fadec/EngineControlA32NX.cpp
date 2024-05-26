@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-
 #include "logging.h"
 #ifdef PROFILING
 #include "ScopedTimer.hpp"
@@ -14,6 +13,8 @@
 #include "Tables1502_A32NX.hpp"
 #include "ThrustLimits_A32NX.hpp"
 
+#include <algorithm>
+
 void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
@@ -25,7 +26,7 @@ void EngineControl_A32NX::shutdown() {
   LOG_INFO("Fadec::EngineControl_A32NX::shutdown()");
 }
 
-void EngineControl_A32NX::update(sGaugeDrawData* pData) {
+void EngineControl_A32NX::update() {
 #ifdef PROFILING
   profilerUpdate.start();
 #endif
@@ -43,7 +44,7 @@ void EngineControl_A32NX::update(sGaugeDrawData* pData) {
     return;
   }
 
-  const double deltaTime          = pData->dt;
+  const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double simTime            = msfsHandlerPtr->getSimulationTime();
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
   const double pressureAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
@@ -554,7 +555,7 @@ double EngineControl_A32NX::updateFF(int    engine,
   // Checking Fuel Logic and final Fuel Flow
   double outFlow = 0;
   if (correctedFuelFlow >= 1) {
-    outFlow = (std::max)(0.0,                                                                                  //
+    outFlow = std::max(0.0,                                                                                  //
                          (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
                           * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature)))                       //
                              - paramImbalance);                                                                //
@@ -646,11 +647,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
   const double pumpStateRight         = simData.fuelPumpState[R]->get();
   const bool   xfrCenterLeftManual    = simData.simVarsDataPtr->data().xfrCenterManual[L] > 1.5;                              // junction 4
   const bool   xfrCenterRightManual   = simData.simVarsDataPtr->data().xfrCenterManual[R] > 1.5;                              // junction 5
-  const bool   xfrCenterLeftAuto      = simData.simVarsDataPtr->data().xfrValveCenterAuto[L] > 1.5 && !xfrCenterLeftManual;   // valve 11
-  const bool   xfrCenterRightAuto     = simData.simVarsDataPtr->data().xfrValveCenterAuto[R] > 1.5 && !xfrCenterRightManual;  // valve 12
-  const bool   xfrValveCenterLeftOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[L] > 1.5                            //
+  const bool   xfrCenterLeftAuto      = simData.simVarsDataPtr->data().xfrValveCenterAuto[L] > 0.0 && !xfrCenterLeftManual;   // valve 11
+  const bool   xfrCenterRightAuto     = simData.simVarsDataPtr->data().xfrValveCenterAuto[R] > 0.0 && !xfrCenterRightManual;  // valve 12
+  const bool   xfrValveCenterLeftOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[L] > 0.0                            //
                                       && (xfrCenterLeftAuto || xfrCenterLeftManual);                                          // valve 9
-  const bool xfrValveCenterRightOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[R] > 1.5                             //
+  const bool xfrValveCenterRightOpen = simData.simVarsDataPtr->data().xfrValveCenterOpen[R] > 0.0                             //
                                        && (xfrCenterRightAuto || xfrCenterRightManual);                                       // valve 10
   const double xfrValveOuterLeft1    = simData.simVarsDataPtr->data().xfrValveOuter1[L];                                      // valve 6
   const double xfrValveOuterRight1   = simData.simVarsDataPtr->data().xfrValveOuter1[R];                                      // valve 7

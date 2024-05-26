@@ -44,6 +44,7 @@ export interface SimbriefData {
     airline: string;
     flightNum: string;
     aircraftReg: string;
+    aircraftIcao: string;
     route: string;
     loadsheet: string;
     costInd: string;
@@ -67,6 +68,7 @@ export const initialState: {data: SimbriefData, simbriefDataPending: boolean, pa
         arrivingPosLat: 0,
         arrivingPosLong: 0,
         arrivingMetar: '',
+        aircraftIcao: '',
         aircraftReg: '',
         flightDistance: '',
         route: '',
@@ -167,6 +169,7 @@ export async function fetchSimbriefDataAction(navigraphUsername: string, overrid
         arrivingPosLong: returnedSimbriefData.destination.posLong,
         arrivingMetar: returnedSimbriefData.destination.metar,
         aircraftReg: returnedSimbriefData.aircraftReg,
+        aircraftIcao: returnedSimbriefData.aircraftIcao,
         flightDistance: returnedSimbriefData.distance,
         flightETAInSeconds: returnedSimbriefData.flightETAInSeconds,
         cruiseAltitude: returnedSimbriefData.cruiseAltitude,
