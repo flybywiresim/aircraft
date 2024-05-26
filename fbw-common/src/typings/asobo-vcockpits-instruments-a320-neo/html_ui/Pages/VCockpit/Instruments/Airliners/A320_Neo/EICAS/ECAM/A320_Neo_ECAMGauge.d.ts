@@ -2,37 +2,59 @@
 
 declare global {
     interface Document {
-        createElement(tagName: "a320-neo-ecam-gauge"): A320_Neo_ECAM_Common.Gauge;
+        createElement(tagName: 'a320-neo-ecam-gauge'): A320_Neo_ECAM_Common.Gauge;
     }
 
     namespace A320_Neo_ECAM_Common {
         class GaugeDefinition {
             startAngle: number;
+
             arcSize: number;
+
             minValue: number;
+
             maxValue: number;
+
             minRedValue: number;
+
             maxRedValue: number;
+
             warningRange: [number, number];
+
             dangerRange: [number, number];
+
             cursorLength: number;
+
             currentValuePos: Vec2;
+
             currentValueFunction: (() => void) | null;
+
             currentValuePrecision: number;
+
             currentValueBorderWidth: number;
+
             outerIndicatorFunction: (() => void) | null;
+
             outerDynamicArcFunction: (() => void) | null;
+
             extraMessageFunction: (() => void) | null;
         }
 
         class Gauge extends HTMLElement {
             viewBoxSize: Vec2;
+
             startAngle: number;
+
             warningRange: [number, number];
+
             dangerRange: [number, number];
+
             outerDynamicArcCurrentValues: [number, number];
+
             outerDynamicArcTargetValues: [number, number];
+
             extraMessageString: string;
+
             isActive: boolean;
             get mainArcRadius(): number;
             get graduationInnerLineEndOffset(): number;

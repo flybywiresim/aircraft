@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUStepAltsPage {
     static Return() {}
 
@@ -239,7 +243,7 @@ class CDUStepAltsPage {
             const rawAltitudeInput = splitInputs[0];
             const rawIdentInput = splitInputs[1];
 
-            const waypointIndex = mcdu.flightPlanManager.findWaypointIndexByIdent(rawIdentInput)
+            const waypointIndex = mcdu.flightPlanManager.findWaypointIndexByIdent(rawIdentInput);
             if (waypointIndex < 0) {
                 // Waypoint ident not found in flightplan
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -279,7 +283,7 @@ class CDUStepAltsPage {
     }
 
     static checkIfStepAboveMaxFl(mcdu, altitude) {
-        const maxFl = mcdu.getMaxFlCorrected()
+        const maxFl = mcdu.getMaxFlCorrected();
         return Number.isFinite(maxFl) && altitude > maxFl * 100;
     }
 
@@ -318,7 +322,7 @@ class CDUStepAltsPage {
             return false;
         }
 
-        const isClimbVsDescent = toAltitude > altitude
+        const isClimbVsDescent = toAltitude > altitude;
         if (!isClimbVsDescent) {
             doesHaveStepDescent = true;
         } else if (doesHaveStepDescent) {
@@ -332,7 +336,7 @@ class CDUStepAltsPage {
 
             const isClimbAfterDescent = isClimbVsDescent && doesHaveStepDescent;
 
-            return isStepSizeValid && !isClimbAfterDescent
+            return isStepSizeValid && !isClimbAfterDescent;
         }
 
         return true;
