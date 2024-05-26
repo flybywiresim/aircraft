@@ -208,6 +208,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincTransitionLevel,
             this.arincEisWord2,
         ];
+
+        this.navDbIdent = null;
     }
 
     Init() {
@@ -311,6 +313,8 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
+
+        this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => this.navDbIdent = dbIdent);
     }
 
     initVariables(resetTakeoffData = true) {
@@ -4460,10 +4464,6 @@ class FMCMainDisplay extends BaseAirliners {
         return h * 60 + m;
     }
 
-    //TODO: can this be util?
-    getNavDataDateRange() {
-        return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
-    }
     /**
      * Generic function which returns true if engine(index) is ON (N2 > 20)
      * @returns {boolean}
@@ -5081,6 +5081,14 @@ class FMCMainDisplay extends BaseAirliners {
         };
 
         await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    }
+
+    /**
+     * Gets the navigation database ident (including cycle info).
+     * @returns {import('msfs-navdata').DatabaseIdent | null}.
+     */
+    getNavDatabaseIdent() {
+        return this.navDbIdent;
     }
 }
 
