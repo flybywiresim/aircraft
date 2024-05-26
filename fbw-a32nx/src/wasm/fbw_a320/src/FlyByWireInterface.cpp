@@ -1790,20 +1790,24 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   fcu.modelInputs.in.bus_inputs.fmgc_1_bus = fmgcsBusOutputs[0].fmgc_a_bus;
   fcu.modelInputs.in.bus_inputs.fmgc_2_bus = fmgcsBusOutputs[1].fmgc_a_bus;
 
+  base_fcu_discrete_outputs discreteOutputs = fcu.getDiscreteOutputs();
+
   if (fcuDisabled) {
     fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
+    discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
   } else {
     fcu.update(sampleTime, simData.simulationTime, failuresConsumer.isActive(Failures::Fcu1), failuresConsumer.isActive(Failures::Fcu2),
                idElecDcEssBusPowered->get(), idElecDcBus2Powered->get());
     fcuBusOutputs = fcu.getBusOutputs();
   }
 
-  base_fcu_discrete_outputs discreteOutputs = fcu.getDiscreteOutputs();
   fcuHealthy = discreteOutputs.fcu_healthy;
 
   if (fmgcDisabled != -1) {
     simConnectInterface.setClientDataFcuBus(fcuBusOutputs);
   }
+
+  idFcuHealthy->set(discreteOutputs.fcu_healthy);
 
   idFcuSelectedHeading->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_hdg_deg));
   idFcuSelectedAltitude->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_alt_ft));
@@ -1824,8 +1828,6 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_1));
   idFcuDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_2));
 
-  idFcuHealthy->set(discreteOutputs.fcu_healthy);
-
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
 
@@ -1844,28 +1846,25 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
     idFcuEisDisplayBaroMode[i]->set(efisPanelOutputs.baro_mode);
   }
 
-  // If the FCU is running in Simulink, these Lvars will be directly set from Simulink via SimConnect
-  if (!fcuDisabled) {
-    idFcuAfsPanelAp1LightOn->set(discreteOutputs.afs_outputs.ap_1_light_on);
-    idFcuAfsPanelAp2LightOn->set(discreteOutputs.afs_outputs.ap_2_light_on);
-    idFcuAfsPanelAthrLightOn->set(discreteOutputs.afs_outputs.athr_light_on);
-    idFcuAfsPanelLocLightOn->set(discreteOutputs.afs_outputs.loc_light_on);
-    idFcuAfsPanelExpedLightOn->set(discreteOutputs.afs_outputs.exped_light_on);
-    idFcuAfsPanelApprLightOn->set(discreteOutputs.afs_outputs.appr_light_on);
+  idFcuAfsPanelAp1LightOn->set(discreteOutputs.afs_outputs.ap_1_light_on);
+  idFcuAfsPanelAp2LightOn->set(discreteOutputs.afs_outputs.ap_2_light_on);
+  idFcuAfsPanelAthrLightOn->set(discreteOutputs.afs_outputs.athr_light_on);
+  idFcuAfsPanelLocLightOn->set(discreteOutputs.afs_outputs.loc_light_on);
+  idFcuAfsPanelExpedLightOn->set(discreteOutputs.afs_outputs.exped_light_on);
+  idFcuAfsPanelApprLightOn->set(discreteOutputs.afs_outputs.appr_light_on);
 
-    idFcuAfsDisplayTrkFpaMode->set(discreteOutputs.afs_outputs.trk_fpa_mode);
-    idFcuAfsDisplayMachMode->set(discreteOutputs.afs_outputs.mach_mode);
-    idFcuAfsDisplaySpdMachValue->set(discreteOutputs.afs_outputs.spd_mach_value);
-    idFcuAfsDisplaySpdMachDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
-    idFcuAfsDisplaySpdMachManaged->set(discreteOutputs.afs_outputs.spd_mach_managed);
-    idFcuAfsDisplayHdgTrkValue->set(discreteOutputs.afs_outputs.hdg_trk_value);
-    idFcuAfsDisplayHdgTrkDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
-    idFcuAfsDisplayHdgTrkManaged->set(discreteOutputs.afs_outputs.hdg_trk_managed);
-    idFcuAfsDisplayAltValue->set(discreteOutputs.afs_outputs.alt_value);
-    idFcuAfsDisplayLvlChManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
-    idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
-    idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
-  }
+  idFcuAfsDisplayTrkFpaMode->set(discreteOutputs.afs_outputs.trk_fpa_mode);
+  idFcuAfsDisplayMachMode->set(discreteOutputs.afs_outputs.mach_mode);
+  idFcuAfsDisplaySpdMachValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+  idFcuAfsDisplaySpdMachDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
+  idFcuAfsDisplaySpdMachManaged->set(discreteOutputs.afs_outputs.spd_mach_managed);
+  idFcuAfsDisplayHdgTrkValue->set(discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuAfsDisplayHdgTrkDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
+  idFcuAfsDisplayHdgTrkManaged->set(discreteOutputs.afs_outputs.hdg_trk_managed);
+  idFcuAfsDisplayAltValue->set(discreteOutputs.afs_outputs.alt_value);
+  idFcuAfsDisplayLvlChManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
+  idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   return true;
 }
