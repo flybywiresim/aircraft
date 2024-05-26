@@ -37,10 +37,13 @@ export type PinnedChart = {
   provider: ChartProvider;
   pagesViewable: number;
   boundingBox?: Chart['bounding_boxes'];
+  chartLinks?: { light: string; dark: string };
   pageIndex: number;
 };
 
 export type ChartTabType = 'STAR' | 'APP' | 'TAXI' | 'SID' | 'REF';
+
+export const ChartTabTypeIndices: readonly ChartTabType[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
 
 type ProviderTabInfo = {
   chartRotation: number;
