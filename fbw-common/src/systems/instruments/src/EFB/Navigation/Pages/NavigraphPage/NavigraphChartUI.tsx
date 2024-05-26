@@ -16,163 +16,172 @@ import { ChartViewer } from '../../Navigation';
 import { navigraphCharts } from '../../../../navigraph';
 
 export const NavigraphChartUI = () => {
-    const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
-    const [statusBarInfo, setStatusBarInfo] = useState('');
+  const [statusBarInfo, setStatusBarInfo] = useState('');
 
-    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
-    const [chartListDisagrees, setChartListDisagrees] = useState(false);
+  const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
+  const [chartListDisagrees, setChartListDisagrees] = useState(false);
 
-    const { availableCharts, isFullScreen, searchQuery, selectedTabType } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+  const { availableCharts, isFullScreen, searchQuery, selectedTabType } = useAppSelector(
+    (state) => state.navigationTab[NavigationTab.NAVIGRAPH],
+  );
 
-    const organizedCharts = useMemo(() => ({
+  const organizedCharts = useMemo(
+    () =>
+      ({
         STAR: { name: 'STAR', charts: availableCharts.STAR },
         APP: { name: 'APP', charts: availableCharts.APP, bundleRunways: true },
         TAXI: { name: 'TAXI', charts: availableCharts.TAXI },
         SID: { name: 'SID', charts: availableCharts.SID },
         REF: { name: 'REF', charts: availableCharts.REF },
-    } satisfies Record<ChartTabType, OrganizedChart>), [availableCharts]);
+      }) satisfies Record<ChartTabType, OrganizedChart>,
+    [availableCharts],
+  );
 
-    const assignAirportInfo = async () => {
-        setIcaoAndNameDisagree(true);
-        const airportInfo = await navigraphCharts.getAirportInfo({ icao: searchQuery });
-        setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
-        setIcaoAndNameDisagree(false);
-    };
+  const assignAirportInfo = async () => {
+    setIcaoAndNameDisagree(true);
+    const airportInfo = await navigraphCharts.getAirportInfo({ icao: searchQuery });
+    setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
+    setIcaoAndNameDisagree(false);
+  };
 
-    useEffect(() => {
-        if (searchQuery.length === 4) {
-            assignAirportInfo();
-        } else {
-            setStatusBarInfo('');
-            dispatch(editTabProperty({
-                tab: NavigationTab.NAVIGRAPH,
-                availableCharts: {
-                    STAR: [],
-                    APP: [],
-                    TAXI: [],
-                    SID: [],
-                    REF: [],
-                },
-            }));
-        }
-    }, [searchQuery]);
+  useEffect(() => {
+    if (searchQuery.length === 4) {
+      assignAirportInfo();
+    } else {
+      setStatusBarInfo('');
+      dispatch(
+        editTabProperty({
+          tab: NavigationTab.NAVIGRAPH,
+          availableCharts: {
+            STAR: [],
+            APP: [],
+            TAXI: [],
+            SID: [],
+            REF: [],
+          },
+        }),
+      );
+    }
+  }, [searchQuery]);
 
-    const handleIcaoChange = async (value: string) => {
-        if (value.length !== 4) return;
-        const newValue = value.toUpperCase();
-        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
-        setChartListDisagrees(true);
-        const chartList = await navigraphCharts.getChartsIndex({ icao: newValue });
-        if (chartList) {
-            dispatch(editTabProperty({
-                tab: NavigationTab.NAVIGRAPH,
-                availableCharts: {
-                    STAR: chartList.filter((it) => it.category === 'ARR'),
-                    APP: chartList.filter((it) => it.category === 'APP'),
-                    TAXI: chartList.filter((it) => it.category === 'APT'),
-                    SID: chartList.filter((it) => it.category === 'DEP'),
-                    REF: chartList.filter((it) => it.category === 'REF'),
-                },
-            }));
-        }
-        setChartListDisagrees(false);
-    };
+  const handleIcaoChange = async (value: string) => {
+    if (value.length !== 4) return;
+    const newValue = value.toUpperCase();
+    dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
+    setChartListDisagrees(true);
+    const chartList = await navigraphCharts.getChartsIndex({ icao: newValue });
+    if (chartList) {
+      dispatch(
+        editTabProperty({
+          tab: NavigationTab.NAVIGRAPH,
+          availableCharts: {
+            STAR: chartList.filter((it) => it.category === 'ARR'),
+            APP: chartList.filter((it) => it.category === 'APP'),
+            TAXI: chartList.filter((it) => it.category === 'APT'),
+            SID: chartList.filter((it) => it.category === 'DEP'),
+            REF: chartList.filter((it) => it.category === 'REF'),
+          },
+        }),
+      );
+    }
+    setChartListDisagrees(false);
+  };
 
-    useEffect(() => {
-        handleIcaoChange(searchQuery);
-    }, []);
+  useEffect(() => {
+    handleIcaoChange(searchQuery);
+  }, []);
 
-    const loading = (!statusBarInfo.length || icaoAndNameDisagree || chartListDisagrees) && searchQuery.length === 4;
+  const loading = (!statusBarInfo.length || icaoAndNameDisagree || chartListDisagrees) && searchQuery.length === 4;
 
-    const getStatusBarText = () => {
-        if (searchQuery.length !== 4) {
-            return t('NavigationAndCharts.Navigraph.NoAirportSelected');
-        }
-        if (loading) {
-            return t('NavigationAndCharts.PleaseWait');
-        }
-        return statusBarInfo;
-    };
+  const getStatusBarText = () => {
+    if (searchQuery.length !== 4) {
+      return t('NavigationAndCharts.Navigraph.NoAirportSelected');
+    }
+    if (loading) {
+      return t('NavigationAndCharts.PleaseWait');
+    }
+    return statusBarInfo;
+  };
 
-    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
-    const simbriefDataLoaded = isSimbriefDataLoaded();
+  const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+  const simbriefDataLoaded = isSimbriefDataLoaded();
 
-    return (
-        <div className="flex h-content-section-reduced w-full flex-row overflow-x-hidden rounded-lg">
-            <>
-                {!isFullScreen && (
-                    <div className="shrink-0" style={{ width: '450px' }}>
-                        <div className="flex flex-row items-center justify-center">
-                            <SimpleInput
-                                placeholder="ICAO"
-                                value={searchQuery}
-                                maxLength={4}
-                                className={`w-full shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
-                                onChange={handleIcaoChange}
-                            />
+  return (
+    <div className="h-content-section-reduced flex w-full flex-row overflow-x-hidden rounded-lg">
+      <>
+        {!isFullScreen && (
+          <div className="shrink-0" style={{ width: '450px' }}>
+            <div className="flex flex-row items-center justify-center">
+              <SimpleInput
+                placeholder="ICAO"
+                value={searchQuery}
+                maxLength={4}
+                className={`w-full shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
+                onChange={handleIcaoChange}
+              />
 
-                            {isSimbriefDataLoaded() && (
-                                <SelectGroup className="shrink-0 rounded-l-none">
-                                    <SelectItem
-                                        className="uppercase"
-                                        selected={searchQuery === departingAirport}
-                                        onSelect={() => handleIcaoChange(departingAirport)}
-                                    >
-                                        {t('NavigationAndCharts.From')}
-                                    </SelectItem>
-                                    <SelectItem
-                                        className="uppercase"
-                                        selected={searchQuery === arrivingAirport}
-                                        onSelect={() => handleIcaoChange(arrivingAirport)}
-                                    >
-                                        {t('NavigationAndCharts.To')}
-                                    </SelectItem>
-                                    {!!altIcao && (
-                                        <SelectItem
-                                            className="uppercase"
-                                            selected={searchQuery === altIcao}
-                                            onSelect={() => handleIcaoChange(altIcao)}
-                                        >
-                                            {t('NavigationAndCharts.Altn')}
-                                        </SelectItem>
-                                    )}
-                                </SelectGroup>
-                            )}
-                        </div>
+              {isSimbriefDataLoaded() && (
+                <SelectGroup className="shrink-0 rounded-l-none">
+                  <SelectItem
+                    className="uppercase"
+                    selected={searchQuery === departingAirport}
+                    onSelect={() => handleIcaoChange(departingAirport)}
+                  >
+                    {t('NavigationAndCharts.From')}
+                  </SelectItem>
+                  <SelectItem
+                    className="uppercase"
+                    selected={searchQuery === arrivingAirport}
+                    onSelect={() => handleIcaoChange(arrivingAirport)}
+                  >
+                    {t('NavigationAndCharts.To')}
+                  </SelectItem>
+                  {!!altIcao && (
+                    <SelectItem
+                      className="uppercase"
+                      selected={searchQuery === altIcao}
+                      onSelect={() => handleIcaoChange(altIcao)}
+                    >
+                      {t('NavigationAndCharts.Altn')}
+                    </SelectItem>
+                  )}
+                </SelectGroup>
+              )}
+            </div>
 
-                        <div className="flex h-11 w-full flex-row items-center">
-                            <ArrowReturnRight size={30} />
-                            <div className="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
-                                {getStatusBarText()}
-                            </div>
-                        </div>
+            <div className="flex h-11 w-full flex-row items-center">
+              <ArrowReturnRight size={30} />
+              <div className="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
+                {getStatusBarText()}
+              </div>
+            </div>
 
-                        <div className="mt-6">
-                            <SelectGroup>
-                                {(['STAR', 'APP', 'TAXI', 'SID', 'REF'] as ChartTabType[]).map((tabType) => (
-                                    <SelectItem
-                                        selected={selectedTabType === tabType}
-                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabType: tabType }))}
-                                        key={tabType}
-                                        className="flex w-full justify-center"
-                                    >
-                                        {tabType}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                            <ScrollableContainer className="mt-5" height={42.75}>
-                                <NavigraphChartSelector
-                                    selectedTab={organizedCharts[selectedTabType]}
-                                    loading={loading}
-                                />
-                            </ScrollableContainer>
-                        </div>
-                    </div>
-                )}
+            <div className="mt-6">
+              <SelectGroup>
+                {(['STAR', 'APP', 'TAXI', 'SID', 'REF'] as ChartTabType[]).map((tabType) => (
+                  <SelectItem
+                    selected={selectedTabType === tabType}
+                    onSelect={() =>
+                      dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabType: tabType }))
+                    }
+                    key={tabType}
+                    className="flex w-full justify-center"
+                  >
+                    {tabType}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              <ScrollableContainer className="mt-5" height={42.75}>
+                <NavigraphChartSelector selectedTab={organizedCharts[selectedTabType]} loading={loading} />
+              </ScrollableContainer>
+            </div>
+          </div>
+        )}
 
-                <ChartViewer />
-            </>
-        </div>
-    );
+        <ChartViewer />
+      </>
+    </div>
+  );
 };
