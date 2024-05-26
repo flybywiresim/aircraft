@@ -134,6 +134,7 @@ clang++ \
   "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/FmgcComputer_data.cpp" \
   "${DIR}/src/model/FmgcComputer.cpp" \
+  "${DIR}/src/model/FmgcOuterLoops.cpp" \
   "${DIR}/src/model/FcuComputer_data.cpp" \
   "${DIR}/src/model/FcuComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \

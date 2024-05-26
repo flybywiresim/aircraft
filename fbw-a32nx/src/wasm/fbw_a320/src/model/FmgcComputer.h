@@ -2,7 +2,12 @@
 #define RTW_HEADER_FmgcComputer_h_
 #include "rtwtypes.h"
 #include "FmgcComputer_types.h"
+#include "FmgcOuterLoops.h"
 
+extern const real_T FmgcComputer_RGND;
+extern ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct;
+extern base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct;
+extern base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct;
 class FmgcComputer final
 {
  public:
@@ -25,6 +30,7 @@ class FmgcComputer final
     base_fmgc_ap_fd_logic_outputs Delay_DSTATE;
     boolean_T Delay_DSTATE_p;
     boolean_T Delay_DSTATE_k;
+    boolean_T Delay_DSTATE_c;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_g;
     boolean_T Memory_PreviousInput_g1;
@@ -59,6 +65,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_as;
     boolean_T Memory_PreviousInput_cu;
     boolean_T Memory_PreviousInput_h;
+    boolean_T Memory_PreviousInput_bo;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_d5;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_dtd;
@@ -68,7 +75,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_ft;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_aba;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_ih;
-    rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_j3;
+    rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_j3h;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_fe;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_cx;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_ds;
@@ -96,7 +103,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_hu;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_h0;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_jle;
-    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_m1;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_m1w;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_ge4;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_pr;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_is;
@@ -112,7 +119,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_hdw;
     rtDW_MATLABFunction_FmgcComputer_ll_T sf_MATLABFunction_aw;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_kz;
-    rtDW_MATLABFunction_FmgcComputer_ll_T sf_MATLABFunction_mn;
+    rtDW_MATLABFunction_FmgcComputer_ll_T sf_MATLABFunction_mnt;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_jl;
     rtDW_MATLABFunction_FmgcComputer_ll_T sf_MATLABFunction_db;
     rtDW_MATLABFunction_FmgcComputer_T sf_MATLABFunction_fm;
@@ -155,11 +162,14 @@ class FmgcComputer final
   };
 
   struct Parameters_FmgcComputer_T {
-    base_fmgc_ap_fd_logic_outputs fmgc_ap_fd_logic_output_MATLABStruct;
-    base_fmgc_discrete_outputs fmgc_discrete_output_MATLABStruct;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
     real_T BitfromLabel2_bit;
+    real_T BitfromLabel8_bit;
+    real_T BitfromLabel9_bit;
+    real_T BitfromLabel10_bit;
+    real_T BitfromLabel11_bit;
+    real_T BitfromLabel12_bit;
     real_T BitfromLabel2_bit_l;
     real_T BitfromLabel_bit_n;
     real_T BitfromLabel1_bit_i;
@@ -225,16 +235,12 @@ class FmgcComputer final
     real_T BitfromLabel3_bit_gv;
     real_T BitfromLabel_bit_kq;
     real_T BitfromLabel2_bit_ie;
+    real_T BitfromLabel_bit_as;
     real_T BitfromLabel_bit_i;
     real_T BitfromLabel1_bit_i5;
     real_T BitfromLabel2_bit_o;
     real_T BitfromLabel3_bit_l;
     real_T BitfromLabel4_bit_f;
-    real_T BitfromLabel1_bit_d;
-    real_T BitfromLabel3_bit_j;
-    real_T BitfromLabel4_bit_o;
-    real_T BitfromLabel5_bit;
-    real_T BitfromLabel6_bit;
     real_T CompareToConstant_const;
     real_T CompareToConstant1_const;
     real_T CompareToConstant1_const_k;
@@ -243,7 +249,6 @@ class FmgcComputer final
     real_T CompareToConstant4_const;
     real_T CompareToConstant5_const;
     real_T CompareToConstant6_const;
-    real_T CompareToConstant2_const_b;
     real_T CompareToConstant1_const_i;
     real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_g;
@@ -256,13 +261,7 @@ class FmgcComputer final
     real_T CompareToConstant1_const_b;
     real_T CompareToConstant2_const_n;
     real_T CompareToConstant1_const_n;
-    real_T CompareToConstant1_const_h;
-    real_T CompareToConstant_const_mh;
-    real_T CompareToConstant2_const_j;
     real_T CompareToConstant_const_l5;
-    real_T CompareToConstant_const_f;
-    real_T CompareToConstant1_const_o;
-    real_T CompareToConstant2_const_g;
     real_T CompareToConstant1_const_n2;
     real_T CompareToConstant2_const_i;
     real_T CompareToConstant2_const_h;
@@ -317,8 +316,8 @@ class FmgcComputer final
     real_T MTrigNode_triggerDuration_n;
     real_T MTrigNode_triggerDuration_b;
     real_T MTrigNode_triggerDuration_bh;
-    SignStatusMatrix EnumeratedConstant1_Value;
     SignStatusMatrix EnumeratedConstant_Value;
+    SignStatusMatrix EnumeratedConstant1_Value;
     SignStatusMatrix EnumeratedConstant1_Value_d;
     fmgc_flight_phase EnumeratedConstant_Value_a;
     fmgc_flight_phase EnumeratedConstant1_Value_dg;
@@ -333,6 +332,13 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant_Value_c;
     fmgc_flight_phase EnumeratedConstant1_Value_c;
     fmgc_flight_phase EnumeratedConstant_Value_ad;
+    real32_T CompareToConstant2_const_b;
+    real32_T CompareToConstant1_const_h;
+    real32_T CompareToConstant_const_mh;
+    real32_T CompareToConstant2_const_j;
+    real32_T CompareToConstant_const_f;
+    real32_T CompareToConstant1_const_o;
+    real32_T CompareToConstant2_const_g;
     real32_T A429ValueOrDefault_defaultValue;
     real32_T A429ValueOrDefault1_defaultValue;
     real32_T A429ValueOrDefault_defaultValue_n;
@@ -340,26 +346,44 @@ class FmgcComputer final
     real32_T A429ValueOrDefault_defaultValue_l;
     real32_T A429ValueOrDefault1_defaultValue_b;
     real32_T A429ValueOrDefault1_defaultValue_m;
+    real32_T A429ValueOrDefault2_defaultValue;
     real32_T A429ValueOrDefault_defaultValue_e;
     real32_T A429ValueOrDefault_defaultValue_ek;
     real32_T A429ValueOrDefault1_defaultValue_f;
-    real32_T A429ValueOrDefault2_defaultValue;
+    real32_T A429ValueOrDefault2_defaultValue_c;
     real32_T A429ValueOrDefault3_defaultValue;
     real32_T A429ValueOrDefault_defaultValue_p;
     real32_T A429ValueOrDefault1_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_o;
     real32_T A429ValueOrDefault_defaultValue_b;
+    real32_T A429ValueOrDefault3_defaultValue_c;
     real32_T A429ValueOrDefault_defaultValue_pm;
     real32_T A429ValueOrDefault1_defaultValue_j;
     real32_T A429ValueOrDefault2_defaultValue_j;
+    real32_T A429ValueOrDefault1_defaultValue_h;
+    real32_T A429ValueOrDefault_defaultValue_f;
+    real32_T A429ValueOrDefault2_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_a;
+    real32_T A429ValueOrDefault1_defaultValue_g;
     real32_T A429ValueOrDefault_defaultValue_m;
+    real32_T A429ValueOrDefault1_defaultValue_o;
     real32_T A429ValueOrDefault_defaultValue_h;
+    real32_T A429ValueOrDefault1_defaultValue_n;
     real32_T A429ValueOrDefault_defaultValue_mo;
+    real32_T A429ValueOrDefault1_defaultValue_b5;
     real32_T A429ValueOrDefault_defaultValue_ht;
+    real32_T A429ValueOrDefault1_defaultValue_d2;
     real32_T A429ValueOrDefault_defaultValue_i;
+    real32_T A429ValueOrDefault1_defaultValue_dp;
     real32_T A429ValueOrDefault_defaultValue_g;
     real32_T A429ValueOrDefault_defaultValue_k;
+    real32_T A429ValueOrDefault_defaultValue_b0;
+    real32_T A429ValueOrDefault2_defaultValue_b;
+    real32_T A429ValueOrDefault1_defaultValue_l;
+    real32_T A429ValueOrDefault3_defaultValue_j;
+    real32_T A429ValueOrDefault_defaultValue_mi;
+    real32_T A429ValueOrDefault1_defaultValue_fc;
+    real32_T A429ValueOrDefault2_defaultValue_f;
     boolean_T SRFlipFlop1_initial_condition;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop1_initial_condition_n;
@@ -394,6 +418,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop_initial_condition_dp;
     boolean_T SRFlipFlop1_initial_condition_o;
     boolean_T SRFlipFlop_initial_condition_n1;
+    boolean_T SRFlipFlop_initial_condition_e5;
     boolean_T PulseNode_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
@@ -481,30 +506,22 @@ class FmgcComputer final
     base_fmgc_bus_outputs Constant4_Value;
     base_fmgc_logic_outputs Constant1_Value;
     base_fmgc_ap_fd_logic_outputs Delay_InitialCondition;
-    real32_T Constant17_Value;
+    real_T Constant_Value;
     real32_T Constant18_Value;
     real32_T Constant19_Value;
     real32_T Constant20_Value;
-    real32_T Constant16_Value;
-    real32_T Constant1_Value_g;
-    real32_T Constant2_Value;
     real32_T Constant22_Value;
     real32_T Constant26_Value;
     real32_T Constant27_Value;
     real32_T Constant28_Value;
-    real32_T Constant11_Value;
-    real32_T Constant12_Value;
-    real32_T Constant13_Value;
-    real32_T Constant14_Value;
-    real32_T Constant15_Value;
     real32_T Constant32_Value;
     real32_T Constant1_Value_k;
-    real32_T Constant11_Value_m;
-    real32_T Constant2_Value_n;
+    real32_T Constant11_Value;
+    real32_T Constant2_Value;
     boolean_T Delay_InitialCondition_g;
     boolean_T Logic_table[16];
     boolean_T Logic_table_h[16];
-    boolean_T Constant_Value;
+    boolean_T Constant_Value_e;
     boolean_T Logic_table_f[16];
     boolean_T Delay_InitialCondition_gu;
     boolean_T Logic_table_n[16];
@@ -542,6 +559,8 @@ class FmgcComputer final
     boolean_T Logic_table_fi[16];
     boolean_T Logic_table_kg[16];
     boolean_T Logic_table_ds[16];
+    boolean_T Delay_InitialCondition_a;
+    boolean_T Logic_table_ap[16];
     boolean_T Constant_Value_m;
     boolean_T Constant1_Value_i;
     boolean_T Constant10_Value;
@@ -552,7 +571,6 @@ class FmgcComputer final
     boolean_T Constant7_Value;
     boolean_T Constant8_Value;
     boolean_T Constant9_Value;
-    int8_T Constant_Value_o;
   };
 
   FmgcComputer(FmgcComputer const&) = delete;
@@ -593,6 +611,7 @@ class FmgcComputer final
   static void FmgcComputer_MATLABFunction_d(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T rtp_isRisingEdge,
     real_T rtp_retriggerable, real_T rtp_triggerDuration, rtDW_MATLABFunction_FmgcComputer_ll_T *localDW);
   static void FmgcComputer_MATLABFunction_gy(const boolean_T rtu_u[19], real32_T *rty_y);
+  FmgcOuterLoops LawMDLOBJ1;
 };
 
 #endif

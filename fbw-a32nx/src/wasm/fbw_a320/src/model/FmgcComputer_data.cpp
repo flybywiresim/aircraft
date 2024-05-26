@@ -1,97 +1,138 @@
 #include "FmgcComputer.h"
 
+ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct{
+  0.0,
+  0.0,
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    false,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  }
+} ;
+
+base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
+  {
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+
+  {
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+
+  {
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+  lateral_law::NONE,
+  vertical_law::NONE,
+  false,
+  false,
+  false,
+  0.0,
+  0.0,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+} ;
+
+base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct{
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+} ;
+
 FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
-
-  {
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    },
-
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    },
-
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    },
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false
-  },
-
-
-  {
-    false,
-    false,
-    false,
-    false,
-    false,
-    false
-  },
 
   18.0,
 
   19.0,
 
   17.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  14.0,
+
+  15.0,
 
   22.0,
 
@@ -223,6 +264,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   11.0,
 
+  21.0,
+
   20.0,
 
   14.0,
@@ -233,16 +276,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   18.0,
 
-  11.0,
-
-  12.0,
-
-  13.0,
-
-  14.0,
-
-  15.0,
-
   2.6,
 
   2.6,
@@ -258,8 +291,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   36.7,
 
   33.3,
-
-  20.0,
 
   0.4,
 
@@ -285,19 +316,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   0.16,
 
-  250.0,
-
-  40.0,
-
-  0.0,
-
   400.0,
-
-  40.0,
-
-  0.0,
-
-  0.0,
 
   0.8,
 
@@ -407,12 +426,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   3.0,
 
-  SignStatusMatrix::NormalOperation,
-
   SignStatusMatrix::NoComputedData,
 
   SignStatusMatrix::NormalOperation,
 
+  SignStatusMatrix::NormalOperation,
+
   fmgc_flight_phase::Takeoff,
 
   fmgc_flight_phase::Goaround,
@@ -438,6 +457,56 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   fmgc_flight_phase::Approach,
 
   fmgc_flight_phase::Approach,
+
+  20.0F,
+
+  250.0F,
+
+  40.0F,
+
+  0.0F,
+
+  40.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
 
   0.0F,
 
@@ -532,6 +601,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
 
   true,
+
+  false,
 
   false,
 
@@ -2323,28 +2394,202 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
 
       {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        }
       },
 
       {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        }
       },
       0.0,
       false,
@@ -2432,8 +2677,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         false,
         false
       },
+      lateral_law::NONE,
+      vertical_law::NONE,
       false,
       false,
+      false,
+      0.0,
+      0.0,
       false,
       false,
       false,
@@ -2456,6 +2706,33 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
       false,
       false
+    },
+
+    {
+      0.0,
+      0.0,
+
+      {
+        0.0,
+        0.0,
+        0.0
+      },
+
+      {
+        0.0,
+        0.0,
+        0.0
+      },
+
+      {
+        false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      }
     },
 
     {
@@ -3010,28 +3287,202 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     false,
 
     {
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      }
     },
 
     {
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      }
     },
     0.0,
     false,
@@ -3120,8 +3571,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
       false
     },
+    lateral_law::NONE,
+    vertical_law::NONE,
     false,
     false,
+    false,
+    0.0,
+    0.0,
     false,
     false,
     false,
@@ -3146,23 +3602,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     false
   },
 
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
+  350.0,
 
   0.0F,
 
@@ -3304,6 +3744,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   false,
 
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
+
   true,
 
   false,
@@ -3320,7 +3765,5 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   false,
 
-  false,
-
-  1
+  false
 };
