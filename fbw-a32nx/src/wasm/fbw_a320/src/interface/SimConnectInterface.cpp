@@ -841,6 +841,24 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FCU_DISCRETE_OUTPUTS", ClientData::FCU_DISCRETE_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FCU_DISCRETE_OUTPUT, sizeof(base_fcu_discrete_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definition
+
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FCU_DISCRETE_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_fcu_discrete_outputs));
+
+  // request data to be updated when set
+  if (fcuDisabled) {
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::FCU_DISCRETE_OUTPUT, ClientData::FCU_DISCRETE_OUTPUT,
+                                           ClientData::FCU_DISCRETE_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FCU_BUS", ClientData::FCU_BUS_OUTPUT);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::FCU_BUS_OUTPUT, sizeof(base_fcu_bus),
@@ -1227,6 +1245,10 @@ base_fac_analog_outputs SimConnectInterface::getClientDataFacAnalogsOutput() {
 
 base_fac_bus SimConnectInterface::getClientDataFacBusOutput() {
   return clientDataFacBusOutputs;
+}
+
+base_fcu_discrete_outputs SimConnectInterface::getClientDataFcuDiscreteOutput() {
+  return clientDataFcuDiscreteOutputs;
 }
 
 base_fcu_bus SimConnectInterface::getClientDataFcuBusOutput() {
@@ -2755,6 +2777,11 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::FAC_2_BUS_OUTPUT:
       // store aircraft data
       clientDataFacBusOutputs = *((base_fac_bus*)&data->dwData);
+      return;
+
+    case ClientData::FCU_DISCRETE_OUTPUT:
+      // store aircraft data
+      clientDataFcuDiscreteOutputs = *((base_fcu_discrete_outputs*)&data->dwData);
       return;
 
     case ClientData::FCU_BUS_OUTPUT:
