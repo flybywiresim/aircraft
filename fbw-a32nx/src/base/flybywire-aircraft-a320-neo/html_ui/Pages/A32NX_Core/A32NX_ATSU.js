@@ -97,8 +97,6 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["tripFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.enroute_burn : lbsToKg(data.fuel.enroute_burn);
             mcdu.simbrief["sendStatus"] = "DONE";
 
-            resetAocTimes();
-
             callback();
 
             updateView();
@@ -178,6 +176,7 @@ const insertUplink = (mcdu) => {
         mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude);
         mcdu.tryUpdateCostIndex(costIndex);
         mcdu.tryUpdateTropo(avgTropopause);
+        mcdu.resestAocTimes();
         if (mcdu.page.Current === mcdu.page.InitPageA) {
             CDUInitPage.ShowPage1(mcdu);
         }
@@ -339,14 +338,4 @@ function getWaypointByIdentAndCoords(mcdu, ident, coords, callback) {
 
         return callback(undefined);
     }).catch(console.error);
-}
-
-function resetAocTimes() {
-    mcdu.aocTimes = {
-        doors: 0,
-        off: 0,
-        out: 0,
-        on: 0,
-        in: 0,
-    };
 }
