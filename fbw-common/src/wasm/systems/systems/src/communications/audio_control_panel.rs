@@ -1,4 +1,6 @@
-use super::audio_management_unit::{IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo};
+use super::audio_management_unit::{
+    self, IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo, TIMEOUT,
+};
 use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -315,9 +317,9 @@ impl AudioControlPanel {
     }
 
     pub fn update(&mut self, context: &UpdateContext, bus_acp: &mut Vec<Arinc429Word<u32>>) {
-        if self.is_power_supply_powered {
-            self.last_complete_cycle_sent += context.delta();
+        self.last_complete_cycle_sent += context.delta();
 
+        if self.is_power_supply_powered {
             if !bus_acp.is_empty() {
                 // These will be used later on
                 // Especially "calls" when SELCAL will be
@@ -343,8 +345,7 @@ impl AudioControlPanel {
                 }
             }
 
-            // Restart full cycle every 160ms as stated in AMM
-            if self.last_complete_cycle_sent.as_millis() > 160 {
+            if self.last_complete_cycle_sent.as_millis() > TIMEOUT {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             }

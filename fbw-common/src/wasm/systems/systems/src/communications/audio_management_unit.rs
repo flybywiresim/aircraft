@@ -9,12 +9,16 @@ use crate::{
         SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+use std::time::Duration;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
+
+// Restart full cycle every 160ms as stated in AMM
+pub const TIMEOUT: u128 = 160;
 
 enum TypeCard {
     Selcal(Selcal),
@@ -259,7 +263,6 @@ pub struct AdaptationBoard {
     ls_fcu2_pressed: bool,
 
     pilot_transmit_channel: u32,
-    copilot_transmit_channel: u32,
 
     need_update: bool,
 }
@@ -346,7 +349,6 @@ impl AdaptationBoard {
             ),
 
             pilot_transmit_channel: 1,
-            copilot_transmit_channel: 1,
 
             is_flt_int_powered: false,
             is_calls_card_powered: false,
@@ -408,62 +410,37 @@ impl AdaptationBoard {
             self.bus_arinc_bay.append(&mut self.bus_acp_avncs);
         }
 
-        // We only take into account VHF1/2/3 as per SDK
-        // 4 stands for NONE SDK wise but stand for 4 HF1 for us therefore
-        // we need to have some logic here to filter
-        // 4 is NONE according to the SDK
-        if context.side_controlling() == SideControlling::CAPTAIN {
-            self.pilot_transmit_channel = if acp_to_take_into_account == 1 {
-                self.mixed_audio = self.computer_a.get_mixed_audio_acp();
+        if acp_to_take_into_account == 1 {
+            self.mixed_audio = self.computer_a.get_mixed_audio_acp();
 
-                let transmission_table = self.computer_a.get_transmission_table_acp();
-                if transmission_table == 0 || transmission_table > 3 {
-                    4
-                } else {
-                    transmission_table - 1
-                }
-            } else if acp_to_take_into_account == 3 {
-                self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
-
-                let transmission_table = self.computer_b.get_transmission_table_acp3();
-                if transmission_table == 0 || transmission_table > 3 {
-                    4
-                } else {
-                    transmission_table - 1
-                }
-            } else {
-                4
-            };
-
-            self.copilot_transmit_channel = 4;
+            self.pilot_transmit_channel = self.computer_a.get_transmission_table_acp();
+        } else if acp_to_take_into_account == 2 {
+            self.mixed_audio = self.computer_b.get_mixed_audio_acp();
+            self.pilot_transmit_channel = self.computer_b.get_transmission_table_acp();
         } else {
-            self.copilot_transmit_channel = if acp_to_take_into_account == 2 {
-                self.mixed_audio = self.computer_b.get_mixed_audio_acp();
-
-                let transmission_table = self.computer_b.get_transmission_table_acp();
-                if transmission_table == 0 || transmission_table > 3 {
-                    4
-                } else {
-                    transmission_table - 1
-                }
-            } else if acp_to_take_into_account == 3 {
-                self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
-
-                let transmission_table = self.computer_a.get_transmission_table_acp3();
-                if transmission_table == 0 || transmission_table > 3 {
-                    4
-                } else {
-                    transmission_table - 1
-                }
+            if context.side_controlling() == SideControlling::CAPTAIN {
+                self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
+                self.pilot_transmit_channel = self.computer_b.get_transmission_table_acp3();
             } else {
-                4
-            };
-
-            self.pilot_transmit_channel = 4;
+                self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
+                self.pilot_transmit_channel = self.computer_a.get_transmission_table_acp3();
+            }
         }
 
-        self.vhfs[0].update(context, self.mixed_audio.receive_com1);
-        self.vhfs[1].update(context, self.mixed_audio.receive_com2);
+        // We only take into account VHF1/2 as Vatsim and IVAO use them only
+        // 4 stands for NONE as per SDK but stand for HF1 for us therefore we need to filter
+        self.pilot_transmit_channel = if self.pilot_transmit_channel == 0
+            || self.pilot_transmit_channel > 2
+            || self.pilot_transmit_channel == 1 && !self.vhfs[0].is_powered()
+            || self.pilot_transmit_channel == 2 && !self.vhfs[1].is_powered()
+        {
+            4
+        } else {
+            self.pilot_transmit_channel - 1
+        };
+
+        self.vhfs[0].update(self.mixed_audio.receive_com1);
+        self.vhfs[1].update(self.mixed_audio.receive_com2);
 
         self.adfs[0].update(
             context,
@@ -544,7 +521,8 @@ impl SimulationElement for AdaptationBoard {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pilot_transmit_id, self.pilot_transmit_channel);
-        writer.write(&self.copilot_transmit_id, self.copilot_transmit_channel);
+        // Forcing copilot to NONE as the pilot version sets copilot too and it's an undesired behaviour
+        writer.write(&self.copilot_transmit_id, 4);
 
         // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
         // writer.write(&self.receive_gls_id, self.mixed_audio.receive_gls);
@@ -648,6 +626,8 @@ pub struct AudioCard {
     mixed_audio_acp3: MixedAudio,
     transmission_table_acp: u32,
     transmission_table_acp3: u32,
+    last_time_data_received_from_acp: Duration,
+    last_time_data_received_from_acp3: Duration,
 }
 
 impl AudioCard {
@@ -659,6 +639,8 @@ impl AudioCard {
             mixed_audio_acp3: Default::default(),
             transmission_table_acp: 0,
             transmission_table_acp3: 0,
+            last_time_data_received_from_acp: Duration::from_millis(0),
+            last_time_data_received_from_acp3: Duration::from_millis(0),
         }
     }
 
@@ -668,8 +650,15 @@ impl AudioCard {
         bus_from_adaptation_card: &mut Vec<Arinc429Word<u32>>,
         is_powered: bool,
     ) {
+        self.last_time_data_received_from_acp += context.delta();
+        self.last_time_data_received_from_acp3 += context.delta();
+
         if is_powered {
             self.acp.update(context, &mut self.bus_acp);
+
+            if self.bus_acp.len() != 0 {
+                self.last_time_data_received_from_acp = Duration::from_millis(0);
+            }
 
             AudioCard::decode_arinc_words_from_acp(
                 &mut self.bus_acp,
@@ -677,11 +666,24 @@ impl AudioCard {
                 &mut self.transmission_table_acp,
             );
 
+            if bus_from_adaptation_card.len() != 0 {
+                self.last_time_data_received_from_acp3 = Duration::from_millis(0);
+            }
+
             AudioCard::decode_arinc_words_from_acp(
                 bus_from_adaptation_card,
                 &mut self.mixed_audio_acp3,
                 &mut self.transmission_table_acp3,
             );
+
+            // If data were not received within timeframe, we consider the ACP as U/S
+            if self.last_time_data_received_from_acp.as_millis() > TIMEOUT {
+                self.mixed_audio_acp = Default::default();
+            }
+
+            if self.last_time_data_received_from_acp3.as_millis() > TIMEOUT {
+                self.mixed_audio_acp3 = Default::default();
+            }
         } else {
             self.mixed_audio_acp = Default::default();
             self.mixed_audio_acp3 = Default::default();
