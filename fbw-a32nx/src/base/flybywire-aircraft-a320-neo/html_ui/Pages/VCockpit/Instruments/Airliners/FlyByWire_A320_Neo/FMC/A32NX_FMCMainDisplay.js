@@ -460,13 +460,6 @@ class FMCMainDisplay extends BaseAirliners {
             tripFuel: undefined,
             payload: undefined,
         };
-        this.aocTimes = {
-            doors: 0,
-            off: 0,
-            out: 0,
-            on: 0,
-            in: 0,
-        };
         this.winds = {
             climb: [],
             cruise: [],
