@@ -163,7 +163,7 @@ impl SlatFlapControlComputer {
         &self,
         flaps_handle: &FlapsHandle,
         context: &UpdateContext,
-        adirs_output: &impl AdirsMeasurementOutputs,
+        adirs: &impl AdirsMeasurementOutputs,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
             (0 | 1, 1)
@@ -199,7 +199,10 @@ impl SlatFlapControlComputer {
             (_, 0) if context.is_in_flight() && self.alpha_speed_lock_active => {
                 if context.indicated_airspeed().get::<knot>()
                     > Self::ALPHA_SPEED_LOCK_OUT_AIRSPEED_THRESHOLD_KNOTS
-                    || adirs_output.angle_of_attack(1).value().get::<degree>()
+                    || self
+                        .angle_of_attack(adirs)
+                        .unwrap_or_default()
+                        .get::<degree>()
                         < Self::ALPHA_SPEED_LOCK_OUT_AOA_THRESHOLD_DEGREES
                 {
                     FlapsConf::Conf0
@@ -211,7 +214,10 @@ impl SlatFlapControlComputer {
                 if context.is_in_flight()
                     && (context.indicated_airspeed().get::<knot>()
                         < Self::ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS
-                        || adirs_output.angle_of_attack(1).value().get::<degree>()
+                        || self
+                            .angle_of_attack(adirs)
+                            .unwrap_or_default()
+                            .get::<degree>()
                             > Self::ALPHA_SPEED_LOCK_IN_AOA_THRESHOLD_DEGREES) =>
             {
                 FlapsConf::Conf1F
@@ -285,6 +291,12 @@ impl SlatFlapControlComputer {
 
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
+    }
+
+    fn angle_of_attack(&self, adirs: &impl AdirsMeasurementOutputs) -> Option<Angle> {
+        [1, 2, 3]
+            .iter()
+            .find_map(|&adiru_number| adirs.angle_of_attack(adiru_number).normal_value())
     }
 
     pub fn update(
