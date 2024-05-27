@@ -535,7 +535,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.sendUpdate();
         }
     }
-
+    // this function seems to be the place to make changes
     checkAocTimes() {
         if (!this.aocTimes.off) {
             if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && !this.isOnGround()) {
