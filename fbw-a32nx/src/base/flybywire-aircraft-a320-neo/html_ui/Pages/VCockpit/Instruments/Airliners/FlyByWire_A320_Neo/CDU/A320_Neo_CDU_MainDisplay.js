@@ -554,7 +554,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.on) {
-            if (this.aocTimes.off && !this.isOnGround()) {
+            /*
+            this.isOnGround() works as follows (from flightphase.ts):
+
+            export function isOnGround(): boolean {
+            return (
+                SimVar.GetSimVarValue('L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED', 'bool') ||
+                SimVar.GetSimVarValue('L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED', 'bool')
+            );
+            }
+            The nose gear compression seems to stay on right after takeoff. Not going to modify this for now.
+            Instead, I can add another condition such that it doesn't trigger at the same time as aocTimes.out.
+            Temporarily using fmgc flight phase. Need to test for edge cases.
+
+            */
+            if (this.aocTimes.off && !this.isOnGround() && !this.FmgcFlightPhases == FmgcFlightPhases.TAKEOFF) {
                 // On: remains blank until Landing time
                 this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
