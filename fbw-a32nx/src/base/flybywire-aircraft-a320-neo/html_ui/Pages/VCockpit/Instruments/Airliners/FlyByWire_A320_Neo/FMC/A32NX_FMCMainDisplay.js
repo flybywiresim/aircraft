@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+/** This class is the top level injection point for many
+ *(if not most?) critical flight parameters.
+ */
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -4980,13 +4983,18 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= fuel && fuel <= 80;
     }
 
-    /**
-     *
-     * @returns {*}
+    /**NOTE: This is essentially the 'top level/master' injection point for the current on board fuel.
+     *ALL fuel projections, current fuel level displays etc use the figure returned here as the baseline.
+     * @returns {either the detected fuel in the tanks(if at least one engine running) or pilot entered block fuel(engines off)}
      */
     //TODO: Can this be util?
     getFOB() {
-        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        if (this.isAnEngineOn()) {
+            return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        } else {
+            //If an engine is not running, use pilot entered block fuel to calculate fuel predictions
+            return this.blockFuel * (0.4535934 / 1000);
+        }
     }
 
     /**
