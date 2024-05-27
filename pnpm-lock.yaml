@@ -53,9 +53,9 @@ dependencies:
   esbuild-plugin-inline-image:
     specifier: ^0.0.8
     version: 0.0.8
-  esbuild-style-plugin:
-    specifier: ^1.6.0
-    version: 1.6.3
+  esbuild-style-plugin-v2:
+    specifier: ^1.6.5
+    version: 1.6.5
   geolib:
     specifier: ^3.3.3
     version: 3.3.4
@@ -3010,13 +3010,6 @@ packages:
       '@types/node': 20.10.4
     dev: true
 
-  /@types/sass@1.45.0:
-    resolution: {integrity: sha512-jn7qwGFmJHwUSphV8zZneO3GmtlgLsmhs/LQyVvQbIIa+fzGMUiHI4HXJZL3FT8MJmgXWbLGiVVY7ElvHq6vDA==}
-    deprecated: This is a stub types definition. sass provides its own type definitions, so you do not need this installed.
-    dependencies:
-      sass: 1.69.5
-    dev: false
-
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
 
@@ -4594,11 +4587,10 @@ packages:
     resolution: {integrity: sha512-L2Wwq7z9HALpq2hfxYHfQrrIyl/ivfRgiAULohVC/WKrGydPzfANGCrt5wSlxxWW4fuiPOc3BIA9Yp00h2QPVQ==}
     dev: false
 
-  /esbuild-style-plugin@1.6.3:
-    resolution: {integrity: sha512-XPEKf4FjLjEVLv/dJH4UxDzXCrFHYpD93DBO8B+izdZARW5b7nNKQbnKv3J+7VDWJbgCU+hzfgIh2AuIZzlmXQ==}
+  /esbuild-style-plugin-v2@1.6.5:
+    resolution: {integrity: sha512-piXexpJy0trVEQV7CAzRFm1qQiYdoFWFWotSH/dIfseZoJYdQcyogF8r5iQHR11elPtVuiTerWOwkLesmIKMVQ==}
     dependencies:
       '@types/less': 3.0.6
-      '@types/sass': 1.45.0
       '@types/stylus': 0.48.42
       glob: 10.3.10
       postcss: 8.4.32
@@ -5474,6 +5466,7 @@ packages:
 
   /glob@7.1.6:
     resolution: {integrity: sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==}
+    deprecated: Glob versions prior to v9 are no longer supported
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
