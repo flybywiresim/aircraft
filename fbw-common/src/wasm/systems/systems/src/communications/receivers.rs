@@ -11,8 +11,10 @@ use uom::num::pow;
 
 pub struct CommTransceiver {
     receive_com_id: VariableIdentifier,
+
     is_power_supply_powered: bool,
     receive: bool,
+
     powered_by: ElectricalBusType,
 }
 impl CommTransceiver {
@@ -25,8 +27,8 @@ impl CommTransceiver {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, receive: bool) {
-        self.receive = receive;
+    pub fn update(&mut self, receive: bool) {
+        self.receive = receive && self.is_power_supply_powered;
     }
 
     pub fn is_powered(&self) -> bool {
