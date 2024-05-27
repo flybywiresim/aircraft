@@ -553,7 +553,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.on) {
-            if (this.aocTimes.off && !this.isOnGround() && this.FmgcFlightPhases != FmgcFlightPhases.TAKEOFF) {
+            if (this.aocTimes.off && this.isOnGround() && this.FmgcFlightPhases != FmgcFlightPhases.TAKEOFF) {
                 // On: remains blank until Landing time
                 this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
