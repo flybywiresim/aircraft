@@ -8,7 +8,7 @@ OUTPUT="${DIR}/out/terronnd.wasm"
 if [ "$1" == "--debug" ]; then
   CLANG_ARGS="-g"
 else
-  WASMLD_ARGS="--strip-debug --gc-sections"
+  WASMLD_ARGS="--strip-debug"
 fi
 
 set -e
@@ -50,7 +50,6 @@ clang++ \
   -fdata-sections \
   -fno-stack-protector \
   -fstack-size-section \
-  -fwritable-strings \
   -mbulk-memory \
   -Werror=return-type \
   -O2 \
@@ -85,6 +84,7 @@ wasm-ld \
   --export get_pages_state \
   --export mark_decommit_pages \
   --export-table \
+  --gc-sections \
   ${WASMLD_ARGS} \
   -O2 \
   -lc++ -lc++abi \
