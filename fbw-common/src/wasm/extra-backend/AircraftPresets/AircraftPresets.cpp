@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #include <fstream>
@@ -44,10 +44,10 @@ bool AircraftPresets::initialize() {
 
   // LVARs
   loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
-  progressAircraftPreset    = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
+  progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup
 
-  aircraftPresetVerbose  = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpedite = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE", UNITS.Bool, UpdateMode::AUTO_READ, 0.250);
   aircraftPresetExpediteDelay =
       dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_EXPEDITE_DELAY", UNITS.Number, UpdateMode::AUTO_READ, 0.250);
@@ -79,9 +79,6 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
-    // read the progress vars once to get the current state
-    progressAircraftPreset->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter());
-
     // check if we already have an active loading process or if this is a new request that
     // needs to be initialized
     if (!loadingIsActive) {
@@ -100,6 +97,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
       return true;
     }
+    
+    // DEBUG
+    std::cout << "requestedProcedure: " << currentProcedure->size() << " => " << currentStep << std::endl;
 
     // Reset the LVAR to the current running procedure in case it has been changed
     // during a running procedure. We only allow "0" as a signal to interrupt the
@@ -203,11 +203,11 @@ bool AircraftPresets::checkCompletion() {
 void AircraftPresets::initializeNewLoadingProcess(const Preset* requestedProcedure) {
   LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
   currentProcedureID = loadAircraftPresetRequest->getAsInt64();
-  currentProcedure   = requestedProcedure;
+  currentProcedure = requestedProcedure;
   currentLoadingTime = 0;
-  currentDelay       = 0;
-  currentStep        = 0;
-  loadingIsActive    = true;
+  currentDelay = 0;
+  currentStep = 0;
+  loadingIsActive = true;
   progressAircraftPreset->setAndWriteToSim(0);
 }
 
@@ -244,7 +244,7 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
     return false;
   }
 
-  FLOAT64    fvalue        = 0.0;
+  FLOAT64 fvalue = 0.0;
   const bool verboseOutput = aircraftPresetVerbose->getAsBool();
   if (verboseOutput) {
     std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: " << currentStepPtr->description << " TEST: ["
