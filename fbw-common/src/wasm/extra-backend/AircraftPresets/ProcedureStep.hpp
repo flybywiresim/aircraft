@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_PROCEDURESTEP_HPP
@@ -66,6 +66,25 @@ class ProcedureStep {
   const double      delayAfter;
   const std::string expectedStateCheckCode;
   const std::string actionCode;
+
+  /**
+   * @brief Construct a new Procedure Step object
+   * @param description
+   * @param type
+   * @param delayAfter
+   * @param expectedStateCheckCode
+   * @param actionCode
+   */
+  ProcedureStep(const std::string& description,
+                const StepType     type,
+                const double       delayAfter,
+                const std::string& expectedStateCheckCode,
+                const std::string& actionCode)
+      : description(description),
+        type(type),
+        delayAfter(delayAfter),
+        expectedStateCheckCode(expectedStateCheckCode),
+        actionCode(actionCode) {}
 
   /**
    * @brief Convert a StepType to a string.
