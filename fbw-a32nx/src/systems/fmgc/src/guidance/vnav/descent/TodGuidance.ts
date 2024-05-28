@@ -20,6 +20,8 @@ export class TodGuidance {
 
   private pauseAtTodDistance: number;
 
+  private tdPauseEnabled: boolean;
+
   private apEngaged: boolean;
 
   private cooldown: number;
@@ -33,6 +35,7 @@ export class TodGuidance {
     this.apEngaged = false;
     this.tdReached = false;
     this.tdPaused = false;
+    this.tdPauseEnabled = false;
     this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
 
     NXDataStore.getAndSubscribe(
@@ -46,6 +49,18 @@ export class TodGuidance {
         }
       },
       '10',
+    );
+
+    NXDataStore.getAndSubscribe(
+      'PAUSE_AT_TOD',
+      (_, value: string) => {
+        if (value === 'ENABLED') {
+          this.tdPauseEnabled = true;
+        } else {
+          this.tdPauseEnabled = false;
+        }
+      },
+      'DISABLED',
     );
   }
 
@@ -62,7 +77,7 @@ export class TodGuidance {
 
   update(deltaTime: number) {
     this.updateTdReached(deltaTime);
-    if (NXDataStore.get('PAUSE_AT_TOD', 'DISABLED') === 'ENABLED') {
+    if (this.tdPauseEnabled) {
       this.updateTdPause(deltaTime);
     }
   }
@@ -77,7 +92,7 @@ export class TodGuidance {
         Simplane.getAutoPilotAirspeedManaged(),
     );
 
-    if (this.tdArmed) {
+    if (this.tdArmed.getVar()) {
       // Check T/D pause first
       if (
         (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
