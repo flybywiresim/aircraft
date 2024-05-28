@@ -42,17 +42,6 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_ecu_bus_
-#define DEFINED_TYPEDEF_FOR_base_ecu_bus_
-
-struct base_ecu_bus
-{
-  base_arinc_429 selected_tla_deg;
-  base_arinc_429 selected_flex_temp_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_lateral_law_
 #define DEFINED_TYPEDEF_FOR_lateral_law_
 
@@ -97,6 +86,17 @@ struct base_ils_bus
   base_arinc_429 ils_frequency_mhz;
   base_arinc_429 localizer_deviation_deg;
   base_arinc_429 glideslope_deviation_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ecu_bus_
+#define DEFINED_TYPEDEF_FOR_base_ecu_bus_
+
+struct base_ecu_bus
+{
+  base_arinc_429 selected_tla_deg;
+  base_arinc_429 selected_flex_temp_deg;
 };
 
 #endif
@@ -509,11 +509,10 @@ struct base_fmgc_logic_outputs
   boolean_T both_ra_valid;
   boolean_T fac_lg_data_failure;
   boolean_T fac_flap_slat_data_failure;
-  real32_T flap_position;
-  real32_T slat_position;
   int8_T flap_slat_lever_position;
   boolean_T fac_speeds_failure;
   boolean_T fac_weights_failure;
+  base_fac_bus chosen_fac_bus;
   boolean_T fcu_failure;
   boolean_T ils_failure;
   boolean_T both_ils_valid;
