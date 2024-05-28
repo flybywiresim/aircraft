@@ -71,16 +71,30 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
     this.handleMovePlane();
     this.handleRotatePlane();
     this.handleScaleMap();
+    this.handlePlaneVisibility();
   }
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    this.props.aircraftTrueHeading.sub(() => this.handleRotatePlane());
+    this.props.aircraftTrueHeading.sub(() => {
+      this.handlePlaneVisibility();
+      this.handleRotatePlane();
+    });
 
-    this.pposLatSub.sub(() => this.handleMovePlane());
+    this.pposLatSub.sub((lat) => {
+      this.pposLatRegister.set(lat);
 
-    this.pposLongSub.sub(() => this.handleMovePlane());
+      this.handlePlaneVisibility();
+      this.handleMovePlane();
+    });
+
+    this.pposLongSub.sub((long) => {
+      this.pposLongRegister.set(long);
+
+      this.handlePlaneVisibility();
+      this.handleMovePlane();
+    });
 
     this.mapCenterLatSub.sub(() => {
       this.handleRecomputeMapParameters();
@@ -108,20 +122,14 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
       const latRegister = this.pposLatRegister;
       const longRegister = this.pposLongRegister;
 
-      latRegister.set(this.pposLatSub.get());
-      longRegister.set(this.pposLongSub.get());
-
       if (latRegister.isNormalOperation() && longRegister.isNormalOperation()) {
         const lat = latRegister.value;
         const long = longRegister.value;
 
         const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
 
-        this.controlPublisher.pub('set_show_plane', true);
         this.controlPublisher.pub('set_plane_x', 768 / 2 + x);
         this.controlPublisher.pub('set_plane_y', 768 / 2 + y);
-      } else {
-        this.controlPublisher.pub('set_show_plane', false);
       }
     }
   }
@@ -132,9 +140,20 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
       if (planeRotation.isNormalOperation()) {
         const ndRotation = this.mapParams.rotation(planeRotation.value);
-
-        this.controlPublisher.pub('set_show_plane', true);
         this.controlPublisher.pub('set_plane_rotation', ndRotation);
+      }
+    }
+  }
+
+  private handlePlaneVisibility() {
+    if (this.isVisible.get()) {
+      const planeRotation = this.props.aircraftTrueHeading.get();
+      if (
+        planeRotation.isNormalOperation() &&
+        this.pposLongRegister.isNormalOperation() &&
+        this.pposLatRegister.isNormalOperation()
+      ) {
+        this.controlPublisher.pub('set_show_plane', true);
       } else {
         this.controlPublisher.pub('set_show_plane', false);
       }

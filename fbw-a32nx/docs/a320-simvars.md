@@ -3223,7 +3223,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The V_3 / F-Speed.
     - Arinc429<Knots>
 
-- A32NX_FAC_{number}_V_3
+- A32NX_FAC_{number}_V_4
     - The V_4 / S-Speed.
     - Arinc429<Knots>
 
