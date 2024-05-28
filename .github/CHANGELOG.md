@@ -93,6 +93,7 @@
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
 1. [CDU] Fix for EFOB calculation not pulling from block fuel prior to engine start - @PatM (Patrick Macken)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
