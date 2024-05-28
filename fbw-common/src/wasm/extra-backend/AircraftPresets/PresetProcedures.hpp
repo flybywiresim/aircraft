@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_PRESET_PROCEDURES
@@ -52,7 +52,7 @@ class PresetProcedures {
   std::vector<Preset*> presets = {&coldAndDark, &powered, &readyForPushback, &readyForTaxi, &readyForTakeoff};
 
   // Map the procedure names to procedure definitions to quickly validate the XML given procedures and add them to the correct list
-  std::unordered_map<std::string, ProcedureDefinition> procedureListMap;
+  std::unordered_map<std::string, ProcedureDefinition> procedureListMap{};
 
   // the path to the XML file containing the procedure definitions in the MSFS VFS
   const std::string configFile;
@@ -81,6 +81,7 @@ class PresetProcedures {
       return nullptr;
     }
     pugi::xml_node aircraftPresetProcedures = loadXMLConfig(configFile);
+
     if (aircraftPresetProcedures.empty()) {
       return nullptr;
     }
@@ -97,7 +98,7 @@ class PresetProcedures {
    * @return the root node of the XML file
    */
   pugi::xml_node loadXMLConfig(const std::string& filePath) {
-    pugi::xml_document           presetProceduresXML;
+    pugi::xml_document presetProceduresXML;
     const pugi::xml_parse_result result = presetProceduresXML.load_file(filePath.c_str());
     if (!result) {
       LOG_ERROR("AircraftPresets: XML config \"" + filePath + "\" parsed with errors. Error description: " + result.description());
@@ -112,18 +113,34 @@ class PresetProcedures {
    * @param rootNode the root node of the XML file
    */
   void processProcedures(const pugi::xml_node& rootNode) {
-    // flag to skip a whole procedure if an error occurs
-    bool continue_outer = false;
+    // DEBUG
+    for (pugi::xml_node procedure : rootNode.children("Procedure")) {
+      std::cout << "CHECKING Procedure: " << procedure.attribute("name").as_string() << std::endl;
+      // procedure.print(std::cout);
+    }
+    std::cout << std::endl;
 
     // iterate over all procedures
     for (pugi::xml_node procedure : rootNode.children("Procedure")) {
-      const std::string procedureName = procedure.attribute("name").as_string();
+      const std::string procedureName{procedure.attribute("name").as_string()};
+
+      // DEBUG
+      std::cout << "Reading Procedure: " << procedureName << std::endl;
+
+      // Check if the procedure name is valid
+      if (procedureListMap.find(procedureName) == procedureListMap.end()) {
+        LOG_ERROR("AircraftPresets: The procedure " + procedureName + " is not valid. Skipping the whole procedure.");
+        continue;
+      }
 
       // iterate over all steps
       for (pugi::xml_node step : procedure.children("Step")) {
+        // DEBUG
+        std::cout << "    Reading Step: " << step.attribute("Name").as_string() << std::endl;
+
         // Check if the step type is valid
-        auto it = ProcedureStep::StepTypeMap.find(step.attribute("Type").as_string());
-        if ((it == ProcedureStep::StepTypeMap.end())) {  // The color was not found in the map
+        auto typeItr = ProcedureStep::StepTypeMap.find(step.attribute("Type").as_string());
+        if ((typeItr == ProcedureStep::StepTypeMap.end())) {
           LOG_ERROR("AircraftPresets: The step type " + std::string{step.attribute("Type").as_string()} +
                     " is not valid. Skipping the Step.\n" + "Procedure: " + procedureName + " Step: " + step.attribute("Name").as_string() +
                     "\n");
@@ -137,30 +154,16 @@ class PresetProcedures {
           continue;
         }
 
-        // Create a new ProcedureStep
-        ProcedureStep pStep = {
-            .description            = std::string{step.attribute("Name").as_string()},
-            .type                   = it->second,
-            .delayAfter             = step.attribute("Delay").as_int(),
-            .expectedStateCheckCode = std::string{step.child("Condition").child_value()},
-            .actionCode             = std::string{step.child("Action").child_value()},
-        };
-
         // Add the step to the correct procedure list
-        auto itr = procedureListMap.find(procedureName);
-        if (itr != procedureListMap.end()) {
-          itr->second.push_back(pStep);
-        } else {
-          LOG_ERROR("The procedure " + procedureName + " is not valid. Skipping the whole procedure.");
-          continue_outer = true;
-          break;
-        }
+        procedureListMap[procedureName].emplace_back(  //
+            step.attribute("Name").as_string(),        //
+            typeItr->second,                           //
+            0,                                         //
+            step.child("Condition").child_value(),     //
+            step.child("Action").child_value()         //
+        );
       }  // for all steps
-      if (continue_outer) {
-        continue_outer = false;
-        continue;
-      }
-    }  // for all procedures
+    }    // for all procedures
   }
 
   /**
@@ -168,8 +171,8 @@ class PresetProcedures {
    */
   void initializeProcedureListMap() {
     procedureListMap.clear();
-    procedureListMap.emplace("POWERED_CONFIG_ON", ProcedureDefinition{});
-    procedureListMap.emplace("POWERED_CONFIG_OFF", ProcedureDefinition{});
+    procedureListMap.emplace("POWERUP_CONFIG_ON", ProcedureDefinition{});
+    procedureListMap.emplace("POWERUP_CONFIG_OFF", ProcedureDefinition{});
     procedureListMap.emplace("PUSHBACK_CONFIG_ON", ProcedureDefinition{});
     procedureListMap.emplace("PUSHBACK_CONFIG_OFF", ProcedureDefinition{});
     procedureListMap.emplace("TAXI_CONFIG_ON", ProcedureDefinition{});
@@ -190,11 +193,11 @@ class PresetProcedures {
     readyForTaxi.clear();
     readyForTakeoff.clear();
 
-    insertProcedureSteps(coldAndDark, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERED_CONFIG_OFF"});
-    insertProcedureSteps(powered, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERED_CONFIG_ON"});
-    insertProcedureSteps(readyForPushback, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON"});
-    insertProcedureSteps(readyForTaxi, {"TAKEOFF_CONFIG_OFF", "POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON"});
-    insertProcedureSteps(readyForTakeoff, {"POWERED_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON", "TAKEOFF_CONFIG_ON"});
+    insertProcedureSteps(coldAndDark, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERUP_CONFIG_OFF"});
+    insertProcedureSteps(powered, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "PUSHBACK_CONFIG_OFF", "POWERUP_CONFIG_ON"});
+    insertProcedureSteps(readyForPushback, {"TAKEOFF_CONFIG_OFF", "TAXI_CONFIG_OFF", "POWERUP_CONFIG_ON", "PUSHBACK_CONFIG_ON"});
+    insertProcedureSteps(readyForTaxi, {"TAKEOFF_CONFIG_OFF", "POWERUP_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON"});
+    insertProcedureSteps(readyForTakeoff, {"POWERUP_CONFIG_ON", "PUSHBACK_CONFIG_ON", "TAXI_CONFIG_ON", "TAKEOFF_CONFIG_ON"});
   }
 
   /**

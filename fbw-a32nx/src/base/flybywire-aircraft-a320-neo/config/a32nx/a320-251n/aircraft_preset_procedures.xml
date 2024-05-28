@@ -45,9 +45,9 @@ The StepType also defines if the step is executed in normal mode, expedited mode
 
 <AircraftPresetProcedures>
     <!-- ================================================================================================= -->
-    <!-- POWERED_CONFIG_ON -->
+    <!-- POWERUP_CONFIG_ON -->
     <!-- ================================================================================================= -->
-    <Procedure name="POWERED_CONFIG_ON">
+    <Procedure name="POWERUP_CONFIG_ON">
         <!-- SOP: PRELIMINARY COCKPIT PREPARATION -->
         <Step Name="BAT1 On" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Condition>
@@ -214,9 +214,9 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     </Procedure>
 
     <!-- ================================================================================================= -->
-    <!-- POWERED_CONFIG_OFF -->
+    <!-- POWERUP_CONFIG_OFF -->
     <!-- ================================================================================================= -->
-    <Procedure name="POWERED_CONFIG_OFF">
+    <Procedure name="POWERUP_CONFIG_OFF">
         <Step Name="NO SMOKING Off" Type="STEP" Delay="1000">
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==</Condition>
             <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
