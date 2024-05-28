@@ -971,6 +971,12 @@ export class PseudoFWC {
     this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
     this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
     this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
+
+    // Inhibit single chimes for the first two seconds after power-on
+    this.auralSingleChimeInhibitTimer.schedule(
+      () => (this.auralSingleChimePending = false),
+      PseudoFWC.AURAL_SC_INHIBIT_TIME,
+    );
   }
 
   mapOrder(array, order): [] {
