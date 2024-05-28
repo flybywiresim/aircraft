@@ -14,7 +14,7 @@ The delay is ignored in expedited mode.
 The StepType also defines if the step is executed in normal mode, expedited mode or both.
 
 <AircraftPresetProcedures> - root
-    <Procedure name="..."> - Procedure - these are a fixed set of procedure in pair _ON and _OFF.
+    <Procedure Name="..."> - Procedure - these are a fixed set of procedure in pair _ON and _OFF.
                                          The _OFF procedure needs to undo the _ON procedure (usually in reverser order).
         <Step             - Step -  a single step in the procedure
             Name="..."    - Name -  the name of the step which is displayed in the flyPad when the preset is executed
@@ -47,7 +47,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- POWERUP_CONFIG_ON -->
     <!-- ================================================================================================= -->
-    <Procedure name="POWERUP_CONFIG_ON">
+    <Procedure Name="POWERUP_CONFIG_ON">
         <!-- SOP: PRELIMINARY COCKPIT PREPARATION -->
         <Step Name="BAT1 On" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Condition>
@@ -92,6 +92,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <!-- Wait until power is available from any source (ext or APU) -->
         <Step Name="Await AC BUS ON" Type="COND" Delay="2000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+            <Action></Action>
         </Step>
 
         <!-- SOP: COCKPIT PREPARATION  -->
@@ -216,7 +217,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- POWERUP_CONFIG_OFF -->
     <!-- ================================================================================================= -->
-    <Procedure name="POWERUP_CONFIG_OFF">
+    <Procedure Name="POWERUP_CONFIG_OFF">
         <Step Name="NO SMOKING Off" Type="STEP" Delay="1000">
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==</Condition>
             <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
@@ -301,7 +302,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- PUSHBACK_CONFIG_ON -->
     <!-- ================================================================================================= -->
-    <Procedure name="PUSHBACK_CONFIG_ON">
+    <Procedure Name="PUSHBACK_CONFIG_ON">
         <!-- SOP: BEFORE PUSHBACK AND START -->
         <Step Name="EXT PWR Off" Type="STEP" Delay="3000">
             <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
@@ -359,7 +360,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- PUSHBACK_CONFIG_OFF -->
     <!-- ================================================================================================= -->
-    <Procedure name="PUSHBACK_CONFIG_OFF">
+    <Procedure Name="PUSHBACK_CONFIG_OFF">
         <Step Name="Cockpit Door open" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
@@ -397,7 +398,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- TAXI_CONFIG_ON -->
     <!-- ================================================================================================= -->
-    <Procedure name="TAXI_CONFIG_ON">
+    <Procedure Name="TAXI_CONFIG_ON">
         <!-- SOP: ENGINE START -->
         <Step Name="ENG MODE SEL START" Type="STEP" Delay="3000">
             <Condition>(L:A32NX_ENGINE_STATE:1) 1 == (L:A32NX_ENGINE_STATE:2) 1 == &amp;&amp;</Condition>
@@ -523,7 +524,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- TAXI_CONFIG_OFF -->
     <!-- ================================================================================================= -->
-    <Procedure name="TAXI_CONFIG_OFF">
+    <Procedure Name="TAXI_CONFIG_OFF">
         <Step Name="TERR ON ND Capt. Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
@@ -616,7 +617,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- TAKEOFF_CONFIG_ON -->
     <!-- ================================================================================================= -->
-    <Procedure name="TAKEOFF_CONFIG_ON">
+    <Procedure Name="TAKEOFF_CONFIG_ON">
         <!-- SOP: TAXI -->
         <Step Name="WX Radar On" Type="STEP" Delay="1000">
             <Condition>(L:XMLVAR_A320_WEATHERRADAR_SYS) 0 ==</Condition>
@@ -680,7 +681,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!-- ================================================================================================= -->
     <!-- TAKEOFF_CONFIG_OFF -->
     <!-- ================================================================================================= -->
-    <Procedure name="TAKEOFF_CONFIG_OFF">
+    <Procedure Name="TAKEOFF_CONFIG_OFF">
         <Step Name="LL Lt L Off" Type="STEP" Delay="0">
             <Condition>(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &amp;&amp;</Condition>
             <Action>

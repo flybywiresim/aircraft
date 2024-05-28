@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "lib/pugixml/pugixml.hpp"
+#include "lib/tinyxml2/tinyxml2.h"
 #include "logging.h"
 
 #include "ProcedureStep.hpp"
@@ -48,6 +48,9 @@ class PresetProcedures {
   Preset readyForTaxi;      // ready for taxi preset - ID 4
   Preset readyForTakeoff;   // ready for takeoff preset - ID 5
 
+  // The XML document containing the procedure definitions
+  tinyxml2::XMLDocument presetProceduresXML;
+
   // List of all presets to access via index ID - ID starts at 1 so must be mapped to the index by subtracting 1
   std::vector<Preset*> presets = {&coldAndDark, &powered, &readyForPushback, &readyForTaxi, &readyForTakeoff};
 
@@ -80,13 +83,12 @@ class PresetProcedures {
       LOG_ERROR("AircraftPresets: The procedure ID " + std::to_string(pID) + " is not valid. Valid IDs are 1-5.");
       return nullptr;
     }
-    pugi::xml_node aircraftPresetProcedures = loadXMLConfig(configFile);
-
-    if (aircraftPresetProcedures.empty()) {
+    if (!loadXMLConfig(configFile)) {
       return nullptr;
     }
+
     initializeProcedureListMap();
-    processProcedures(aircraftPresetProcedures);
+    processProcedures();
     initializePresets();
     return presets[pID - 1];
   }
@@ -97,35 +99,32 @@ class PresetProcedures {
    * @param filePath the path to the XML file containing the procedure definitions in the MSFS VFS
    * @return the root node of the XML file
    */
-  pugi::xml_node loadXMLConfig(const std::string& filePath) {
-    pugi::xml_document presetProceduresXML;
-    const pugi::xml_parse_result result = presetProceduresXML.load_file(filePath.c_str());
-    if (!result) {
-      LOG_ERROR("AircraftPresets: XML config \"" + filePath + "\" parsed with errors. Error description: " + result.description());
-      return pugi::xml_node();
+  bool loadXMLConfig(const std::string& filePath) {
+    presetProceduresXML.Clear();
+    presetProceduresXML.LoadFile(filePath.c_str());
+    if (presetProceduresXML.Error()) {
+      LOG_ERROR("AircraftPresets: XML config \"" + filePath +
+                "\" parsed with errors. Error description: " + presetProceduresXML.ErrorStr());
+      return false;
     }
     LOG_INFO("AircraftPresets: XML config \"" + filePath + "\" parsed without errors.");
-    return presetProceduresXML.child("AircraftPresetProcedures");
+    return true;
   }
 
   /**
    * @brief Process the procedures from the XML file and add them to the procedure list map
    * @param rootNode the root node of the XML file
    */
-  void processProcedures(const pugi::xml_node& rootNode) {
-    // DEBUG
-    for (pugi::xml_node procedure : rootNode.children("Procedure")) {
-      std::cout << "CHECKING Procedure: " << procedure.attribute("name").as_string() << std::endl;
-      // procedure.print(std::cout);
+  void processProcedures() {
+    tinyxml2::XMLNode* rootNode = presetProceduresXML.RootElement();
+    if (!rootNode) {
+      LOG_ERROR("AircraftPresets: The XML config file does not contain a root node.");
+      return;
     }
-    std::cout << std::endl;
 
-    // iterate over all procedures
-    for (pugi::xml_node procedure : rootNode.children("Procedure")) {
-      const std::string procedureName{procedure.attribute("name").as_string()};
-
-      // DEBUG
-      std::cout << "Reading Procedure: " << procedureName << std::endl;
+    for (auto currentProcedure = rootNode->FirstChildElement(); currentProcedure;
+         currentProcedure      = currentProcedure->NextSiblingElement()) {
+      const std::string procedureName = currentProcedure->Attribute("Name");
 
       // Check if the procedure name is valid
       if (procedureListMap.find(procedureName) == procedureListMap.end()) {
@@ -133,37 +132,43 @@ class PresetProcedures {
         continue;
       }
 
-      // iterate over all steps
-      for (pugi::xml_node step : procedure.children("Step")) {
-        // DEBUG
-        std::cout << "    Reading Step: " << step.attribute("Name").as_string() << std::endl;
-
+      for (auto currentStep         = currentProcedure->FirstChildElement();  //
+           currentStep; currentStep = currentStep->NextSiblingElement()) {
         // Check if the step type is valid
-        auto typeItr = ProcedureStep::StepTypeMap.find(step.attribute("Type").as_string());
-        if ((typeItr == ProcedureStep::StepTypeMap.end())) {
-          LOG_ERROR("AircraftPresets: The step type " + std::string{step.attribute("Type").as_string()} +
-                    " is not valid. Skipping the Step.\n" + "Procedure: " + procedureName + " Step: " + step.attribute("Name").as_string() +
-                    "\n");
+        auto typeItr = ProcedureStep::StepTypeMap.find(currentStep->Attribute("Type"));
+        if (typeItr == ProcedureStep::StepTypeMap.end()) {
+          LOG_ERROR("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: " + procedureName +
+                    " Step: " + currentStep->Attribute("Name"));
           continue;
         }
 
         // Check if the delay is valid
-        if (step.attribute("Delay").as_int() < 0) {
-          LOG_ERROR("AircraftPresets: The delay " + std::to_string(step.attribute("Delay").as_int()) +
-                    " is not valid. Skipping the Step.\n" + "Procedure: " + procedureName + " Step: " + step.attribute("Name").as_string());
+        if (currentStep->IntAttribute("Delay") < 0) {
+          LOG_ERROR("AircraftPresets: Invalid delay. Skipping the Step.\n Procedure: " + procedureName +
+                    " Step: " + currentStep->Attribute("Name"));
           continue;
         }
 
-        // Add the step to the correct procedure list
+        // Get the condition and action from the step
+        std::string condition, action;
+        for (auto currentStepChild = currentStep->FirstChildElement(); currentStepChild;
+             currentStepChild      = currentStepChild->NextSiblingElement()) {
+          if (!std::strcmp(currentStepChild->Name(), "Condition") && currentStepChild->GetText())
+            condition = currentStepChild->GetText();
+          else if (!std::strcmp(currentStepChild->Name(), "Action") && currentStepChild->GetText())
+            action = currentStepChild->GetText();
+        }
+
+        // Add the procedure step to the procedure list map
         procedureListMap[procedureName].emplace_back(  //
-            step.attribute("Name").as_string(),        //
+            currentStep->Attribute("Name"),            //
             typeItr->second,                           //
-            0,                                         //
-            step.child("Condition").child_value(),     //
-            step.child("Action").child_value()         //
+            currentStep->IntAttribute("Delay"),        //
+            condition,                                 //
+            action                                     //
         );
-      }  // for all steps
-    }    // for all procedures
+      }
+    }
   }
 
   /**
