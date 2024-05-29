@@ -161,7 +161,7 @@
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",
     "esbuild-plugin-inline-image": "^0.0.8",
-    "esbuild-style-plugin": "^1.6.0",
+    "esbuild-style-plugin-v2": "^1.6.5",
     "geolib": "^3.3.3",
     "i18next": "^21.6.14",
     "json5": "^2.2.3",
