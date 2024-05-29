@@ -100,8 +100,7 @@ class PresetProcedures {
    * @return the root node of the XML file
    */
   bool loadXMLConfig(const std::string& filePath) {
-    presetProceduresXML.Clear();
-    presetProceduresXML.LoadFile(filePath.c_str());
+    presetProceduresXML.LoadFile(filePath.c_str());  // also clears the previous document
     if (presetProceduresXML.Error()) {
       LOG_ERROR("AircraftPresets: XML config \"" + filePath +
                 "\" parsed with errors. Error description: " + presetProceduresXML.ErrorStr());
@@ -134,8 +133,10 @@ class PresetProcedures {
 
       for (auto currentStep         = currentProcedure->FirstChildElement();  //
            currentStep; currentStep = currentStep->NextSiblingElement()) {
-        // Check if the step type is valid
+        // Get the step type
         auto typeItr = ProcedureStep::StepTypeMap.find(currentStep->Attribute("Type"));
+
+        // Check if the step type is valid
         if (typeItr == ProcedureStep::StepTypeMap.end()) {
           LOG_ERROR("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: " + procedureName +
                     " Step: " + currentStep->Attribute("Name"));

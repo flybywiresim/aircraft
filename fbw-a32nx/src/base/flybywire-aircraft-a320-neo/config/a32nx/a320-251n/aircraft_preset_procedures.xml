@@ -92,7 +92,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <!-- Wait until power is available from any source (ext or APU) -->
         <Step Name="Await AC BUS ON" Type="COND" Delay="2000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
-            <Action></Action>
         </Step>
 
         <!-- SOP: COCKPIT PREPARATION  -->
@@ -733,4 +732,3 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
     </Procedure>
 </AircraftPresetProcedures>
-
