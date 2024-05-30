@@ -1,5 +1,5 @@
 use super::audio_management_unit::{
-    self, IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo, TIMEOUT,
+    IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo, TIMEOUT,
 };
 use crate::{
     shared::{
