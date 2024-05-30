@@ -19,11 +19,6 @@ interface Props {
      * The NAV receiver  (VOR, ILS, ADF).
      */
     receiver: number,
-
-    /**
-     * The NAV transceiver  (VOR, ILS, ADF).
-     */
-    transceiver: number;
 }
 
 enum Mode {
@@ -171,7 +166,7 @@ export const NavRadioPanel = (props: Props) => {
         side={props.side}
         value={standbyFrequency}
         setValue={setStandbyFrequencySaved}
-        transceiver={props.transceiver}
+        transceiver={props.receiver}
       />
     );
   } else {
