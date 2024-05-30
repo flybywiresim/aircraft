@@ -1,7 +1,8 @@
 use std::f64::consts::PI;
 
 use crate::{
-    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
+    pneumatic::{Solenoid, SolenoidSignal},
+    shared::{interpolation, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
