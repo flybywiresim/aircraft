@@ -15,6 +15,8 @@ interface Props {
    * The RMP side (e.g. 'L' or 'R').
    */
   side: string;
+
+  receiver: number;
 }
 
 /**
