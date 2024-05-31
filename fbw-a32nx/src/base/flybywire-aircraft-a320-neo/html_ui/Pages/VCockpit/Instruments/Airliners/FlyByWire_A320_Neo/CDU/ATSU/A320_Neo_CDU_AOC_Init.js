@@ -152,10 +152,6 @@ class CDUAocInit {
         if (mcdu.aocTimes.in) {
             inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
-        // Not using simbrief block time anymore
-        // if (mcdu.simbrief["blockTime"]) {
-        //     blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
-        // }
         if (mcdu.aocTimes.in && mcdu.aocTimes.out) {
             blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in - mcdu.aocTimes.out)}[color]green`;
         }
