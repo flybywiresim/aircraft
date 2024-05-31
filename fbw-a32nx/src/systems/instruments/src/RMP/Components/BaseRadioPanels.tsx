@@ -36,7 +36,7 @@ export const RootRadioPanel = (props: Props) => {
   const powered = powerAvailable && panelSwitch;
 
   if (!powered) return <UnpoweredRadioPanel />;
-  return <PoweredRadioPanel side={props.side} receiver={props.receiver}/>;
+  return <PoweredRadioPanel side={props.side} receiver={props.receiver} />;
 };
 
 /**
