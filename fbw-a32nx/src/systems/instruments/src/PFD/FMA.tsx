@@ -567,6 +567,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       });
 
     sub
+      .on('fcuAtsDiscreteWord')
+      .whenChanged()
+      .handle((word) => {
+        this.fcuAtsDiscreteWord = word;
+        this.setText();
+      });
+
+    sub
       .on('fcuAtsFmaDiscreteWord')
       .whenChanged()
       .handle((word) => {
