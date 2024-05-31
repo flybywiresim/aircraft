@@ -656,7 +656,7 @@ impl AudioCard {
         if is_powered {
             self.acp.update(context, &mut self.bus_acp);
 
-            if self.bus_acp.len() != 0 {
+            if !self.bus_acp.is_empty() {
                 self.last_time_data_received_from_acp = Duration::from_millis(0);
             }
 
@@ -666,7 +666,7 @@ impl AudioCard {
                 &mut self.transmission_table_acp,
             );
 
-            if bus_from_adaptation_card.len() != 0 {
+            if !bus_from_adaptation_card.is_empty() {
                 self.last_time_data_received_from_acp3 = Duration::from_millis(0);
             }
 
