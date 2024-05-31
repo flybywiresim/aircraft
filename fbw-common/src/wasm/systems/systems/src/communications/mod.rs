@@ -46,7 +46,7 @@ impl Communications {
         self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_powered()
             && self.rmp_fo.as_ref().unwrap().is_powered())
             && (self.rmp_cpt.as_ref().unwrap().is_abnormal_mode()
-                || self.rmp_cpt.as_ref().unwrap().is_abnormal_mode());
+                || self.rmp_fo.as_ref().unwrap().is_abnormal_mode());
 
         self.previous_side_controlling = context.side_controlling();
     }
