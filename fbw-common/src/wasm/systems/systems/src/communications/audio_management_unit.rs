@@ -417,14 +417,12 @@ impl AdaptationBoard {
         } else if acp_to_take_into_account == 2 {
             self.mixed_audio = self.computer_b.get_mixed_audio_acp();
             self.pilot_transmit_channel = self.computer_b.get_transmission_table_acp();
+        } else if context.side_controlling() == SideControlling::CAPTAIN {
+            self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
+            self.pilot_transmit_channel = self.computer_b.get_transmission_table_acp3();
         } else {
-            if context.side_controlling() == SideControlling::CAPTAIN {
-                self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
-                self.pilot_transmit_channel = self.computer_b.get_transmission_table_acp3();
-            } else {
-                self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
-                self.pilot_transmit_channel = self.computer_a.get_transmission_table_acp3();
-            }
+            self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
+            self.pilot_transmit_channel = self.computer_a.get_transmission_table_acp3();
         }
 
         // We only take into account VHF1/2 as Vatsim and IVAO use them only
