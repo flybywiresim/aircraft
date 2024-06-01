@@ -384,8 +384,6 @@ class FmgcOuterLoops final
     real_T Gain_Gain;
     real_T Gain1_Gain_n;
     real_T Gain_Gain_l;
-    real_T Gain1_Gain_k;
-    real_T Gain_Gain_c;
     real_T Gain1_Gain_i;
     real_T Gain_Gain_e;
     real_T Gain5_Gain;
@@ -395,7 +393,7 @@ class FmgcOuterLoops final
     real_T Saturation_LowerSat;
     real_T Gain2_Gain;
     real_T Gain1_Gain_e;
-    real_T Gain1_Gain_kx;
+    real_T Gain1_Gain_k;
     real_T Gain_Gain_j;
     real_T Gain_Gain_h;
     real_T Constant3_Value;
@@ -502,8 +500,6 @@ class FmgcOuterLoops final
     real_T tau_Value_h;
     real_T zeta_Value_d;
     real_T Constant3_Value_h;
-    real_T Constant3_Value_g;
-    real_T Constant3_Value_ou;
     real_T Constant3_Value_a;
     real_T Constant3_Value_oh;
     real_T Gain2_Gain_b;
@@ -522,7 +518,7 @@ class FmgcOuterLoops final
     real_T Constant3_Value_d;
     real_T Gain_Gain_o0;
     real_T Gain1_Gain_or;
-    real_T Gain_Gain_c2;
+    real_T Gain_Gain_c;
     real_T Gain_Gain_lv;
     real_T Gain_Gain_on;
     real_T Constant3_Value_lz;
@@ -536,7 +532,7 @@ class FmgcOuterLoops final
     real_T Gain6_Gain_p;
     real_T Constant3_Value_e;
     real_T Constant3_Value_mt;
-    real_T Constant3_Value_gh;
+    real_T Constant3_Value_g;
     real_T Gain1_Gain_ke;
     real_T Gain_Gain_m;
     real_T Constant1_Value_fq;
@@ -943,21 +939,21 @@ class FmgcOuterLoops final
             const real_T *rtu_in_data_beta_deg, const real_T *rtu_in_data_H_ft, const real_T *rtu_in_data_H_ind_ft,
             const real_T *rtu_in_data_H_radio_ft, const real_T *rtu_in_data_H_dot_ft_min, const real_T
             *rtu_in_data_Psi_magnetic_deg, const real_T *rtu_in_data_Psi_magnetic_track_deg, const real_T
-            *rtu_in_data_Psi_true_deg, const real_T *rtu_in_data_bx_m_s2, const real_T *rtu_in_data_by_m_s2, const
-            real_T *rtu_in_data_bz_m_s2, const real_T *rtu_in_data_nav_loc_deg, const real_T *rtu_in_data_nav_gs_deg,
-            const real_T *rtu_in_data_nav_dme_nmi, const real_T *rtu_in_data_nav_loc_magvar_deg, const real_T
-            *rtu_in_data_nav_loc_error_deg, const boolean_T *rtu_in_data_nav_gs_valid, const real_T
-            *rtu_in_data_nav_gs_error_deg, const real_T *rtu_in_data_flight_guidance_xtk_nmi, const real_T
-            *rtu_in_data_flight_guidance_tae_deg, const real_T *rtu_in_data_flight_guidance_phi_deg, const real_T
-            *rtu_in_data_flight_guidance_phi_limit_deg, const real_T *rtu_in_data_VLS_kn, const real_T
-            *rtu_in_data_VMAX_kn, const boolean_T *rtu_in_data_on_ground, const real_T *rtu_in_data_zeta_deg, const
-            real_T *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged, const lateral_law
-            *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
-            *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_H_c_ft, const real_T *rtu_in_input_H_dot_c_fpm, const
-            real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn, const boolean_T
-            *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const boolean_T
-            *rtu_in_input_FINAL_DES_mode_active, const boolean_T *rtu_in_input_GS_track_mode, real_T *rty_out_Phi_loc_c,
-            real_T *rty_out_Nosewheel_c, real_T *rty_out_flight_director_Theta_c_deg, real_T
+            *rtu_in_data_Psi_true_deg, const real_T *rtu_in_data_Chi_true_deg, const real_T *rtu_in_data_bx_m_s2, const
+            real_T *rtu_in_data_by_m_s2, const real_T *rtu_in_data_bz_m_s2, const real_T *rtu_in_data_nav_loc_deg, const
+            real_T *rtu_in_data_nav_gs_deg, const real_T *rtu_in_data_nav_dme_nmi, const real_T
+            *rtu_in_data_nav_loc_magvar_deg, const real_T *rtu_in_data_nav_loc_error_deg, const boolean_T
+            *rtu_in_data_nav_gs_valid, const real_T *rtu_in_data_nav_gs_error_deg, const real_T
+            *rtu_in_data_flight_guidance_xtk_nmi, const real_T *rtu_in_data_flight_guidance_tae_deg, const real_T
+            *rtu_in_data_flight_guidance_phi_deg, const real_T *rtu_in_data_flight_guidance_phi_limit_deg, const real_T *
+            rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn, const boolean_T *rtu_in_data_on_ground, const real_T *
+            rtu_in_data_zeta_deg, const real_T *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged,
+            const lateral_law *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
+            *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_Chi_c_deg, const real_T *rtu_in_input_H_c_ft, const
+            real_T *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn,
+            const boolean_T *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const
+            boolean_T *rtu_in_input_FINAL_DES_mode_active, const boolean_T *rtu_in_input_GS_track_mode, real_T
+            *rty_out_Phi_loc_c, real_T *rty_out_Nosewheel_c, real_T *rty_out_flight_director_Theta_c_deg, real_T
             *rty_out_flight_director_Phi_c_deg, real_T *rty_out_flight_director_Beta_c_deg, real_T
             *rty_out_autopilot_Theta_c_deg, real_T *rty_out_autopilot_Phi_c_deg, real_T *rty_out_autopilot_Beta_c_deg,
             boolean_T *rty_out_flare_law_condition_Flare, real_T *rty_out_flare_law_H_dot_radio_fpm, real_T

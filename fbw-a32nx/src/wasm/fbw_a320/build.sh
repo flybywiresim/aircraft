@@ -138,6 +138,7 @@ clang++ \
   "${DIR}/src/model/FcuComputer.cpp" \
   "${DIR}/src/model/FadecComputer_data.cpp" \
   "${DIR}/src/model/FadecComputer.cpp" \
+  "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
