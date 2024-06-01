@@ -77,30 +77,6 @@ enum class vertical_law
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
-
-struct base_ils_bus
-{
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_ecu_bus_
-#define DEFINED_TYPEDEF_FOR_base_ecu_bus_
-
-struct base_ecu_bus
-{
-  base_arinc_429 selected_tla_deg;
-  base_arinc_429 selected_flex_temp_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
 #define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
 
@@ -158,6 +134,19 @@ struct base_fms_inputs
   real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -321,6 +310,27 @@ struct base_ir_bus
   base_arinc_429 inertial_vertical_speed_ft_s;
   base_arinc_429 north_south_velocity_kn;
   base_arinc_429 east_west_velocity_kn;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ecu_bus_
+#define DEFINED_TYPEDEF_FOR_base_ecu_bus_
+
+struct base_ecu_bus
+{
+  base_arinc_429 selected_tla_deg;
+  base_arinc_429 n1_ref_percent;
+  base_arinc_429 selected_flex_temp_deg;
+  base_arinc_429 ecu_status_word_1;
+  base_arinc_429 ecu_status_word_2;
+  base_arinc_429 ecu_status_word_3;
+  base_arinc_429 n1_limit_percent;
+  base_arinc_429 n1_maximum_percent;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 selected_n2_actual_percent;
+  base_arinc_429 selected_n1_actual_percent;
+  base_arinc_429 ecu_maintenance_word_6;
 };
 
 #endif
@@ -494,7 +504,6 @@ struct base_fmgc_logic_outputs
   boolean_T fd_own_engaged;
   boolean_T ap_own_engaged;
   boolean_T athr_own_engaged;
-  boolean_T athr_active;
   boolean_T ap_inop;
   boolean_T athr_inop;
   boolean_T fmgc_opp_priority;
@@ -559,6 +568,7 @@ struct base_fmgc_longitudinal_modes
   boolean_T fpa_active;
   boolean_T alt_acq_active;
   boolean_T alt_hold_active;
+  boolean_T fma_dash_display;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
   boolean_T final_des_active;
@@ -671,6 +681,62 @@ struct ap_raw_output
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_athr_fma_mode_
+#define DEFINED_TYPEDEF_FOR_athr_fma_mode_
+
+enum class athr_fma_mode
+  : int32_T {
+  NONE = 0,
+  MAN_TOGA,
+  MAN_GA_SOFT,
+  MAN_FLEX,
+  MAN_DTO,
+  MAN_MCT,
+  MAN_THR,
+  SPEED,
+  MACH,
+  THR_MCT,
+  THR_CLB,
+  THR_LVR,
+  THR_IDLE,
+  A_FLOOR,
+  TOGA_LK
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_fma_message_
+#define DEFINED_TYPEDEF_FOR_athr_fma_message_
+
+enum class athr_fma_message
+  : int32_T {
+  NONE = 0,
+  LVR_TOGA,
+  LVR_CLB,
+  LVR_MCT,
+  LVR_ASYM
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_athr_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_athr_outputs_
+
+struct base_fmgc_athr_outputs
+{
+  boolean_T athr_active;
+  boolean_T alpha_floor_mode_active;
+  boolean_T thrust_mode_active;
+  boolean_T thrust_target_idle;
+  boolean_T speed_mach_mode_active;
+  boolean_T retard_mode_active;
+  athr_fma_mode fma_mode;
+  athr_fma_message fma_message;
+  real_T n1_c_percent;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_outputs_
 
@@ -733,6 +799,7 @@ struct fmgc_outputs
   base_fmgc_logic_outputs logic;
   base_fmgc_ap_fd_logic_outputs ap_fd_logic;
   ap_raw_output ap_fd_outer_loops;
+  base_fmgc_athr_outputs athr;
   base_fmgc_discrete_outputs discrete_outputs;
   base_fmgc_bus_outputs bus_outputs;
 };
