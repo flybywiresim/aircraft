@@ -93,9 +93,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update fly-by-wire
   result &= updateFlyByWire(calculatedSampleTime);
 
-  // get throttle data and process it
-  result &= updateAutothrust(calculatedSampleTime);
-
   for (int i = 0; i < 2; i++) {
     result &= updateRa(i);
   }
@@ -142,6 +139,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFcdc(calculatedSampleTime, i);
   }
 
+  for (int i = 0; i < 2; i++) {
+    result &= updateFadec(calculatedSampleTime, i);
+  }
+
   result &= updateServoSolenoidStatus();
 
   // update additional recording data
@@ -184,10 +185,12 @@ void FlyByWireInterface::loadConfiguration() {
   facDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FAC_DISABLED", -1);
   fcuDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FCU_DISABLED", false);
   fmgcDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FMGC_DISABLED", -1);
+  fadecDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FADEC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (elacDisabled != -1 || secDisabled != -1 || facDisabled != -1 || fmgcDisabled != -1 || fcuDisabled);
+  clientDataEnabled =
+      (elacDisabled != -1 || secDisabled != -1 || facDisabled != -1 || fmgcDisabled != -1 || fcuDisabled || fadecDisabled != -1);
 
   // print configuration into console
   std::cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << std::endl;
@@ -196,6 +199,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << std::endl;
   std::cout << "WASM: MODEL     : FCU_DISABLED                         = " << fcuDisabled << std::endl;
   std::cout << "WASM: MODEL     : FMGC_DISABLED                        = " << fmgcDisabled << std::endl;
+  std::cout << "WASM: MODEL     : FADEC_DISABLED                       = " << fadecDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
 
   // --------------------------------------------------------------------------
@@ -351,12 +355,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
 
-  idAutothrustStatus = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
-  idAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
-  idAutothrustModeMessage = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
   idAutothrustDisabled = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISABLED");
-  idAutothrustThrustLeverWarningFlex = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
-  idAutothrustThrustLeverWarningToga = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
   idAutothrustDisconnect = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
   idAirConditioningPack_1 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
@@ -776,6 +775,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuAfsDisplayVsFpaDashes = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_VS_FPA_DASHES");
 
   idFcuHealthy = std::make_unique<LocalVariable>("A32NX_FCU_HEALTHY");
+
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+
+    idEcuMaintenanceWord6[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_MAINTENANCE_WORD_6");
+  }
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -1803,7 +1808,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
 
   fcuHealthy = discreteOutputs.fcu_healthy;
 
-  if (fmgcDisabled != -1) {
+  if (fmgcDisabled != -1 || fadecDisabled != -1) {
     simConnectInterface.setClientDataFcuBus(fcuBusOutputs);
   }
 
@@ -2077,7 +2082,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateAutothrust(double sampleTime) {
+bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
   // get sim data
   SimData simData = simConnectInterface.getSimData();
 
@@ -2098,117 +2103,87 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // update reverser thrust limit
   idAutothrustThrustLimitREV->set(idAutothrustThrustLimitTOGA->get() * autothrustThrustLimitReversePercentageToga);
 
-  autoThrustInput.in.time.dt = sampleTime;
-  autoThrustInput.in.time.simulation_time = simData.simulationTime;
+  fadecInputs[fadecIndex].in.time.dt = sampleTime;
+  fadecInputs[fadecIndex].in.time.simulation_time = simData.simulationTime;
 
-  autoThrustInput.in.data.nz_g = simData.nz_g;
-  autoThrustInput.in.data.Theta_deg = simData.Theta_deg;
-  autoThrustInput.in.data.Phi_deg = simData.Phi_deg;
-  autoThrustInput.in.data.V_ias_kn = simData.V_ias_kn;
-  autoThrustInput.in.data.V_tas_kn = simData.V_tas_kn;
-  autoThrustInput.in.data.V_mach = simData.V_mach;
-  autoThrustInput.in.data.V_gnd_kn = simData.V_gnd_kn;
-  autoThrustInput.in.data.alpha_deg = simData.alpha_deg;
-  autoThrustInput.in.data.H_ft = simData.H_ft;
-  autoThrustInput.in.data.H_ind_ft = simData.H_ind_ft;
-  autoThrustInput.in.data.H_radio_ft = simData.H_radio_ft;
-  autoThrustInput.in.data.H_dot_fpm = simData.H_dot_fpm;
-  autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
-  autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
-  autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
-  autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-  autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
-  autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
-  autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
-  autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
-  autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
-  autoThrustInput.in.data.commanded_engine_N1_2_percent = simData.commanded_engine_N1_2_percent;
-  autoThrustInput.in.data.engine_N1_1_percent = simData.engine_N1_1_percent;
-  autoThrustInput.in.data.engine_N1_2_percent = simData.engine_N1_2_percent;
-  autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
-  autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
-  autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
-  autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
+  fadecInputs[fadecIndex].in.data.V_ias_kn = simData.V_ias_kn;
+  fadecInputs[fadecIndex].in.data.V_tas_kn = simData.V_tas_kn;
+  fadecInputs[fadecIndex].in.data.V_mach = simData.V_mach;
+  fadecInputs[fadecIndex].in.data.V_gnd_kn = simData.V_gnd_kn;
+  fadecInputs[fadecIndex].in.data.alpha_deg = simData.alpha_deg;
+  fadecInputs[fadecIndex].in.data.H_ft = simData.H_ft;
+  fadecInputs[fadecIndex].in.data.H_ind_ft = simData.H_ind_ft;
+  fadecInputs[fadecIndex].in.data.H_radio_ft = simData.H_radio_ft;
+  fadecInputs[fadecIndex].in.data.H_dot_fpm = simData.H_dot_fpm;
+  fadecInputs[fadecIndex].in.data.on_ground =
+      idLgciuLeftMainGearCompressed[fadecIndex]->get() && idLgciuRightMainGearCompressed[fadecIndex]->get();
+  fadecInputs[fadecIndex].in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
+  fadecInputs[fadecIndex].in.data.is_engine_operative = fadecIndex == 0 ? simData.engine_combustion_1 : simData.engine_combustion_2;
+  fadecInputs[fadecIndex].in.data.commanded_engine_N1_percent =
+      fadecIndex == 0 ? simData.commanded_engine_N1_1_percent + simData.engine_N1_1_percent - simData.corrected_engine_N1_1_percent
+                      : simData.commanded_engine_N1_2_percent + simData.engine_N1_2_percent - simData.corrected_engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.engine_N2_percent = 0;
+  fadecInputs[fadecIndex].in.data.engine_N1_percent = fadecIndex == 0 ? simData.engine_N1_1_percent : simData.engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.TAT_degC = simData.total_air_temperature_celsius;
+  fadecInputs[fadecIndex].in.data.OAT_degC = simData.ambient_temperature_celsius;
 
-  autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
-  autoThrustInput.in.input.ATHR_disconnect =
+  fadecInputs[fadecIndex].in.input.ATHR_disconnect =
       simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
-  autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
-  autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
-  autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-  autoThrustInput.in.input.V_LS_kn = facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
-  autoThrustInput.in.input.V_MAX_kn =
-      facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
-  autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
-  autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
-  autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
-  autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
-  autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
-  autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
-  autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
-  autoThrustInput.in.input.mode_requested = 0;
-  autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
-  autoThrustInput.in.input.alpha_floor_condition =
-      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
-  autoThrustInput.in.input.is_approach_mode_active = false;
-  autoThrustInput.in.input.is_SRS_TO_mode_active = false;
-  autoThrustInput.in.input.is_SRS_GA_mode_active = false;
-  autoThrustInput.in.input.is_LAND_mode_active = false;
-  autoThrustInput.in.input.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
-  autoThrustInput.in.input.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
-  autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
-  autoThrustInput.in.input.is_alt_soft_mode_active = false;
-  autoThrustInput.in.input.is_anti_ice_wing_active = additionalData.wingAntiIce == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
-  autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
-  autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-  autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
-  autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
-  autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
-  autoThrustInput.in.input.target_TCAS_RA_rate_fpm = 0;
+  fadecInputs[fadecIndex].in.input.TLA_deg = fadecIndex == 0 ? thrustLeverAngle_1->get() : thrustLeverAngle_2->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
+  fadecInputs[fadecIndex].in.input.is_anti_ice_active = simData.engineAntiIce_1 == 1;
+  fadecInputs[fadecIndex].in.input.is_air_conditioning_active = idAirConditioningPack_1->get();
+  fadecInputs[fadecIndex].in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
 
-  // step the model -------------------------------------------------------------------------------------------------
-  autoThrust.setExternalInputs(&autoThrustInput);
-  autoThrust.step();
+  fadecInputs[fadecIndex].in.fcu_input = fcuBusOutputs;
 
-  // get output from model ------------------------------------------------------------------------------------------
-  autoThrustOutput = autoThrust.getExternalOutputs().out.output;
+  if (fadecIndex == fadecDisabled) {
+    simConnectInterface.setClientDataFadecData(fadecInputs[fadecIndex].in.data);
+    simConnectInterface.setClientDataFadecInput(fadecInputs[fadecIndex].in.input);
 
-  // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
-  idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
+    fadecOutputs[fadecIndex] = simConnectInterface.getClientDataFadecOutput();
+  } else {
+    // step the model -------------------------------------------------------------------------------------------------
+    fadecs[fadecIndex].setExternalInputs(&fadecInputs[fadecIndex]);
+    fadecs[fadecIndex].step();
 
-  // write output to sim --------------------------------------------------------------------------------------------
-  SimOutputThrottles simOutputThrottles = {std::fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
-                                           std::fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
-                                           autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
-  if (!simConnectInterface.sendData(simOutputThrottles)) {
-    std::cout << "WASM: Write data failed!" << std::endl;
-    return false;
+    // get output from model ------------------------------------------------------------------------------------------
+    fadecOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.output;
+    fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
 
-  // update local variables
-  idAutothrustN1_TLA_1->set(autoThrustOutput.N1_TLA_1_percent);
-  idAutothrustN1_TLA_2->set(autoThrustOutput.N1_TLA_2_percent);
-  idAutothrustReverse_1->set(autoThrustOutput.is_in_reverse_1);
-  idAutothrustReverse_2->set(autoThrustOutput.is_in_reverse_2);
-  idAutothrustThrustLimitType->set(static_cast<int32_t>(autoThrustOutput.thrust_limit_type));
-  idAutothrustThrustLimit->set(autoThrustOutput.thrust_limit_percent);
-  idAutothrustN1_c_1->set(autoThrustOutput.N1_c_1_percent);
-  idAutothrustN1_c_2->set(autoThrustOutput.N1_c_2_percent);
-  idAutothrustStatus->set((int32_t)autoThrustOutput.status);
-  idAutothrustMode->set(static_cast<int32_t>(autoThrustOutput.mode));
-  idAutothrustModeMessage->set(static_cast<int32_t>(autoThrustOutput.mode_message));
+  idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
 
-  // update warnings
-  auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
-    idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
-    idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
-  } else {
-    idAutothrustThrustLeverWarningFlex->set(0);
-    idAutothrustThrustLeverWarningToga->set(0);
+  // write output to sim (only after both FADECs have been updated) -------------------------------------------------
+  if (fadecIndex == 1) {
+    std::cout << "Throttlepos1: " << fadecOutputs[0].sim_throttle_lever_pos << std::endl;
+    std::cout << "Throttlepos2: " << fadecOutputs[1].sim_throttle_lever_pos << std::endl;
+    SimOutputThrottles simOutputThrottles = {std::fmin(99.9999999999999, fadecOutputs[0].sim_throttle_lever_pos),
+                                             std::fmin(99.9999999999999, fadecOutputs[1].sim_throttle_lever_pos),
+                                             fadecOutputs[0].sim_thrust_mode, fadecOutputs[1].sim_thrust_mode};
+    if (!simConnectInterface.sendData(simOutputThrottles)) {
+      std::cout << "WASM: Write data failed!" << std::endl;
+      return false;
+    }
+
+    // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
+    idAutothrustDisabled->set(fadecs[0].getExternalOutputs().out.data_computed.ATHR_disabled ||
+                              fadecs[1].getExternalOutputs().out.data_computed.ATHR_disabled);
+
+    // update local variables
+    idAutothrustN1_TLA_1->set(fadecOutputs[0].N1_TLA_percent);
+    idAutothrustN1_TLA_2->set(fadecOutputs[1].N1_TLA_percent);
+    idAutothrustReverse_1->set(fadecOutputs[0].is_in_reverse);
+    idAutothrustReverse_2->set(fadecOutputs[1].is_in_reverse);
+    idAutothrustThrustLimitType->set(static_cast<int32_t>(fadecOutputs[0].thrust_limit_type));
+    idAutothrustThrustLimit->set(fadecOutputs[0].thrust_limit_percent);
+    idAutothrustN1_c_1->set(fadecOutputs[0].N1_c_percent);
+    idAutothrustN1_c_2->set(fadecOutputs[1].N1_c_percent);
   }
 
   // success

@@ -670,10 +670,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_ecu_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 2; i++) {
-      result &=
-          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-    }
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_ecu_bus));
   }
 
   // ------------------------------------------------------------------------------------------------------------------
@@ -965,6 +962,41 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FADEC_DATA", ClientData::FADEC_DATA);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FADEC_DATA, sizeof(athr_data), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FADEC_DATA, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(athr_data));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FADEC_INPUTS", ClientData::FADEC_INPUTS);
+  // create client data
+  result &=
+      SimConnect_CreateClientData(hSimConnect, ClientData::FADEC_INPUTS, sizeof(athr_input), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &=
+      SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FADEC_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(athr_input));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FADEC_OUTPUTS", ClientData::FADEC_OUTPUTS);
+  // create client data
+  result &=
+      SimConnect_CreateClientData(hSimConnect, ClientData::FADEC_OUTPUTS, sizeof(athr_output), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &=
+      SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FADEC_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(athr_output));
+
+  // request data to be updated when set
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::FADEC_OUTPUTS, ClientData::FADEC_OUTPUTS, ClientData::FADEC_OUTPUTS,
+                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   // return result
   return SUCCEEDED(result);
 }
@@ -1211,6 +1243,14 @@ bool SimConnectInterface::setClientDataFmgcBBus(base_fmgc_b_bus output, int fmgc
   return sendClientData(ClientData::FMGC_1_BUS_B_OUTPUT + fmgcIndex, sizeof(output), &output);
 }
 
+bool SimConnectInterface::setClientDataFadecData(athr_data output) {
+  return sendClientData(ClientData::FADEC_DATA, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFadecInput(athr_input output) {
+  return sendClientData(ClientData::FADEC_INPUTS, sizeof(output), &output);
+}
+
 base_elac_discrete_outputs SimConnectInterface::getClientDataElacDiscretesOutput() {
   return clientDataElacDiscreteOutputs;
 }
@@ -1265,6 +1305,10 @@ base_fmgc_a_bus SimConnectInterface::getClientDataFmgcABusOutput() {
 
 base_fmgc_b_bus SimConnectInterface::getClientDataFmgcBBusOutput() {
   return clientDataFmgcBBusOutputs;
+}
+
+athr_output SimConnectInterface::getClientDataFadecOutput() {
+  return clientDataFadecOutputs;
 }
 
 bool SimConnectInterface::setClientDataAdr(base_adr_bus output, int adrIndex) {
@@ -2812,6 +2856,11 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::FMGC_2_BUS_B_OUTPUT:
       // store aircraft data
       clientDataFmgcBBusOutputs = *((base_fmgc_b_bus*)&data->dwData);
+      return;
+
+    case ClientData::FADEC_OUTPUTS:
+      // store aircraft data
+      clientDataFadecOutputs = *((athr_output*)&data->dwData);
       return;
 
     default:

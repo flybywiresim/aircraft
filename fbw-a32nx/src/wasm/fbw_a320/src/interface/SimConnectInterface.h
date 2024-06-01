@@ -12,6 +12,7 @@
 
 #include "../model/ElacComputer_types.h"
 #include "../model/FacComputer_types.h"
+#include "../model/FadecComputer_types.h"
 #include "../model/FcuComputer_types.h"
 #include "../model/FmgcComputer_types.h"
 #include "../model/SecComputer_types.h"
@@ -296,6 +297,11 @@ class SimConnectInterface {
   base_fmgc_a_bus getClientDataFmgcABusOutput();
   base_fmgc_b_bus getClientDataFmgcBBusOutput();
 
+  bool setClientDataFadecData(athr_data output);
+  bool setClientDataFadecInput(athr_input output);
+
+  athr_output getClientDataFadecOutput();
+
   bool setClientDataAdr(base_adr_bus output, int adrIndex);
   bool setClientDataIr(base_ir_bus output, int irIndex);
   bool setClientDataRa(base_ra_bus output, int raIndex);
@@ -348,6 +354,11 @@ class SimConnectInterface {
     FMGC_2_BUS_A_OUTPUT,
     FMGC_1_BUS_B_OUTPUT,
     FMGC_2_BUS_B_OUTPUT,
+    FADEC_DATA,
+    FADEC_INPUTS,
+    FADEC_OUTPUTS,
+    FADEC_1_BUS,
+    FADEC_2_BUS,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -362,8 +373,6 @@ class SimConnectInterface {
     SFCC_2_BUS,
     ILS_1_BUS,
     ILS_2_BUS,
-    FADEC_1_BUS,
-    FADEC_2_BUS,
   };
 
   bool isConnected = false;
@@ -419,6 +428,8 @@ class SimConnectInterface {
   base_fmgc_discrete_outputs clientDataFmgcDiscreteOutputs = {};
   base_fmgc_a_bus clientDataFmgcABusOutputs = {};
   base_fmgc_b_bus clientDataFmgcBBusOutputs = {};
+
+  athr_output clientDataFadecOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
