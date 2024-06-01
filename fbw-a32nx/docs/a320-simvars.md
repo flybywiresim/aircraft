@@ -190,7 +190,7 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- A32NX_DMC_DISPLAYTEST:{1,2,3}
+- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
     - Enum
     - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
       Value | Meaning
@@ -2025,7 +2025,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
-- A32NX_FM{number}_ACC_ALT
+- L:A32NX_FM{number}_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The acceleration altitude
     - {number}
@@ -2090,35 +2090,35 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- A32NX_FM{number}_LANDING_ELEVATION
+- L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- A32NX_FM{number}_MISSED_ACC_ALT
+- L:A32NX_FM{number}_MISSED_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- A32NX_FM{number}_MISSED_EO_ACC_ALT
+- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach engine out acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- A32NX_FM{number}_MISSED_THR_RED_ALT
+- L:A32NX_FM{number}_MISSED_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach thrust reduction altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- A32NX_FM{number}_THR_RED_ALT
+- L:A32NX_FM{number}_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The thrust reduction altitude
     - {number}
