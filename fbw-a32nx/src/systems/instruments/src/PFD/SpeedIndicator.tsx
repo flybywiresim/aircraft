@@ -1072,8 +1072,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         : this.speedState.fcuSelectedSpeed;
 
       const chosenTargetSpeedFailed = chosenTargetSpeed.isFailureWarning();
+      const chosenTargetSpeedNcd = chosenTargetSpeed.isNoComputedData();
 
-      const inRange = this.handleVisibility(chosenTargetSpeed.value, chosenTargetSpeedFailed);
+      const inRange = this.handleVisibility(chosenTargetSpeed.value, chosenTargetSpeedFailed, chosenTargetSpeedNcd);
 
       if (isSpeedManaged) {
         this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
@@ -1093,7 +1094,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     }
   }
 
-  private handleVisibility(currentTargetSpeed: number, spdSelFail: boolean): boolean {
+  private handleVisibility(currentTargetSpeed: number, spdSelFail: boolean, spdSelNcd: boolean): boolean {
     let inRange = false;
 
     if (spdSelFail) {
@@ -1101,6 +1102,11 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.spdSelFlagRef.instance.style.display = 'block';
+    } else if (spdSelNcd) {
+      this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagRef.instance.style.display = 'none';
     } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
