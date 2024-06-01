@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
@@ -11,18 +11,20 @@ import {
   usePersistentProperty,
   parseMetar,
   ConfigWeatherMap,
+  LandingFlapsConfig,
+  LandingRunwayConditions,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
+import { PerformanceCalculatorContext } from '../../AircraftContext';
 
 interface OutputDisplayProps {
   label: string;
@@ -50,10 +52,12 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
   </div>
 );
 
+// TODO F-LD and LD
+
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculator: LandingCalculator = new LandingCalculator();
+  const calculators = useContext(PerformanceCalculatorContext);
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -91,7 +95,7 @@ export const LandingWidget = () => {
 
   const handleCalculateLanding = (): void => {
     if (!areInputsValid()) return;
-    const landingDistances = calculator.calculateLandingDistances(
+    const landingDistances = calculators.landing.calculateLandingDistances(
       weight ?? 0,
       flaps ?? LandingFlapsConfig.Full,
       runwayCondition,
@@ -294,8 +298,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwaySlopeChange = (value: string): void => {
-    // FIXME sus... should be parseFloat?
-    let slope: number | undefined = parseInt(value);
+    let slope: number | undefined = parseFloat(value);
 
     if (Number.isNaN(slope)) {
       slope = undefined;
