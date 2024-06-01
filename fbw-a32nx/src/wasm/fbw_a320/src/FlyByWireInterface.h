@@ -5,9 +5,9 @@
 
 #include "AdditionalData.h"
 #include "Arinc429.h"
-#include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
 #include "EngineData.h"
+#include "FadecComputer.h"
 #include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
@@ -61,6 +61,7 @@ class FlyByWireInterface {
   int facDisabled = -1;
   bool fcuDisabled = false;
   int fmgcDisabled = -1;
+  int fadecDisabled = -1;
   bool tailstrikeProtectionEnabled = true;
 
   ConfirmNode elac2EmerPowersupplyRelayTimer = ConfirmNode(true, 30);
@@ -114,17 +115,11 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  Autothrust autoThrust;
-  Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
-  athr_output autoThrustOutput;
-
   base_ra_bus raBusOutputs[2] = {};
 
   base_lgciu_bus lgciuBusOutputs[2] = {};
 
   base_sfcc_bus sfccBusOutputs[2] = {};
-
-  base_ecu_bus fadecBusOutputs[2] = {};
 
   base_ils_bus ilsBusOutputs[2] = {};
 
@@ -157,6 +152,11 @@ class FlyByWireInterface {
   base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
   base_fac_analog_outputs facsAnalogOutputs[2] = {};
   base_fac_bus facsBusOutputs[2] = {};
+
+  FadecComputer fadecs[2];
+  FadecComputer::ExternalInputs_FadecComputer_T fadecInputs[2];
+  athr_output fadecOutputs[2];
+  base_ecu_bus fadecBusOutputs[2];
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -248,12 +248,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitTOGA;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
-  std::unique_ptr<LocalVariable> idAutothrustStatus;
-  std::unique_ptr<LocalVariable> idAutothrustMode;
-  std::unique_ptr<LocalVariable> idAutothrustModeMessage;
   std::unique_ptr<LocalVariable> idAutothrustDisabled;
-  std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
-  std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
@@ -620,6 +615,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFcuHealthy;
 
+  std::unique_ptr<LocalVariable> idEcuMaintenanceWord6[2];
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -634,7 +631,7 @@ class FlyByWireInterface {
   bool updateAdditionalData(double sampleTime);
 
   bool updateFlyByWire(double sampleTime);
-  bool updateAutothrust(double sampleTime);
+  bool updateFadec(double sampleTime, int fadecIndex);
 
   bool updateRa(int raIndex);
 

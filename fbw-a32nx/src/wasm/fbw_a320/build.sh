@@ -118,8 +118,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/Autothrust_data.cpp" \
-  "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/ElacComputer_data.cpp" \
   "${DIR}/src/model/ElacComputer.cpp" \
@@ -137,6 +135,8 @@ clang++ \
   "${DIR}/src/model/FmgcOuterLoops.cpp" \
   "${DIR}/src/model/FcuComputer_data.cpp" \
   "${DIR}/src/model/FcuComputer.cpp" \
+  "${DIR}/src/model/FadecComputer_data.cpp" \
+  "${DIR}/src/model/FadecComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
