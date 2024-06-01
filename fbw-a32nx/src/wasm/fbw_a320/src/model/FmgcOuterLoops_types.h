@@ -77,6 +77,7 @@ struct ap_raw_data
   real_T Psi_magnetic_deg;
   real_T Psi_magnetic_track_deg;
   real_T Psi_true_deg;
+  real_T Chi_true_deg;
   real_T bx_m_s2;
   real_T by_m_s2;
   real_T bz_m_s2;
@@ -144,6 +145,7 @@ struct ap_raw_laws_input
   lateral_law lateral_law;
   vertical_law vertical_law;
   real_T Psi_c_deg;
+  real_T Chi_c_deg;
   real_T H_c_ft;
   real_T H_dot_c_fpm;
   real_T FPA_c_deg;

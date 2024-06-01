@@ -497,7 +497,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idIrWindSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_SPEED");
     idIrWindDirectionTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
     idIrTrackAngleMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
+    idIrTrackAngleTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRUE_TRACK");
     idIrHeadingMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING");
+    idIrHeadingTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRUE_HEADING");
     idIrDriftAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_DRIFT_ANGLE");
     idIrFlightPathAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_FLIGHT_PATH_ANGLE");
     idIrPitchAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH");
@@ -1181,7 +1183,7 @@ bool FlyByWireInterface::updateIls(int ilsIndex) {
   }
 
   ilsBusOutputs[ilsIndex].runway_heading_deg.SSM = nav_loc_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  ilsBusOutputs[ilsIndex].runway_heading_deg.Data = simData.nav_loc_deg;
+  ilsBusOutputs[ilsIndex].runway_heading_deg.Data = std::fmod(std::fmod(simData.nav_loc_deg - simData.nav_loc_magvar_deg, 360) + 360, 360);
   ilsBusOutputs[ilsIndex].ils_frequency_mhz.SSM = Arinc429SignStatus::NormalOperation;
   ilsBusOutputs[ilsIndex].ils_frequency_mhz.Data = 0;
   ilsBusOutputs[ilsIndex].localizer_deviation_deg.SSM =
@@ -1212,6 +1214,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   irBusOutputs[adirsIndex].latitude_deg = Arinc429Utils::fromSimVar(idIrLatitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].longitude_deg = Arinc429Utils::fromSimVar(idIrLongitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].ground_speed_kn = Arinc429Utils::fromSimVar(idIrGroundSpeed[adirsIndex]->get());
+  irBusOutputs[adirsIndex].track_angle_true_deg = Arinc429Utils::fromSimVar(idIrTrackAngleTrue[adirsIndex]->get());
+  irBusOutputs[adirsIndex].heading_true_deg = Arinc429Utils::fromSimVar(idIrHeadingTrue[adirsIndex]->get());
   irBusOutputs[adirsIndex].wind_speed_kn = Arinc429Utils::fromSimVar(idIrWindSpeed[adirsIndex]->get());
   irBusOutputs[adirsIndex].wind_direction_true_deg = Arinc429Utils::fromSimVar(idIrWindDirectionTrue[adirsIndex]->get());
   irBusOutputs[adirsIndex].track_angle_magnetic_deg = Arinc429Utils::fromSimVar(idIrTrackAngleMagnetic[adirsIndex]->get());
@@ -1649,8 +1653,8 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.pfd_own_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.adc_3_switch = false;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.att_3_switch = false;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.left_wheel_spd_abv_70_kts = false;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.right_wheel_spd_abv_70_kts = false;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.left_wheel_spd_abv_70_kts = simData.wheelRpmLeft * 0.118921 > 70;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.right_wheel_spd_abv_70_kts = simData.wheelRpmRight * 0.118921 > 70;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.bscu_opp_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.bscu_own_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.nose_gear_pressed_opp = idLgciuNoseGearCompressed[oppFmgcIndex]->get();
