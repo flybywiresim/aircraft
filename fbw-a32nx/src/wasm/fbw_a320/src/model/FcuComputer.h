@@ -88,9 +88,11 @@ class FcuComputer final
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_nz;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_he;
     rtDW_EFISFilterLogic_FcuComputer_T sf_EFISFilterLogic;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kw;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ch;
     rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1_o;
+    rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_hh;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ma;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_a4;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kl;
@@ -180,6 +182,7 @@ class FcuComputer final
     real_T MTrigNode1_isRisingEdge_a;
     real_T MTrigNode2_isRisingEdge_p;
     real_T MTrigNode3_isRisingEdge;
+    real_T MTrigNode_isRisingEdge_kt;
     real_T MTrigNode_isRisingEdge_i;
     real_T MTrigNode1_isRisingEdge_m;
     real_T MTrigNode2_isRisingEdge_hp;
@@ -200,6 +203,7 @@ class FcuComputer final
     real_T MTrigNode1_retriggerable_ls;
     real_T MTrigNode2_retriggerable_c;
     real_T MTrigNode3_retriggerable;
+    real_T MTrigNode_retriggerable_m;
     real_T MTrigNode_retriggerable_k;
     real_T MTrigNode1_retriggerable_p;
     real_T MTrigNode2_retriggerable_k;
@@ -212,6 +216,7 @@ class FcuComputer final
     real_T MTrigNode1_triggerDuration;
     real_T MTrigNode2_triggerDuration;
     real_T MTrigNode3_triggerDuration;
+    real_T MTrigNode_triggerDuration_k;
     real_T MTrigNode_triggerDuration_m;
     real_T MTrigNode1_triggerDuration_h;
     real_T MTrigNode2_triggerDuration_a;
@@ -297,6 +302,7 @@ class FcuComputer final
     boolean_T PulseNode_isRisingEdge_l;
     boolean_T PulseNode_isRisingEdge_hz;
     boolean_T PulseNode1_isRisingEdge_e;
+    boolean_T PulseNode2_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_d;
     int8_T CompareToConstant_const;
     int8_T CompareToConstant_const_p;
