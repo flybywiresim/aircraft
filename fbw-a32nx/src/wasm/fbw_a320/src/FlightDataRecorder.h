@@ -3,9 +3,6 @@
 #include <fstream>
 
 #include "AdditionalData.h"
-#include "AutopilotLaws.h"
-#include "AutopilotStateMachine.h"
-#include "Autothrust.h"
 #include "EngineData.h"
 #include "zfstream.h"
 
