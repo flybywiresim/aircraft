@@ -24,7 +24,7 @@ export class FcuBusPublisher extends SimVarPublisher<FcuSimVars> {
         ['option', { name: `L:A32NX_EFIS_${efisSide}_OPTION`, type: SimVarValueType.Enum }],
         ['navaidMode1', { name: `L:A32NX_EFIS_${efisSide}_NAVAID_1_MODE`, type: SimVarValueType.Enum }],
         ['navaidMode2', { name: `L:A32NX_EFIS_${efisSide}_NAVAID_2_MODE`, type: SimVarValueType.Enum }],
-        ['efisLsActive', { name: `L:BTN_LS_${efisSide === 'L' ? 1 : 2}_FILTER_ACTIVE`, type: SimVarValueType.Bool }],
+        ['efisLsActive', { name: `L:A32NX_BTN_LS_${efisSide === 'L' ? 1 : 2}_FILTER_ACTIVE`, type: SimVarValueType.Bool }],
       ]),
       bus,
     );
