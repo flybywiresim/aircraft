@@ -42,6 +42,19 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_lateral_law_
 #define DEFINED_TYPEDEF_FOR_lateral_law_
 
@@ -134,19 +147,6 @@ struct base_fms_inputs
   real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
-
-struct base_ils_bus
-{
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -521,11 +521,15 @@ struct base_fmgc_logic_outputs
   int8_T flap_slat_lever_position;
   boolean_T fac_speeds_failure;
   boolean_T fac_weights_failure;
+  boolean_T fac_rudder_control_failure;
+  boolean_T both_fac_rudder_valid;
   base_fac_bus chosen_fac_bus;
   boolean_T fcu_failure;
   boolean_T ils_failure;
   boolean_T both_ils_valid;
   base_ils_bus ils_computation_data;
+  boolean_T ils_tune_inhibit;
+  real_T rwy_hdg_memo;
 };
 
 #endif

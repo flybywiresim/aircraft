@@ -374,6 +374,8 @@ void FcuComputer::step()
       FcuComputer_DWork.pValue_not_empty_m = false;
       FcuComputer_MATLABFunction_o_Reset(&FcuComputer_DWork.sf_MATLABFunction_kw);
       FcuComputer_MATLABFunction1_Reset(&FcuComputer_DWork.sf_MATLABFunction1_o);
+      FcuComputer_MATLABFunction_Reset(&FcuComputer_DWork.sf_MATLABFunction_hh);
+      FcuComputer_MATLABFunction_o_Reset(&FcuComputer_DWork.sf_MATLABFunction_ar);
       FcuComputer_MATLABFunction_o_Reset(&FcuComputer_DWork.sf_MATLABFunction_ch);
       FcuComputer_DWork.pValue_not_empty = false;
       FcuComputer_DWork.prevTrkFpaActive_not_empty = false;
@@ -865,9 +867,14 @@ void FcuComputer::step()
     rtb_Equal6 = (FcuComputer_U.in.discrete_inputs.afs_inputs.vs_fpa_knob.turns !=
                   FcuComputer_P.CompareToConstant_const_o);
     FcuComputer_MATLABFunction1(&rtb_BusAssignment_m, rtb_Equal7, (rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa ||
-      rtb_BusAssignment_o_baro_qfe || rtb_Equal6), &rtb_Equal6, &FcuComputer_DWork.sf_MATLABFunction1_o);
+      rtb_BusAssignment_o_baro_qfe || rtb_Equal6), &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction1_o);
+    FcuComputer_MATLABFunction(rtb_BusAssignment_m.logic.afs.vs_fpa_buttons.pushed, FcuComputer_U.in.time.dt, &rtb_OR3_j,
+      FcuComputer_P.MTrigNode_isRisingEdge_kt, FcuComputer_P.MTrigNode_retriggerable_m,
+      FcuComputer_P.MTrigNode_triggerDuration_k, &FcuComputer_DWork.sf_MATLABFunction_hh);
+    FcuComputer_MATLABFunction_d((rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa && rtb_OR3_j),
+      FcuComputer_P.PulseNode2_isRisingEdge_k, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_ar);
     FcuComputer_MATLABFunction_d((FcuComputer_U.in.discrete_inputs.ap_1_engaged ||
-      FcuComputer_U.in.discrete_inputs.ap_2_engaged), FcuComputer_P.PulseNode_isRisingEdge_d, &rtb_OR3_j,
+      FcuComputer_U.in.discrete_inputs.ap_2_engaged), FcuComputer_P.PulseNode_isRisingEdge_d, &rtb_Equal6,
       &FcuComputer_DWork.sf_MATLABFunction_ch);
     if (!FcuComputer_DWork.pValue_not_empty) {
       if (FcuComputer_DWork.p_trk_fpa_active) {
@@ -892,12 +899,16 @@ void FcuComputer::step()
       }
     }
 
-    if (rtb_OR3_j || rtb_Equal6) {
+    if (rtb_Equal6 || rtb_Equal8) {
       if (FcuComputer_DWork.p_trk_fpa_active) {
         FcuComputer_DWork.pValue = rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.fpa_deg;
       } else {
         FcuComputer_DWork.pValue = rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.vs_ft_min;
       }
+    }
+
+    if (rtb_OR3_j) {
+      FcuComputer_DWork.pValue = 0.0F;
     }
 
     if (FcuComputer_DWork.p_trk_fpa_active) {
@@ -913,7 +924,7 @@ void FcuComputer::step()
     }
 
     FcuComputer_DWork.prevTrkFpaActive = FcuComputer_DWork.p_trk_fpa_active;
-    rtb_BusAssignment_o_baro_qfe = rtb_Equal6;
+    rtb_BusAssignment_o_baro_qfe = rtb_Equal8;
     FcuComputer_MATLABFunction((FcuComputer_DWork.pValue_j != FcuComputer_DWork.DelayInput1_DSTATE[0]),
       FcuComputer_U.in.time.dt, &rtb_Equal8, FcuComputer_P.MTrigNode_isRisingEdge_i,
       FcuComputer_P.MTrigNode_retriggerable_k, FcuComputer_P.MTrigNode_triggerDuration_m,
