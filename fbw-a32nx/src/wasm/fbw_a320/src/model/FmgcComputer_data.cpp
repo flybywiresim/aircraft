@@ -131,6 +131,7 @@ base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct{
 
 FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { 0.0, 1.0 },
+  1.0,
   2.0,
   0.2,
   5.0,
@@ -149,6 +150,14 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
 
   { 1.0, 0.01 },
+  11.0,
+  11.0,
+  13.0,
+  13.0,
+  11.0,
+  11.0,
+  13.0,
+  13.0,
   18.0,
   19.0,
   17.0,
@@ -199,6 +208,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   17.0,
   18.0,
   19.0,
+  16.0,
   24.0,
   24.0,
   11.0,
@@ -234,6 +244,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   18.0,
   20.0,
   29.0,
+  700.0,
   2.6,
   2.6,
   0.0,
@@ -246,13 +257,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   30.0,
   400.0,
   400.0,
+  50.0,
+  50.0,
   36.7,
   36.7,
   100.0,
   30.0,
   400.0,
-  1.92,
-  1.1,
   0.16,
   400.0,
   60.0,
@@ -298,6 +309,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   1.2,
   0.72,
   10.0,
+  0.36,
+  0.36,
   30.0,
   0.72,
   0.72,
@@ -430,26 +443,14 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   false,
   false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  true,
   false,
   false,
   false,
@@ -470,6 +471,26 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   true,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  true,
   true,
   true,
   true,
@@ -493,6 +514,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   true,
   false,
+  true,
+  true,
   true,
   true,
   true,
@@ -2460,6 +2483,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       0,
       false,
       false,
+      false,
+      false,
 
       {
         {
@@ -2626,7 +2651,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
           0U,
           0.0F
         }
-      }
+      },
+      false,
+      0.0
     },
 
     {
@@ -3242,6 +3269,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     0,
     false,
     false,
+    false,
+    false,
 
     {
       {
@@ -3408,7 +3437,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0U,
         0.0F
       }
-    }
+    },
+    false,
+    0.0
   },
 
   {
@@ -3669,6 +3700,33 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0U,
         0.0F
       }
+    }
+  },
+
+  {
+    0.0,
+    0.0,
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     }
   },
 
@@ -3776,6 +3834,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
   18.0,
   0.0,
+  0.0,
+  9.81,
+  9.81,
+  9.81,
+  -3.0,
   0.017453292519943295,
   0.00508,
   0.51444444444444448,
@@ -3805,6 +3868,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { 10.0F, 10.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F },
 
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
+  0.0F,
   0.0174532924F,
   0.0174532924F,
   10.0F,
@@ -3816,7 +3880,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
-  0.0F,
+  true,
   false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
@@ -3857,7 +3921,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  true,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

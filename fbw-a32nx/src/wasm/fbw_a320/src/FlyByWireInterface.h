@@ -375,7 +375,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idIrWindSpeed[3];
   std::unique_ptr<LocalVariable> idIrWindDirectionTrue[3];
   std::unique_ptr<LocalVariable> idIrTrackAngleMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrTrackAngleTrue[3];
   std::unique_ptr<LocalVariable> idIrHeadingMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrHeadingTrue[3];
   std::unique_ptr<LocalVariable> idIrDriftAngle[3];
   std::unique_ptr<LocalVariable> idIrFlightPathAngle[3];
   std::unique_ptr<LocalVariable> idIrPitchAngle[3];

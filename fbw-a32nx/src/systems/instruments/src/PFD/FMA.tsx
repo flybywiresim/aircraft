@@ -1360,7 +1360,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
 
   private setText() {
     const rollOutActive = this.fmgcDiscreteWord2.getBitValueOr(26, false);
-    const flareActive = this.fmgcDiscreteWord2.getBitValueOr(25, false);
+    const flareActive = this.fmgcDiscreteWord1.getBitValueOr(25, false);
     const landActive = this.fmgcDiscreteWord4.getBitValueOr(14, false) && !flareActive && !rollOutActive;
 
     const navActive = this.fmgcDiscreteWord2.getBitValueOr(12, false);
