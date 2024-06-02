@@ -1,32 +1,5 @@
 #include "FmgcComputer.h"
 
-ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct{
-  0.0,
-  0.0,
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    false,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  }
-} ;
-
 base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   {
     false,
@@ -85,6 +58,8 @@ base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   0.0,
   0.0,
   false,
+  0.0,
+  false,
   false,
   false,
   false,
@@ -106,6 +81,33 @@ base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   false,
   false,
   false
+} ;
+
+ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct{
+  0.0,
+  0.0,
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    false,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  }
 } ;
 
 base_fmgc_athr_outputs rtP_fmgc_athr_output_MATLABStruct{
@@ -214,10 +216,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   11.0,
   11.0,
   14.0,
+  11.0,
   25.0,
   11.0,
   12.0,
   14.0,
+  11.0,
   11.0,
   14.0,
   18.0,
@@ -261,6 +265,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   400.0,
   50.0,
   50.0,
+  400.0,
   36.7,
   36.7,
   100.0,
@@ -269,6 +274,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.16,
   400.0,
   60.0,
+  250.0,
   0.0,
   0.8,
   0.133,
@@ -364,6 +370,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Descent,
   fmgc_flight_phase::Approach,
+  fmgc_flight_phase::Descent,
+  fmgc_flight_phase::Approach,
+  fmgc_flight_phase::Takeoff,
+  fmgc_flight_phase::Goaround,
+  fmgc_flight_phase::Takeoff,
+  fmgc_flight_phase::Climb,
+  fmgc_flight_phase::Goaround,
   fmgc_flight_phase::Takeoff,
   fmgc_flight_phase::Climb,
   fmgc_flight_phase::Goaround,
@@ -465,6 +478,16 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   false,
   false,
   false,
@@ -569,8 +592,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   false,
   true,
+  false,
   true,
   false,
+  true,
+  false,
+  true,
   true,
   true,
   false,
@@ -2738,6 +2765,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       0.0,
       0.0,
       false,
+      0.0,
+      false,
       false,
       false,
       false,
@@ -3730,33 +3759,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   },
 
   {
-    0.0,
-    0.0,
-
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-
-    {
-      false,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
-    }
-  },
-
-  {
     {
       false,
       false,
@@ -3814,6 +3816,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     0.0,
     0.0,
     false,
+    0.0,
+    false,
     false,
     false,
     false,
@@ -3838,6 +3842,33 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   },
 
   {
+    0.0,
+    0.0,
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    }
+  },
+
+  {
     false,
     false,
     false,
@@ -3859,6 +3890,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   -10.0,
   0.0,
   18.0,
+  0.0,
   0.0,
   0.0,
   9.81,
@@ -3896,10 +3928,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
   0.0F,
+  -2.0F,
+  4.0F,
   0.0174532924F,
   0.0174532924F,
   10.0F,
-  0.0F,
   0.0F,
   0.0F,
   0.0F,
