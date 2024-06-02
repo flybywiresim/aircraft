@@ -317,6 +317,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
   idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
+  idFmsManagedSpeedTarget = std::make_unique<LocalVariable>("A32NX_SPEEDS_MANAGED_PFD");
 
   idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   // FIXME consider FM1/FM2
@@ -1661,8 +1662,10 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.nose_gear_pressed_own = idLgciuNoseGearCompressed[fmgcIndex]->get();
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.elac_opp_ap_disc = !elacsDiscreteOutputs[oppFmgcIndex].ap_1_authorised;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.elac_own_ap_disc = !elacsDiscreteOutputs[fmgcIndex].ap_1_authorised;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.eng_opp_stop = false;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.eng_own_stop = false;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.eng_opp_stop =
+      !(fmgcIndex == 0 ? simData.engine_combustion_2 : simData.engine_combustion_1);
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.eng_own_stop =
+      !(fmgcIndex == 0 ? simData.engine_combustion_1 : simData.engine_combustion_2);
 
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fm_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
@@ -1686,7 +1689,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vs_target_ft_min = idFlightGuidanceTargetVerticalSpeed->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_2_kts = idFmgcV2->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV2->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmgcV2->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmsManagedSpeedTarget->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flex_temp_deg_c = idFmgcFlexTemperature->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_eo_ft = fmAccelerationAltitudeEngineOut->valueOr(0);
