@@ -557,6 +557,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord6[2];
 
+  std::unique_ptr<LocalVariable> idStickLockActive;
+
   std::unique_ptr<LocalVariable> idLightsTest;
 
   std::unique_ptr<LocalVariable> idFcuSelectedHeading;

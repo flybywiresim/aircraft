@@ -714,6 +714,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcABusDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_6");
   }
 
+  idStickLockActive = std::make_unique<LocalVariable>("A32NX_STICK_LOCK_ACTIVE");
+
   // FCU Lvars
   idLightsTest = std::make_unique<LocalVariable>("A32NX_OVHD_INTLT_ANN");
 
@@ -1756,6 +1758,11 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcABusDiscreteWord1[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_1));
   idFmgcABusDiscreteWord2[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_2));
   idFmgcABusDiscreteWord6[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_6));
+
+  // Set the stick lock var (for sounds), after both FMGCs have updated
+  if (fmgcIndex == 1) {
+    idStickLockActive->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
+  }
 
   return true;
 }
