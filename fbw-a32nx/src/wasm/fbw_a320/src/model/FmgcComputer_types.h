@@ -42,15 +42,29 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 
-struct base_ils_bus
+struct base_fmgc_b_bus
 {
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
+  base_arinc_429 fac_weight_lbs;
+  base_arinc_429 fm_weight_lbs;
+  base_arinc_429 fac_cg_percent;
+  base_arinc_429 fm_cg_percent;
+  base_arinc_429 fg_radio_height_ft;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 approach_spd_target_kn;
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_nose_wheel_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+  base_arinc_429 n1_left_percent;
+  base_arinc_429 n1_right_percent;
 };
 
 #endif
@@ -86,6 +100,19 @@ enum class vertical_law
   FLARE,
   SRS,
   VPATH
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -499,6 +526,8 @@ struct base_fmgc_logic_outputs
 {
   boolean_T on_ground;
   boolean_T gnd_eng_stop_flt_5s;
+  boolean_T one_engine_out;
+  boolean_T engine_running;
   boolean_T ap_fd_athr_common_condition;
   boolean_T ap_fd_common_condition;
   boolean_T fd_own_engaged;
@@ -752,33 +781,6 @@ struct base_fmgc_discrete_outputs
   boolean_T fcu_own_fail;
   boolean_T fmgc_healthy;
   boolean_T ils_test_inhibit;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-
-struct base_fmgc_b_bus
-{
-  base_arinc_429 fac_weight_lbs;
-  base_arinc_429 fm_weight_lbs;
-  base_arinc_429 fac_cg_percent;
-  base_arinc_429 fm_cg_percent;
-  base_arinc_429 fg_radio_height_ft;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 approach_spd_target_kn;
-  base_arinc_429 delta_p_ail_cmd_deg;
-  base_arinc_429 delta_p_splr_cmd_deg;
-  base_arinc_429 delta_r_cmd_deg;
-  base_arinc_429 delta_nose_wheel_cmd_deg;
-  base_arinc_429 delta_q_cmd_deg;
-  base_arinc_429 n1_left_percent;
-  base_arinc_429 n1_right_percent;
 };
 
 #endif
