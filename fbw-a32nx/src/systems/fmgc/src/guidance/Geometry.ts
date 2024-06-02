@@ -29,6 +29,7 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -467,7 +468,11 @@ export class Geometry {
     const inboundTransition = this.transitions.get(activeLegIdx - 1);
 
     // Restrict sequencing in cases where we are still in inbound transition. Make an exception for very short legs as the transition could be overshooting.
-    if (!inboundTransition?.isNull && inboundTransition?.isAbeam(ppos) && activeLeg.distance > 0.01) {
+    if (
+      !inboundTransition?.isNull &&
+      inboundTransition?.isAbeam(ppos) &&
+      (activeLeg.distance > 0.01 || (activeLeg instanceof XFLeg && activeLeg.overshot))
+    ) {
       return false;
     }
 
