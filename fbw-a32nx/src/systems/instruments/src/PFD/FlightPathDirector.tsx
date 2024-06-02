@@ -94,7 +94,7 @@ export class FlightPathDirector extends DisplayComponent<{
       this.needsUpdate = true;
     });
 
-    sub.on('rollFdCommand').handle((fdr) => {
+    sub.on('pitchFdCommand').handle((fdr) => {
       this.data.pitchFdCommand = fdr;
       this.needsUpdate = true;
     });
