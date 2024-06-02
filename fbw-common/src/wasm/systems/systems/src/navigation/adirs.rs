@@ -1906,7 +1906,6 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
 
 trait NormaliseAngleExt {
     fn normalised(self) -> Angle;
-    fn normalised_180(self) -> Angle;
 }
 
 impl NormaliseAngleExt for Angle {
@@ -1923,23 +1922,6 @@ impl NormaliseAngleExt for Angle {
                 v
             } else {
                 v + Angle::FULL_TURN
-            }
-        }
-    }
-
-    /// Create a new angle by normalizing the value into the range of
-    /// [-π, π) rad.
-    #[inline]
-    fn normalised_180(self) -> Angle {
-        if self < Angle::HALF_TURN && self >= -Angle::HALF_TURN {
-            self
-        } else {
-            let v = self % Angle::FULL_TURN;
-
-            if v < Angle::HALF_TURN {
-                v
-            } else {
-                v - Angle::FULL_TURN
             }
         }
     }
@@ -4343,14 +4325,6 @@ mod tests {
                     .unwrap()
                     .get::<degree>(),
                 wind_angle.get::<degree>()
-            );
-            assert_about_eq!(
-                test_bed
-                    .wind_direction_bnr(adiru_number)
-                    .normal_value()
-                    .unwrap()
-                    .get::<degree>(),
-                wind_angle.normalised_180().get::<degree>()
             );
             assert_about_eq!(
                 test_bed
