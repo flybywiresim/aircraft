@@ -449,21 +449,21 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     const atActive = this.fcuAtsDiscreteWord.getBitValueOr(14, false);
 
     if (this.fcuAtsFmaDiscreteWord.getBitValueOr(11, false)) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
                             `;
     } else if (false) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(13, false)) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       const FlexTemp = Math.round(this.flexTemp);
       const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
       text = `<g>
@@ -475,78 +475,74 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 </text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(29, false)) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && !atActive) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && !atActive) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(17, false)) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(18, false)) {
-      this.displayModeChangedPath(true);
+      this.isShown = false;
       text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
                             </g>`;
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(19, false)) {
-      text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(20, false)) {
-      text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && atActive) {
-      text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(14, false)) {
-      text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && atActive) {
-      text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
     } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(16, false)) {
-      text = '<text  class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-      this.displayModeChangedPath();
+      text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
     } else if (this.autoBrakeActive) {
       switch (this.autoBrakeMode) {
         case 1:
           text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
-          this.displayModeChangedPath();
           break;
         case 2:
           text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
-          this.displayModeChangedPath();
           break;
         case 3:
           text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
-          this.displayModeChangedPath();
           break;
         default:
           text = '';
           this.isShown = false;
-          this.displayModeChangedPath(true);
       }
     } else {
       text = '';
       this.isShown = false;
+    }
+
+    const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML;
+    if (hasChanged) {
+      this.displayModeChangedPath();
+    } else if (!this.isShown) {
       this.displayModeChangedPath(true);
     }
 
@@ -600,7 +596,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   render(): VNode {
     return (
-      <>
+      <g>
         <path
           ref={this.modeChangedPathRef}
           visibility="hidden"
@@ -608,7 +604,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
           d="m3.3 1.8143h27.127v6.0476h-27.127z"
         />
         <g ref={this.cellRef} />
-      </>
+      </g>
     );
   }
 }
@@ -1690,8 +1686,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
       } else {
         this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
       }
-    }
-    if (!this.isShown) {
+    } else if (!this.isShown) {
       this.displayModeChangedPath(true);
     }
   }
@@ -2050,14 +2045,17 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         const atEngaged = a.getBitValueOr(13, false);
         const atActive = a.getBitValueOr(14, false);
 
-        const className = this.getClass(atEngaged, atActive);
-        this.posSub.set(!atActive ? 21.253048 : 21.753487);
-        this.classSub.set(`MiddleAlign ${className}`);
-        if (className !== 'HiddenElement') {
+        const className = `MiddleAlign ${this.getClass(atEngaged, atActive)}`;
+
+        const hasChanged = className.length > 0 && className !== this.classSub.get();
+        if (hasChanged) {
           this.displayModeChangedPath();
-        } else {
+        } else if (!this.isShown) {
           this.displayModeChangedPath(true);
         }
+
+        this.posSub.set(!atActive ? 21.253048 : 21.753487);
+        this.classSub.set(className);
       });
   }
 
