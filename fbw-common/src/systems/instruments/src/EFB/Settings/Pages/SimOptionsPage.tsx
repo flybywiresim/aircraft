@@ -43,11 +43,6 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
   ];
 
-  const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
-    { name: t('Settings.SimOptions.Captain'), setting: 'Captain'},
-    { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot'},
-  ];
-
   return (
     <>
       {!showThrottleSettings && (
@@ -197,19 +192,13 @@ export const SimOptionsPage = () => {
 
           <SettingItem name={t('Settings.SimOptions.CockpitSeatUsedToControl')}>
             <SelectGroup>
-                <SelectItem
-                  onSelect={() => setSideControlling(0)}
-                  selected={sideControlling === 0}
-                >
+              <SelectItem onSelect={() => setSideControlling(0)} selected={sideControlling === 0}>
                 {t('Settings.SimOptions.Captain')}
-                </SelectItem>
+              </SelectItem>
 
-                <SelectItem
-                onSelect={() => setSideControlling(1)}
-                selected={sideControlling === 1}
-                >
+              <SelectItem onSelect={() => setSideControlling(1)} selected={sideControlling === 1}>
                 {t('Settings.SimOptions.Copilot')}
-                </SelectItem>
+              </SelectItem>
             </SelectGroup>
           </SettingItem>
         </SettingsPage>
