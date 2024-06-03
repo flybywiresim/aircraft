@@ -43,6 +43,11 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
   ];
 
+  const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
+    { name: t('Settings.SimOptions.Captain'), setting: 'Captain'},
+    { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot'},
+  ];
+
   return (
     <>
       {!showThrottleSettings && (
