@@ -47,7 +47,6 @@ class FcuComputer final
     real32_T pValue_e;
     real32_T pValue_j;
     real32_T pValue_n;
-    boolean_T Delay_DSTATE;
     boolean_T pValue_not_empty;
     boolean_T prevTrkFpaActive;
     boolean_T prevTrkFpaActive_not_empty;
@@ -101,6 +100,7 @@ class FcuComputer final
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_lh;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_p5r;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_av;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_du;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_dc;
     rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_g;
@@ -300,6 +300,7 @@ class FcuComputer final
     boolean_T PulseNode_isRisingEdge_oa;
     boolean_T PulseNode1_isRisingEdge_ke;
     boolean_T PulseNode_isRisingEdge_l;
+    boolean_T PulseNode1_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_hz;
     boolean_T PulseNode1_isRisingEdge_e;
     boolean_T PulseNode2_isRisingEdge_k;
@@ -315,7 +316,6 @@ class FcuComputer final
     base_fcu_bus Constant2_Value;
     base_fcu_logic_outputs Constant1_Value;
     base_fcu_discrete_outputs Constant3_Value;
-    boolean_T Delay_InitialCondition;
     boolean_T Constant15_Value;
     boolean_T Constant1_Value_i;
     boolean_T Constant1_Value_d;
