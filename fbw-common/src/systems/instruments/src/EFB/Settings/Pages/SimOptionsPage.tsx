@@ -29,6 +29,7 @@ export const SimOptionsPage = () => {
   const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
   const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
   const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+  const [sideControlling, setSideControlling] = usePersistentNumberProperty('SIDE_CONTROLLING', 0);
 
   const defaultBaroButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -40,6 +41,11 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.None'), setting: 'NONE' },
     { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
+  ];
+
+  const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
+    { name: t('Settings.SimOptions.Captain'), setting: 'Captain'},
+    { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot'},
   ];
 
   return (
@@ -187,6 +193,24 @@ export const SimOptionsPage = () => {
             >
               {t('Settings.SimOptions.Calibrate')}
             </button>
+          </SettingItem>
+
+          <SettingItem name={t('Settings.SimOptions.CockpitSeatUsedToControl')}>
+            <SelectGroup>
+                <SelectItem
+                  onSelect={() => setSideControlling(0)}
+                  selected={sideControlling === 0}
+                >
+                {t('Settings.SimOptions.Captain')}
+                </SelectItem>
+
+                <SelectItem
+                onSelect={() => setSideControlling(1)}
+                selected={sideControlling === 1}
+                >
+                {t('Settings.SimOptions.Copilot')}
+                </SelectItem>
+            </SelectGroup>
           </SettingItem>
         </SettingsPage>
       )}
