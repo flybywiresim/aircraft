@@ -98,6 +98,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_fm;
     boolean_T Memory_PreviousInput_nu;
     boolean_T Memory_PreviousInput_as;
+    boolean_T Memory_PreviousInput_bw;
     boolean_T Memory_PreviousInput_cu;
     boolean_T Memory_PreviousInput_h;
     boolean_T Memory_PreviousInput_bo;
@@ -106,6 +107,8 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_cm;
     boolean_T Memory_PreviousInput_o;
     boolean_T icLoad;
+    boolean_T pLand3FailOp;
+    boolean_T pLand3FailPass;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_n;
@@ -115,6 +118,8 @@ class FmgcComputer final
     boolean_T pU_not_empty_n;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_mw;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_abn;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_kzm;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_aa;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_od;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_d5;
@@ -132,6 +137,10 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_hdx;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_hd1;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_ppo;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_gp;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_esv;
+    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_k4v;
+    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_k0;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_fe;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_cx;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_dsw;
@@ -339,6 +348,8 @@ class FmgcComputer final
     real_T BitfromLabel3_bit_d;
     real_T BitfromLabel2_bit_nl;
     real_T BitfromLabel3_bit_g;
+    real_T BitfromLabel2_bit_g;
+    real_T BitfromLabel1_bit_pq;
     real_T BitfromLabel1_bit_aw;
     real_T BitfromLabel3_bit_gv;
     real_T BitfromLabel_bit_kq;
@@ -461,6 +472,8 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay_a3g;
     real_T ConfirmNode_timeDelay_m;
     real_T ConfirmNode_timeDelay_mu;
+    real_T ConfirmNode1_timeDelay_b;
+    real_T ConfirmNode_timeDelay_a5;
     real_T ConfirmNode1_timeDelay_h;
     real_T ConfirmNode_timeDelay_ht;
     real_T ConfirmNode_timeDelay_gz;
@@ -645,6 +658,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop_initial_condition_ce;
     boolean_T SRFlipFlop_initial_condition_hs;
     boolean_T SRFlipFlop_initial_condition_dp;
+    boolean_T SRFlipFlop_initial_condition_a;
     boolean_T SRFlipFlop1_initial_condition_o;
     boolean_T SRFlipFlop_initial_condition_n1;
     boolean_T SRFlipFlop_initial_condition_e5;
@@ -734,14 +748,20 @@ class FmgcComputer final
     boolean_T ConfirmNode_isRisingEdge_gr;
     boolean_T ConfirmNode_isRisingEdge_o;
     boolean_T PulseNode_isRisingEdge_fo;
+    boolean_T ConfirmNode1_isRisingEdge_a;
+    boolean_T PulseNode_isRisingEdge_py;
+    boolean_T PulseNode1_isRisingEdge_cg;
+    boolean_T ConfirmNode_isRisingEdge_nz;
     boolean_T ConfirmNode1_isRisingEdge_b4;
     boolean_T PulseNode3_isRisingEdge_k;
     boolean_T PulseNode1_isRisingEdge_kl;
     boolean_T PulseNode2_isRisingEdge_f;
     boolean_T PulseNode4_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge_ch;
-    boolean_T PulseNode1_isRisingEdge_n;
+    boolean_T PulseNode6_isRisingEdge;
     boolean_T PulseNode5_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge_n;
+    boolean_T PulseNode5_isRisingEdge_b;
     boolean_T PulseNode2_isRisingEdge_iu;
     boolean_T PulseNode3_isRisingEdge_i;
     boolean_T PulseNode_isRisingEdge_jp;
@@ -863,6 +883,7 @@ class FmgcComputer final
     boolean_T Logic_table_dr[16];
     boolean_T Logic_table_d3[16];
     boolean_T Logic_table_fi[16];
+    boolean_T Logic_table_bs[16];
     boolean_T Logic_table_kg[16];
     boolean_T Logic_table_ds[16];
     boolean_T Delay_InitialCondition_a;
