@@ -191,8 +191,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
 
-  std::unique_ptr<LocalVariable> idAutopilot_H_dot_radio;
-
   std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
   std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
