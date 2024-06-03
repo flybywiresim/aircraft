@@ -92,6 +92,7 @@
 1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
+1. [COMMS] Enabled all components of communications panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.11.0
 
@@ -147,7 +148,6 @@
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
-1. [COMMS] Enabled all components of comms panels. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.10.0
 
