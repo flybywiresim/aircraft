@@ -261,6 +261,10 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
 
+  private fmgcDiscreteWord2 = new Arinc429Word(0);
+
+  private fmgcDiscreteWord5 = new Arinc429Word(0);
+
   private fdRollCommand = new Arinc429Word(0);
 
   private fdPitchCommand = new Arinc429Word(0);
@@ -333,6 +337,27 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     }
   }
 
+  private handleFdBarsFlashing() {
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.getBitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.getBitValueOr(24, false);
+
+    if (fdRollBarFlashing) {
+      this.lateralRef1.instance.classList.add('BlinkInfinite');
+      this.lateralRef2.instance.classList.add('BlinkInfinite');
+    } else {
+      this.lateralRef1.instance.classList.remove('BlinkInfinite');
+      this.lateralRef2.instance.classList.remove('BlinkInfinite');
+    }
+
+    if (fdPitchBarFlashing) {
+      this.verticalRef1.instance.classList.add('BlinkInfinite');
+      this.verticalRef2.instance.classList.add('BlinkInfinite');
+    } else {
+      this.verticalRef1.instance.classList.remove('BlinkInfinite');
+      this.verticalRef2.instance.classList.remove('BlinkInfinite');
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -363,6 +388,24 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
         this.fcuDiscreteWord1 = tr;
 
         this.handleFdState();
+      });
+
+    sub
+      .on('fmgcDiscreteWord2')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord2 = tr;
+
+        this.handleFdBarsFlashing();
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord5 = tr;
+
+        this.handleFdBarsFlashing();
       });
 
     sub

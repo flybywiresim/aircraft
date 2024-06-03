@@ -990,7 +990,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       .on('fmgcDiscreteWord3')
       .whenChanged()
       .handle((word) => {
-        this.fmgcDiscreteWord4 = word;
+        this.fmgcDiscreteWord3 = word;
         this.getText();
       });
 
