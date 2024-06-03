@@ -2036,10 +2036,9 @@ mod tests {
     }
 
     fn test_bed_in_descent() -> CabinAirTestBed {
-        let test_bed = test_bed_in_cruise()
+        test_bed_in_cruise()
             .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
-            .iterate(40);
-        test_bed
+            .iterate(40)
     }
 
     mod a320_pressurization_tests {
