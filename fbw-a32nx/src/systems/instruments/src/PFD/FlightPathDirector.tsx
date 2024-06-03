@@ -42,6 +42,10 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
 
+  private fmgcDiscreteWord2 = new Arinc429Word(0);
+
+  private fmgcDiscreteWord5 = new Arinc429Word(0);
+
   private needsUpdate = false;
 
   private isVisible = false;
@@ -77,6 +81,24 @@ export class FlightPathDirector extends DisplayComponent<{
       .handle((tr) => {
         this.data.fdOff = tr.getBitValueOr(23, false);
         this.needsUpdate = true;
+      });
+
+    sub
+      .on('fmgcDiscreteWord2')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord2 = tr;
+
+        this.handleFpdFlashing();
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord5 = tr;
+
+        this.handleFpdFlashing();
       });
 
     sub.on('fpa').handle((fpa) => {
@@ -168,6 +190,17 @@ export class FlightPathDirector extends DisplayComponent<{
       this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
     }
     this.needsUpdate = false;
+  }
+
+  private handleFpdFlashing() {
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.getBitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.getBitValueOr(24, false);
+
+    if (fdRollBarFlashing || fdPitchBarFlashing) {
+      this.birdPathWings.instance.classList.add('BlinkInfinite');
+    } else {
+      this.birdPathWings.instance.classList.remove('BlinkInfinite');
+    }
   }
 
   render(): VNode {
