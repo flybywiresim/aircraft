@@ -2172,8 +2172,6 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
 
   // write output to sim (only after both FADECs have been updated) -------------------------------------------------
   if (fadecIndex == 1) {
-    std::cout << "Throttlepos1: " << fadecOutputs[0].sim_throttle_lever_pos << std::endl;
-    std::cout << "Throttlepos2: " << fadecOutputs[1].sim_throttle_lever_pos << std::endl;
     SimOutputThrottles simOutputThrottles = {std::fmin(99.9999999999999, fadecOutputs[0].sim_throttle_lever_pos),
                                              std::fmin(99.9999999999999, fadecOutputs[1].sim_throttle_lever_pos),
                                              fadecOutputs[0].sim_thrust_mode, fadecOutputs[1].sim_thrust_mode};
