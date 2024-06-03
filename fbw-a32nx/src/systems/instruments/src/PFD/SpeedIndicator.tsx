@@ -1309,7 +1309,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
     sub
       .on('machAr')
-      .withArinc429Precision(2)
+      .withArinc429Precision(3)
       .handle((mach) => {
         this.mach = mach;
         this.handleMachDisplay();
