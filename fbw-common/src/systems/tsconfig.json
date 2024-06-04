@@ -5,6 +5,7 @@
     "resolveJsonModule" : true,
     "typeRoots": [
       "../typings",
+      "../../../node_modules/@types",
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,

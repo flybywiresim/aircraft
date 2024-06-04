@@ -1,5 +1,5 @@
 const imagePlugin = require('esbuild-plugin-inline-image');
-const postCssPlugin = require('esbuild-style-plugin');
+const postCssPlugin = require('esbuild-style-plugin-v2');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');

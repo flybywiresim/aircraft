@@ -1,12 +1,11 @@
 use systems::{
     air_conditioning::{
-        cabin_pressure_controller::OutflowValveController,
-        pressure_valve::{OutflowValve, PressureValveSignal},
+        cabin_pressure_controller::OutflowValveController, pressure_valve::OutflowValve,
         AdirsToAirCondInterface, Air, OperatingChannel, PressurizationConstants,
         PressurizationOverheadShared,
     },
     shared::{
-        low_pass_filter::LowPassFilter, CabinSimulation, ControllerSignal, ElectricalBusType,
+        low_pass_filter::LowPassFilter, CabinSimulation, ElectricalBusType,
         InternationalStandardAtmosphere,
     },
     simulation::{
@@ -21,7 +20,6 @@ use uom::si::{
     f64::*,
     length::foot,
     pressure::{hectopascal, psi},
-    ratio::percent,
     velocity::foot_per_minute,
 };
 
@@ -138,10 +136,6 @@ impl OutflowValveControlModule {
 
     fn switch_active_channel(&mut self) {
         std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
-    }
-
-    pub fn negative_relief_valve_trigger(&self) -> &impl ControllerSignal<PressureValveSignal> {
-        &self.epp
     }
 }
 
@@ -447,34 +441,5 @@ impl EmergencyPressurizationPartition {
 
     fn outflow_valve_controller(&self) -> &OutflowValveController {
         &self.outflow_valve_controller
-    }
-}
-
-/// Negative relieve valves signal. This returns a controller signal, but the valves are mechanical assemblies
-impl ControllerSignal<PressureValveSignal> for EmergencyPressurizationPartition {
-    fn signal(&self) -> Option<PressureValveSignal> {
-        let open = Some(PressureValveSignal::Open(
-            Ratio::new::<percent>(100.),
-            Duration::from_secs(1),
-        ));
-        let closed = Some(PressureValveSignal::Close(
-            Ratio::new::<percent>(0.),
-            Duration::from_secs(1),
-        ));
-        if self.differential_pressure.get::<psi>()
-            < A380PressurizationConstants::MIN_SAFETY_DELTA_P + 0.2
-        {
-            if self.differential_pressure.get::<psi>()
-                < A380PressurizationConstants::MIN_SAFETY_DELTA_P
-            {
-                open
-            } else {
-                Some(PressureValveSignal::Neutral)
-            }
-        } else if self.safety_valve_open_amount.get::<percent>() > 0. {
-            closed
-        } else {
-            Some(PressureValveSignal::Neutral)
-        }
     }
 }

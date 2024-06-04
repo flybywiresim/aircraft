@@ -5,7 +5,8 @@
     "resolveJsonModule" : true,
     "skipLibCheck": true,
     "typeRoots": [
-      "../../../fbw-common/src/typings"
+      "../../../fbw-common/src/typings",
+      "../../../node_modules/@types",
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,

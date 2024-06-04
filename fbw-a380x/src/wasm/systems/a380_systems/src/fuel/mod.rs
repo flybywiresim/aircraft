@@ -65,7 +65,7 @@ pub struct A380Fuel {
 }
 
 impl A380Fuel {
-    pub const A380_FUEL: [FuelInfo<'_>; 11] = [
+    pub const A380_FUEL: [FuelInfo<'static>; 11] = [
         FuelInfo {
             // LEFT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_1",

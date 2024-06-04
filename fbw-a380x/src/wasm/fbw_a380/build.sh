@@ -40,6 +40,11 @@ clang \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -mbulk-memory \
+  -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${COMMON_DIR}/fbw_common/src/zlib" \
   "${COMMON_DIR}/fbw_common/src/zlib/adler32.c" \
@@ -75,6 +80,11 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -mbulk-memory \
+  -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${COMMON_DIR}/fbw_common/src" \

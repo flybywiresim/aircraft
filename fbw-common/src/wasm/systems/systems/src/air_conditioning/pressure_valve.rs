@@ -4,10 +4,14 @@ use crate::{
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
-use super::OutflowValveSignal;
+use super::{Air, OutflowValveSignal, PressurizationConstants};
 
-use std::time::Duration;
-use uom::si::{f64::*, ratio::percent};
+use std::{marker::PhantomData, time::Duration};
+use uom::si::{
+    f64::*,
+    pressure::{hectopascal, psi},
+    ratio::percent,
+};
 
 /// This is of format Open/Close (target open amount, full travel time)
 pub enum PressureValveSignal {
@@ -184,6 +188,140 @@ impl SimulationElement for SafetyValve {
         self.failure.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+pub struct SafetyValveSignal<C: PressurizationConstants> {
+    ambient_pressure: Pressure,
+    cabin_pressure: Pressure,
+    safety_valve_open_amount: Ratio,
+
+    constants: PhantomData<C>,
+}
+
+impl<C: PressurizationConstants> SafetyValveSignal<C> {
+    pub fn new() -> Self {
+        Self {
+            ambient_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            safety_valve_open_amount: Ratio::default(),
+
+            constants: PhantomData,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        cabin_pressure: Pressure,
+        safety_valve_open_amount: Ratio,
+    ) {
+        self.ambient_pressure = context.ambient_pressure();
+        self.cabin_pressure = cabin_pressure;
+        self.safety_valve_open_amount = safety_valve_open_amount;
+    }
+}
+
+// Safety valve signal
+impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal> for SafetyValveSignal<C> {
+    fn signal(&self) -> Option<PressureValveSignal> {
+        let cabin_delta_p = self.cabin_pressure - self.ambient_pressure;
+        let open = Some(PressureValveSignal::Open(
+            Ratio::new::<percent>(100.),
+            Duration::from_secs(1),
+        ));
+        let closed = Some(PressureValveSignal::Close(
+            Ratio::new::<percent>(0.),
+            Duration::from_secs(1),
+        ));
+        if cabin_delta_p.get::<psi>() > C::MAX_SAFETY_DELTA_P {
+            if cabin_delta_p.get::<psi>() > C::MAX_SAFETY_DELTA_P + 0.5 {
+                open
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if cabin_delta_p.get::<psi>() < C::MIN_SAFETY_DELTA_P {
+            if cabin_delta_p.get::<psi>() < C::MIN_SAFETY_DELTA_P - 0.5 {
+                open
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.safety_valve_open_amount > Ratio::default() {
+            closed
+        } else {
+            Some(PressureValveSignal::Neutral)
+        }
+    }
+}
+
+impl<C: PressurizationConstants> Default for SafetyValveSignal<C> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub struct NegativeRelieveValveSignal<C: PressurizationConstants> {
+    ambient_pressure: Pressure,
+    cabin_pressure: Pressure,
+    safety_valve_open_amount: Ratio,
+
+    constants: PhantomData<C>,
+}
+
+impl<C: PressurizationConstants> NegativeRelieveValveSignal<C> {
+    pub fn new() -> Self {
+        Self {
+            ambient_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            safety_valve_open_amount: Ratio::default(),
+
+            constants: PhantomData,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        cabin_pressure: Pressure,
+        safety_valve_open_amount: Ratio,
+    ) {
+        self.ambient_pressure = context.ambient_pressure();
+        self.cabin_pressure = cabin_pressure;
+        self.safety_valve_open_amount = safety_valve_open_amount;
+    }
+}
+
+// Negative relieve valves signal
+impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
+    for NegativeRelieveValveSignal<C>
+{
+    fn signal(&self) -> Option<PressureValveSignal> {
+        let cabin_delta_p = self.cabin_pressure - self.ambient_pressure;
+        let open = Some(PressureValveSignal::Open(
+            Ratio::new::<percent>(100.),
+            Duration::from_secs(1),
+        ));
+        let closed = Some(PressureValveSignal::Close(
+            Ratio::new::<percent>(0.),
+            Duration::from_secs(1),
+        ));
+        if cabin_delta_p.get::<psi>() < C::MIN_SAFETY_DELTA_P + 0.2 {
+            if cabin_delta_p.get::<psi>() < C::MIN_SAFETY_DELTA_P {
+                open
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.safety_valve_open_amount.get::<percent>() > 0. {
+            closed
+        } else {
+            Some(PressureValveSignal::Neutral)
+        }
+    }
+}
+
+impl<C: PressurizationConstants> Default for NegativeRelieveValveSignal<C> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

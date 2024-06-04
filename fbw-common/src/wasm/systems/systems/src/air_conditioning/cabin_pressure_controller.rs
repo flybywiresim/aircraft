@@ -13,8 +13,8 @@ use crate::{
 };
 
 use super::{
-    pressure_valve::{OutflowValve, PressureValveSignal, SafetyValve},
-    AdirsToAirCondInterface, OutflowValveSignal, PressurizationConstants,
+    pressure_valve::{OutflowValve, SafetyValve},
+    AdirsToAirCondInterface, Air, OutflowValveSignal, PressurizationConstants,
     PressurizationOverheadShared,
 };
 
@@ -56,6 +56,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     pressure_schedule_manager: Option<PressureScheduleManager>,
     manual_partition: Option<CpcManualPartition>,
     outflow_valve_controller: OutflowValveController,
+    adirs_data_is_valid: bool,
     exterior_pressure: LowPassFilter<Pressure>,
     exterior_flight_altitude: Length,
     exterior_vertical_speed: LowPassFilter<Velocity>,
@@ -124,6 +125,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 Self::OFV_CONTROLLER_KP,
                 Self::OFV_CONTROLLER_KI,
             ),
+            adirs_data_is_valid: false,
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
@@ -172,6 +174,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         safety_valve: &SafetyValve,
         is_active: bool,
     ) {
+        self.adirs_data_is_valid = [1, 2, 3]
+            .iter()
+            .any(|&adr| adirs.ambient_static_pressure(adr).is_normal_operation());
         let (adirs_airspeed, _) = self.adirs_values_calculation(adirs);
 
         self.cabin_pressure = cabin_simulation.cabin_pressure();
@@ -255,9 +260,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
         let new_exterior_altitude: Length;
 
-        if !self.is_initialised {
+        if !self.is_initialised && adirs_ambient_pressure.is_some() {
             self.exterior_pressure.reset(
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
             );
             new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
@@ -265,7 +270,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         } else {
             self.exterior_pressure.update(
                 context.delta(),
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
             );
 
             new_exterior_altitude =
@@ -641,43 +646,19 @@ impl<C: PressurizationConstants> ControllerSignal<OutflowValveSignal>
     }
 }
 
-// Safety valve signal
-impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
-    for CabinPressureController<C>
-{
-    fn signal(&self) -> Option<PressureValveSignal> {
-        let open = Some(PressureValveSignal::Open(
-            Ratio::new::<percent>(100.),
-            Duration::from_secs(1),
-        ));
-        let closed = Some(PressureValveSignal::Close(
-            Ratio::new::<percent>(0.),
-            Duration::from_secs(1),
-        ));
-        if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
-            if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
-                open
-            } else {
-                Some(PressureValveSignal::Neutral)
-            }
-        } else if self.cabin_delta_p() < Pressure::new::<psi>(-0.5) {
-            if self.cabin_delta_p() < Pressure::new::<psi>(-1.) {
-                open
-            } else {
-                Some(PressureValveSignal::Neutral)
-            }
-        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
-            closed
-        } else {
-            Some(PressureValveSignal::Neutral)
-        }
-    }
-}
-
 impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
         let ssm = if self.failure.is_active() {
             SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+
+        // Delta P is no computed data if the adirs are not sending ambient pressure information
+        let delta_p_ssm = if self.failure.is_active() {
+            SignStatus::FailureWarning
+        } else if !self.adirs_data_is_valid {
+            SignStatus::NoComputedData
         } else {
             SignStatus::NormalOperation
         };
@@ -688,7 +669,11 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
             self.safety_valve_open_amount,
         );
 
-        writer.write_arinc429(&self.cabin_delta_pressure_id, self.cabin_delta_p_out(), ssm);
+        writer.write_arinc429(
+            &self.cabin_delta_pressure_id,
+            self.cabin_delta_p_out(),
+            delta_p_ssm,
+        );
         writer.write_arinc429(&self.cabin_altitude_id, self.cabin_altitude_out(), ssm);
         writer.write_arinc429(
             &self.outflow_valve_open_percentage_id,
