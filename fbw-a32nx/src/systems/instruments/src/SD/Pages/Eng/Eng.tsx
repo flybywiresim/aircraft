@@ -353,7 +353,7 @@ const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) =
       setTempAmber(false);
     }
 
-    let timeout: number;
+    let timeout: ReturnType<typeof setTimeout>;
     if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
       timeout = setTimeout(() => {
         if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
