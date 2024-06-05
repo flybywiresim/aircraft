@@ -297,13 +297,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
   25.0,
   0.0,
-  25.0,
-  0.0,
   35.0,
   0.0,
   35.0,
-  0.0,
-  25.0,
   40.0,
   0.0,
   1.0,
@@ -403,6 +399,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   fmgc_flight_phase::Descent,
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Approach,
+  fmgc_flight_phase::Goaround,
+  fmgc_flight_phase::Goaround,
 
   { -100.0F, -20.0F, 0.0F, 10.0F, 100.0F },
 
@@ -538,6 +536,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   true,
+  false,
+  false,
   false,
   false,
   false,
@@ -4065,6 +4065,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
