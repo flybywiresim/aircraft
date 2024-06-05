@@ -106,6 +106,8 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_bh;
     boolean_T Memory_PreviousInput_cm;
     boolean_T Memory_PreviousInput_o;
+    boolean_T Memory_PreviousInput_kr;
+    boolean_T Memory_PreviousInput_km;
     boolean_T icLoad;
     boolean_T pLand3FailOp;
     boolean_T pLand3FailPass;
@@ -412,10 +414,6 @@ class FmgcComputer final
     real_T CompareToConstant6_const_h;
     real_T CompareToConstant5_const_av;
     real_T CompareToConstant7_const;
-    real_T CompareToConstant8_const;
-    real_T CompareToConstant10_const;
-    real_T CompareToConstant9_const;
-    real_T CompareToConstant11_const;
     real_T CompareToConstant_const_e3;
     real_T CompareToConstant_const_ce;
     real_T MTrigNode_isRisingEdge;
@@ -515,6 +513,8 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant_Value_c;
     fmgc_flight_phase EnumeratedConstant1_Value_c5;
     fmgc_flight_phase EnumeratedConstant_Value_ad;
+    fmgc_flight_phase EnumeratedConstant_Value_by;
+    fmgc_flight_phase EnumeratedConstant1_Value_e;
     real32_T ScheduledGain1_BreakpointsForDimension1[5];
     real32_T ScheduledGain2_BreakpointsForDimension1[4];
     real32_T ScheduledGain1_Table[5];
@@ -666,6 +666,8 @@ class FmgcComputer final
     boolean_T SRFlipFlop1_initial_condition_l;
     boolean_T SRFlipFlop1_initial_condition_m;
     boolean_T SRFlipFlop1_initial_condition_by;
+    boolean_T SRFlipFlop_initial_condition_as;
+    boolean_T SRFlipFlop1_initial_condition_l0;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode3_isRisingEdge;
@@ -892,6 +894,8 @@ class FmgcComputer final
     boolean_T Logic_table_ac[16];
     boolean_T Logic_table_ma[16];
     boolean_T Logic_table_acc[16];
+    boolean_T Logic_table_b3[16];
+    boolean_T Logic_table_mj[16];
     boolean_T Constant_Value_m5;
     boolean_T Constant1_Value_i5;
     boolean_T Constant10_Value;
