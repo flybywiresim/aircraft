@@ -1679,7 +1679,8 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFlightGuidanceTrackAngleError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_limit_deg = idFlightGuidancePhiLimit->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.direct_to_nav_engage = false;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vertical_flight_plan_valid = false;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vertical_flight_plan_valid =
+      idFlightGuidanceAvailable->get();  // TODO add proper variable here
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.final_app_can_engage = idFmFinalCanEngage->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.next_alt_cstr_ft = idFmgcAltitudeConstraint->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.requested_des_submode =
