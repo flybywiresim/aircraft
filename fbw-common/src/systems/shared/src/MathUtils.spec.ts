@@ -127,3 +127,20 @@ describe('MathUtils.normalisePi', () => {
     expect(MathUtils.normalisePi(4 * Math.PI)).toBeCloseTo(0);
   });
 });
+
+describe('MathUtils.correctMsfsLocaliserError', () => {
+  it('does not change regular front course deviations', () => {
+    expect(MathUtils.correctMsfsLocaliserError(1.2)).toBeCloseTo(1.2);
+    expect(MathUtils.correctMsfsLocaliserError(89.9)).toBeCloseTo(89.9);
+    expect(MathUtils.correctMsfsLocaliserError(0)).toBeCloseTo(0);
+    expect(MathUtils.correctMsfsLocaliserError(-2.5)).toBeCloseTo(-2.5);
+    expect(MathUtils.correctMsfsLocaliserError(-89.9)).toBeCloseTo(-89.9);
+  });
+  it('corrects back beam deviations', () => {
+    expect(MathUtils.correctMsfsLocaliserError(-178.8)).toBeCloseTo(-1.2);
+    expect(MathUtils.correctMsfsLocaliserError(-90.1)).toBeCloseTo(-89.9);
+    expect(MathUtils.correctMsfsLocaliserError(0)).toBeCloseTo(0);
+    expect(MathUtils.correctMsfsLocaliserError(177.5)).toBeCloseTo(2.5);
+    expect(MathUtils.correctMsfsLocaliserError(90.1)).toBeCloseTo(89.9);
+  });
+});

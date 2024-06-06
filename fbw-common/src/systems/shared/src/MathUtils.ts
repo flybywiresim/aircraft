@@ -132,6 +132,22 @@ export class MathUtils {
   }
 
   /**
+   * Corrects an MSFS localiser radial error to give the correct deviations on the back beam.
+   * @param radialError Radial error from simvar NAV RADIAL ERROR in degrees.
+   * @returns The corrected localiser angular deviation in degrees.
+   */
+  public static correctMsfsLocaliserError(radialError: number): number {
+    const normalisedError = MathUtils.normalise180(radialError);
+    if (normalisedError < -90) {
+      return -180 - normalisedError;
+    }
+    if (normalisedError > 90) {
+      return 180 - normalisedError;
+    }
+    return normalisedError;
+  }
+
+  /**
    * Gets the smallest angle between two angles
    * @param angle1 First angle in degrees
    * @param angle2 Second angle in degrees
