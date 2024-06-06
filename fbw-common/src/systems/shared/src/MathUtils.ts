@@ -527,12 +527,12 @@ export class MathUtils {
   }
 
   /**
-   * Returns a value rounded to the given number of decimal precission.
-   * @param value
-   * @param decimalPrecision
+   * Round a number to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
    */
-  public static round(value: number, decimalPrecision: number) {
-    const shift = 10 ** decimalPrecision;
-    return Math.round((value + Number.EPSILON) * shift) / shift;
+  public static round(value: number, quantum = 1): number {
+    return Math.round(value / quantum) * quantum;
   }
 }

@@ -16,12 +16,13 @@ describe('MathUtils.clamp', () => {
 
 describe('MathUtils.round', () => {
   it('correctly rounds', () => {
-    expect(MathUtils.round(1.005, 2)).toBe(1.01);
-    expect(MathUtils.round(1.005, 3)).toBe(1.005);
-    expect(MathUtils.round(1.004, 2)).toBe(1);
-    expect(MathUtils.round(1.5, 0)).toBe(2);
-    expect(MathUtils.round(1.05, 1)).toBe(1.1);
-    expect(MathUtils.round(1.05, 0)).toBe(1);
+    expect(MathUtils.round(1.005, 2)).toBeCloseTo(2);
+    expect(MathUtils.round(1.005, 3)).toBeCloseTo(0);
+    expect(MathUtils.round(1.004, 0.005)).toBeCloseTo(1.005, 3);
+    expect(MathUtils.round(1.5, 0)).toBe(NaN);
+    expect(MathUtils.round(1.05, 1)).toBeCloseTo(1);
+    expect(MathUtils.round(1.33, 0.25)).toBeCloseTo(1.25);
+    expect(MathUtils.round(1.38, 0.25)).toBeCloseTo(1.5);
   });
 });
 
