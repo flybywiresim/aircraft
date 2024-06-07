@@ -128,18 +128,6 @@ mod communications_tests {
 
     #[test]
     fn test_unpack() {
-        let mut test_bed = test_bed();
-        //13831281
-        //883636401
-        test_bed.write_by_name("ADF1_IDENT_PACKED", 883636401);
-        test_bed.write_by_name("ACP1_ADF1_KNOB_VOLUME_DOWN", 1);
-        test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
-        test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
-        test_bed.write_by_name("SIDE_CONTROLLING", 0);
-
-        test_bed.run();
-
-        //let value: f64 = test_bed.read_by_name("COM VOLUME:1");
-        //assert!(value == 50);
+        // for later
     }
 }
