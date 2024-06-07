@@ -389,7 +389,6 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
-            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -490,7 +489,6 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
-            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
