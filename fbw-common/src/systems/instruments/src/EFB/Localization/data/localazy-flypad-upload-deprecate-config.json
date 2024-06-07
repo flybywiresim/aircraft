@@ -1,0 +1,18 @@
+{
+  "readKey": "a8263619487010799481-d63ff7f0aed9bf9e6c24d9878ca821c5a97fa77df75b0ce222aea98709900277",
+  "upload": {
+    "skipFailedAutodetection": true,
+    "deprecate": "project",
+    "appVersion": 0,
+    "keySeparator": ".",
+    "features": [],
+    "folder": ".",
+    "type": "json",
+    "files": {
+      "pattern": "en.json",
+      "type": "json",
+      "path": ".",
+      "file": "flybywireos3.json"
+    }
+  }
+}

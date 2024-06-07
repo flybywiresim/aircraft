@@ -1,0 +1,10 @@
+{
+  "readKey": "a8263619487010799481-d63ff7f0aed9bf9e6c24d9878ca821c5a97fa77df75b0ce222aea98709900277",
+  "download": {
+    "folder": "downloaded",
+    "includeSourceLang": false,
+    "files": {
+      "output": "${lang}.json"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "overrides": [
+        {
+            "files": ["util.js"],
+            "parserOptions": {
+                "sourceType": "module"
+            }
+        }
+    ]
+}

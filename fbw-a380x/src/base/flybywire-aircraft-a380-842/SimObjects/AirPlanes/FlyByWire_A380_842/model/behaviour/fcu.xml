@@ -1,0 +1,184 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!--
+    Template for rigging FCU AP pbs
+
+    PROVIDE GLOBALLY:
+            - INDICATOR_POWERED         <no default>    Code to determine if the indicator and button are powered
+            - BACKLIGHT_POWERED         <no default>    Code to determine if the backlight is powered
+            - BACKLIGHT_POTENTIOMETER   <no default>    Code to determine if the backlight is powered
+
+    Main Parameters:
+            - ID                        <no default>    Autopilot ID (1 or 2)
+    -->
+    <Template Name="FBW_A380X_AP_PushButton">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_FCU_AP#ID#</NODE_ID>
+            <INDICATOR_CODE>(L:A32NX_AUTOPILOT_#ID#_ACTIVE, Bool)</INDICATOR_CODE>
+            <TOOLTIPID>%((L:XMLVAR_Autopilot_#ID#_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+
+            <BUTTON_CODE>(&gt;H:A320_Neo_FCU_AP_#ID#_PUSH)</BUTTON_CODE>
+
+            <NODE_IS_INDICATOR />
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template" />
+    </Template>
+
+    <Template Name="FBW_A380X_Components_FCU">
+        <DefaultTemplateParameters>
+            <!-- Global parameters for FBW_A380X_BacklightIndicator_Button_Template instances -->
+
+            <INDICATOR_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) or</INDICATOR_POWERED>
+
+            <!-- Defined from FCU channel A and B -->
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) or</BACKLIGHT_POWERED>
+            <BACKLIGHT_POTENTIOMETER>84</BACKLIGHT_POTENTIOMETER>
+        </DefaultTemplateParameters>
+
+        <!-- TODO link to 380 elec busses, FCU channel 1/2 -->
+        <!-- TODO all of this needs to be replaced with generic templates -->
+
+        <UseTemplate Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
+            <NODE_ID>KNOB_FCU_SPEED</NODE_ID>
+            <ANIM_NAME>KNOB_FCU_SPEED</ANIM_NAME>
+            <ANIM_NAME_PUSHPULL>PUSH_KNOB_FCU_SPEED</ANIM_NAME_PUSHPULL>
+            <TYPE>AIRBUS</TYPE>
+        </UseTemplate>
+
+        <!-- SPD/MACH pb -->
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
+            <NODE_ID>PUSH_FCU_SPDMACH</NODE_ID>
+            <ANIM_NAME>PUSH_FCU_SPDMACH</ANIM_NAME>
+
+            <NO_INDICATOR>True</NO_INDICATOR>
+            <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((A:AUTOPILOT MANAGED SPEED IN MACH, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- LOC pb -->
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_FCU_LOC</NODE_ID>
+            <INDICATOR_CODE>(L:A32NX_FCU_LOC_MODE_ACTIVE, bool)</INDICATOR_CODE>
+            <TOOLTIPID>%((L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
+
+            <BUTTON_CODE>(&gt;H:A320_Neo_FCU_LOC_PUSH)</BUTTON_CODE>
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+
+        <!-- HDG knob -->
+        <UseTemplate Name="FBW_Airbus_Autopilot_Knob_Heading_Template">
+            <NODE_ID>KNOB_FCU_HDG</NODE_ID>
+            <ANIM_NAME_KNOB>KNOB_FCU_HDG</ANIM_NAME_KNOB>
+            <ANIM_NAME_PUSHPULL>PUSH_KNOB_FCU_HDG</ANIM_NAME_PUSHPULL>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_ENGAGE_MANAGED_MODE</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_ENGAGE_SELECTED_HEADING_MODE</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
+        </UseTemplate>
+
+        <!-- HDG+V/S / TRK+FPA pb -->
+        <UseTemplate Name="FBW_AIRBUS_Push_Heading_Track_Template">
+            <NODE_ID>PUSH_FCU_HDGTRK</NODE_ID>
+            <ANIM_NAME>PUSH_FCU_HDGTRK</ANIM_NAME>
+        </UseTemplate>
+
+        <!-- FD pb -->
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_FCU_FD</NODE_ID>
+            <INDICATOR_CODE>(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, boolean)</INDICATOR_CODE>
+            <TOOLTIPID>%((A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_OFF%{end}</TOOLTIPID>
+
+            <BUTTON_CODE>
+                1 (&gt;K:TOGGLE_FLIGHT_DIRECTOR, number)
+                2 (&gt;K:TOGGLE_FLIGHT_DIRECTOR, number)
+            </BUTTON_CODE>
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+
+        <!-- AP1 pb -->
+        <UseTemplate Name="FBW_A380X_AP_PushButton">
+            <ID>1</ID>
+        </UseTemplate>
+
+        <!-- AP2 pb -->
+        <UseTemplate Name="FBW_A380X_AP_PushButton">
+            <ID>2</ID>
+        </UseTemplate>
+
+        <!-- ATHR pb -->
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_FCU_ATHR</NODE_ID>
+            <INDICATOR_CODE>(L:A32NX_AUTOTHRUST_STATUS, enum) 0 &gt;</INDICATOR_CODE>
+            <TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
+
+            <BUTTON_CODE>1 (&gt;K:AUTO_THROTTLE_ARM)</BUTTON_CODE>
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+
+        <!-- ALT KNOB -->
+        <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
+            <NODE_ID>KNOB_FCU_ALT</NODE_ID>
+            <PART_ID>KNOB_FCU_ALT</PART_ID>
+            <ANIM_NAME_KNOB>KNOB_FCU_ALT</ANIM_NAME_KNOB>
+            <ANIM_NAME_PUSHPULL>PUSH_KNOB_FCU_ALT</ANIM_NAME_PUSHPULL>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALT_DECREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALT_INCREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_MANAGED_ALTITUDE_MODE</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_SELECTED_ALTITUDE_MODE</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
+        </UseTemplate>
+
+        <!-- ALT KNOB - increment switch -->
+        <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
+            <NODE_ID>KNOB_FCU_SELECTOR_ALT</NODE_ID>
+            <ANIM_NAME>KNOB_FCU_SELECTOR_ALT</ANIM_NAME>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+        </UseTemplate>
+
+        <!-- ALT pb -->
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_FCU_ALT</NODE_ID>
+            <INDICATOR_CODE>0</INDICATOR_CODE>
+            <TOOLTIPID>AMONG US SUSSY IMPOSTER</TOOLTIPID> <!-- TODO actually put something useful here -->
+
+            <BUTTON_CODE />
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+
+        <!-- APPR pb -->
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_FCU_APPR</NODE_ID>
+            <INDICATOR_CODE>(L:A32NX_FCU_APPR_MODE_ACTIVE, bool)</INDICATOR_CODE>
+            <TOOLTIPID>%((L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_OFF%{end}</TOOLTIPID>
+
+            <BUTTON_CODE>(&gt;H:A320_Neo_FCU_APPR_PUSH)</BUTTON_CODE>
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+
+        <!-- V/S knob -->
+        <UseTemplate Name="FBW_Airbus_Autopilot_Knob_VerticalSpeed_Template">
+            <NODE_ID>KNOB_FCU_UPDN</NODE_ID>
+            <PART_ID>KNOB_FCU_UPDN</PART_ID>
+            <ANIM_NAME_KNOB>KNOB_FCU_UPDN</ANIM_NAME_KNOB>
+            <ANIM_NAME_PUSHPULL>PUSH_KNOB_FCU_UPDN</ANIM_NAME_PUSHPULL>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LEVEL_OFF</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

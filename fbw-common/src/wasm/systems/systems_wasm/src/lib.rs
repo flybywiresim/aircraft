@@ -169,6 +169,8 @@ pub struct MsfsHandler {
     failures: Option<Failures>,
     time: Time,
     external_data: ExternalData,
+
+    event_id_simstop: sys::DWORD,
 }
 impl MsfsHandler {
     const SIMOBJECT_DATA_REQUEST_ID_SIMULATION_TIME: sys::DWORD = 0;
@@ -182,14 +184,13 @@ impl MsfsHandler {
         failures: Option<Failures>,
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
-        ATCServices::new(sim_connect);
-
         Ok(Self {
             variables: Some(variables),
             aspects,
             failures,
             time: Time::new(sim_connect)?,
             external_data: ExternalData::new(),
+            event_id_simstop: ATCServices::new(sim_connect),
         })
     }
 
@@ -257,7 +258,7 @@ impl MsfsHandler {
                     let vpilot: &VPilot = data.into::<VPilot>(sim_connect).unwrap();
                     self.external_data.set_vpilot(vpilot.loaded, vpilot.selcal);
                 }
-                SimConnectRecv::Event(e) if e.id() == ATCServices::EVENT_SIMSTOP => {
+                SimConnectRecv::Event(e) if e.id() == self.event_id_simstop => {
                     ATCServices::disconnect_atc_services(sim_connect);
                 }
                 _ => {
@@ -664,13 +665,11 @@ impl ATCServices {
     const AREA_IVAO: &'static str = "IVAO Altitude Data";
     const AREA_VPILOT: &'static str = "vPILOT FBW";
 
-    const EVENT_SIMSTOP: sys::DWORD = 0;
-
-    fn new(sim_connect: &mut SimConnect) {
+    fn new(sim_connect: &mut SimConnect) -> sys::DWORD {
         Ivao::new(sim_connect);
         VPilot::new(sim_connect);
 
-        sim_connect.subscribe_to_system_event(ATCServices::EVENT_SIMSTOP, "SIMSTOP");
+        sim_connect.subscribe_to_system_event("SIMSTOP").unwrap()
     }
 
     pub fn write_to_ivao(

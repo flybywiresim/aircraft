@@ -1,0 +1,693 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+
+    <!--
+    Template for rigging DCDU "BRT / DIM" buttons
+
+    Main Parameters:
+            - DCDU_SIDE         <no default>    Either L or R
+            - PLANE_NAME        <no default>    Plane project name
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+    -->
+    <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
+        <DefaultTemplateParameters>
+            <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+            <BRT_DIM_INVERT_ANIM>1</BRT_DIM_INVERT_ANIM>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT>mcdubuttons</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <NO_SEQ2/>
+        </DefaultTemplateParameters>
+
+        <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UPARROW/>
+                <DOWNARROW/>
+                <LEFTARROW/>
+                <RIGHTARROW/>
+                <CURSOR>Hand</CURSOR>
+                <ANIM_NAME>SWITCH_MP#DCDU_SIDE#_DIM</ANIM_NAME>
+                <CODE_POS_0>
+                    (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100) 0.05 + 1 min (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100)
+                </CODE_POS_0>
+                <CODE_POS_2>
+                    (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100) 0.05 - 0.05 max (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100)
+                </CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+                <MOMENTARY_SWITCH/>
+
+                <Condition Valid="BRT_DIM_SWITCH_DIRECTION">
+                    <SWITCH_DIRECTION>#BRT_DIM_SWITCH_DIRECTION#</SWITCH_DIRECTION>
+                </Condition>
+                <Condition Valid="BRT_DIM_INVERT_ANIM">
+                    <INVERT_ANIM>#BRT_DIM_INVERT_ANIM#</INVERT_ANIM>
+                </Condition>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1" Node="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100) #SEQ1_POWERED# *</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for rigging DCDU generic buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Node-ID of the button
+            - PLANE_NAME        <no default>    Plane project name
+            - HTML_EVENT_ID     <no default>    HTML-Event that will be fired when the button is pushed
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+    -->
+    <Template Name="FBW_Airbus_DCDU_Generic_Switch">
+        <DefaultTemplateParameters>
+            <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 / #SEQ1_POWERED# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+
+            <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_DCDU_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging inop. DCDU generic buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Name of the button
+            - PLANE_NAME        <no default>    Plane project name
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+    -->
+    <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+        <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+            <HTML_EVENT_ID>INOP</HTML_EVENT_ID>
+            <NO_SEQ2/>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for beacon light switches
+    -->
+    <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Beacon_Template">
+            <DefaultTemplateParameters>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_OFF</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_ON</ANIMTIP_1>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            </DefaultTemplateParameters>
+
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for wing light switches
+    -->
+    <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Wing_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Wing_Template">
+            <LIGHT_TYPE>WING</LIGHT_TYPE>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_OFF</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_ON</ANIMTIP_1>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for landing light switches
+    -->
+    <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Landing_Template">
+        <DefaultTemplateParameters>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_OFF</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_ON</ANIMTIP_1>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_RETRACT</ANIMTIP_2>
+            <WWISE_EVENT>lswitch</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
+            <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for console light switches
+    -->
+    <Template Name="FBW_LIGHTING_Switch_Console_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <INVERT_ANIM>True</INVERT_ANIM>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
+                <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
+                <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
+                <ANIMTIP_2>Set Console/Floor light to bright</ANIMTIP_2>
+                <CODE_POS_0>100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_0>
+                <CODE_POS_1>50 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_2>
+                <STATE0_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 100 ==</STATE0_TEST>
+                <STATE1_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 ==</STATE1_TEST>
+                <STATE2_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for handling landing gear indications
+    -->
+    <Template Name="FBW_Airbus_LANDING_GEAR_Light_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+            <PART_ID>LANDING_GEAR_Light</PART_ID>
+            <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+            <SEQ_POWERED>1</SEQ_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Fuel_Pump">
+        <DefaultTemplateParameters>
+            <CIRCUIT_CONNECTED_TO_BUS>1 (>A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#CIRCUIT_ID#, Bool)</CIRCUIT_CONNECTED_TO_BUS>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#CIRCUIT_ID# 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</LEFT_SINGLE_CODE>
+
+            <SEQ2_CODE>#CIRCUIT_CONNECTED_TO_BUS# 0 ==</SEQ2_CODE>
+
+            <DOWN_CODE>#CIRCUIT_CONNECTED_TO_BUS# 1 ==</DOWN_CODE>
+
+            <TOOLTIPID>%((#CIRCUIT_CONNECTED_TO_BUS# 0 ==))%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+        </UseTemplate>
+
+        <Update Once="True">
+            (L:A32NX_START_STATE, Bool) 2 == #CIRCUIT_CONNECTED_TO_BUS# 1 == and if{
+                #CIRCUIT_ID# 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+            }
+        </Update>
+    </Template>
+
+    <Template Name="FBW_Airbus_Fuel_Crossfeed">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_AntiIce_Engine">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <HELPID>HELPID_CESS_CARB_HEAT</HELPID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
+            <SEQ2_CODE>(A:ENG ANTI ICE:#ID#, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>(&gt;K:ANTI_ICE_TOGGLE_ENG#ID#)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_AntiIce_Wing">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
+            <SEQ2_CODE>(A:STRUCTURAL DEICE SWITCH, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Probes_Window_Heat">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <PART_ID>DEICE_Switch_Windshield</PART_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
+
+            <LEFT_SINGLE_CODE>(L:A32NX_MAN_PITOT_HEAT, Bool) ! (&gt;L:A32NX_MAN_PITOT_HEAT, Bool)</LEFT_SINGLE_CODE>
+            <DISABLE_SEQ1/>
+            <SEQ2_CODE>(L:A32NX_MAN_PITOT_HEAT)</SEQ2_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>0.33</FREQUENCY>
+            <UPDATE_CODE>
+                (A:ENG COMBUSTION:1, Bool) (A:ENG COMBUSTION:2, Bool) or (L:A32NX_MAN_PITOT_HEAT, Bool) or if{
+                    (A:PITOT HEAT, Bool) ! if{ (&gt;K:PITOT_HEAT_ON) }
+                    (A:WINDSHIELD DEICE SWITCH, Bool) ! if{ (&gt;K:WINDSHIELD_DEICE_ON) }
+                } els{
+                    (A:PITOT HEAT, Bool) if{ (&gt;K:PITOT_HEAT_OFF) }
+                    (A:WINDSHIELD DEICE SWITCH, Bool) if{ (&gt;K:WINDSHIELD_DEICE_OFF) }
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Bleed_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:ENGINE_BLEED_AIR_SOURCE_TOGGLE)</LEFT_SINGLE_CODE>
+            <SEQ1_CODE>(L:A32NX_OVHD_PNEU_ENG_#ID#_BLEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:BLEED AIR ENGINE:#ID#, Bool) !</SEQ2_CODE>
+            <DOWN_CODE>(A:BLEED AIR ENGINE:#ID#, Bool)</DOWN_CODE>
+            <TOOLTIPID>%((A:BLEED AIR ENGINE:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_APU_Bleed_Switch">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOOLTIPID>%((L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool) )%{if}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_APU_BLEED_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_APU_BLEED_TURN_ON%{end}</TOOLTIPID>
+            <SEQ1_CODE>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)
+
+                0 (&gt;K:APU_BLEED_AIR_SOURCE_TOGGLE)
+            </LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_APU_Starter_Switch">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE>(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_APU_START_PB_IS_ON, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>#EXTRA_CONDITION# if{ 1 (&gt;L:A32NX_OVHD_APU_START_PB_IS_ON) }</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((L:A32NX_OVHD_APU_START_PB_IS_ON, Bool) (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE, Bool) ! and)%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_AVAILABLE%{else}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_ON%{end}</TOOLTIPID>
+
+            <MOMENTARY/>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Switch_Master_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>ENGINE_Switch_Master_#ID#</NODE_ID>
+            <ANIM_NAME>ENGINE_Switch_Master_#ID#</ANIM_NAME>
+            <WWISE_EVENT_1>engmaster</WWISE_EVENT_1>
+            <WWISE_EVENT_2>engmaster</WWISE_EVENT_2>
+            <PART_ID>ENGINE_Switch_Master</PART_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_ON</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_OFF</ANIMTIP_1>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Update Frequency="5">
+                (* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
+                (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
+                (A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
+                    (&gt;K:TOGGLE_STARTER#ID#)
+                }
+            </Update>
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <ANIM_CODE>
+                    (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
+                </ANIM_CODE>
+                <LEFT_SINGLE_CODE>
+                    (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
+                        #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
+                        (A:GENERAL ENG STARTER:#ID#, Bool) if{
+                            (&gt;K:TOGGLE_STARTER#ID#)
+                        }
+                    } els{
+                        #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
+                        (A:GENERAL ENG STARTER:#ID#, Bool) ! if{
+                            (&gt;K:TOGGLE_STARTER#ID#)
+                        }
+                    }
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+        <Condition Check="POTENTIOMETER">
+            <Component ID="#NODE_ID#_SEQ1" Node="#NODE_ID#_SEQ1">
+                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                    <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_Airbus_Push_EFIS_GPWS">
+        <UseTemplate Name="FBW_Push_Held">
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+
+            <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
+            <HOLD_SIMVAR>L:A32NX_GPWS_TEST</HOLD_SIMVAR>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+
+            <TOOLTIPID>Test GPWS / Stop G/S alert</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Sidestick_Priority">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <TOOLTIPID>%((L:A32NX_AUTOPILOT_ACTIVE, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
+                        (&gt;K:AUTOPILOT_OFF)
+                    } els{
+                        1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
+                    }
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_Wiper_Knob">
+        <DefaultTemplateParameters>
+            <NODE_ID>HANDLING_Switch_Wipers</NODE_ID>
+            <ANIM_NAME>HANDLING_Switch_Wipers</ANIM_NAME>
+            <CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS>
+            <WWISE_EVENT>turnknob</WWISE_EVENT>
+            <POWER_NORM>100</POWER_NORM>
+            <POWER_SLOW>75</POWER_SLOW>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.WIPERS_SET_OFF</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.WIPERS_SET_SLOW</ANIMTIP_1>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.WIPERS_SET_FAST</ANIMTIP_2>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <SET_POWER>#CIRCUIT_ID_WIPERS# (&gt;K:2:ELECTRICAL_CIRCUIT_POWER_SETTING_SET)</SET_POWER>
+            <GET_POWER>(A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, Percent)</GET_POWER>
+            <INIT_WIPERS_STATE>
+                (A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+            </INIT_WIPERS_STATE>
+            <WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) ! if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_ON>
+            <WIPERS_OFF>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_OFF>
+            <IS_WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool)</IS_WIPERS_ON>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Update">
+                <UPDATE_ONCE>True</UPDATE_ONCE>
+                <UPDATE_CODE>#INIT_WIPERS_STATE#</UPDATE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <CODE_POS_0>#WIPERS_OFF#</CODE_POS_0>
+                <CODE_POS_1>#WIPERS_ON# #POWER_SLOW# #SET_POWER#</CODE_POS_1>
+                <CODE_POS_2>#WIPERS_ON# #POWER_NORM# #SET_POWER#</CODE_POS_2>
+                <STATE0_TEST>#IS_WIPERS_ON# !</STATE0_TEST>
+                <STATE1_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_SLOW# == and</STATE1_TEST>
+                <STATE2_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_NORM# == and</STATE2_TEST>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Coffee_Cup">
+        <DefaultTemplateParameters>
+            <CLICKZONE_NODE_ID>#NODE_ID#_CLICKZONE</CLICKZONE_NODE_ID>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) !</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+        <Component ID="#CLICKZONE_NODE_ID#" Node="#CLICKZONE_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) ! (&gt;L:XMLVAR_#NODE_ID#_HIDDEN)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE/>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - BASE_NAME
+        - PART_ID
+        - GROUP_INDEX
+        - TOOLTIPID
+    -->
+    <Template Name="FBW_Airbus_ECAM_Page_button">
+        <DefaultTemplateParameters>
+            <!-- Internal -->
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <PART_ID>ECAM_Button</PART_ID>
+            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <LED_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ2</LED_NODE_ID>
+            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
+
+            <!-- Downfeed -->
+            <WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+        </DefaultTemplateParameters>
+
+        <!-- Push button -->
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    #GROUP_INDEX# -1 &gt; if{
+                        (&gt;H:A32NX_SD_PAGE_CHANGED)
+                        #GROUP_INDEX# (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)
+                    }
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- Button LED -->
+        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                    #GROUP_INDEX# -1 &gt; if{
+                        (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) #GROUP_INDEX# ==
+                    }
+                    (L:A32NX_OVHD_INTLT_ANN) 0 == or
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- Button backlight -->
+        <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_ATC_MSG_Button">
+        <UseTemplate Name="FBW_Push_Held">
+            <TOOLTIP>Acknowledge ATC message.</TOOLTIP>
+            <SEQ1_CODE>(L:A32NX_DCDU_ATC_MSG_WAITING, Bool)</SEQ1_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_DCDU_ATC_MSG_ACK, Bool)</LEFT_SINGLE_CODE>
+            <NO_SEQ2/>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_PA_Button">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE>
+                (L:A32NX_CABIN_READY, bool) (L:A32NX_TO_CONFIG_NORMAL, bool) and (O:WAS_READY_#NODE_ID#, bool) ! and if{
+                  (E:ABSOLUTE TIME, seconds) (&gt;O:CALL_START_#NODE_ID#, seconds)
+                }
+                (L:A32NX_CABIN_READY, bool) (L:A32NX_TO_CONFIG_NORMAL, bool) and (&gt;O:WAS_READY_#NODE_ID#, bool)
+                (L:A32NX_CABIN_READY, bool) (E:ABSOLUTE TIME, seconds) (O:CALL_START_#NODE_ID#, seconds) - 5 &lt; and
+            </SEQ1_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+            <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Baro_SubTemplate1</TEMPLATE_TO_CALL>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate1">
+        <DefaultTemplateParameters>
+            <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
+            <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
+            <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+        </DefaultTemplateParameters>
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <UseTemplate Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+                </UseTemplate>
+            </Component>
+        </Template>
+        <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+            <DefaultTemplateParameters>
+                <BARO_ID>#ID#</BARO_ID>
+                <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
+                <Switch Param="AIRLINER_TYPE">
+                    <Case Value="A320">
+                        <MODE_BARO>0</MODE_BARO>
+                        <MODE_QNH>1</MODE_QNH>
+                        <MODE_STD>2</MODE_STD>
+                        <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                    </Case>
+                </Switch>
+                <Condition Valid="USE_PUSH_STD">
+                    <PUSH/>
+                </Condition>
+            </DefaultTemplateParameters>
+
+            <Switch>
+                <Case Check="AIRLINER_TYPE">
+                    <Switch Param="AIRLINER_TYPE">
+                        <Case Value="A320">
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                                <ANTICLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                </CLOCKWISE_CODE>
+                                <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
+                                <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
+                                <PULL_CODE>
+                                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                                </PULL_CODE>
+                                <PUSH_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
+                                </PUSH_CODE>
+                                <CENTER_RADIUS>0</CENTER_RADIUS>
+                                <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
+                                <COUNT>36</COUNT>
+                            </UseTemplate>
+                        </Case>
+                        <Default>
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                                <ANTICLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                }
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                }
+                                </CLOCKWISE_CODE>
+                                <LEFT_SINGLE_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! (&gt;L:XMLVAR_Baro#BARO_ID#_ForcedToSTD)
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) if{
+                                        (A:KOHLSMAN SETTING MB:1, mbars) 16 * (&gt;L:XMLVAR_Baro#BARO_ID#_SavedPressure)
+                                        #BARO_ID# (&gt;K:BAROMETRIC_STD_PRESSURE)
+                                    } els{
+                                        #BARO_ID# (L:XMLVAR_Baro#BARO_ID#_SavedPressure) (&gt;K:2:KOHLSMAN_SET)
+                                    }
+                                </LEFT_SINGLE_CODE>
+                                <COUNT>36</COUNT>
+                                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                            </UseTemplate>
+                        </Default>
+                    </Switch>
+                </Case>
+                <Default>
+                    <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                        <ANTICLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_DEC)</ANTICLOCKWISE_CODE>
+                        <CLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_INC)</CLOCKWISE_CODE>
+                        <WWISE_EVENT>RMPknob</WWISE_EVENT>
+                        <COUNT>36</COUNT>
+                    </UseTemplate>
+                </Default>
+            </Switch>
+    </Template>
+
+    <Template Name="FBW_CVR_Ground_Control_Pushbutton">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <GNDCTL_PERMISSIVES>
+18 sp0
+(A:GENERAL ENG OIL PRESSURE:1, psi) l0 &lt; sp1
+(A:GENERAL ENG OIL PRESSURE:2, psi) l0 &lt; sp2
+(L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool) l1 and l2 and
+            </GNDCTL_PERMISSIVES>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_Push_Held">
+            <LEFT_SINGLE_CODE>
+#GNDCTL_PERMISSIVES# sp0
+(L:A32NX_RCDR_GROUND_CONTROL_ON, bool) (&gt;O:GroundCtlWasOn, bool)
+(O:GroundCtlWasOn, bool) ! l0 and if{
+  1 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON, bool)
+}
+            </LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE>
+(O:GroundCtlWasOn, bool) if{
+  0 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON, bool)
+}
+            </LEFT_LEAVE_CODE>
+            <MOMENTARY/>
+        </UseTemplate>
+        <Update Frequency="2">
+#GNDCTL_PERMISSIVES# sp0
+(L:A32NX_RCDR_GROUND_CONTROL_ON, bool) l0 ! and if{
+  0 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON, bool)
+}
+        </Update>
+    </Template>
+</ModelBehaviors>

@@ -1,0 +1,223 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!--
+    Template for rigging generic ECAM CP buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Node-ID of the button
+
+    Page State:
+            - STATE_ID          <no default>    State of the simvar (L:A380X_ECAM_CP_SELECTED_PAGE_ID)
+
+    ... or ...
+
+    HTML Event:
+            - HTML_EVENT        <no default>    HTML Event to send when clicked
+    -->
+    <Template Name="FBW_A380X_ECAM_CP_Button_Template">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+
+            <!-- TODO find the actual bus powering the ECAM CP -->
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+
+            <!-- Internal -->
+            <STATE_SIMVAR>L:A380X_ECAM_CP_SELECTED_PAGE</STATE_SIMVAR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+
+            <Condition Valid="HTML_EVENT">
+                <True>
+                    <LEFT_SINGLE_CODE>(&gt;H:A380X_RMP_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+                </True>
+                <False>
+                    <LEFT_SINGLE_CODE>#STATE_ID# (&gt;#STATE_SIMVAR#)</LEFT_SINGLE_CODE>
+                    <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
+                </False>
+            </Condition>
+
+            <CURSOR>Hand</CURSOR>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_ECAM_CP">
+        <!-- SD ENG -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_ENG</NODE_ID>
+            <STATE_ID>0</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT ENGINE PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD BLEED -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_BLEED</NODE_ID>
+            <STATE_ID>1</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT BLEED PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD PRESS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_PRESS</NODE_ID>
+            <STATE_ID>2</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT CAB PRESS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD EL/AC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_ELAC</NODE_ID>
+            <STATE_ID>3</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT ELEC AC PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD FUEL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_FUEL</NODE_ID>
+            <STATE_ID>4</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT FUEL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD HYD -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_HYD</NODE_ID>
+            <STATE_ID>5</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT HYD PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- TODO CB REPSOL -->
+
+        <!-- SD APU -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_APU</NODE_ID>
+            <STATE_ID>7</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT APU PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD COND -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_COND</NODE_ID>
+            <STATE_ID>8</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT COND PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD DOOR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_DOOR</NODE_ID>
+            <STATE_ID>9</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT DOOR - OXYGEN PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD EL/DC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_ELDC</NODE_ID>
+            <STATE_ID>10</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT ELEC EC PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD WHEEL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_WHEEL</NODE_ID>
+            <STATE_ID>11</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT WHEEL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD F/CTL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_FCTL</NODE_ID>
+            <STATE_ID>12</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT F/CTL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SD VIDEO -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_VIDEO</NODE_ID>
+            <STATE_ID>13</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT VIDEO PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- TODO ALL HOLLAND -->
+        <!-- TODO CLR HOLLAND -->
+        <!-- TODO RCL LAST REPSOL -->
+        <!-- TODO STS HOLLAND -->
+        <!-- TODO MORE REPSOL -->
+        <!-- TODO RCL HOLLAND -->
+        <!-- TODO CLEAR HOLLAND -->
+
+        <!-- EWD POTENTIOMETER -->
+        <UseTemplate Name="FBW_Stepless_Potentiometer">
+            <NODE_ID>KNOB_EFIS_EWD</NODE_ID> <!-- TODO TYPO REPSOL -->
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_EWD_DECREASE</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_EWD_INCREASE</ANIMTIP_1>
+            <POTENTIOMETER>92</POTENTIOMETER>
+        </UseTemplate>
+
+        <!-- KNOB SD -->
+        <UseTemplate Name="FBW_Stepless_Potentiometer">
+            <NODE_ID>KNOB_EFIS_SD</NODE_ID> <!-- TODO TYPO REPSOL -->
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_SD_DECREASE</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_SD_INCREASE</ANIMTIP_1>
+            <POTENTIOMETER>93</POTENTIOMETER>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

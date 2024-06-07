@@ -512,7 +512,7 @@ impl UpdateContext {
                     Vector3::new(0., -9.8, 0.),
                 ),
 
-            side_controlling: SideControlling::CAPTAIN,
+            side_controlling: SideControlling::Captain,
 
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),

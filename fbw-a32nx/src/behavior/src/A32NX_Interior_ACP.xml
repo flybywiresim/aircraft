@@ -134,7 +134,6 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
             <TRANSMIT_ID>3</TRANSMIT_ID>
-            <BLINK_ID>4</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
 
@@ -159,7 +158,6 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF1#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
             <TRANSMIT_ID>4</TRANSMIT_ID>
-            <BLINK_ID>8</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
@@ -184,7 +182,6 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF2#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF2#</NODE_ID_SEQ2>
             <TRANSMIT_ID>5</TRANSMIT_ID>
-            <BLINK_ID>16</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_R</TOOLTIP>
         </UseTemplate>
 
@@ -209,8 +206,6 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_MECH#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <TRANSMIT_ID>6</TRANSMIT_ID>
-            <BLINK_ID>32</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP#ID#_MECH_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -235,8 +230,6 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_ATT#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <TRANSMIT_ID>7</TRANSMIT_ID>
-            <BLINK_ID>64</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP#ID#_ATT_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -427,7 +420,7 @@
                         (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
                     }
                 </SEQ1_EMISSIVE_CODE>
-                    <!-- Button name light (for example CALL or MECH)-->
+                <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
                         (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #BLINK_ID# #BLINK_VAR# == ^ #EMISSIVE_TEST# or #EMISSIVE_DIM# *
