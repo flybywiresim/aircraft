@@ -219,9 +219,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param discontinuityIndex
    */
   private cleanUpAfterDiscontinuity(discontinuityIndex: number) {
-    // Find next XF leg
+    // Find next XF/HM leg
     const xFLegIndexInPlan = this.allLegs.findIndex(
-      (it, index) => index > discontinuityIndex && it.isDiscontinuity === false && it.isXF(),
+      (it, index) =>
+        index > discontinuityIndex && it.isDiscontinuity === false && (it.isXF() || it.type === LegType.HM),
     );
 
     if (xFLegIndexInPlan !== -1) {
