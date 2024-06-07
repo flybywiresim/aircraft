@@ -248,9 +248,6 @@ struct AdaptationBoard {
     vors: [NavReceiver; 2],
     ils: NavReceiver,
 
-    is_flt_int_powered: bool,
-    is_calls_card_powered: bool,
-
     audio_switching_knob_id: VariableIdentifier,
     audio_switching_knob: AudioSwitchingKnobPosition,
 
@@ -342,9 +339,6 @@ impl AdaptationBoard {
             ),
 
             pilot_transmit_channel: 1,
-
-            is_flt_int_powered: false,
-            is_calls_card_powered: false,
 
             audio_switching_knob: AudioSwitchingKnobPosition::default(),
 
@@ -483,11 +477,6 @@ impl SimulationElement for AdaptationBoard {
         self.computer_b.accept(visitor);
 
         visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_flt_int_powered = buses.is_powered(ElectricalBusType::DirectCurrentEssential);
-        self.is_calls_card_powered = buses.is_powered(ElectricalBusType::DirectCurrent(1));
     }
 
     fn export_to_external_software(&self, data: &mut crate::simulation::ExternalData) {
@@ -652,6 +641,9 @@ impl Computer {
 
 impl SimulationElement for Computer {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        if self.second_card.is_some() {
+            self.second_card.as_mut().unwrap().accept(visitor);
+        }
         self.audio_card.accept(visitor);
 
         visitor.visit(self);
@@ -871,7 +863,7 @@ impl Calls {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            selcal_id: context.get_identifier(format!("ACP_SELCAL")),
+            selcal_id: context.get_identifier("ACP_SELCAL_RECEIVED".to_owned()),
             ..Default::default()
         }
     }
@@ -924,7 +916,7 @@ impl SimulationElement for Calls {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.selcal_id, self.selcal);
+        writer.write(&self.selcal_id, self.selcal != 0);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {

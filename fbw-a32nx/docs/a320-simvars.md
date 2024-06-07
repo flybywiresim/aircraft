@@ -190,7 +190,7 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+- A32NX_DMC_DISPLAYTEST:{1,2,3}
     - Enum
     - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
       Value | Meaning
@@ -580,132 +580,6 @@
     - Set to 0 whenever on RAD position. 100 whenever neutral position. 200 whenever in INT position
 
 - A32NX_SIDE_CONTROLLING
-    - Enum
-    - Indicates which side controls the airplane
-      Value | Meaning
-      --- | ---
-      0 | Captain
-      1 | FO
-
-- A32NX_RMP_SEL_LIGHT_ON
-    - Bool
-    - If the SEL light is on
-
-- A32NX_ACP{1,2,3}_VHF{1,2}_TRANSMIT
-    - Bool
-    - Indicates which VHF is selected for transmission on which ACP
-      Value | Meaning
-      --- | ---
-      0 | Not selected
-      1 | Selected
-
-- A32NX_ACP{1,2,3}_VHF{1,2,3}_VOLUME
-    - Number
-    - Volume of VHF 1/2/3 on the left/right/overhead ACP
-
-- A32NX_ACP{1,2,3}_HF{1,2}_VOLUME
-    - Number
-    - Volume of HF 1/2 on the left/right/overhead ACP
-
-- A32NX_ACP{1,2,3}_MECH_VOLUME
-    - Number
-    - Volume of MECH on the left/right/overhead ACP
-
-- A32NX_ACP{1,2,3}_ATT_VOLUME
-    - Number
-    - Volume of CABIN on the left/right/overhead ACP
-
-- A32NX_ACP{1,2,3}_PA_VOLUME
-    - Number
-    - Volume of PA on the left/right/overhead ACP
-
-- A32NX_HF1_VOLUME
-    - Number
-    - The HF1 volume equal to one of the ACPs (or all) depending on the controlling mode
-- A32NX_HF2_VOLUME
-    - Number
-    - The HF2 volume equal to one of the ACPs (or all) depending on the controlling mode
-- A32NX_ACP_MECH_VOLUME
-    - Number
-    - The MECH volume equal to one of the ACPs (or all) depending on the controlling mode
-
-- A32NX_ACP_ATT_VOLUME
-    - Number
-    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
-
-- A32NX_ACP_PA_VOLUME
-    - Number
-    - The PA volume equal to one of the ACPs (or all) depending on the controlling mode
-
-- L:A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
-    - Bool
-    - If the VHF 1/2/3 volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_HF{1,2}_KNOB_VOLUME_DOWN
-    - Bool
-    - If the HF 1/2 volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_MECH_KNOB_VOLUME_DOWN
-    - Bool
-    - If the MECH volume knob is activated on the left/right/overhead
-
-- L:A32NX_ACP{1,2,3}_ATT_KNOB_VOLUME_DOWN
-    - Bool
-    - If the CABIN volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_PA_KNOB_VOLUME_DOWN
-    - Bool
-    - If the PA volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_VOR{1,2}_KNOB_VOLUME_DOWN
-    - Bool
-    - If the VOR 1/2 volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_ILS_KNOB_VOLUME_DOWN
-    - Bool
-    - If the ILS volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_MLS_KNOB_VOLUME_DOWN
-    - Bool
-    - If the MLS volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_MKR_KNOB_VOLUME_DOWN
-    - Bool
-    - If the ILS Markers volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_ADF{1,2}_KNOB_VOLUME_DOWN
-    - Bool
-    - If the ADF 1/2 volume knob is activated on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_VOR{1,2}_VOLUME
-    - Number
-    - Volume of VOR 1/2 on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_ILS_VOLUME
-    - Number
-    - Volume of ILS on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_MLS_VOLUME
-    - Number
-    - Volume of MLS on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_MKR_VOLUME
-    - Number
-    - Volume of the ILS Markers on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_ADF{1,2}_VOLUME
-    - Number
-    - Volume of ADF 1/2 on the left/right/overhead ACP
-
-- L:A32NX_ACP{1,2,3}_SWITCH_INT
-    - Number
-    - Set to 0 whenever on RAD position. 50 whenever neutral position. 100 whenever in INT position
-
-- L:A32NX_IS_EMITTING_ON_FREQUENCY
-    - Bool
-    - True if the INTRAD switch on the ACPs (depending on controlling mode) is on RAD thus transmitting
-
-- L:A32NX_SIDE_CONTROLLING
     - Enum
     - Indicates which side controls the airplane
       Value | Meaning
@@ -2159,7 +2033,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
-- L:A32NX_FM{number}_ACC_ALT
+- A32NX_FM{number}_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The acceleration altitude
     - {number}
@@ -2203,7 +2077,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
 
-- L:A32NX_FM{number}_NAV_DISCRETE
+- A32NX_FM{number}_NAV_DISCRETE
     - Arinc429<Discrete>
     - {number}
         - 1 - captain's side FMGC
@@ -2217,42 +2091,42 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 15  | MMR 1 manually tuned |
       | 16  | MMR 2 manually tuned |
 
-- L:A32NX_FM{number}_EO_ACC_ALT
+- A32NX_FM{number}_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The engine out acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_LANDING_ELEVATION
+- A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_ACC_ALT
+- A32NX_FM{number}_MISSED_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
+- A32NX_FM{number}_MISSED_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach engine out acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_THR_RED_ALT
+- A32NX_FM{number}_MISSED_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach thrust reduction altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_THR_RED_ALT
+- A32NX_FM{number}_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The thrust reduction altitude
     - {number}

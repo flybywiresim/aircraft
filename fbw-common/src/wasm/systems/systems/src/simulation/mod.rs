@@ -56,7 +56,9 @@ pub struct ExternalData {
 
 impl ExternalData {
     pub fn new() -> Self {
-        Default::default()
+        Self {
+            ..Default::default()
+        }
     }
 
     pub fn set_ivao(&mut self, selcal: u8, volume_com1: u8, volume_com2: u8) {
@@ -393,6 +395,10 @@ pub trait SimulationElement {
     /// Receives a failure in order to activate or deactivate it.
     fn receive_failure(&mut self, _failure_type: FailureType, _is_active: bool) {}
 
+    /// Writes simulation data into a struct which will be transmitted to
+    /// an external software via SimConnect.
+    ///
+    /// Take as example how selcal is done.
     fn export_to_external_software(&self, _data: &mut ExternalData) {}
 }
 

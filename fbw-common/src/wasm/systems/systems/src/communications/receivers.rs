@@ -90,7 +90,6 @@ impl SimulationElement for NavReceiver {
                 false
             },
         );
-
         writer.write(&self.receive_nav_id, self.ok_to_beep);
     }
 

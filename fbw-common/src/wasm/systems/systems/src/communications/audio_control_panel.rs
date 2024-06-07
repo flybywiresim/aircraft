@@ -340,9 +340,7 @@ impl AudioControlPanel {
             self.vhfs[1].update_vhf2(context);
 
             if !bus_acp.is_empty() {
-                // These will be used later on
-                // Especially "calls" when SELCAL will be
-                // translated into Rust
+                // These will be used later on, maybe
                 let mut call_mech: bool = false;
                 let mut call_att: bool = false;
 
@@ -510,7 +508,6 @@ impl SimulationElement for AudioControlPanel {
             writer.write(&self.transmit_channel_id, self.transmit_channel as u32);
             writer.write(&self.selcal_id, self.selcal_to_blink);
         }
-
         writer.write(&self.reset_button_id, 0);
     }
 

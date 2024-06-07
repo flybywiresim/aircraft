@@ -262,13 +262,10 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
-
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
-
     // From msfs in millimeters
     precipitation_rate: Length,
-
     in_cloud: bool,
 
     surface: SurfaceTypeMsfs,
@@ -383,6 +380,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
+            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
@@ -482,6 +480,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
+            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
 

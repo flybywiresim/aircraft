@@ -255,9 +255,7 @@ impl Aircraft for A320 {
             &self.pneumatic,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
-
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
-
         self.communications.update(context);
     }
 }
