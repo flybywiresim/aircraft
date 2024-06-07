@@ -12,6 +12,12 @@ type PlanCentre = {
   inAlternate: boolean;
 };
 
+type ShownFplnLegs = {
+  isMissedApproach: boolean;
+  isAlternate: boolean;
+  isAlternateMissedApproach: boolean;
+};
+
 export class EfisInterface {
   public version = 0;
 
@@ -28,6 +34,12 @@ export class EfisInterface {
     fpIndex: 0,
     index: 0,
     inAlternate: false,
+  };
+
+  readonly shownFplnLegs: ShownFplnLegs = {
+    isMissedApproach: false,
+    isAlternate: false,
+    isAlternateMissedApproach: false,
   };
 
   setPlanCentre(fpIndex: number, index: number, inAlternate: boolean): void {
@@ -53,11 +65,19 @@ export class EfisInterface {
     }
   }
 
+  setShownFplnLegs(isMissedApproach: boolean, isAlternate: boolean, isAlternateMissedApproach: boolean): void {
+    this.shownFplnLegs.isMissedApproach = isMissedApproach;
+    this.shownFplnLegs.isAlternate = isAlternate;
+    this.shownFplnLegs.isAlternateMissedApproach = isAlternateMissedApproach;
+
+    // Don't increment version here, the real one takes a bit of time to update as well
+  }
+
   shouldTransmitSecondary(): boolean {
     return this.isSecRelatedPageOpen;
   }
 
-  shouldTransmitMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
+  shouldTransmitMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
     if (planIndex === FlightPlanIndex.FirstSecondary) {
       return this.isSecRelatedPageOpen;
     }
@@ -67,7 +87,7 @@ export class EfisInterface {
       return false;
     }
 
-    if (isArcVsPlanMode) {
+    if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
       const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
 
@@ -75,7 +95,10 @@ export class EfisInterface {
       const lastMissedLegIndex = plan.legCount - 1;
 
       // Check that first line is before end of alternate plan and last line is after start of alternate plan
-      return legIn1stLineIndex <= lastMissedLegIndex && legInLastLineIndex >= firstMissedLegIndex;
+      const fplnPageWouldShowMissed =
+        legIn1stLineIndex <= lastMissedLegIndex && legInLastLineIndex >= firstMissedLegIndex;
+
+      return this.shownFplnLegs.isMissedApproach || fplnPageWouldShowMissed;
     }
 
     return (
@@ -85,7 +108,7 @@ export class EfisInterface {
     );
   }
 
-  shouldTransmitAlternate(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
+  shouldTransmitAlternate(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
     if (planIndex === FlightPlanIndex.FirstSecondary) {
       return this.isSecRelatedPageOpen;
     }
@@ -95,7 +118,7 @@ export class EfisInterface {
       return false;
     }
 
-    if (isArcVsPlanMode) {
+    if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
       const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
 
@@ -103,13 +126,16 @@ export class EfisInterface {
       const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
 
       // Check that first line is before end of alternate plan and last line is after start of alternate plan
-      return legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateLegIndex;
+      const fplnPageWouldShowAlternate =
+        legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateLegIndex;
+
+      return this.shownFplnLegs.isAlternate || fplnPageWouldShowAlternate;
     }
 
     return planIndex === this.planCentre.fpIndex && this.planCentre.inAlternate;
   }
 
-  shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isArcVsPlanMode: boolean): boolean {
+  shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
     if (planIndex === FlightPlanIndex.FirstSecondary) {
       return this.isSecRelatedPageOpen;
     }
@@ -119,7 +145,7 @@ export class EfisInterface {
       return false;
     }
 
-    if (isArcVsPlanMode) {
+    if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
       const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
 
@@ -127,7 +153,10 @@ export class EfisInterface {
       const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
 
       // Check that first line is before end of alternate missed plan and last line is after start of alternate missed plan
-      return legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateMissedLegIndex;
+      const fplnPageWouldShowAlternateMissed =
+        legIn1stLineIndex <= lastAlternateLegIndex && legInLastLineIndex >= firstAlternateMissedLegIndex;
+
+      return this.shownFplnLegs.isAlternateMissedApproach || fplnPageWouldShowAlternateMissed;
     }
 
     return (

@@ -366,10 +366,7 @@ export class EfisSymbols<T extends number> {
         if (
           this.flightPlanService.active.alternateFlightPlan.legCount > 0 &&
           this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(
-            FlightPlanIndex.Active,
-            mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV,
-          )
+          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
@@ -440,10 +437,7 @@ export class EfisSymbols<T extends number> {
         if (
           this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
           this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(
-            FlightPlanIndex.FirstSecondary,
-            mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV,
-          )
+          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
@@ -532,11 +526,11 @@ export class EfisSymbols<T extends number> {
     const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
     const flightPhase = getFlightPhaseManager().phase;
 
-    const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+    const isPlanMode = mode === EfisNdMode.PLAN;
 
     const transmitMissed = isAlternate
-      ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isArcVsPlanMode)
-      : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isArcVsPlanMode);
+      ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
+      : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isPlanMode);
 
     const ret: NdSymbol[] = [];
 

@@ -657,9 +657,24 @@ class CDUFlightPlanPage {
 
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'L');
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'R');
+
+        const isMissedApproachLegShown = targetPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.fpIndex >= targetPlan.firstMissedApproachLegIndex
+        );
+        const isAlternateLegShown = scrollWindow.some((row, index) => index > 0 && !row.marker && row.inAlternate);
+        const isAlternateMissedApproachLegShown = targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex
+        );
+
+        mcdu.efisInterfaces['L'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+        mcdu.efisInterfaces['R'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+
         mcdu.onUnload = () => {
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
+
+            mcdu.efisInterfaces['L'].setShownFplnLegs(false, false, false);
+            mcdu.efisInterfaces['R'].setShownFplnLegs(false, false, false);
         };
 
         // Render scrolling data to text >> add ditto marks
