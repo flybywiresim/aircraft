@@ -1,10 +1,6 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-
-/** This class is the top level injection point for many
- *(if not most?) critical flight parameters.
- */
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -2876,7 +2872,7 @@ class FMCMainDisplay extends BaseAirliners {
             return null;
         }
 
-        return this.zeroFuelWeight + (useFqi ? this.getFOB() : this.blockFuel);
+        return this.zeroFuelWeight + (this.getFOB());
     }
 
     getToSpeedsTooLow() {
@@ -4983,9 +4979,10 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= fuel && fuel <= 80;
     }
 
-    /**NOTE: This is essentially the 'top level/master' injection point for the current on board fuel.
-     *ALL fuel projections, current fuel level displays etc use the figure returned here as the baseline.
-     * @returns {either the detected fuel in the tanks(if at least one engine running) or pilot entered block fuel(engines off)}
+    /**
+     * Retrieves current fuel on boad in tons.
+     *
+     * @returns {number | undefined} current fuel on board in tons, or undefined if fuel readings are not available.
      */
     //TODO: Can this be util?
     getFOB() {
@@ -4993,7 +4990,7 @@ class FMCMainDisplay extends BaseAirliners {
             return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
         } else {
             //If an engine is not running, use pilot entered block fuel to calculate fuel predictions
-            return this.blockFuel * (0.4535934 / 1000);
+            return this.blockFuel;
         }
     }
 
