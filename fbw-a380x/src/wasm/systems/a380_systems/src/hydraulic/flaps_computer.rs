@@ -293,6 +293,7 @@ impl SlatFlapControlComputer {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
+    // FIXME This is not the correct ADR input selection yet, due to missing references
     fn angle_of_attack(&self, adirs: &impl AdirsMeasurementOutputs) -> Option<Angle> {
         [1, 2, 3]
             .iter()
@@ -742,7 +743,7 @@ mod tests {
                 vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
                 altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
                 angle_of_attack: Arinc429Word::new(
-                    Angle::new::<degree>(0.0),
+                    Angle::default(),
                     SignStatus::NormalOperation,
                 ),
             }
