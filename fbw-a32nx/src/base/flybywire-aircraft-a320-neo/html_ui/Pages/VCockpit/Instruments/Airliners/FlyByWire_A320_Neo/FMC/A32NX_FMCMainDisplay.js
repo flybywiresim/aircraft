@@ -998,12 +998,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (adirLat.isNormalOperation() && adirLong.isNormalOperation()) {
                 holdSpeedTarget = this.getHoldingSpeed(nextLegConstraints.descentSpeed, nextLegConstraints.descentAltitude);
 
-                const ppos = {
-                    lat: adirLat.value,
-                    long: adirLong.value,
-                };
-                const stats = plan.computeWaypointStatistics();
-                const dtg = stats.get(plan.activeLegIndex).distanceFromPpos;
+                const dtg = this.guidanceController.activeLegDtg;
                 // decel range limits are [3, 20] NM
                 const decelDist = this.calculateDecelDist(cas, holdSpeedTarget);
                 if (dtg < decelDist) {
