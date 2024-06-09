@@ -173,6 +173,7 @@ export class FALeg extends Leg {
       this.predictedPath.length = 0;
       this.predictedPath.push(point0 as PathVector);
     }
+    this.isComputed = true;
   }
 
   /** @inheritdoc */
