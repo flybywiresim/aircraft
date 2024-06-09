@@ -742,10 +742,7 @@ mod tests {
                 heading: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
                 vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
                 altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
-                angle_of_attack: Arinc429Word::new(
-                    Angle::default(),
-                    SignStatus::NormalOperation,
-                ),
+                angle_of_attack: Arinc429Word::new(Angle::default(), SignStatus::NormalOperation),
             }
         }
 
