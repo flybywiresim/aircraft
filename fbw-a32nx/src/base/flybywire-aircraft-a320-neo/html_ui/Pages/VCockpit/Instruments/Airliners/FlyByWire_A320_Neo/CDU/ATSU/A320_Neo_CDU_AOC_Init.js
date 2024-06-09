@@ -50,12 +50,12 @@ class CDUAocInit {
         if (mcdu.simbrief.ete) {
             ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
-
-        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-        if (currentFob) {
-            fob = `{small}${currentFob}{end}[color]green`;
+        if (mcdu.isAnEngineOn()) {
+            const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+            if (currentFob) {
+                fob = `{small}${currentFob}{end}[color]green`;
+            }
         }
-
         mcdu.setTemplate([
             ["INIT/REVIEW", "1", "2", "AOC"],
             ["\xa0FMC FLT NO", "GMT\xa0"],
@@ -102,9 +102,9 @@ class CDUAocInit {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
-
-        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-
+        if (mcdu.isAnEngineOn()) {
+            const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+        }
         /**
             GMT: is the current zulu time
             FLT time: is wheels up to wheels down... so basically shows 0000 as soon as you are wheels up, counts up and then stops timing once you are weight on wheels again
