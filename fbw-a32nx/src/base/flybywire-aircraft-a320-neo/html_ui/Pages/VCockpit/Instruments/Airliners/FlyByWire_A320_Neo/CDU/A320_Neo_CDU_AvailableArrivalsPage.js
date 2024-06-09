@@ -179,7 +179,9 @@ class CDUAvailableArrivalsPage {
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
                         const finalLeg = approach.legs[approach.legs.length - 1];
-                        const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find((ils) => ils.databaseId === finalLeg.recommendedNavaid.databaseId) : undefined;
+                        const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find(
+                            (ils) => finalLeg && finalLeg.recommendedNavaid && ils.databaseId === finalLeg.recommendedNavaid.databaseId
+                        ) : undefined;
                         const hasIls = !!matchingIls;
                         const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
 
