@@ -59,6 +59,8 @@ class CDUAvailableArrivalsPage {
 
         const flightPlanAccentColor = isTemporary ? "yellow" : "green";
 
+        const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(targetPlan.destinationAirport.ident);
+
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AvailableArrivalsPage;
         let selectedApproachCell = "------";
@@ -133,7 +135,6 @@ class CDUAvailableArrivalsPage {
          * @type {import('msfs-navdata').Runway[]}
          */
         const runways = targetPlan.availableDestinationRunways;
-        const ilss = await mcdu.navigationDatabase.backendDatabase.getIlsAtAirport(targetPlan.destinationAirport.ident);
 
         // Sort the approaches in Honeywell's documented order
         const sortedApproaches = approaches.slice()
@@ -179,6 +180,7 @@ class CDUAvailableArrivalsPage {
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
                         const finalLeg = approach.legs[approach.legs.length - 1];
+                        console.log("trying to use ilss");
                         const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find(
                             (ils) => finalLeg && finalLeg.recommendedNavaid && ils.databaseId === finalLeg.recommendedNavaid.databaseId
                         ) : undefined;
@@ -192,9 +194,15 @@ class CDUAvailableArrivalsPage {
                     mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
                         // Clicking the already selected approach is not allowed
                         if (!isSelected) {
-                            await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
+                            try {
+                                await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
 
-                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                            } catch (e) {
+                                console.error(e);
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            }
+
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -214,8 +222,13 @@ class CDUAvailableArrivalsPage {
                     mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
                         // Clicking the already selected runway is not allowed
                         if (!isSelected) {
-                            await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
-                            await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
+                            try {
+                                await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
+                                await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
+                            } catch (e) {
+                                console.error(e);
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            }
 
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                         } else {
@@ -269,7 +282,12 @@ class CDUAvailableArrivalsPage {
 
                     if (!isSelected) {
                         mcdu.onLeftInput[i + 2] = async () => {
-                            await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
+                            try {
+                                await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
+                            } catch (e) {
+                                console.error(e);
+                                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            }
 
                             const availableVias = targetPlan.availableApproachVias;
 
@@ -299,11 +317,16 @@ class CDUAvailableArrivalsPage {
                                     return t.ident === destinationRunway.ident;
                                 }) : undefined;
 
-                                if (arrivalRunway !== undefined) {
-                                    await mcdu.flightPlanService.setDestinationRunway(arrivalRunway.ident, forPlan, inAlternate);
-                                }
+                                try {
+                                    if (arrivalRunway !== undefined) {
+                                        await mcdu.flightPlanService.setDestinationRunway(arrivalRunway.ident, forPlan, inAlternate);
+                                    }
 
-                                await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
+                                    await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
+                                } catch (e) {
+                                    console.error(e);
+                                    mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                }
 
                                 const availableVias = targetPlan.availableApproachVias;
 
@@ -330,7 +353,12 @@ class CDUAvailableArrivalsPage {
                     rows[0][1] = `${Labels.NO_TRANS}${!isNoTransSelected ? "}" : "{sp}"}[color]${color}`;
 
                     mcdu.onRightInput[2] = async () => {
-                        await mcdu.flightPlanService.setArrivalEnrouteTransition(null, forPlan, inAlternate);
+                        try {
+                            await mcdu.flightPlanService.setArrivalEnrouteTransition(null, forPlan, inAlternate);
+                        } catch (e) {
+                            console.error(e);
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                        }
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
                     };
@@ -348,7 +376,12 @@ class CDUAvailableArrivalsPage {
                             // Clicking the already selected transition is not allowed
                             mcdu.onRightInput[i + 3] = async (_, scratchpadCallback) => {
                                 if (!isSelected) {
-                                    await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
+                                    try {
+                                        await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
+                                    } catch (e) {
+                                        console.error(e);
+                                        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                    }
 
                                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
                                 } else {
@@ -502,7 +535,12 @@ class CDUAvailableArrivalsPage {
                 mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
                     // Clicking the already selected via is not allowed
                     if (!isSelected) {
-                        await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+                        try {
+                            await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+                        } catch (e) {
+                            console.error(e);
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                        }
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                     } else {
@@ -557,7 +595,12 @@ class CDUAvailableArrivalsPage {
             bottomLine
         ]);
         mcdu.onLeftInput[1] = async () => {
-            await mcdu.flightPlanService.setApproachVia(null, forPlan, inAlternate);
+            try {
+                await mcdu.flightPlanService.setApproachVia(null, forPlan, inAlternate);
+            } catch (e) {
+                console.error(e);
+                mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+            }
 
             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
         };
