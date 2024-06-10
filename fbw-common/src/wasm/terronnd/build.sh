@@ -47,6 +47,11 @@ clang++ \
   -fvisibility=hidden \
   -fno-common \
   -fstack-usage \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -mbulk-memory \
+  -Werror=return-type \
   -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
