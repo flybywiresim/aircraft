@@ -201,8 +201,11 @@ class CDUAvailableArrivalsPage {
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                            }
 
+                                mcdu.eraseTemporaryFlightPlan(() => {
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, false, forPlan, inAlternate);
+                                });
+                            }
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -225,12 +228,16 @@ class CDUAvailableArrivalsPage {
                             try {
                                 await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
                                 await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
+
+                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                            }
 
-                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                mcdu.eraseTemporaryFlightPlan(() => {
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, false, forPlan, inAlternate);
+                                });
+                            }
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -284,17 +291,21 @@ class CDUAvailableArrivalsPage {
                         mcdu.onLeftInput[i + 2] = async () => {
                             try {
                                 await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
+
+                                const availableVias = targetPlan.availableApproachVias;
+
+                                if (selectedApproach !== undefined && availableVias.length > 0) {
+                                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                                } else {
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                }
                             } catch (e) {
                                 console.error(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                            }
 
-                            const availableVias = targetPlan.availableApproachVias;
-
-                            if (selectedApproach !== undefined && availableVias.length > 0) {
-                                CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                            } else {
-                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                mcdu.eraseTemporaryFlightPlan(() => {
+                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                                });
                             }
                         };
                     }
@@ -323,17 +334,21 @@ class CDUAvailableArrivalsPage {
                                     }
 
                                     await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
+
+                                    const availableVias = targetPlan.availableApproachVias;
+
+                                    if (selectedApproach !== undefined && availableVias.length > 0) {
+                                        CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                                    } else {
+                                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                    }
                                 } catch (e) {
                                     console.error(e);
                                     mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                                }
 
-                                const availableVias = targetPlan.availableApproachVias;
-
-                                if (selectedApproach !== undefined && availableVias.length > 0) {
-                                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                                } else {
-                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                                    mcdu.eraseTemporaryFlightPlan(() => {
+                                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                                    });
                                 }
                             } else {
                                 mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -355,12 +370,16 @@ class CDUAvailableArrivalsPage {
                     mcdu.onRightInput[2] = async () => {
                         try {
                             await mcdu.flightPlanService.setArrivalEnrouteTransition(null, forPlan, inAlternate);
+
+                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                        }
 
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                            mcdu.eraseTemporaryFlightPlan(() => {
+                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                            });
+                        }
                     };
 
                     for (let i = 0; i < ArrivalPagination.TRNS_PAGE; i++) {
@@ -378,12 +397,16 @@ class CDUAvailableArrivalsPage {
                                 if (!isSelected) {
                                     try {
                                         await mcdu.flightPlanService.setArrivalEnrouteTransition(transition.databaseId, forPlan, inAlternate);
+
+                                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
                                     } catch (e) {
                                         console.error(e);
                                         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                                    }
 
-                                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
+                                        mcdu.eraseTemporaryFlightPlan(() => {
+                                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                                        });
+                                    }
                                 } else {
                                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -537,12 +560,16 @@ class CDUAvailableArrivalsPage {
                     if (!isSelected) {
                         try {
                             await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+
+                            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                        }
 
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                            mcdu.eraseTemporaryFlightPlan(() => {
+                                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                            });
+                        }
                     } else {
                         mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -597,12 +624,16 @@ class CDUAvailableArrivalsPage {
         mcdu.onLeftInput[1] = async () => {
             try {
                 await mcdu.flightPlanService.setApproachVia(null, forPlan, inAlternate);
+
+                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
             } catch (e) {
                 console.error(e);
                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-            }
 
-            CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                mcdu.eraseTemporaryFlightPlan(() => {
+                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
+                });
+            }
         };
         let up = false;
         let down = false;
