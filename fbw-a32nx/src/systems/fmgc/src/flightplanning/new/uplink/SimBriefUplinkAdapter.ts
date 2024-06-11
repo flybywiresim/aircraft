@@ -125,7 +125,14 @@ export class SimBriefUplinkAdapter {
 
     fms.onUplinkInProgress();
 
-    await flightPlanService.newCityPair(route.from.ident, route.to.ident, route.altn, FlightPlanIndex.Uplink);
+    await flightPlanService.newCityPair(route.from.ident, route.to.ident, undefined, FlightPlanIndex.Uplink);
+
+    // Set alternate  airport separately, so the active flight plan uplink still works even if the alternate fails
+    try {
+      await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
+    } catch (e) {
+      console.error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set alternate: ${e}`);
+    }
 
     if (doUplinkProcedures) {
       await flightPlanService.setOriginRunway(`${route.from.ident}${route.from.rwy}`, FlightPlanIndex.Uplink);
