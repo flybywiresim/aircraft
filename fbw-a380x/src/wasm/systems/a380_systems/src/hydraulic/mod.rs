@@ -2187,6 +2187,12 @@ impl A380Hydraulic {
             &self.gear_system_hydraulic_controller,
             lgcius.active_lgciu(),
             self.green_circuit.system_section(),
+            self.braking_circuit_norm
+                .left_brake_pressure()
+                .max(self.braking_circuit_altn.left_brake_pressure()),
+            self.braking_circuit_norm
+                .right_brake_pressure()
+                .max(self.braking_circuit_altn.right_brake_pressure()),
         );
     }
 

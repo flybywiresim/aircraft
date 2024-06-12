@@ -298,10 +298,10 @@ class A32NX_BrakeTemp {
         this.gearRight = new A32NX_GearStatus(1, 'L:A32NX_GEAR_RIGHT_POSITION', 'BRAKE RIGHT POSITION', 'WHEEL RPM:2');
         this.brakeFan = new A32NX_BrakeFan('L:A32NX_BRAKE_FAN', 'L:A32NX_BRAKE_FAN_BTN_PRESSED', this.gearLeft);
         this.brakes = [
-            new A32NX_OneBrakeTemp(0, 'L:A32NX_BRAKE_TEMPERATURE_1', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(1, 'L:A32NX_BRAKE_TEMPERATURE_2', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(2, 'L:A32NX_BRAKE_TEMPERATURE_3', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(3, 'L:A32NX_BRAKE_TEMPERATURE_4', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(0, 'L:A32NX_BRAKE_TEMPERATURE_1_ORIG', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_1_ORIG', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(1, 'L:A32NX_BRAKE_TEMPERATURE_2_ORIG', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_2_ORIG', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(2, 'L:A32NX_BRAKE_TEMPERATURE_3_ORIG', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_3_ORIG', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(3, 'L:A32NX_BRAKE_TEMPERATURE_4_ORIG', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_4_ORIG', this.gearLeft, this.brakeFan),
         ];
     }
 

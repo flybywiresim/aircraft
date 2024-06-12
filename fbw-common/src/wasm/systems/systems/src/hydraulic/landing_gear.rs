@@ -13,6 +13,7 @@ use crate::{
 
 use super::{
     aerodynamic_model::AerodynamicModel,
+    brake::{BrakeAssembly, BrakeProperties},
     linear_actuator::{
         Actuator, ElectroHydrostaticPowered, HydraulicAssemblyController,
         HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatorMode,
@@ -20,7 +21,7 @@ use super::{
     HydraulicValve, HydraulicValveType,
 };
 
-use uom::si::{f64::*, pressure::psi, ratio::ratio};
+use uom::si::{f64::*, length::inch, mass::kilogram, pressure::psi, ratio::ratio};
 
 pub trait GearGravityExtension {
     fn extension_handle_number_of_turns(&self) -> u8;
@@ -46,6 +47,10 @@ pub struct HydraulicGearSystem {
     nose_gear_assembly: GearSystemComponentAssembly,
     left_gear_assembly: GearSystemComponentAssembly,
     right_gear_assembly: GearSystemComponentAssembly,
+
+    brake_properties: BrakeProperties,
+    left_gear_brakes: BrakeAssembly,
+    right_gear_brakes: BrakeAssembly,
 }
 impl HydraulicGearSystem {
     pub fn new(
@@ -169,6 +174,24 @@ impl HydraulicGearSystem {
                 ],
                 gear_right_aerodynamic,
             ),
+
+            brake_properties: BrakeProperties::new(
+                // The Tyre has 20 inches of diameter. We estimate the diameter of the brake by dividing by 2.
+                Length::new::<inch>(20.) / 2.,
+                Mass::new::<kilogram>(66.),
+            ),
+            left_gear_brakes: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(),
+                [1, 2],
+                Some(ElectricalBusType::AlternatingCurrent(2)),
+            ),
+            right_gear_brakes: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                [3, 4],
+                Some(ElectricalBusType::AlternatingCurrent(2)),
+            ),
         }
     }
 
@@ -178,6 +201,8 @@ impl HydraulicGearSystem {
         valves_controller: &impl GearSystemController,
         lgciu_controller: &impl LgciuGearControl,
         main_hydraulic_circuit: &impl SectionPressure,
+        left_brake_actuator_pressure: Pressure,
+        right_brake_actuator_pressure: Pressure,
     ) {
         self.hydraulic_supply.update(
             context,
@@ -225,6 +250,27 @@ impl HydraulicGearSystem {
             valves_controller,
             current_pressure,
         );
+
+        for (gear_brakes, brake_actuator_pressure, gear_assembly) in [
+            (
+                &mut self.left_gear_brakes,
+                left_brake_actuator_pressure,
+                &self.left_gear_assembly,
+            ),
+            (
+                &mut self.right_gear_brakes,
+                right_brake_actuator_pressure,
+                &self.right_gear_assembly,
+            ),
+        ] {
+            gear_brakes.update(
+                context,
+                &self.brake_properties,
+                brake_actuator_pressure,
+                /* TODO */ false,
+                gear_assembly.position_normalized().get::<ratio>() > 0.25,
+            );
+        }
     }
 
     pub fn all_actuators(&mut self) -> [&mut impl Actuator; 6] {
@@ -236,6 +282,14 @@ impl HydraulicGearSystem {
             self.left_gear_assembly.actuator(),
             self.right_gear_assembly.actuator(),
         ]
+    }
+
+    pub fn left_gear_position(&self) -> Ratio {
+        self.left_gear_assembly.position_normalized()
+    }
+
+    pub fn right_gear_position(&self) -> Ratio {
+        self.right_gear_assembly.position_normalized()
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
@@ -281,6 +335,9 @@ impl SimulationElement for HydraulicGearSystem {
         self.nose_door_assembly.accept(visitor);
         self.left_door_assembly.accept(visitor);
         self.right_door_assembly.accept(visitor);
+
+        self.left_gear_brakes.accept(visitor);
+        self.right_gear_brakes.accept(visitor);
 
         visitor.visit(self);
     }

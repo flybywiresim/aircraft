@@ -8,7 +8,7 @@ use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
-    length::meter,
+    length::{inch, meter},
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
@@ -22,6 +22,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
+        brake::{BrakeAssembly, BrakeProperties},
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
@@ -1514,6 +1515,9 @@ pub(super) struct A320Hydraulic {
     gear_system_gravity_extension_controller: A320GravityExtension,
     gear_system_hydraulic_controller: A320GearHydraulicController,
     gear_system: HydraulicGearSystem,
+    brake_properties: BrakeProperties,
+    left_brake_assembly: BrakeAssembly,
+    right_brake_assembly: BrakeAssembly,
 
     ptu_high_pitch_sound_active: DelayedFalseLogicGate,
 
@@ -1777,6 +1781,22 @@ impl A320Hydraulic {
             gear_system_gravity_extension_controller: A320GravityExtension::new(context),
             gear_system_hydraulic_controller: A320GearHydraulicController::new(),
             gear_system: A320GearSystemFactory::a320_gear_system(context),
+            brake_properties: BrakeProperties::new(
+                Length::new::<inch>(20.) / 2.,
+                Mass::new::<kilogram>(66.),
+            ),
+            left_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(),
+                1..=2,
+                Some(ElectricalBusType::AlternatingCurrent(2)),
+            ),
+            right_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                3..=4,
+                Some(ElectricalBusType::AlternatingCurrent(2)),
+            ),
 
             ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
                 Self::HIGH_PITCH_PTU_SOUND_DURATION,
@@ -2062,6 +2082,12 @@ impl A320Hydraulic {
             &self.gear_system_hydraulic_controller,
             lgcius.active_lgciu(),
             self.green_circuit.system_section(),
+            self.braking_circuit_norm
+                .left_brake_pressure()
+                .max(self.braking_circuit_altn.left_brake_pressure()),
+            self.braking_circuit_norm
+                .right_brake_pressure()
+                .max(self.braking_circuit_altn.right_brake_pressure()),
         );
     }
 
@@ -2110,6 +2136,29 @@ impl A320Hydraulic {
 
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
+
+        for (brake_assembly, braking_pressure_norm, braking_pressure_altn, gear_position) in [
+            (
+                &mut self.left_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.right_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+        ] {
+            brake_assembly.update(
+                context,
+                &self.brake_properties,
+                braking_pressure_norm.max(braking_pressure_altn),
+                /* TODO */ false,
+                gear_position.get::<ratio>() > 0.25,
+            );
+        }
 
         self.braking_force.update_forces(
             context,
