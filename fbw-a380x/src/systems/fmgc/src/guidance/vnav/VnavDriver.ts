@@ -56,7 +56,7 @@ export class VnavDriver implements GuidanceComponent {
             CoarsePredictions.updatePredictions(this.guidanceController, this.atmosphericConditions);
         }
 
-        const newCruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
+        const newCruiseAltitude = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number');
         if (newCruiseAltitude !== this.lastCruiseAltitude) {
             this.lastCruiseAltitude = newCruiseAltitude;
 

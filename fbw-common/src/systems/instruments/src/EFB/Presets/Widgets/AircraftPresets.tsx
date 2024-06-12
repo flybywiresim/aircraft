@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
 
@@ -68,6 +68,15 @@ export const AircraftPresets = () => {
   const handleCancel = () => {
     setLoadPresetVar(0);
   };
+
+  useEffect(() => {
+    setLoadPresetProgress(0.0);
+    if (loadPresetVar === 0) {
+      console.log('AircraftPresets: Loading preset finished or cancelled');
+    } else {
+      console.log(`AircraftPresets: Loading preset: ${loadPresetVar} ${AircraftPresetsList[loadPresetVar - 1].name}`);
+    }
+  }, [loadPresetVar]);
 
   return (
     <div className="h-content-section-reduced border-theme-accent mt-4 space-y-4 rounded-lg border-2 p-4">

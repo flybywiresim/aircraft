@@ -2633,6 +2633,11 @@ mod acs_controller_tests {
             self
         }
 
+        fn both_engines_off(mut self) -> Self {
+            self.command(|a| a.set_engine_n1(Ratio::new::<percent>(0.)));
+            self
+        }
+
         fn landing_gear_compressed(mut self) -> Self {
             self.command(|a| a.set_on_ground(true));
             self
@@ -3179,6 +3184,23 @@ mod acs_controller_tests {
                 .iterate(1000);
 
             assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+        }
+
+        #[test]
+        fn duct_temperature_does_not_jump_on_instant_engine_off() {
+            let test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .iterate(1000)
+                .both_engines_off()
+                .both_packs_off()
+                .cab_fans_pb_on(false)
+                .iterate(2);
+
+            assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() < 80.);
         }
 
         #[test]
