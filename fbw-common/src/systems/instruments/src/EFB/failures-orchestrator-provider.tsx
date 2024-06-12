@@ -3,6 +3,8 @@
 
 import React, { PropsWithChildren, useState } from 'react';
 import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from './event-bus-provider';
 
 interface FailuresOrchestratorContext {
   allFailures: Readonly<Readonly<Failure>[]>;
@@ -12,7 +14,8 @@ interface FailuresOrchestratorContext {
   deactivate(identifier: number): Promise<void>;
 }
 
-const createOrchestrator = (failures: FailureDefinition[]) => new FailuresOrchestrator('A32NX', failures);
+const createOrchestrator = (failures: FailureDefinition[], bus: EventBus) =>
+  new FailuresOrchestrator(bus, 'A32NX', failures);
 
 const Context = React.createContext<FailuresOrchestratorContext>({
   allFailures: [],
@@ -25,12 +28,12 @@ const Context = React.createContext<FailuresOrchestratorContext>({
 export interface FailuresOrchestratorProviderProps {
   failures: FailureDefinition[];
 }
-
 export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOrchestratorProviderProps>> = ({
   failures,
   children,
 }) => {
-  const [orchestrator] = useState(() => createOrchestrator(failures));
+  const bus = useEventBus();
+  const [orchestrator] = useState(() => createOrchestrator(failures, bus));
 
   const [allFailures] = useState(() => orchestrator.getAllFailures());
   const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());

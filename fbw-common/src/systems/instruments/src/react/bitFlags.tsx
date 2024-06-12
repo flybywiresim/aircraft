@@ -1,5 +1,7 @@
+/* eslint-disable function-paren-newline */
+import { PaxStationInfo, SeatFlags } from '@flybywiresim/fbw-sdk';
+
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { PaxStationInfo, SeatFlags } from '../../../shared/src';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
 

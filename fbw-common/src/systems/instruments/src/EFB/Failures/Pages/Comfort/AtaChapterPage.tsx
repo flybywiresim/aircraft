@@ -5,11 +5,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle, Failure } from '@flybywiresim/fbw-sdk';
-import { t } from '../../../Localization/translation';
-import { FailureButton } from '../../FailureButton';
+
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { useAppSelector } from '../../../Store/store';
+import { t } from '@flybywiresim/flypad';
+import { FailureButton } from '../../FailureButton';
 
 interface AtaChapterPageProps {
   chapter: AtaChapterNumber;
@@ -39,7 +40,7 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
 
   return (
     <div>
-      <Link to="/failures/comfort" className="inline-block">
+      <Link to="/failures/failure-list/comfort" className="inline-block">
         <div className="hover:text-theme-highlight flex flex-row items-center space-x-3 transition duration-100">
           <ArrowLeft size={30} />
           <h1 className="font-bold text-current">

@@ -27,7 +27,6 @@
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
     "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
     "build-a32nx:extras-host": "node fbw-a32nx/src/systems/extras-host/build.js",
-    "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "node fbw-a32nx/src/systems/fmgc/build.js",
     "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
     "build-a32nx:sentry-client": "node fbw-a32nx/src/systems/sentry-client/build.js",
@@ -52,7 +51,7 @@
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
-
+    
     "====== A380 =================": "==========================================",
 
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
@@ -75,7 +74,7 @@
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
     "build-ingamepanels-checklist-fix:manifest": "node scripts/build_ingamepanels_checklist_fix.js",
-
+    
     "====== COMMON ================": "==========================================",
 
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",

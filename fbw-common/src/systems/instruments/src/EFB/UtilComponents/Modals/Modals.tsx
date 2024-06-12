@@ -5,7 +5,7 @@
 import React, { createContext, FC, useContext, useState } from 'react';
 import { t } from '../../Localization/translation';
 
-interface ModalContextInterface {
+export interface ModalContextInterface {
   showModal: (modal: JSX.Element) => void;
   modal?: JSX.Element;
   popModal: () => void;
@@ -67,19 +67,19 @@ export const PromptModal: FC<PromptModalProps> = ({
   };
 
   return (
-    <div className="border-theme-accent bg-theme-body w-5/12 rounded-xl border-2 p-8">
+    <div className="bg-theme-body border-theme-accent w-5/12 rounded-xl border-2 p-8">
       <h1 className="font-bold">{title}</h1>
       <p className="mt-4">{bodyText}</p>
 
       <div className="mt-8 flex flex-row space-x-4">
         <div
-          className="border-theme-accent bg-theme-accent text-theme-text hover:border-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+          className="text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body border-theme-accent hover:border-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
           onClick={handleCancel}
         >
           {cancelText ?? t('Modals.Cancel')}
         </div>
         <div
-          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+          className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
           onClick={handleConfirm}
         >
           {confirmText ?? t('Modals.Confirm')}
@@ -98,11 +98,11 @@ export const AlertModal: FC<AlertModalProps> = ({ title, bodyText, onAcknowledge
   };
 
   return (
-    <div className="border-theme-accent bg-theme-body w-5/12 rounded-xl border-2 p-8">
+    <div className="bg-theme-body border-theme-accent w-5/12 rounded-xl border-2 p-8">
       <h1 className="font-bold">{title}</h1>
       <p className="mt-4">{bodyText}</p>
       <div
-        className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight mt-8 flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+        className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight mt-8 flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
         onClick={handleAcknowledge}
       >
         {acknowledgeText ?? t('Modals.Okay')}

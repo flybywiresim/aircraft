@@ -48,7 +48,7 @@ import { Performance } from './Performance/Performance';
 import { Navigation } from './Navigation/Navigation';
 import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
-import { Failures } from './Failures/Failures';
+import { FailuresHome } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
@@ -62,6 +62,7 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
+import { FailureGeneratorsInit } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorsInit';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -404,7 +405,11 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
   switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-      return <div className="h-screen w-screen" onClick={offToLoaded} />;
+      return (
+        <div className="h-screen w-screen" onClick={offToLoaded}>
+          <FailureGeneratorsInit />
+        </div>
+      );
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
       return <LoadingScreen />;
@@ -436,7 +441,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                     <Route path="/performance" component={Performance} />
                     <Route path="/navigation" component={Navigation} />
                     <Route path="/atc" component={ATC} />
-                    <Route path="/failures" component={Failures} />
+                    <Route path="/failures" component={FailuresHome} />
                     <Route path="/checklists" component={Checklists} />
                     <Route path="/presets" component={Presets} />
                     <Route path="/settings" component={Settings} />
