@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /**
  * @typedef {Object} SelectedNavaid
  * @property {Fmgc.SelectedNavaidType} type
@@ -94,7 +98,7 @@ class CDUSelectedNavaids {
                     mcdu.getOrSelectNavaidsByIdent(text, (navaid) => {
                         if (navaid) {
                             mcdu.reselectNavaid(icao);
-                            mcdu.deselectNavaid(navaid.infos.icao);
+                            mcdu.deselectNavaid(navaid.databaseId);
                             CDUSelectedNavaids.ShowPage(mcdu);
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -114,7 +118,7 @@ class CDUSelectedNavaids {
                 if (text.match(/^[A-Z0-9]{1,4}$/) !== null) {
                     mcdu.getOrSelectNavaidsByIdent(text, (navaid) => {
                         if (navaid) {
-                            mcdu.deselectNavaid(navaid.infos.icao);
+                            mcdu.deselectNavaid(navaid.databaseId);
                             CDUSelectedNavaids.ShowPage(mcdu);
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);

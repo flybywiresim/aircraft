@@ -32,7 +32,7 @@ class CDUAtcConnectionNotification {
             flightNo = mcdu.atsu.flightNumber() + "[color]green";
             flightNoAvail = true;
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+        if (mcdu.flightPlanService.active.destinationAirport && mcdu.flightPlanService.active.destinationAirport.ident) {
             fromToAvail = true;
         }
 

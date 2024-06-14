@@ -1,17 +1,18 @@
-/**
- * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
- */
-enum TurnDirection {
-  Unknown = 0,
-  Left = 1,
-  Right = 2,
-  Either = 3,
-}
+// Copyright (c) 2022-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { TurnDirection } from '../../navdata/shared/types/ProcedureLeg';
 
 export class MathUtils {
   static DEGREES_TO_RADIANS = Math.PI / 180;
 
   static RADIANS_TO_DEGREES = 180 / Math.PI;
+
+  static FEET_TO_NAUTICAL_MILES = 6076.12;
+
+  static METRES_TO_NAUTICAL_MILES = 1852;
+
+  public static TWO_PI = Math.PI * 2;
 
   private static optiPow10 = [];
 
@@ -74,6 +75,60 @@ export class MathUtils {
       diff -= 360;
     }
     return diff;
+  }
+
+  /**
+   * Normalises an angle into the range [0; 360).
+   * @param angle The angle in degrees.
+   * @returns An equivalent angle in the range [0; 360).
+   */
+  public static normalise360(angle: number): Degrees {
+    // this can still be negative..
+    const mod360 = angle % 360;
+    // so we force it positive.
+    return (mod360 + 360) % 360;
+  }
+
+  /**
+   * Normalises an angle into the range [-180; 180).
+   * @param angle The angle in degrees.
+   * @returns An equivalent angle in the range [-180; 180).
+   */
+  public static normalise180(angle: number): number {
+    const normalised360 = this.normalise360(angle);
+
+    if (normalised360 >= 180) {
+      return normalised360 - 360;
+    }
+
+    return normalised360;
+  }
+
+  /**
+   * Normalises an angle into the range [0; 2π).
+   * @param angle The angle in radians.
+   * @returns An equivalent angle in the range [0; 2π).
+   */
+  public static normalise2Pi(angle: number): Degrees {
+    // this can still be negative..
+    const mod2Pi = angle % MathUtils.TWO_PI;
+    // so we force it positive.
+    return (mod2Pi + MathUtils.TWO_PI) % MathUtils.TWO_PI;
+  }
+
+  /**
+   * Normalises an angle into the range [-π; π).
+   * @param angle The angle in radians.
+   * @returns An equivalent angle in the range [-π; π).
+   */
+  public static normalisePi(angle: number): number {
+    const normalised2Pi = this.normalise2Pi(angle);
+
+    if (normalised2Pi >= Math.PI) {
+      return normalised2Pi - MathUtils.TWO_PI;
+    }
+
+    return normalised2Pi;
   }
 
   /**
