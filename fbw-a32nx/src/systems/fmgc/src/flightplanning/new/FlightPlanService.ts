@@ -143,12 +143,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.delete(FlightPlanIndex.Temporary);
   }
 
-  async uplinkInsert(): Promise<void> {
+  async uplinkInsert(intoPlan = FlightPlanIndex.Active): Promise<void> {
     if (!this.hasUplink) {
       throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
     }
 
-    this.flightPlanManager.copy(FlightPlanIndex.Uplink, FlightPlanIndex.Active);
+    this.flightPlanManager.copy(FlightPlanIndex.Uplink, intoPlan);
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
 
     if (this.hasTemporary) {

@@ -15,32 +15,32 @@ class CDUSecFplnMain {
         };
 
         mcdu.onLeftInput[0] = () => {
-            return;
+            // TODO do not call this directly, it is private
             mcdu.flightPlanService.flightPlanManager.copy(Fmgc.FlightPlanIndex.Active, Fmgc.FlightPlanIndex.FirstSecondary);
             CDUFlightPlanPage.ShowPage(mcdu, 0, Fmgc.FlightPlanIndex.FirstSecondary);
         };
+        mcdu.onRightInput[0] = () => {
+            CDUInitPage.ShowPage1(mcdu, Fmgc.FlightPlanIndex.FirstSecondary);
+        };
 
         mcdu.onLeftInput[1] = () => {
-            return;
             CDUFlightPlanPage.ShowPage(mcdu, 0, Fmgc.FlightPlanIndex.FirstSecondary);
         };
 
         mcdu.onLeftInput[2] = () => {
-            return;
             mcdu.flightPlanService.secondaryReset(1);
         };
 
         mcdu.onLeftInput[5] = () => {
-            return;
             mcdu.flightPlanService.flightPlanManager.swap(Fmgc.FlightPlanIndex.FirstSecondary, Fmgc.FlightPlanIndex.Active);
         };
 
         mcdu.setTemplate([
             ["SEC INDEX"],
             [""],
-            ["{COPY ACTIVE[color]inop", "INIT>[color]inop"],
+            ["{COPY ACTIVE[color]", "INIT>[color]"],
             [""],
-            ["<SEC F-PLN[color]inop", "PERF>[color]inop"],
+            ["<SEC F-PLN[color]", "PERF>[color]inop"],
             [""],
             ["{DELETE SEC[color]inop"],
             [""],
@@ -48,7 +48,7 @@ class CDUSecFplnMain {
             [""],
             [""],
             [""],
-            ["*SWAP ACTIVE[color]inop"]
+            ["*SWAP ACTIVE[color]   "]
         ]);
     }
 }

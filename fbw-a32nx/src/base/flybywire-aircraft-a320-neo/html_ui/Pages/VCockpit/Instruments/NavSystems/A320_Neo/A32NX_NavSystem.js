@@ -73,6 +73,11 @@ class NavSystem extends BaseInstrument {
         return this.currFlightPlanService;
     }
 
+    /**
+   * @param index {number}
+   * @param alternate {boolean}
+   * @return {AlternateFlightPlan<P>|FlightPlan<P>|FlightPlan<A320FlightPlanPerformanceData | Fmgc.A320FlightPlanPerformanceData>}
+   */
     flightPlan(index, alternate) {
         const plan = index === Fmgc.FlightPlanIndex.Active ? this.flightPlanService.activeOrTemporary : this.flightPlanService.get(index);
 

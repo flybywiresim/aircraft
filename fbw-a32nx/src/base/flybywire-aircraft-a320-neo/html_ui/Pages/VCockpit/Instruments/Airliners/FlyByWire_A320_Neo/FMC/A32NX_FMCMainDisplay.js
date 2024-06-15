@@ -76,6 +76,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._destDataChecked = undefined;
         this._towerHeadwind = undefined;
         this._EfobBelowMinClr = undefined;
+        /** @type {ISimbriefData|undefined} */
+        this.simbriefOfp = undefined;
+        /** @type {"NotLoaded"|"Requested"|"Loaded"} */
+        this.simbriefOfpState = "NotLoaded";
         this.simbrief = undefined;
         this.aocWeight = undefined;
         this.aocTimes = undefined;
@@ -2310,7 +2314,8 @@ class FMCMainDisplay extends BaseAirliners {
                             }
                             this.coRoute["navlog"] = data.navlog.fix;
 
-                            await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
+                            // TODO sec?
+                            await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, Fmgc.FlightPlanIndex.Active, this.flightPlanService, this.coRoute);
                             await this.flightPlanService.uplinkInsert();
                             this.setGroundTempFromOrigin();
 
@@ -2368,9 +2373,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
     }
 
-    onUplinkDone() {
+    onUplinkDone(forPlan) {
         this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
-        this.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
+        this.setScratchpadMessage(forPlan === Fmgc.FlightPlanIndex.Active ? NXSystemMessages.aocActFplnUplink : NXSystemMessages.aocSecFplnUplink);
     }
 
     /**

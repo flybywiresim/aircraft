@@ -10,8 +10,8 @@ import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/sr
 import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { CoRouteUplinkAdapter as CoRouteUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
-import { ApproachUtils as ApproachUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
@@ -91,6 +91,8 @@ declare global {
         const WaypointFactory: typeof WaypointFactory_
 
         const WaypointEntryUtils: typeof WaypointEntryUtils_
+
+        const CoRouteUplinkAdapter: typeof CoRouteUplinkAdapter_
 
         const SimBriefUplinkAdapter: typeof SimBriefUplinkAdapter_
 

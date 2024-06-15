@@ -161,8 +161,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('temporaryDelete');
   }
 
-  uplinkInsert(): Promise<void> {
-    return this.callFunctionViaRpc('uplinkInsert');
+  uplinkInsert(intoPlan: number): Promise<void> {
+    return this.callFunctionViaRpc('uplinkInsert', intoPlan);
   }
 
   uplinkDelete(): Promise<void> {

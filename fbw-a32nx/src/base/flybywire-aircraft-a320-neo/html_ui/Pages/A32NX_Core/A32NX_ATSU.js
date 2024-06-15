@@ -52,11 +52,14 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
+    mcdu.simbriefOfpState = "Requested";
 
     updateView();
 
     return Fmgc.SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID)
         .then(data => {
+            mcdu.simbriefOfp = data;
+            mcdu.simbriefOfpState = "Loaded";
             mcdu.simbrief["units"] = data.units;
             mcdu.simbrief["route"] = data.route;
             mcdu.simbrief["cruiseAltitude"] = data.cruiseAltitude;

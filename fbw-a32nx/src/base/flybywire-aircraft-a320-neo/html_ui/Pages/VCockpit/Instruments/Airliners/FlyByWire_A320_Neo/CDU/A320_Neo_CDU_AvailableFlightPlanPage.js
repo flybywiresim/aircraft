@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAvailableFlightPlanPage {
     static ShowPage(mcdu, offset = 0, currentRoute = 1) {
         mcdu.clearDisplay();
@@ -161,7 +165,8 @@ class CDUAvailableFlightPlanPage {
                 }
                 mcdu.coRoute["navlog"] = selectedRoute.navlog;
                 setTimeout(async () => {
-                    await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, mcdu.coRoute);
+                    // TODO sec?
+                    await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, Fmgc.FlightPlanIndex.Active, mcdu.flightPlanService, mcdu.coRoute);
                     await mcdu.flightPlanService.uplinkInsert();
                     this.setGroundTempFromOrigin();
 

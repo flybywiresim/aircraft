@@ -60,6 +60,7 @@ class TypeIIMessage extends McduMessage {
  */
 const NXSystemMessages = {
     aocActFplnUplink:       new TypeIIMessage("AOC ACT F-PLN UPLINK"),
+    aocSecFplnUplink:       new TypeIIMessage("AOC SEC F-PLN UPLINK"),
     arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
     awyWptMismatch:         new TypeIMessage("AWY/WPT MISMATCH"),
     cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),

@@ -56,7 +56,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   temporaryDelete(): Promise<void>;
 
-  uplinkInsert(): Promise<void>;
+  uplinkInsert(intoPlan: number): Promise<void>;
 
   uplinkDelete(): Promise<void>;
 
