@@ -6,7 +6,7 @@ import { ArrowReturnRight } from 'react-bootstrap-icons';
 
 import { t } from '../../../Localization/translation';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
-import { ChartTabType, editTabProperty, NavigationTab } from '../../../Store/features/navigationPage';
+import { editTabProperty, NavigationTab } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
@@ -14,6 +14,7 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
 import { navigraphCharts } from '../../../../navigraph';
+import { ChartCategory } from "@flybywiresim/fbw-sdk";
 
 export const NavigraphChartUI = () => {
   const dispatch = useAppDispatch();
@@ -35,7 +36,7 @@ export const NavigraphChartUI = () => {
         TAXI: { name: 'TAXI', charts: availableCharts.TAXI },
         SID: { name: 'SID', charts: availableCharts.SID },
         REF: { name: 'REF', charts: availableCharts.REF },
-      }) satisfies Record<ChartTabType, OrganizedChart>,
+      }) satisfies Record<ChartCategory, OrganizedChart>,
     [availableCharts],
   );
 

@@ -16,9 +16,9 @@ import {
   isChartPinned,
   removedPinnedChart,
   addPinnedChart,
+  ChartTabTypeToIndex,
 } from '../../../Store/features/navigationPage';
 import { navigationTabs } from '../../Navigation';
-import { ChartCategory } from '@flybywiresim/fbw-sdk';
 
 interface NavigraphChartSelectorProps {
   selectedTab: OrganizedChart;
@@ -34,14 +34,6 @@ export type OrganizedChart = {
   name: string;
   charts: Chart[];
   bundleRunways?: boolean;
-};
-
-const ChartTabTypeToIndex: Record<ChartCategory, number> = {
-  STAR: 0,
-  APP: 1,
-  TAXI: 2,
-  SID: 3,
-  REF: 4,
 };
 
 export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelectorProps) => {

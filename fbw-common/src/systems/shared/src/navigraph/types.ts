@@ -8,4 +8,6 @@ export enum NavigraphSubscriptionStatus {
 
 export type ChartCategory = 'STAR' | 'APP' | 'TAXI' | 'SID' | 'REF';
 
+export type LocalChartCategory = 'IMAGE' | 'PDF' | 'BOTH';
+
 export type NavigraphAirportCharts = Record<ChartCategory, Chart[]>;

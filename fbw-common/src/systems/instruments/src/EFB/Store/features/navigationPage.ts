@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
+import { ChartCategory, LocalChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { Chart } from 'navigraph/charts';
@@ -42,11 +42,26 @@ export type PinnedChart = {
 };
 
 export const ChartTabTypeIndices: readonly ChartCategory[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
+export const LocalChartTabTypeIndices: readonly LocalChartCategory[] = ['IMAGE', 'PDF', 'BOTH'];
 
-type ProviderTabInfo = {
+export const ChartTabTypeToIndex: Record<ChartCategory, number> = {
+  STAR: 0,
+  APP: 1,
+  TAXI: 2,
+  SID: 3,
+  REF: 4,
+};
+
+export const LocalChartCategoryToIndex: Record<LocalChartCategory, number> = {
+  IMAGE: 0,
+  PDF: 1,
+  BOTH: 2,
+};
+
+type ProviderTabInfo<C> = {
   chartRotation: number;
   searchQuery: string;
-  selectedTabType: ChartCategory;
+  selectedTabType: C;
   isFullScreen: boolean;
   chartDimensions: {
     width?: number;
@@ -60,15 +75,17 @@ type ProviderTabInfo = {
   chartPosition: { positionX: number; positionY: number; scale: number };
 };
 
-type NavigraphProviderTabInfo = ProviderTabInfo & {
+type NavigraphProviderTabInfo = ProviderTabInfo<ChartCategory> & {
   availableCharts: NavigraphAirportCharts;
 };
+
+type LocalFilesTabInfo = ProviderTabInfo<LocalChartCategory>;
 
 interface InitialChartState {
   selectedNavigationTabIndex: number;
   usingDarkTheme: boolean;
   [NavigationTab.NAVIGRAPH]: NavigraphProviderTabInfo;
-  [NavigationTab.LOCAL_FILES]: ProviderTabInfo;
+  [NavigationTab.LOCAL_FILES]: LocalFilesTabInfo;
   [NavigationTab.PINNED_CHARTS]: {
     searchQuery: string;
     selectedProvider: ChartProvider | 'ALL';
@@ -122,7 +139,7 @@ const initialState: InitialChartState = {
   [NavigationTab.LOCAL_FILES]: {
     chartRotation: 0,
     searchQuery: '',
-    selectedTabType: 'STAR',
+    selectedTabType: 'PDF',
     isFullScreen: false,
     chartDimensions: {
       width: 0,

@@ -12,7 +12,7 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
-import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
+import { NavigationTab, editTabProperty, LocalChartCategoryToIndex } from '../../../Store/features/navigationPage';
 import { ChartViewer } from '../../Navigation';
 
 interface LocalFileCharts {
@@ -33,7 +33,7 @@ export const LocalFileChartUI = () => {
     { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
     { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.images, ...charts.pdfs] },
   ]);
-  const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector(
+  const { searchQuery, isFullScreen, chartName, selectedTabType } = useAppSelector(
     (state) => state.navigationTab[NavigationTab.LOCAL_FILES],
   );
 
@@ -42,11 +42,11 @@ export const LocalFileChartUI = () => {
 
     const searchableCharts: string[] = [];
 
-    if (selectedTabIndex === 0 || selectedTabIndex === 2) {
+    if (selectedTabType === 'IMAGE' || selectedTabType === 'BOTH') {
       searchableCharts.push(...charts.images.map((image) => image.fileName));
     }
 
-    if (selectedTabIndex === 1 || selectedTabIndex === 2) {
+    if (selectedTabType === 'PDF' || selectedTabType === 'BOTH') {
       searchableCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
     }
 
@@ -67,7 +67,7 @@ export const LocalFileChartUI = () => {
 
   useEffect(() => {
     handleIcaoChange(searchQuery);
-  }, [selectedTabIndex]);
+  }, [selectedTabType]);
 
   useEffect(() => {
     updateSearchStatus();
@@ -93,7 +93,7 @@ export const LocalFileChartUI = () => {
 
     try {
       // IMAGE or BOTH
-      if (selectedTabIndex === 0 || selectedTabIndex === 2) {
+      if (selectedTabType === 'IMAGE' || selectedTabType === 'BOTH') {
         const imageNames: string[] = await Viewer.getImageList();
         imageNames.forEach((imageName) => {
           if (imageName.toUpperCase().includes(searchQuery)) {
@@ -106,7 +106,7 @@ export const LocalFileChartUI = () => {
       }
 
       // PDF or BOTH
-      if (selectedTabIndex === 1 || selectedTabIndex === 2) {
+      if (selectedTabType === 'PDF' || selectedTabType === 'BOTH') {
         const pdfNames: string[] = await Viewer.getPDFList();
         pdfNames.forEach((pdfName) => {
           if (pdfName.toUpperCase().includes(searchQuery)) {
@@ -145,7 +145,7 @@ export const LocalFileChartUI = () => {
   const simbriefDataLoaded = isSimbriefDataLoaded();
 
   return (
-    <div className="h-content-section-reduced flex w-full flex-row overflow-x-hidden rounded-lg">
+    <div className="flex h-content-section-reduced w-full flex-row overflow-x-hidden rounded-lg">
       <>
         {!isFullScreen && (
           <div className="shrink-0 overflow-hidden" style={{ width: '450px' }}>
@@ -195,11 +195,13 @@ export const LocalFileChartUI = () => {
 
             <div className="mt-6">
               <SelectGroup>
-                {organizedCharts.map((organizedChart, index) => (
+                {organizedCharts.map((organizedChart) => (
                   <SelectItem
-                    selected={index === selectedTabIndex}
+                    selected={organizedChart.name === selectedTabType}
                     onSelect={() =>
-                      dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabType: index }))
+                      dispatch(
+                        editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabType: organizedChart.name }),
+                      )
                     }
                     key={organizedChart.name}
                     className="flex w-full justify-center uppercase"
@@ -210,7 +212,10 @@ export const LocalFileChartUI = () => {
               </SelectGroup>
 
               <ScrollableContainer className="mt-5" height={42.75}>
-                <LocalFileChartSelector selectedTab={organizedCharts[selectedTabIndex]} loading={loading} />
+                <LocalFileChartSelector
+                  selectedTab={organizedCharts[LocalChartCategoryToIndex[selectedTabType]]}
+                  loading={loading}
+                />
               </ScrollableContainer>
             </div>
           </div>
