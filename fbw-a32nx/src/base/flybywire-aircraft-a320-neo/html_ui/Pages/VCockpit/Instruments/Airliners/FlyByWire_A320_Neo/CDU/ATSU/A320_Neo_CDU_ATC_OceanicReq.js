@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAtcOceanicReq {
     static CreateDataBlock() {
         return {
@@ -15,7 +19,7 @@ class CDUAtcOceanicReq {
         if (!data.callsign) {
             return false;
         }
-        if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
+        if (!mcdu.flightPlanService.active.destinationAirport) {
             return false;
         }
         if (mcdu.atsu.currentStation() === "") {
@@ -28,7 +32,7 @@ class CDUAtcOceanicReq {
         const retval = new AtsuCommon.OclMessage();
 
         retval.Callsign = data.callsign;
-        retval.Destination = mcdu.flightPlanManager.getDestination().ident;
+        retval.Destination = mcdu.flightPlanService.active.destinationAirport.ident;
         retval.EntryPoint = data.entryPoint;
         retval.EntryTime = data.entryTime;
         retval.RequestedMach = data.requestedMach;
@@ -40,14 +44,17 @@ class CDUAtcOceanicReq {
     }
 
     static WaypointOnRoute(mcdu, ident) {
-        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
-        const wptsListIndex = mcdu.flightPlanManager.getActiveWaypointIndex();
+        const activePlan = mcdu.flightPlanService.active;
+
+        const totalWaypointsCount = activePlan.legCount;
+        const wptsListIndex = activePlan.activeLegIndex;
+
         let i = 0;
 
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount) {
-            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, undefined, true);
+            const leg = activePlan.elementAt(i + wptsListIndex);
 
-            if (waypoint && !waypoint.isVectors && waypoint.ident === ident) {
+            if (leg && leg.isDiscontinuity === false && leg.ident === ident) {
                 return true;
             }
 
@@ -58,6 +65,10 @@ class CDUAtcOceanicReq {
     }
 
     static CalculateEntryPointETA(mcdu, ident) {
+        // TODO this currently does not work as computeWaypointStatistics returns dummy values. Needs a refactor of predictions (fms-v2)
+
+        const activePlan = mcdu.flightPlanService.active;
+
         const adirLat = ADIRS.getLatitude();
         const adirLong = ADIRS.getLongitude();
         const ppos = (adirLat.isNormalOperation() && adirLong.isNormalOperation()) ? {
@@ -69,7 +80,7 @@ class CDUAtcOceanicReq {
         };
 
         let retval = "";
-        const stats = mcdu.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
+        const stats = activePlan.computeWaypointStatistics();
         stats.forEach((value) => {
             if (value.ident === ident && retval === "") {
                 const eta = value.etaFromPpos;

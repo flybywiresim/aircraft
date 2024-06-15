@@ -10,9 +10,9 @@ import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lna
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
-import { Geo } from '@fmgc/utils/Geo';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
+import { placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
+import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
@@ -20,9 +20,19 @@ import { PathVector, PathVectorType } from '../PathVector';
 export class CFLeg extends XFLeg {
   private computedPath: PathVector[] = [];
 
+  /**
+   * A course-to-fix leg.
+   * This leg specifies a leg of a specified distance on a specified inbound course to a fix.
+   * @param fix The fix the leg terminates at.
+   * @param course Course to the fix in degrees tree.
+   * @param length Leg length in nautical miles.
+   * @param metadata Leg metadata.
+   * @param segment Segment the leg belongs to.
+   */
   constructor(
-    fix: WayPoint,
+    fix: Fix,
     public readonly course: DegreesTrue,
+    public readonly length: number,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
@@ -33,7 +43,7 @@ export class CFLeg extends XFLeg {
 
   getPathStartPoint(): Coordinates | undefined {
     if (this.inboundGuidable instanceof IFLeg) {
-      return this.inboundGuidable.fix.infos.coordinates;
+      return this.inboundGuidable.fix.location;
     }
 
     if (this.inboundGuidable instanceof Transition && this.inboundGuidable.isComputed) {
@@ -59,26 +69,15 @@ export class CFLeg extends XFLeg {
     if (this.inboundGuidable && this.inboundGuidable.isComputed) {
       const prevLegTerm = this.inboundGuidable.getPathEndPoint();
 
-      return Geo.doublePlaceBearingIntercept(
+      return placeBearingIntersection(
         this.getPathEndPoint(),
-        prevLegTerm,
         inverseCourse,
-        Avionics.Utils.clampAngle(inverseCourse + 90),
-      );
+        prevLegTerm,
+        MathUtils.normalise360(inverseCourse + 90),
+      )[0];
     }
 
-    // We start the leg at (tad + 0.1) from the fix if we have a fixed radius transition outbound. This allows showing a better looking path after sequencing.
-    let distance = 1;
-    if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
-      distance = this.outboundGuidable.tad + 0.1;
-    }
-
-    return Avionics.Utils.bearingDistanceToCoordinates(
-      inverseCourse,
-      distance,
-      this.fix.infos.coordinates.lat,
-      this.fix.infos.coordinates.long,
-    );
+    return placeBearingDistance(this.fix.location, inverseCourse, this.length);
   }
 
   get predictedPath(): PathVector[] {

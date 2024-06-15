@@ -73,16 +73,16 @@ class CDUDataIndexPage {
             ["DATA INDEX", "2", "2"],
             ["", "STORED\xa0"],
             ["<WAYPOINTS", "WAYPOINTS>"],
-            ["", "STORED\xa0"],
-            ["<NAVAIDS", "NAVAIDS>"],
-            ["", "STORED\xa0"],
-            ["<RUNWAYS", "RUNWAYS>"],
-            ["", "STORED\xa0"],
-            ["<ROUTES", "ROUTES>"],
-            ["\xa0ACTIVE F-PLAN", ""],
-            ["<WINDS"],
-            ["\xa0SEC F-PLAN", ""],
-            ["<WINDS"]
+            ["", "STORED\xa0[color]inop"],
+            ["<NAVAIDS", "NAVAIDS>[color]inop"],
+            ["", "STORED\xa0[color]inop"],
+            ["<RUNWAYS[color]inop", "RUNWAYS>[color]inop"],
+            ["", "STORED\xa0[color]inop"],
+            ["<ROUTES[color]inop", "ROUTES>[color]inop"],
+            ["\xa0ACTIVE F-PLAN[color]inop", ""],
+            ["<WINDS[color]inop"],
+            ["\xa0SEC F-PLAN[color]inop", ""],
+            ["<WINDS[color]inop"]
 
         ]);
 

@@ -165,3 +165,81 @@ export class Arinc429Register implements Arinc429WordData {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 }
+
+/**
+ * A utility class specifically for writing Arinc429 words to a simvar.
+ * Optimized to only write when the value changes more than some quantization.
+ */
+export class Arinc429OutputWord implements Arinc429WordData {
+  private word: Arinc429Word;
+
+  private isDirty: boolean = true;
+
+  constructor(
+    private name: string,
+    value = 0,
+  ) {
+    this.word = new Arinc429Word(value);
+  }
+
+  static empty(name: string) {
+    return new Arinc429OutputWord(name);
+  }
+
+  get value() {
+    return this.word.value;
+  }
+
+  set value(value) {
+    if (this.word.value !== value) {
+      this.isDirty = true;
+    }
+
+    this.word.value = value;
+  }
+
+  get ssm() {
+    return this.word.ssm;
+  }
+
+  set ssm(ssm) {
+    if (this.word.ssm !== ssm) {
+      this.isDirty = true;
+    }
+
+    this.word.ssm = ssm;
+  }
+
+  isFailureWarning() {
+    return this.word.isFailureWarning();
+  }
+
+  isNoComputedData() {
+    return this.word.isNoComputedData();
+  }
+
+  isFunctionalTest() {
+    return this.word.isFunctionalTest();
+  }
+
+  isNormalOperation() {
+    return this.word.isNormalOperation();
+  }
+
+  async writeToSimVarIfDirty() {
+    if (this.isDirty) {
+      this.isDirty = false;
+      return Arinc429Word.toSimVarValue(this.name, this.value, this.ssm);
+    }
+
+    return Promise.resolve();
+  }
+
+  setBnrValue(value: number, ssm: Arinc429SignStatusMatrix, bits: number, rangeMax: number, rangeMin: number = 0) {
+    const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+    const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
+
+    this.value = data;
+    this.ssm = ssm;
+  }
+}
