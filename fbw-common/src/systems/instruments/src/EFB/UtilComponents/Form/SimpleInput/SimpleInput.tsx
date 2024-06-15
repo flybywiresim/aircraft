@@ -197,7 +197,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         className={`px-3 py-1.5 ${props.fontSizeClassName ?? 'text-lg'} focus-within:border-theme-highlight placeholder:text-theme-unselected bg-theme-accent border-theme-accent
                     text-theme-text rounded-md border-2 transition duration-100 focus-within:outline-none
                     ${props.className}
-                    ${props.disabled && 'opacity-50'}`}
+                    ${props.disabled && 'cursor-not-allowed opacity-50'}`}
         value={displayValue}
         placeholder={props.placeholder}
         onChange={(e) => onChange(e.target.value)}

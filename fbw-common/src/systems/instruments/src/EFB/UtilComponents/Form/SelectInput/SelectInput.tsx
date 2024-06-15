@@ -27,6 +27,7 @@ interface SelectInputProps {
   className?: string;
   forceShowAll?: boolean; // Forces dropdown to show all options
   maxHeight?: number; // max height before it becomes scrollable
+  disabled?: boolean;
 }
 
 const defaultOptionFallback: Option = { value: 0, displayValue: '' };
@@ -60,13 +61,15 @@ export const SelectInput = (props: SelectInputProps) => {
   };
 
   const handleToggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    if (props.disabled !== true) {
+      setShowDropdown(!showDropdown);
+    }
   };
 
   return (
     <div className="flex flex-row">
       <div
-        className={`border-theme-accent relative cursor-pointer rounded-md border-2 ${props.className} ${' '}
+        className={`border-theme-accent relative ${props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} rounded-md border-2 ${props.className} ${' '}
                 ${showDropdown && (props.dropdownOnTop ? 'border-t-theme-body rounded-t-none' : 'border-b-theme-body rounded-b-none')}`}
         onClick={handleToggleDropdown}
       >
