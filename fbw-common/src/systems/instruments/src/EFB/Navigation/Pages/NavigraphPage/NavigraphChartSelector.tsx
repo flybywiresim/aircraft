@@ -54,6 +54,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
   const { chartId, searchQuery, selectedTabType } = useAppSelector(
     (state) => state.navigationTab[NavigationTab.NAVIGRAPH],
   );
+
   const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
   useEffect(() => {
@@ -191,7 +192,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     </div>
                   </div>
                   <div className="m-2 flex flex-col">
-                    <span>{chart.procedures[0]}</span>
+                    <span>{chart.name}</span>
                     <span className="mr-auto mt-0.5 rounded-md bg-theme-secondary px-2 text-sm text-theme-text">
                       {chart.index_number}
                     </span>
