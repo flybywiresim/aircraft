@@ -2,7 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { createContext } from 'react';
-import { LandingPerformanceCalculator, TakeoffPerformanceCalculator } from 'shared/src';
+import { LandingPerformanceCalculator } from '../../../shared/src/performance/landing';
+import { TakeoffPerformanceCalculator } from '../../../shared/src/performance/takeoff';
 
 interface PerformanceCalculators {
   takeoff: TakeoffPerformanceCalculator | null;
