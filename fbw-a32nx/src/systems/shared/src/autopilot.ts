@@ -1,8 +1,8 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ControlLaw } from '../../fmgc/src/guidance/ControlLaws';
+import { ControlLaw } from '@fmgc/guidance/ControlLaws';
 
 enum LateralMode {
   NONE = 0,

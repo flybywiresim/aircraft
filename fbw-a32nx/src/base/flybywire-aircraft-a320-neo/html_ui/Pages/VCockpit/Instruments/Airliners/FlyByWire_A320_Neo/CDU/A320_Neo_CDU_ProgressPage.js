@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -16,23 +20,29 @@ class CDUProgressPage {
         switch (mcdu.flightPhaseManager.phase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF: {
-                if (mcdu._cruiseEntered) {
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                if (mcdu.cruiseLevel) {
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 const altCtn = Math.round(mcdu.constraintAlt / 100);
-                if (!mcdu._cruiseEntered && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+                if (!mcdu.cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
                 } else {
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CRUISE: {
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                // TODO check if this is correct
+                // We can get here by taking off without FROM/TO entered, and climbing to the FCU altitude (which will then be used as cruise altitude)
+                // to enter the cruise phase. We then enter a new FROM/TO which resets the cruise altitude, but I don't know if it puts us in the CLB phase
+                // or keeps us in CRZ.
+                if (mcdu.cruiseLevel) {
+                    flCrz = "FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                }
                 break;
             }
             case FmgcFlightPhases.DESCENT: {
@@ -109,11 +119,11 @@ class CDUProgressPage {
         mcdu.rightInputDelay[3] = () => 0;
         mcdu.onRightInput[3] = (input, scratchpadCallback) => {
             mcdu.trySetProgWaypoint(input, (success) => {
-                if (success) {
-                    CDUProgressPage.ShowPage(mcdu);
-                } else {
+                if (!success) {
                     scratchpadCallback(input);
                 }
+
+                CDUProgressPage.ShowPage(mcdu);
             });
         };
 
@@ -186,11 +196,13 @@ class CDUProgressPage {
     }
 
     static ShowReportPage(mcdu) {
+        const plan = mcdu.flightPlanService.active;
+
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPageReport;
         let altCell = "---";
-        if (isFinite(mcdu.cruiseFlightLevel)) {
-            altCell = mcdu.cruiseFlightLevel.toFixed(0);
+        if (isFinite(mcdu.cruiseLevel)) {
+            altCell = mcdu.cruiseLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = (value, scratchpadCallback) => {
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
@@ -199,48 +211,35 @@ class CDUProgressPage {
                 scratchpadCallback();
             }
         };
-        let toWaypoint;
-        if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getDestination();
-        } else {
-            toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
-        }
+
+        const toLeg = plan.activeLeg;
         let toWaypointCell = "";
-        let toWaypointUTCCell = "---";
+        const toWaypointUTCCell = "---";
         const toWaypointAltCell = "----";
         let nextWaypointCell = "";
-        let nextWaypointUTCCell = "----";
+        const nextWaypointUTCCell = "----";
         const nextWaypointAltCell = "---";
-        if (toWaypoint) {
-            toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
-            let nextWaypoint;
-            if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
-            } else {
-                nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
-            }
-            if (nextWaypoint) {
-                nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
+        if (toLeg && toLeg.isDiscontinuity === false) {
+            toWaypointCell = toLeg.ident;
+            // toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toLeg.infos.etaInFP); TODO port over
+            const nextLeg = plan.maybeElementAt(plan.activeLegIndex + 1);
+
+            if (nextLeg && nextLeg.isDiscontinuity === false) {
+                nextWaypointCell = nextLeg.ident;
+                // nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextLeg.infos.etaInFP); TODO port over
             }
         }
+
         let destCell = "";
-        let destUTCCell = "---";
-        let destDistCell = "----";
-        if (mcdu.flightPlanManager.getDestination()) {
-            console.log(mcdu.flightPlanManager.getDestination());
-            destCell = mcdu.flightPlanManager.getDestination().ident;
-            const destInfos = mcdu.flightPlanManager.getDestination().infos;
-            if (destInfos instanceof AirportInfo) {
-                const destApproach = destInfos.approaches[mcdu.flightPlanManager.getApproachIndex()];
-                if (destApproach) {
-                    destCell += destApproach.runway;
-                }
-            }
-            destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
-            destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
+        const destUTCCell = "---";
+        const destDistCell = "----";
+        if (plan.destinationAirport) {
+            destCell = plan.destinationRunway
+                ? plan.destinationRunway.ident
+                : plan.destinationAirport.ident;
+
         }
+
         mcdu.setTemplate([
             ["REPORT"],
             ["\xa0OVHD", "ALT\xa0", "UTC"],
@@ -261,19 +260,25 @@ class CDUProgressPage {
     static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
+
+        const plan = mcdu.flightPlanService.active;
+
         let destIdentCell = "";
         let destETACell = "";
-        if (mcdu.flightPlanManager.getDestination()) {
-            destIdentCell = mcdu.flightPlanManager.getDestination().ident + "[color]green";
+        if (plan.destinationAirport) {
+            destIdentCell = plan.destinationAirport.ident + "[color]green";
+
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+                // destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over (fms-v2)
             }
+
             mcdu.onRightInput[0] = (value) => {
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
             };
         }
+
         mcdu.setTemplate([
             ["PREDICTIVE GPS"],
             ["DEST", "ETA"],
