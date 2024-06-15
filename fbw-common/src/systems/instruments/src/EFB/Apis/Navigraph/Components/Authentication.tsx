@@ -12,6 +12,9 @@ import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';
 import { CancelToken } from '@navigraph/auth';
 
+const NAVIGRAPH_SUBSCRIPTION_CHARTS = 'charts';
+const NAVIGRAPH_SUBSCRIPTION_FMSDATA = 'fmsdata';
+
 export type NavigraphAuthInfo =
   | {
       loggedIn: false;
@@ -31,10 +34,11 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
     return {
       loggedIn: true,
       username: navigraphAuth.user.preferred_username,
-      subscriptionStatus:
-        navigraphAuth.user.subscriptions.length >= 2
-          ? NavigraphSubscriptionStatus.Unlimited
-          : NavigraphSubscriptionStatus.Unknown,
+      subscriptionStatus: [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) =>
+        navigraphAuth.user.subscriptions.includes(it),
+      )
+        ? NavigraphSubscriptionStatus.Unlimited
+        : NavigraphSubscriptionStatus.Unknown,
     };
   }
 
