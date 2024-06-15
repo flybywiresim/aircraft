@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
+import { ChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { Chart } from 'navigraph/charts';
@@ -41,14 +41,12 @@ export type PinnedChart = {
   pageIndex: number;
 };
 
-export type ChartTabType = 'STAR' | 'APP' | 'TAXI' | 'SID' | 'REF';
-
-export const ChartTabTypeIndices: readonly ChartTabType[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
+export const ChartTabTypeIndices: readonly ChartCategory[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
 
 type ProviderTabInfo = {
   chartRotation: number;
   searchQuery: string;
-  selectedTabType: ChartTabType;
+  selectedTabType: ChartCategory;
   isFullScreen: boolean;
   chartDimensions: {
     width?: number;
