@@ -17,6 +17,7 @@ interface SimpleInputProps {
   min?: number;
   max?: number;
   number?: boolean;
+  uppercase?: boolean;
   padding?: number;
   decimalPrecision?: number;
   fontSizeClassName?: string;
@@ -68,6 +69,10 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     if (props.number) {
       originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+    }
+
+    if (props.uppercase) {
+      originalValue = originalValue.toUpperCase();
     }
 
     if (props.maxLength) {
