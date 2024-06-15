@@ -9,25 +9,4 @@ export class NavigraphKeys {
     }
     return !(NavigraphKeys.clientSecret === '' || NavigraphKeys.clientId === '');
   }
-
-  // public async amdbCall(query: string): Promise<string> {
-  //   const callResp = await fetch(`https://amdb.api.navigraph.com/v1/${query}`, {
-  //     headers: {
-  //       Authorization: `Bearer ${this.accessToken}`,
-  //     },
-  //   });
-  //
-  //   if (callResp.ok) {
-  //     return callResp.text();
-  //   }
-  //
-  //   // Unauthorized
-  //   if (callResp.status === 401) {
-  //     await this.getToken();
-  //
-  //     return this.amdbCall(query);
-  //   }
-  //
-  //   return Promise.reject();
-  // }
 }
