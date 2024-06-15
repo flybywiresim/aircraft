@@ -294,6 +294,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwaySlopeChange = (value: string): void => {
+    // FIXME sus... should be parseFloat?
     let slope: number | undefined = parseInt(value);
 
     if (Number.isNaN(slope)) {
@@ -457,8 +458,8 @@ export const LandingWidget = () => {
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
                       onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                      className={`border-theme-highlight bg-theme-highlight text-theme-body flex flex-row items-center justify-center 
-                                            space-x-4 rounded-md rounded-r-none border-2 px-8 py-2 outline-none 
+                      className={`border-theme-highlight bg-theme-highlight text-theme-body flex flex-row items-center justify-center
+                                            space-x-4 rounded-md rounded-r-none border-2 px-8 py-2 outline-none
                                             transition duration-100 ${
                                               !isAutoFillIcaoValid()
                                                 ? 'opacity-50'
@@ -741,8 +742,8 @@ export const LandingWidget = () => {
             <div className="mt-14 flex flex-row space-x-8">
               <button
                 onClick={handleCalculateLanding}
-                className={`border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full flex-row items-center 
-                                justify-center space-x-4 rounded-md border-2 py-2 outline-none 
+                className={`border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full flex-row items-center
+                                justify-center space-x-4 rounded-md border-2 py-2 outline-none
                                 ${!areInputsValid() && 'pointer-events-none opacity-50'}`}
                 type="button"
                 disabled={!areInputsValid()}

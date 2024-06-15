@@ -4,6 +4,7 @@
     "resolveJsonModule" : true,
     "paths": {
       "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@shared/*": ["./shared/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@sentry/*": ["./sentry-client/src/*"],
       "@failures": ["./failures/src/index.ts"],

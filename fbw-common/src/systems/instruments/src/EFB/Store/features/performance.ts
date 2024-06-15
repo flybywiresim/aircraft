@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
+import { LandingFlapsConfig, LandingRunwayConditions } from '../../../../../shared/src/performance/landing';
 
 interface TPerformanceLanding {
   icao: string;
