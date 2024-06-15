@@ -13,6 +13,7 @@ import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { DataInterface } from '../interface/DataInterface';
+import { FmsErrorType } from '@fmgc/FmsError';
 
 export interface OfpRoute {
   from: string;
@@ -36,6 +37,10 @@ interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
 
 interface AirwayTerminationOfpRouteChunk extends BaseOfpRouteChunk {
   instruction: 'airwayTermination';
+  locationHint: {
+    lat: number;
+    long: number;
+  };
   ident: string;
 }
 
@@ -107,7 +112,16 @@ export class CoRouteUplinkAdapter {
 
     fms.onUplinkInProgress();
 
-    await flightPlanService.newCityPair(route.from, route.to, route.altn, FlightPlanIndex.Uplink);
+    await flightPlanService.newCityPair(route.from, route.to, undefined, FlightPlanIndex.Uplink);
+
+    // Set alternate  airport separately, so the active flight plan uplink still works even if the alternate fails
+    try {
+      await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
+    } catch (e) {
+      console.error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`);
+    }
+
+    const plan = flightPlanService.uplink;
 
     let insertHead = -1;
 
@@ -197,9 +211,14 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            throw new Error(
-              `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
+            console.warn(
+              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
             );
+
+            if (plan.elementAt(insertHead).isDiscontinuity === false) {
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+              insertHead++;
+            }
           }
 
           continue;
@@ -219,14 +238,16 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            throw new Error(
+            console.warn(
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
+
+            await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+            insertHead++;
           }
 
           break;
         }
-
         case 'latlong': {
           if (insertHead === -1) {
             setInsertHeadToEndOfEnroute();
@@ -239,8 +260,6 @@ export class CoRouteUplinkAdapter {
           break;
         }
         case 'airway': {
-          const plan = flightPlanService.uplink;
-
           let airwaySearchFix: Fix;
           if (!plan.pendingAirways) {
             plan.startAirwayEntry(insertHead);
@@ -262,9 +281,12 @@ export class CoRouteUplinkAdapter {
             if (airways.length > 0) {
               plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
             } else {
-              throw new Error(
-                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for "airway" chunk: ${chunk.ident}`,
+              console.warn(
+                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
               );
+              fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
+              // Cancel airway entry
+              plan.pendingAirways = undefined;
             }
           } else {
             throw new Error(
@@ -275,24 +297,45 @@ export class CoRouteUplinkAdapter {
           break;
         }
         case 'airwayTermination': {
-          const plan = flightPlanService.uplink;
-
-          if (!plan.pendingAirways) {
-            plan.startAirwayEntry(insertHead);
-          }
-
-          const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
-
           const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
           if (fixes.length > 0) {
+            if (!plan.pendingAirways) {
+              // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
+              // we add the termination fix with a disco in between
+              console.warn(
+                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
+              );
+
+              await flightPlanService.nextWaypoint(
+                insertHead,
+                fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
+                FlightPlanIndex.Uplink,
+              );
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+
+              insertHead += 2;
+
+              break;
+            }
+
+            const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
+
             plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
 
             ensureAirwaysFinalized();
           } else {
-            throw new Error(
-              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}`,
+            console.warn(
+              `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
+
+            plan.pendingAirways = undefined;
+
+            if (plan.elementAt(insertHead).isDiscontinuity === false) {
+              // It's possible we already have a disco here, if the start of the airway was not found
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+              insertHead++;
+            }
           }
 
           break;
@@ -372,7 +415,14 @@ export class CoRouteUplinkAdapter {
           lastInstruction.instruction === 'airway' &&
           fix.via_airway !== lastFix.via_airway
         ) {
-          instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident.toString() });
+          instructions.push({
+            instruction: 'airwayTermination',
+            ident: lastFix.ident.toString(),
+            locationHint: {
+              lat: parseFloat(lastFix.pos_lat.toString()),
+              long: parseFloat(lastFix.pos_long.toString()),
+            },
+          });
         }
 
         // Airway
@@ -388,7 +438,11 @@ export class CoRouteUplinkAdapter {
         ofp.navlog[i + 1]?.via_airway !== fix.via_airway.toString()
       ) {
         // End of airway
-        instructions.push({ instruction: 'airwayTermination', ident: fix.ident.toString() });
+        instructions.push({
+          instruction: 'airwayTermination',
+          ident: fix.ident.toString(),
+          locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) },
+        });
       }
     }
 

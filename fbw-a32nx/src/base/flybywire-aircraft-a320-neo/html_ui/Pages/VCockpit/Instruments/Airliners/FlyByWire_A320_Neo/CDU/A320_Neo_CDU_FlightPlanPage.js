@@ -151,7 +151,7 @@ class CDUFlightPlanPage {
             }
 
             if (i === targetPlan.lastIndex) {
-                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i, inAlternate: false, inMissedApproach: false });
+                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i + 1, inAlternate: false, inMissedApproach: false });
             }
         }
 
@@ -181,7 +181,7 @@ class CDUFlightPlanPage {
                 }
 
                 if (i === targetPlan.alternateFlightPlan.lastIndex) {
-                    waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i, inAlternate: true, inMissedApproach: false });
+                    waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i + 1, inAlternate: true, inMissedApproach: false });
                 }
             }
         } else if (targetPlan.legCount > 0) {
@@ -235,9 +235,9 @@ class CDUFlightPlanPage {
 
             const legAccentColor = (inAlternate || inMissedApproach) ? "cyan" : planAccentColor;
 
-            const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
-            const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
-            const wpActive = (fpIndex >= targetPlan.activeLegIndex);
+            const wpPrev = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex - 1);
+            const wpNext = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex + 1);
+            const wpActive = inAlternate || (fpIndex >= targetPlan.activeLegIndex);
 
             // Bearing/Track
             let bearingTrack = "";
@@ -581,9 +581,23 @@ class CDUFlightPlanPage {
                     if (value === FMCMainDisplay.clrValue) {
                         CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                         return;
+                    } else if (value === "") {
+                        return;
                     }
 
-                    mcdu.insertWaypoint(value, forPlan, inAlternate, fpIndex, true, (success) => {
+                    // Insert after last leg if we click on a marker after the flight plan
+                    const insertionIndex = fpIndex < targetPlan.legCount ? fpIndex : targetPlan.legCount - 1;
+                    const insertBeforeVsAfterIndex = fpIndex < targetPlan.legCount;
+
+                    // Cannot insert after MANUAL leg
+                    const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
+                    if (previousElement && previousElement.isDiscontinuity === false && previousElement.isVectors()) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                        scratchpadCallback();
+                        return;
+                    }
+
+                    mcdu.insertWaypoint(value, forPlan, inAlternate, insertionIndex, insertBeforeVsAfterIndex, (success) => {
                         if (!success) {
                             scratchpadCallback();
                         }
@@ -643,9 +657,24 @@ class CDUFlightPlanPage {
 
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'L');
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'R');
+
+        const isMissedApproachLegShown = targetPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.fpIndex >= targetPlan.firstMissedApproachLegIndex
+        );
+        const isAlternateLegShown = scrollWindow.some((row, index) => index > 0 && !row.marker && row.inAlternate);
+        const isAlternateMissedApproachLegShown = targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex
+        );
+
+        mcdu.efisInterfaces['L'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+        mcdu.efisInterfaces['R'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+
         mcdu.onUnload = () => {
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
+
+            mcdu.efisInterfaces['L'].setShownFplnLegs(false, false, false);
+            mcdu.efisInterfaces['R'].setShownFplnLegs(false, false, false);
         };
 
         // Render scrolling data to text >> add ditto marks

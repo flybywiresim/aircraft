@@ -30,6 +30,8 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -594,7 +596,13 @@ export class VnavDriver implements GuidanceComponent {
 
     const activeLegIndx = this.guidanceController.activeLegIndex;
     const activeLeg = geometry.legs.get(activeLegIndx);
-    const referenceLegIndex = activeLeg ? activeLegIndx : activeLegIndx + 1;
+
+    let referenceLegIndex = activeLegIndx;
+    if (!activeLeg) {
+      referenceLegIndex = activeLegIndx + 1;
+    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
+      referenceLegIndex = activeLegIndx + 2;
+    }
     const referenceLeg = geometry.legs.get(referenceLegIndex);
 
     if (!referenceLeg) {

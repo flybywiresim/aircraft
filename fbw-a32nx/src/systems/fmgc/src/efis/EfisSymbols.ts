@@ -23,7 +23,7 @@ import {
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { NauticalMiles, bearingTo, distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
@@ -238,6 +238,9 @@ export class EfisSymbols<T extends number> {
       // we reverse the array at the end to make sure symbols are drawn in the correct order
       // eslint-disable-next-line no-loop-func
       const upsertSymbol = (symbol: NdSymbol): void => {
+        if (DEBUG) {
+          console.time(`upsert symbol ${symbol.databaseId}`);
+        }
         // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
         const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
         if (symbolIdx !== -1) {
@@ -363,10 +366,7 @@ export class EfisSymbols<T extends number> {
         if (
           this.flightPlanService.active.alternateFlightPlan.legCount > 0 &&
           this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(
-            FlightPlanIndex.Active,
-            mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV,
-          )
+          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
@@ -437,10 +437,7 @@ export class EfisSymbols<T extends number> {
         if (
           this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
           this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(
-            FlightPlanIndex.FirstSecondary,
-            mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV,
-          )
+          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
         ) {
           const symbols = this.getFlightPlanSymbols(
             true,
@@ -529,11 +526,11 @@ export class EfisSymbols<T extends number> {
     const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
     const flightPhase = getFlightPhaseManager().phase;
 
-    const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+    const isPlanMode = mode === EfisNdMode.PLAN;
 
     const transmitMissed = isAlternate
-      ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isArcVsPlanMode)
-      : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isArcVsPlanMode);
+      ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
+      : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isPlanMode);
 
     const ret: NdSymbol[] = [];
 
@@ -613,7 +610,7 @@ export class EfisSymbols<T extends number> {
       const isCourseReversal =
         leg.type === LegType.HA || leg.type === LegType.HF || leg.type === LegType.HM || leg.type === LegType.PI;
 
-      if (i === flightPlan.activeLegIndex) {
+      if (i === flightPlan.activeLegIndex && !isAlternate) {
         type |= NdSymbolTypeFlags.ActiveLegTermination;
       } else if (
         isCourseReversal &&

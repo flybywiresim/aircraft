@@ -141,6 +141,11 @@ export class NavaidSelectionManager {
 
     // we need this as a fallback for MSFS-sourced facilities with missing elevation data
     this.heightAboveGround = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+    if (this.filteredHeight === null) {
+      this.filteredHeight = this.heightAboveGround;
+    } else {
+      this.filteredHeight = 0.01 * this.heightAboveGround + 0.99 * this.filteredHeight;
+    }
   }
 
   private updateCandidateList(): void {
@@ -233,7 +238,7 @@ export class NavaidSelectionManager {
       heightAboveNavaid = Math.max(0, this.altitude - facility.dmeLocation.alt) / 6076.12;
     } else {
       // fallback for MSFS navdata with missing navaid elevations
-      heightAboveNavaid = this.altitude - this.heightAboveGround;
+      heightAboveNavaid = this.filteredHeight;
     }
 
     const heightAboveNavaidNm = heightAboveNavaid / 6076.12;

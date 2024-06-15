@@ -68,6 +68,7 @@ const NXSystemMessages = {
     checkToData:            new TypeIIMessage("CHECK TAKE OFF DATA", true),
     checkWeight:            new TypeIIMessage("CHECK WEIGHT", true),
     comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
+    cstrDelUpToWpt:         new TypeIIMessage("CSTR DEL UP TO WWWWW", false, "WWWWW"),
     databaseCodingError:    new TypeIIMessage("DATABASE CODING ERROR"),
     dcduFileFull:           new TypeIMessage("DCDU FILE FULL"),
     destEfobBelowMin:       new TypeIIMessage("DEST EFOB BELOW MIN", true),

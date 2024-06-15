@@ -70,7 +70,7 @@ class CDUAtcAtisMenu {
             }
 
             // validate the airport
-            mcdu.dataManager.GetAirportByIdent(entries[0]).then((airport) => {
+            mcdu.navigationDatabaseService.activeDatabase.searchAirport(entries[0]).then((airport) => {
                 if (airport) {
                     airports[idx].autoupdate = mcdu.atsu.atisAutoUpdateActive(entries[0]);
                     airports[idx].icao = entries[0];

@@ -15,6 +15,7 @@ import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/new/rpc/FlightPl
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -367,7 +368,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('setPerformanceData', key, value, planIndex);
   }
 
-  stringMissedApproach(planIndex?: number): Promise<void> {
-    return this.callFunctionViaRpc('stringMissedApproach', planIndex);
+  stringMissedApproach(onConstraintsDeleted?: (_: FlightPlanLeg) => void, planIndex?: number): Promise<void> {
+    return this.callFunctionViaRpc('stringMissedApproach', onConstraintsDeleted, planIndex);
   }
 }
