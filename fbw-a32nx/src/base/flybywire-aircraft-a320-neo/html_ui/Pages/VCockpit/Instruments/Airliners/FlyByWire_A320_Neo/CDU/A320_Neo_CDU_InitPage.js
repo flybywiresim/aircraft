@@ -150,7 +150,7 @@ class CDUInitPage {
                     try {
                         if (value === "") {
                             await mcdu.getCoRouteList(mcdu);
-                            CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                            CDUAvailableFlightPlanPage.ShowPage(mcdu, forPlan);
                         } else {
                             if (await mcdu.tryUpdateAltDestination(value)) {
                                 CDUInitPage.ShowPage1(mcdu);
@@ -197,16 +197,16 @@ class CDUInitPage {
          */
         mcdu.onRightInput[0] = (value, scratchpadCallback) => {
             if (value !== "") {
-                mcdu.tryUpdateFromTo(value, (result) => {
+                mcdu.tryUpdateFromTo(value, forPlan, (result) => {
                     if (result) {
-                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        CDUAvailableFlightPlanPage.ShowPage(mcdu, forPlan);
                     } else {
                         scratchpadCallback();
                     }
                 });
             } else if (plan.originAirport && plan.destinationAirport) {
                 mcdu.getCoRouteList(mcdu).then(() => {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    CDUAvailableFlightPlanPage.ShowPage(mcdu, forPlan);
                 });
             }
         };
