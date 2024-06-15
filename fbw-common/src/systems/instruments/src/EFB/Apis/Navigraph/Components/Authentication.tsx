@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { DeviceFlowParams } from 'navigraph/auth';
 import QRCode from 'qrcode.react';
-import { NavigraphClient, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
+import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';
@@ -32,7 +32,7 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
       loggedIn: true,
       username: navigraphAuth.user.preferred_username,
       subscriptionStatus:
-        navigraphAuth.user.subscriptions.length > 2
+        navigraphAuth.user.subscriptions.length >= 2
           ? NavigraphSubscriptionStatus.Unlimited
           : NavigraphSubscriptionStatus.Unknown,
     };
@@ -170,7 +170,7 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({
     ui = <NavigraphAuthRedirectUI />;
   }
 
-  return NavigraphClient.hasSufficientEnv ? (
+  return NavigraphKeys.hasSufficientEnv ? (
     <>{ui}</>
   ) : (
     <div className="mr-4 flex h-content-section-reduced w-full items-center justify-center overflow-x-hidden">

@@ -253,7 +253,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                 </div>
               </div>
               <div className="m-2 flex flex-col">
-                <span>{chart.procedures[0]}</span>
+                <span>{chart.name}</span>
                 <span className="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
                   {chart.index_number}
                 </span>

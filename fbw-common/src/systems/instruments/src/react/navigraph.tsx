@@ -2,6 +2,7 @@ import { User } from 'navigraph/auth';
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
 import { navigraphAuth } from '../navigraph';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 interface NavigraphAuthContext {
   initialized: boolean;
@@ -17,11 +18,19 @@ const authContext = createContext<NavigraphAuthContext>({
 
 function useProvideAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [initialized, setinitialized] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = navigraphAuth.onAuthStateChanged((u) => {
-      if (!initialized) setinitialized(true);
+      if (!initialized) {
+        setInitialized(true);
+      }
+
+      if (u) {
+        // Compat for some old legacy JS
+        NXDataStore.set('NAVIGRAPH_USERNAME', u.preferred_username);
+      }
+
       setUser(u);
     });
 
