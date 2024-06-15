@@ -8,12 +8,12 @@ export enum VnavDescentMode {
   DPO,
 }
 
-export type AircraftConfig = {
+export interface AircraftConfig {
   lnavConfig: LnavConfig;
   vnavConfig: VnavConfig;
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
-};
+}
 
 export interface VnavConfig {
   /**

@@ -3,7 +3,7 @@ import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';

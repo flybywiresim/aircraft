@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlightPathAngleStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -13,7 +13,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 
-export const DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG: AircraftCtlSurfcConfiguration = {
+export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: AircraftCtlSurfcConfiguration = {
   flapConfig: FlapConf.CLEAN,
   speedbrakesExtended: false,
   gearExtended: false,
@@ -199,7 +199,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
     private readonly acConfig: AircraftConfig,
-    private defaultConfig: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    private defaultConfig: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ) {}
 
   predictToAltitude(

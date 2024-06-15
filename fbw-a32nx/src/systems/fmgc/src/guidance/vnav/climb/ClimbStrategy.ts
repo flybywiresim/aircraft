@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
+import { DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { EngineModel } from '../EngineModel';
 import { Predictions, StepResults } from '../Predictions';
 import { AtmosphericConditions } from '../AtmosphericConditions';
@@ -70,7 +70,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
@@ -100,7 +100,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
@@ -130,7 +130,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 
@@ -177,7 +177,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
     const distance =
@@ -210,7 +210,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
@@ -248,7 +248,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 
@@ -295,7 +295,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
 
@@ -330,7 +330,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
 
@@ -360,7 +360,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     mach: Mach,
     fuelOnBoard: number,
     headwindComponent: WindComponent,
-    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CTL_SURFC_CONFIG,
+    config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 

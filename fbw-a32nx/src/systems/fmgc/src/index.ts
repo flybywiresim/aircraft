@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,8 +8,6 @@ import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUpl
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcServer';
-import { A320AircraftConfig } from '@fmgc/flightplanning/new/A320AircraftConfig';
-import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -66,6 +64,4 @@ export {
   DataManager,
   EventBus,
   a320EfisRangeSettings,
-  A320AircraftConfig,
-  A380AircraftConfig,
 };

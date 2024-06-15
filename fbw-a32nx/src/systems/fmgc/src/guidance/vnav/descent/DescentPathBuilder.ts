@@ -20,7 +20,7 @@ import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/Tempora
 import { AltitudeDescriptor, MathUtils } from '@flybywiresim/fbw-sdk';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 
 export class DescentPathBuilder {
   private geometricPathBuilder: GeometricPathBuilder;
