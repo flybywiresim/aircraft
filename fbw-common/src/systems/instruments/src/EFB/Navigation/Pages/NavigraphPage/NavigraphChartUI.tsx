@@ -161,7 +161,7 @@ export const NavigraphChartUI = () => {
 
             <div className="mt-6">
               <SelectGroup>
-                {(['STAR', 'APP', 'TAXI', 'SID', 'REF'] as ChartTabType[]).map((tabType) => (
+                {(['STAR', 'APP', 'TAXI', 'SID', 'REF'] satisfies ChartCategory[]).map((tabType) => (
                   <SelectItem
                     selected={selectedTabType === tabType}
                     onSelect={() =>
