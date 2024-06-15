@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
 import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';

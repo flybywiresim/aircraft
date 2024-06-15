@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -447,13 +447,13 @@ export class LnavDriver implements GuidanceComponent {
     return undefined;
   }
 
-  public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates, acConfig: AircraftConfig): number {
+  public legEta(gs: Knots, termination: Coordinates): number {
     // FIXME use a more accurate estimate, calculate in predictions
 
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
-    const nauticalMilesToGo = distanceTo(ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+    const nauticalMilesToGo = distanceTo(this.ppos, termination);
+    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
 
     const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 

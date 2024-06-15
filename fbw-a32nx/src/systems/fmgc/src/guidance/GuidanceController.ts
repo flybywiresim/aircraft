@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
@@ -242,7 +243,7 @@ export class GuidanceController {
       // Don't compute distance and ETA for XM legs
       const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-      const efisEta = isXMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination, this.acConfig);
+      const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
 
       // FIXME should be NCD if no FM position
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
