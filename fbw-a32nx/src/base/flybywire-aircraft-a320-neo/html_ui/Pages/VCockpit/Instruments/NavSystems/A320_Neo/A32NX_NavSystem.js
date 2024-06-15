@@ -69,6 +69,9 @@ class NavSystem extends BaseInstrument {
         return this.currFlightPhaseManager;
     }
 
+    /**
+     * @return {FlightPlanService<A320FlightPlanPerformanceData>}
+     */
     get flightPlanService() {
         return this.currFlightPlanService;
     }

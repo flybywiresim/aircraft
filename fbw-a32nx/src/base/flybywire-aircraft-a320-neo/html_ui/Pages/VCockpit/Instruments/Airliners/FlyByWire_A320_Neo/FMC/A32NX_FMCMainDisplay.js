@@ -128,15 +128,12 @@ class FMCMainDisplay extends BaseAirliners {
         /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
         this.flaps = undefined;
         this.ths = undefined;
-        this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
         this.activeWpIdx = undefined;
         this.efisSymbols = undefined;
-        this.groundTempAuto = undefined;
-        this.groundTempPilot = undefined;
         /**
          * Landing elevation in feet MSL.
          * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
@@ -481,7 +478,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseFlightLevelTimeOut = undefined;
         this.flightNumber = undefined;
         // this.flightNumber = undefined;
-        this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
@@ -492,8 +488,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = false;
         this.managedProfile = new Map();
         this.speedLimitExceeded = false;
-        this.groundTempAuto = undefined;
-        this.groundTempPilot = undefined;
         this.landingElevation = undefined;
         this.destinationLatitude = undefined;
         this.destinationLongitude = undefined;
@@ -1895,17 +1889,17 @@ class FMCMainDisplay extends BaseAirliners {
     /* END OF FMS CHECK ROUTINE */
     /* MCDU GET/SET METHODS */
 
-    setCruiseFlightLevelAndTemperature(input) {
+    setCruiseFlightLevelAndTemperature(input, forPlan) {
         if (input === FMCMainDisplay.clrValue) {
-            this.cruiseLevel = undefined;
-            this.cruiseTemperature = undefined;
+            this.setCruiseLevel(undefined, forPlan);
+            this.currFlightPlanService.setPerformanceData('cruiseTemperature', undefined, forPlan);
             return true;
         }
         const flString = input.split("/")[0].replace("FL", "");
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString))) {
+        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan) && forPlan === Fmgc.FlightPlanIndex.Active) {
             if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseLevel);
             } else {
@@ -1915,13 +1909,13 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
+
         if (!!tempString) {
             const temp = parseInt(tempString.replace("M", "-"));
-            console.log("tS: " + tempString);
-            console.log("ti: " + temp);
-            if (isFinite(temp) && this.cruiseLevel) {
+
+            if (isFinite(temp) && this.flightPlan(forPlan, false).performanceData.cruiseFlightLevel) {
                 if (temp > -270 && temp < 100) {
-                    this.cruiseTemperature = temp;
+                    this.currFlightPlanService.setPerformanceData('cruiseTemperature', temp, forPlan);
                     return true;
                 } else {
                     this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -1932,6 +1926,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return false;
             }
         }
+
         this.setScratchpadMessage(NXSystemMessages.formatError);
         return false;
     }
@@ -1957,12 +1952,15 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Any tropopause altitude up to 60,000 ft is able to be entered
      * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+     * @param {number} forPlan the flight plan index to set tropopause for
      * @return {boolean} Whether tropopause could be set or not
      */
-    tryUpdateTropo(tropo) {
+    tryUpdateTropo(tropo, forPlan) {
+        const plan = this.flightPlan(forPlan, false);
+
         if (tropo === FMCMainDisplay.clrValue) {
-            if (this.tropo) {
-                this.tropo = undefined;
+            if (plan.performanceData.tropopause) {
+                this.currFlightPlanService.setPerformanceData('tropopause', undefined, forPlan);
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -1975,8 +1973,9 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         const value = parseInt(tropo);
+
         if (isFinite(value) && value >= 0 && value <= 60000) {
-            this.tropo = Math.round(value / 10) * 10;
+            this.currFlightPlanService.setPerformanceData('tropopause', Math.round(value / 10) * 10, forPlan);
             return true;
         }
 
@@ -1984,32 +1983,32 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //-----------------------------------------------------------------------------------
-    // TODO:FPM REWRITE: Start of functions to refactor
-    //-----------------------------------------------------------------------------------
-
     resetCoroute() {
         this.coRoute.routeNumber = undefined;
         this.coRoute.routes = [];
     }
 
     /** MCDU Init page method for FROM/TO, NOT for programmatic use */
-    tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
+    tryUpdateFromTo(fromTo, forPlan, callback = EmptyCallback.Boolean) {
         if (fromTo === FMCMainDisplay.clrValue) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
         const match = fromTo.match(/^([A-Z]{4})\/([A-Z]{4})$/);
+
         if (match === null) {
             this.setScratchpadMessage(NXSystemMessages.formatError);
             return callback(false);
         }
+
         const [, from, to] = match;
 
+        // TODO differentiate for sec
         this.resetCoroute();
 
-        this.setFromTo(from, to).then(() => {
+        this.setFromTo(from, to, forPlan).then(() => {
+            // TODO differentiate for sec
             this.getCoRouteList().then(() => callback(true)).catch(console.log);
         }).catch((e) => {
             if (e instanceof McduMessage) {
@@ -2025,9 +2024,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Programmatic method to set from/to
      * @param {string} from 4-letter icao code for origin airport
      * @param {string} to 4-letter icao code for destination airport
+     * @param {number} forPlan the flight plan index to set from/to for
      * @throws NXSystemMessage on error (you are responsible for pushing to the scratchpad if appropriate)
      */
-    async setFromTo(from, to) {
+    async setFromTo(from, to, forPlan) {
         let airportFrom, airportTo;
         try {
             airportFrom = await this.navigationDatabaseService.activeDatabase.searchAirport(from);
@@ -2043,8 +2043,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.atsu.resetAtisAutoUpdate();
 
-        return this.flightPlanService.newCityPair(from, to).then(() => {
-            this.setGroundTempFromOrigin();
+        return this.flightPlanService.newCityPair(from, to, undefined, forPlan).then(() => {
+            this.setGroundTempFromOrigin(forPlan);
         });
     }
 
@@ -2063,10 +2063,6 @@ class FMCMainDisplay extends BaseAirliners {
             this._DistanceToAlt = 0;
         }
     }
-
-    //-----------------------------------------------------------------------------------
-    // TODO:FPM REWRITE: End of functions to refactor
-    //-----------------------------------------------------------------------------------
 
     // only used by trySetRouteAlternateFuel
     isAltFuelInRange(fuel) {
@@ -2317,7 +2313,7 @@ class FMCMainDisplay extends BaseAirliners {
                             // TODO sec?
                             await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, Fmgc.FlightPlanIndex.Active, this.flightPlanService, this.coRoute);
                             await this.flightPlanService.uplinkInsert();
-                            this.setGroundTempFromOrigin();
+                            this.setGroundTempFromOrigin(Fmgc.FlightPlanIndex.Active);
 
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {
@@ -3394,9 +3390,10 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Sets new Cruise FL if all conditions good
      * @param fl {number} Altitude or FL
+     * @param forPlan {number} Flight plan index to set Cruise FL for
      * @returns {boolean} input passed checks
      */
-    trySetCruiseFl(fl) {
+    trySetCruiseFl(fl, forPlan) {
         if (!isFinite(fl)) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
@@ -3408,9 +3405,12 @@ class FMCMainDisplay extends BaseAirliners {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+
         const phase = this.flightPhaseManager.phase;
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue("feet")) / 100);
-        if (fl < selFl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
+
+        // TODO check if it's correct to skip this logic for SEC
+        if (forPlan !== Fmgc.FlightPlanIndex.Active || (fl < selFl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND))) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
@@ -3420,18 +3420,22 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.cruiseLevel = fl;
+        this.setCruiseLevel(fl, forPlan);
+
         this.onUpdateCruiseLevel(fl);
 
         return true;
     }
 
-    onUpdateCruiseLevel(newCruiseLevel) {
+    onUpdateCruiseLevel(newCruiseLevel, forPlan) {
         this._cruiseEntered = true;
-        this.cruiseTemperature = undefined;
-        this.updateConstraints();
+        this.currFlightPlanService.setPerformanceData('cruiseTemperature', undefined, forPlan);
 
-        this.flightPhaseManager.handleNewCruiseAltitudeEntered(newCruiseLevel);
+        if (forPlan === Fmgc.FlightPlanIndex.Active) {
+            this.updateConstraints();
+
+            this.flightPhaseManager.handleNewCruiseAltitudeEntered(newCruiseLevel);
+        }
     }
 
     trySetRouteReservedFuel(s) {
@@ -4335,18 +4339,19 @@ class FMCMainDisplay extends BaseAirliners {
         );
     }
 
-    setGroundTempFromOrigin() {
-        const origin = this.flightPlanService.active.originAirport;
+    setGroundTempFromOrigin(forPlan) {
+        const origin = this.flightPlanService.get(forPlan).originAirport;
 
         if (!origin) {
             return;
         }
 
-        this.groundTempAuto = A32NX_Util.getIsaTemp(origin.location.alt);
+        this.flightPlanService.setPerformanceData('defaultGroundTemperature', A32NX_Util.getIsaTemp(origin.location.alt), forPlan);
     }
 
-    trySetGroundTemp(scratchpadValue) {
-        if (this.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
+    trySetGroundTemp(scratchpadValue, forPlan) {
+        // TODO check if this condition is still applicable in SEC
+        if (forPlan === Fmgc.FlightPlanIndex.Active && this.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
             throw NXSystemMessages.notAllowed;
         }
 
@@ -4359,7 +4364,7 @@ class FMCMainDisplay extends BaseAirliners {
             throw NXSystemMessages.formatError;
         }
 
-        this.groundTempPilot = parseInt(scratchpadValue);
+        this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
     }
 
     get groundTemp() {
@@ -4701,6 +4706,19 @@ class FMCMainDisplay extends BaseAirliners {
         return undefined;
     }
 
+    setCruiseLevel(level, forPlan) {
+        const plan = this.flightPlan(forPlan, false);
+
+        if (plan) {
+            this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level, forPlan);
+            // used by FlightPhaseManager - only set for active plan
+            if (forPlan === Fmgc.FlightPlanIndex.Active) {
+                SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+            }
+        }
+    }
+
+    /** @deprecated */
     set cruiseLevel(level) {
         const plan = this.currFlightPlanService.active;
 
@@ -4759,6 +4777,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    /** @deprecated */
     set tropo(tropo) {
         const plan = this.currFlightPlanService.active;
 

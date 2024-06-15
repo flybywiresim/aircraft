@@ -113,23 +113,27 @@ class CDUInitPage {
                 cruiseTemp.update(isForPrimary ? "|___°" : "|[\xa0]°", isForPrimary ? Column.amber : Column.cyan);
                 cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
 
+                const planCruiseLevel = plan.performanceData.cruiseFlightLevel;
+                const planeCruiseTemp = plan.performanceData.cruiseTemperature;
+
                 //This is done so pilot enters a FL first, rather than using the computed one
                 // TODO differentiate for SEC
-                if (mcdu.cruiseLevel) {
-                    cruiseFl.update("FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0"), Column.cyan);
-                    if (mcdu.cruiseTemperature) {
-                        cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
+                if (planCruiseLevel) {
+                    cruiseFl.update("FL" + planCruiseLevel.toFixed(0).padStart(3, "0"), Column.cyan);
+
+                    if (planeCruiseTemp) {
+                        cruiseTemp.update(planeCruiseTemp.toFixed(0) + "°", Column.cyan);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan);
                     } else {
-                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.cruiseLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseTemp.update(mcdu.tempCurve.evaluate(planCruiseLevel).toFixed(0) + "°", Column.cyan, Column.small);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
                     }
                 }
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
-                    if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
-                        CDUInitPage.ShowPage1(mcdu);
+                    if (mcdu.setCruiseFlightLevelAndTemperature(value, forPlan)) {
+                        CDUInitPage.ShowPage1(mcdu, forPlan);
                     } else {
                         scratchpadCallback();
                     }
@@ -172,12 +176,14 @@ class CDUInitPage {
             });
         };
 
-        // TODO differentiate for SEC
-        if (mcdu.tropo) {
-            tropo.update(mcdu.tropo.toString(), mcdu.isTropoPilotEntered ? Column.big : Column.small);
+        const planTropo = plan.performanceData.tropopause;
+
+        if (planTropo) {
+            tropo.update(planTropo.toString(), plan.performanceData.tropopauseIsPilotEntered ? Column.big : Column.small);
         }
+
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
-            if (mcdu.tryUpdateTropo(value)) {
+            if (mcdu.tryUpdateTropo(value, forPlan)) {
                 CDUInitPage.ShowPage1(mcdu);
             } else {
                 scratchpadCallback();
@@ -219,8 +225,9 @@ class CDUInitPage {
 
                             plan = mcdu.flightPlan(forPlan, false);
 
+                            // TODO differentiate for sec
                             mcdu.updateFlightNo(plan.flightNumber);
-                            mcdu.setGroundTempFromOrigin();
+                            mcdu.setGroundTempFromOrigin(forPlan);
 
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu, forPlan);
@@ -242,14 +249,16 @@ class CDUInitPage {
         };
 
         const groundTemp = new Column(23, "---°", Column.right);
-        if (mcdu.groundTemp !== undefined) {
-            groundTemp.update(mcdu.groundTemp.toFixed(0) + "°", Column.cyan, (mcdu.groundTempPilot !== undefined ? Column.big : Column.small));
+
+        const planGroundTemp = plan.performanceData.groundTemperature;
+
+        if (planGroundTemp !== undefined) {
+            groundTemp.update(planGroundTemp.toFixed(0) + "°", Column.cyan, (plan.performanceData.groundTemperatureIsPilotEntered ? Column.big : Column.small));
         }
 
         mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
             try {
-                // TODO differentiate for SEC
-                mcdu.trySetGroundTemp(scratchpadValue);
+                mcdu.trySetGroundTemp(scratchpadValue, forPlan);
                 CDUInitPage.ShowPage1(mcdu, forPlan);
             } catch (msg) {
                 if (msg instanceof McduMessage) {

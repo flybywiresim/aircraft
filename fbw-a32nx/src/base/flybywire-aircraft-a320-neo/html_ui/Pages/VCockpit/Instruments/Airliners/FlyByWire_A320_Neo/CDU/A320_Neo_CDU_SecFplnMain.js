@@ -42,13 +42,13 @@ class CDUSecFplnMain {
             [""],
             ["<SEC F-PLN[color]", "PERF>[color]inop"],
             [""],
-            ["{DELETE SEC[color]inop"],
+            ["{DELETE SEC"],
             [""],
-            ["*ACTIVATE SEC[color]inop"],
+            ["*ACTIVATE SEC"],
             [""],
             [""],
             [""],
-            ["*SWAP ACTIVE[color]   "]
+            ["*SWAP ACTIVE   "]
         ]);
     }
 }

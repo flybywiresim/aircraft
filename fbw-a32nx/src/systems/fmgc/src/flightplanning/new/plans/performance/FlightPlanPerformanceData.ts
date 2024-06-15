@@ -30,7 +30,19 @@ export interface FlightPlanPerformanceData {
 
   costIndex: number;
 
+  /** Cruise level in thousands of feet */
   cruiseFlightLevel: number;
+
+  /** Cruise temperatures in degrees Celsius */
+  cruiseTemperature: number;
+
+  defaultGroundTemperature: TemperatureValue;
+
+  pilotGroundTemperature: TemperatureValue;
+
+  get groundTemperature(): TemperatureValue;
+
+  get groundTemperatureIsPilotEntered(): boolean;
 
   pilotTropopause: AltitudeValue;
 
@@ -145,6 +157,8 @@ type VSpeedValue = number | undefined;
 
 type AltitudeValue = Feet | undefined;
 
+type TemperatureValue = Celsius | undefined;
+
 type CostIndexValue = number | undefined;
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
@@ -182,6 +196,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.pilotTransitionLevel = this.pilotTransitionLevel;
 
     cloned.cruiseFlightLevel = this.cruiseFlightLevel;
+    cloned.cruiseTemperature = this.cruiseTemperature;
     cloned.costIndex = this.costIndex;
     cloned.pilotTropopause = this.pilotTropopause;
     cloned.defaultTropopause = this.defaultTropopause;
@@ -189,10 +204,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     return cloned as this;
   }
 
-  /**
-   * Cruise FL
-   */
   cruiseFlightLevel: AltitudeValue = undefined;
+
+  cruiseTemperature: TemperatureValue = undefined;
+
+  defaultGroundTemperature: TemperatureValue = undefined;
+
+  pilotGroundTemperature: TemperatureValue = undefined;
+
+  get groundTemperature() {
+    return this.pilotGroundTemperature ?? this.defaultGroundTemperature;
+  }
+
+  get groundTemperatureIsPilotEntered() {
+    return this.pilotGroundTemperature !== undefined;
+  }
 
   /**
    * Cost index
