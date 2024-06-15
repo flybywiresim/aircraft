@@ -164,7 +164,7 @@ export const FlightWidget = () => {
           {airframeInfo.variant}
         </h1>
       </div>
-      <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
+      <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">
         <div className="flex h-full flex-col justify-between">
           {simbriefDataLoaded && (
             <div className="space-y-8">
@@ -184,12 +184,12 @@ export const FlightWidget = () => {
                     {schedOutParsed}
                   </p>
                   <div className="relative mx-6 flex h-1 w-full flex-row">
-                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
+                    <div className="border-theme-text absolute inset-x-0 border-b-4 border-dashed" />
 
-                    <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
+                    <div className="bg-theme-highlight relative w-full" style={{ width: `${flightPlanProgress}%` }}>
                       {!!flightPlanProgress && (
                         <IconPlane
-                          className="absolute right-0 -translate-y-1/2 translate-x-1/2 fill-current text-theme-highlight"
+                          className="text-theme-highlight absolute right-0 -translate-y-1/2 translate-x-1/2 fill-current"
                           size={50}
                           strokeLinejoin="miter"
                         />
@@ -197,7 +197,7 @@ export const FlightWidget = () => {
                     </div>
                   </div>
                   <p
-                    className={`text-right font-body ${Math.round(flightPlanProgress) >= 98 ? 'text-theme-highlight' : 'text-theme-text'}`}
+                    className={`font-body text-right ${Math.round(flightPlanProgress) >= 98 ? 'text-theme-highlight' : 'text-theme-text'}`}
                   >
                     {schedInParsed}
                   </p>
@@ -206,20 +206,20 @@ export const FlightWidget = () => {
               <div>
                 <div className="mb-4 flex flex-row justify-around">
                   <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
-                  <div className="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+                  <div className="bg-theme-accent mx-4 my-auto h-8 w-1" />
                   <InformationEntry
                     title={t('Dashboard.YourFlight.CompanyRoute')}
                     info={departingIata + arrivingIata}
                   />
-                  <div className="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+                  <div className="bg-theme-accent mx-4 my-auto h-8 w-1" />
                   <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
                 </div>
-                <div className="my-auto h-0.5 w-full bg-theme-accent" />
+                <div className="bg-theme-accent my-auto h-0.5 w-full" />
                 <div className="mt-4 flex flex-row justify-around">
                   <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
-                  <div className="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+                  <div className="bg-theme-accent mx-4 my-auto h-8 w-1" />
                   <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
-                  <div className="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+                  <div className="bg-theme-accent mx-4 my-auto h-8 w-1" />
                   <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
                 </div>
               </div>
@@ -227,11 +227,11 @@ export const FlightWidget = () => {
                 <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
                 <ScrollableContainer height={15}>
                   <p className="font-mono text-2xl">
-                    <span className="text-2xl text-theme-highlight">
+                    <span className="text-theme-highlight text-2xl">
                       {departingAirport}/{departingRunway}
                     </span>{' '}
                     {route}{' '}
-                    <span className="text-2xl text-theme-highlight">
+                    <span className="text-theme-highlight text-2xl">
                       {arrivingAirport}/{arrivingRunway}
                     </span>
                   </p>
@@ -258,7 +258,7 @@ export const FlightWidget = () => {
                 <button
                   type="button"
                   onClick={fetchData}
-                  className="flex w-full items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight bg-theme-highlight p-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+                  className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center space-x-4 rounded-md border-2 p-2 transition duration-100"
                 >
                   <CloudArrowDown size={26} />
                   <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>

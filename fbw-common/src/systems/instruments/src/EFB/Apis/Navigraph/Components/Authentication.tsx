@@ -77,14 +77,14 @@ const Loading: React.FC<LoadingProps> = ({ onNewDeviceFlowParams }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <div
-        className="flex items-center justify-center rounded-md bg-theme-secondary"
+        className="bg-theme-secondary flex items-center justify-center rounded-md"
         style={{ width: '400px', height: '400px' }}
       >
         <CloudArrowDown className="animate-bounce" size={40} />
       </div>
       <button
         type="button"
-        className={`mt-6 flex items-center justify-center rounded-md bg-theme-highlight p-2 opacity-0 transition duration-200 focus:outline-none ${showResetButton && 'opacity-100'}`}
+        className={`bg-theme-highlight mt-6 flex items-center justify-center rounded-md p-2 opacity-0 transition duration-200 focus:outline-none ${showResetButton && 'opacity-100'}`}
         style={{ width: '400px' }}
         onClick={handleResetRefreshToken}
       >
@@ -108,7 +108,7 @@ export const NavigraphAuthUI = () => {
   const hasQr = !!params?.verification_uri_complete;
 
   return (
-    <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
+    <div className="bg-theme-accent flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg p-6">
       <div className="flex flex-col items-center justify-center">
         <ShieldLock className="mr-2" size={40} />
 
@@ -123,7 +123,7 @@ export const NavigraphAuthUI = () => {
         </p>
 
         <h1
-          className="mt-4 flex h-16 items-center rounded-md border-2 border-theme-highlight bg-theme-secondary px-4 text-4xl font-bold tracking-wider"
+          className="border-theme-highlight bg-theme-secondary mt-4 flex h-16 items-center rounded-md border-2 px-4 text-4xl font-bold tracking-wider"
           style={{ minWidth: '200px' }}
         >
           {displayAuthCode}
@@ -177,7 +177,7 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({
   return NavigraphKeys.hasSufficientEnv ? (
     <>{ui}</>
   ) : (
-    <div className="mr-4 flex h-content-section-reduced w-full items-center justify-center overflow-x-hidden">
+    <div className="h-content-section-reduced mr-4 flex w-full items-center justify-center overflow-x-hidden">
       <p className="mb-6 pt-6 text-3xl">{t('NavigationAndCharts.Navigraph.InsufficientEnv')}</p>
     </div>
   );
@@ -191,15 +191,15 @@ export const NavigraphAuthRedirectUI = () => {
   };
 
   return (
-    <div className="flex h-content-section-reduced items-center justify-center rounded-lg border-2 border-theme-accent">
+    <div className="h-content-section-reduced border-theme-accent flex items-center justify-center rounded-lg border-2">
       <div className="flex flex-col items-center justify-center space-y-4">
         <h1>{t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Title')}</h1>
 
         <button
           type="button"
-          className="flex w-52 items-center justify-center space-x-4 rounded-md border-2
-                         border-theme-highlight bg-theme-highlight py-2 text-theme-body transition
-                         duration-100 hover:bg-theme-body hover:text-theme-highlight"
+          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-52
+                         items-center justify-center space-x-4 rounded-md border-2
+                         py-2 transition duration-100"
           onClick={handleGoToThirdPartySettings}
         >
           {t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Button')}
