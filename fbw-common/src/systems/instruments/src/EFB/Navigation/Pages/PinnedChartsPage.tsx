@@ -71,14 +71,14 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
           onMouseLeave={() => setCurrentTag(tag)}
         >
           <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.Delete')}>
-            <div className="absolute bottom-0 right-0 z-10 text-utility-red">
+            <div className="text-utility-red absolute bottom-0 right-0 z-10">
               <IconTrash className="z-10" size={48} />
             </div>
           </TooltipWrapper>
           <div className="opacity-70">
             <div className={`${getTagColor(currentTag)} absolute inset-x-0 top-0 h-1.5 w-full bg-current`} />
             <h2 className="break-all font-bold">
-              {title} <div className="inline-block text-theme-unselected">{tag}</div>
+              {title} <div className="text-theme-unselected inline-block">{tag}</div>
             </h2>
             <p className="font-inter mt-2">{subTitle}</p>
             <IconArrowRight className={`ml-auto mt-auto opacity-0 ${getTagColor(tag)}`} />
@@ -87,7 +87,7 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
       ) : (
         <Link
           to={`/navigation/${pathify(provider)}`}
-          className={`${showDelete && 'rounded-t-none'} relative flex flex-col flex-wrap overflow-hidden rounded-md bg-theme-accent px-2 pb-2 pt-3 ${className}`}
+          className={`${showDelete && 'rounded-t-none'} bg-theme-accent relative flex flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 ${className}`}
           onClick={() => {
             dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
             dispatch(
@@ -125,7 +125,7 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
         >
           <div className={`${getTagColor(tag)} absolute inset-x-0 top-0 h-1.5 w-full bg-current`} />
           <h2 className="break-all font-bold">
-            {title} <div className="inline-block text-theme-unselected">{tag}</div>
+            {title} <div className="text-theme-unselected inline-block">{tag}</div>
           </h2>
           <p className="font-inter mt-2">{subTitle}</p>
           <IconArrowRight className={`ml-auto mt-auto ${getTagColor(tag)}`} />
@@ -245,7 +245,7 @@ export const PinnedChartUI = () => {
   };
 
   return (
-    <div className="h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
+    <div className="h-content-section-reduced border-theme-accent space-y-4 rounded-lg border-2 p-4">
       <div className="space-y-4">
         {/* FIXME: The spacex4 is causing the keyboard to be shifted as well */}
         <div className="flex flex-row items-center space-x-4">
@@ -314,13 +314,13 @@ export const PinnedChartUI = () => {
             </SelectGroup>
           ) : (
             <>
-              <div className="flex grow items-center justify-center rounded-md border border-theme-accent px-6 py-2">
+              <div className="border-theme-accent flex grow items-center justify-center rounded-md border px-6 py-2">
                 {t('NavigationAndCharts.PinnedCharts.ShowingChartsFromAllProviders')}
               </div>
               {editMode && (
                 <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.RemoveAllPinnedCharts')}>
                   <div
-                    className="flex w-min shrink items-center justify-center rounded-md border-2 border-utility-red bg-utility-red p-2 text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
+                    className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red flex w-min shrink items-center justify-center rounded-md border-2 p-2 text-center transition duration-100"
                     onClick={removeAll}
                   >
                     <IconTrash />
@@ -378,7 +378,7 @@ export const PinnedChartUI = () => {
         </ScrollableContainer>
       ) : (
         <div
-          className="flex items-center justify-center rounded-lg border-2 border-theme-accent"
+          className="border-theme-accent flex items-center justify-center rounded-lg border-2"
           style={{ height: '44rem' }}
         >
           {t('NavigationAndCharts.PinnedCharts.NoItemsFound')}

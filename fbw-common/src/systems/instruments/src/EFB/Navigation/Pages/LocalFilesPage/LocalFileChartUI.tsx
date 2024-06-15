@@ -145,7 +145,7 @@ export const LocalFileChartUI = () => {
   const simbriefDataLoaded = isSimbriefDataLoaded();
 
   return (
-    <div className="flex h-content-section-reduced w-full flex-row overflow-x-hidden rounded-lg">
+    <div className="h-content-section-reduced flex w-full flex-row overflow-x-hidden rounded-lg">
       <>
         {!isFullScreen && (
           <div className="shrink-0 overflow-hidden" style={{ width: '450px' }}>

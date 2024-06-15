@@ -14,7 +14,7 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
 import { navigraphCharts } from '../../../../navigraph';
-import { ChartCategory } from "@flybywiresim/fbw-sdk";
+import { ChartCategory } from '@flybywiresim/fbw-sdk';
 
 export const NavigraphChartUI = () => {
   const dispatch = useAppDispatch();

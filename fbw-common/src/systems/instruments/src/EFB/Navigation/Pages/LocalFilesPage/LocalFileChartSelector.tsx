@@ -9,10 +9,10 @@ import { t } from '../../../Localization/translation';
 import {
   addPinnedChart,
   ChartProvider,
-  ChartTabTypeToIndex,
   editPinnedChart,
   editTabProperty,
-  isChartPinned, LocalChartCategoryToIndex,
+  isChartPinned,
+  LocalChartCategoryToIndex,
   NavigationTab,
   removedPinnedChart,
   setBoundingBox,
