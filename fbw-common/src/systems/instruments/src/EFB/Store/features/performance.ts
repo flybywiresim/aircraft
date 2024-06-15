@@ -3,7 +3,14 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
+import { Runway } from '../../Performance/Data/Runways';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../../../../../shared/src/performance/landing';
+import {
+  LineupAngle,
+  RunwayCondition,
+  TakeoffAntiIceSetting,
+  TakeoffPerformanceResult,
+} from '../../../../../shared/src/performance/takeoff';
 
 interface TPerformanceLanding {
   icao: string;
@@ -30,8 +37,42 @@ interface TPerformanceLanding {
   autoland: boolean;
 }
 
+export enum TakeoffCoGPositions {
+  Standard,
+  Forward,
+}
+
+interface TPerformanceTakeoff {
+  icao?: string;
+  runwayBearing?: number;
+  runwayLength?: number;
+  runwaySlope?: number;
+  lineupAngle?: LineupAngle;
+  elevation?: number;
+
+  runwayCondition: RunwayCondition;
+  windDirection?: number;
+  windMagnitude?: number;
+  oat?: number;
+  qnh?: number;
+
+  weight?: number;
+  takeoffCg?: TakeoffCoGPositions;
+  config?: number;
+  antiIce?: TakeoffAntiIceSetting;
+  packs?: boolean;
+  forceToga?: boolean;
+  cg?: number;
+
+  result?: TakeoffPerformanceResult;
+
+  availableRunways: Runway[];
+  selectedRunwayIndex: number;
+}
+
 interface TPerformanceState {
   landing: TPerformanceLanding;
+  takeoff: TPerformanceTakeoff;
 }
 
 export const initialState: TPerformanceState = {
@@ -59,6 +100,17 @@ export const initialState: TPerformanceState = {
     displayedRunwayLength: 0,
     autoland: false,
   },
+  takeoff: {
+    availableRunways: [],
+    antiIce: TakeoffAntiIceSetting.Off,
+    packs: true,
+    takeoffCg: TakeoffCoGPositions.Standard,
+    forceToga: false,
+    config: -1,
+    lineupAngle: 90,
+    runwayCondition: RunwayCondition.Dry,
+    selectedRunwayIndex: -1,
+  },
 };
 
 const performanceSlice = createSlice({
@@ -73,9 +125,17 @@ const performanceSlice = createSlice({
     clearLandingValues: (state) => {
       state.landing = initialState.landing;
     },
+    setTakeoffValues: (state, action: PayloadAction<Partial<TPerformanceTakeoff>>) => {
+      Object.keys(action.payload).forEach((key) => {
+        state.takeoff[key] = action.payload[key];
+      });
+    },
+    clearTakeoffValues: (state) => {
+      state.takeoff = initialState.takeoff;
+    },
   },
 });
 
-export const { setLandingValues, clearLandingValues } = performanceSlice.actions;
+export const { setLandingValues, clearLandingValues, setTakeoffValues, clearTakeoffValues } = performanceSlice.actions;
 
 export default performanceSlice.reducer;
