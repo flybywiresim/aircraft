@@ -28,28 +28,4 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
       this.notify();
     }
   }
-
-  setValue(value: typeof this.value.value): void {
-    const oldValue = this.value.value;
-    this.value.setValue(value);
-    if (oldValue !== this.value.value) {
-      this.notify();
-    }
-  }
-
-  setBitValue(bit: number, value: boolean): void {
-    const oldValue = this.value.value;
-    this.value.setBitValue(bit, value);
-    if (oldValue !== this.value.value) {
-      this.notify();
-    }
-  }
-
-  setSsm(ssm: typeof this.value.ssm): void {
-    const oldSsm = this.value.ssm;
-    this.value.setSsm(ssm);
-    if (oldSsm !== this.value.ssm) {
-      this.notify();
-    }
-  }
 }
