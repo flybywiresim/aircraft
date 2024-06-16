@@ -314,7 +314,7 @@ export const PushbackPage = () => {
 
         {/* Manual Pushback Controls */}
         <div
-          className={`border-theme-accent flex h-full flex-col space-y-2 rounded-lg border-2 p-6 ${!pushbackUIAvailable && 'pointer-events-none opacity-20'}`}
+          className={`flex h-full flex-col space-y-2 rounded-lg border-2 border-theme-accent p-6 ${!pushbackUIAvailable && 'pointer-events-none opacity-20'}`}
         >
           <div className="flex flex-row space-x-4">
             {/* Pushback System enabled On/Off */}
@@ -327,7 +327,7 @@ export const PushbackPage = () => {
                   <button
                     type="button"
                     onClick={handleEnableSystem}
-                    className="border-theme-accent text-theme-text flex h-20 w-full items-center justify-center rounded-md border-2 bg-green-600 opacity-60 transition duration-100 hover:opacity-100"
+                    className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-green-600 text-theme-text opacity-60 transition duration-100 hover:opacity-100"
                   >
                     <ToggleOn size={50} />
                   </button>
@@ -342,7 +342,7 @@ export const PushbackPage = () => {
                   <button
                     type="button"
                     onClick={handleEnableSystem}
-                    className={`{ border-theme-accent text-theme-text flex h-20 w-full items-center justify-center rounded-md border-2 bg-red-600 opacity-60 transition duration-100 hover:opacity-100${!pushbackUIAvailable && 'pointer-events-none opacity-30'}`}
+                    className={`{ flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-red-600 text-theme-text opacity-60 transition duration-100 hover:opacity-100${!pushbackUIAvailable && 'pointer-events-none opacity-30'}`}
                   >
                     <ToggleOff size={50} />
                   </button>
@@ -357,7 +357,7 @@ export const PushbackPage = () => {
                 <button
                   type="button"
                   onClick={handleCallTug}
-                  className={`duration-100'} border-theme-accent text-theme-text flex h-20 w-full items-center justify-center rounded-md border-2 opacity-60 transition hover:opacity-100 ${tugInTransit ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'pointer-events-none opacity-30'}`}
+                  className={`duration-100'} flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-accent text-theme-text opacity-60 transition hover:opacity-100 ${tugInTransit ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'pointer-events-none opacity-30'}`}
                 >
                   <TruckFlatbed size={50} />{' '}
                   {pushbackActive ? (
@@ -398,7 +398,7 @@ export const PushbackPage = () => {
               <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
                 <button
                   type="button"
-                  className="border-theme-highlight bg-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex h-20 w-full items-center justify-center rounded-md border-2 transition duration-100"
+                  className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                   onClick={() => handleTugSpeed(tugCmdSpdFactor - 0.1)}
                 >
                   <ArrowDown size={40} />
@@ -412,7 +412,7 @@ export const PushbackPage = () => {
               <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
                 <button
                   type="button"
-                  className="border-theme-highlight bg-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex h-20 w-full items-center justify-center rounded-md border-2 transition duration-100"
+                  className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                   onClick={() => handleTugSpeed(tugCmdSpdFactor + 0.1)}
                 >
                   <ArrowUp size={40} />
@@ -427,7 +427,7 @@ export const PushbackPage = () => {
                 <button
                   type="button"
                   onClick={stopMovement}
-                  className="border-theme-highlight bg-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex h-20 w-full items-center justify-center rounded-md border-2 transition duration-100"
+                  className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                 >
                   {tugCmdSpdFactor !== 0 ? <PauseCircleFill size={40} /> : <PlayCircleFill size={40} />}
                 </button>
@@ -440,7 +440,7 @@ export const PushbackPage = () => {
               <TooltipWrapper text={t('Pushback.TT.Left')}>
                 <button
                   type="button"
-                  className="border-theme-highlight bg-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex h-20 w-full items-center justify-center rounded-md border-2 transition duration-100"
+                  className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                   onClick={() => handleTugDirection(tugCmdHdgFactor - 0.05)}
                 >
                   <ArrowLeft size={40} />
@@ -454,7 +454,7 @@ export const PushbackPage = () => {
               <TooltipWrapper text={t('Pushback.TT.Right')}>
                 <button
                   type="button"
-                  className="border-theme-highlight bg-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex h-20 w-full items-center justify-center rounded-md border-2 transition duration-100"
+                  className="flex h-20 w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                   onClick={() => handleTugDirection(tugCmdHdgFactor + 0.05)}
                 >
                   <ArrowRight size={40} />

@@ -121,8 +121,8 @@ export const ThirdPartyOptionsPage = () => {
 
                 <button
                   type="button"
-                  className="text-theme-text hover:bg-theme-body rounded-md border-2 border-red-600
-                                       bg-red-600 px-5 py-2.5 transition duration-100 hover:text-red-600"
+                  className="rounded-md border-2 border-red-600 bg-red-600 px-5
+                                       py-2.5 text-theme-text transition duration-100 hover:bg-theme-body hover:text-red-600"
                   onClick={handleNavigraphAccountUnlink}
                 >
                   {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Unlink')}
@@ -131,8 +131,8 @@ export const ThirdPartyOptionsPage = () => {
             ) : (
               <button
                 type="button"
-                className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight
-                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
+                className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                 onClick={() => history.push('/settings/3rd-party-options/navigraph-login')}
               >
                 {t('Settings.ThirdPartyOptions.NavigraphAccountLink.Link')}
@@ -151,8 +151,8 @@ export const ThirdPartyOptionsPage = () => {
                 />
 
                 <div
-                  className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red flex w-min shrink items-center justify-center
-                                    rounded-md border-2 p-2 text-center transition duration-100"
+                  className="flex w-min shrink items-center justify-center rounded-md border-2 border-utility-red bg-utility-red p-2
+                                    text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-red"
                   onClick={handleOverrideSimBriefIDDelete}
                 >
                   <IconTrash />

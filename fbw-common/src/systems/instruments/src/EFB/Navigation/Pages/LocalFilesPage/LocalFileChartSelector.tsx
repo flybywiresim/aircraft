@@ -45,7 +45,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
   if (loading) {
     return (
       <div
-        className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
+        className="flex h-full items-center justify-center rounded-md border-2 border-theme-accent"
         style={{ height: '42.75rem' }}
       >
         <CloudArrowDown className="animate-bounce" size={40} />
@@ -56,7 +56,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
   if (!selectedTab.charts.length) {
     return (
       <div
-        className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
+        className="flex h-full items-center justify-center rounded-md border-2 border-theme-accent"
         style={{ height: '42.75rem' }}
       >
         <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
@@ -110,7 +110,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     <div className="space-y-4">
       {selectedTab.charts.map((chart) => (
         <div
-          className="bg-theme-accent flex w-full flex-row overflow-hidden rounded-md"
+          className="flex w-full flex-row overflow-hidden rounded-md bg-theme-accent"
           onClick={() => handleChartClick(chart)}
           key={chart.fileName}
         >
@@ -121,7 +121,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
               }`}
             />
             <div
-              className="hover:bg-theme-highlight hover:text-theme-body flex h-full items-center px-2 transition duration-100"
+              className="flex h-full items-center px-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
               onClick={(event) => {
                 event.stopPropagation();
 
@@ -173,7 +173,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
           </div>
           <div className="m-2 flex flex-col">
             <span>{chart.fileName}</span>
-            <span className="bg-theme-secondary text-theme-text mr-auto rounded-sm px-2 text-sm">{chart.type}</span>
+            <span className="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">{chart.type}</span>
           </div>
         </div>
       ))}
