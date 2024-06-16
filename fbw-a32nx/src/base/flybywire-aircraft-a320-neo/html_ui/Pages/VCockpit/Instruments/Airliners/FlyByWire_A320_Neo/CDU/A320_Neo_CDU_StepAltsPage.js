@@ -28,7 +28,7 @@ class CDUStepAltsPage {
             : null;
 
         mcdu.setTemplate([
-            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel + "{end}"],
+            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.cruiseLevel + "{end}"],
             ["\xa0ALT\xa0/\xa0WPT", "DIST\xa0TIME"],
             CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
             [""],
@@ -225,7 +225,7 @@ class CDUStepAltsPage {
         const clickedStep = stepWaypoint.cruiseStep;
 
         if (input === FMCMainDisplay.clrValue) {
-            mcdu.flightPlanService.removeCruiseStep(stepWaypoint);
+            mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
 
             return true;
         }
@@ -267,7 +267,7 @@ class CDUStepAltsPage {
             if (rawAltitudeInput === "") {
                 // /Waypoint
                 mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, clickedStep.toAltitude);
-                mcdu.flightPlanService.removeCruiseStep(index);
+                mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
             } else {
                 // Altitude/waypoint
                 const altitude = this.tryParseAltitude(rawAltitudeInput);
@@ -279,7 +279,7 @@ class CDUStepAltsPage {
                 }
 
                 mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, altitude);
-                mcdu.flightPlanService.removeCruiseStep(index);
+                mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
 
                 if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
                     mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
@@ -311,7 +311,7 @@ class CDUStepAltsPage {
      * @param {*} toAltitude Altitude of step
      */
     static checkStepInsertionRules(mcdu, stepLegs, insertAtIndex, toAltitude) {
-        let altitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel * 100;
+        let altitude = mcdu.cruiseLevel * 100;
         let doesHaveStepDescent = false;
 
         let i = 0;

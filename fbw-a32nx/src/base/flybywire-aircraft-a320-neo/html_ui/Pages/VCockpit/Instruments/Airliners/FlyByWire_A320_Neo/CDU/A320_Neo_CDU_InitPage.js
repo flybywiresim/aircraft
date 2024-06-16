@@ -119,13 +119,13 @@ class CDUInitPage {
                 cruiseFlTempSeparator.updateAttributes(Column.amber);
 
                 //This is done so pilot enters a FL first, rather than using the computed one
-                if (mcdu.flightPlanService.active.performanceData.cruiseFlightLevel) {
-                    cruiseFl.update("FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
+                if (mcdu.cruiseLevel) {
+                    cruiseFl.update("FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0"), Column.cyan);
                     if (mcdu.cruiseTemperature) {
                         cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan);
                     } else {
-                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.flightPlanService.active.performanceData.cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.cruiseLevel).toFixed(0) + "°", Column.cyan, Column.small);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
                     }
                 }
@@ -218,6 +218,9 @@ class CDUInitPage {
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);
                             }
+                        }).catch((error) => {
+                            console.error(error);
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                         });
                     });
             }

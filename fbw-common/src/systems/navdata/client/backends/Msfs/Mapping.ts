@@ -196,7 +196,7 @@ export class MsfsMapping {
           (appr) =>
             appr.runwayNumber === runwayNumber &&
             appr.runwayDesignator === runwayDesignator &&
-            appr.approachType === MSApproachType.Ils,
+            this.approachHasLandingSystem(appr),
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
         const lsFrequencyChannel = lsAppr

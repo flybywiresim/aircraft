@@ -114,6 +114,8 @@ export class AFLeg extends XFLeg {
         },
       );
     }
+
+    this.isComputed = true;
   }
 
   public get turnDirectionSign(): 1 | -1 {

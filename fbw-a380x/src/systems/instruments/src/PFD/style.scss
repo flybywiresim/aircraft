@@ -1,10 +1,10 @@
-@import "shared/definitions";
+@import "../Common/definitions";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -244,10 +244,10 @@ text.Red {
 }
 
 .EarthFill {
-  fill: #9c480c;
+  fill: #5D2518;
 }
 .SkyFill {
-  fill: #0698ff;
+  fill: #0073DE;
 }
 .BlackFill {
   fill: $display-background;
@@ -257,6 +257,7 @@ text.Red {
   fill: $display-grey;
   stroke: none;
 }
+
 .BackgroundFill {
   fill: $display-background;
   stroke: none;
@@ -269,6 +270,20 @@ text.Red {
 
 .HiddenElement {
   display: none;
+}
+
+.GreenPulse {
+  animation: green-pulse 1s step-end infinite;
+  stroke: 1px !important;
+
+  @keyframes green-pulse {
+      0%, 100% {
+        fill: $display-green;
+      }
+      50% {
+          fill: hsl(120, 100%, 20%)
+      }
+  }
 }
 
 /* .BacklightBleed {

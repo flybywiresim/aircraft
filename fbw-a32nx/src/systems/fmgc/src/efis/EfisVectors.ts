@@ -12,6 +12,8 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 const UPDATE_TIMER = 2_500;
 
@@ -126,12 +128,21 @@ export class EfisVectors {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
+        const flightPhase = getFlightPhaseManager().phase;
+
+        // FIXME implement
+        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
 
         const transmitActive =
+          // In preflight phase, the flight plan line is solid even when NAV is not armed
+          flightPhase === FmgcFlightPhase.Preflight ||
           engagedLateralMode === LateralMode.NAV ||
           engagedLateralMode === LateralMode.LOC_CPT ||
           engagedLateralMode === LateralMode.LOC_TRACK ||
-          navArmed;
+          engagedLateralMode === LateralMode.LAND ||
+          engagedLateralMode === LateralMode.FLARE ||
+          engagedLateralMode === LateralMode.ROLL_OUT ||
+          (navArmed && doesPreNavEngagePathExist);
 
         if (transmitActive) {
           this.transmitFlightPlan(
@@ -175,7 +186,7 @@ export class EfisVectors {
     alternateGroup = mainGroup,
   ) {
     const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-    const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+    const isPlanMode = mode === EfisNdMode.PLAN;
 
     if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
       this.transmit(null, mainGroup, side);
@@ -199,7 +210,7 @@ export class EfisVectors {
 
     // ACTIVE missed
 
-    const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isArcVsPlanMode);
+    const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
 
     if (transmitMissed) {
       const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
@@ -217,7 +228,7 @@ export class EfisVectors {
 
     // ALTN
 
-    const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isArcVsPlanMode);
+    const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isPlanMode);
 
     if (transmitAlternate) {
       const alternateGeometry = this.guidanceController.getGeometryForFlightPlan(plan.index, true);
@@ -229,10 +240,7 @@ export class EfisVectors {
 
         // ALTN missed
 
-        const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(
-          plan.index,
-          isArcVsPlanMode,
-        );
+        const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(plan.index, isPlanMode);
 
         if (transmitAlternateMissed) {
           const missedVectors = alternateGeometry

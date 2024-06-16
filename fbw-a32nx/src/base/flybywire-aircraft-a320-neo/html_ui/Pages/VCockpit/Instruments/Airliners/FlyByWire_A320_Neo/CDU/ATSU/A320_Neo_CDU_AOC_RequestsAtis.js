@@ -101,7 +101,7 @@ class CDUAocRequestsAtis {
                 store.selected = "";
                 CDUAocRequestsAtis.ShowPage(mcdu, store);
             } else if (value) {
-                mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
                     if (airport) {
                         store.selected = value;
                         store.manual = true;

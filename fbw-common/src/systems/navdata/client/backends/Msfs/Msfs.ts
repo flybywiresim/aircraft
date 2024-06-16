@@ -1,4 +1,5 @@
-// Copyright (c) 2021, 2022 FlyByWire Simulations
+// Copyright (c) 2021, 2022, 2024 FlyByWire Simulations
+// Copyright (c) Microsoft Corporation
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-await-in-loop */
@@ -63,6 +64,13 @@ declare class CoherentNearestSearchSession implements NearestSearchSession<strin
 }
 
 export class MsfsBackend implements DataInterface {
+  /** Duration of an AIRAC cycle (28 days) in milliseconds. */
+  public static readonly CYCLE_DURATION = 86400_000 * 28;
+
+  private static readonly MSFS_DATE_RANGE_REGEX = /([A-Z]{3})(\d\d?)([A-Z]{3})(\d\d?)\/(\d\d)/;
+
+  private static dateCache = new Date();
+
   private cache: FacilityCache;
 
   private mapping: MsfsMapping;
@@ -112,30 +120,50 @@ export class MsfsBackend implements DataInterface {
 
   /** @inheritdoc */
   public async getDatabaseIdent(): Promise<DatabaseIdent> {
-    // "APR21MAY18/22"
-    const range = SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    const fromMonth = months.indexOf(range.substring(0, 3)) + 1;
-    const fromDay = parseInt(range.substring(3, 5));
-    const toMonth = months.indexOf(range.substring(5, 8)) + 1;
-    const toDay = parseInt(range.substring(8, 10));
-    const fromYear = parseInt(range.substring(11, 13));
+    const out = {
+      provider: 'Msfs',
+      airacCycle: '',
+      effectiveFrom: '',
+      effectiveTo: '',
+    };
 
-    let toYear = fromYear;
-    if (fromMonth === 12 && toMonth < 12) {
-      toYear++;
+    // "APR21MAY18/22"
+    const facilitiesDateRange = SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
+
+    const match = facilitiesDateRange.match(MsfsBackend.MSFS_DATE_RANGE_REGEX);
+    if (match === null) {
+      console.warn('AiracUtils: Failed to parse facilitiesDateRange', facilitiesDateRange);
+      return out;
     }
 
-    // the to date is supposed to overlap the next cycle
-    const toDate = new Date(Date.UTC(toYear, toMonth - 1, toDay));
-    toDate.setUTCDate(toDay + 1);
+    const [, effMonth, effDay, expMonth, expDay, expYear] = match;
 
-    return {
-      provider: 'Msfs', // TODO navi or navblue
-      airacCycle: '', // TODO
-      effectiveFrom: iso8601CalendarDate(fromYear, fromMonth, fromDay),
-      effectiveTo: iso8601CalendarDate(toDate.getUTCFullYear(), toDate.getUTCMonth() + 1, toDate.getUTCDate()),
-    };
+    const effDate = new Date(`${effMonth}-${effDay}-${expYear} UTC`);
+    const expDate = new Date(`${expMonth}-${expDay}-${expYear} UTC`);
+
+    // We need to work around a bug where the sim gives the year of the expiration date rather than the effective date.
+    if (effDate.getTime() > expDate.getTime()) {
+      effDate.setUTCFullYear(effDate.getUTCFullYear() - 1);
+    }
+
+    const effectiveTimestamp = effDate.getTime();
+    MsfsBackend.dateCache.setTime(effectiveTimestamp);
+    const expirationTimestamp = effectiveTimestamp + MsfsBackend.CYCLE_DURATION;
+    const realExpDate = new Date(expirationTimestamp);
+    const january1 = Date.UTC(MsfsBackend.dateCache.getUTCFullYear(), 0, 1);
+    const january1Delta = effectiveTimestamp - january1;
+    const cycle = Math.trunc(january1Delta / MsfsBackend.CYCLE_DURATION) + 1;
+
+    out.airacCycle = `${(MsfsBackend.dateCache.getUTCFullYear() % 100).toString().padStart(2, '0')}${cycle.toString().padStart(2, '0')}`;
+    // For reasons of brain death JS date month is 0-based while day is 1-based, so we add 1 to the month.
+    out.effectiveFrom = iso8601CalendarDate(effDate.getUTCFullYear(), effDate.getUTCMonth() + 1, effDate.getUTCDate());
+    out.effectiveTo = iso8601CalendarDate(
+      realExpDate.getUTCFullYear(),
+      realExpDate.getUTCMonth() + 1,
+      realExpDate.getUTCDate(),
+    );
+
+    return out;
   }
 
   /** @inheritdoc */

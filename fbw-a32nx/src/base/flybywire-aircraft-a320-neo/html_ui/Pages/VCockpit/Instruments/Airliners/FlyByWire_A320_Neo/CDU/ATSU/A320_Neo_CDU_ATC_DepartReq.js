@@ -172,8 +172,8 @@ class CDUAtcDepartReq {
                 if (airports.length !== 2 || !/^[A-Z0-9]{4}$/.test(airports[0]) || !/^[A-Z0-9]{4}$/.test(airports[1])) {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 } else {
-                    mcdu.dataManager.GetAirportByIdent(airports[0]).then((from) => {
-                        mcdu.dataManager.GetAirportByIdent(airports[1]).then((to) => {
+                    mcdu.navigationDatabaseService.activeDatabase.searchAirport(airports[0]).then((from) => {
+                        mcdu.navigationDatabaseService.activeDatabase.searchAirport(airports[1]).then((to) => {
                             if (from.ident && to.ident) {
                                 store.from = from.ident;
                                 store.to = to.ident;

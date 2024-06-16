@@ -19,6 +19,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
@@ -423,7 +424,7 @@ export class LnavDriver implements GuidanceComponent {
     // This will typically be an IF leg
     for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
       const leg = geometry.legs.get(i);
-      if (!leg || leg instanceof VMLeg) {
+      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
         continue;
       }
 

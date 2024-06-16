@@ -243,7 +243,7 @@ class CDUAirportsMonitor {
                 } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which internally uses FacilityLoader (and further down calls Coherence)
-                    mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
+                    mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((ap_data) => {
                         if (ap_data) {
                             this.user_ap = ap_data;
                             // trigger data update next frame

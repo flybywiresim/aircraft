@@ -76,7 +76,6 @@ class CDUDirectToPage {
                 }
 
                 mcdu.showFmsErrorMessage(err.type);
-                return callback(false);
             });
         };
 

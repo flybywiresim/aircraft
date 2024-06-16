@@ -1,15 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  EfisSide,
-  EfisNdMode,
-  ApproachUtils,
-  RunwayUtils,
-  SimVarString,
-  ApproachType,
-  LegType,
-} from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -216,10 +208,8 @@ export class GuidanceController {
 
       if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
         const appr = this.flightPlanService.active.approach;
-        apprMsg =
-          appr && appr.type !== ApproachType.Unknown
-            ? ApproachUtils.longApproachName(appr)
-            : RunwayUtils.runwayString(runway.ident); // Runway-by-itself
+        // Nothing is shown on the ND for runway-by-itself approaches
+        apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr) : '';
       }
     }
 

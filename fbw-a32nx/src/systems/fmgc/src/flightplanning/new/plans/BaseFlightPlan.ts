@@ -285,7 +285,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     });
   }
 
-  async stringMissedApproach() {
+  private removeConstraintsUntil(untilLegIndex: number) {
+    for (let i = this.activeLegIndex; i < untilLegIndex; i++) {
+      const leg = this.allLegs[i];
+
+      if (leg.isDiscontinuity === false) {
+        leg.clearConstraints();
+      }
+    }
+  }
+
+  async stringMissedApproach(onConstraintsDeleted = (_: FlightPlanLeg): void => {}) {
     // Make sure we've not already strung the missed approach
     // Being on an enroute segment would be an indication of that, unless there's no approach legs at all (after DIR to MAP for example),
     // then restring anyways
@@ -306,6 +316,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (missedApproachPointIndex === -1) {
       return;
     }
+
+    this.removeConstraintsUntil(missedApproachPointIndex + 1);
+    onConstraintsDeleted(this.legElementAt(missedApproachPointIndex));
 
     // Move arrival/approach into enroute
     this.redistributeLegsAt(missedApproachPointIndex);
@@ -1286,7 +1299,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private async insertElementBefore(index: number, element: FlightPlanElement, insertDiscontinuity = false) {
-    if (index < 1 || index > this.allLegs.length) {
+    if (index < 1 || index >= this.allLegs.length) {
       throw new Error(`[FMS/FPM] Tried to insert waypoint out of bounds (index=${index})`);
     }
 
