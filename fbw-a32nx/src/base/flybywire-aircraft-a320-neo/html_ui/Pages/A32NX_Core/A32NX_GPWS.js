@@ -214,7 +214,7 @@ class A32NX_GPWS {
         }
 
         this.GPWSComputeLightsAndCallouts();
-        this.egpwsAlertDiscreteWord1();
+        this.gpwsUpdateDiscreteWords();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH
