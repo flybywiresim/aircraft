@@ -305,6 +305,15 @@
   top: 31px;
 }
 
+.oanc-airport-not-in-active-fpln {
+  position: absolute;
+  right: 310px;
+  color: $display-white;
+  background-color: $display-background;
+  text-align: center;
+  font-size: 20px;
+}
+
 .oanc-airplane-shadow {
   stroke: $display-background;
   stroke-width: 10px;

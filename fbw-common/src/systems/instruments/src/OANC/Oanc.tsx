@@ -303,7 +303,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly overlayNDModeSub = Subject.create(EfisNdMode.PLAN);
 
-  private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
+  private readonly ndModeSwitchDelayDebouncer = new DebounceTimer();
 
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
@@ -317,6 +317,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.canvasCentreY,
     this.zoomLevelIndex,
     this.getZoomLevelInverseScale.bind(this),
+  );
+
+  private readonly airportNotInActiveFpln = MappedSubject.create(
+    ([ndMode, arpt, origin, dest, altn]) => ndMode !== EfisNdMode.ARC && ![origin, dest, altn].includes(arpt),
+    this.overlayNDModeSub,
+    this.dataAirportIcao,
+    this.fmsDataStore.origin,
+    this.fmsDataStore.destination,
+    this.fmsDataStore.alternate,
   );
 
   // eslint-disable-next-line arrow-body-style
@@ -1131,7 +1140,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       // noop
     }
 
-    this.ndMOdeSwitchDelayDebouncer.schedule(() => {
+    this.ndModeSwitchDelayDebouncer.schedule(() => {
       this.overlayNDModeSub.set(newMode);
 
       switch (newMode) {
@@ -1382,6 +1391,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           </span>
           <span class="oanc-airport-info" id="oanc-airport-info-line2">
             {this.airportInfoLine2}
+          </span>
+          <span
+            class="oanc-airport-not-in-active-fpln"
+            style={{ display: this.airportNotInActiveFpln.map((it) => (it ? 'inherit' : 'none')) }}
+          >
+            ARPT NOT IN
+            <br />
+            ACTIVE F/PLN
           </span>
         </div>
 
