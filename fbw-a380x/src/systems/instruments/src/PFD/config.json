@@ -2,7 +2,6 @@
   "index": "./instrument.tsx",
   "isInteractive": false,
   "extraDeps": [
-    "../MsfsAvionicsCommon",
-    "fbw-common/src/systems/instruments/src/PFD"
+    "../MsfsAvionicsCommon"
   ]
 }

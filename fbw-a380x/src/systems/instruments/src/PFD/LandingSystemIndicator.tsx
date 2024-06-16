@@ -1,13 +1,4 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  HEvent,
-  MappedSubject,
-  Subject,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -105,7 +96,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
-            <LsReminder bus={this.props.bus} />
           </g>
 
           <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
@@ -233,7 +223,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
         <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="149.11575">
           {this.freqTextLeading}
         </text>
-        <text id="ILSFreqTrailing" class="Magenta FontLarge AlignLeft" x="12.964463" y="149.24084">
+        <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="149.24084">
           {this.freqTextTrailing}
         </text>
 
@@ -612,48 +602,8 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text id="ILSMarkerText" class={this.classNames} x="107" y="133">
+      <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">
         {this.markerText}
-      </text>
-    );
-  }
-}
-
-class LsReminder extends DisplayComponent<{ bus: EventBus }> {
-  private readonly lsReminderRef = FSComponent.createRef<SVGTextElement>();
-
-  private readonly hasLoc = ConsumerSubject.create(null, false);
-
-  private readonly lsButton = ConsumerSubject.create(null, false);
-
-  private readonly ilsReminderShown = MappedSubject.create(
-    ([hasLoc, lsButton]) => hasLoc && lsButton,
-    this.hasLoc,
-    this.lsButton,
-  );
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
-    this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
-
-    // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    this.ilsReminderShown.sub((it) => {
-      if (it) {
-        this.lsReminderRef.instance.style.display = 'inline';
-      } else {
-        this.lsReminderRef.instance.style.display = 'none';
-      }
-    });
-  }
-
-  render(): VNode {
-    return (
-      <text class="FontLargest Magenta MiddleAlign Blink9Seconds" ref={this.lsReminderRef} x="104" y="126">
-        ILS
       </text>
     );
   }
