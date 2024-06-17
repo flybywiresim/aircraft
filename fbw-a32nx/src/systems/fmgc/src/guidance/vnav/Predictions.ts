@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { AccelFactorMode, Common, FlapConf } from './common';
 import { EngineModel } from './EngineModel';
 import { FlightModel } from './FlightModel';

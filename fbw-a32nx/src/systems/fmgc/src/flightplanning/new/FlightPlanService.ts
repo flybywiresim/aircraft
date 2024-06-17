@@ -402,7 +402,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async addOrEditManualHold(
     at: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
     planIndex = FlightPlanIndex.Active,
     alternate = false,

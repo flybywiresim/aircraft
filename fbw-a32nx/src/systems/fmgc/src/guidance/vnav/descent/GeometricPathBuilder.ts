@@ -17,7 +17,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 
 export class GeometricPathBuilder {
   private flightPathAngleStrategy: FlightPathAngleStrategy;

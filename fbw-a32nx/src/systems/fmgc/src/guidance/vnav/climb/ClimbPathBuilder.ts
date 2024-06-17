@@ -1,9 +1,13 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
