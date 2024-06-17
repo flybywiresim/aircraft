@@ -8,6 +8,7 @@ import {
   VerticalProfileComputationParameters,
   VerticalProfileComputationParametersObserver,
 } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { McduSpeedProfile, ManagedSpeedType } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { BaseGeometryProfile, PerfCrzToPrediction } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
@@ -20,7 +21,6 @@ import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfi
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import {
@@ -40,9 +40,7 @@ export class VnavDriver implements GuidanceComponent {
 
   private currentMcduSpeedProfile: McduSpeedProfile;
 
-  // TODO this is public because it's needed in the StepAhead FMMessage. Make this private and pass it to the message class once we don't instantiate
-  // those from vanilla JS
-  public constraintReader: ConstraintReader;
+  private constraintReader: ConstraintReader;
 
   private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
 
@@ -76,7 +74,6 @@ export class VnavDriver implements GuidanceComponent {
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
     private readonly atmosphericConditions: AtmosphericConditions,
     private readonly windProfileFactory: WindProfileFactory,
-    private readonly acConfig: AircraftConfig,
   ) {
     this.headingProfile = new NavHeadingProfile(flightPlanService);
     this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
@@ -84,7 +81,7 @@ export class VnavDriver implements GuidanceComponent {
     this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
 
     this.aircraftToDescentProfileRelation = new AircraftToDescentProfileRelation(this.computationParametersObserver);
-    this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
+    this.descentGuidance = VnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
       ? new LatchedDescentGuidance(
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
@@ -107,7 +104,6 @@ export class VnavDriver implements GuidanceComponent {
       this.headingProfile,
       this.windProfileFactory,
       this.aircraftToDescentProfileRelation,
-      this.acConfig,
     );
   }
 
@@ -563,7 +559,7 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   updateDebugInformation() {
-    if (!this.acConfig.vnavConfig.DEBUG_GUIDANCE) {
+    if (!VnavConfig.DEBUG_GUIDANCE) {
       return;
     }
 

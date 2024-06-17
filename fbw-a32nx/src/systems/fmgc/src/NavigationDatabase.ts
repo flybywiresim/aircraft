@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -7,6 +7,7 @@ import {
   Airport,
   Airway,
   Database,
+  DatabaseIdent,
   Fix,
   IlsNavaid,
   MsfsBackend,
@@ -80,5 +81,9 @@ export class NavigationDatabase {
 
     // This does not work in the MSFS backend
     return this.backendDatabase.getAirways([ident]);
+  }
+
+  public getDatabaseIdent(): Promise<DatabaseIdent> {
+    return this.backendDatabase.getDatabaseIdent();
   }
 }

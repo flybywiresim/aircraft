@@ -17,7 +17,6 @@ import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -66,7 +65,6 @@ export class LnavDriver implements GuidanceComponent {
   constructor(
     private readonly flightPlanService: FlightPlanService,
     guidanceController: GuidanceController,
-    private readonly acConfig: AircraftConfig,
   ) {
     this.guidanceController = guidanceController;
     this.lastAvail = null;
@@ -447,13 +445,13 @@ export class LnavDriver implements GuidanceComponent {
     return undefined;
   }
 
-  public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates, acConfig: AircraftConfig): number {
+  public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
     // FIXME use a more accurate estimate, calculate in predictions
 
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
     const nauticalMilesToGo = distanceTo(ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+    const secondsToGo = (nauticalMilesToGo / Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
 
     const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 

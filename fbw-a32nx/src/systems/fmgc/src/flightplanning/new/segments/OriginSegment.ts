@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, areDatabaseItemsEqual, LegType } from '@flybywiresim/fbw-sdk';
+import { Airport, Runway, areDatabaseItemsEqual, LegType, MathUtils as FbwMathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
-import { MathUtils } from '@microsoft/msfs-sdk';
+import { MathUtils as MsMathUtils } from '@microsoft/msfs-sdk';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
@@ -30,7 +30,7 @@ export class OriginSegment extends FlightPlanSegment {
   public async setOriginIcao(icao: string) {
     this.airport = await loadAirport(icao);
 
-    await this.refreshOriginLegs();
+    await this.refreshDepartureLegs();
 
     this.flightPlan.availableOriginRunways = await loadAllRunways(this.originAirport);
     this.flightPlan.availableDepartures = await loadAllDepartures(this.originAirport);
@@ -47,13 +47,13 @@ export class OriginSegment extends FlightPlanSegment {
 
     if (runwayIdent === undefined) {
       this.runway = undefined;
-      await this.refreshOriginLegs();
+      await this.refreshDepartureLegs();
       return;
     }
 
     this.runway = await loadRunway(this.originAirport, runwayIdent);
 
-    await this.refreshOriginLegs();
+    await this.refreshDepartureLegs();
 
     this.insertNecessaryDiscontinuities();
   }
@@ -87,55 +87,8 @@ export class OriginSegment extends FlightPlanSegment {
     });
   }
 
-  async refreshOriginLegs() {
+  private async refreshDepartureLegs() {
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-    this.resetOriginLegFlag();
-
-    let addOriginLeg = true;
-    let isDisconnectedIdf = false;
-    if (this.runway && this.flightPlan.originDeparture) {
-      let firstDepartureLeg: FlightPlanElement;
-      if (this.flightPlan.departureRunwayTransitionSegment.allLegs.length > 0) {
-        firstDepartureLeg = this.flightPlan.departureRunwayTransitionSegment.allLegs[0];
-      } else if (this.flightPlan.departureSegment.allLegs.length > 0) {
-        firstDepartureLeg = this.flightPlan.departureSegment.allLegs[0];
-      } else {
-        firstDepartureLeg = this.flightPlan.departureEnrouteTransitionSegment.allLegs[0];
-      }
-
-      if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.type === LegType.IF) {
-        if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
-          // TODO should this stuff go into DepartureRunwayTransitionSegment?
-          firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
-
-          addOriginLeg = false;
-        } else {
-          const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
-          const diff = MathUtils.diffAngle(bearing, this.runway.bearing);
-
-          isDisconnectedIdf = Math.abs(diff) > 1.0;
-        }
-      }
-    }
-
-    this.allLegs.length = 0;
-    if (addOriginLeg) {
-      const originLeg = FlightPlanLeg.fromAirportAndRunway(
-        this,
-        this.flightPlan.departureSegment.procedure?.ident ?? '',
-        this.originAirport,
-        this.runway,
-      );
-      originLeg.flags |= FlightPlanLegFlags.Origin;
-      this.allLegs.push(originLeg);
-
-      this.strung = false;
-    }
-
-    if (isDisconnectedIdf) {
-      this.allLegs.push({ isDiscontinuity: true });
-    }
 
     if (this.runway) {
       const newRunwayCompatibleSids = await db.getDepartures(this.runway.airportIdent, this.runway.ident);
@@ -157,22 +110,78 @@ export class OriginSegment extends FlightPlanSegment {
 
           this.strung = true;
         }
-      } else {
+      } else if (this.flightPlan.originDeparture) {
         // If not compatible with the new runway, remove the departure procedure
-        if (this.flightPlan.originDeparture) {
-          this.flightPlan.departureSegment.setProcedure(undefined, true);
-        }
-
-        const runwayLeg = this.allLegs[this.allLegs.length - 1];
-
-        if (runwayLeg.isDiscontinuity === true) {
-          throw new Error('[FMS/FPM] Runway leg was discontinuity');
-        }
-
-        this.allLegs.push(FlightPlanLeg.originExtendedCenterline(this, this.runway, runwayLeg));
+        this.flightPlan.departureSegment.setProcedure(undefined);
+      } else {
+        this.refreshOriginLegs();
       }
 
       this.flightPlan.availableDepartures = newRunwayCompatibleSids;
+    } else {
+      this.refreshOriginLegs();
+    }
+  }
+
+  async refreshOriginLegs() {
+    this.resetOriginLegFlag();
+
+    let addOriginLeg = true;
+    let addInitalAltitudeLeg = false;
+    let isDisconnectedIdf = false;
+    if (this.runway && this.flightPlan.originDeparture) {
+      let firstDepartureLeg: FlightPlanElement;
+      if (this.flightPlan.departureRunwayTransitionSegment.allLegs.length > 0) {
+        firstDepartureLeg = this.flightPlan.departureRunwayTransitionSegment.allLegs[0];
+      } else if (this.flightPlan.departureSegment.allLegs.length > 0) {
+        firstDepartureLeg = this.flightPlan.departureSegment.allLegs[0];
+      } else {
+        firstDepartureLeg = this.flightPlan.departureEnrouteTransitionSegment.allLegs[0];
+      }
+
+      if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.type === LegType.IF) {
+        if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
+          // TODO should this stuff go into DepartureRunwayTransitionSegment?
+          firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
+
+          addOriginLeg = false;
+        } else {
+          const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
+          const diff = FbwMathUtils.normalise180(MsMathUtils.diffAngleDeg(bearing, this.runway.bearing));
+
+          isDisconnectedIdf = Math.abs(diff) > 1.0;
+        }
+      }
+    } else if (this.runway && !this.flightPlan.originDeparture) {
+      addInitalAltitudeLeg = true;
+    }
+
+    this.allLegs.length = 0;
+    if (addOriginLeg) {
+      const originLeg = FlightPlanLeg.fromAirportAndRunway(
+        this,
+        this.flightPlan.departureSegment.procedure?.ident ?? '',
+        this.originAirport,
+        this.runway,
+      );
+      originLeg.flags |= FlightPlanLegFlags.Origin;
+      this.allLegs.push(originLeg);
+
+      this.strung = false;
+    }
+
+    if (addInitalAltitudeLeg) {
+      const runwayLeg = this.allLegs[this.allLegs.length - 1];
+
+      if (runwayLeg.isDiscontinuity === true) {
+        throw new Error('[FMS/FPM] Runway leg was discontinuity');
+      }
+
+      this.allLegs.push(FlightPlanLeg.originExtendedCenterline(this, this.runway, runwayLeg));
+    }
+
+    if (isDisconnectedIdf) {
+      this.allLegs.push({ isDiscontinuity: true });
     }
 
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);

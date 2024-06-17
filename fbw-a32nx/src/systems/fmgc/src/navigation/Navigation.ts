@@ -90,7 +90,7 @@ export class Navigation implements NavigationProvider {
 
   constructor(
     private flightPlanService: FlightPlanService,
-    private readonly facLoader?: FacilityLoader,
+    private readonly facLoader: FacilityLoader,
   ) {
     this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
     this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);

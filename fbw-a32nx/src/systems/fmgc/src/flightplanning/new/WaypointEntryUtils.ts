@@ -26,7 +26,7 @@ export class WaypointEntryUtils {
     fms: DataInterface & DisplayInterface,
     place: string,
     stored: boolean,
-    ident?: string,
+    ident: string,
   ): Promise<Fix | undefined> {
     if (WaypointEntryUtils.isLatLonFormat(place)) {
       const coordinates = WaypointEntryUtils.parseLatLon(place);

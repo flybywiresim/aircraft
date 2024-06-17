@@ -23,7 +23,6 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { BisectionMethod, NonTerminationStrategy } from '@fmgc/guidance/vnav/BisectionMethod';
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigInterface';
 
 class FlapConfigurationProfile {
   static getBySpeed(speed: Knots, parameters: VerticalProfileComputationParameters): FlapConf {
@@ -118,10 +117,9 @@ export class ApproachPathBuilder {
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
     atmosphericConditions: AtmosphericConditions,
-    private readonly acConfig: AircraftConfig,
   ) {
-    this.idleStrategy = new IdleDescentStrategy(observer, atmosphericConditions, this.acConfig);
-    this.fpaStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, 0, this.acConfig);
+    this.idleStrategy = new IdleDescentStrategy(observer, atmosphericConditions);
+    this.fpaStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, 0);
   }
 
   computeApproachPath(

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { VerticalMode } from '@shared/autopilot';
 
 export enum FmgcFlightPhase {
@@ -27,11 +31,11 @@ export function isOnGround(): boolean {
 }
 
 function isEngineOn(index: number): boolean {
-  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
+  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
 }
 
 function isEngineOnTakeOffThrust(index: number): boolean {
-  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N1:${index}`, 'percent') >= 70;
+  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N1:${index}`, 'number') >= 70;
 }
 
 export function isAnEngineOn(): boolean {

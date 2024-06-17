@@ -112,7 +112,14 @@ export class CoRouteUplinkAdapter {
 
     fms.onUplinkInProgress();
 
-    await flightPlanService.newCityPair(route.from, route.to, route.altn, FlightPlanIndex.Uplink);
+    await flightPlanService.newCityPair(route.from, route.to, undefined, FlightPlanIndex.Uplink);
+
+    // Set alternate  airport separately, so the active flight plan uplink still works even if the alternate fails
+    try {
+      await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
+    } catch (e) {
+      console.error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`);
+    }
 
     const plan = flightPlanService.uplink;
 

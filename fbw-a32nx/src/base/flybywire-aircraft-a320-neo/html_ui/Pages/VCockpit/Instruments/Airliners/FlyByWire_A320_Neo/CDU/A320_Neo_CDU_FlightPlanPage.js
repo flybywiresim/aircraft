@@ -235,9 +235,9 @@ class CDUFlightPlanPage {
 
             const legAccentColor = (inAlternate || inMissedApproach) ? "cyan" : planAccentColor;
 
-            const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
-            const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
-            const wpActive = (fpIndex >= targetPlan.activeLegIndex);
+            const wpPrev = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex - 1);
+            const wpNext = inAlternate ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1) : targetPlan.maybeElementAt(fpIndex + 1);
+            const wpActive = inAlternate || (fpIndex >= targetPlan.activeLegIndex);
 
             // Bearing/Track
             let bearingTrack = "";
@@ -657,9 +657,24 @@ class CDUFlightPlanPage {
 
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'L');
         CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, forPlan, 'R');
+
+        const isMissedApproachLegShown = targetPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.fpIndex >= targetPlan.firstMissedApproachLegIndex
+        );
+        const isAlternateLegShown = scrollWindow.some((row, index) => index > 0 && !row.marker && row.inAlternate);
+        const isAlternateMissedApproachLegShown = targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(
+            (row, index) => index > 0 && !row.marker && row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex
+        );
+
+        mcdu.efisInterfaces['L'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+        mcdu.efisInterfaces['R'].setShownFplnLegs(isMissedApproachLegShown, isAlternateLegShown, isAlternateMissedApproachLegShown);
+
         mcdu.onUnload = () => {
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'L');
             CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, Fmgc.FlightPlanIndex.Active, 'R');
+
+            mcdu.efisInterfaces['L'].setShownFplnLegs(false, false, false);
+            mcdu.efisInterfaces['R'].setShownFplnLegs(false, false, false);
         };
 
         // Render scrolling data to text >> add ditto marks
@@ -1061,10 +1076,10 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
     let isFl = false;
     if (useTransAlt) {
         const transAlt = activePlan.performanceData.transitionAltitude;
-        isFl = transAlt !== null && alt > transAlt;
+        isFl = transAlt !== undefined && alt > transAlt;
     } else {
         const transLevel = activePlan.performanceData.transitionLevel;
-        isFl = transLevel !== null && alt >= (transLevel * 100);
+        isFl = transLevel !== undefined && alt >= (transLevel * 100);
     }
 
     if (isFl) {

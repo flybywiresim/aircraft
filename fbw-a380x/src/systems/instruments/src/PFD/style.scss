@@ -275,6 +275,20 @@ text.Red {
   display: none;
 }
 
+.GreenPulse {
+  animation: green-pulse 1s step-end infinite;
+  stroke: 1px !important;
+
+  @keyframes green-pulse {
+      0%, 100% {
+        fill: $display-green;
+      }
+      50% {
+          fill: hsl(120, 100%, 20%)
+      }
+  }
+}
+
 /* .BacklightBleed {
   width: 100%;
   height: 100%;

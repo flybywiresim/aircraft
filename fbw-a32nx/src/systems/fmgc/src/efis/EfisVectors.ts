@@ -186,7 +186,7 @@ export class EfisVectors {
     alternateGroup = mainGroup,
   ) {
     const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-    const isArcVsPlanMode = mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV;
+    const isPlanMode = mode === EfisNdMode.PLAN;
 
     if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
       this.transmit(null, mainGroup, side);
@@ -210,7 +210,7 @@ export class EfisVectors {
 
     // ACTIVE missed
 
-    const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isArcVsPlanMode);
+    const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
 
     if (transmitMissed) {
       const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
@@ -228,7 +228,7 @@ export class EfisVectors {
 
     // ALTN
 
-    const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isArcVsPlanMode);
+    const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isPlanMode);
 
     if (transmitAlternate) {
       const alternateGeometry = this.guidanceController.getGeometryForFlightPlan(plan.index, true);
@@ -240,10 +240,7 @@ export class EfisVectors {
 
         // ALTN missed
 
-        const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(
-          plan.index,
-          isArcVsPlanMode,
-        );
+        const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(plan.index, isPlanMode);
 
         if (transmitAlternateMissed) {
           const missedVectors = alternateGeometry

@@ -6,215 +6,146 @@
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export interface FlightPlanPerformanceData {
-  /**
-   * V1 speed; Unit: Knots; Null if not set.
-   */
-  v1: number | null;
+  v1: number;
 
-  /**
-   * Vr speed; Unit: Knots; Null if not set.
-   */
-  vr: number | null;
+  vr: number;
 
-  /**
-   * V2 speed; Unit: Knots; Null if not set.
-   */
-  v2: number | null;
+  v2: number;
 
-  /**
-   * Transition altitude from nav database; Unit: Feet; Null if not set.
-   */
-  databaseTransitionAltitude: number | null;
+  databaseTransitionAltitude: number;
 
-  /**
-   * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
-  databaseTransitionLevel: number | null;
+  databaseTransitionLevel: number;
 
-  /**
-   * Pilot entered transition altitude; Unit: Feet; Null if not set.
-   */
-  pilotTransitionAltitude: number | null;
+  pilotTransitionAltitude: number;
 
-  /**
-   * Pilot entered transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
-  pilotTransitionLevel: number | null;
+  pilotTransitionLevel: number;
 
-  /**
-   * Returns pilot entered altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
-   */
-  get transitionAltitude(): number | null;
+  get transitionAltitude(): AltitudeValue;
 
-  /**
-   * Whether returned transition altitude is from nav database;
-   */
   get transitionAltitudeIsFromDatabase(): boolean;
 
-  /**
-   * Transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
-  get transitionLevel(): number | null;
+  get transitionLevel(): AltitudeValue;
 
-  /**
-   * Whether returned transition level is from nav database;
-   */
   get transitionLevelIsFromDatabase(): boolean;
 
-  /**
-   * Cost index; Unit: No unit; Null if not set.
-   */
-  costIndex: number | null;
+  costIndex: number;
 
-  /**
-   * Cruise flight level; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
-  cruiseFlightLevel: number | null;
+  cruiseFlightLevel: number;
 
-  /**
-   * Pilot entered tropopause; Unit: Feet; Null if not set.
-   */
-  pilotTropopause: number | null;
+  pilotTropopause: AltitudeValue;
 
-  /**
-   * Default tropopause; Unit: Feet; Null if not set.
-   */
-  defaultTropopause: number | null;
+  defaultTropopause: AltitudeValue;
 
-  /**
-   * Tropopause. Default if no pilot entry, pilot entered otherwise; Unit: Feet; Null if not set.
-   */
-  get tropopause(): number | null;
+  get tropopause(): AltitudeValue;
 
-  /**
-   * Whether tropopause is pilot entered.
-   */
   get tropopauseIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered thrust reduction altitude; Unit: Feet; Null if not set.
-   */
-  pilotThrustReductionAltitude: number | null;
+  // THR RED
 
   /**
-   * Thrust reduction altitude from nav database; Unit: Feet; Null if not set.
+   * THR RED pilot entry
    */
-  defaultThrustReductionAltitude: number | null;
+  pilotThrustReductionAltitude: AltitudeValue;
 
   /**
-   * Pilot entered thrust reduction altitude if set, from nav database otherwise; Unit: Feet; Null if not set.
+   * THR RED from NAV database
    */
-  get thrustReductionAltitude(): number | null;
+  defaultThrustReductionAltitude: AltitudeValue;
 
-  /**
-   * Whether thrust reduction altitude is pilot entered;
-   */
+  get thrustReductionAltitude(): AltitudeValue;
+
   get thrustReductionAltitudeIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered acceleration altitude; Unit: Feet; Null if not set.
-   */
-  pilotAccelerationAltitude: number | null;
+  // ACC
 
   /**
-   * Acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * ACC pilot entry
    */
-  defaultAccelerationAltitude: number | null;
+  pilotAccelerationAltitude: AltitudeValue;
 
   /**
-   * Returns pilot entered acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * ACC from NAV database
    */
-  get accelerationAltitude(): number | null;
+  defaultAccelerationAltitude: AltitudeValue;
 
-  /**
-   * Whether acceleration altitude is pilot entered; Null if not set.
-   */
+  get accelerationAltitude(): AltitudeValue;
+
   get accelerationAltitudeIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered engine-out acceleration altitude; Unit: Feet; Null if not set.
-   */
-  pilotEngineOutAccelerationAltitude: number | null;
+  // EO ACC
 
   /**
-   * Engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * EO ACC pilot entry
    */
-  defaultEngineOutAccelerationAltitude: number | null;
+  pilotEngineOutAccelerationAltitude: AltitudeValue;
 
   /**
-   * Returns pilot entered engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * EO ACC from NAV database
    */
-  get engineOutAccelerationAltitude(): number | null;
+  defaultEngineOutAccelerationAltitude: AltitudeValue;
 
-  /**
-   * Whether engine-out acceleration altitude is pilot entered; Null if not set.
-   */
+  get engineOutAccelerationAltitude(): AltitudeValue;
+
   get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered missed apch thrust reduction altitude; Unit: Feet; Null if not set.
-   */
-  pilotMissedThrustReductionAltitude: number | null;
+  // MISSED THR RED
 
   /**
-   * Missed apch thrust reduction altitude from nav database; Unit: Feet; Null if not set.
+   * Missed THR RED pilot entry
    */
-  defaultMissedThrustReductionAltitude: number | null;
+  pilotMissedThrustReductionAltitude: AltitudeValue;
 
   /**
-   * Returns pilot entered missed apch thrust reduction altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed THR RED from NAV database
    */
-  get missedThrustReductionAltitude(): number | null;
+  defaultMissedThrustReductionAltitude: AltitudeValue;
 
-  /**
-   * Whether missed apch thrust reduction altitude is pilot entered
-   */
+  get missedThrustReductionAltitude(): AltitudeValue;
+
   get missedThrustReductionAltitudeIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered missed apch acceleration altitude; Unit: Feet; Null if not set.
-   */
-  pilotMissedAccelerationAltitude: number | null;
+  // MISSED ACC
 
   /**
-   * Missed apch acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * Missed ACC pilot entry
    */
-  defaultMissedAccelerationAltitude: number | null;
+  pilotMissedAccelerationAltitude: AltitudeValue;
 
   /**
-   * Returns pilot entered missed apch acceleration altitude of set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed ACC from NAV database
    */
-  get missedAccelerationAltitude(): number | null;
+  defaultMissedAccelerationAltitude: AltitudeValue;
 
-  /**
-   * Whether missed apch acceleration altitude is pilot entered
-   */
+  get missedAccelerationAltitude(): AltitudeValue;
+
   get missedAccelerationAltitudeIsPilotEntered(): boolean;
 
-  /**
-   * Pilot entered missed apch engine-out acceleration altitude; Unit: Feet; Null if not set.
-   */
-  pilotMissedEngineOutAccelerationAltitude: number | null;
+  // MISSED EO ACC
 
   /**
-   * Missed apch engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * Missed EO ACC pilot entry
    */
-  defaultMissedEngineOutAccelerationAltitude: number | null;
+  pilotMissedEngineOutAccelerationAltitude: AltitudeValue;
 
   /**
-   * Returns pilot entered missed apch engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed EO ACC from NAV database
    */
-  get missedEngineOutAccelerationAltitude(): number | null;
+  defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
 
-  /**
-   * Whether missed apch engine-out acceleration altitude is pilot entered
-   */
+  get missedEngineOutAccelerationAltitude(): AltitudeValue;
+
   get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
   clone(): this;
 }
 
 export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>;
+
+type VSpeedValue = number | undefined;
+
+type AltitudeValue = Feet | undefined;
+
+type CostIndexValue = number | undefined;
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 
@@ -259,259 +190,259 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   }
 
   /**
-   * Cruise flight level; Unit: flight level (i.e. hundreds of feets); Null if not set.
+   * Cruise FL
    */
-  cruiseFlightLevel: number | null = null;
+  cruiseFlightLevel: AltitudeValue = undefined;
 
   /**
-   * Cost index; Unit: No unit; Null if not set.
+   * Cost index
    */
-  costIndex: number | null = null;
+  costIndex: CostIndexValue = undefined;
 
   /**
-   * Tropopause altitude entered by the pilot; Unit: Feet; Null if not set.
+   * Tropopause altitude in feet entered by the pilot, undefined if not entered
    */
-  pilotTropopause: number | null = null;
+  pilotTropopause: AltitudeValue = undefined;
 
   /**
-   * Default tropopause altitude; Unit: Feet; Null if not set.
+   * Default tropopause altitude in feet
    */
-  defaultTropopause: number | null = 36090;
+  defaultTropopause: AltitudeValue = 36090;
 
   get tropopause() {
     const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   get tropopauseIsPilotEntered() {
-    return this.pilotTropopause !== null;
+    return this.pilotTropopause !== undefined;
   }
 
   /**
-   * V1 speed; Unit: Knots; Null if not set.
+   * V1 speed
    */
-  v1: number | null = null;
+  v1: VSpeedValue = undefined;
 
   /**
-   * Vr speed; Unit: Knots; Null if not set.
+   * VR speed
    */
-  vr: number | null = null;
+  vr: VSpeedValue = undefined;
 
   /**
-   * V2 speed; Unit: Knots; Null if not set.
+   * V2 speed
    */
-  v2: number | null = null;
+  v2: VSpeedValue = undefined;
 
   // THR RED
 
   /**
-   * Pilot entered thrust reduction altitude; Unit: Feet; Null if not set.
+   * THR RED pilot entry
    */
-  pilotThrustReductionAltitude: number | null = null;
+  pilotThrustReductionAltitude: AltitudeValue = undefined;
 
   /**
-   * Thrust reduction altitude from nav database; Unit: Feet; Null if not set.
+   * THR RED from NAV database
    */
-  defaultThrustReductionAltitude: number | null = null;
+  defaultThrustReductionAltitude: AltitudeValue = undefined;
 
   /**
-   * Pilot entered thrust reduction altitude if set, from nav database otherwise; Unit: Feet; Null if not set.
+   * THR RED from pilot if entered, otherwise from database
    */
   get thrustReductionAltitude() {
     const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether thrust reduction altitude is pilot entered;
+   * Whether THR RED is from the database
    */
   get thrustReductionAltitudeIsPilotEntered() {
-    return this.pilotThrustReductionAltitude !== null;
+    return this.pilotThrustReductionAltitude !== undefined;
   }
 
   // ACC
 
   /**
-   * Pilot entered acceleration altitude; Unit: Feet; Null if not set.
+   * ACC pilot entry
    */
-  pilotAccelerationAltitude: number | null = null;
+  pilotAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * ACC from NAV database
    */
-  defaultAccelerationAltitude: number | null = null;
+  defaultAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * ACC from pilot if entered, otherwise from database
    */
   get accelerationAltitude() {
     const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether acceleration altitude is pilot entered; Null if not set.
+   * Whether ACC is from the database
    */
   get accelerationAltitudeIsPilotEntered() {
-    return this.pilotAccelerationAltitude !== null;
+    return this.pilotAccelerationAltitude !== undefined;
   }
 
   // EO ACC
 
   /**
-   * Pilot entered engine-out acceleration altitude; Unit: Feet; Null if not set.
+   * EO ACC pilot entry
    */
-  pilotEngineOutAccelerationAltitude: number | null = null;
+  pilotEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * EO ACC from NAV database
    */
-  defaultEngineOutAccelerationAltitude: number | null = null;
+  defaultEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * EO ACC from pilot if entered, otherwise from database
    */
   get engineOutAccelerationAltitude() {
     const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether engine-out acceleration altitude is pilot entered; Null if not set.
+   * Whether EO ACC is from the database
    */
   get engineOutAccelerationAltitudeIsPilotEntered() {
-    return this.pilotEngineOutAccelerationAltitude !== null;
+    return this.pilotEngineOutAccelerationAltitude !== undefined;
   }
 
   // MISSED THR RED
 
   /**
-   * Pilot entered missed apch thrust reduction altitude; Unit: Feet; Null if not set.
+   * Missed THR RED pilot entry
    */
-  pilotMissedThrustReductionAltitude: number | null = null;
+  pilotMissedThrustReductionAltitude: AltitudeValue = undefined;
 
   /**
-   * Missed apch thrust reduction altitude from nav database; Unit: Feet; Null if not set.
+   * Missed THR RED from NAV database
    */
-  defaultMissedThrustReductionAltitude: number | null = null;
+  defaultMissedThrustReductionAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered missed apch thrust reduction altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed THR RED from pilot if entered, otherwise from database
    */
   get missedThrustReductionAltitude() {
     const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether missed apch thrust reduction altitude is pilot entered
+   * Whether missed THR RED is from the database
    */
   get missedThrustReductionAltitudeIsPilotEntered() {
-    return this.pilotMissedThrustReductionAltitude !== null;
+    return this.pilotMissedThrustReductionAltitude !== undefined;
   }
 
   // MISSED ACC
 
   /**
-   * Pilot entered missed apch acceleration altitude; Unit: Feet; Null if not set.
+   * Missed ACC pilot entry
    */
-  pilotMissedAccelerationAltitude: number | null = null;
+  pilotMissedAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Missed apch acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * Missed ACC from NAV database
    */
-  defaultMissedAccelerationAltitude: number | null = null;
+  defaultMissedAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered missed apch acceleration altitude of set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed ACC from pilot if entered, otherwise from database
    */
   get missedAccelerationAltitude() {
     const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether missed apch acceleration altitude is pilot entered
+   * Whether missed ACC is from the database
    */
   get missedAccelerationAltitudeIsPilotEntered() {
-    return this.pilotMissedAccelerationAltitude !== null;
+    return this.pilotMissedAccelerationAltitude !== undefined;
   }
 
   // MISSED EO ACC
 
   /**
-   * Pilot entered missed apch engine-out acceleration altitude; Unit: Feet; Null if not set.
+   * Missed EO ACC pilot entry
    */
-  pilotMissedEngineOutAccelerationAltitude: number | null = null;
+  pilotMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Missed apch engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
+   * Missed EO ACC from NAV database
    */
-  defaultMissedEngineOutAccelerationAltitude: number | null = null;
+  defaultMissedEngineOutAccelerationAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered missed apch engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * Missed EO ACC from pilot if entered, otherwise from database
    */
   get missedEngineOutAccelerationAltitude() {
     const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether missed apch engine-out acceleration altitude is pilot entered
+   * Whether missed EO ACC is from the database
    */
   get missedEngineOutAccelerationAltitudeIsPilotEntered() {
-    return this.pilotMissedEngineOutAccelerationAltitude !== null;
+    return this.pilotMissedEngineOutAccelerationAltitude !== undefined;
   }
 
   /**
-   * Transition altitude from nav database; Unit: Feet; Null if not set.
+   * TRANS ALT from NAV database
    */
-  databaseTransitionAltitude: number | null = null;
+  databaseTransitionAltitude: AltitudeValue = undefined;
 
   /**
-   * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
+   * TRANS ALT from pilot entry
    */
-  pilotTransitionAltitude: number | null = null;
+  pilotTransitionAltitude: AltitudeValue = undefined;
 
   /**
-   * Returns pilot entered altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
+   * TRANS ALT from pilot if entered, otherwise from database
    */
   get transitionAltitude() {
     const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== undefined ? MathUtils.round(rawAlt, -1) : undefined;
   }
 
   /**
-   * Whether returned transition altitude is from nav database;
+   * Whether TRANS ALT is from the database
    */
   get transitionAltitudeIsFromDatabase() {
-    return this.pilotTransitionAltitude === null;
+    return this.pilotTransitionAltitude === undefined;
   }
 
   /**
-   * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
+   * TRANS LVL from NAV database
    */
-  databaseTransitionLevel: number | null = null;
+  databaseTransitionLevel: AltitudeValue = undefined;
 
   /**
-   * Pilot entered transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
+   * TRANS LVL from pilot entry
    */
-  pilotTransitionLevel: number | null = null;
+  pilotTransitionLevel: AltitudeValue = undefined;
 
   /**
-   * Transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
+   * TRANS LVL from pilot if entered, otherwise from database
    */
   get transitionLevel() {
     const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
-    return rawLevel !== null ? MathUtils.round(rawLevel, 0) : null;
+    return rawLevel !== undefined ? MathUtils.round(rawLevel, 0) : undefined;
   }
 
   /**
-   * Whether returned transition level is from nav database;
+   * Whether TRANS LVL is from the database
    */
   get transitionLevelIsFromDatabase() {
-    return this.pilotTransitionLevel === null;
+    return this.pilotTransitionLevel === undefined;
   }
 
   serialize(): SerializedFlightPlanPerformanceData {
@@ -544,38 +475,38 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 }
 
 export interface SerializedFlightPlanPerformanceData {
-  cruiseFlightLevel: number | null;
-  costIndex: number | null;
+  cruiseFlightLevel: number | undefined;
+  costIndex: number | undefined;
   defaultTropopause: number;
-  pilotTropopause: number;
+  pilotTropopause: number | undefined;
 
-  v1: number | null;
+  v1: number | undefined;
 
-  vr: number | null;
+  vr: number | undefined;
 
-  v2: number | null;
+  v2: number | undefined;
 
-  pilotThrustReductionAltitude: number | null;
-  defaultThrustReductionAltitude: number | null;
+  pilotThrustReductionAltitude: number | undefined;
+  defaultThrustReductionAltitude: number | undefined;
 
-  pilotAccelerationAltitude: number | null;
-  defaultAccelerationAltitude: number | null;
+  pilotAccelerationAltitude: number | undefined;
+  defaultAccelerationAltitude: number | undefined;
 
-  pilotEngineOutAccelerationAltitude: number | null;
-  defaultEngineOutAccelerationAltitude: number | null;
+  pilotEngineOutAccelerationAltitude: number | undefined;
+  defaultEngineOutAccelerationAltitude: number | undefined;
 
-  pilotMissedThrustReductionAltitude: number | null;
-  defaultMissedThrustReductionAltitude: number | null;
+  pilotMissedThrustReductionAltitude: number | undefined;
+  defaultMissedThrustReductionAltitude: number | undefined;
 
-  pilotMissedAccelerationAltitude: number | null;
-  defaultMissedAccelerationAltitude: number | null;
+  pilotMissedAccelerationAltitude: number | undefined;
+  defaultMissedAccelerationAltitude: number | undefined;
 
-  pilotMissedEngineOutAccelerationAltitude: number | null;
-  defaultMissedEngineOutAccelerationAltitude: number | null;
+  pilotMissedEngineOutAccelerationAltitude: number | undefined;
+  defaultMissedEngineOutAccelerationAltitude: number | undefined;
 
-  databaseTransitionAltitude: number | null;
-  pilotTransitionAltitude: number | null;
+  databaseTransitionAltitude: number | undefined;
+  pilotTransitionAltitude: number | undefined;
 
-  databaseTransitionLevel: number | null;
-  pilotTransitionLevel: number | null;
+  databaseTransitionLevel: number | undefined;
+  pilotTransitionLevel: number | undefined;
 }
