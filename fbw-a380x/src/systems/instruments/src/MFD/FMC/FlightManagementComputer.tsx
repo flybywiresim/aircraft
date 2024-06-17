@@ -2,7 +2,6 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import {
   A320FlightPlanPerformanceData,
-  A380AircraftConfig,
   DataManager,
   EfisInterface,
   EfisSymbols,
@@ -10,6 +9,7 @@ import {
   Navigation,
   getFlightPhaseManager,
 } from '@fmgc/index';
+import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
 import { ArraySubject, ClockEvents, EventBus, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
@@ -110,7 +110,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#guidanceController;
   }
 
-  #navigation = new Navigation(this.flightPlanService, undefined);
+  #navigation = new Navigation(this.flightPlanService);
 
   get navigation() {
     return this.#navigation;
