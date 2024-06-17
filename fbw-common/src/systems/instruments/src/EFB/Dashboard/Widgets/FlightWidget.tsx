@@ -151,7 +151,7 @@ export const FlightWidget = () => {
     ) {
       fetchData();
     }
-  }, []);
+  }, [navigraphAuthInfo]);
 
   const simbriefDataLoaded = isSimbriefDataLoaded();
 
