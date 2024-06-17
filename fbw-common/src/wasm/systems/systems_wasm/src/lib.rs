@@ -14,7 +14,10 @@ use crate::anti_ice::{engine_anti_ice, wing_anti_ice};
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use ::msfs::{
-    sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
+    sim_connect::{
+        client_data_definition, data_definition, Period, SimConnect, SimConnectRecv,
+        SIMCONNECT_OBJECT_ID_USER,
+    },
     sys, MSFSEvent,
 };
 use failures::Failures;
@@ -22,13 +25,24 @@ use fxhash::FxHashMap;
 use std::fmt::{Display, Formatter};
 use std::{error::Error, time::Duration};
 use systems::shared::ElectricalBusType;
-use systems::simulation::{InitContext, StartState};
+use systems::simulation::{ExternalData, InitContext, StartState};
 use systems::{
     failures::FailureType,
     simulation::{
         Aircraft, Simulation, SimulatorReaderWriter, VariableIdentifier, VariableRegistry,
     },
 };
+
+struct Events {
+    event_id_simstop: sys::DWORD,
+}
+impl Events {
+    pub fn new(sim_connect: &mut SimConnect) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            event_id_simstop: sim_connect.subscribe_to_system_event("SIMSTOP")?,
+        })
+    }
+}
 
 /// Type used to configure and build a simulation and a handler which acts as a bridging layer
 /// between the simulation and Microsoft Flight Simulator.
@@ -165,19 +179,30 @@ pub struct MsfsHandler {
     aspects: Vec<Box<dyn Aspect>>,
     failures: Option<Failures>,
     time: Time,
+    external_data: ExternalData,
+    events_subscrived: Events,
 }
 impl MsfsHandler {
+    const SIMOBJECT_DATA_REQUEST_ID_SIMULATION_TIME: sys::DWORD = 0;
+
+    const CLIENT_DATA_REQUEST_ID_IVAO: sys::DWORD = 0;
+    const CLIENT_DATA_REQUEST_ID_VPILOT: sys::DWORD = 1;
+
     fn new(
         variables: MsfsVariableRegistry,
         aspects: Vec<Box<dyn Aspect>>,
         failures: Option<Failures>,
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
+        ATCServices::new(sim_connect);
+
         Ok(Self {
             variables: Some(variables),
             aspects,
             failures,
             time: Time::new(sim_connect)?,
+            external_data: ExternalData::new(),
+            events_subscrived: Events::new(sim_connect)?,
         })
     }
 
@@ -196,14 +221,57 @@ impl MsfsHandler {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
 
-                    simulation.tick(delta_time, self.time.simulation_time(), self);
+                    let mut external_data = self.external_data;
+
+                    simulation.tick(
+                        delta_time,
+                        self.time.simulation_time(),
+                        &mut external_data,
+                        self,
+                    );
+
+                    ATCServices::write_to_ivao(sim_connect, &external_data, &self.external_data);
+                    ATCServices::write_to_vpilot(sim_connect, &external_data, &self.external_data);
+
+                    self.external_data = external_data;
+
+                    println!("");
+                    println!("");
+
                     self.post_tick(sim_connect)?;
                 }
             }
             MSFSEvent::SimConnect(message) => match message {
-                SimConnectRecv::SimObjectData(data) if data.id() == SimulationTime::REQUEST_ID => {
+                SimConnectRecv::SimObjectData(data)
+                    if data.id() == MsfsHandler::SIMOBJECT_DATA_REQUEST_ID_SIMULATION_TIME =>
+                {
                     self.time
                         .increment(data.into::<SimulationTime>(sim_connect).unwrap());
+                }
+                SimConnectRecv::ClientData(data)
+                    if data.id() == MsfsHandler::CLIENT_DATA_REQUEST_ID_IVAO =>
+                {
+                    if self.external_data.get_volume_com1() != u8::MAX {
+                        let ivao: &Ivao = data.into::<Ivao>(sim_connect).unwrap();
+                        println!(
+                            "Received ivao {} {} {}",
+                            ivao.selcal, ivao.volume_com1, ivao.volume_com2
+                        );
+                        self.external_data.set_ivao(
+                            ivao.selcal,
+                            ivao.volume_com1,
+                            ivao.volume_com2,
+                        );
+                    }
+                }
+                SimConnectRecv::ClientData(data)
+                    if data.id() == MsfsHandler::CLIENT_DATA_REQUEST_ID_VPILOT =>
+                {
+                    let vpilot: &VPilot = data.into::<VPilot>(sim_connect).unwrap();
+                    self.external_data.set_vpilot(vpilot.loaded, vpilot.selcal);
+                }
+                SimConnectRecv::Event(e) if e.id() == self.events_subscrived.event_id_simstop => {
+                    ATCServices::disconnect(sim_connect);
                 }
                 _ => {
                     self.handle_message(&message);
@@ -556,9 +624,7 @@ struct SimulationTime {
     value: f64,
 }
 
-impl SimulationTime {
-    const REQUEST_ID: sys::DWORD = 0;
-}
+impl SimulationTime {}
 
 struct Time {
     previous_simulation_time_value: f64,
@@ -568,7 +634,7 @@ struct Time {
 impl Time {
     fn new(sim_connect: &mut SimConnect) -> Result<Self, Box<dyn Error>> {
         sim_connect.request_data_on_sim_object::<SimulationTime>(
-            SimulationTime::REQUEST_ID,
+            MsfsHandler::SIMOBJECT_DATA_REQUEST_ID_SIMULATION_TIME,
             SIMCONNECT_OBJECT_ID_USER,
             Period::VisualFrame,
         )?;
@@ -603,6 +669,127 @@ impl Time {
         } else {
             delta
         }
+    }
+}
+
+struct ATCServices;
+impl ATCServices {
+    const AREA_IVAO: &'static str = "IVAO Altitude Data";
+    const AREA_VPILOT: &'static str = "vPILOT FBW";
+
+    fn new(sim_connect: &mut SimConnect) {
+        Ivao::new(sim_connect);
+        VPilot::new(sim_connect);
+    }
+
+    pub fn write_to_ivao(
+        sim_connect: &mut SimConnect,
+        new_external_data: &ExternalData,
+        previous_external_data: &ExternalData,
+    ) {
+        println!(
+            "Before writing to ivao = {} {} {}      {} {} {}",
+            previous_external_data.get_selcal(),
+            previous_external_data.get_volume_com1(),
+            previous_external_data.get_volume_com2(),
+            new_external_data.get_selcal(),
+            new_external_data.get_volume_com1(),
+            new_external_data.get_volume_com2()
+        );
+
+        if previous_external_data.get_selcal() != new_external_data.get_selcal()
+            || previous_external_data.get_volume_com1() != new_external_data.get_volume_com1()
+            || previous_external_data.get_volume_com2() != new_external_data.get_volume_com2()
+        {
+            println!("Writing to ivao...");
+            let ivao: Ivao = Ivao {
+                selcal: new_external_data.get_selcal() as u8,
+                volume_com1: if new_external_data.get_volume_com1() != u8::MAX {
+                    new_external_data.get_volume_com1()
+                } else {
+                    0
+                },
+                volume_com2: if new_external_data.get_volume_com2() != u8::MAX {
+                    new_external_data.get_volume_com2()
+                } else {
+                    0
+                },
+            };
+
+            let area = sim_connect.get_client_area(ATCServices::AREA_IVAO).unwrap();
+            sim_connect.set_client_data(&area, &ivao);
+        }
+    }
+
+    pub fn write_to_vpilot(
+        sim_connect: &mut SimConnect,
+        new_external_data: &ExternalData,
+        previous_external_data: &ExternalData,
+    ) {
+        if previous_external_data.get_selcal() != new_external_data.get_selcal()
+            || previous_external_data.get_loaded() != new_external_data.get_loaded()
+        {
+            let vpilot: VPilot = VPilot {
+                loaded: new_external_data.get_loaded(),
+                selcal: new_external_data.get_selcal(),
+            };
+
+            let area = sim_connect
+                .get_client_area(ATCServices::AREA_VPILOT)
+                .unwrap();
+            sim_connect.set_client_data(&area, &vpilot);
+        }
+    }
+
+    pub fn disconnect(sim_connect: &mut SimConnect) {
+        let ivao: Ivao = Ivao {
+            selcal: 0,
+            volume_com1: 0,
+            volume_com2: 0,
+        };
+        let area_ivao = sim_connect.get_client_area(ATCServices::AREA_IVAO).unwrap();
+        sim_connect.set_client_data(&area_ivao, &ivao);
+
+        let vpilot: VPilot = VPilot {
+            loaded: 0,
+            selcal: 0,
+        };
+        let area_vpilot = sim_connect
+            .get_client_area(ATCServices::AREA_VPILOT)
+            .unwrap();
+        sim_connect.set_client_data(&area_vpilot, &vpilot);
+    }
+}
+
+#[client_data_definition]
+pub struct Ivao {
+    selcal: u8,
+    volume_com1: u8,
+    volume_com2: u8,
+}
+
+impl Ivao {
+    fn new(sim_connect: &mut SimConnect) {
+        sim_connect.request_client_data::<Ivao>(
+            MsfsHandler::CLIENT_DATA_REQUEST_ID_IVAO,
+            ATCServices::AREA_IVAO,
+        );
+    }
+}
+
+#[client_data_definition]
+pub struct VPilot {
+    loaded: u8,
+    selcal: u8,
+}
+
+impl VPilot {
+    fn new(sim_connect: &mut SimConnect) {
+        sim_connect.create_client_data::<VPilot>(ATCServices::AREA_VPILOT);
+        sim_connect.request_client_data::<VPilot>(
+            MsfsHandler::CLIENT_DATA_REQUEST_ID_VPILOT,
+            ATCServices::AREA_VPILOT,
+        );
     }
 }
 

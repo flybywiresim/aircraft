@@ -190,7 +190,7 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+- A32NX_DMC_DISPLAYTEST:{1,2,3}
     - Enum
     - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
       Value | Meaning
@@ -384,65 +384,64 @@
     - Bool
     - Indicates if the APU fire button is RELEASED
 
-- A32NX_RMP_L_TOGGLE_SWITCH
+- A32NX_RMP_{L,R}_TOGGLE_SWITCH
     - Boolean
-    - Whether the left radio management panel toggle switch is on or off.
+    - Whether the left/right radio management panel toggle switch is on or off.
 
-- A32NX_RMP_R_TOGGLE_SWITCH
-    - Boolean
-    - Whether the right radio management panel toggle switch is on or off.
-
-- A32NX_RMP_L_SELECTED_MODE
-    - Number
-    - The current mode of the left radio management panel.
-
-- A32NX_RMP_R_SELECTED_MODE
-    - Number
-    - The current mode of the right radio management panel.
+- A32NX_RMP_{L,R}_SELECTED_MODE
+    - Enum
+    - The current mode of the left/right radio management panel.
+      Meaning | Value
+      --- | ---
+      VHF1 | 1
+      VHF2 | 2
+      VHF3 | 3
+      HF1 | 4
+      HF2 | 5
+      VOR | 6
+      ILS | 7
+      MLS | 8
+      ADF | 9
 
 - A32NX_RMP_{L,R}_NAV_BUTTON_SELECTED
     - Bool
-    - Whether the NAV push button on the corresponding RMP is pushed or not.
+    - Whether the NAV push button on the left/right RMP is pushed or not.
 
-- A32NX_RMP_L_VHF2_STANDBY
+- A32NX_RMP_{L,R}_VHF{1,2,3}_STANDBY
     - Hz
-    - The VHF 2 standby frequency for the left RMP.
+    - The VHF 1/2/3 standby frequency for the left/right RMP.
 
-- A32NX_RMP_L_VHF3_STANDBY
+- A32NX_RMP_HF{1,2}_ACTIVE_FREQUENCY
     - Hz
-    - The VHF 3 standby frequency for the left RMP.
+    - The HF 1/2 active frequency that is set.
 
-- A32NX_RMP_R_VHF1_STANDBY
+- A32NX_RMP_{L,R}_HF{1,2}_STANDBY_FREQUENCY
     - Hz
-    - The VHF 1 standby frequency for the right RMP.
-
-- A32NX_RMP_R_VHF3_STANDBY
-    - Hz
-    - The VHF 3 standby frequency for the right RMP.
+    - The HF 1/2 standby frequency for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_VOR
     - Hz
-    - The VOR active frequency that is saved for display for the left/right RMP.
+    - The VOR active frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ILS
     - Hz
-    - The ILS active frequency that is saved for display for the left/right RMP.
+    - The ILS active frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
-    - The ADF active frequency that is saved for display for the left/right RMP.
+    - The ADF active frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
-    - The VOR standby frequency that is saved for display for the left/right RMP.
+    - The VOR standby frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ILS
     - Hz
-    - The ILS standby frequency that is saved for display for the left/right RMP.
+    - The ILS standby frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ADF
     - Hz
-    - The ADF standby frequency that is saved for display for the left/right RMP.
+    - The ADF standby frequency that is saved for the left/right RMP.
 
 - A32NX_RMP_{L,R}_SAVED_COURSE_VOR
     - Number
@@ -451,6 +450,142 @@
 - A32NX_RMP_{L,R}_SAVED_COURSE_ILS
     - Number
     - The ILS course tuned via the left/right RMP
+
+- A32NX_RMP_SEL_LIGHT_ON
+    - Bool
+    - If the SEL light is on
+
+- A32NX_ACP{1,2,3}_VHF{1,2}_TRANSMIT
+    - Bool
+    - Indicates which VHF is selected for transmission on which ACP
+      Value | Meaning
+      --- | ---
+      0 | Not selected
+      1 | Selected
+
+- A32NX_VOLUME_VHF{1,2}_FROM_ATC_SERVICES
+    - Number
+    - Volume of VHF 1/2 provided by ATC Services (IVAO, vPilot for instance)
+      Value | Meaning
+      --- | ---
+      -1 | No volume to set
+      0-100 | Volume to set
+
+- A32NX_ACP{1,2,3}_VHF{1,2,3}_VOLUME
+    - Number
+    - Volume of VHF 1/2/3 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_HF{1,2}_VOLUME
+    - Number
+    - Volume of HF 1/2 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MECH_VOLUME
+    - Number
+    - Volume of MECH on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ATT_VOLUME
+    - Number
+    - Volume of CABIN on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_PA_VOLUME
+    - Number
+    - Volume of PA on the left/right/overhead ACP
+
+- A32NX_HF{1,2}_VOLUME
+    - Number
+    - The HF1/2 volume equal to one of the ACPs depending on the controlling mode
+
+- A32NX_ACP_MECH_VOLUME
+    - Number
+    - The MECH volume equal to one of the ACPs depending on the controlling mode
+
+- A32NX_ACP_ATT_VOLUME
+    - Number
+    - The CABIN volume equal to one of the ACPs depending on the controlling mode
+
+- A32NX_ACP_PA_VOLUME
+    - Number
+    - The PA volume equal to one of the ACPs depending on the controlling mode
+
+- A32NX_NAV_VOLUME:{1,2,3}
+    - Number
+    - The Morse volume for the corresponding nav transceiver equal to one of the ACPs depending on the controlling mode
+
+- A32NX_ADF_VOLUME:{1,2}
+    - Number
+    - The Morse volume for the corresponding adf transceiver equal to one of the ACPs depending on the controlling mode
+
+- A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the VHF 1/2/3 volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_HF{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the HF 1/2 volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MECH_KNOB_VOLUME_DOWN
+    - Bool
+    - If the MECH volume knob is activated on the left/right/overhead
+
+- A32NX_ACP{1,2,3}_ATT_KNOB_VOLUME_DOWN
+    - Bool
+    - If the CABIN volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_PA_KNOB_VOLUME_DOWN
+    - Bool
+    - If the PA volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_VOR{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the VOR 1/2 volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ILS_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ILS volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MLS_KNOB_VOLUME_DOWN
+    - Bool
+    - If the MLS volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MKR_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ILS Markers volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ADF{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ADF 1/2 volume knob is activated on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_VOR{1,2}_VOLUME
+    - Number
+    - Volume of VOR 1/2 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ILS_VOLUME
+    - Number
+    - Volume of ILS on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MLS_VOLUME
+    - Number
+    - Volume of MLS on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MKR_VOLUME
+    - Number
+    - Volume of the ILS Markers on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ADF{1,2}_VOLUME
+    - Number
+    - Volume of ADF 1/2 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_SWITCH_INT
+    - Number
+    - Set to 0 whenever on RAD position. 100 whenever neutral position. 200 whenever in INT position
+
+- A32NX_SIDE_CONTROLLING
+    - Enum
+    - Indicates which side controls the airplane
+      Value | Meaning
+      --- | ---
+      0 | Captain
+      1 | FO
 
 - A32NX_TO_CONFIG_FLAPS
     - Enum
@@ -1912,7 +2047,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
-- L:A32NX_FM{number}_ACC_ALT
+- A32NX_FM{number}_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The acceleration altitude
     - {number}
@@ -1956,7 +2091,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
 
-- L:A32NX_FM{number}_NAV_DISCRETE
+- A32NX_FM{number}_NAV_DISCRETE
     - Arinc429<Discrete>
     - {number}
         - 1 - captain's side FMGC
@@ -1970,42 +2105,42 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 15  | MMR 1 manually tuned |
       | 16  | MMR 2 manually tuned |
 
-- L:A32NX_FM{number}_EO_ACC_ALT
+- A32NX_FM{number}_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The engine out acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_LANDING_ELEVATION
+- A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_ACC_ALT
+- A32NX_FM{number}_MISSED_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
+- A32NX_FM{number}_MISSED_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach engine out acceleration altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_MISSED_THR_RED_ALT
+- A32NX_FM{number}_MISSED_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The missed approach thrust reduction altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- L:A32NX_FM{number}_THR_RED_ALT
+- A32NX_FM{number}_THR_RED_ALT
     - ARINC429<number> (feet MSL)
     - The thrust reduction altitude
     - {number}

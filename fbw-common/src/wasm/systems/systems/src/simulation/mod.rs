@@ -23,6 +23,71 @@ pub use update_context::*;
 
 pub mod test;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SideControlling {
+    Captain,
+    Fo,
+}
+
+impl Default for SideControlling {
+    fn default() -> SideControlling {
+        SideControlling::Captain
+    }
+}
+
+read_write_enum!(SideControlling);
+
+impl From<f64> for SideControlling {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => SideControlling::Captain,
+            _ => SideControlling::Fo,
+        }
+    }
+}
+
+#[derive(Default, Copy, Clone, Debug)]
+pub struct ExternalData {
+    loaded: bool,
+    selcal: u8,
+    volume_com1: u8,
+    volume_com2: u8,
+}
+
+impl ExternalData {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+
+    pub fn set_ivao(&mut self, selcal: u8, volume_com1: u8, volume_com2: u8) {
+        self.selcal = selcal;
+        self.volume_com1 = volume_com1;
+        self.volume_com2 = volume_com2;
+    }
+
+    pub fn set_vpilot(&mut self, loaded: u8, selcal: u8) {
+        self.selcal = selcal;
+        self.loaded = loaded == 1;
+    }
+
+    pub fn get_volume_com1(&self) -> u8 {
+        self.volume_com1
+    }
+
+    pub fn get_volume_com2(&self) -> u8 {
+        self.volume_com2
+    }
+
+    pub fn get_loaded(&self) -> u8 {
+        self.loaded as u8
+    }
+    pub fn get_selcal(&self) -> u8 {
+        self.selcal
+    }
+}
+
 /// Trait for a type which can read and write simulator data.
 /// Using this trait implementors can abstract away the way the code
 /// interacts with the simulator. This separation of concerns is very important
@@ -329,6 +394,12 @@ pub trait SimulationElement {
 
     /// Receives a failure in order to activate or deactivate it.
     fn receive_failure(&mut self, _failure_type: FailureType, _is_active: bool) {}
+
+    /// Writes simulation data into a struct which will be transmitted to
+    /// an external software via SimConnect.
+    ///
+    /// Take as example how selcal is done.
+    fn export_to_external_software(&self, _data: &mut ExternalData) {}
 }
 
 /// Trait for visitors that visit the aircraft's system simulation to call
@@ -432,13 +503,14 @@ impl<T: Aircraft> Simulation<T> {
         &mut self,
         delta: Duration,
         simulation_time: f64,
+        external_data: &mut ExternalData,
         reader_writer: &mut impl SimulatorReaderWriter,
     ) {
         self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(reader_writer);
         self.update_context
-            .update(&mut reader, delta, simulation_time);
+            .update(&mut reader, delta, simulation_time, external_data);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
         self.aircraft.accept(&mut visitor);
@@ -458,6 +530,9 @@ impl<T: Aircraft> Simulation<T> {
 
         let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
+        self.aircraft.accept(&mut visitor);
+
+        let mut visitor = ExportDataVisitor::new(external_data);
         self.aircraft.accept(&mut visitor);
     }
 
@@ -512,6 +587,23 @@ impl FailureSimulationElementVisitor {
 impl SimulationElementVisitor for FailureSimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.receive_failure(self.failure_type, self.is_active);
+    }
+}
+
+/// Visits aircraft components in order to pass data coming
+/// from the system simulation into third party software
+/// such as vPilot or Altitude (IVAO).
+struct ExportDataVisitor<'a> {
+    data: &'a mut ExternalData,
+}
+impl<'a> ExportDataVisitor<'a> {
+    pub fn new(data: &'a mut ExternalData) -> Self {
+        ExportDataVisitor { data }
+    }
+}
+impl<'a> SimulationElementVisitor for ExportDataVisitor<'a> {
+    fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
+        visited.export_to_external_software(&mut self.data);
     }
 }
 
