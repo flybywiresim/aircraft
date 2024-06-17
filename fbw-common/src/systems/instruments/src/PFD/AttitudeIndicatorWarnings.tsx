@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars, FwcDataEvents, TawsDataEvents } from '../MsfsAvionicsCommon/providers';
 
 interface AttitudeIndicatorWarningsProps {
@@ -20,6 +20,10 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
   private readonly rwyTooShortActive = Subject.create(false);
 
   private readonly rwyAheadActive = Subject.create(false);
+
+  private readonly rowRopWord1 = Arinc429RegisterSubject.createEmpty();
+
+  private readonly oansWord1 = Arinc429RegisterSubject.createEmpty();
 
   private readonly fwcWord126 = Arinc429RegisterSubject.createEmpty();
 
@@ -48,20 +52,20 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
       .on('rowRopWord1Raw')
       .whenChanged()
       .handle((raw) => {
-        const ar = new Arinc429Word(raw);
+        this.rowRopWord1.setWord(raw);
 
-        this.maxReverseActive.set(ar.getBitValueOr(12, false));
-        this.maxReverseMaxBrakingActive.set(ar.getBitValueOr(13, false));
-        this.ifWetRwyTooShortActive.set(ar.getBitValueOr(14, false));
-        this.rwyTooShortActive.set(ar.getBitValueOr(15, false));
+        this.maxReverseActive.set(this.rowRopWord1.get().bitValueOr(12, false));
+        this.maxReverseMaxBrakingActive.set(this.rowRopWord1.get().bitValueOr(13, false));
+        this.ifWetRwyTooShortActive.set(this.rowRopWord1.get().bitValueOr(14, false));
+        this.rwyTooShortActive.set(this.rowRopWord1.get().bitValueOr(15, false));
       });
 
     sub
       .on('oansWord1Raw')
       .whenChanged()
       .handle((raw) => {
-        const ar = new Arinc429Word(raw);
-        this.rwyAheadActive.set(ar.getBitValueOr(11, false));
+        this.oansWord1.setWord(raw);
+        this.rwyAheadActive.set(this.oansWord1.get().bitValueOr(11, false));
       });
 
     sub
