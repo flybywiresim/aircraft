@@ -2262,7 +2262,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       // IF -> XX if no discontinuity before, and element present
       if (i !== 0 && element && element.isDiscontinuity === false && element.type === LegType.IF) {
-        if (prevElement && prevElement.isDiscontinuity === true) {
+        if (
+          (prevElement && prevElement.isDiscontinuity === true) ||
+          (prevElement.isDiscontinuity === false && prevElement.isXI())
+        ) {
           continue;
         }
 

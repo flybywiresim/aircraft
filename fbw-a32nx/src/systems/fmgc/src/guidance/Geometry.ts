@@ -30,6 +30,7 @@ import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -204,7 +205,12 @@ export class Geometry {
     const nextNextLeg = this.legs.get(index + 2);
 
     const inboundTransition = this.transitions.get(index - 1);
-    const outboundTransition = this.transitions.get(index);
+    let outboundTransition = this.transitions.get(index);
+    if (leg instanceof IFLeg) {
+      outboundTransition = undefined;
+    } else if (leg instanceof CILeg && nextLeg instanceof IFLeg && nextNextLeg instanceof TFLeg) {
+      outboundTransition = this.transitions.get(index + 1);
+    }
 
     const legPredictedTas = Geometry.getLegPredictedTas(leg, tas);
     const legPredictedGs = Geometry.getLegPredictedGs(leg, gs);
