@@ -100,7 +100,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** CONF 2 runway limited weights at sea level/ISA/0 slope/no bleed/fwd cg/no wind/dry, MTOW [kg], runway length [metres] => lookup key = (runway length) */
   private static readonly runwayPerfLimitConf2 = new LerpLookupTable([
-    [54_200, 1000],
+    [54_500, 1000],
     [60_500, 1219],
     [71_000, 1604],
     [78_400, 1959],
@@ -150,7 +150,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly runwayTemperatureFactor: Record<number, [number, number, number, number, number, number]> = {
     1: [0.00001, 0.095175, 0.000194, 0.064995, 0.000179, 0.181707],
     2: [-0.00001, 0.131948, 0.000155, 0.162938, 0.000206, 0.185232],
-    3: [-0.000438, 0.198845, 0.000188, 0.14547, 0.000247, 0.143393],
+    3: [-0.0000438, 0.198845, 0.000188, 0.14547, 0.000247, 0.143393],
   };
 
   /** Headwind factors for each takeoff config. */
@@ -256,9 +256,9 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Segment segment weight factors for each takeoff config. */
   private static readonly vmcgBaseFactor: Record<number, [number, number]> = {
-    1: [0.06143, -15.371],
-    2: [0.080039, -36.927],
-    3: [0.069037, -23.783],
+    1: [0.06722, -23.463],
+    2: [0.082005, -39.27],
+    3: [0.0704, -25.6868],
   };
 
   /** Slope factor for each takeoff config. */
@@ -271,8 +271,8 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   /** Pressure altitude factors for each takeoff config. */
   private static readonly vmcgPressureAltFactor: Record<number, [number, number]> = {
     1: [1.123e-6, 0.000136],
-    2: [1.63e-6, -0.000313],
-    3: [1.0e-6, 0.00029],
+    2: [-7.58e-7, 0.00703],
+    3: [1.95e-7, 0.000266],
   };
 
   /** Temperature factors for each takeoff config. */
@@ -288,13 +288,13 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [number, number, number, number, number, number, number, number]
   > = {
     1: [0.001198, -1.80539, 0.000097, -0.15121, -0.000255, 0.337391, 0.000066, -0.079718],
-    2: [0.000688, -1.163, 0.000031, -0.057504, -0.000184, 0.246185, 0.000012, 0.0216],
+    2: [0.000697, -1.17473, 0.000031, -0.057504, -0.000184, 0.246185, 0.000012, 0.0216],
     3: [0.0023, -3.468, -0.000037, 0.033946, -0.000156, 0.213953, -0.000757, 1.094],
   };
 
   /** Tailwind factors for each takeoff config. */
   private static readonly vmcgTailWindFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [0.00161, -4.7535, -0.000106, 0.145473, 0.023687, -0.0356],
+    1: [0.00161, -4.7535, -0.000106, 0.145473, 0.031431, -0.0356],
     2: [0.001892, -5.646, -0.000059, 0.079539, 0.009948, -0.010763],
     3: [0.000613, -3.165, -0.000022, 0.020622, 0.049286, -0.0396],
   };
