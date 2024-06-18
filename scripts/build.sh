@@ -28,7 +28,7 @@ for arg in "$@"; do
 done
 
 # run build with the new arguments
-time npx igniter "${args[@]}"
+FBW_TYPECHECK=1 time npx igniter "${args[@]}"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
