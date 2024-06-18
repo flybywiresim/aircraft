@@ -137,7 +137,7 @@ export const ChartViewer = () => {
       const dLat = boundingBox.planview.latlng.lat2 - boundingBox.planview.latlng.lat1;
       const dLon = boundingBox.planview.latlng.lng2 - boundingBox.planview.latlng.lng1;
       const x = boundingBox.planview.pixels.x1 + dx * ((aircraftLongitude - boundingBox.planview.latlng.lng1) / dLon);
-      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat1 - aircraftLatitude) / dLat);
+      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat2 - aircraftLatitude) / dLat);
 
       setAircraftIconPosition({ x, y, r: aircraftTrueHeading });
       visible = true;
@@ -537,6 +537,8 @@ export const ChartViewer = () => {
                   {aircraftIconVisible && boundingBox && (
                     <svg
                       ref={planeRef}
+                      width={boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1}
+                      height={Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}
                       viewBox={`0 0 ${boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1} ${Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}`}
                       className="absolute left-0 top-0 z-30"
                     >
