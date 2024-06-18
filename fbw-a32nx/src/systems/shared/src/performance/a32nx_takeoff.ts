@@ -2890,15 +2890,15 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     } else {
       // 2nd seg or brake energy limited
       // v2
-      v2 = this.calculateSecondSegBrakeV2(speeds, result, false);
+      const v2NoWind = this.calculateSecondSegBrakeV2(speeds, result, false, false);
       const [v2ThresholdFactor1, v2ThresholdFactor2] =
         A320251NTakeoffPerformanceCalculator.v2SecondSegBrakeThresholds[result.inputs.conf];
       speeds.v2Table2Threshold = result.params.adjustedTora * v2ThresholdFactor1 + v2ThresholdFactor2;
-      const useTable2 = v2 >= speeds.v2Table2Threshold;
+      const useTable2 = v2NoWind >= speeds.v2Table2Threshold;
       if (useTable2) {
-        speeds.v2Table1 = v2;
-        v2 = this.calculateSecondSegBrakeV2(speeds, result, true);
+        speeds.v2Table1NoWind = v2NoWind;
       }
+      v2 = this.calculateSecondSegBrakeV2(speeds, result, true, useTable2);
 
       // vr
       const [vRBaseFactor1, vRBaseFactor2]: [number, number] = useTable2
@@ -2952,6 +2952,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private calculateSecondSegBrakeV2(
     speeds: Partial<TakeoffPerformanceSpeeds>,
     result: Partial<TakeoffPerformanceResult>,
+    correctWind: boolean,
     useTable2: boolean,
   ): number {
     if (!result.inputs || !result.params) {
@@ -2985,11 +2986,15 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     speeds.v2DeltaSlope =
       result.inputs.slope * result.params.adjustedTora * ((result.inputs.tow / 1000) * v2SlopeFactor1 + v2SlopeFactor2);
 
-    const v2WindFactor =
-      result.params.headwind >= 0
-        ? A320251NTakeoffPerformanceCalculator.v2SecondSegBrakeHeadwindFactors[result.inputs.conf]
-        : A320251NTakeoffPerformanceCalculator.v2SecondSegBrakeTailwindFactors[result.inputs.conf];
-    speeds.v2DeltaWind = result.params.headwind * v2WindFactor;
+    if (correctWind) {
+      const v2WindFactor =
+        result.params.headwind >= 0
+          ? A320251NTakeoffPerformanceCalculator.v2SecondSegBrakeHeadwindFactors[result.inputs.conf]
+          : A320251NTakeoffPerformanceCalculator.v2SecondSegBrakeTailwindFactors[result.inputs.conf];
+      speeds.v2DeltaWind = result.params.headwind * v2WindFactor;
+    } else {
+      speeds.v2DeltaWind = 0;
+    }
 
     return speeds.v2Base + speeds.v2DeltaRunway + speeds.v2DeltaAlt + speeds.v2DeltaSlope + speeds.v2DeltaWind;
   }

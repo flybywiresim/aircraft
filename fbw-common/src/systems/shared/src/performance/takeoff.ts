@@ -135,7 +135,7 @@ export interface TakeoffPerformanceParameters {
 
 export interface TakeoffPerformanceSpeeds {
   dryV2: number;
-  v2Table1?: number;
+  v2Table1NoWind?: number;
   v2Table2Threshold: number;
   v2Base: number;
   v2DeltaRunway: number;
