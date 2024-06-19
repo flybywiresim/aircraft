@@ -1,10 +1,10 @@
-@import "../Common/definitions";
+@import "shared/definitions";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -244,10 +244,10 @@ text.Red {
 }
 
 .EarthFill {
-  fill: #5D2518;
+  fill: #9c480c;
 }
 .SkyFill {
-  fill: #0073DE;
+  fill: #0698ff;
 }
 .BlackFill {
   fill: $display-background;
@@ -257,7 +257,6 @@ text.Red {
   fill: $display-grey;
   stroke: none;
 }
-
 .BackgroundFill {
   fill: $display-background;
   stroke: none;
