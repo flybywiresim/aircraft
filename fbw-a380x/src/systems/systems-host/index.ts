@@ -2,143 +2,227 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher, KeyEventManager, Wait, GameStateProvider } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  HEventPublisher,
+  KeyEventManager,
+  Wait,
+  GameStateProvider,
+  InstrumentBackplane,
+  Clock,
+  ClockEvents,
+  Subject,
+  ConsumerSubject,
+  MappedSubject,
+  SubscribableMapFunctions,
+} from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
+import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
+import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
+import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
+import { Transponder } from 'systems-host/systems/Communications/Transponder';
+import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 
 class SystemsHost extends BaseInstrument {
-    private readonly bus: EventBus;
+  private readonly bus = new EventBus();
 
-    private readonly hEventPublisher: HEventPublisher;
+  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes>();
 
-    // TODO: Migrate PowerSupplyBusses and AtsuSystem, if needed
+  private readonly backplane = new InstrumentBackplane();
 
-    private fwc: LegacyFwc;
+  private readonly clock = new Clock(this.bus);
 
-    private gpws: LegacyGpws;
+  private readonly hEventPublisher: HEventPublisher;
 
-    private soundManager: LegacySoundManager;
+  private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
-    private keyInterceptManager: KeyEventManager;
+  // TODO: Migrate PowerSupplyBusses and AtsuSystem, if needed
 
-    /**
-     * "mainmenu" = 0
-     * "loading" = 1
-     * "briefing" = 2
-     * "ingame" = 3
-     */
-    private gameState = 0;
+  private fwc: LegacyFwc;
 
-    constructor() {
-        super();
+  private gpws: LegacyGpws;
 
-        this.bus = new EventBus();
-        this.hEventPublisher = new HEventPublisher(this.bus);
-        this.fwc = new LegacyFwc();
-        this.soundManager = new LegacySoundManager();
-        this.gpws = new LegacyGpws(this.soundManager);
-        this.gpws.init();
+  private soundManager: LegacySoundManager;
 
-        let lastUpdateTime = Date.now();
-        setInterval(() => {
-            const now = Date.now();
-            const dt = now - lastUpdateTime;
+  private keyInterceptManager: KeyEventManager;
 
-            this.fwc.update(dt);
-            this.soundManager.update(dt);
-            this.gpws.update(dt);
+  private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
+  private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
+  private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
+  private readonly dcBus1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
+  private readonly dcBus2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
 
-            lastUpdateTime = now;
-        }, 75);
+  private readonly vhf1 = new VhfRadio(VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
+  private readonly vhf2 = new VhfRadio(VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
+  private readonly vhf3 = new VhfRadio(VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
 
-        Promise.all([
-            KeyEventManager.getManager(this.bus),
-            Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
-        ]).then(([keyEventManager]) => {
-            this.keyInterceptManager = keyEventManager;
-            this.initLighting();
-        });
+  // TODO powered subs
+  private readonly amu1 = new AudioManagementUnit(this.bus, 1, this.failuresConsumer);
+  private readonly amu2 = new AudioManagementUnit(this.bus, 2, this.failuresConsumer);
+
+  private readonly xpdr1 = new Transponder(
+    1,
+    41,
+    MappedSubject.create(SubscribableMapFunctions.or(), this.acEssBusPowered, this.acBus2Powered),
+    this.failuresConsumer,
+  );
+  // MSFS only supports 1
+  // private readonly xpdr2 = new Transponder(2, 144, this.acBus2Powered, this.failuresConsumer);
+
+  private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
+
+  private readonly cameraPublisher = new CameraPublisher(this.bus);
+
+  private readonly powerPublisher = new PowerSupplyBusses(this.bus);
+
+  /**
+   * "mainmenu" = 0
+   * "loading" = 1
+   * "briefing" = 2
+   * "ingame" = 3
+   */
+  private gameState = 0;
+
+  constructor() {
+    super();
+
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addInstrument('Vhf1', this.vhf1, true);
+    this.backplane.addInstrument('Vhf2', this.vhf2, true);
+    this.backplane.addInstrument('Vhf3', this.vhf3, true);
+    this.backplane.addInstrument('Amu1', this.amu1, true);
+    this.backplane.addInstrument('Amu2', this.amu2, true);
+    this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
+    this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
+    this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
+    this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+
+    this.hEventPublisher = new HEventPublisher(this.bus);
+    this.fwc = new LegacyFwc();
+    this.soundManager = new LegacySoundManager();
+    this.gpws = new LegacyGpws(this.soundManager);
+    this.gpws.init();
+
+    let lastUpdateTime: number;
+    // TODO this is really fast for the FWC...
+    this.bus
+      .getSubscriber<ClockEvents>()
+      .on('realTime')
+      .atFrequency(13.3)
+      .handle((now) => {
+        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        lastUpdateTime = now;
+
+        this.fwc.update(dt);
+        this.soundManager.update(dt);
+        this.gpws.update(dt);
+      });
+
+    Promise.all([
+      KeyEventManager.getManager(this.bus),
+      Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
+    ]).then(([keyEventManager]) => {
+      this.keyInterceptManager = keyEventManager;
+      this.initLighting();
+    });
+  }
+
+  get templateID(): string {
+    return 'A380X_SYSTEMSHOST';
+  }
+
+  public getDeltaTime() {
+    return this.deltaTime;
+  }
+
+  public onInteractionEvent(args: string[]): void {
+    this.hEventPublisher.dispatchHEvent(args[0]);
+  }
+
+  public connectedCallback(): void {
+    super.connectedCallback();
+
+    // Needed to fetch METARs from the sim
+    RegisterViewListener(
+      'JS_LISTENER_FACILITY',
+      () => {
+        console.log('JS_LISTENER_FACILITY registered.');
+      },
+      true,
+    );
+
+    this.backplane.init();
+  }
+
+  public Update(): void {
+    super.Update();
+
+    this.failuresConsumer.update();
+
+    if (this.gameState !== 3) {
+      const gamestate = this.getGameState();
+      if (gamestate === 3) {
+        this.hEventPublisher.startPublish();
+      }
+      this.gameState = gamestate;
     }
 
-    get templateID(): string {
-        return 'A380X_SYSTEMSHOST';
-    }
+    this.backplane.onUpdate();
+  }
 
-    public getDeltaTime() {
-        return this.deltaTime;
-    }
+  // TODO this should be in extras host, it's not an aircraft system, but a sim thing
+  private initLighting() {
+    console.log('[systems-host] initializing lighting to defaults');
 
-    public onInteractionEvent(args: string[]): void {
-        this.hEventPublisher.dispatchHEvent(args[0]);
-    }
+    /** automatic brightness based on ambient light, [0, 1] scale */
+    const autoBrightness = Math.max(
+      15,
+      Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')),
+    );
 
-    public connectedCallback(): void {
-        super.connectedCallback();
+    // OVHD Reading Lights
+    this.setPotentiometer(96, 0); // Capt
+    this.setPotentiometer(97, 0); // F/O
 
-        // Needed to fetch METARs from the sim
-        RegisterViewListener('JS_LISTENER_FACILITY', () => {
-            console.log('JS_LISTENER_FACILITY registered.');
-        }, true);
-    }
+    // Glareshield
+    this.setPotentiometer(84, autoBrightness < 50 ? 1.5 * autoBrightness : 0); // Int Lt
+    this.setPotentiometer(87, autoBrightness); // Lcd Brt
+    this.setPotentiometer(10, 0); // table Cpt
+    this.setPotentiometer(11, 0); // table F/O
 
-    public Update(): void {
-        super.Update();
+    // Instruments Cpt
+    this.setPotentiometer(88, autoBrightness); // PFD
+    this.setPotentiometer(89, autoBrightness); // ND
+    this.setPotentiometer(94, autoBrightness / 2); // wxRadar
+    this.setPotentiometer(98, autoBrightness); // MFD
+    this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
 
-        if (this.gameState !== 3) {
-            const gamestate = this.getGameState();
-            if (gamestate === 3) {
-                this.hEventPublisher.startPublish();
-            }
-            this.gameState = gamestate;
-        }
-    }
+    // Instruments F/O
+    this.setPotentiometer(90, autoBrightness); // PFD
+    this.setPotentiometer(91, autoBrightness); // ND
+    this.setPotentiometer(95, autoBrightness / 2); // wxRadar
+    this.setPotentiometer(99, autoBrightness); // MFD
+    this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
 
-    private initLighting() {
-        console.log('[systems-host] initializing lighting to defaults');
+    // Pedestal
+    this.setPotentiometer(80, autoBrightness); // rmpCptLightLevel
+    this.setPotentiometer(81, autoBrightness); // rmpFoLightLevel
+    this.setPotentiometer(82, autoBrightness); // rmpOvhdLightLevel
+    this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
+    this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
+    this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
+    this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
+    this.setPotentiometer(85, autoBrightness); // integralLightLevel
+    this.setPotentiometer(7, autoBrightness); // ambientLightLevel
+  }
 
-        /** automatic brightness based on ambient light, [0, 1] scale */
-        const autoBrightness = Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));
-
-        // OVHD Reading Lights
-        this.setPotentiometer(96, 0); // Capt
-        this.setPotentiometer(97, 0); // F/O
-
-        // Glareshield
-        this.setPotentiometer(84, autoBrightness < 50 ? 1.5 * autoBrightness : 0); // Int Lt
-        this.setPotentiometer(87, autoBrightness); // Lcd Brt
-        this.setPotentiometer(10, 0); // table Cpt
-        this.setPotentiometer(11, 0); // table F/O
-
-        // Instruments Cpt
-        this.setPotentiometer(88, autoBrightness); // PFD
-        this.setPotentiometer(89, autoBrightness); // ND
-        this.setPotentiometer(94, autoBrightness / 2); // wxRadar
-        this.setPotentiometer(98, autoBrightness); // MFD
-        this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
-
-        // Instruments F/O
-        this.setPotentiometer(90, autoBrightness); // PFD
-        this.setPotentiometer(91, autoBrightness); // ND
-        this.setPotentiometer(95, autoBrightness / 2); // wxRadar
-        this.setPotentiometer(99, autoBrightness); // MFD
-        this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
-
-        // Pedestal
-        this.setPotentiometer(80, autoBrightness); // rmpCptLightLevel
-        this.setPotentiometer(81, autoBrightness); // rmpFoLightLevel
-        this.setPotentiometer(82, autoBrightness); // rmpOvhdLightLevel
-        this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
-        this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
-        this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
-        this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
-        this.setPotentiometer(85, autoBrightness); // integralLightLevel
-        this.setPotentiometer(7, autoBrightness); // ambientLightLevel
-    }
-
-    private setPotentiometer(potentiometer: number, brightness: number) {
-        this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
-    }
+  private setPotentiometer(potentiometer: number, brightness: number) {
+    this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+  }
 }
 
 registerInstrument('systems-host', SystemsHost);
