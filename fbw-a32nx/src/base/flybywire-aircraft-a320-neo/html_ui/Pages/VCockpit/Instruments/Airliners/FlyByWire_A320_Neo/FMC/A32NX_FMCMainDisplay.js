@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -2676,7 +2675,7 @@ class FMCMainDisplay extends BaseAirliners {
             return null;
         }
 
-        return this.zeroFuelWeight + (useFqi ? this.getFOB() : this.blockFuel);
+        return this.zeroFuelWeight + (this.getFOB());
     }
 
     getToSpeedsTooLow() {
@@ -4560,12 +4559,18 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     * Retrieves current fuel on boad in tons.
      *
-     * @returns {*}
+     * @returns {number | undefined} current fuel on board in tons, or undefined if fuel readings are not available.
      */
     //TODO: Can this be util?
     getFOB() {
-        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        if (this.isAnEngineOn()) {
+            return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        } else {
+            //If an engine is not running, use pilot entered block fuel to calculate fuel predictions
+            return this.blockFuel;
+        }
     }
 
     /**
@@ -4575,10 +4580,9 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getGW() {
         let fmGW = 0;
-        if (this.isAnEngineOn() && isFinite(this.zeroFuelWeight)) {
+        //Simplified to just checking fuelWeight as GetFOB handles what fuel level to use (block vs tank reading)
+        if (isFinite(this.zeroFuelWeight)) {
             fmGW = (this.getFOB() + this.zeroFuelWeight);
-        } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
-            fmGW = (this.blockFuel + this.zeroFuelWeight);
         } else {
             fmGW = 0;
         }
