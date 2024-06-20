@@ -20,6 +20,7 @@ import {
   setToastPresented,
   setSimbriefDataPending,
 } from '@flybywiresim/flypad';
+import { useNavigraphAuthInfo } from '../../Apis/Navigraph/Components/Authentication';
 
 interface InformationEntryProps {
   title: string;
@@ -37,7 +38,9 @@ export const FlightWidget = () => {
   const { data } = useAppSelector((state) => state.simbrief);
   const simbriefDataPending = useAppSelector((state) => state.simbrief.simbriefDataPending);
   const aircraftIcao = useAppSelector((state) => state.simbrief.data.aircraftIcao);
-  const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
+
+  const navigraphAuthInfo = useNavigraphAuthInfo();
+
   const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
   const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
   const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
@@ -104,7 +107,10 @@ export const FlightWidget = () => {
       toast.error(t('Dashboard.YourFlight.NoImportDueToBoardingOrRefuel'));
     } else {
       try {
-        const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '');
+        const action = await fetchSimbriefDataAction(
+          (navigraphAuthInfo.loggedIn && navigraphAuthInfo.username) || '',
+          overrideSimBriefUserID ?? '',
+        );
         dispatch(action);
         dispatch(setFuelImported(false));
         dispatch(setPayloadImported(false));
@@ -122,7 +128,7 @@ export const FlightWidget = () => {
   useEffect(() => {
     if (
       !simbriefDataPending &&
-      (navigraphUsername || overrideSimBriefUserID) &&
+      ((navigraphAuthInfo.loggedIn && navigraphAuthInfo.username) || overrideSimBriefUserID) &&
       !toastPresented &&
       fuelImported &&
       payloadImported
@@ -141,11 +147,11 @@ export const FlightWidget = () => {
       (!data || !isSimbriefDataLoaded()) &&
       !simbriefDataPending &&
       autoSimbriefImport === 'ENABLED' &&
-      (navigraphUsername || overrideSimBriefUserID)
+      ((navigraphAuthInfo.loggedIn && navigraphAuthInfo.username) || overrideSimBriefUserID)
     ) {
       fetchData();
     }
-  }, []);
+  }, [navigraphAuthInfo]);
 
   const simbriefDataLoaded = isSimbriefDataLoaded();
 
@@ -252,7 +258,7 @@ export const FlightWidget = () => {
                 <button
                   type="button"
                   onClick={fetchData}
-                  className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex w-full items-center justify-center space-x-4 rounded-md border-2 p-2 transition duration-100"
+                  className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center space-x-4 rounded-md border-2 p-2 transition duration-100"
                 >
                   <CloudArrowDown size={26} />
                   <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
