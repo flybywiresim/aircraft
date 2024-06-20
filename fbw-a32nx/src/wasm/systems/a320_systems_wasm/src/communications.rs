@@ -97,8 +97,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         VariableToEventWriteOn::Change,
         "RADIO_DME2_IDENT_SET",
     )?;
-    // For the next two, they are not VOR but
-    // the SDK does not allow us to call RADIO_DME3/4_IDENT_SET yet
+    // The next two get data from ILS_IDENT since both MMRs are ILS only (so far)
     builder.variable_to_event(
         Variable::aspect("ILS_IDENT"),
         VariableToEventMapping::EventDataRaw,
@@ -106,7 +105,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "RADIO_VOR3_IDENT_SET",
     )?;
     builder.variable_to_event(
-        Variable::aspect("GLS_IDENT"),
+        Variable::aspect("ILS_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
         "RADIO_VOR4_IDENT_SET",
