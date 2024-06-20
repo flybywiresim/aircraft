@@ -2,6 +2,7 @@ import { DisplayComponent, FSComponent, SimVarValueType, Subject, Subscription, 
 
 import './MfdSurvControls.scss';
 
+import { MfdSurvData } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -20,6 +21,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private readonly squawkCode = Subject.create<number | null>(null);
 
+  private readonly xpdrAltRptgOn = Subject.create<boolean>(true);
+
   private readonly xpdrStatusSelectedIndex = Subject.create<number | null>(0);
 
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(0);
@@ -31,7 +34,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<MfdSimvars>();
+    const sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvData>();
 
     sub
       .on('xpdrCode')
@@ -41,15 +44,18 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       });
 
     sub
-      .on('xpdrState')
+      .on('isAuto')
       .whenChanged()
-      .handle((code) => {
-        if (code === 3) {
-          this.xpdrStatusSelectedIndex.set(0);
-        } else if (code === 1) {
-          this.xpdrStatusSelectedIndex.set(1);
-        }
-      });
+      .handle((it) => this.xpdrStatusSelectedIndex.set(it ? 0 : 1));
+
+    sub
+      .on('isAltReportingOn')
+      .whenChanged()
+      .handle((it) => this.xpdrAltRptgOn.set(it));
+
+    this.subs.push(
+      this.xpdrAltRptgOn.sub((it) => this.props.bus.getPublisher<MfdSurvData>().pub('isAltReportingOn', it, true)),
+    );
   }
 
   public destroy(): void {
@@ -60,11 +66,11 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   }
 
   private xpdrStatusChanged(val: number) {
-    if (val === 0) {
-      SimVar.SetSimVarValue('TRANSPONDER STATE:1', SimVarValueType.Enum, 3);
-    } else if (val === 1) {
-      SimVar.SetSimVarValue('TRANSPONDER STATE:1', SimVarValueType.Enum, 1);
-    }
+    this.props.bus.getPublisher<MfdSurvData>().pub('isAuto', val === 0, true);
+  }
+
+  private setDefaultSettings() {
+    // TODO
   }
 
   render(): VNode {
@@ -107,7 +113,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 <div class="mfd-label bigger" style="margin-top: 20px; margin-bottom: 5px;">
                   ALT RTPG
                 </div>
-                <SurvButton labelOff={'OFF'} labelOn={'ON'} onClick={() => console.log('ALT RTPG')} />
+                <SurvButton state={this.xpdrAltRptgOn} labelOff={'OFF'} labelOn={'ON'} />
               </div>
               <div style="display: flex; flex-direction: column; flex; 1; align-items: center; justify-content: center; padding-right: 20px;">
                 <RadioButtonGroup
@@ -169,27 +175,27 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
               <div style="display: grid; grid-template-columns: auto auto auto;">
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">WXR</div>
-                  <SurvButton labelOff={'OFF'} labelOn={'AUTO'} onClick={() => console.log('WXR')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">PRED W/S</div>
-                  <SurvButton labelOff={'OFF'} labelOn={'AUTO'} onClick={() => console.log('PRED W/S')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">TURB</div>
-                  <SurvButton labelOff={'OFF'} labelOn={'AUTO'} onClick={() => console.log('TURB')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">GAIN</div>
-                  <SurvButton labelOff={'MAN'} labelOn={'AUTO'} onClick={() => console.log('GAIN')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'MAN'} labelOn={'AUTO'} />
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">MODE</div>
-                  <SurvButton labelOff={'MAP'} labelOn={'WX'} onClick={() => console.log('MODE')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'MAP'} labelOn={'WX'} />
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
                   <div class="mfd-label">WX ON VD</div>
-                  <SurvButton labelOff={'OFF'} labelOn={'AUTO'} onClick={() => console.log('WX ON VD')} />
+                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
                 </div>
               </div>
             </div>
@@ -200,23 +206,27 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
               <div class="mfd-label">TERR SYS</div>
-              <SurvButton labelOff={'OFF'} labelOn={'ON'} onClick={() => console.log('TERR SYS')} />
+              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
               <div class="mfd-label">GPWS</div>
-              <SurvButton labelOff={'OFF'} labelOn={'ON'} onClick={() => console.log('GPWS')} />
+              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
               <div class="mfd-label">G/S MODE</div>
-              <SurvButton labelOff={'OFF'} labelOn={'ON'} onClick={() => console.log('G/S MODE')} />
+              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
               <div class="mfd-label">FLAP MODE</div>
-              <SurvButton labelOff={'OFF'} labelOn={'ON'} onClick={() => console.log('FLAP MODE')} />
+              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
               <div class="mfd-label">SURV</div>
-              <Button label={'DEFAULT SETTINGS'} onClick={() => console.log('DEFAULT')} buttonStyle="width: 140px;" />
+              <Button
+                label={'DEFAULT SETTINGS'}
+                onClick={() => this.setDefaultSettings()}
+                buttonStyle="width: 140px;"
+              />
             </div>
           </div>
         </div>

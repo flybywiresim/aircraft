@@ -10,11 +10,11 @@ import {
 import './style.scss';
 
 export interface SurvButtonProps extends ComponentProps {
+  state: Subject<boolean>;
   labelOn: string | Subscribable<VNode>;
   labelOff: string | Subscribable<VNode>;
   disabled?: Subscribable<boolean>;
   buttonStyle?: string;
-  onClick: () => void;
 }
 
 /*
@@ -28,7 +28,7 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
 
   private clickHandler(): void {
     if (this.props.disabled?.get() === false) {
-      this.props.onClick();
+      this.props.state.set(!this.props.state.get());
     }
   }
 
@@ -64,8 +64,26 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
         style="border: 1px inset lightgrey; display: flex; flex-direction: column; width: 100px; justify-content: center; align-items: center; padding: 5px;"
         ref={this.topRef}
       >
-        <div class="mfd-value bigger">{this.props.labelOn}</div>
-        <div class="mfd-label">{this.props.labelOff}</div>
+        <div
+          class={{
+            'mfd-label': this.props.state.map((it) => !it),
+            'mfd-value': this.props.state,
+            // eslint-disable-next-line prettier/prettier
+            'bigger': this.props.state,
+          }}
+        >
+          {this.props.labelOn}
+        </div>
+        <div
+          class={{
+            'mfd-label': this.props.state,
+            'mfd-value': this.props.state.map((it) => !it),
+            // eslint-disable-next-line prettier/prettier
+            'bigger': this.props.state.map((it) => !it),
+          }}
+        >
+          {this.props.labelOff}
+        </div>
       </div>
     );
   }
