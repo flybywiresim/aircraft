@@ -2,7 +2,7 @@ import { DisplayComponent, FSComponent, SimVarValueType, Subject, Subscription, 
 
 import './MfdSurvControls.scss';
 
-import { MfdSurvData } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -34,7 +34,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvData>();
+    const sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
     sub
       .on('xpdrCode')
@@ -44,17 +44,19 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       });
 
     sub
-      .on('isAuto')
+      .on('mfd_xpdr_set_auto')
       .whenChanged()
       .handle((it) => this.xpdrStatusSelectedIndex.set(it ? 0 : 1));
 
     sub
-      .on('isAltReportingOn')
+      .on('mfd_xpdr_set_alt_reporting')
       .whenChanged()
       .handle((it) => this.xpdrAltRptgOn.set(it));
 
     this.subs.push(
-      this.xpdrAltRptgOn.sub((it) => this.props.bus.getPublisher<MfdSurvData>().pub('isAltReportingOn', it, true)),
+      this.xpdrAltRptgOn.sub((it) =>
+        this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', it, true),
+      ),
     );
   }
 
@@ -66,7 +68,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   }
 
   private xpdrStatusChanged(val: number) {
-    this.props.bus.getPublisher<MfdSurvData>().pub('isAuto', val === 0, true);
+    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', val === 0, true);
   }
 
   private setDefaultSettings() {

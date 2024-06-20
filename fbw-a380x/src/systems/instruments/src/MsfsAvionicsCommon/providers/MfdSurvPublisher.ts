@@ -1,15 +1,13 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-
-import { EventBus, PublishPacer, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 /**
  * Transmitted from MFD to RMP
  */
-export interface MfdSurvData {
+export interface MfdSurvEvents {
     /** (MFD SURV -> RMP) Is AUTO (true) or STBY (false). */
-    isAuto: boolean,
+    mfd_xpdr_set_auto: boolean,
     /** (MFD SURV -> RMP) Altitude reporting ON/OFF */
-    isAltReportingOn: boolean,
+    mfd_xpdr_set_alt_reporting: boolean,
 }
