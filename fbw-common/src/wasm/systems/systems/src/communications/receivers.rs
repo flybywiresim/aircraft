@@ -65,9 +65,6 @@ impl NavReceiver {
             is_power_supply_powered: false,
             powered_by,
             morse: Morse::new(context, name),
-            // Always true to VORs and ADFs.
-            // Used for ILS
-            // Called in update()
             ok_to_beep: false,
         }
     }

@@ -21,11 +21,12 @@ const TEXT_DATA_MODE_VHF3_UNPOWERED = '------';
  * @returns The formated frequency string in 123.456
  */
 const formatFrequency = (frequency: number): string => {
-  // VHF, HF , VOR, ILS
+  // VHF, VOR, ILS
   if (frequency >= 108000000) {
     return (frequency / 1000000).toFixed(3).padEnd(7, '0');
   }
 
+  // HF
   if (frequency >= 2000000) {
     return (frequency / 1000000).toFixed(3).padEnd(5, '0');
   }
