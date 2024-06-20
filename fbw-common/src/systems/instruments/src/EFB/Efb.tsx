@@ -7,7 +7,6 @@ import {
   FailureDefinition,
   UniversalConfigProvider,
   NXDataStore,
-  NavigraphClient,
   SENTRY_CONSENT_KEY,
   SentryConsentState,
   useInteractionEvent,
@@ -38,7 +37,6 @@ import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
-import { NavigraphContext } from './Apis/Navigraph/Navigraph';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -62,6 +60,7 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
+import { NavigraphAuthProvider } from '../react/navigraph';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -180,8 +179,6 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
   const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
   const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
   const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
-
-  const [navigraph] = useState(() => new NavigraphClient());
 
   const dispatch = useAppDispatch();
 
@@ -415,7 +412,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
       return <EmptyBatteryScreen />;
     case PowerStates.LOADED:
       return (
-        <NavigraphContext.Provider value={navigraph}>
+        <NavigraphAuthProvider>
           <ModalContainer />
           <PowerContext.Provider value={{ powerState, setPowerState }}>
             <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
@@ -446,7 +443,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
               </div>
             </div>
           </PowerContext.Provider>
-        </NavigraphContext.Provider>
+        </NavigraphAuthProvider>
       );
     default:
       throw new Error('Invalid content state provided');

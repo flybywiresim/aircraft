@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len,react/no-this-in-sfc,no-console */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowClockwise,
   ArrowCounterclockwise,
@@ -17,10 +17,9 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { Chart } from 'navigraph/charts';
 import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-// import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
-import { useNavigraph } from '../Apis/Navigraph/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
@@ -38,6 +37,8 @@ import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
 import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
+import { useNavigraphAuth } from '../../react/navigraph';
+import { navigraphCharts } from '../../navigraph';
 
 export const navigationTabs: (PageLink & { associatedTab: NavigationTab })[] = [
   { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
@@ -100,7 +101,7 @@ export const ChartViewer = () => {
   // const [drawMode] = useState(false);
   // const [brushSize] = useState(10);
 
-  const { userName } = useNavigraph();
+  const navigraphAuth = useNavigraphAuth();
 
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -115,22 +116,28 @@ export const ChartViewer = () => {
   const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
   const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
 
+  const [chartLightBlob, setChartLightBlob] = useState<Blob | null>(null);
+  const chartLightUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartLightBlob) : null), [chartLightBlob]);
+
+  const [chartDarkBlob, setChartDarkBlob] = useState<Blob | null>(null);
+  const chartDarkUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartDarkBlob) : null), [chartDarkBlob]);
+
   useEffect(() => {
     let visible = false;
 
     if (
       boundingBox &&
-      aircraftLatitude >= boundingBox.bottomLeft.lat &&
-      aircraftLatitude <= boundingBox.topRight.lat &&
-      aircraftLongitude >= boundingBox.bottomLeft.lon &&
-      aircraftLongitude <= boundingBox.topRight.lon
+      aircraftLatitude >= boundingBox.planview.latlng.lat1 &&
+      aircraftLatitude <= boundingBox.planview.latlng.lat2 &&
+      aircraftLongitude >= boundingBox.planview.latlng.lng1 &&
+      aircraftLongitude <= boundingBox.planview.latlng.lng2
     ) {
-      const dx = boundingBox.topRight.xPx - boundingBox.bottomLeft.xPx;
-      const dy = boundingBox.bottomLeft.yPx - boundingBox.topRight.yPx;
-      const dLat = boundingBox.topRight.lat - boundingBox.bottomLeft.lat;
-      const dLon = boundingBox.topRight.lon - boundingBox.bottomLeft.lon;
-      const x = boundingBox.bottomLeft.xPx + dx * ((aircraftLongitude - boundingBox.bottomLeft.lon) / dLon);
-      const y = boundingBox.topRight.yPx + dy * ((boundingBox.topRight.lat - aircraftLatitude) / dLat);
+      const dx = boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1;
+      const dy = boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2;
+      const dLat = boundingBox.planview.latlng.lat2 - boundingBox.planview.latlng.lat1;
+      const dLon = boundingBox.planview.latlng.lng2 - boundingBox.planview.latlng.lng1;
+      const x = boundingBox.planview.pixels.x1 + dx * ((aircraftLongitude - boundingBox.planview.latlng.lng1) / dLon);
+      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat1 - aircraftLatitude) / dLat);
 
       setAircraftIconPosition({ x, y, r: aircraftTrueHeading });
       visible = true;
@@ -144,6 +151,21 @@ export const ChartViewer = () => {
     aircraftLongitude.toFixed(2),
     aircraftTrueHeading.toFixed(1),
   ]);
+
+  useEffect(() => {
+    navigraphCharts
+      .getChartImage({
+        chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
+        theme: 'light',
+      })
+      .then((blob) => setChartLightBlob(blob));
+    navigraphCharts
+      .getChartImage({
+        chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
+        theme: 'dark',
+      })
+      .then((blob) => setChartDarkBlob(blob));
+  }, [chartLinks]);
 
   const handleRotateRight = () => {
     dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation + 90) % 360 }));
@@ -508,14 +530,14 @@ export const ChartViewer = () => {
                 >
                   {chartLinks && provider === 'NAVIGRAPH' && (
                     <p className="text-theme-highlight absolute left-0 top-0 -translate-y-full whitespace-nowrap font-bold transition duration-100">
-                      This chart is linked to {userName}
+                      This chart is linked to {navigraphAuth.user?.preferred_username ?? '<not logged in>'}
                     </p>
                   )}
 
                   {aircraftIconVisible && boundingBox && (
                     <svg
                       ref={planeRef}
-                      viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`}
+                      viewBox={`0 0 ${boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1} ${Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}`}
                       className="absolute left-0 top-0 z-30"
                     >
                       <g
@@ -534,18 +556,23 @@ export const ChartViewer = () => {
                   )}
 
                   <div ref={chartRef}>
-                    <img
-                      className="absolute left-0 w-full select-none transition duration-100"
-                      draggable={false}
-                      src={chartLinks.dark}
-                      alt="chart"
-                    />
-                    <img
-                      className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
-                      draggable={false}
-                      src={chartLinks.light}
-                      alt="chart"
-                    />
+                    {chartLightUrl && (
+                      <img
+                        className="absolute left-0 w-full select-none transition duration-100"
+                        draggable={false}
+                        src={chartLightUrl}
+                        alt="chart"
+                      />
+                    )}
+
+                    {chartDarkUrl && (
+                      <img
+                        className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
+                        draggable={false}
+                        src={chartDarkUrl}
+                        alt="chart"
+                      />
+                    )}
                   </div>
                 </div>
               </TransformComponent>
