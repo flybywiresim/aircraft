@@ -88,10 +88,12 @@ struct ap_raw_data
   real_T nav_loc_error_deg;
   boolean_T nav_gs_valid;
   real_T nav_gs_error_deg;
-  real_T flight_guidance_xtk_nmi;
-  real_T flight_guidance_tae_deg;
-  real_T flight_guidance_phi_deg;
-  real_T flight_guidance_phi_limit_deg;
+  real_T fms_xtk_nmi;
+  real_T fms_tae_deg;
+  real_T fms_phi_deg;
+  real_T fms_phi_limit_deg;
+  real_T fms_H_c_profile_ft;
+  real_T fms_H_dot_c_profile_ft_min;
   real_T VLS_kn;
   real_T VMAX_kn;
   boolean_T on_ground;
