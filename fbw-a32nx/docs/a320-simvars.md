@@ -1526,6 +1526,20 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
+- A32NX_EFIS_{side}_MRP_LAT
+    - Arinc429<Degrees>
+    - Provides the latitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_MRP_LONG
+    - Arinc429<Degrees>
+    - Provides the longitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
 - A32NX_PFD_MSG_SET_HOLD_SPEED
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD

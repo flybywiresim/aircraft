@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUIRSInit {
     static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]cyan") {
         mcdu.clearDisplay();
@@ -26,8 +30,10 @@ class CDUIRSInit {
         let statusIRS3;
         let alignType = "---";
         // Ref coordinates are taken based on origin airport
+        const activeOriginAirport = mcdu.flightPlanService.active.originAirport;
+
         if (!originAirportLat && !originAirportLon) {
-            const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+            const airportCoordinates = activeOriginAirport.location;
             originAirportLat = CDUInitPage.ConvertDDToDMS(airportCoordinates['lat'], false);
             originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
             originAirportLat['sec'] = Math.ceil(Number(originAirportLat['sec'] / 100));
@@ -35,11 +41,11 @@ class CDUIRSInit {
             // Must be string for consistency since leading 0's are not allowed in Number
             originAirportLat['min'] = originAirportLat['min'].toString();
             originAirportLon['min'] = originAirportLon['min'].toString();
-            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
+            referenceName = activeOriginAirport.ident + " [color]green";
             originAirportCoordinates = JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon);
         }
         if (originAirportCoordinates === JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon)) {
-            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
+            referenceName = activeOriginAirport.ident + " [color]green";
         }
         const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
