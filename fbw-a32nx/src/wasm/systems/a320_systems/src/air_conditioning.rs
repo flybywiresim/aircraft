@@ -937,7 +937,7 @@ impl PressurizationConstants for A320PressurizationConstants {
     const TAKEOFF_RATE: f64 = -400.;
     const DEPRESS_RATE: f64 = 500.;
     const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
-    const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+    const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.036; // PSI
     const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
 }
 
