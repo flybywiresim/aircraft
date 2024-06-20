@@ -1389,3 +1389,36 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     }
   }
 }
+
+export class SquawkFormat implements DataEntryFormat<number> {
+  public placeholder = '----';
+
+  public maxDigits = 4;
+
+  private minValue = 0;
+
+  private maxValue = 7777;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}

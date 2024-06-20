@@ -16,6 +16,9 @@ export type MfdSimvars = {
   rightMfdInView: boolean;
   kccuOnL: boolean;
   kccuOnR: boolean;
+  xpdrAvail: boolean;
+  xpdrCode: number;
+  xpdrState: number;
 };
 
 export type InternalKccuKeyEvent = {
@@ -38,6 +41,9 @@ export enum MfdVars {
   rightMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:2',
   kccuOnL = 'L:A32NX_KCCU_L_KBD_ON_OFF',
   kccuOnR = 'L:A32NX_KCCU_L_KBD_ON_OFF',
+  xpdrAvail = 'TRANSPONDER AVAILABLE',
+  xpdrCode = 'TRANSPONDER CODE:1',
+  xpdrState = 'TRANSPONDER STATE:1',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -58,6 +64,9 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['rightMfdInView', { name: MfdVars.rightMfdInView, type: SimVarValueType.Bool }],
     ['kccuOnL', { name: MfdVars.kccuOnL, type: SimVarValueType.Bool }],
     ['kccuOnR', { name: MfdVars.kccuOnR, type: SimVarValueType.Bool }],
+    ['xpdrAvail', { name: MfdVars.xpdrAvail, type: SimVarValueType.Bool }],
+    ['xpdrCode', { name: MfdVars.xpdrCode, type: SimVarValueType.Number }],
+    ['xpdrState', { name: MfdVars.xpdrState, type: SimVarValueType.Enum }],
   ]);
 
   public constructor(bus: EventBus) {

@@ -282,9 +282,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     this.topRef.instance.addEventListener('mousemove', (ev) => {
       this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY);
     });
-
-    // Navigate to initial page
-    this.uiService.navigateTo('fms/data/status');
   }
 
   private activeUriChanged(uri: ActiveUriInformation) {
@@ -323,7 +320,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     );
 
     // Mapping from URL to page component
-    this.activePage = pageForUrl(`${uri.sys}/${uri.category}/${uri.page}`, this.props.bus, this, this.props.fmcService);
+    if (uri.page) {
+      this.activePage = pageForUrl(
+        `${uri.sys}/${uri.category}/${uri.page}`,
+        this.props.bus,
+        this,
+        this.props.fmcService,
+      );
+    } else {
+      this.activePage = pageForUrl(`${uri.sys}/${uri.category}`, this.props.bus, this, this.props.fmcService);
+    }
 
     FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
     FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());

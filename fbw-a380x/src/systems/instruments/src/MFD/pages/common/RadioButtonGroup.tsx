@@ -17,6 +17,7 @@ interface RadioButtonGroupProps extends ComponentProps {
   onModified?: (newSelectedIndex: number) => void;
   additionalVerticalSpacing?: number;
   tmpyActive?: Subscribable<boolean>;
+  greenActive?: Subscribable<boolean>;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -27,6 +28,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
 
     if (this.props.tmpyActive === undefined) {
       this.props.tmpyActive = Subject.create<boolean>(false);
+    }
+    if (this.props.greenActive === undefined) {
+      this.props.greenActive = Subject.create<boolean>(false);
     }
     if (this.props.valuesDisabled === undefined) {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
@@ -73,6 +77,18 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
             document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add('tmpy');
           } else {
             document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('tmpy');
+          }
+        });
+      }, true),
+    );
+
+    this.subs.push(
+      this.props.greenActive.sub((v) => {
+        this.props.values.forEach((val, idx) => {
+          if (v === true) {
+            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add('green');
+          } else {
+            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('green');
           }
         });
       }, true),

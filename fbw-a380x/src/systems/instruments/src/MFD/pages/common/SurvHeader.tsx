@@ -45,7 +45,7 @@ export class SurvHeader extends AbstractHeader {
             label="STATUS & SWITCHING"
             menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('surv/status-switching') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorStatSwitch`}
-            containerStyle="width: 50%"
+            containerStyle="width: 40%"
           />
         </div>
       </>
