@@ -59,7 +59,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
     // FIXME clean this up.. should be handled by an IE in the XML
     sub.on('hEvent').handle((eventName) => {
       if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+        SimVar.SetSimVarValue(`L:A32NX_BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
       }
     });
 

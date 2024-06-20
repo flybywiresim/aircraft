@@ -15,7 +15,7 @@ use uom::si::{
 use super::{Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, SideControlling, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -235,6 +235,7 @@ pub struct UpdateContext {
     rotation_vel_x_id: VariableIdentifier,
     rotation_vel_y_id: VariableIdentifier,
     rotation_vel_z_id: VariableIdentifier,
+    side_controlling_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -274,6 +275,7 @@ pub struct UpdateContext {
 
     rotation_accel: Vector3<AngularAcceleration>,
     rotation_vel: Vector3<AngularVelocity>,
+    side_controlling: SideControlling,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -315,6 +317,7 @@ impl UpdateContext {
     pub(crate) const ROTATION_VEL_X_KEY: &'static str = "ROTATION VELOCITY BODY X";
     pub(crate) const ROTATION_VEL_Y_KEY: &'static str = "ROTATION VELOCITY BODY Y";
     pub(crate) const ROTATION_VEL_Z_KEY: &'static str = "ROTATION VELOCITY BODY Z";
+    pub(crate) const SIDE_CONTROLLING: &'static str = "SIDE_CONTROLLING";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -343,6 +346,7 @@ impl UpdateContext {
         bank: Angle,
         mach_number: MachNumber,
         latitude: Angle,
+        side_controlling: SideControlling,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -386,6 +390,7 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -440,6 +445,7 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+            side_controlling,
         }
     }
 
@@ -483,6 +489,7 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -502,6 +509,8 @@ impl UpdateContext {
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
                     Vector3::new(0., -9.8, 0.),
                 ),
+
+            side_controlling: SideControlling::CAPTAIN,
 
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
@@ -620,6 +629,8 @@ impl UpdateContext {
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_y_id)),
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
+
+        self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
 
@@ -804,6 +815,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn side_controlling(&self) -> SideControlling {
+        self.side_controlling
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
