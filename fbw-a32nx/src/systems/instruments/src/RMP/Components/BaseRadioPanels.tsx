@@ -123,11 +123,11 @@ const PoweredRadioPanel = (props: Props) => {
    * MLS IMPLEMENTED IN THE XML BEHAVIOURS
    * BUT DISABLED HERE SINCE THERE IS NOT ENOUGH REFERENCES
    */
-  useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
-    if (navButtonPressed) {
-      setPanelMode(8);
-    }
-  });
+  // useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
+  //   if (navButtonPressed) {
+  //     setPanelMode(8);
+  //   }
+  // });
 
   useInteractionEvent(`A32NX_RMP_${props.side}_ADF_BUTTON_PRESSED`, () => {
     if (navButtonPressed) {
