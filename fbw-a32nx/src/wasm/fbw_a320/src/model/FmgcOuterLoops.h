@@ -943,12 +943,13 @@ class FmgcOuterLoops final
             real_T *rtu_in_data_by_m_s2, const real_T *rtu_in_data_bz_m_s2, const real_T *rtu_in_data_nav_loc_deg, const
             real_T *rtu_in_data_nav_gs_deg, const real_T *rtu_in_data_nav_dme_nmi, const real_T
             *rtu_in_data_nav_loc_magvar_deg, const real_T *rtu_in_data_nav_loc_error_deg, const boolean_T
-            *rtu_in_data_nav_gs_valid, const real_T *rtu_in_data_nav_gs_error_deg, const real_T
-            *rtu_in_data_flight_guidance_xtk_nmi, const real_T *rtu_in_data_flight_guidance_tae_deg, const real_T
-            *rtu_in_data_flight_guidance_phi_deg, const real_T *rtu_in_data_flight_guidance_phi_limit_deg, const real_T *
-            rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn, const boolean_T *rtu_in_data_on_ground, const real_T *
-            rtu_in_data_zeta_deg, const real_T *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged,
-            const lateral_law *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
+            *rtu_in_data_nav_gs_valid, const real_T *rtu_in_data_nav_gs_error_deg, const real_T *rtu_in_data_fms_xtk_nmi,
+            const real_T *rtu_in_data_fms_tae_deg, const real_T *rtu_in_data_fms_phi_deg, const real_T
+            *rtu_in_data_fms_phi_limit_deg, const real_T *rtu_in_data_fms_H_c_profile_ft, const real_T
+            *rtu_in_data_fms_H_dot_c_profile_ft_min, const real_T *rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn,
+            const boolean_T *rtu_in_data_on_ground, const real_T *rtu_in_data_zeta_deg, const real_T
+            *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged, const lateral_law
+            *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
             *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_Chi_c_deg, const real_T *rtu_in_input_H_c_ft, const
             real_T *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn,
             const boolean_T *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const

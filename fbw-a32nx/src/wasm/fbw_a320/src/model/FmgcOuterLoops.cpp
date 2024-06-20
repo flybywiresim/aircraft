@@ -2154,17 +2154,17 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   *rtu_in_data_by_m_s2, const real_T *rtu_in_data_bz_m_s2, const real_T *rtu_in_data_nav_loc_deg, const real_T
   *rtu_in_data_nav_gs_deg, const real_T *rtu_in_data_nav_dme_nmi, const real_T *rtu_in_data_nav_loc_magvar_deg, const
   real_T *rtu_in_data_nav_loc_error_deg, const boolean_T *rtu_in_data_nav_gs_valid, const real_T
-  *rtu_in_data_nav_gs_error_deg, const real_T *rtu_in_data_flight_guidance_xtk_nmi, const real_T
-  *rtu_in_data_flight_guidance_tae_deg, const real_T *rtu_in_data_flight_guidance_phi_deg, const real_T
-  *rtu_in_data_flight_guidance_phi_limit_deg, const real_T *rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn, const
-  boolean_T *rtu_in_data_on_ground, const real_T *rtu_in_data_zeta_deg, const real_T *rtu_in_data_total_weight_kg, const
-  boolean_T *rtu_in_input_ap_engaged, const lateral_law *rtu_in_input_lateral_law, const vertical_law
-  *rtu_in_input_vertical_law, const real_T *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_Chi_c_deg, const real_T
-  *rtu_in_input_H_c_ft, const real_T *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T
-  *rtu_in_input_V_c_kn, const boolean_T *rtu_in_input_ALT_soft_mode_active, const boolean_T
-  *rtu_in_input_TCAS_mode_active, const boolean_T *rtu_in_input_FINAL_DES_mode_active, const boolean_T
-  *rtu_in_input_GS_track_mode, real_T *rty_out_Phi_loc_c, real_T *rty_out_Nosewheel_c, real_T
-  *rty_out_flight_director_Theta_c_deg, real_T *rty_out_flight_director_Phi_c_deg, real_T
+  *rtu_in_data_nav_gs_error_deg, const real_T *rtu_in_data_fms_xtk_nmi, const real_T *rtu_in_data_fms_tae_deg, const
+  real_T *rtu_in_data_fms_phi_deg, const real_T *rtu_in_data_fms_phi_limit_deg, const real_T
+  *rtu_in_data_fms_H_c_profile_ft, const real_T *rtu_in_data_fms_H_dot_c_profile_ft_min, const real_T
+  *rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn, const boolean_T *rtu_in_data_on_ground, const real_T
+  *rtu_in_data_zeta_deg, const real_T *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged, const
+  lateral_law *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
+  *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_Chi_c_deg, const real_T *rtu_in_input_H_c_ft, const real_T
+  *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn, const boolean_T
+  *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const boolean_T
+  *rtu_in_input_FINAL_DES_mode_active, const boolean_T *rtu_in_input_GS_track_mode, real_T *rty_out_Phi_loc_c, real_T
+  *rty_out_Nosewheel_c, real_T *rty_out_flight_director_Theta_c_deg, real_T *rty_out_flight_director_Phi_c_deg, real_T
   *rty_out_flight_director_Beta_c_deg, real_T *rty_out_autopilot_Theta_c_deg, real_T *rty_out_autopilot_Phi_c_deg,
   real_T *rty_out_autopilot_Beta_c_deg, boolean_T *rty_out_flare_law_condition_Flare, real_T
   *rty_out_flare_law_H_dot_radio_fpm, real_T *rty_out_flare_law_H_dot_c_fpm, real_T
@@ -2225,7 +2225,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   rtb_Sum5 = *rtu_in_time_dt;
   r = *rtu_in_data_V_tas_kn;
   external_limit = *rtu_in_data_H_radio_ft;
-  rtb_Sum1 = *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_Sum1 = *rtu_in_data_fms_phi_limit_deg;
   r = std::abs(r);
   if (r > 600.0) {
     r = 19.0;
@@ -2288,8 +2288,8 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     FmgcOuterLoops_DWork.pY_not_empty_m = true;
   }
 
-  FmgcOuterLoops_DWork.pY_d += std::fmax(std::fmin(*rtu_in_data_flight_guidance_phi_deg - FmgcOuterLoops_DWork.pY_d, std::
-    abs(FmgcOuterLoops_rtP.RateLimiterVariableTs_up) * *rtu_in_time_dt), -std::abs
+  FmgcOuterLoops_DWork.pY_d += std::fmax(std::fmin(*rtu_in_data_fms_phi_deg - FmgcOuterLoops_DWork.pY_d, std::abs
+    (FmgcOuterLoops_rtP.RateLimiterVariableTs_up) * *rtu_in_time_dt), -std::abs
     (FmgcOuterLoops_rtP.RateLimiterVariableTs_lo) * *rtu_in_time_dt);
   FmgcOuterLoops_LagFilter(FmgcOuterLoops_DWork.pY_d, FmgcOuterLoops_rtP.LagFilter_C1, rtu_in_time_dt, &rtb_Sum5,
     &FmgcOuterLoops_DWork.sf_LagFilter);
@@ -2480,9 +2480,9 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     break;
 
    case 3:
-    r = FmgcOuterLoops_rtP.Gain_Gain_p * *rtu_in_data_flight_guidance_xtk_nmi;
+    r = FmgcOuterLoops_rtP.Gain_Gain_p * *rtu_in_data_fms_xtk_nmi;
     r = rtb_k1 * r / *rtu_in_data_V_gnd_kn;
-    rtb_Mod1_o = FmgcOuterLoops_rtP.Gain2_Gain * *rtu_in_data_flight_guidance_tae_deg;
+    rtb_Mod1_o = FmgcOuterLoops_rtP.Gain2_Gain * *rtu_in_data_fms_tae_deg;
     if (r > FmgcOuterLoops_rtP.Saturation_UpperSat) {
       r = FmgcOuterLoops_rtP.Saturation_UpperSat;
     } else if (r < FmgcOuterLoops_rtP.Saturation_LowerSat) {
@@ -2901,14 +2901,18 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     *rtu_in_data_nav_gs_valid;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.nav_gs_error_deg =
     *rtu_in_data_nav_gs_error_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.flight_guidance_xtk_nmi =
-    *rtu_in_data_flight_guidance_xtk_nmi;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.flight_guidance_tae_deg =
-    *rtu_in_data_flight_guidance_tae_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.flight_guidance_phi_deg =
-    *rtu_in_data_flight_guidance_phi_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.flight_guidance_phi_limit_deg
-    = *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_xtk_nmi =
+    *rtu_in_data_fms_xtk_nmi;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_tae_deg =
+    *rtu_in_data_fms_tae_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_phi_deg =
+    *rtu_in_data_fms_phi_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_phi_limit_deg =
+    *rtu_in_data_fms_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_H_c_profile_ft =
+    *rtu_in_data_fms_H_c_profile_ft;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.fms_H_dot_c_profile_ft_min =
+    *rtu_in_data_fms_H_dot_c_profile_ft_min;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.VLS_kn = *rtu_in_data_VLS_kn;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1.data.VMAX_kn =
     *rtu_in_data_VMAX_kn;
@@ -3288,14 +3292,18 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     *rtu_in_data_nav_gs_valid;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.nav_gs_error_deg =
     *rtu_in_data_nav_gs_error_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.flight_guidance_xtk_nmi = *
-    rtu_in_data_flight_guidance_xtk_nmi;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.flight_guidance_tae_deg = *
-    rtu_in_data_flight_guidance_tae_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.flight_guidance_phi_deg = *
-    rtu_in_data_flight_guidance_phi_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.flight_guidance_phi_limit_deg
-    = *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_xtk_nmi =
+    *rtu_in_data_fms_xtk_nmi;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_tae_deg =
+    *rtu_in_data_fms_tae_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_phi_deg =
+    *rtu_in_data_fms_phi_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_phi_limit_deg =
+    *rtu_in_data_fms_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_H_c_profile_ft =
+    *rtu_in_data_fms_H_c_profile_ft;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.fms_H_dot_c_profile_ft_min
+    = *rtu_in_data_fms_H_dot_c_profile_ft_min;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.VLS_kn =
     *rtu_in_data_VLS_kn;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_c.data.VMAX_kn =
@@ -3788,14 +3796,18 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     *rtu_in_data_nav_gs_valid;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.nav_gs_error_deg =
     *rtu_in_data_nav_gs_error_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.flight_guidance_xtk_nmi = *
-    rtu_in_data_flight_guidance_xtk_nmi;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.flight_guidance_tae_deg = *
-    rtu_in_data_flight_guidance_tae_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.flight_guidance_phi_deg = *
-    rtu_in_data_flight_guidance_phi_deg;
-  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.flight_guidance_phi_limit_deg
-    = *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_xtk_nmi =
+    *rtu_in_data_fms_xtk_nmi;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_tae_deg =
+    *rtu_in_data_fms_tae_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_phi_deg =
+    *rtu_in_data_fms_phi_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_phi_limit_deg =
+    *rtu_in_data_fms_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_H_c_profile_ft =
+    *rtu_in_data_fms_H_c_profile_ft;
+  rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.fms_H_dot_c_profile_ft_min
+    = *rtu_in_data_fms_H_dot_c_profile_ft_min;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.VLS_kn =
     *rtu_in_data_VLS_kn;
   rtb_BusConversion_InsertedFor_SpeedProtectionSignalSelection_at_inport_0_BusCreator1_o.data.VMAX_kn =
@@ -4154,7 +4166,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   }
 
   FmgcOuterLoops_Voter1(rtb_fpmtoms_j, rtb_ug, rtb_Gain1_hk, &rtb_Mod1_o);
-  rtb_Y_gk = *rtu_in_input_H_c_ft - *rtu_in_data_H_ft;
+  rtb_Y_gk = *rtu_in_data_fms_H_c_profile_ft - *rtu_in_data_H_ft;
   FmgcOuterLoops_LagFilter(rtb_Y_gk, FmgcOuterLoops_rtP.LagFilter_C1_k, rtu_in_time_dt, &rtb_Mod2_n,
     &FmgcOuterLoops_DWork.sf_LagFilter_ag);
   rtb_ug = FmgcOuterLoops_rtP.Gain2_Gain_l * rtb_Mod2_n;
@@ -4164,7 +4176,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     rtb_ug = FmgcOuterLoops_rtP.Saturation_LowerSat_j5;
   }
 
-  rtb_Mod2_n = *rtu_in_input_H_dot_c_fpm + rtb_ug;
+  rtb_Mod2_n = *rtu_in_data_fms_H_dot_c_profile_ft_min + rtb_ug;
   rtb_Y_gk = rtb_Mod2_n - *rtu_in_data_H_dot_ft_min;
   rtb_Mod2_n = FmgcOuterLoops_rtP.kntoms_Gain_ni * *rtu_in_data_V_tas_kn;
   if (rtb_Mod2_n > FmgcOuterLoops_rtP.Saturation_UpperSat_d0) {
@@ -4290,14 +4302,15 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.nav_gs_valid = *rtu_in_data_nav_gs_valid;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.nav_gs_error_deg =
     *rtu_in_data_nav_gs_error_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.flight_guidance_xtk_nmi =
-    *rtu_in_data_flight_guidance_xtk_nmi;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.flight_guidance_tae_deg =
-    *rtu_in_data_flight_guidance_tae_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.flight_guidance_phi_deg =
-    *rtu_in_data_flight_guidance_phi_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.flight_guidance_phi_limit_deg =
-    *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_xtk_nmi = *rtu_in_data_fms_xtk_nmi;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_tae_deg = *rtu_in_data_fms_tae_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_phi_deg = *rtu_in_data_fms_phi_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_phi_limit_deg =
+    *rtu_in_data_fms_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_H_c_profile_ft =
+    *rtu_in_data_fms_H_c_profile_ft;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.fms_H_dot_c_profile_ft_min =
+    *rtu_in_data_fms_H_dot_c_profile_ft_min;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.VLS_kn = *rtu_in_data_VLS_kn;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.VMAX_kn = *rtu_in_data_VMAX_kn;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_o.data.on_ground = *rtu_in_data_on_ground;
@@ -4405,14 +4418,15 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.nav_gs_valid = *rtu_in_data_nav_gs_valid;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.nav_gs_error_deg =
     *rtu_in_data_nav_gs_error_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.flight_guidance_xtk_nmi =
-    *rtu_in_data_flight_guidance_xtk_nmi;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.flight_guidance_tae_deg =
-    *rtu_in_data_flight_guidance_tae_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.flight_guidance_phi_deg =
-    *rtu_in_data_flight_guidance_phi_deg;
-  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.flight_guidance_phi_limit_deg =
-    *rtu_in_data_flight_guidance_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_xtk_nmi = *rtu_in_data_fms_xtk_nmi;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_tae_deg = *rtu_in_data_fms_tae_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_phi_deg = *rtu_in_data_fms_phi_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_phi_limit_deg =
+    *rtu_in_data_fms_phi_limit_deg;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_H_c_profile_ft =
+    *rtu_in_data_fms_H_c_profile_ft;
+  rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.fms_H_dot_c_profile_ft_min =
+    *rtu_in_data_fms_H_dot_c_profile_ft_min;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.VLS_kn = *rtu_in_data_VLS_kn;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.VMAX_kn = *rtu_in_data_VMAX_kn;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.data.on_ground = *rtu_in_data_on_ground;
