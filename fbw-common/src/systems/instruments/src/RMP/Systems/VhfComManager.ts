@@ -198,7 +198,7 @@ export class VhfComManager implements Instrument {
     } else {
       Arinc429Word.toSimVarValue(
         this.tuningVar,
-        RadioUtils.packBcd32VhfFrequencyToArinc(frequency),
+        RadioUtils.packBcd32VhfComFrequencyToArinc(frequency),
         Arinc429SignStatusMatrix.NormalOperation,
       );
     }
