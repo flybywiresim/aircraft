@@ -1,6 +1,7 @@
 // do not use @fmgc shortcut - breaks units tests with jest
 // noinspection ES6PreferShortImport
-import { TurnDirection } from '../../fmgc/src/types/fstypes/FSEnums';
+
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
 export class MathUtils {
     static DEGREES_TO_RADIANS = Math.PI / 180;
