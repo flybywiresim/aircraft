@@ -1,4 +1,5 @@
-import { GameStateProvider, Instrument, SimVarValueType, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, GameStateProvider, Instrument, SimVarValueType, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import { MfdSurvEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
@@ -18,13 +19,15 @@ enum MsfsTransponderState {
 
 /** The transponder contained within the AESS and interfacing with MSFS. */
 export class Transponder implements Instrument {
+  private readonly sub = this.bus.getSubscriber<MfdSurvEvents>();
+
   private readonly isFailed = Subject.create(false);
   private readonly failureKey = this.index === 2 ? A380Failure.Transponder2 : A380Failure.Transponder1;
 
   private readonly msfsCircuitVar = `CIRCUIT SWITCH ON:${this.msfsCircuit}`;
 
-  private readonly isAuto = Subject.create(true);
-  private readonly isAltReportingOn = Subject.create(true);
+  private readonly isAuto = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_auto'), false);
+  private readonly isAltReportingOn = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true);
 
   private readonly msfsTransponderState = Subject.create(MsfsTransponderState.Off);
   private readonly msfsTransponderStateVar = `TRANSPONDER STATE:${this.index}`;
@@ -37,6 +40,7 @@ export class Transponder implements Instrument {
    * @param failuresConsumer The failures consumer.
    */
   constructor(
+    private readonly bus: EventBus,
     private readonly index: 1 | 2,
     private readonly msfsCircuit: number,
     private readonly isPowered: Subscribable<boolean>,

@@ -65,6 +65,7 @@ class SystemsHost extends BaseInstrument {
   private readonly amu2 = new AudioManagementUnit(this.bus, 2, this.failuresConsumer);
 
   private readonly xpdr1 = new Transponder(
+    this.bus,
     1,
     41,
     MappedSubject.create(SubscribableMapFunctions.or(), this.acEssBusPowered, this.acBus2Powered),
