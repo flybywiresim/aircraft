@@ -7,15 +7,14 @@ import {
   AmdbProjection,
   AmdbResponse,
   FeatureTypeString,
-  NavigraphClient,
+  getAmdbData,
+  searchAmdbAirports,
 } from '@flybywiresim/fbw-sdk';
 import { AmdbDataInterface } from './AmdbDataInterface';
 
 export class NavigraphAmdbClient implements AmdbDataInterface {
-  private readonly navigraphClient = new NavigraphClient();
-
   async searchForAirports(queryString: string): Promise<AmdbAirportSearchResponse> {
-    return this.navigraphClient.searchAmdbAirports(queryString);
+    return searchAmdbAirports(queryString);
   }
 
   async getAirportData(
@@ -24,6 +23,6 @@ export class NavigraphAmdbClient implements AmdbDataInterface {
     excludeFeatureTypes?: FeatureTypeString[],
     projection = AmdbProjection.ArpAzeq,
   ): Promise<AmdbResponse> {
-    return this.navigraphClient.getAmdbData(icao, includeFeatureTypes, excludeFeatureTypes, projection);
+    return getAmdbData(icao, includeFeatureTypes, excludeFeatureTypes, projection);
   }
 }
