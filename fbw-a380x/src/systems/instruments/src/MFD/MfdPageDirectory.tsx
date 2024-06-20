@@ -26,6 +26,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
+import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
 
 export function pageForUrl(
   url: string,
@@ -89,6 +90,8 @@ export function pageForUrl(
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/debug':
       return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'surv/controls':
+      return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
