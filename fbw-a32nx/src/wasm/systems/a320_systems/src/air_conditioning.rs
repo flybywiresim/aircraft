@@ -32,8 +32,13 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
-    velocity::knot, volume::cubic_meter, volume_rate::liter_per_second,
+    f64::*,
+    pressure::{hectopascal, psi},
+    ratio::percent,
+    thermodynamic_temperature::degree_celsius,
+    velocity::knot,
+    volume::cubic_meter,
+    volume_rate::liter_per_second,
 };
 
 use crate::payload::A320Pax;
@@ -692,8 +697,11 @@ impl<const ZONES: usize> SimulationElement for A320AirConditioningSystemOverhead
 }
 
 struct A320PressurizationSystem {
+    is_excessive_residual_pressure_id: VariableIdentifier,
+
     cpc: [CabinPressureController<A320PressurizationConstants>; 2],
     cpc_interface: [PressurizationSystemInterfaceUnit; 2],
+    is_excessive_residual_pressure: bool,
     outflow_valve: [OutflowValve; 1], // Array to prepare for more than 1 outflow valve in A380
     safety_valve: SafetyValve,
     safety_valve_signal: SafetyValveSignal<A320PressurizationConstants>,
@@ -709,6 +717,9 @@ impl A320PressurizationSystem {
         let active = 2 - (random % 2);
 
         Self {
+            is_excessive_residual_pressure_id: context
+                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
+
             cpc: [
                 CabinPressureController::new(context, CpcId::Cpc1),
                 CabinPressureController::new(context, CpcId::Cpc2),
@@ -717,6 +728,7 @@ impl A320PressurizationSystem {
                 PressurizationSystemInterfaceUnit::new(context, 1),
                 PressurizationSystemInterfaceUnit::new(context, 2),
             ],
+            is_excessive_residual_pressure: false,
             // Sub-buses 206PP, 401PP (auto) and 301PP (manual)
             outflow_valve: [OutflowValve::new(
                 vec![
@@ -813,6 +825,9 @@ impl A320PressurizationSystem {
             self.cpc.iter().all(|controller| controller.has_fault())
                 && !self.pressurization_overhead.is_in_man_mode(),
         );
+
+        self.is_excessive_residual_pressure =
+            self.is_excessive_residual_pressure(context, cabin_simulation);
     }
 
     fn switch_active_system(&mut self) {
@@ -841,6 +856,16 @@ impl A320PressurizationSystem {
             .for_each(|c| c.update_ambient_conditions(context, adirs));
     }
 
+    fn is_excessive_residual_pressure(
+        &self,
+        context: &UpdateContext,
+        cabin_simulation: &impl CabinSimulation,
+    ) -> bool {
+        // This signal comes from a dedicated pressure switch and is transmitted directly to the FWC
+        (cabin_simulation.cabin_pressure() - context.ambient_pressure())
+            > Pressure::new::<psi>(A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
+    }
+
     fn outflow_valve_open_amount(&self, ofv_id: usize) -> Ratio {
         self.outflow_valve[ofv_id].open_amount()
     }
@@ -861,6 +886,13 @@ impl CabinAltitude for A320PressurizationSystem {
 }
 
 impl SimulationElement for A320PressurizationSystem {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.is_excessive_residual_pressure_id,
+            self.is_excessive_residual_pressure,
+        );
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cpc, visitor);
         accept_iterable!(self.cpc_interface, visitor);
@@ -896,8 +928,6 @@ impl PressurizationSystemInterfaceUnit {
 
         self.discrete_word.set_bit(11, cpc.is_active());
         self.discrete_word.set_bit(12, cpc.has_fault());
-        self.discrete_word
-            .set_bit(13, cpc.is_excessive_residual_pressure());
         self.discrete_word.set_bit(14, cpc.is_excessive_alt());
         self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
         self.discrete_word
