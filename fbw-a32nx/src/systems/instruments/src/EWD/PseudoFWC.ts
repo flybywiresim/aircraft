@@ -944,7 +944,7 @@ export class PseudoFWC {
     }, true);
 
     this.stallWarning.sub((v) => {
-      this.fwcOut126.setBitValue(17, v);
+      this.fwcOut126.get().setBitValue(17, v);
       // set the sound on/off
       SimVar.SetSimVarValue('L:A32NX_AUDIO_STALL_WARNING', 'bool', v);
     }, true);
@@ -956,7 +956,7 @@ export class PseudoFWC {
     }, true);
 
     // FIXME depend on FWC state
-    this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.fwcOut126.get().setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
     const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
