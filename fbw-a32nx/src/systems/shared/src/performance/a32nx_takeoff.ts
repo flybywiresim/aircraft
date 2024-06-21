@@ -91,9 +91,9 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [83_700, 2459],
     [85_000, 2559],
     [86_200, 2709],
-    [87_900, 2918],
+    [87_200, 2918],
     [90_700, 3180],
-    [98_300, 3800],
+    [98_600, 3800],
     [107_000, 5000],
   ]);
 
@@ -107,10 +107,10 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [82_900, 2239],
     [85_500, 2459],
     [87_300, 2709],
-    [87_400, 2869],
-    [89_800, 3180],
+    [88_000, 2869],
+    [90_000, 3180],
     [92_900, 3600],
-    [95_800, 3800],
+    [96_600, 3800],
     [97_500, 3900],
     [106_000, 5000],
   ]);
@@ -147,8 +147,8 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Temperature factors for each takeoff config. */
   private static readonly runwayTemperatureFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [0.00001, 0.095175, 0.000194, 0.064995, 0.000196, 0.148702],
-    2: [-0.00001, 0.131948, 0.000155, 0.162938, 0.000206, 0.185232],
+    1: [0.00001, 0.095175, 0.000207, 0.040242, 0.00024, 0.066189],
+    2: [-0.00001, 0.131948, 0.000155, 0.162938, 0.000225, 0.150363],
     3: [-0.0000438, 0.198845, 0.000188, 0.14547, 0.000247, 0.143393],
   };
 
@@ -192,7 +192,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     number,
     [number, number, number, number, number, number]
   > = {
-    1: [0.0000021, 0.005414, 0.000178, 0.158383, 0.000053, 0.602099],
+    1: [0.0000025, 0.001, 0.000155, 0.211445, 0.000071, 0.556741],
     2: [0.0000121, 0.042153, 0.0001256, 0.325925, 0.000082, 0.546259],
     3: [-0.0000294, 0.13903, 0.0000693, 0.480536, 0.000103, 0.499618],
   };
