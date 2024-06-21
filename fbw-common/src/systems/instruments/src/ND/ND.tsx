@@ -146,7 +146,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     this.currentPageMode,
   );
 
-  private showOans = Subject.create<boolean>(true);
+  private showOans = Subject.create<boolean>(false);
 
   private showOansRunwayInfo = Subject.create<boolean>(false);
 

@@ -33,7 +33,7 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
 
   render(): VNode | null {
     return (
-      <g ref={this.flagRef}>
+      <g ref={this.flagRef} style="display: none;">
         <rect
           x="273"
           y="209"
