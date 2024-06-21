@@ -913,7 +913,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   };
 
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
-    1: [0, 152],
+    1: [-0.009368, 186.79],
     2: [0.02346, 68.33],
     3: [0.01309, 110.26],
   };
@@ -939,7 +939,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeRunwayTable2: Record<number, [number, number]> = {
     1: [3180, -0.003612],
     2: [3180, -0.007],
-    3: [3180, -0.019],
+    3: [3180, -0.013],
   };
 
   private static readonly v2SecondSegBrakeAltFactors: Record<number, [number, number, number, number]> = {
