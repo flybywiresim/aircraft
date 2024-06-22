@@ -1970,7 +1970,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           break;
         }
 
-        const xiToXf = lastLegInFirst.isXI() && element.isXF() && element.type !== LegType.IF;
+        const xiToXf = lastLegInFirst.isXI() && element.isXF();
 
         if (xiToXf) {
           if (LnavConfig.VERBOSE_FPM_LOG) {

@@ -30,7 +30,6 @@ import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
-import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -42,8 +41,8 @@ function isGuidableCapturingPath(guidable: Guidable): boolean {
   );
 }
 
-function isCiIfTfSequence(leg: Leg, nextLeg: Leg, nextNextLeg: Leg): boolean {
-  return leg instanceof CILeg && nextLeg instanceof IFLeg && nextNextLeg instanceof TFLeg;
+function isCiIfXfSequence(leg: Leg, nextLeg: Leg, nextNextLeg: Leg): boolean {
+  return leg instanceof CILeg && nextLeg instanceof IFLeg && nextNextLeg instanceof XFLeg;
 }
 
 export class Geometry {
@@ -300,7 +299,7 @@ export class Geometry {
 
     // Compute leg and outbound if previous leg isn't null (we already computed 1 leg forward the previous iteration)
     if (!(prevLeg && prevLeg.isNull)) {
-      const shouldSkipNextLeg = isCiIfTfSequence(leg, nextLeg, nextNextLeg);
+      const shouldSkipNextLeg = isCiIfXfSequence(leg, nextLeg, nextNextLeg);
       const chosenOutboundTransition = shouldSkipNextLeg
         ? TransitionPicker.forLegs(leg, nextNextLeg)
         : outboundTransition;

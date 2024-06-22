@@ -74,14 +74,14 @@ export namespace GeometryFactory {
         nextElement.type !== LegType.CI &&
         nextElement.type !== LegType.VI
       ) {
-        nextGeometryLeg = isXiIfTf(element, nextElement, nextNextElement)
+        nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
           ? geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement)
           : geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
       }
 
       const geometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, prevElement, element, nextGeometryLeg);
 
-      if (isXiIfTf(prevElement, element, nextElement)) {
+      if (isXiIfXf(prevElement, element, nextElement)) {
         geometryLeg.isNull = true;
       }
 
@@ -131,7 +131,7 @@ export namespace GeometryFactory {
 
       let nextLeg: Leg = undefined;
       if (nextPlanLeg?.isDiscontinuity === false && !nextPlanLeg.isXI()) {
-        nextLeg = isXiIfTf(planLeg, nextPlanLeg, nextNextPlanLeg)
+        nextLeg = isXiIfXf(planLeg, nextPlanLeg, nextNextPlanLeg)
           ? geometryLegFromFlightPlanLeg(runningMagvar, nextPlanLeg, nextNextPlanLeg)
           : geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
       }
@@ -141,7 +141,7 @@ export namespace GeometryFactory {
           ? geometryLegFromFlightPlanLeg(runningMagvar, prevPlanLeg, planLeg, nextLeg)
           : undefined;
 
-      if (isXiIfTf(prevPlanLeg, planLeg, nextPlanLeg)) {
+      if (isXiIfXf(prevPlanLeg, planLeg, nextPlanLeg)) {
         newLeg.isNull = true;
       }
 
@@ -373,7 +373,7 @@ function doGenerateTransitionsForLeg(leg: Leg, legIndex: number, plan: BaseFligh
   return true;
 }
 
-function isXiIfTf(
+function isXiIfXf(
   prev: FlightPlanElement | undefined,
   current: FlightPlanElement | undefined,
   next: FlightPlanElement | undefined,
@@ -384,6 +384,6 @@ function isXiIfTf(
     current?.isDiscontinuity === false &&
     current?.type === LegType.IF &&
     next?.isDiscontinuity === false &&
-    next?.type === LegType.TF
+    next?.isXF()
   );
 }
