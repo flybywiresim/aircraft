@@ -1,4 +1,12 @@
-import { DisplayComponent, FSComponent, SimVarValueType, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  SimVarValueType,
+  Subject,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdSurvControls.scss';
 
@@ -22,6 +30,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   private readonly xpdrFailed = Subject.create<boolean>(false);
 
   private readonly squawkCode = Subject.create<number | null>(null);
+
+  private readonly xpdrAltRptgAvailable = Subject.create<boolean>(true);
 
   private readonly xpdrAltRptgOn = Subject.create<boolean>(true);
 
@@ -74,7 +84,12 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     sub
       .on('mfd_xpdr_set_auto')
       .whenChanged()
-      .handle((it) => this.xpdrStatusSelectedIndex.set(it ? 0 : 1));
+      .handle((it) => {
+        this.xpdrStatusSelectedIndex.set(it ? 0 : 1);
+
+        this.xpdrAltRptgOn.set(it);
+        this.xpdrAltRptgAvailable.set(it);
+      });
 
     sub
       .on('mfd_xpdr_set_alt_reporting')
@@ -183,11 +198,15 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   buttonStyle="width: 100px;"
                 />
                 <div class="mfd-label bigger" style="margin-top: 20px; margin-bottom: 5px;">
-                  ALT RTPG
+                  ALT RPTG
                 </div>
                 <SurvButton
                   state={this.xpdrAltRptgOn}
-                  disabled={this.xpdrFailed}
+                  disabled={MappedSubject.create(
+                    ([failed, avail]) => failed || !avail,
+                    this.xpdrFailed,
+                    this.xpdrAltRptgAvailable,
+                  )}
                   labelFalse={'OFF'}
                   labelTrue={'ON'}
                   onChanged={(v) =>
