@@ -52,7 +52,6 @@ export namespace GeometryFactory {
 
     const planElements = plan.allLegs;
     for (let i = 0; i < planElements.length; i++) {
-      const prevPrevElement = planElements[i - 2];
       const prevElement = planElements[i - 1];
       const element = planElements[i];
       const nextElement = planElements[i + 1];
@@ -69,39 +68,24 @@ export namespace GeometryFactory {
         runningMagvar = getFacilities().getMagVar(fixLocation.lat, fixLocation.long);
       }
 
-      let nextGeometryLeg;
+      let nextGeometryLeg: Leg;
       if (
         nextElement?.isDiscontinuity === false &&
         nextElement.type !== LegType.CI &&
         nextElement.type !== LegType.VI
       ) {
-        if (
-          // XI -> IF -> TF
-          element.isXI() &&
-          nextElement.type === LegType.IF &&
-          nextNextElement?.isDiscontinuity === false &&
-          nextNextElement.type === LegType.TF
-        ) {
-          nextGeometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement);
-        } else {
-          nextGeometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
-        }
+        nextGeometryLeg = isXiIfTf(element, nextElement, nextNextElement)
+          ? geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement)
+          : geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
       }
 
       const geometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, prevElement, element, nextGeometryLeg);
 
-      let previousGeometryLeg = legs.get(i - 1);
-      if (
-        // XI -> IF -> TF
-        prevPrevElement?.isDiscontinuity === false &&
-        prevPrevElement.isXI() &&
-        prevElement?.isDiscontinuity === false &&
-        prevElement.type === LegType.IF &&
-        element.type === LegType.TF
-      ) {
-        previousGeometryLeg = legs.get(i - 2);
+      if (isXiIfTf(prevElement, element, nextElement)) {
+        geometryLeg.isNull = true;
       }
 
+      const previousGeometryLeg = legs.get(i - 1);
       if (previousGeometryLeg && doGenerateTransitions && doGenerateTransitionsForLeg(geometryLeg, i, plan)) {
         const transition = TransitionPicker.forLegs(previousGeometryLeg, geometryLeg);
 
@@ -126,7 +110,6 @@ export namespace GeometryFactory {
     for (let i = 0; i < flightPlan.legCount; i++) {
       const oldLeg = geometry.legs.get(i);
 
-      const prevPrevPlanLeg = flightPlan.allLegs[i - 2];
       const prevPlanLeg = flightPlan.allLegs[i - 1];
       const nextPlanLeg = flightPlan.allLegs[i + 1];
       const nextNextPlanLeg = flightPlan.allLegs[i + 2];
@@ -146,31 +129,21 @@ export namespace GeometryFactory {
         continue;
       }
 
-      let nextLeg: Leg;
-      if (
-        nextPlanLeg?.isDiscontinuity === false &&
-        nextPlanLeg.type !== LegType.CI &&
-        nextPlanLeg.type !== LegType.VI &&
-        nextPlanLeg.type !== LegType.PI
-      ) {
-        if (
-          // XI IF TF
-          planLeg.isDiscontinuity === false &&
-          planLeg.isXI() &&
-          nextPlanLeg?.type === LegType.IF &&
-          nextNextPlanLeg?.isDiscontinuity === false &&
-          nextNextPlanLeg.type === LegType.TF
-        ) {
-          nextLeg = geometryLegFromFlightPlanLeg(runningMagvar, nextPlanLeg, nextNextPlanLeg);
-        } else {
-          nextLeg = geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
-        }
+      let nextLeg: Leg = undefined;
+      if (nextPlanLeg?.isDiscontinuity === false && !nextPlanLeg.isXI()) {
+        nextLeg = isXiIfTf(planLeg, nextPlanLeg, nextNextPlanLeg)
+          ? geometryLegFromFlightPlanLeg(runningMagvar, nextPlanLeg, nextNextPlanLeg)
+          : geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
       }
 
       const newLeg =
         planLeg?.isDiscontinuity === false
           ? geometryLegFromFlightPlanLeg(runningMagvar, prevPlanLeg, planLeg, nextLeg)
           : undefined;
+
+      if (isXiIfTf(prevPlanLeg, planLeg, nextPlanLeg)) {
+        newLeg.isNull = true;
+      }
 
       if (LnavConfig.DEBUG_GEOMETRY) {
         console.log(`[FMS/Geometry/Update] Old leg #${i} = ${oldLeg?.repr ?? '<none>'}`);
@@ -194,18 +167,7 @@ export namespace GeometryFactory {
           oldLeg.metadata = newLeg.metadata;
         }
 
-        let prevLeg = geometry.legs.get(i - 1);
-        if (
-          // XI -> IF -> TF
-          prevPrevPlanLeg?.isDiscontinuity === false &&
-          prevPrevPlanLeg.isXI() &&
-          prevPlanLeg?.isDiscontinuity === false &&
-          prevPlanLeg.type === LegType.IF &&
-          planLeg.isDiscontinuity === false &&
-          planLeg.type === LegType.TF
-        ) {
-          prevLeg = geometry.legs.get(i - 2);
-        }
+        const prevLeg = geometry.legs.get(i - 1);
 
         if (prevLeg && newLeg) {
           const oldInboundTransition = geometry.transitions.get(i - 1);
@@ -227,18 +189,7 @@ export namespace GeometryFactory {
         if (newLeg) {
           geometry.legs.set(i, newLeg);
 
-          let prevLeg = geometry.legs.get(i - 1);
-          if (
-            // XI -> IF -> TF
-            prevPrevPlanLeg?.isDiscontinuity === false &&
-            prevPrevPlanLeg.isXI() &&
-            prevPlanLeg?.isDiscontinuity === false &&
-            prevPlanLeg.type === LegType.IF &&
-            planLeg.isDiscontinuity === false &&
-            planLeg.type === LegType.TF
-          ) {
-            prevLeg = geometry.legs.get(i - 2);
-          }
+          const prevLeg = geometry.legs.get(i - 1);
 
           if (prevLeg && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
             const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
@@ -420,4 +371,19 @@ function doGenerateTransitionsForLeg(leg: Leg, legIndex: number, plan: BaseFligh
   }
 
   return true;
+}
+
+function isXiIfTf(
+  prev: FlightPlanElement | undefined,
+  current: FlightPlanElement | undefined,
+  next: FlightPlanElement | undefined,
+): next is FlightPlanLeg {
+  return (
+    prev?.isDiscontinuity === false &&
+    prev?.isXI() &&
+    current?.isDiscontinuity === false &&
+    current?.type === LegType.IF &&
+    next?.isDiscontinuity === false &&
+    next?.type === LegType.TF
+  );
 }
