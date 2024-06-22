@@ -18,6 +18,10 @@ export type MfdSimvars = {
   kccuOnR: boolean;
   xpdrAvail: boolean;
   xpdrCode: number;
+  gpwsTerrOff: boolean;
+  gpwsSysOff: boolean;
+  gpwsGsInhibit: boolean;
+  gpwsFlapsInhibit: boolean;
 };
 
 export type InternalKccuKeyEvent = {
@@ -42,6 +46,10 @@ export enum MfdVars {
   kccuOnR = 'L:A32NX_KCCU_L_KBD_ON_OFF',
   xpdrAvail = 'TRANSPONDER AVAILABLE',
   xpdrCode = 'TRANSPONDER CODE:1',
+  gpwsTerrOff = 'L:A32NX_GPWS_TERR_OFF',
+  gpwsSysOff = 'L:A32NX_GPWS_SYS_OFF',
+  gpwsGsInhibit = 'L:A32NX_GPWS_GS_OFF',
+  gpwsFlapsInhibit = 'L:A32NX_GPWS_FLAPS_OFF',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -64,6 +72,10 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['kccuOnR', { name: MfdVars.kccuOnR, type: SimVarValueType.Bool }],
     ['xpdrAvail', { name: MfdVars.xpdrAvail, type: SimVarValueType.Bool }],
     ['xpdrCode', { name: MfdVars.xpdrCode, type: SimVarValueType.Number }],
+    ['gpwsTerrOff', { name: MfdVars.gpwsTerrOff, type: SimVarValueType.Bool }],
+    ['gpwsSysOff', { name: MfdVars.gpwsSysOff, type: SimVarValueType.Bool }],
+    ['gpwsGsInhibit', { name: MfdVars.gpwsGsInhibit, type: SimVarValueType.Bool }],
+    ['gpwsFlapsInhibit', { name: MfdVars.gpwsFlapsInhibit, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

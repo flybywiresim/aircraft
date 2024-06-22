@@ -75,10 +75,10 @@ Use React-based implementation for now, hence no dev. effort needed here.
 
 ### SURV
 
-| Status      | URI | Sprint/Prio |
+| Status      | URI | Sprint/Prio | Missing functionality |
 | ------------- | ------------- | ------------- |
-| 🟥 | surv/controls | 4 |
-| 🟥 | surv/status-switching | 4 |
+| ✅ | surv/controls | 2 | TCAS+WXR not functional |
+| 🟥 | surv/status-switching | 4 | tbd |
 
 ### FCU BKUP
 

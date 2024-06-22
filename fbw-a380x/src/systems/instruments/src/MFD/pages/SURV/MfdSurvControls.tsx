@@ -19,17 +19,45 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
+  private readonly xpdrFailed = Subject.create<boolean>(false);
+
   private readonly squawkCode = Subject.create<number | null>(null);
 
   private readonly xpdrAltRptgOn = Subject.create<boolean>(true);
 
   private readonly xpdrStatusSelectedIndex = Subject.create<number | null>(0);
 
+  private readonly tcasFailed = Subject.create<boolean>(true);
+
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(0);
 
   private readonly tcasNormAbvBlwSelectedIndex = Subject.create<number | null>(0);
 
+  private readonly wxrFailed = Subject.create<boolean>(true);
+
   private readonly wxrElevnTiltSelectedIndex = Subject.create<number | null>(0);
+
+  private readonly wxrAuto = Subject.create<boolean>(false);
+
+  private readonly wxrPredWsAuto = Subject.create<boolean>(false);
+
+  private readonly wxrTurbAuto = Subject.create<boolean>(false);
+
+  private readonly wxrGainAuto = Subject.create<boolean>(true);
+
+  private readonly wxrModeWx = Subject.create<boolean>(true);
+
+  private readonly wxrOnVd = Subject.create<boolean>(false);
+
+  private readonly tawsFailed = Subject.create<boolean>(false);
+
+  private readonly tawsTerrSysOn = Subject.create<boolean>(true);
+
+  private readonly tawsGpwsOn = Subject.create<boolean>(true);
+
+  private readonly tawsGsModeOn = Subject.create<boolean>(true);
+
+  private readonly tawsFlapModeOn = Subject.create<boolean>(true);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -53,11 +81,25 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       .whenChanged()
       .handle((it) => this.xpdrAltRptgOn.set(it));
 
-    this.subs.push(
-      this.xpdrAltRptgOn.sub((it) =>
-        this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', it, true),
-      ),
-    );
+    sub
+      .on('gpwsTerrOff')
+      .whenChanged()
+      .handle((it) => this.tawsTerrSysOn.set(!it));
+
+    sub
+      .on('gpwsSysOff')
+      .whenChanged()
+      .handle((it) => this.tawsGpwsOn.set(!it));
+
+    sub
+      .on('gpwsGsInhibit')
+      .whenChanged()
+      .handle((it) => this.tawsGsModeOn.set(!it));
+
+    sub
+      .on('gpwsFlapsInhibit')
+      .whenChanged()
+      .handle((it) => this.tawsFlapModeOn.set(!it));
   }
 
   public destroy(): void {
@@ -72,7 +114,32 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   }
 
   private setDefaultSettings() {
-    // TODO
+    if (this.xpdrFailed.get() === false) {
+      this.xpdrStatusSelectedIndex.set(0);
+      this.xpdrAltRptgOn.set(true);
+    }
+
+    if (this.tcasFailed.get() === false) {
+      this.tcasTaraSelectedIndex.set(0);
+      this.tcasNormAbvBlwSelectedIndex.set(0);
+    }
+
+    if (this.wxrFailed.get() === false) {
+      this.wxrElevnTiltSelectedIndex.set(0);
+      this.wxrAuto.set(true);
+      this.wxrPredWsAuto.set(true);
+      this.wxrTurbAuto.set(true);
+      this.wxrGainAuto.set(true);
+      this.wxrModeWx.set(true);
+      this.wxrOnVd.set(true);
+    }
+
+    if (this.tawsFailed.get() === false) {
+      this.tawsTerrSysOn.set(true);
+      this.tawsGpwsOn.set(true);
+      this.tawsGsModeOn.set(true);
+      this.tawsFlapModeOn.set(true);
+    }
   }
 
   render(): VNode {
@@ -87,9 +154,12 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-surv-controls-first-section">
-            <div style="width: 40%; display: flex; flex-direction: row; border-right: 2px solid lightgrey; margin-left: 5px;">
-              <div style="display: flex; flex-direction: column; flex: 1; align-items: center;">
-                <div class="mfd-label bigger" style="position: relative; left: 100px; top: 3px;">
+            <div class="mfd-surv-controls-xpdr-section">
+              <div class="mfd-surv-controls-xpdr-left">
+                <div
+                  class={{ 'mfd-surv-heading': true, failed: this.xpdrFailed }}
+                  style="position: relative; left: 100px; top: 3px;"
+                >
                   XPDR
                 </div>
                 <div class="mfd-label bigger" style="margin-top: 30px;">
@@ -115,9 +185,17 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 <div class="mfd-label bigger" style="margin-top: 20px; margin-bottom: 5px;">
                   ALT RTPG
                 </div>
-                <SurvButton state={this.xpdrAltRptgOn} labelOff={'OFF'} labelOn={'ON'} />
+                <SurvButton
+                  state={this.xpdrAltRptgOn}
+                  disabled={this.xpdrFailed}
+                  labelFalse={'OFF'}
+                  labelTrue={'ON'}
+                  onChanged={(v) =>
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', v, true)
+                  }
+                />
               </div>
-              <div style="display: flex; flex-direction: column; flex; 1; align-items: center; justify-content: center; padding-right: 20px;">
+              <div class="mfd-surv-controls-xpdr-right">
                 <RadioButtonGroup
                   values={['AUTO', 'STBY']}
                   onModified={(val) => this.xpdrStatusChanged(val)}
@@ -128,11 +206,14 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 />
               </div>
             </div>
-            <div style="width: 60%; display: flex; flex-direction: row; border-right: 2px solid lightgrey; margin-left: 5px; padding-top: 75px;">
-              <div class="mfd-label bigger" style="position: relative; left: 150px; top: -70px;">
+            <div class="mfd-surv-controls-tcas-section">
+              <div
+                class={{ 'mfd-surv-heading': true, failed: this.tcasFailed }}
+                style="position: relative; left: 150px; top: -70px;"
+              >
                 TCAS
               </div>
-              <div style="display: flex; flex-direction: column; flex; 1; align-items: center; justify-content: center; padding-right: 40px; border-right: 2px solid lightgrey;">
+              <div class="mfd-surv-controls-tcas-left">
                 <RadioButtonGroup
                   values={['TA/RA', 'TA ONLY', 'STBY']}
                   selectedIndex={this.tcasTaraSelectedIndex}
@@ -142,7 +223,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   valuesDisabled={Subject.create(Array(3).fill(true))}
                 />
               </div>
-              <div style="display: flex; flex-direction: column; flex; 1; align-items: center; justify-content: center;">
+              <div class="mfd-surv-controls-tcas-right">
                 <RadioButtonGroup
                   values={['NORM', 'ABV', 'BLW']}
                   selectedIndex={this.tcasNormAbvBlwSelectedIndex}
@@ -155,80 +236,148 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
             </div>
           </div>
           <div class="mfd-surv-controls-second-section">
-            <div style="width: 30%; display: flex; flex-direction: row; margin-left: 5px;">
-              <div style="display: flex; flex-direction: column; flex: 1; align-items: center;">
-                <div class="mfd-label bigger" style="position: relative; left: 100px; top: 3px;">
-                  WXR
-                </div>
-                <div class="mfd-label bigger" style="margin-top: 80px;">
-                  ELEVN/TILT
-                </div>
-                <RadioButtonGroup
-                  values={['AUTO', 'ELEVN', 'TILT']}
-                  selectedIndex={this.wxrElevnTiltSelectedIndex}
-                  idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlswxrElevnTilt`}
-                  additionalVerticalSpacing={10}
-                  greenActive={Subject.create(true)}
-                  valuesDisabled={Subject.create(Array(3).fill(true))}
-                />
+            <div class="mfd-surv-controls-wxr-left">
+              <div
+                class={{ 'mfd-surv-heading': true, failed: this.wxrFailed }}
+                style="position: relative; left: 100px; top: 0px;"
+              >
+                WXR
               </div>
+              <div class="mfd-label bigger" style="margin-top: 80px;">
+                ELEVN/TILT
+              </div>
+              <RadioButtonGroup
+                values={['AUTO', 'ELEVN', 'TILT']}
+                selectedIndex={this.wxrElevnTiltSelectedIndex}
+                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlswxrElevnTilt`}
+                additionalVerticalSpacing={10}
+                greenActive={Subject.create(true)}
+                valuesDisabled={Subject.create(Array(3).fill(true))}
+              />
             </div>
-            <div style="width: 70%; display: flex; flex-direction: row; margin-left: 5px; padding-top: 30px; align-items: center; justify-content: center;">
-              <div style="display: grid; grid-template-columns: auto auto auto;">
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">WXR</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
+            <div class="mfd-surv-controls-wxr-right">
+              <div class="mfd-surv-controls-wxr-grid">
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">WXR</div>
+                  <SurvButton
+                    state={this.wxrAuto}
+                    disabled={this.wxrFailed}
+                    labelFalse={'OFF'}
+                    labelTrue={'AUTO'}
+                    onChanged={() => {}}
+                  />
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">PRED W/S</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">PRED W/S</div>
+                  <SurvButton
+                    state={this.wxrPredWsAuto}
+                    disabled={this.wxrFailed}
+                    labelFalse={'OFF'}
+                    labelTrue={'AUTO'}
+                    onChanged={() => {}}
+                  />
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">TURB</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">TURB</div>
+                  <SurvButton
+                    state={this.wxrTurbAuto}
+                    disabled={this.wxrFailed}
+                    labelFalse={'OFF'}
+                    labelTrue={'AUTO'}
+                    onChanged={() => {}}
+                  />
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">GAIN</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'MAN'} labelOn={'AUTO'} />
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">GAIN</div>
+                  <SurvButton
+                    state={this.wxrGainAuto}
+                    disabled={this.wxrFailed}
+                    labelFalse={'MAN'}
+                    labelTrue={'AUTO'}
+                    onChanged={() => {}}
+                  />
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">MODE</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'MAP'} labelOn={'WX'} />
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">MODE</div>
+                  <SurvButton
+                    state={this.wxrModeWx}
+                    disabled={this.wxrFailed}
+                    labelFalse={'MAP'}
+                    labelTrue={'WX'}
+                    onChanged={() => {}}
+                  />
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-                  <div class="mfd-label">WX ON VD</div>
-                  <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'AUTO'} />
+                <div class="mfd-surv-controls-wxr-grid-cell">
+                  <div class="mfd-surv-label">WX ON VD</div>
+                  <SurvButton
+                    state={this.wxrOnVd}
+                    disabled={this.wxrFailed}
+                    labelFalse={'OFF'}
+                    labelTrue={'AUTO'}
+                    onChanged={() => {}}
+                  />
                 </div>
               </div>
             </div>
           </div>
           <div class="mfd-surv-controls-third-section">
-            <div class="mfd-label bigger" style="position: relative; left: 100px; top: -15px;">
+            <div
+              class={{ 'mfd-surv-heading': true, failed: this.tawsFailed }}
+              style="position: relative; left: 100px; top: 5px;"
+            >
               TAWS
             </div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
-              <div class="mfd-label">TERR SYS</div>
-              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
+            <div class="mfd-surv-controls-taws-section">
+              <div class="mfd-surv-controls-taws-element" style="padding-right: 50px;">
+                <div class="mfd-surv-label">TERR SYS</div>
+                <SurvButton
+                  state={this.tawsTerrSysOn}
+                  disabled={this.tawsFailed}
+                  labelFalse={'OFF'}
+                  labelTrue={'ON'}
+                  onChanged={(v) => SimVar.SetSimVarValue('L:A32NX_GPWS_TERR_OFF', SimVarValueType.Bool, !v)}
+                />
+              </div>
+              <div class="mfd-surv-controls-taws-element">
+                <div class="mfd-surv-label">GPWS</div>
+                <SurvButton
+                  state={this.tawsGpwsOn}
+                  disabled={this.tawsFailed}
+                  labelFalse={'OFF'}
+                  labelTrue={'ON'}
+                  onChanged={(v) => SimVar.SetSimVarValue('L:A32NX_GPWS_SYS_OFF', SimVarValueType.Bool, !v)}
+                />
+              </div>
+              <div class="mfd-surv-controls-taws-element">
+                <div class="mfd-surv-label">G/S MODE</div>
+                <SurvButton
+                  state={this.tawsGsModeOn}
+                  disabled={this.tawsFailed}
+                  labelFalse={'OFF'}
+                  labelTrue={'ON'}
+                  onChanged={(v) => SimVar.SetSimVarValue('L:A32NX_GPWS_GS_OFF', SimVarValueType.Bool, !v)}
+                />
+              </div>
+              <div class="mfd-surv-controls-taws-element">
+                <div class="mfd-surv-label">FLAP MODE</div>
+                <SurvButton
+                  state={this.tawsFlapModeOn}
+                  disabled={this.tawsFailed}
+                  labelFalse={'OFF'}
+                  labelTrue={'ON'}
+                  onChanged={(v) => SimVar.SetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', SimVarValueType.Bool, !v)}
+                />
+              </div>
             </div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
-              <div class="mfd-label">GPWS</div>
-              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
-              <div class="mfd-label">G/S MODE</div>
-              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
-              <div class="mfd-label">FLAP MODE</div>
-              <SurvButton state={Subject.create(true)} labelOff={'OFF'} labelOn={'ON'} />
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 10px; height: 100px;">
-              <div class="mfd-label">SURV</div>
-              <Button
-                label={'DEFAULT SETTINGS'}
-                onClick={() => this.setDefaultSettings()}
-                buttonStyle="width: 140px;"
-              />
+            <div class="mfd-surv-controls-def-settings-container">
+              <div class="mfd-surv-controls-def-settings">
+                <div class="mfd-surv-label">SURV</div>
+                <Button
+                  label={'DEFAULT SETTINGS'}
+                  onClick={() => this.setDefaultSettings()}
+                  buttonStyle="width: 140px;"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import {
   ComponentProps,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   Subscription,
@@ -10,11 +11,15 @@ import {
 import './style.scss';
 
 export interface SurvButtonProps extends ComponentProps {
-  state: Subject<boolean>;
-  labelOn: string | Subscribable<VNode>;
-  labelOff: string | Subscribable<VNode>;
+  /** True = Upper state; False = Lower state */
+  state: Subscribable<boolean>;
+  /** Upper label */
+  labelTrue: string;
+  /** Lower label */
+  labelFalse: string;
   disabled?: Subscribable<boolean>;
   buttonStyle?: string;
+  onChanged(val: boolean): void;
 }
 
 /*
@@ -26,9 +31,33 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
 
   private topRef = FSComponent.createRef<HTMLDivElement>();
 
+  private readonly upperLabelGreen = MappedSubject.create(
+    ([state, disabled]) => state === true && !disabled,
+    this.props.state,
+    this.props.disabled ?? Subject.create(false),
+  );
+
+  private readonly upperLabelHidden = MappedSubject.create(
+    ([state, disabled]) => state === false && disabled,
+    this.props.state,
+    this.props.disabled ?? Subject.create(false),
+  );
+
+  private readonly lowerLabelGreen = MappedSubject.create(
+    ([state, disabled]) => state === false && !disabled,
+    this.props.state,
+    this.props.disabled ?? Subject.create(false),
+  );
+
+  private readonly lowerLabelHidden = MappedSubject.create(
+    ([state, disabled]) => state === true && disabled,
+    this.props.state,
+    this.props.disabled ?? Subject.create(false),
+  );
+
   private clickHandler(): void {
     if (this.props.disabled?.get() === false) {
-      this.props.state.set(!this.props.state.get());
+      this.props.onChanged(!this.props.state.get());
     }
   }
 
@@ -60,29 +89,26 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
 
   public render(): VNode {
     return (
-      <div
-        style="border: 1px inset lightgrey; display: flex; flex-direction: column; width: 100px; justify-content: center; align-items: center; padding: 5px;"
-        ref={this.topRef}
-      >
+      <div class={{ 'mfd-surv-button': true, disabled: this.props.disabled ?? false }} ref={this.topRef}>
         <div
           class={{
-            'mfd-label': this.props.state.map((it) => !it),
-            'mfd-value': this.props.state,
-            // eslint-disable-next-line prettier/prettier
-            'bigger': this.props.state,
+            'mfd-label': this.upperLabelGreen.map((it) => !it),
+            'mfd-value': this.upperLabelGreen,
+            bigger: this.upperLabelGreen,
           }}
+          style={{ visibility: this.upperLabelHidden.map((it) => (it ? 'hidden' : 'visible')) }}
         >
-          {this.props.labelOn}
+          {this.props.labelTrue}
         </div>
         <div
           class={{
-            'mfd-label': this.props.state,
-            'mfd-value': this.props.state.map((it) => !it),
-            // eslint-disable-next-line prettier/prettier
-            'bigger': this.props.state.map((it) => !it),
+            'mfd-label': this.lowerLabelGreen.map((it) => !it),
+            'mfd-value': this.lowerLabelGreen,
+            bigger: this.lowerLabelGreen,
           }}
+          style={{ visibility: this.lowerLabelHidden.map((it) => (it ? 'hidden' : 'visible')) }}
         >
-          {this.props.labelOff}
+          {this.props.labelFalse}
         </div>
       </div>
     );
