@@ -116,17 +116,15 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    let mainColor;
+    let mainColor = '#000';
     if (isColorLayer) {
-      if (symbol.type & NdSymbolTypeFlags.ActiveLegTermination) {
-        mainColor = '#fff';
-      } else if (symbol.type & NdSymbolTypeFlags.Tuned) {
+      if (symbol.type & NdSymbolTypeFlags.Tuned) {
         mainColor = '#0ff';
+      } else if (symbol.type & NdSymbolTypeFlags.ActiveLegTermination) {
+        mainColor = '#fff';
       } else {
         mainColor = '#ff94ff';
       }
-    } else {
-      mainColor = '#000';
     }
 
     if (symbol.type & NdSymbolTypeFlags.VorDme) {
