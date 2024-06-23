@@ -91,7 +91,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [83_700, 2459],
     [85_000, 2559],
     [86_200, 2709],
-    [87_200, 2918],
+    [86_800, 2918],
     [90_700, 3180],
     [98_900, 3800],
     [107_000, 5000],
