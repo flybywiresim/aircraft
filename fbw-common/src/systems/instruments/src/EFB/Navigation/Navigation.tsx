@@ -557,7 +557,13 @@ export const ChartViewer = () => {
                     </svg>
                   )}
 
-                  <div ref={chartRef}>
+                  <div
+                    ref={chartRef}
+                    style={{
+                      width: boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1,
+                      height: Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2),
+                    }}
+                  >
                     {chartLightUrl && (
                       <img
                         className="absolute left-0 w-full select-none transition duration-100"
