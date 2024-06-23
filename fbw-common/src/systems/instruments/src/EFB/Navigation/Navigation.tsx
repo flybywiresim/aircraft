@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len,react/no-this-in-sfc,no-console */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowClockwise,
   ArrowCounterclockwise,
@@ -105,7 +105,6 @@ export const ChartViewer = () => {
 
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
   const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number; y: number; r: number }>({
@@ -116,6 +115,7 @@ export const ChartViewer = () => {
   const [aircraftLatitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 1000);
   const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
   const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
+  const [loading, setLoading] = useState(true);
 
   const [chartLightBlob, setChartLightBlob] = useState<Blob | null>(null);
   const chartLightUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartLightBlob) : null), [chartLightBlob]);
@@ -154,6 +154,7 @@ export const ChartViewer = () => {
   ]);
 
   useEffect(() => {
+    setLoading(true);
     navigraphCharts
       .getChartImage({
         chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
@@ -176,33 +177,27 @@ export const ChartViewer = () => {
     dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation - 90) % 360 }));
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line func-names
-    if (imgRef.current) {
-      imgRef.current.onload = function () {
-        if (ref.current) {
-          // @ts-ignore
-          const imgWidth = this.width;
-          // @ts-ignore
-          const imgHeight = this.height;
-          const chartDimensions: { width: number; height: number } = {
-            width: -1,
-            height: -1,
-          };
+  const chartImgRef = useCallback((node: HTMLImageElement) => {
+    if (node) {
+      node.onload = function () {
+        const chartDimensions: { width: number; height: number } = {
+          width: -1,
+          height: -1,
+        };
 
-          chartDimensions.height = imgHeight;
-          chartDimensions.width = imgWidth;
+        chartDimensions.height = node.height;
+        chartDimensions.width = node.width;
 
-          dispatch(
-            editTabProperty({
-              tab: currentTab,
-              chartDimensions,
-            }),
-          );
-        }
+        dispatch(
+          editTabProperty({
+            tab: currentTab,
+            chartDimensions,
+          }),
+        );
+        setLoading(false);
       };
     }
-  }, [chartLinks, currentPage, imgRef]);
+  }, []);
 
   useEffect(() => {
     const { width, height } = chartDimensions;
@@ -276,6 +271,7 @@ export const ChartViewer = () => {
           <div
             className="h-full"
             onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
+            style={{ display: loading ? 'none' : 'block' }}
           >
             {pagesViewable > 1 && (
               <div className="absolute left-6 top-6 z-40 flex flex-row items-center overflow-hidden rounded-md">
@@ -558,7 +554,7 @@ export const ChartViewer = () => {
                         draggable={false}
                         src={chartLightUrl}
                         alt="chart"
-                        ref={imgRef}
+                        ref={chartImgRef}
                       />
                     )}
 
@@ -568,7 +564,7 @@ export const ChartViewer = () => {
                         draggable={false}
                         src={chartDarkUrl}
                         alt="chart"
-                        ref={imgRef}
+                        ref={chartImgRef}
                       />
                     )}
                   </div>
