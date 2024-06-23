@@ -8,6 +8,10 @@
         <Parameters Type="Default">
             <RMP_ID>1</RMP_ID>
             <NO_ID_IN_PARTID>True</NO_ID_IN_PARTID>
+            <!-- FIXME needs electrical logic -->
+            <ANN_LT_TEST>(L:A32NX_OVHD_INTLT_ANN) 0 ==</ANN_LT_TEST>
+            <!-- FIXME once ANN LT has IE to drive a pot for emis brightness, hook it up in our templates here -->
+            <!--ANN_LT_POTENTIOMETER></ANN_LT_POTENTIOMETER-->
         </Parameters>
         <Parameters Type="Override">
             <!-- FIXME use 1, 2, 3 rather than L, R, T everywhere! -->
@@ -302,6 +306,7 @@
                     <BUTTON_NAME>VOICE</BUTTON_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_RADIO_NAV_FILTER)</SEQ1_EMISSIVE_CODE>
                     <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+                    <POTENTIOMETER_SEQ2>#RMP_INTEG_POT#</POTENTIOMETER_SEQ2>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_A380X_RMP_Audio_Knob">
@@ -319,6 +324,8 @@
                 <UseTemplate Name="FBW_A380X_RMP_Audio_Knob">
                     <KNOB_NAME>DUMMY_VOL</KNOB_NAME>
                     <NODE_ID>KNOB_RMP_#RMP_ID#_DUMMY</NODE_ID>
+                    <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+                    <SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_A380X_RMP_Button">
@@ -344,6 +351,7 @@
                     <COVER_NODE_ID>COVER_RMP_#RMP_ID#_STBY_NAV</COVER_NODE_ID>
                     <SEQ1_EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_STBY_NAV)</SEQ1_EMISSIVE_CODE>
                     <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+                    <POTENTIOMETER_SEQ2>#RMP_INTEG_POT#</POTENTIOMETER_SEQ2>
                 </UseTemplate>
             </Component>
 
@@ -353,12 +361,12 @@
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>LIGHT_RMP_#RMP_ID#_LED_RED</NODE_ID>
-                    <EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_RED_LED)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_RED_LED) #ANN_LT_TEST# or</EMISSIVE_CODE>
                     <FAILURE>#RMP_MAIN_ELEC#</FAILURE>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>LIGHT_RMP_#RMP_ID#_LED_GREEN</NODE_ID>
-                    <EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_GREEN_LED)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_GREEN_LED) #ANN_LT_TEST# ! and</EMISSIVE_CODE>
                     <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                     <FAILURE>#RMP_MAIN_ELEC#</FAILURE>
                 </UseTemplate>
@@ -393,8 +401,9 @@
             <NODE_ID>BUTTON</NODE_ID>
             <BUTTON_NAME>ADK</BUTTON_NAME>
             <ID></ID>
-            <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>#ANN_LT_TEST#</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>#ANN_LT_TEST#</SEQ2_EMISSIVE_CODE>
+            <BUTTON_EMISSIVE_CODE>1</BUTTON_EMISSIVE_CODE>
             <IS_AIRLINER>True</IS_AIRLINER>
         </Parameters>
         <Parameters Type="Default">
@@ -431,6 +440,32 @@
         <Parameters Type="Default">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
         </Parameters>
+        <Parameters Type="Override">
+            <Condition Valid="NO_SEQ1_ANN_LT_TEST">
+                <False>
+                    <Condition NotEmpty="SEQ1_EMISSIVE_CODE">
+                        <True>
+                            <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# #ANN_LT_TEST# or</SEQ1_EMISSIVE_CODE>
+                        </True>
+                        <False>
+                            <SEQ1_EMISSIVE_CODE>#ANN_LT_TEST#</SEQ1_EMISSIVE_CODE>
+                        </False>
+                    </Condition>
+                </False>
+            </Condition>
+            <Condition Valid="NO_SEQ2_ANN_LT_TEST">
+                <False>
+                    <Condition NotEmpty="SEQ2_EMISSIVE_CODE">
+                        <True>
+                            <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# #ANN_LT_TEST# or</SEQ2_EMISSIVE_CODE>
+                        </True>
+                        <False>
+                            <SEQ2_EMISSIVE_CODE>#ANN_LT_TEST#</SEQ2_EMISSIVE_CODE>
+                        </False>
+                    </Condition>
+                </False>
+            </Condition>
+        </Parameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_Interaction_Base_Template">
                 <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
@@ -443,6 +478,11 @@
                 <SEQ2_FAILURE>#RMP_INTEG_ELEC#</SEQ2_FAILURE>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                 <CREATE_COMPONENT>False</CREATE_COMPONENT>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <EMISSIVE_CODE>#BUTTON_EMISSIVE_CODE#</EMISSIVE_CODE>
+                <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
+                <POTENTIOMETER>#RMP_INTEG_POT#</POTENTIOMETER>
             </UseTemplate>
         </Component>
     </Template>
@@ -487,12 +527,14 @@
         </Parameters>
         <Parameters Type="Default">
             <NODE_ID>#PART_ID#</NODE_ID>
-            <ANIM_LAG_SWITCH>200</ANIM_LAG_SWITCH>
+            <ANIM_LAG_SWITCH>350</ANIM_LAG_SWITCH>
             <ANIM_LAG_KNOB>500</ANIM_LAG_KNOB>
             <!-- TODO WWISE -->
             <TOOLTIP_TITLE>A380X.TOOLTIPS.RMP_#KNOB_NAME#_TITLE</TOOLTIP_TITLE>
             <TT_DESCRIPTION_ID>A380X.TOOLTIPS.RMP_#KNOB_NAME#_ACTION</TT_DESCRIPTION_ID>
             <TT_PUSH_DESCRIPTION_ID>A380X.TOOLTIPS.RMP_#KNOB_NAME#_PUSH_ACTION</TT_PUSH_DESCRIPTION_ID>
+            <SEQ1_EMISSIVE_CODE>(L:#RX_LED_LOCAL_VAR#) #ANN_LT_TEST# or</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:#RX_LED_LOCAL_VAR#) #ANN_LT_TEST# or</SEQ2_EMISSIVE_CODE>
         </Parameters>
         <Parameters Type="Default">
             <ANIM_NAME_KNOB>#NODE_ID#_ROTATE_ANIM</ANIM_NAME_KNOB>
@@ -521,13 +563,13 @@
         <!-- SEQ1 is the emissive for the light in the centre of the knob when it's being listened to -->
         <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
             <NODE_ID>#NODE_ID#_SEQ1</NODE_ID>
-            <EMISSIVE_CODE>(L:#RX_LED_LOCAL_VAR#)</EMISSIVE_CODE>
+            <EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
             <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
         </UseTemplate>
         <!-- SEQ2 is the emissive for the light under the knob when it's being listened to -->
         <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
             <NODE_ID>#NODE_ID#_SEQ2</NODE_ID>
-            <EMISSIVE_CODE>(L:#RX_LED_LOCAL_VAR#)</EMISSIVE_CODE>
+            <EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</EMISSIVE_CODE>
             <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
         </UseTemplate>
     </Template>
