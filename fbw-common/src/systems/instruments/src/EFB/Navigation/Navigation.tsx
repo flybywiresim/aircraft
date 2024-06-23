@@ -105,6 +105,7 @@ export const ChartViewer = () => {
 
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
   const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number; y: number; r: number }>({
@@ -176,39 +177,32 @@ export const ChartViewer = () => {
   };
 
   useEffect(() => {
-    const img = new Image();
     // eslint-disable-next-line func-names
-    img.onload = function () {
-      if (ref.current) {
-        // @ts-ignore
-        const imgWidth = this.width;
-        // @ts-ignore
-        const imgHeight = this.height;
-        const chartDimensions: { width: number; height: number } = {
-          width: -1,
-          height: -1,
-        };
+    if (imgRef.current) {
+      imgRef.current.onload = function () {
+        if (ref.current) {
+          // @ts-ignore
+          const imgWidth = this.width;
+          // @ts-ignore
+          const imgHeight = this.height;
+          const chartDimensions: { width: number; height: number } = {
+            width: -1,
+            height: -1,
+          };
 
-        if (imgWidth > imgHeight) {
-          // landscape
-          chartDimensions.height = ref.current.clientHeight;
-          chartDimensions.width = imgWidth * (ref.current.clientHeight / imgHeight);
-        } else {
-          // portrait
-          chartDimensions.height = imgHeight * (ref.current.clientWidth / imgWidth);
-          chartDimensions.width = ref.current.clientWidth;
+          chartDimensions.height = imgHeight;
+          chartDimensions.width = imgWidth;
+
+          dispatch(
+            editTabProperty({
+              tab: currentTab,
+              chartDimensions,
+            }),
+          );
         }
-
-        dispatch(
-          editTabProperty({
-            tab: currentTab,
-            chartDimensions,
-          }),
-        );
-      }
-    };
-    img.src = chartLinks.light;
-  }, [chartLinks, currentPage]);
+      };
+    }
+  }, [chartLinks, currentPage, imgRef]);
 
   useEffect(() => {
     const { width, height } = chartDimensions;
@@ -557,19 +551,14 @@ export const ChartViewer = () => {
                     </svg>
                   )}
 
-                  <div
-                    ref={chartRef}
-                    style={{
-                      width: boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1,
-                      height: Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2),
-                    }}
-                  >
+                  <div ref={chartRef}>
                     {chartLightUrl && (
                       <img
                         className="absolute left-0 w-full select-none transition duration-100"
                         draggable={false}
                         src={chartLightUrl}
                         alt="chart"
+                        ref={imgRef}
                       />
                     )}
 
@@ -579,6 +568,7 @@ export const ChartViewer = () => {
                         draggable={false}
                         src={chartDarkUrl}
                         alt="chart"
+                        ref={imgRef}
                       />
                     )}
                   </div>
