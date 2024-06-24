@@ -18,9 +18,9 @@
  * ```
  */
 export interface ConditionType {
-    varName: string;
-    result: number;
-    comp?: string;
+  varName: string;
+  result: number;
+  comp?: string;
 }
 
 /**
@@ -57,11 +57,11 @@ export interface ConditionType {
  * ```
  */
 export interface ChecklistItem {
-    item: string;
-    result: string;
-    type?: string;
-    action?: string;
-    condition?: ConditionType[];
+  item: string;
+  result: string;
+  type?: string;
+  action?: string;
+  condition?: ConditionType[];
 }
 
 /**
@@ -73,7 +73,7 @@ export interface ChecklistItem {
  * Each item follows the structure defined in {@link ChecklistItem}.
  */
 export interface ChecklistJsonDefinition {
-    name: string;
-    flightphase: number;
-    items: ChecklistItem[];
+  name: string;
+  flightphase: number;
+  items: ChecklistItem[];
 }

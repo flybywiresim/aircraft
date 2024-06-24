@@ -3,12 +3,16 @@ class CDUAvailableFlightPlanPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
         let fromTo = "NO ORIGIN/DEST";
-        const hasCoRoutes = mcdu.coRoute.routes.length > 0;
-        if (mcdu.flightPlanManager.getOrigin()) {
-            if (mcdu.flightPlanManager.getDestination()) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident;
-            }
+
+        const origin = mcdu.flightPlanService.active.originAirport;
+        const dest = mcdu.flightPlanService.active.destinationAirport;
+
+        if (origin && dest) {
+            fromTo = `${origin.ident}/${dest.ident}`;
         }
+
+        const hasCoRoutes = mcdu.coRoute.routes.length > 0;
+
         if (hasCoRoutes) {
             const coRoutesListSize = mcdu.coRoute.routes.length;
 
@@ -157,9 +161,12 @@ class CDUAvailableFlightPlanPage {
                 }
                 mcdu.coRoute["navlog"] = selectedRoute.navlog;
                 setTimeout(async () => {
-                    await insertCoRoute(mcdu);
+                    await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, mcdu.coRoute);
+                    await mcdu.flightPlanService.uplinkInsert();
+                    this.setGroundTempFromOrigin();
+
                     CDUInitPage.ShowPage1(mcdu);
-                }, mcdu.getDelayRouteChange());
+                }, 0 /* No delay because it takes long enough without artificial delay */);
 
             };
         } else {
@@ -179,7 +186,6 @@ class CDUAvailableFlightPlanPage {
                 ["<RETURN"]
             ]);
         }
-
         mcdu.onLeftInput[5] = () => {
             CDUInitPage.ShowPage1(mcdu);
         };

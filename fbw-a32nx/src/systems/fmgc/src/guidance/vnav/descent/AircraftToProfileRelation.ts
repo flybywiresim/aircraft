@@ -2,123 +2,141 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NavGeometryProfile, VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import {
+  NavGeometryProfile,
+  VerticalCheckpoint,
+  VerticalCheckpointReason,
+} from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class AircraftToDescentProfileRelation {
-    public isValid: boolean = false;
+  public isValid: boolean = false;
 
-    public currentProfile?: NavGeometryProfile;
+  public currentProfile?: NavGeometryProfile;
 
-    private topOfDescent?: VerticalCheckpoint;
+  private topOfDescent?: VerticalCheckpoint;
 
-    private geometricPathStart?: VerticalCheckpoint;
+  private geometricPathStart?: VerticalCheckpoint;
 
-    private distanceToEnd: NauticalMiles = 0;;
+  private distanceToEnd: NauticalMiles = 0;
 
-    public totalFlightPlanDistance: number = 0;
+  public totalFlightPlanDistance: number = 0;
 
-    get distanceFromStart(): NauticalMiles {
-        return this.totalFlightPlanDistance - this.distanceToEnd;
+  get distanceFromStart(): NauticalMiles {
+    return this.totalFlightPlanDistance - this.distanceToEnd;
+  }
+
+  constructor(private observer: VerticalProfileComputationParametersObserver) {}
+
+  reset() {
+    this.isValid = false;
+    this.currentProfile = undefined;
+    this.topOfDescent = undefined;
+    this.geometricPathStart = undefined;
+    this.distanceToEnd = 0;
+    this.totalFlightPlanDistance = 0;
+  }
+
+  updateProfile(profile: NavGeometryProfile) {
+    const topOfDescent = profile?.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
+    const geometricPathStart = profile?.findVerticalCheckpoint(VerticalCheckpointReason.GeometricPathStart);
+
+    const isProfileValid = !!topOfDescent && !!geometricPathStart;
+
+    if (!isProfileValid) {
+      this.invalidate();
+
+      // If the profile is empty, we don't bother logging that it's invalid, because it probably just hasn't been computed yet.
+      if (VnavConfig.DEBUG_PROFILE && profile.checkpoints.length >= 0) {
+        console.warn('[FMS/VNAV] Invalid profile');
+      }
+
+      return;
     }
 
-    constructor(private observer: VerticalProfileComputationParametersObserver) { }
+    this.isValid = isProfileValid;
 
-    updateProfile(profile: NavGeometryProfile) {
-        const topOfDescent = profile?.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
-        const geometricPathStart = profile?.findVerticalCheckpoint(VerticalCheckpointReason.GeometricPathStart);
+    this.topOfDescent = topOfDescent;
+    this.geometricPathStart = geometricPathStart;
 
-        const isProfileValid = !!topOfDescent && !!geometricPathStart;
+    this.currentProfile = profile;
+    this.totalFlightPlanDistance = profile.totalFlightPlanDistance;
 
-        if (!isProfileValid) {
-            this.invalidate();
+    this.distanceToEnd = profile.totalFlightPlanDistance - profile.distanceToPresentPosition;
+  }
 
-            // If the profile is empty, we don't bother logging that it's invalid, because it probably just hasn't been computed yet.
-            if (VnavConfig.DEBUG_PROFILE && profile.checkpoints.length >= 0) {
-                console.warn('[FMS/VNAV] Invalid profile');
-            }
+  private invalidate() {
+    this.isValid = false;
+    this.currentProfile = undefined;
+    this.topOfDescent = undefined;
+  }
 
-            return;
-        }
-
-        this.isValid = isProfileValid;
-
-        this.topOfDescent = topOfDescent;
-        this.geometricPathStart = geometricPathStart;
-
-        this.currentProfile = profile;
-        this.totalFlightPlanDistance = profile.totalFlightPlanDistance;
-
-        this.distanceToEnd = profile.totalFlightPlanDistance - profile.distanceToPresentPosition;
+  update(distanceToEnd: number) {
+    if (!this.isValid) {
+      return;
     }
 
-    private invalidate() {
-        this.isValid = false;
-        this.currentProfile = undefined;
-        this.topOfDescent = undefined;
+    if (!Number.isFinite(distanceToEnd)) {
+      this.invalidate();
+      return;
     }
 
-    update(distanceToEnd: number) {
-        if (!this.isValid) {
-            return;
-        }
+    this.distanceToEnd = distanceToEnd;
+  }
 
-        this.distanceToEnd = distanceToEnd;
+  isPastTopOfDescent(): boolean {
+    return this.distanceToTopOfDescent() < 0;
+  }
+
+  distanceToTopOfDescent(): number | null {
+    if (this.topOfDescent) {
+      return this.topOfDescent.distanceFromStart - this.distanceFromStart;
     }
 
-    isPastTopOfDescent(): boolean {
-        return this.distanceToTopOfDescent() < 0;
-    }
+    return null;
+  }
 
-    distanceToTopOfDescent(): number | null {
-        if (this.topOfDescent) {
-            return this.topOfDescent.distanceFromStart - this.distanceFromStart;
-        }
+  isOnGeometricPath(): boolean {
+    return this.distanceFromStart > this.geometricPathStart.distanceFromStart;
+  }
 
-        return null;
-    }
+  computeLinearDeviation(): Feet {
+    const altitude = this.observer.get().presentPosition.alt;
+    const targetAltitude = this.currentTargetAltitude();
 
-    isOnGeometricPath(): boolean {
-        return this.distanceFromStart > this.geometricPathStart.distanceFromStart;
-    }
+    return altitude - targetAltitude;
+  }
 
-    computeLinearDeviation(): Feet {
-        const altitude = this.observer.get().presentPosition.alt;
-        const targetAltitude = this.currentTargetAltitude();
+  currentTargetAltitude(): Feet {
+    return this.currentProfile.interpolateAltitudeAtDistance(this.distanceFromStart);
+  }
 
-        return altitude - targetAltitude;
-    }
+  currentTargetPathAngle(): Degrees {
+    return this.currentProfile.interpolatePathAngleAtDistance(this.distanceFromStart);
+  }
 
-    currentTargetAltitude(): Feet {
-        return this.currentProfile.interpolateAltitudeAtDistance(this.distanceFromStart);
-    }
+  currentTargetVerticalSpeed(): FeetPerMinute {
+    const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
 
-    currentTargetPathAngle(): Degrees {
-        return this.currentProfile.interpolatePathAngleAtDistance(this.distanceFromStart);
-    }
+    const knotsToFeetPerMinute = 101.269;
+    return knotsToFeetPerMinute * groundSpeed * Math.tan(this.currentTargetPathAngle() * MathUtils.DEGREES_TO_RADIANS);
+  }
 
-    currentTargetVerticalSpeed(): FeetPerMinute {
-        const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
+  isAboveSpeedLimitAltitude(): boolean {
+    const { presentPosition, descentSpeedLimit } = this.observer.get();
 
-        const knotsToFeetPerMinute = 101.269;
-        return knotsToFeetPerMinute * groundSpeed * Math.tan(this.currentTargetPathAngle() * MathUtils.DEGREES_TO_RADIANS);
-    }
+    return presentPosition.alt > descentSpeedLimit?.underAltitude;
+  }
 
-    isAboveSpeedLimitAltitude(): boolean {
-        const { presentPosition, descentSpeedLimit } = this.observer.get();
+  isCloseToAirfieldElevation(): boolean {
+    const { destinationElevation, presentPosition } = this.observer.get();
 
-        return presentPosition.alt > descentSpeedLimit?.underAltitude;
-    }
+    return presentPosition.alt < destinationElevation + 5000;
+  }
 
-    isCloseToAirfieldElevation(): boolean {
-        const { destinationElevation, presentPosition } = this.observer.get();
-
-        return presentPosition.alt < destinationElevation + 5000;
-    }
-
-    get currentDistanceToEnd(): NauticalMiles {
-        return this.distanceToEnd;
-    }
+  get currentDistanceToEnd(): NauticalMiles {
+    return this.distanceToEnd;
+  }
 }

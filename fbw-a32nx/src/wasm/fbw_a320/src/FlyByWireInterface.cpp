@@ -223,13 +223,11 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - autothrust
-  autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
-
-  // initialize local variable for reverse
-  idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
+  autothrustThrustLimitReversePercentageToga =
+      INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", 0.813);
 
   // print configuration into console
-  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << std::endl;
+  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = " << autothrustThrustLimitReversePercentageToga << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -1645,7 +1643,9 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_actuator_healthy = true;
-  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended = false;
+  // This should come from a dedicated discrete from the SFCC
+  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended =
+      !reinterpret_cast<Arinc429DiscreteWord*>(&sfccBusOutputs[facIndex].slat_flap_actual_position_word)->bitFromValueOr(12, false);
   facs[facIndex].modelInputs.in.discrete_inputs.nose_gear_pressed = idLgciuNoseGearCompressed[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.ir_3_switch = false;
   facs[facIndex].modelInputs.in.discrete_inputs.adr_3_switch = false;
@@ -1699,7 +1699,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacCenterOfGravity[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].center_of_gravity_pos_percent));
   idFacSideslipTarget[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].sideslip_target_deg));
   idFacSlatAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_slat_angle_deg));
-  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle));
+  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle_deg));
   idFacDiscreteWord2[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_2));
   idFacRudderTravelLimitCommand[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_travel_limit_command_deg));
   idFacDeltaRYawDamperVoted[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_yaw_damper_deg));
@@ -2406,6 +2406,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // set position for 3D animation
   idThrottlePosition3d_1->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_1->get()));
   idThrottlePosition3d_2->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_2->get()));
+
+  // update reverser thrust limit
+  idAutothrustThrustLimitREV->set(idAutothrustThrustLimitTOGA->get() * autothrustThrustLimitReversePercentageToga);
 
   // set client data if needed
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {

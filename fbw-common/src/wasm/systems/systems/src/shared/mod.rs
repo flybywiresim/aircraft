@@ -249,6 +249,7 @@ pub trait AdirsMeasurementOutputs {
     fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
+    fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle>;
 }
 
 pub trait AdirsDiscreteOutputs {
@@ -1016,6 +1017,16 @@ impl<'a> Average<&'a Ratio> for Ratio {
         I: Iterator<Item = &'a Ratio>,
     {
         iter.copied().average()
+    }
+}
+
+pub trait Resolution {
+    fn resolution(self, resolution: f64) -> f64;
+}
+
+impl Resolution for f64 {
+    fn resolution(self, resolution: f64) -> f64 {
+        (self / resolution).round() * resolution
     }
 }
 
@@ -2147,5 +2158,34 @@ mod mach_number_tests {
             MachNumber(0.5),
             0.001
         );
+    }
+}
+
+#[cfg(test)]
+mod resolution_tests {
+    use super::*;
+
+    #[test]
+    fn positive_values_are_returned_to_correct_resolution() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, 20.);
+    }
+
+    #[test]
+    fn negative_values_are_returned_to_correct_resolution() {
+        let value: f64 = -22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, -20.);
+    }
+
+    #[test]
+    fn bigger_resolution_than_twice_value_returns_zero() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(50.);
+
+        assert_eq!(value_after_resolution, 0.);
     }
 }

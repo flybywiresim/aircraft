@@ -2250,7 +2250,7 @@ impl A380Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+            .update(context, adirs, &self.flap_system, &self.slat_system);
 
         self.flap_system.update(
             context,
@@ -2281,7 +2281,7 @@ impl A380Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+            .update(context, adirs, &self.flap_system, &self.slat_system);
 
         self.epump_auto_logic.update(
             context,
@@ -6564,6 +6564,9 @@ mod tests {
             }
             fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
                 Arinc429Word::new(Length::default(), SignStatus::NormalOperation)
+            }
+            fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
         }
 
