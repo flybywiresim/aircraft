@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+export * from './AircraftContext';
 export * from './Efb';
 export * from './Enum/Airframe';
 export * from './Assets/Error';

@@ -2,23 +2,26 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, Route, Switch } from 'react-router-dom';
 import { PageLink, TabRoutes, pathify } from '../../Utils/routing';
-import { AutomaticCallOutsPage } from './AutomaticCallOutsPage';
 import { t } from '../../Localization/translation';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { AircraftContext } from '../../AircraftContext';
 
 const basePinProgRoute = `/settings/${pathify('Aircraft Options / Pin Programs')}`;
 
-const subTabs: PageLink[] = [
-  { alias: t('Settings.AutomaticCallOuts.Title'), name: 'Automatic Call Outs', component: <AutomaticCallOutsPage /> },
-];
-
 export const AircraftOptionsPinProgramsPage = () => {
+  const aircraftContext = useContext(AircraftContext);
+  const [acoPage] = useState(React.createElement(aircraftContext.settingsPages.autoCalloutsPage));
+
+  const subTabs: PageLink[] = [
+    { alias: t('Settings.AutomaticCallOuts.Title'), name: 'Automatic Call Outs', component: acoPage },
+  ];
+
   const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
   const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
   const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
