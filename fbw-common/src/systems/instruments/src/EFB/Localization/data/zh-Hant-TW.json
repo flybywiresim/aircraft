@@ -5,7 +5,7 @@
     "ConnectHoppieACARS": "連接 Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "此頻率無可用信息",
     "SearchPlaceholder": "搜尋",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "只有在設定頁面中選擇 IVAO 或 VATSIM 作為 ATIS/ATC 來源時，此頁面才可使用。",
     "SetActive": "設定為啟用",
     "SetStandby": "設定為待機",
     "ShowAll": "All",
@@ -18,8 +18,8 @@
     "ShowTower": "Tower",
     "Standby": "待機",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "ATC 呼號搜尋",
+      "AtcTypeFilter": "過濾器"
     },
     "Title": "航空交通管制"
   },
@@ -84,7 +84,7 @@
       "Route": "航路",
       "SimBriefDataNotYetLoaded": "未加載 SimBrief 數據。",
       "Title": "你的航班",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "燃油與載荷已匯入！",
       "ZFW": "零油重量（ZFW）"
     }
   },
@@ -186,18 +186,18 @@
       "Title": "後推"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "高壓空氣車",
       "BaggageTruck": "行李車",
       "CateringTruck": "餐食車",
-      "Cones": "Safety Cones",
+      "Cones": "三角錐",
       "DoorAft": "後門",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "行李艙門",
       "DoorFwd": "前門",
       "ExternalPower": "外部電源",
       "FuelTruck": "加油車",
-      "JetBridge": "廊橋",
+      "JetBridge": "空橋",
       "Title": "服務",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "輪擋"
     },
     "Title": "地面"
   },
@@ -317,12 +317,12 @@
       "RunwaySlope": "跑道坡度",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "您需要輸入一個機場 ICAO 代碼才能請求 METAR 報文",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "您需要加載 SimBrief 數據才能自動填充數據"
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "您需要加載 SimBrief 數據才能自動填入數據"
       },
       "Temperature": "溫度",
       "Title": "降落",
       "UnitFt": "英呎（ft.）",
-      "UnitMeter": "米（m）",
+      "UnitMeter": "公尺（m）",
       "Weight": "重量",
       "WindDirection": "風向",
       "WindDirectionUnit": "°",
@@ -375,22 +375,22 @@
     "AircraftStates": {
       "Cancel": "取消",
       "ColdDark": "冷艙",
-      "ConfirmationDialogMsg": "請確認加載預設",
+      "ConfirmationDialogMsg": "請確認加載設定",
       "CurrentProcedureStep": "當前程序步驟",
-      "PleaseConfirmLoadingOfPreset": "請確認加載預設",
+      "PleaseConfirmLoadingOfPreset": "請確認加載設定",
       "Powered": "已通電",
       "ReadyPushback": "準備好後推",
       "ReadyTakeoff": "準備起飛",
       "ReadyTaxi": "準備滑行",
-      "SelectAPresetToLoad": "選擇要加載的預設",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飛機必須在地面上才能加載預設",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "飛機必須在地面上才能加載預設",
+      "SelectAPresetToLoad": "選擇要加載的設定",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飛機必須在地面上才能加載設定",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "飛機必須在地面上才能加載設定",
       "Title": "飛機狀態",
       "Turnaround": "迴轉"
     },
     "InteriorLighting": {
-      "AircraftNeedsToBePoweredToLoadPresets": "飛機需要通電才能加載預設",
-      "AircraftNeedsToBePoweredToSavePresets": "飛機需要通電以保存預設",
+      "AircraftNeedsToBePoweredToLoadPresets": "飛機需要通電才能加載設定",
+      "AircraftNeedsToBePoweredToSavePresets": "飛機需要通電以保存設定",
       "AutoLoadDawnDusk": "黎明／黃昏：",
       "AutoLoadDay": "白天：",
       "AutoLoadLightingHelpTitle": "自動設定載入中",
@@ -401,20 +401,20 @@
       "LoadingPreset": "加載預設",
       "NewNameConfirmationDialogMsg": "請確認新照明設定的名字",
       "NoName": "無名",
-      "PleaseConfirmSavingPreset": "請確認保存預設",
-      "SavePreset": "保存預設",
-      "SavingPreset": "正在儲存預設",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "選擇要加載或保存的內部照明預設",
+      "PleaseConfirmSavingPreset": "請確認保存設定",
+      "SavePreset": "保存設定",
+      "SavingPreset": "正在儲存設定",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "選擇要加載或保存的內部照明設定",
       "TT": {
         "AircraftMustBePowered": "飛機必須通電",
-        "ClickTextToChangeThePresetsName": "單擊「文本」以更改預設的名稱",
-        "LoadThisPreset": "加載此預設",
+        "ClickTextToChangeThePresetsName": "點擊「文本」以更改設定的名稱",
+        "LoadThisPreset": "加載此設定",
         "SaveTheCurrentLightingLevels": "儲存當前照明亮度"
       },
-      "TheAircraftMustBePoweredForInteriorLightingPresets": "飛機必須接通電源才能使用艙內照明預設",
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "飛機必須接通電源才能使用艙內照明設定",
       "Title": "艙內照明"
     },
-    "Title": "預設"
+    "Title": "設定"
   },
   "Pushback": {
     "AvailableOnlyOnGround": "後推控制只能在地面上使用",
@@ -432,7 +432,7 @@
     "ParkingBrake": {
       "Off": "鬆開",
       "On": "剎住",
-      "Title": "泊機煞車"
+      "Title": "Parking Brake"
     },
     "Right": "右",
     "SystemEnabledOff": "後推系統關閉",
@@ -461,7 +461,7 @@
     "UseControllerInput": "使用控制器輸入"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
+    "AlignAdirs": "對齊 ADIRS",
     "FinishBoarding": "登機完畢",
     "OnScreenKeyboard": "螢幕鍵盤",
     "SimBridge": "SimBridge",
@@ -608,10 +608,10 @@
       "OverrideSimBriefUserID": "覆蓋 SimBrief 使用者 ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "請確認你有正確輸入您的 SimBrief 帳戶名或駕駛 ID。",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "用於替代連接的 Navigraph 帳戶的替代 SimBrief 使用者 ID"
       },
       "Title": "第三方選項",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "此覆蓋的 SimBrief PilotID 已經驗證且更新上去"
     },
     "ThrottleConfig": {
       "Apply": "套用",
@@ -623,15 +623,15 @@
       "ConfigureStart": "Configure Start",
       "CurrentValue": "目前數值",
       "Deadband": "死區",
-      "ErrorOverlapMsg": "overlaps with",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "ErrorOverlapMsg": "重疊於",
+      "FourThrottleWarning": "請記得將 MSFS 配置為對 Throttle 1+2 使用軸 1，對 Throttle 3+4 使用軸 2。",
       "IndependentAxis": "獨立軸",
       "LoadFromFile": "從檔案載入",
       "PleaseEnterAValidDeadzone": "請輸入有效的死區",
       "ResetToDefaults": "重置成預設",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
-      "ReverserOnAxis": "Reverser On Axis",
+      "ReverserOnAxis": "軸上的反向推力",
       "SaveAndApply": "儲存並套用",
       "SetFromThrottle": "Set from Throttle",
       "ThrottleConfigurationReset": "Throttle Configuration Reset",
@@ -656,8 +656,8 @@
       "Theme": "佈景主題",
       "TimeDisplayed": "顯示時間",
       "Title": "flyPad",
-      "TwelveHours": "12h",
-      "TwentyFourHours": "24h",
+      "TwelveHours": "12小時制",
+      "TwentyFourHours": "24小時制",
       "Utc": "UTC",
       "UtcAndLocal": "UTC 和本地時間"
     }
