@@ -120,8 +120,6 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     if (isColorLayer) {
       if (symbol.type & NdSymbolTypeFlags.Tuned) {
         mainColor = '#0ff';
-      } else if (symbol.type & NdSymbolTypeFlags.ActiveLegTermination) {
-        mainColor = '#fff';
       } else {
         mainColor = '#ff94ff';
       }
