@@ -161,7 +161,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Tailwind factors for each takeoff config. */
   private static readonly runwayTailWindFactor: Record<number, [number, number, number, number]> = {
-    1: [0.000065, -0.684701, 0.00498, 0.0875],
+    1: [0.000065, -0.684701, 0.00498, 0.0808],
     2: [0.000198, -1.017, 0.00711, 0.009],
     3: [0.000271, -1.1506, 0.0078, 0.00875],
   };
@@ -915,7 +915,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
     1: [-0.009368, 186.79],
     2: [0.02346, 68.33],
-    3: [0.014396, 104.29],
+    3: [0.015504, 101.09],
   };
 
   private static readonly v2SecondSegBrakeBaseTable1: Record<number, [number, number]> = {
