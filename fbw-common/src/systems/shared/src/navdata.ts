@@ -41,7 +41,7 @@ export enum AirspaceType {
   Training = 23,
 }
 
-export enum AltitudeDescriptor {
+export enum MsfsAltitudeDescriptor {
   Empty = 0,
   /** @, At in Alt1 */
   At = 1,
@@ -95,7 +95,7 @@ export enum FrequencyType {
 }
 
 // ARINC424 names
-export enum LegType {
+export enum MsfsLegType {
   Unknown = 0,
   AF = 1, // Arc to a fix (i.e. DME ARC)
   CA = 2, // Course to an Altitude
@@ -154,6 +154,7 @@ export enum RouteType {
 }
 
 export enum RunwayDesignatorChar {
+  None = 0,
   L = 1,
   R = 2,
   C = 3,
@@ -205,14 +206,14 @@ export enum RunwaySurface {
   Paint = 32,
 }
 
-export enum TurnDirection {
+export enum MsfsTurnDirection {
   Unknown = 0,
   Left = 1,
   Right = 2,
   Either = 3,
 }
 
-export enum VorClass {
+export enum MsfsVorClass {
   Unknown = 0,
   Terminal = 1, // T
   LowAltitude = 2, // L

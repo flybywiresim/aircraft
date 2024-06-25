@@ -89,7 +89,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
 
-      PaintUtils.paintText(true, context, x + 13, y + 35 + 18 * i, line, '#ff94ff');
+      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
     }
   }
 
