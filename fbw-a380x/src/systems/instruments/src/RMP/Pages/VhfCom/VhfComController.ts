@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, MappedSubject, ObjectSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject, ObjectSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 
 import {
   Arinc429LocalVarConsumerSubject,
@@ -11,9 +11,10 @@ import {
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
 import { VhfComManagerControlEvents, VhfComManagerDataEvents } from '@flybywiresim/rmp';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
-import { AudioControlLocalVarEvents } from 'instruments/src/RMP/Data/AudioControlPublisher';
-import { VhfRadioEvents } from 'instruments/src/RMP/Data/VhfRadioPublisher';
+import { RmpMessageControlEvents } from '../../Systems/RmpMessageManager';
+import { AudioControlLocalVarEvents } from '../../Data/AudioControlPublisher';
+import { VhfRadioEvents } from '../../Data/VhfRadioPublisher';
+import { FlasherEvents } from '../..//Systems/Flasher';
 
 export enum ReceptionMode {
   Off,
@@ -55,6 +56,8 @@ export class VhfComController {
     frequency: 0,
   };
 
+  private static readonly TRANSMIT_ONLY_FLASH_TIME = 2_000;
+
   private readonly standbyControlTopic: keyof VhfComManagerControlEvents = `vhf_com_set_standby_frequency_${this.vhfIndex}`;
 
   private readonly standbyModeControlTopic: keyof VhfComManagerControlEvents = `vhf_com_set_standby_mode_${this.vhfIndex}`;
@@ -63,8 +66,11 @@ export class VhfComController {
 
   private readonly audioSub = this.bus.getSubscriber<AudioControlLocalVarEvents>();
   private readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents & VhfRadioEvents>();
+  private readonly flashSub = this.bus.getSubscriber<FlasherEvents>();
   private readonly vhfPub = this.bus.getPublisher<VhfComManagerControlEvents>();
   private readonly messagePub = this.bus.getPublisher<RmpMessageControlEvents>();
+
+  private readonly flash1Hz = ConsumerSubject.create(this.flashSub.on('flash_1hz'), false);
 
   private readonly _activeFrequency = ConsumerSubject.create<number | null>(
     this.vhfSub.on(`vhf_com_active_frequency_${this.vhfIndex}`),
@@ -157,6 +163,17 @@ export class VhfComController {
     this.isRadioFailed,
   ) as Subscribable<string>;
 
+  private readonly transmitOnlyFlashing = Subject.create(false);
+
+  private readonly transmitOnlyFlashingTimer = new DebounceTimer();
+
+  public readonly isLoudspeakerHidden = MappedSubject.create(
+    ([receptionMode, transmitOnlyFlashing, flash1Hz]) => receptionMode === ReceptionMode.Off || (receptionMode === ReceptionMode.TransmitOnly && transmitOnlyFlashing && !flash1Hz),
+    this.receptionMode,
+    this.transmitOnlyFlashing,
+    this.flash1Hz,
+  ) as Subscribable<boolean>;
+
   public readonly transceiverName = `VHF${this.vhfIndex}`;
 
   constructor(
@@ -185,6 +202,13 @@ export class VhfComController {
         displayDigit.isPilotEntered.set(
           entryInProgress && i >= entry.entryOffset && i < entry.entryOffset + entry.entered.length,
         );
+      }
+    });
+
+    this.receptionMode.sub((mode) => {
+      if (mode === ReceptionMode.TransmitOnly) {
+        this.transmitOnlyFlashing.set(true)
+        this.transmitOnlyFlashingTimer.schedule(() => this.transmitOnlyFlashing.set(false), VhfComController.TRANSMIT_ONLY_FLASH_TIME);
       }
     });
   }

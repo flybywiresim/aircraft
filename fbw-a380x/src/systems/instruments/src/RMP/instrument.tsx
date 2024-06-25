@@ -14,7 +14,6 @@ import {
 import { ArincEventBus, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { RmpState, RmpStateControllerEvents, VhfComManager } from '@flybywiresim/rmp';
 
-import { RefImages } from './Components/RefImages';
 import { RmpMessages } from './Components/RmpMessages';
 import { RmpPageStack } from './Components/RmpPageStack';
 import { Flasher } from './Systems/Flasher';
@@ -22,12 +21,12 @@ import { A380xRmpStateController } from './Systems/RmpStateController';
 import { KeypadController } from './Systems/KeypadController';
 import { RmpMessageManager } from './Systems/RmpMessageManager';
 import { AudioControlManager } from './Systems/AudioControlManager';
-import { CameraPublisher } from '../MsfsAvionicsCommon/providers/CameraPublisher';
+import { AudioControlLocalVarPublisher } from './Data/AudioControlPublisher';
+import { VhfRadioPublisher } from './Data/VhfRadioPublisher';
+import { TransponderPublisher } from './Data/TransponderPublisher';
+import { TransmitMessageMonitor } from './Systems/TransmitMessageMonitor';
 
 import './style.scss';
-import { AudioControlLocalVarPublisher } from 'instruments/src/RMP/Data/AudioControlPublisher';
-import { VhfRadioPublisher } from 'instruments/src/RMP/Data/VhfRadioPublisher';
-import { TransponderPublisher } from 'instruments/src/RMP/Data/TransponderPublisher';
 
 class RmpInstrument implements FsInstrument {
   private readonly bus = new ArincEventBus();
@@ -62,6 +61,8 @@ class RmpInstrument implements FsInstrument {
 
   private readonly transponderPublisher = new TransponderPublisher(this.bus);
 
+  private readonly transmitMessageMonitor = new TransmitMessageMonitor(this.bus);
+
   private readonly screenOff = Subject.create(true);
 
   constructor(public readonly instrument: BaseInstrument) {
@@ -81,6 +82,7 @@ class RmpInstrument implements FsInstrument {
     this.backplane.addPublisher('AudioControlPublisher', this.audioControlPublisher);
     this.backplane.addPublisher('VhfRadioPublisher', this.vhfRadioPublisher);
     this.backplane.addPublisher('TransponderPublisher', this.transponderPublisher);
+    this.backplane.addInstrument('TransmitMessageMonitor', this.transmitMessageMonitor);
 
     for (const vhf of this.vhfControllers) {
       this.backplane.addInstrument(`VhfController${vhf.index}`, vhf, true);

@@ -220,7 +220,7 @@ class VhfComRow extends DisplayComponent<VhfComRowProps> {
           <div
             class={{
               'loudspeaker-symbol': true,
-              invisible: this.controller.receptionMode.map((v) => v === ReceptionMode.Off),
+              invisible: this.controller.isLoudspeakerHidden,
             }}
           >
             <svg viewBox="0 0 75 114" style="width: 58px; height: 89px;">
