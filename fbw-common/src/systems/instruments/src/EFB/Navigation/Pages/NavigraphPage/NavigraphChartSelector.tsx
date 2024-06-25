@@ -168,6 +168,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                               provider: ChartProvider.NAVIGRAPH,
                               pagesViewable: 1,
                               boundingBox: chart.bounding_boxes,
+                              chartLinks: { dark: chart.image_night_url, light: chart.image_day_url },
                               pageIndex: navigationTabs.findIndex(
                                 (tab) => tab.associatedTab === NavigationTab.NAVIGRAPH,
                               ),
