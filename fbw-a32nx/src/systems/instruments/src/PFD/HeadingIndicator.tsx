@@ -61,7 +61,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
 
   private ILSCourse = Subject.create(0);
 
-  private lsPressed = ConsumerSubject.create(null, false);
+  private lsPressed = Subject.create(false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);

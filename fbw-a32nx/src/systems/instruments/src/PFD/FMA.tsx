@@ -1159,13 +1159,13 @@ class B2Cell extends DisplayComponent<CellProps> {
 class C1Cell extends ShowForSecondsComponent<CellProps> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), LateralMode.NONE);
-
   private fmgcDiscreteWord1 = new Arinc429Word(0);
 
   private fmgcDiscreteWord2 = new Arinc429Word(0);
 
   private fmgcDiscreteWord3 = new Arinc429Word(0);
+
+  private textSub = Subject.create('');
 
   constructor(props: CellProps) {
     super(props, 10);
@@ -1273,7 +1273,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z"
         />
         <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">
-          {this.text}
+          {this.textSub}
         </text>
       </g>
     );
@@ -1335,7 +1335,7 @@ class C2Cell extends DisplayComponent<CellProps> {
   render(): VNode {
     return (
       <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
-        {this.text}
+        {this.textSub}
       </text>
     );
   }
