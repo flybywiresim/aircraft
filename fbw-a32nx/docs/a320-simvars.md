@@ -1399,6 +1399,20 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
+- A32NX_EFIS_{side}_MRP_LAT
+    - Arinc429<Degrees>
+    - Provides the latitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_MRP_LONG
+    - Arinc429<Degrees>
+    - Provides the longitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
 - A32NX_PFD_MSG_SET_HOLD_SPEED
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
@@ -2041,6 +2055,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_FM_VNAV_TRIGGER_STEP_DELETED
     - Bool
     - Indicates whether to trigger a step deleted message on the MCDU
+
+- `A32NX_FM{number}_BACKBEAM_SELECTED`
+    - Bool
+    - Indicates to the FG that a localiser back beam is tuned.
 
 ## Autopilot System
 
@@ -3221,7 +3239,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The V_3 / F-Speed.
     - Arinc429<Knots>
 
-- A32NX_FAC_{number}_V_3
+- A32NX_FAC_{number}_V_4
     - The V_4 / S-Speed.
     - Arinc429<Knots>
 

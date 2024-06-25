@@ -15,9 +15,11 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { clampAngle } from 'msfs-geo';
+import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
+import { VnavStatus } from './shared/VnavStatus';
+import { LnavStatus } from './shared/LnavStatus';
 import { CrossTrackError } from './shared/CrossTrackError';
 import { RadioNeedle } from './shared/RadioNeedle';
-import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
 import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -391,6 +393,9 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())}
           />
           <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
+
+          {false && <LnavStatus />}
+          {true && <VnavStatus />}
 
           <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
             DISPLAY SYSTEM VERSION INCONSISTENCY
