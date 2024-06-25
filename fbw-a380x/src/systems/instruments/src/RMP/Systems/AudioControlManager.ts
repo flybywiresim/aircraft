@@ -8,7 +8,6 @@ import {
   MutableSubscribable,
   SimVarValueType,
   Subject,
-  Subscription,
 } from '@microsoft/msfs-sdk';
 import { KeypadEvents, SystemKeys } from './KeypadController';
 import { AudioControlLocalVarEvents } from '../Data/AudioControlPublisher';
@@ -181,7 +180,19 @@ export class AudioControlManager implements Instrument {
   private onKeyPressed(key: SystemKeys): void {
     const keyEvent = this.keyEventMap[key];
     if (keyEvent) {
-      keyEvent.state.set(!keyEvent.state.get());
+      const newState = !keyEvent.state.get();
+
+      if (newState && key !== SystemKeys.Voice) {
+        // clear all others as only one can be on
+        for (const k of Object.keys(this.keyEventMap)) {
+          if (k !== key) {
+            this.keyEventMap[k].state.set(false);
+          }
+        }
+      }
+
+      // now set ours on
+      keyEvent.state.set(newState);
     }
   }
 }

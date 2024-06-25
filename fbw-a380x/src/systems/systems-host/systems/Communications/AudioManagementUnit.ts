@@ -48,8 +48,10 @@ export class AudioManagementUnit implements Instrument {
     this.isHealthy,
   );
 
-  private readonly setTransmitEvent1 = 'K:PILOT_TRANSMITTER_SET';
-  private readonly setTransmitEvent2 = 'K:COPILOT_TRANSMITTER_SET';
+  private readonly onsideTransmitEvent = this.index === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET';
+  private readonly offsideTransmitEvent = this.index === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET';
+
+  private simTransmitterState = SimTransmitStates.None;
 
   // TODO hook up
   private readonly onsideRmpSwitchedOn = Subject.create(true);
@@ -93,9 +95,9 @@ export class AudioManagementUnit implements Instrument {
 
     // we need to only write the com states to the sim when the pilot is on our side of the cockpit
     const activeSubs = [
-      this.vhf3Transmit.sub(this.onVhfTransmitStateChanged.bind(this), true, true),
-      this.vhf2Transmit.sub(this.onVhfTransmitStateChanged.bind(this), true, true),
-      this.vhf1Transmit.sub(this.onVhfTransmitStateChanged.bind(this), true, true),
+      this.vhf3Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com3), true, true),
+      this.vhf2Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com2), true, true),
+      this.vhf1Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com1), true, true),
       this.vhf3Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM3_RECEIVE_SELECT'), true, true),
       this.vhf2Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM2_RECEIVE_SELECT'), true, true),
       this.vhf1Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM1_RECEIVE_SELECT'), true, true),
@@ -132,42 +134,21 @@ export class AudioManagementUnit implements Instrument {
 
   private onVhfVolumeChanged(kEvent: string, volume: number): void {
     if (this.isPilotSittingOurSide.get()) {
-      SimVar.SetSimVarValue(kEvent, SimVarValueType.Number, volume / 100);
+      SimVar.SetSimVarValue(kEvent, SimVarValueType.Number, volume);
     }
   }
 
-  private onVhfTransmitStateChanged(): void {
+  private onVhfTransmitStateChanged(com: SimTransmitStates, transmitOn: boolean): void {
     if (this.isPilotSittingOurSide.get()) {
-      switch (true) {
-        case this.vhf1Transmit.get() && this.vhf2Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com1);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.Com2);
-          break;
-        case this.vhf1Transmit.get() && this.vhf3Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com1);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.Com3);
-          break;
-        case this.vhf2Transmit.get() && this.vhf3Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com2);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.Com3);
-          break;
-        case this.vhf1Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com1);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.None);
-          break;
-        case this.vhf2Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com2);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.None);
-          break;
-        case this.vhf3Transmit.get():
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.Com3);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.None);
-          break;
-        default:
-          SimVar.SetSimVarValue(this.setTransmitEvent1, SimVarValueType.Number, SimTransmitStates.None);
-          SimVar.SetSimVarValue(this.setTransmitEvent2, SimVarValueType.Number, SimTransmitStates.None);
-          break;
+      if (transmitOn) {
+        SimVar.SetSimVarValue(this.onsideTransmitEvent, SimVarValueType.Enum, com);
+        this.simTransmitterState = com;
+      } else if (this.simTransmitterState === com) {
+        SimVar.SetSimVarValue(this.onsideTransmitEvent, SimVarValueType.Enum, SimTransmitStates.None);
+        this.simTransmitterState = SimTransmitStates.None;
       }
+      // always clear the offside just to be sure, as MSFS actually ORs the two sides together for the simvar
+      SimVar.SetSimVarValue(this.offsideTransmitEvent, SimVarValueType.Enum, SimTransmitStates.None);
     }
   }
 }

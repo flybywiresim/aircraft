@@ -18,59 +18,59 @@ These local vars are for internal use only! They should not be considered a stab
 
 ### Local Vars
 
-- `L:A380X_RMP{rmp_index}_ATT_TX`
+- `L:A380X_RMP_{rmp_index}_ATT_TX`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_CAB_RX`
+- `L:A380X_RMP_{rmp_index}_CAB_RX`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_CAB_VOL`
+- `L:A380X_RMP_{rmp_index}_CAB_VOL`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_HF_RX_{vhf_index}`
+- `L:A380X_RMP_{rmp_index}_HF_RX_{vhf_index}`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_HF_TX_{hf_index}`
+- `L:A380X_RMP_{rmp_index}_HF_TX_{hf_index}`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_HF_VOL_{vhf_index}`
+- `L:A380X_RMP_{rmp_index}_HF_VOL_{vhf_index}`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_INT_RX`
+- `L:A380X_RMP_{rmp_index}_INT_RX`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_INT_VOL`
+- `L:A380X_RMP_{rmp_index}_INT_VOL`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_MECH_TX`
+- `L:A380X_RMP_{rmp_index}_MECH_TX`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_PA_RX`
+- `L:A380X_RMP_{rmp_index}_PA_RX`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_PA_TX`
+- `L:A380X_RMP_{rmp_index}_PA_TX`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_PA_VOL`
+- `L:A380X_RMP_{rmp_index}_PA_VOL`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_RAD_NAV_RX`
+- `L:A380X_RMP_{rmp_index}_RAD_NAV_RX`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_RAD_NAV_SELECT`
+- `L:A380X_RMP_{rmp_index}_RAD_NAV_SELECT`
     - Enum
     - Indicates which radio navaid is selected for audio reception.
     -   | State  | Number |
@@ -82,34 +82,34 @@ These local vars are for internal use only! They should not be considered a stab
         | VOR2   | 4      |
         | MKR    | 5      |
 
-- `L:A380X_RMP{rmp_index}_RAD_NAV_FILTER`
+- `L:A380X_RMP_{rmp_index}_RAD_NAV_FILTER`
     - Boolean
     - Indicates whether the voice filter (to filter out ident morse codes) is on/off.
 
-- `L:A380X_RMP{rmp_index}_RAD_NAV_VOL`
+- `L:A380X_RMP_{rmp_index}_RAD_NAV_VOL`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_TEL_RX_{tel_index}`
+- `L:A380X_RMP_{rmp_index}_TEL_RX_{tel_index}`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_TEL_TX_{hf_index}`
+- `L:A380X_RMP_{rmp_index}_TEL_TX_{hf_index}`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_TEL_VOL_{tel_index}`
+- `L:A380X_RMP_{rmp_index}_TEL_VOL_{tel_index}`
     - Percent
     - Indicates the position of the volume knob.
 
-- `L:A380X_RMP{rmp_index}_VHF_RX_{hf_index}`
+- `L:A380X_RMP_{rmp_index}_VHF_RX_{hf_index}`
     - Boolean
     - Indicates the state of the knob to toggle reception on/off.
 
-- `L:A380X_RMP{rmp_index}_VHF_TX_{hf_index}`
+- `L:A380X_RMP_{rmp_index}_VHF_TX_{hf_index}`
     - Boolean
     - Indicates whether transmission is on/off.
 
-- `L:A380X_RMP{rmp_index}_VHF_VOL_{hf_index}`
+- `L:A380X_RMP_{rmp_index}_VHF_VOL_{hf_index}`
     - Percent
     - Indicates the position of the volume knob.

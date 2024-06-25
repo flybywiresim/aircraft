@@ -293,6 +293,7 @@
                 <UseTemplate Name="FBW_A380X_RMP_Button">
                     <NODE_ID>PUSH_RMP_#RMP_ID#_PA</NODE_ID>
                     <BUTTON_NAME>PA_CALL</BUTTON_NAME>
+                    <SEQ1_EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_PA_TX)</SEQ1_EMISSIVE_CODE>
                     <NO_SEQ2/>
                 </UseTemplate>
 
