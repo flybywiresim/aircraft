@@ -809,7 +809,7 @@ export const TakeoffWidget = () => {
               <div className="flex flex-col space-y-4">
                 <Label text={t('Performance.Takeoff.RunwayCondition')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.runwayCondition}
                     value={runwayCondition}
                     onChange={handleRunwayConditionChange}
@@ -861,7 +861,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.Wind')}>
                   <SimpleInput
-                    className="w-48"
+                    className="w-60"
                     value={windInput}
                     placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}
                     onChange={handleWindChange}
@@ -869,7 +869,7 @@ export const TakeoffWidget = () => {
                   />
                 </Label>
                 <Label text={t('Performance.Takeoff.Temperature')}>
-                  <div className="flex w-48 flex-row">
+                  <div className="flex w-60 flex-row">
                     <SimpleInput
                       className="w-full rounded-r-none"
                       value={getVariableUnitDisplayValue<'C' | 'F'>(
@@ -897,7 +897,7 @@ export const TakeoffWidget = () => {
                   </div>
                 </Label>
                 <Label text={t('Performance.Takeoff.Qnh')}>
-                  <div className="flex w-48 flex-row">
+                  <div className="flex w-60 flex-row">
                     <SimpleInput
                       className="w-full rounded-r-none"
                       value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(
@@ -925,7 +925,7 @@ export const TakeoffWidget = () => {
                   </div>
                 </Label>
                 <Label text={t('Performance.Takeoff.Weight')}>
-                  <div className="flex w-48 flex-row">
+                  <div className="flex w-60 flex-row">
                     <SimpleInput
                       className="w-full rounded-r-none"
                       value={getVariableUnitDisplayValue<'kg' | 'lb'>(
@@ -954,7 +954,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.CoGPosition')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.takeoffCg}
                     value={takeoffCg}
                     onChange={handleCoG}
@@ -972,7 +972,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.Configuration')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.config}
                     value={config}
                     onChange={handleConfigChange}
@@ -986,7 +986,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.Thrust')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.forceToga}
                     value={forceToga}
                     onChange={handleThrustChange}
@@ -999,7 +999,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.AntiIce')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.antiIce}
                     value={antiIce}
                     onChange={handleAntiIce}
@@ -1012,7 +1012,7 @@ export const TakeoffWidget = () => {
                 </Label>
                 <Label text={t('Performance.Takeoff.Packs')}>
                   <SelectInput
-                    className="w-48"
+                    className="w-60"
                     defaultValue={initialState.takeoff.antiIce}
                     value={packs}
                     onChange={handlePacks}
