@@ -297,7 +297,7 @@ export const TakeoffWidget = () => {
   };
 
   const handleICAOChange = (icao: string) => {
-    clearTakeoffValues();
+    dispatch(clearTakeoffValues());
 
     dispatch(setTakeoffValues({ icao }));
     if (isValidIcao(icao)) {
