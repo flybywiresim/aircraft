@@ -137,8 +137,8 @@ export const ChartViewer = () => {
       const dy = boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2;
       const dLat = boundingBox.planview.latlng.lat2 - boundingBox.planview.latlng.lat1;
       const dLon = boundingBox.planview.latlng.lng2 - boundingBox.planview.latlng.lng1;
-      const x = boundingBox.planview.pixels.x1 + dx * ((aircraftLongitude - boundingBox.planview.latlng.lng1) / dLon);
-      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat2 - aircraftLatitude) / dLat);
+      const x = dx * ((aircraftLongitude - boundingBox.planview.latlng.lng1) / dLon);
+      const y = dy * ((boundingBox.planview.latlng.lat2 - aircraftLatitude) / dLat);
 
       setAircraftIconPosition({ x, y, r: aircraftTrueHeading });
       visible = true;
@@ -530,7 +530,8 @@ export const ChartViewer = () => {
                       width={boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1}
                       height={Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}
                       viewBox={`0 0 ${boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1} ${Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}`}
-                      className="absolute left-0 top-0 z-30"
+                      style={{ left: boundingBox.planview.pixels.x1, top: boundingBox.planview.pixels.y2 }}
+                      className="absolute z-30"
                     >
                       <g
                         className="transition duration-100"
