@@ -14,7 +14,7 @@ import {
 import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { EfisNdMode } from '../NavigationDisplay';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
 
 export interface FmMessagesProps {
@@ -37,7 +37,7 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
   );
 
   private readonly visible = this.props.mode.map((mode) => {
-    if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) {
+    if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR || this.activeMessages.length === 0) {
       return false;
     }
 

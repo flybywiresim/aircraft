@@ -2306,6 +2306,43 @@
             </Requires>
         </Sound>
 
+        <!-- Stall warning =====================================================================-->
+        <Sound WwiseEvent="aural_stall_new" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_AUDIO_STALL_WARNING" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <!-- ROP/ROW warnings =====================================================================-->
+        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
     </SimVarSounds>
 
     <!-- AvionicSounds ========================================================================================== -->
@@ -2313,8 +2350,6 @@
     <AvionicSounds>
         <Sound WwiseData="true" WwiseEvent="cchordshort" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="aural_stall" />
-        <Sound WwiseData="true" WwiseEvent="aural_stall_new" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_pull_up" />
         <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_overspeed" />
@@ -2387,13 +2422,6 @@
         <Sound WwiseData="true" WwiseEvent="traffic" NodeName="Wiper_Base_l" />
         <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="Wiper_Base_l" />
         <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="Wiper_Base_l" />
-
-        <!-- ROPS callouts ==================================================================================== -->
-
-        <Sound WwiseData="true" WwiseEvent="brake_max_braking" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="keep_max_reverse" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="runway_too_short" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="set_max_reverse" NodeName="Wiper_Base_l" />
 
     </AvionicSounds>
 

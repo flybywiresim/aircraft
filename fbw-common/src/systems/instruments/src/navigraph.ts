@@ -6,7 +6,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 initializeApp({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  scopes: [Scope.CHARTS],
+  scopes: [Scope.CHARTS, 'amdb' as Scope], // Navigraph SDK doesn't offer AMDB as Scope yet
 });
 
 export const navigraphAuth = getAuth({

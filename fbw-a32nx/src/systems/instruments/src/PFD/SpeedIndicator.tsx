@@ -388,6 +388,35 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private rightMainGearCompressed = true;
 
+  private airSpeed = Arinc429Word.empty();
+
+  private setOutline(): void {
+    let airspeedValue: number;
+    if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
+      airspeedValue = NaN;
+    } else if (this.airSpeed.isNoComputedData()) {
+      airspeedValue = 30;
+    } else {
+      airspeedValue = this.airSpeed.value;
+    }
+    if (Number.isNaN(airspeedValue)) {
+      this.offTapeRef.instance.classList.add('HiddenElement');
+      this.offTapeFailedRef.instance.classList.remove('HiddenElement');
+    } else {
+      this.offTapeRef.instance.classList.remove('HiddenElement');
+      this.offTapeFailedRef.instance.classList.add('HiddenElement');
+
+      const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
+      const showLower = clampedSpeed > 72;
+
+      if (showLower) {
+        this.lowerRef.instance.setAttribute('visibility', 'visible');
+      } else {
+        this.lowerRef.instance.setAttribute('visibility', 'hidden');
+      }
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -399,6 +428,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .handle((g) => {
         this.leftMainGearCompressed = g;
         this.onGround = this.rightMainGearCompressed || g;
+        this.setOutline();
       });
 
     sub
@@ -407,36 +437,15 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .handle((g) => {
         this.rightMainGearCompressed = g;
         this.onGround = this.leftMainGearCompressed || g;
+        this.setOutline();
       });
 
     sub
       .on('speedAr')
       .withArinc429Precision(2)
       .handle((speed) => {
-        let airspeedValue: number;
-        if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
-          airspeedValue = NaN;
-        } else if (speed.isNoComputedData()) {
-          airspeedValue = 30;
-        } else {
-          airspeedValue = speed.value;
-        }
-        if (Number.isNaN(airspeedValue)) {
-          this.offTapeRef.instance.classList.add('HiddenElement');
-          this.offTapeFailedRef.instance.classList.remove('HiddenElement');
-        } else {
-          this.offTapeRef.instance.classList.remove('HiddenElement');
-          this.offTapeFailedRef.instance.classList.add('HiddenElement');
-
-          const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
-          const showLower = clampedSpeed > 72;
-
-          if (showLower) {
-            this.lowerRef.instance.setAttribute('visibility', 'visible');
-          } else {
-            this.lowerRef.instance.setAttribute('visibility', 'hidden');
-          }
-        }
+        this.airSpeed = speed;
+        this.setOutline();
       });
 
     sub
