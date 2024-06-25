@@ -6,7 +6,8 @@ export interface BaseEwdSimvars {
     eng_selector_position: number;
     thrust_limit_type: number;
     thrust_limit: number;
-    sat: number;
+    satRaw: number;
+    flex: number;
 
 }
 
@@ -28,7 +29,8 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
             ['eng_selector_position', { name: 'L:XMLVAR_ENG_MODE_SEL', type: SimVarValueType.Enum}],
             ['thrust_limit_type', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', type: SimVarValueType.Number}],
             ['thrust_limit', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT', type: SimVarValueType.Number}],
-            ['sat', { name: 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', type: SimVarValueType.Number}],
+            ['satRaw', { name: 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', type: SimVarValueType.Number}],
+            ['flex', { name: 'L:AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number}],
 
         ];
 

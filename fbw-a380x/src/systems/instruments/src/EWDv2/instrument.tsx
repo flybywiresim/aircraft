@@ -10,9 +10,10 @@ import { PseudoFWC } from './PseudoFWC';
 
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWDv2/EWD';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 class A32NX_EWD extends BaseInstrument {
-  private readonly bus = new EventBus();
+  private readonly bus = new ArincEventBus();
 
   private readonly backplane = new InstrumentBackplane();
 
@@ -29,7 +30,7 @@ class A32NX_EWD extends BaseInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
-   // this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
+    // this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addInstrument('Fwc', this.pseudoFwc);
   }
 
@@ -40,7 +41,7 @@ class A32NX_EWD extends BaseInstrument {
   public connectedCallback(): void {
     super.connectedCallback();
 
-   // this.arincProvider.init();
+    this.arincProvider.init();
     this.backplane.init();
 
     FSComponent.render(<EngineWarningDisplay bus={this.bus} />, document.getElementById('EWDv2_CONTENT'));
