@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len,react/no-this-in-sfc,no-console */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowClockwise,
   ArrowCounterclockwise,
@@ -115,6 +115,7 @@ export const ChartViewer = () => {
   const [aircraftLatitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 1000);
   const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
   const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
+  const [loading, setLoading] = useState(true);
 
   const [chartLightBlob, setChartLightBlob] = useState<Blob | null>(null);
   const chartLightUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartLightBlob) : null), [chartLightBlob]);
@@ -137,7 +138,7 @@ export const ChartViewer = () => {
       const dLat = boundingBox.planview.latlng.lat2 - boundingBox.planview.latlng.lat1;
       const dLon = boundingBox.planview.latlng.lng2 - boundingBox.planview.latlng.lng1;
       const x = boundingBox.planview.pixels.x1 + dx * ((aircraftLongitude - boundingBox.planview.latlng.lng1) / dLon);
-      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat1 - aircraftLatitude) / dLat);
+      const y = boundingBox.planview.pixels.y2 + dy * ((boundingBox.planview.latlng.lat2 - aircraftLatitude) / dLat);
 
       setAircraftIconPosition({ x, y, r: aircraftTrueHeading });
       visible = true;
@@ -153,6 +154,7 @@ export const ChartViewer = () => {
   ]);
 
   useEffect(() => {
+    setLoading(true);
     navigraphCharts
       .getChartImage({
         chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
@@ -175,29 +177,16 @@ export const ChartViewer = () => {
     dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation - 90) % 360 }));
   };
 
-  useEffect(() => {
-    const img = new Image();
-    // eslint-disable-next-line func-names
-    img.onload = function () {
-      if (ref.current) {
-        // @ts-ignore
-        const imgWidth = this.width;
-        // @ts-ignore
-        const imgHeight = this.height;
+  const chartImgRef = useCallback((node: HTMLImageElement) => {
+    if (node) {
+      node.onload = function () {
         const chartDimensions: { width: number; height: number } = {
           width: -1,
           height: -1,
         };
 
-        if (imgWidth > imgHeight) {
-          // landscape
-          chartDimensions.height = ref.current.clientHeight;
-          chartDimensions.width = imgWidth * (ref.current.clientHeight / imgHeight);
-        } else {
-          // portrait
-          chartDimensions.height = imgHeight * (ref.current.clientWidth / imgWidth);
-          chartDimensions.width = ref.current.clientWidth;
-        }
+        chartDimensions.height = node.height;
+        chartDimensions.width = node.width;
 
         dispatch(
           editTabProperty({
@@ -205,10 +194,10 @@ export const ChartViewer = () => {
             chartDimensions,
           }),
         );
-      }
-    };
-    img.src = chartLinks.light;
-  }, [chartLinks, currentPage]);
+        setLoading(false);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     const { width, height } = chartDimensions;
@@ -282,6 +271,7 @@ export const ChartViewer = () => {
           <div
             className="h-full"
             onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
+            style={{ display: loading ? 'none' : 'block' }}
           >
             {pagesViewable > 1 && (
               <div className="absolute left-6 top-6 z-40 flex flex-row items-center overflow-hidden rounded-md">
@@ -537,6 +527,8 @@ export const ChartViewer = () => {
                   {aircraftIconVisible && boundingBox && (
                     <svg
                       ref={planeRef}
+                      width={boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1}
+                      height={Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}
                       viewBox={`0 0 ${boundingBox.planview.pixels.x2 - boundingBox.planview.pixels.x1} ${Math.abs(boundingBox.planview.pixels.y1 - boundingBox.planview.pixels.y2)}`}
                       className="absolute left-0 top-0 z-30"
                     >
@@ -555,14 +547,14 @@ export const ChartViewer = () => {
                     </svg>
                   )}
 
-                  <div>
+                  <div ref={chartRef}>
                     {chartLightUrl && (
                       <img
-                        ref={chartRef}
                         className="absolute left-0 w-full select-none transition duration-100"
                         draggable={false}
                         src={chartLightUrl}
                         alt="chart"
+                        ref={chartImgRef}
                       />
                     )}
 
@@ -572,6 +564,7 @@ export const ChartViewer = () => {
                         draggable={false}
                         src={chartDarkUrl}
                         alt="chart"
+                        ref={chartImgRef}
                       />
                     )}
                   </div>
