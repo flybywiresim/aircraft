@@ -15,7 +15,7 @@ import EWDMessages from '@instruments/common/EWDMessages';
 import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
 
-import './style.scss';
+import '../style.scss';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
