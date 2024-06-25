@@ -106,7 +106,7 @@ export const initialState: TPerformanceState = {
     packs: true,
     takeoffCg: TakeoffCoGPositions.Standard,
     forceToga: false,
-    config: -1,
+    config: 1,
     lineupAngle: 90,
     runwayCondition: RunwayCondition.Dry,
     selectedRunwayIndex: -1,
