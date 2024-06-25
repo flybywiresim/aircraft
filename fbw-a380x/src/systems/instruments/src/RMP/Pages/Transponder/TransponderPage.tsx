@@ -130,7 +130,8 @@ export class TransponderPage extends DisplayComponent<TransponderPageProps> impl
             <div
               class={{
                 cyan: true,
-                'font-19': true,
+                'font-19': this.controller.entryInProgress.map((v) => !v),
+                'font-16': this.controller.entryInProgress,
                 amber: this.controller.entryInvalid,
               }}
             >
