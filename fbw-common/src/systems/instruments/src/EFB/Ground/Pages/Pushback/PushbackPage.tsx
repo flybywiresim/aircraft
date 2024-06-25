@@ -191,7 +191,7 @@ export const PushbackPage = () => {
       <div className="text-m overflow-hidden text-black">
         pushbackSystemEnabled: {pushbackSystemEnabled}
         <br />
-        deltaTime: {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_UPDT_DELTA', 'number'), 3).toFixed(3)}
+        deltaTime: {SimVar.GetSimVarValue('L:A32NX_PUSHBACK_UPDT_DELTA', 'number').toFixed(3)}
         <br />
         pushBackWait: {pushbackWait}
         <br />
@@ -207,44 +207,32 @@ export const PushbackPage = () => {
         <br />
         NW STRG DISC MEMO {SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool')}
         <br />
-        Steer Input Control:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('STEER INPUT CONTROL', 'Percent Over 100'), 3).toFixed(3)}
+        Steer Input Control: {SimVar.GetSimVarValue('STEER INPUT CONTROL', 'Percent Over 100').toFixed(3)}
         <br />
-        Gear Steer Angle:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100'), 3).toFixed(3)}
+        Gear Steer Angle: {SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100').toFixed(3)}
       </div>
       <div className="text-m overflow-hidden text-black">
-        Heading (True): {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees'), 3).toFixed(3)}
+        Heading (True): {SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees').toFixed(3)}
         <br />
-        Heading (Magnetic):{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'), 3).toFixed(3)}
+        Heading (Magnetic): {SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees').toFixed(3)}
         <br />
         tCHeadingF: {tugCmdHdgFactor.toFixed(3)}
         <br />
-        tCHeading : {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_HDG', 'degrees'), 3).toFixed(3)}
+        tCHeading : {SimVar.GetSimVarValue('L:A32NX_PUSHBACK_HDG', 'degrees').toFixed(3)}
         <br />
-        Rotation Velocity X:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
+        Rotation Velocity X: {SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number').toFixed(3)}
         <br />
-        Rotation Velocity Y:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
-        <br /> Rotation Velocity Z:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number'), 3).toFixed(3)}
+        Rotation Velocity Y: {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number').toFixed(3)}
+        <br /> Rotation Velocity Z: {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(3)}
         <br /> Rot. Accel. X:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'feet per second squared'), 3).toFixed(
-          3,
-        )}
+        {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'feet per second squared').toFixed(3)}
         <br /> Rot. Accel. Y:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'feet per second squared'), 3).toFixed(
-          3,
-        )}
+        {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'feet per second squared').toFixed(3)}
         <br /> Rot. Accel Z:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(
-          3,
-        )}
+        {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'feet per second squared').toFixed(3)}
         <br /> Counter Rot. Accel X:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'feet per second squared'), 3).toFixed(3)}{' '}
-        <br /> Pitch: {MathUtils.round(SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees'), 3).toFixed(3)}
+        {SimVar.GetSimVarValue('L:A32NX_PUSHBACK_R_X_OUT', 'feet per second squared').toFixed(3)} <br /> Pitch:{' '}
+        {SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees').toFixed(3)}
       </div>
       <div className="text-m overflow-hidden text-black">
         acGroundSpeed: {planeGroundSpeed.toFixed(3)}
@@ -255,24 +243,19 @@ export const PushbackPage = () => {
         <br />
         tCSpeedFactor: {tugCmdSpdFactor.toFixed(3)}
         <br />
-        tCSpeed: {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_SPD', 'feet per second'), 3).toFixed(3)}
+        tCSpeed: {SimVar.GetSimVarValue('L:A32NX_PUSHBACK_SPD', 'feet per second').toFixed(3)}
         <br />
-        tInertiaSpeed:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('L:A32NX_PUSHBACK_INERTIA_SPD', 'feet per second'), 3).toFixed(3)}
+        tInertiaSpeed: {SimVar.GetSimVarValue('L:A32NX_PUSHBACK_INERTIA_SPD', 'feet per second').toFixed(3)}
         <br />
-        Velocity X: {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'feet per second'), 3).toFixed(3)}
+        Velocity X: {SimVar.GetSimVarValue('VELOCITY BODY X', 'feet per second').toFixed(3)}
         <br />
-        Velocity Y: {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per second'), 3).toFixed(3)}
+        Velocity Y: {SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per second').toFixed(3)}
         <br />
-        Velocity Z: {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'feet per second'), 3).toFixed(3)}
-        <br /> Accel. X:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY X', 'feet per second squared'), 3).toFixed(3)}
-        <br /> Accel. Y:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Y', 'feet per second squared'), 3).toFixed(3)}
-        <br /> Accel Z:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
-        <br /> Rel. Wind Z:{' '}
-        {MathUtils.round(SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second'), 3).toFixed(3)}
+        Velocity Z: {SimVar.GetSimVarValue('VELOCITY BODY Z', 'feet per second').toFixed(3)}
+        <br /> Accel. X: {SimVar.GetSimVarValue('ACCELERATION BODY X', 'feet per second squared').toFixed(3)}
+        <br /> Accel. Y: {SimVar.GetSimVarValue('ACCELERATION BODY Y', 'feet per second squared').toFixed(3)}
+        <br /> Accel Z: {SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared').toFixed(3)}
+        <br /> Rel. Wind Z: {SimVar.GetSimVarValue('RELATIVE WIND VELOCITY BODY Z', 'meter per second').toFixed(3)}
         m/s
       </div>
     </div>

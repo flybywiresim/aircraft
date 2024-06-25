@@ -4,6 +4,7 @@
 
 import {
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -11,7 +12,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
@@ -21,12 +22,17 @@ import { GlideSlope } from './Glideslope';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
+import { GenericFlightManagementBusEvents } from '../../types/GenericFlightManagementBusEvents';
 
 export interface RoseLsProps<T extends number> extends RoseModeProps<T> {
   index: 1 | 2;
 }
 
 export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
+  private readonly sub = this.props.bus.getSubscriber<
+    GenericAdirsEvents & GenericDisplayManagementEvents & GenericVorEvents & GenericFlightManagementBusEvents
+  >();
+
   isVisible = Subject.create(false);
 
   //  private readonly headingWord = Arinc429ConsumerSubject.create(null);
@@ -41,36 +47,36 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
 
   private readonly localizerValidSub = Subject.create(false);
 
+  private readonly backbeam = ConsumerSubject.create(this.sub.on('fm.1.backbeam'), false);
+
   onShow() {
     super.onShow();
 
     const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    const sub = this.props.bus.getSubscriber<GenericAdirsEvents & GenericDisplayManagementEvents & GenericVorEvents>();
-
     const index: 3 | 4 = (this.props.index + 2) as 3 | 4;
 
-    sub
+    this.sub
       .on(`nav${index}Obs`)
       .whenChanged()
       .handle((v) => this.courseSub.set(v));
 
-    sub
+    this.sub
       .on(`nav${index}RadialError`)
       .whenChanged()
       .handle((v) => this.courseDeviationSub.set(v));
 
-    sub
+    this.sub
       .on(`nav${index}Available`)
       .whenChanged()
       .handle((v) => this.ilsAvailableSub.set(v));
 
-    sub
+    this.sub
       .on(`nav${index}Frequency`)
       .whenChanged()
       .handle((v) => this.ilsFrequencySub.set(v));
 
-    sub
+    this.sub
       .on('localizerValid')
       .whenChanged()
       .handle((v) => this.localizerValidSub.set(v));
@@ -83,7 +89,7 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
       <g visibility={this.isVisible.map((v) => (v ? 'visible' : 'hidden'))}>
         <IlsInfoIndicator bus={this.props.bus} index={this.props.index} />
 
-        <GlideSlope bus={this.props.bus} />
+        <GlideSlope bus={this.props.bus} backbeam={this.backbeam} />
 
         <RoseModeUnderlay
           bus={this.props.bus}
@@ -96,6 +102,7 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
           heading={this.props.headingWord}
           course={this.courseSub}
           courseDeviation={this.courseDeviationSub}
+          backbeam={this.backbeam}
           available={this.localizerValidSub}
           ilsFrequency={this.ilsFrequencySub}
         />
@@ -108,6 +115,7 @@ interface IlsCaptureOverlayProps extends ComponentProps {
   heading: Subscribable<Arinc429WordData>;
   course: Subscribable<number>;
   courseDeviation: Subscribable<number>;
+  backbeam: Subscribable<boolean>;
   available: Subscribable<boolean>;
   ilsFrequency: Subscribable<number>;
 }
@@ -141,10 +149,24 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
     return 'White';
   }, this.props.heading);
 
-  private readonly deviation = MappedSubject.create(([courseDeviation]) => {
-    const dots = Math.max(-2, Math.min(2, courseDeviation / 0.8));
-    return dots * 74;
-  }, this.props.courseDeviation);
+  private readonly deviation = MappedSubject.create(
+    ([courseDeviation, backbeam]) => {
+      const dots =
+        (backbeam ? -1 : 1) * Math.max(-2, Math.min(2, MathUtils.correctMsfsLocaliserError(courseDeviation) / 0.8));
+      return dots * 74;
+    },
+    this.props.courseDeviation,
+    this.props.backbeam,
+  );
+
+  // FIXME hook up when MMR ready
+  private readonly mixLocVnav = Subject.create(false);
+
+  private readonly locBcReminderText = MappedSubject.create(
+    ([backbeam, mixLocVnav]) => (backbeam ? 'B/C' : mixLocVnav ? 'LOC' : ''),
+    this.props.backbeam,
+    this.mixLocVnav,
+  );
 
   render(): VNode {
     return (
@@ -155,6 +177,13 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
         strokeWidth={3}
         fill="none"
       >
+        <g id="loc-bc-reminder">
+          {/* FIXME don't have a good reference for the position of this. Only doc illustrations. */}
+          <text x={202} y={416} class="FontSmall Magenta">
+            {this.locBcReminderText}
+          </text>
+        </g>
+
         <g id="ils-deviation-scale">
           <circle cx={236} cy={384} r={5} />
           <circle cx={310} cy={384} r={5} />
