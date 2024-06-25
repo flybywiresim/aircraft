@@ -224,7 +224,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                   values={['DIRECT', 'DIRECT WITH ABEAM', 'CRS IN', 'CRS OUT']}
                   valuesDisabled={Subject.create([false, true, true, true])}
                   selectedIndex={this.directToOption}
-                  tmpyActive={this.tmpyActive}
+                  color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
                 />
               </div>
             </div>

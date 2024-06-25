@@ -1,4 +1,5 @@
 import {
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -23,15 +24,30 @@ import { SurvButton } from 'instruments/src/MFD/pages/common/SurvButton';
 
 interface MfdSurvControlsProps extends AbstractMfdPageProps {}
 
+export enum TransponderState {
+  Off = 0,
+  Standby = 1,
+  Test = 2,
+  ModeA = 3,
+  ModeC = 4,
+  ModeS = 5,
+}
+
 export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
+
+  private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
   private readonly xpdrFailed = Subject.create<boolean>(false);
 
   private readonly squawkCode = Subject.create<number | null>(null);
 
   private readonly xpdrAltRptgAvailable = Subject.create<boolean>(true);
+
+  private readonly xpdrSetAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true);
+
+  private readonly xpdrState = ConsumerSubject.create(this.sub.on('xpdrState'), TransponderState.Off);
 
   private readonly xpdrAltRptgOn = Subject.create<boolean>(true);
 
@@ -81,20 +97,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
         this.squawkCode.set(code);
       });
 
-    sub
-      .on('mfd_xpdr_set_auto')
-      .whenChanged()
-      .handle((it) => {
-        this.xpdrStatusSelectedIndex.set(it ? 0 : 1);
-
-        this.xpdrAltRptgOn.set(it);
-        this.xpdrAltRptgAvailable.set(it);
-      });
-
-    sub
-      .on('mfd_xpdr_set_alt_reporting')
-      .whenChanged()
-      .handle((it) => this.xpdrAltRptgOn.set(it));
+    this.xpdrState.sub(() => this.xpdrStatusChanged());
+    this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged());
 
     sub
       .on('gpwsTerrOff')
@@ -124,22 +128,39 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     super.destroy();
   }
 
-  private xpdrStatusChanged(val: number) {
-    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', val === 0, true);
+  private xpdrStatusChanged() {
+    const state = this.xpdrState.get();
+    const isOnGround = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', SimVarValueType.Bool);
+
+    this.xpdrStatusSelectedIndex.set(
+      state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS ? 0 : 1,
+    );
+
+    // On ground, Mode C is inhibited, we can only update from transponder state once we're in the air
+    this.xpdrAltRptgOn.set(
+      isOnGround
+        ? this.xpdrSetAltReportingRequest.get()
+        : state === TransponderState.ModeC || state === TransponderState.ModeS,
+    );
+    this.xpdrAltRptgAvailable.set(
+      state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS,
+    );
   }
 
   private setDefaultSettings() {
     if (this.xpdrFailed.get() === false) {
-      this.xpdrStatusSelectedIndex.set(0);
-      this.xpdrAltRptgOn.set(true);
+      this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
+      this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', true, true);
     }
 
     if (this.tcasFailed.get() === false) {
+      // FIXME replace with appropriate events
       this.tcasTaraSelectedIndex.set(0);
       this.tcasNormAbvBlwSelectedIndex.set(0);
     }
 
     if (this.wxrFailed.get() === false) {
+      // FIXME replace with appropriate events
       this.wxrElevnTiltSelectedIndex.set(0);
       this.wxrAuto.set(true);
       this.wxrPredWsAuto.set(true);
@@ -150,10 +171,10 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     }
 
     if (this.tawsFailed.get() === false) {
-      this.tawsTerrSysOn.set(true);
-      this.tawsGpwsOn.set(true);
-      this.tawsGsModeOn.set(true);
-      this.tawsFlapModeOn.set(true);
+      SimVar.SetSimVarValue('L:A32NX_GPWS_TERR_OFF', SimVarValueType.Bool, false);
+      SimVar.SetSimVarValue('L:A32NX_GPWS_SYS_OFF', SimVarValueType.Bool, false);
+      SimVar.SetSimVarValue('L:A32NX_GPWS_GS_OFF', SimVarValueType.Bool, false);
+      SimVar.SetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', SimVarValueType.Bool, false);
     }
   }
 
@@ -209,19 +230,21 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   )}
                   labelFalse={'OFF'}
                   labelTrue={'ON'}
-                  onChanged={(v) =>
-                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', v, true)
-                  }
+                  onChanged={(v) => {
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', v, true);
+                  }}
                 />
               </div>
               <div class="mfd-surv-controls-xpdr-right">
                 <RadioButtonGroup
                   values={['AUTO', 'STBY']}
-                  onModified={(val) => this.xpdrStatusChanged(val)}
+                  onModified={(val) =>
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', val === 0, true)
+                  }
                   selectedIndex={this.xpdrStatusSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsXpdrStatus`}
                   additionalVerticalSpacing={50}
-                  greenActive={Subject.create(true)}
+                  color={this.xpdrStatusSelectedIndex.map((it) => (it === 0 ? 'green' : 'white'))}
                 />
               </div>
             </div>
@@ -238,7 +261,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   selectedIndex={this.tcasTaraSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
-                  greenActive={Subject.create(true)}
+                  color={Subject.create('green')}
                   valuesDisabled={Subject.create(Array(3).fill(true))}
                 />
               </div>
@@ -248,7 +271,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   selectedIndex={this.tcasNormAbvBlwSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
-                  greenActive={Subject.create(true)}
+                  color={Subject.create('green')}
                   valuesDisabled={Subject.create(Array(3).fill(true))}
                 />
               </div>
@@ -270,7 +293,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 selectedIndex={this.wxrElevnTiltSelectedIndex}
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlswxrElevnTilt`}
                 additionalVerticalSpacing={10}
-                greenActive={Subject.create(true)}
+                color={Subject.create('green')}
                 valuesDisabled={Subject.create(Array(3).fill(true))}
               />
             </div>
@@ -350,8 +373,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
               <div class="mfd-surv-controls-taws-element" style="padding-right: 50px;">
                 <div class="mfd-surv-label">TERR SYS</div>
                 <SurvButton
-                  state={this.tawsTerrSysOn}
-                  disabled={this.tawsFailed}
+                  state={Subject.create(false)} // this.tawsTerrSysOn
+                  disabled={Subject.create(true)} // this.tawsFailed
                   labelFalse={'OFF'}
                   labelTrue={'ON'}
                   onChanged={(v) => SimVar.SetSimVarValue('L:A32NX_GPWS_TERR_OFF', SimVarValueType.Bool, !v)}

@@ -9,15 +9,17 @@ import {
 } from '@microsoft/msfs-sdk';
 import './style.scss';
 
+type RADIO_BUTTON_COLOR = 'yellow' | 'green' | 'cyan' | 'white';
+
 interface RadioButtonGroupProps extends ComponentProps {
   values: string[];
   valuesDisabled?: Subscribable<boolean[]>;
   selectedIndex: Subject<number | null>;
   idPrefix: string;
+  /** If this function is defined, selectedIndex is not automatically updated. This function should take care of that. */
   onModified?: (newSelectedIndex: number) => void;
   additionalVerticalSpacing?: number;
-  tmpyActive?: Subscribable<boolean>;
-  greenActive?: Subscribable<boolean>;
+  color?: Subscribable<RADIO_BUTTON_COLOR>;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -26,11 +28,8 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    if (this.props.tmpyActive === undefined) {
-      this.props.tmpyActive = Subject.create<boolean>(false);
-    }
-    if (this.props.greenActive === undefined) {
-      this.props.greenActive = Subject.create<boolean>(false);
+    if (this.props.color === undefined) {
+      this.props.color = Subject.create<RADIO_BUTTON_COLOR>('cyan');
     }
     if (this.props.valuesDisabled === undefined) {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
@@ -71,25 +70,14 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     );
 
     this.subs.push(
-      this.props.tmpyActive.sub((v) => {
+      this.props.color.sub((v) => {
         this.props.values.forEach((val, idx) => {
-          if (v === true) {
-            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add('tmpy');
-          } else {
-            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('tmpy');
-          }
-        });
-      }, true),
-    );
+          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('yellow');
+          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('green');
+          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('cyan');
+          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('white');
 
-    this.subs.push(
-      this.props.greenActive.sub((v) => {
-        this.props.values.forEach((val, idx) => {
-          if (v === true) {
-            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add('green');
-          } else {
-            document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('green');
-          }
+          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add(v);
         });
       }, true),
     );
@@ -112,7 +100,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
             style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}
             id={`${this.props.idPrefix}_label_${idx}`}
           >
-            <input type="radio" name="entityType" id={`${this.props.idPrefix}_${idx}`} />
+            <input type="radio" name={`${this.props.idPrefix}`} id={`${this.props.idPrefix}_${idx}`} />
             <span>{el}</span>
           </label>
         ))}

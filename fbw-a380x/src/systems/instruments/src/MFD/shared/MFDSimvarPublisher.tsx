@@ -18,6 +18,7 @@ export type MfdSimvars = {
   kccuOnR: boolean;
   xpdrAvail: boolean;
   xpdrCode: number;
+  xpdrState: number;
   gpwsTerrOff: boolean;
   gpwsSysOff: boolean;
   gpwsGsInhibit: boolean;
@@ -43,9 +44,10 @@ export enum MfdVars {
   leftMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:1',
   rightMfdInView = 'IS CAMERA RAY INTERSECT WITH NODE:2',
   kccuOnL = 'L:A32NX_KCCU_L_KBD_ON_OFF',
-  kccuOnR = 'L:A32NX_KCCU_L_KBD_ON_OFF',
+  kccuOnR = 'L:A32NX_KCCU_R_KBD_ON_OFF',
   xpdrAvail = 'TRANSPONDER AVAILABLE',
   xpdrCode = 'TRANSPONDER CODE:1',
+  xpdrState = 'TRANSPONDER STATE:1',
   gpwsTerrOff = 'L:A32NX_GPWS_TERR_OFF',
   gpwsSysOff = 'L:A32NX_GPWS_SYS_OFF',
   gpwsGsInhibit = 'L:A32NX_GPWS_GS_OFF',
@@ -72,6 +74,7 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['kccuOnR', { name: MfdVars.kccuOnR, type: SimVarValueType.Bool }],
     ['xpdrAvail', { name: MfdVars.xpdrAvail, type: SimVarValueType.Bool }],
     ['xpdrCode', { name: MfdVars.xpdrCode, type: SimVarValueType.Number }],
+    ['xpdrState', { name: MfdVars.xpdrState, type: SimVarValueType.Enum }],
     ['gpwsTerrOff', { name: MfdVars.gpwsTerrOff, type: SimVarValueType.Bool }],
     ['gpwsSysOff', { name: MfdVars.gpwsSysOff, type: SimVarValueType.Bool }],
     ['gpwsGsInhibit', { name: MfdVars.gpwsGsInhibit, type: SimVarValueType.Bool }],

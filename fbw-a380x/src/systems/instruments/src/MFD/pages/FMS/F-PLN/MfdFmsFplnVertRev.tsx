@@ -480,7 +480,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altCstrRadioButtons`}
                         selectedIndex={this.selectedAltitudeConstraintOption}
                         values={['AT', 'AT OR ABOVE', 'AT OR BELOW']}
-                        tmpyActive={this.tmpyActive}
+                        color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
                         valuesDisabled={this.altConstraintDisabled.map((it) => Array(3).fill(it))}
                         onModified={(newIdx) => {
                           this.selectedAltitudeConstraintOption.set(newIdx);

@@ -180,7 +180,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdTurnRadio`}
                 selectedIndex={this.turnSelectedIndex}
                 values={['LEFT', 'RIGHT']}
-                tmpyActive={this.tmpyActive}
+                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
               />
             </div>
             <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">
@@ -191,7 +191,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdDefiningParameterRadio`}
                 selectedIndex={this.legDefiningParameterSelectedIndex}
                 values={['TIME', 'DIST']}
-                tmpyActive={this.tmpyActive}
+                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
               />
               <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 30px;">
                 <div ref={this.legTimeRef}>
