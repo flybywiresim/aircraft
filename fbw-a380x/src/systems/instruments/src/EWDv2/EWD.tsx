@@ -1,20 +1,13 @@
-import { N1Limit } from 'instruments/src/EWDv2/ThrustRatingMode';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
 // import { Checklist } from './elements/Checklist';
 
 import '../index.scss';
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  VNode,
-} from '@microsoft/msfs-sdk';
-import { EwdSimvars } from 'instruments/src/EWDv2/shared/EwdSimvarPublisher';
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { N1Limit } from './elements/ThrustRatingMode';
+import { EWDMemo } from './elements/EWDMemo';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -155,7 +148,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
         <path stroke="white" strokeWidth={2} d="m 49 436.3 h 193" /> */}
 
           {/* <Checklist x={47} y={467} /> */}
-          {/* <EWDMemo x={395} y={414} active={displayMemo} /> */}
+          <EWDMemo bus={this.props.bus} />
         </svg>
       </CdsDisplayUnit>
     );
