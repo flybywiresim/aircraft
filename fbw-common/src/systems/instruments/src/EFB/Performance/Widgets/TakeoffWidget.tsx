@@ -799,8 +799,6 @@ export const TakeoffWidget = () => {
                     className="w-48"
                     value={runwaySlope}
                     placeholder="%"
-                    min={-2}
-                    max={2}
                     decimalPrecision={2}
                     onChange={handleRunwaySlopeChange}
                     number
