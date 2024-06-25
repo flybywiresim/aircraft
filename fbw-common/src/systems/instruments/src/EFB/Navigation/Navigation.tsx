@@ -547,10 +547,9 @@ export const ChartViewer = () => {
                     </svg>
                   )}
 
-                  <div>
+                  <div ref={chartRef}>
                     {chartLightUrl && (
                       <img
-                        ref={chartRef}
                         className="absolute left-0 w-full select-none transition duration-100"
                         draggable={false}
                         src={chartLightUrl}
