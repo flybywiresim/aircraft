@@ -321,9 +321,28 @@ export class CoRouteUplinkAdapter {
 
             const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
 
-            plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
+            const airwayFix = pickAirwayFix(tailAirway, fixes);
+            if (airwayFix) {
+              plan.pendingAirways.thenTo(airwayFix);
 
-            ensureAirwaysFinalized();
+              ensureAirwaysFinalized();
+            } else {
+              // Fixes with the name of the airway termination are found but they're not on that airway
+              console.warn(
+                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
+              );
+
+              await flightPlanService.nextWaypoint(
+                insertHead,
+                fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
+                FlightPlanIndex.Uplink,
+              );
+              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+
+              insertHead += 2;
+
+              break;
+            }
           } else {
             console.warn(
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
