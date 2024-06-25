@@ -28,10 +28,12 @@ export type NavigraphAuthInfo =
     };
 
 export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
+  const [info, setInfo] = useState<NavigraphAuthInfo>({ loggedIn: false });
+
   const navigraphAuth = useNavigraphAuth();
 
-  if (navigraphAuth.user) {
-    return {
+  if (navigraphAuth.user && info.loggedIn === false) {
+    setInfo({
       loggedIn: true,
       username: navigraphAuth.user.preferred_username,
       subscriptionStatus: [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) =>
@@ -39,10 +41,12 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
       )
         ? NavigraphSubscriptionStatus.Unlimited
         : NavigraphSubscriptionStatus.Unknown,
-    };
+    });
+  } else if (!navigraphAuth.user && info.loggedIn === true) {
+    setInfo({ loggedIn: false });
   }
 
-  return { loggedIn: false };
+  return info;
 };
 
 interface LoadingProps {

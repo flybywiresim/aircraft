@@ -104,7 +104,7 @@ export const ChartViewer = () => {
   const navigraphAuth = useNavigraphAuth();
 
   const ref = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<HTMLImageElement>(null);
 
   const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
   const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number; y: number; r: number }>({
@@ -547,9 +547,10 @@ export const ChartViewer = () => {
                     </svg>
                   )}
 
-                  <div ref={chartRef}>
+                  <div>
                     {chartLightUrl && (
                       <img
+                        ref={chartRef}
                         className="absolute left-0 w-full select-none transition duration-100"
                         draggable={false}
                         src={chartLightUrl}
