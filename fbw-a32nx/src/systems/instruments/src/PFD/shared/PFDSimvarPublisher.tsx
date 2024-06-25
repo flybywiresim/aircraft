@@ -167,6 +167,8 @@ export type PFDSimvars = AdirsSimVars &
     fm2TransAltRaw: number;
     fm1TransLvlRaw: number;
     fm2TransLvlRaw: number;
+    fm1Backbeam: boolean;
+    fm2Backbeam: boolean;
   };
 
 export enum PFDVars {
@@ -325,6 +327,8 @@ export enum PFDVars {
   fm2TransAltRaw = 'L:A32NX_FM2_TRANS_ALT',
   fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
   fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
+  fm1Backbeam = 'L:A32NX_FM1_BACKBEAM_SELECTED',
+  fm2Backbeam = 'L:A32NX_FM2_BACKBEAM_SELECTED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -484,6 +488,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2TransAltRaw', { name: PFDVars.fm2TransAltRaw, type: SimVarValueType.Number }],
     ['fm1TransLvlRaw', { name: PFDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
     ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
+    ['fm1Backbeam', { name: PFDVars.fm1Backbeam, type: SimVarValueType.Bool }],
+    ['fm2Backbeam', { name: PFDVars.fm2Backbeam, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: ArincEventBus) {

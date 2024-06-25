@@ -263,20 +263,24 @@ class CDUNavRadioPage {
                 scratchpadCallback();
                 return;
             }
-        } else if (input.match(/^[BF]?\d{1,3}$/) !== null) {
-            // FIXME apparently entering just "B" or "F" when the course already exists changes between front and back
-            if (input.charAt(0) === 'B') {
-                mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-                scratchpadCallback();
+        } else if (input === 'F' || input === 'B') {
+            // change existing course between front course and back course
+            const mmr = mcdu.getMmrTuningData(1);
+            if (mmr.course === null) {
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 return;
             }
-            const course = input.charAt(0) === 'F' ? parseInt(input.slice(1)) : parseInt(input);
+            const backcourse = input.charAt(0) === 'B';
+            mcdu.setIlsCourse(mmr.course, backcourse);
+        } else if (input.match(/^[BF]?\d{1,3}$/) !== null) {
+            const backcourse = input.charAt(0) === 'B';
+            const course = input.charAt(0) === 'F' || backcourse ? parseInt(input.slice(1)) : parseInt(input);
             if (course < 0 || course > 360) {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 scratchpadCallback();
                 return;
             }
-            mcdu.setIlsCourse(course % 360);
+            mcdu.setIlsCourse(course % 360, backcourse);
         } else {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
