@@ -3,19 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ConsumerSubject,
+  ConsumerValue,
   DisplayComponent,
   FSComponent,
   HEvent,
   MappedSubject,
-  MathUtils,
   Subject,
   Subscribable,
   SubscribableMapFunctions,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -81,6 +82,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
           <LandingSystemInfo bus={this.props.bus} isVisible={this.lsVisible} />
 
           <g id="LSGroup">
+            <LocBcIndicator bus={this.props.bus} />
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
@@ -322,55 +324,70 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
   }
 }
 
+class LocBcIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+  private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
+
+  // FIXME hook up when MMR ready
+  private readonly mixLocVnav = Subject.create(false);
+
+  private readonly text = MappedSubject.create(
+    ([backbeam, mixLocVnav]) => (backbeam ? 'B/C' : mixLocVnav ? 'LOC' : ''),
+    this.backbeam,
+    this.mixLocVnav,
+  );
+
+  /** @inheritdoc */
+  render(): VNode {
+    return (
+      <g id="LocBcIndicator">
+        <text class="FontMediumSmaller AlignLeft Magenta" x="38.410" y="126.45">
+          {this.text}
+        </text>
+      </g>
+    );
+  }
+}
+
 class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private lagFilter = new LagFilter(1.5);
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & PFDSimvars>();
 
-  private rightDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly lagFilter = new LagFilter(1.5);
 
-  private leftDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly backbeam = ConsumerValue.create(this.sub.on('fm1Backbeam'), false);
 
-  private locDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
 
-  private diamondGroup = FSComponent.createRef<SVGGElement>();
+  private readonly locRadialError = ConsumerValue.create(this.sub.on('navRadialError'), 0);
 
-  private handleNavRadialError(radialError: number): void {
+  private readonly dots = Subject.create(0);
+
+  private readonly isLeftDiamondHidden = this.dots.map((v) => v >= -2);
+
+  private readonly isRightDiamondHidden = this.dots.map((v) => v <= 2);
+
+  private readonly isLocDiamondHidden = this.dots.map((v) => v < -2 || v > 2);
+
+  private handleNavRadialError(): void {
+    const radialError = MathUtils.correctMsfsLocaliserError(this.locRadialError.get());
     const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
-    const dots = deviation / 0.8;
-
-    if (dots > 2) {
-      this.rightDiamond.instance.classList.remove('HiddenElement');
-      this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.classList.add('HiddenElement');
-    } else if (dots < -2) {
-      this.rightDiamond.instance.classList.add('HiddenElement');
-      this.leftDiamond.instance.classList.remove('HiddenElement');
-      this.locDiamond.instance.classList.add('HiddenElement');
-    } else {
-      this.locDiamond.instance.classList.remove('HiddenElement');
-      this.rightDiamond.instance.classList.add('HiddenElement');
-      this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.style.transform = `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`;
-    }
+    this.dots.set(((this.backbeam.get() ? -1 : 1) * deviation) / 0.8);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const lagFilterSub = this.sub.on('realTime').handle(this.handleNavRadialError.bind(this), true);
 
-    sub
-      .on('hasLoc')
-      .whenChanged()
-      .handle((hasLoc) => {
-        if (hasLoc) {
-          this.diamondGroup.instance.classList.remove('HiddenElement');
-          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
-        } else {
-          this.diamondGroup.instance.classList.add('HiddenElement');
-          this.lagFilter.reset();
-          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
-        }
-      });
+    this.hasLoc.sub((hasLoc) => {
+      if (hasLoc) {
+        lagFilterSub.resume(true);
+      } else {
+        lagFilterSub.pause();
+        this.lagFilter.reset();
+      }
+    });
   }
 
   render(): VNode {
@@ -392,23 +409,39 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
           class="NormalStroke White"
           d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
         />
-        <g class="HiddenElement" ref={this.diamondGroup}>
+        <g
+          class={{
+            HiddenElement: this.hasLoc.map(SubscribableMapFunctions.not()),
+          }}
+        >
           <path
             id="LocDiamondRight"
-            ref={this.rightDiamond}
-            class="NormalStroke Magenta HiddenElement"
+            class={{
+              NormalStroke: true,
+              Magenta: true,
+              HiddenElement: this.isRightDiamondHidden,
+            }}
             d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198"
           />
           <path
             id="LocDiamondLeft"
-            ref={this.leftDiamond}
-            class="NormalStroke Magenta HiddenElement"
+            class={{
+              NormalStroke: true,
+              Magenta: true,
+              HiddenElement: this.isLeftDiamondHidden,
+            }}
             d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198"
           />
           <path
             id="LocDiamond"
-            ref={this.locDiamond}
-            class="NormalStroke Magenta HiddenElement"
+            class={{
+              NormalStroke: true,
+              Magenta: true,
+              HiddenElement: this.isLocDiamondHidden,
+            }}
+            style={{
+              transform: this.dots.map((dots) => `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`),
+            }}
             d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
           />
         </g>
@@ -423,6 +456,27 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+  private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
+
+  // FIXME hook up when MMR ready
+  private readonly mixLocVnav = Subject.create(false);
+
+  private readonly isHidden = MappedSubject.create(
+    ([backbeam, mixLocVnav]) => backbeam && !mixLocVnav,
+    this.backbeam,
+    this.mixLocVnav,
+  );
+
+  private readonly hasGlideSlope = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+
+  private readonly noGlideSlope = MappedSubject.create(
+    ([isHidden, hasGlideSlope]) => isHidden || !hasGlideSlope,
+    this.isHidden,
+    this.hasGlideSlope,
+  );
+
   private lagFilter = new LagFilter(1.5);
 
   private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -430,10 +484,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   private lowerDiamond = FSComponent.createRef<SVGPathElement>();
 
   private glideSlopeDiamond = FSComponent.createRef<SVGPathElement>();
-
-  private diamondGroup = FSComponent.createRef<SVGGElement>();
-
-  private hasGlideSlope = false;
 
   private handleGlideSlopeError(glideSlopeError: number): void {
     const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
@@ -458,23 +508,14 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    this.noGlideSlope.sub((noGlideSlope) => {
+      if (noGlideSlope) {
+        this.lagFilter.reset();
+      }
+    });
 
-    sub
-      .on('hasGlideslope')
-      .whenChanged()
-      .handle((hasGlideSlope) => {
-        this.hasGlideSlope = hasGlideSlope;
-        if (hasGlideSlope) {
-          this.diamondGroup.instance.classList.remove('HiddenElement');
-        } else {
-          this.diamondGroup.instance.classList.add('HiddenElement');
-          this.lagFilter.reset();
-        }
-      });
-
-    sub.on('glideSlopeError').handle((gs) => {
-      if (this.hasGlideSlope) {
+    this.sub.on('glideSlopeError').handle((gs) => {
+      if (!this.noGlideSlope.get()) {
         this.handleGlideSlopeError(gs);
       }
     });
@@ -482,7 +523,12 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
 
   render(): VNode {
     return (
-      <g id="LocalizerSymbolsGroup">
+      <g
+        id="LocalizerSymbolsGroup"
+        class={{
+          HiddenElement: this.isHidden,
+        }}
+      >
         <path
           class="NormalStroke White"
           d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
@@ -499,7 +545,11 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
           class="NormalStroke White"
           d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
         />
-        <g class="HideGSDiamond" ref={this.diamondGroup}>
+        <g
+          class={{
+            HiddenElement: this.noGlideSlope,
+          }}
+        >
           <path
             id="GlideSlopeDiamondLower"
             ref={this.upperDiamond}

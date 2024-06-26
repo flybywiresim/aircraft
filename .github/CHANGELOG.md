@@ -92,6 +92,9 @@
 1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
+1. [ISIS] Fixed localiser deviation when on the back beam - @tracernz (Mike)
+1. [FMS/AP/ND/PFD] Added support for localiser back course approaches - @tracer (Mike)
+1. [ND] Fix color of navaids at the active leg termination - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
