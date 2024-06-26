@@ -44,7 +44,8 @@ class FmgcComputer final
   struct BlockIO_FmgcComputer_T {
     real_T u;
     real_T u_l;
-    real32_T u_ly;
+    real_T u_ly;
+    real32_T u_lyj;
   };
 
   struct D_Work_FmgcComputer_T {
@@ -799,11 +800,13 @@ class FmgcComputer final
     real_T Y_Y0;
     real_T Y_Y0_h;
     real_T Constant_Value_i;
+    real_T Y_Y0_c;
     real_T Gain_Gain_h;
     real_T Gain1_Gain;
     real_T Bias_Bias;
     real_T Gain2_Gain;
     real_T Constant_Value_m;
+    real_T Gain3_Gain;
     real_T Gain1_Gain_a;
     real_T fpmtoms_Gain;
     real_T kntoms_Gain;
@@ -827,7 +830,7 @@ class FmgcComputer final
     real_T ktstomps_Gain_m;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
-    real32_T Gain3_Gain;
+    real32_T Gain3_Gain_k;
     real32_T Gain1_Gain_g;
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];
