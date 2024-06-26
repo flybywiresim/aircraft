@@ -1,7 +1,9 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::Pack, cabin_air::CabinAirSimulation, pressure_valve::SafetyValve,
+        acs_controller::Pack,
+        cabin_air::CabinAirSimulation,
+        pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
         AirHeater, CabinFan, DuctTemperature, MixerUnit, OutletAir, OverheadFlowSelector, PackFlow,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
@@ -861,6 +863,7 @@ struct A380PressurizationSystem {
 
     negative_relief_valves_id: VariableIdentifier,
     negative_relief_valves: SafetyValve,
+    negative_relief_valves_signal: NegativeRelieveValveSignal<A380PressurizationConstants>,
 }
 
 impl A380PressurizationSystem {
@@ -904,6 +907,7 @@ impl A380PressurizationSystem {
             negative_relief_valves_id: context
                 .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
             negative_relief_valves: SafetyValve::new(),
+            negative_relief_valves_signal: NegativeRelieveValveSignal::new(),
         }
     }
 
@@ -926,9 +930,14 @@ impl A380PressurizationSystem {
             );
         }
 
+        self.negative_relief_valves_signal.update(
+            context,
+            cabin_simulation.cabin_pressure(),
+            self.negative_relief_valves.open_amount(),
+        );
         // TODO Add check for failure
         self.negative_relief_valves
-            .update(context, self.ocsm[0].negative_relief_valve_trigger());
+            .update(context, &self.negative_relief_valves_signal);
     }
 
     fn safety_valve_open_amount(&self) -> Ratio {
@@ -2777,10 +2786,9 @@ mod tests {
     }
 
     fn test_bed_in_descent() -> CabinAirTestBed {
-        let test_bed = test_bed_in_cruise()
+        test_bed_in_cruise()
             .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
-            .iterate(40);
-        test_bed
+            .iterate(40)
     }
 
     mod a380_pressurization_tests {

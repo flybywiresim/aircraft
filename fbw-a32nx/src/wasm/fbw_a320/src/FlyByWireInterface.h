@@ -76,7 +76,7 @@ class FlyByWireInterface {
   bool wasPaused = false;
   bool wasInSlew = false;
 
-  double autothrustThrustLimitReverse = -45;
+  double autothrustThrustLimitReversePercentageToga = 0.0;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -370,6 +370,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDistance;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
+
+  std::unique_ptr<LocalVariable> idFm1BackbeamSelected;
 
   std::unique_ptr<LocalVariable> idRealisticTillerEnabled;
   std::unique_ptr<LocalVariable> idTillerHandlePosition;

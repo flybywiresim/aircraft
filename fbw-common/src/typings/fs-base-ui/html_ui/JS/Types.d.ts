@@ -1,6 +1,7 @@
 declare global {
     class LatLongData {
         lat: Latitude;
+
         long: Longitude;
     }
 
@@ -9,6 +10,7 @@ declare global {
         constructor(data: { lat: Latitude, long: Longitude });
 
         lat: Latitude;
+
         long: Longitude;
 
         /**
@@ -58,7 +60,9 @@ declare global {
         constructor(data: { lat: Latitude, long: Longitude, alt: Feet });
 
         lat: Latitude;
+
         long: Longitude;
+
         alt: Feet;
 
         /**
@@ -96,7 +100,9 @@ declare global {
         constructor(data: { pitchDegree: number, bankDegree: number, headingDegree: number });
 
         pitchDegree: number;
+
         bankDegree: number;
+
         headingDegree: number;
 
         /**
@@ -109,6 +115,7 @@ declare global {
         constructor(data: { lla: LatLongAlt, pbh: PitchBankHeading });
 
         lla: LatLongAlt;
+
         pbh: PitchBankHeading;
 
         /**
@@ -122,11 +129,17 @@ declare global {
             i_boundary: number; i2_boundary: number; d_boundary: number; });
 
         pid_p: number;
+
         pid_i: number;
+
         pid_i2: number;
+
         pid_d: number;
+
         i_boundary: number;
+
         i2_boundary: number;
+
         d_boundary: number;
 
         /**
@@ -139,7 +152,9 @@ declare global {
         constructor(data: { x: number; y: number; z: number; });
 
         x: number;
+
         y: number;
+
         z: number;
 
         /**
@@ -173,6 +188,7 @@ declare global {
         constructor(json: string | null);
 
         bReversed: boolean;
+
         static sKeyDelimiter: string;
     }
 

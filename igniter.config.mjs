@@ -111,14 +111,6 @@ export default new TaskOfTasks("all", [
                     "Cargo.toml",
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm"
                 ]),
-            new ExecTask("systems-fadec",
-                "npm run build-a32nx:fadec",
-                [
-                    "fbw-a32nx/src/wasm/fadec_a320",
-                    "fbw-common/src/wasm/fbw_common",
-                    "fbw-common/src/wasm/fadec_common",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm"
-                ]),
             new ExecTask("systems-fbw",
                 "npm run build-a32nx:fbw",
                 [
@@ -133,13 +125,16 @@ export default new TaskOfTasks("all", [
                 "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
             ]),
-            new ExecTask('extra-backend-a32nx',
+            new ExecTask('cpp-wasm-cmake',
                 "npm run build:cpp-wasm-cmake",
                 [
                     'fbw-common/src/wasm/cpp-msfs-framework',
                     'fbw-common/src/wasm/extra-backend',
+                    'fbw-common/src/wasm/fadec_common',
                     'fbw-a32nx/src/wasm/extra-backend-a32nx',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/extra-backend-a32nx.wasm'
+                    'fbw-a32nx/src/wasm/fadec_a32nx',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/extra-backend-a32nx.wasm',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec-a32nx.wasm'
                 ]),
         ], true),
 
@@ -195,14 +190,6 @@ export default new TaskOfTasks("all", [
                     "fbw-a380x/src/wasm/systems",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm"
                 ]),
-            new ExecTask("systems-fadec",
-                "npm run build-a380x:fadec",
-                [
-                    "fbw-common/src/wasm/fbw_common",
-                    "fbw-common/src/wasm/fadec_common",
-                    "fbw-a380x/src/wasm/fadec_a380",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm"
-                ]),
             new ExecTask("systems-fbw",
                 "npm run build-a380x:fbw",
                 [
@@ -217,13 +204,16 @@ export default new TaskOfTasks("all", [
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
                 "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm",
             ]),
-            new ExecTask('extra-backend',
+            new ExecTask('cpp-wasm-cmake',
                 "npm run build:cpp-wasm-cmake",
                 [
                     'fbw-common/src/wasm/cpp-msfs-framework',
                     'fbw-common/src/wasm/extra-backend',
+                    'fbw-common/src/wasm/fadec_common',
                     'fbw-a380x/src/wasm/extra-backend-a380x',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/extra-backend-a380x.wasm'
+                    'fbw-a380x/src/wasm/fadec_a380x',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/extra-backend-a380x.wasm',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec-a380x.wasm'
                 ]),
         ], true),
 
@@ -237,7 +227,7 @@ export default new TaskOfTasks("all", [
     // InGamePanels Checklist Fix Tasks
     new TaskOfTasks("ingamepanels-checklist-fix", [
         // Prepare the out folder and any other pre tasks.
-        // Currently, these can be run in parallel but in the future, we may need to run them in sequence if there are any dependencies.
+        // Currently, these can be run in parallel, but in the future, we may need to run them in sequence if there are any dependencies.
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", "npm run build-ingamepanels-checklist-fix:copy-base-files")
         ], true),

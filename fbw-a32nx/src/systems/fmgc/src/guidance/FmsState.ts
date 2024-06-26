@@ -5,17 +5,17 @@
 import { EfisNdMode } from '@flybywiresim/fbw-sdk';
 
 export interface FmsState<T extends number> {
-    leftEfisState: EfisState<T>,
+  leftEfisState: EfisState<T>;
 
-    rightEfisState: EfisState<T>,
+  rightEfisState: EfisState<T>;
 }
 
 export interface EfisState<T extends number> {
-    mode: EfisNdMode,
+  mode: EfisNdMode;
 
-    range: T,
+  range: T;
 
-    dataLimitReached: boolean,
+  dataLimitReached: boolean;
 
-    legsCulled: boolean,
+  legsCulled: boolean;
 }

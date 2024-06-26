@@ -6,6 +6,7 @@
   - [Uncategorized](#uncategorized)
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
+  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
@@ -169,11 +170,11 @@
     - Bool
     - True if the hot air valve {1 or 2} is open
 
-- A32NX_COND_TADD_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
+- A32NX_COND_TADD_CHANNEL_{id}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id}
+        - 1 or 2
 
 - A32NX_VENT_PRIMARY_FANS_ENABLED
     - Bool
@@ -193,14 +194,14 @@
         - FWD
         - BULK
 
-- A32NX_VENT_{id}_VCM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id}
+- A32NX_VENT_{id1}_VCM_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id1}
         - FWD
         - AFT
+    - {id2}
+        - 1 or 2
 
 - A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
     - Bool
@@ -501,6 +502,34 @@
         - 2
         - 3
         - 4
+
+## Flaps / Slats (ATA 27)
+
+- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |      Description A380X, if different     |
+      |:---:|:----------------------------------------:|
+      | 11  | Slat Data Valid                          |
+      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
+      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
+      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
+      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
+      | 16  | Slat WTB Engaged                         |
+      | 17  | Slat Fault                               |
+      | 18  | Flap Data Valid                          |
+      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
+      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
+      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
+      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
+      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
+      | 24  | Flap WTB engaged                         |
+      | 25  | Flap Fault                               |
+      | 26  | Spoiler Lift Demand                      |
+      | 27  | Spoiler Limit Demand                     |
+      | 28  | Slat System Jam                          |
+      | 29  | Flap System Jam                          |
 
 ## Indicating-Recording ATA 31
 

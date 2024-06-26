@@ -248,10 +248,24 @@
     - Enum
     - Contains the numeric flight phase as determined by the FWC
     - Input for: systems.wasm
+  - | Value  | Flight Phase     |
+        |--------|------------------|
+    | 0      |                  |
+    | 1      | ELEC PWR         |
+    | 2      | 1ST ENG STARTED  |
+    | 3      | 1ST ENG TO PWR   |
+    | 4      | 80 kt            |
+    | 5      | LIFTOFF          |
+    | 6      | 1500ft (in clb)  |
+    | 7      | 800 ft (in desc) |
+    | 8      | TOUCHDOWN        |
+    | 9      | 80 kt            |
+    | 10     | 2nd ENG SHUTDOWN |
+    | &gt; 1 | 5 MIN AFTER      |
 
 - A32NX_FWC_SKIP_STARTUP
-    - Bool
-    - Set to true in a non-cold and dark flight phase to skip the initial memorization step
+  - Bool
+  - Set to true in a non-cold and dark flight phase to skip the initial memorization step
 
 - A32NX_FWC_TOMEMO
     - Bool
@@ -1385,6 +1399,20 @@ These variables are the interface between the 3D model and the systems/code.
         - L
         - R
 
+- A32NX_EFIS_{side}_MRP_LAT
+    - Arinc429<Degrees>
+    - Provides the latitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_MRP_LONG
+    - Arinc429<Degrees>
+    - Provides the longitude of the map reference point in the FMS to show on the ND
+    - {side}
+        - L
+        - R
+
 - A32NX_PFD_MSG_SET_HOLD_SPEED
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
@@ -2028,6 +2056,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates whether to trigger a step deleted message on the MCDU
 
+- `A32NX_FM{number}_BACKBEAM_SELECTED`
+    - Bool
+    - Indicates to the FG that a localiser back beam is tuned.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -2271,6 +2303,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
       --- | ---
       SELECTED | 0
       MANAGED | 1
+
+- `A320_NE0_FCU_STATE`
+    - Enum
+    - Indicates the state of the VS/FPA window.
+      State | Value
+      --- | ---
+      Idle (should be dashed) | 0
+      Zeroing (should show 00oo with no + sign) | 1
+      Selecting (should show the selected value) | 2
+      Flying (should show the selected value) | 3
 
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
@@ -2794,46 +2836,96 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - True if the hot air trim system has a fault
 
-- A32NX_PRESS_CABIN_ALTITUDE
-    - Feet
+- A32NX_PRESS_CPC_{number}_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Number 1 or 2
+    - Discrete Data word of the Cabin Pressure Controller bus output (label 057)
+    - Bits with * not yet implemented
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | System in control                                    |
+      | 12  | System status - fail                                 |
+      | 13  | Excessive residual pressure - warn                   |
+      | 14  | Excessive cabin altitude - warn                      |
+      | 15  | Low differential pressure - warn                     |
+      | 16  | Preplanned desc inf - too quick *                    |
+      | 17  | Landing field elevation manual                       |
+      | 18  | Used ADIRS channel bit 1 *                           |
+      | 19  | Used ADIRS channel bit 2 *                           |
+      | 20  | FMS Enabled *                                        |
+      | 21  | Flight mode bit 1 *                                  |
+      | 22  | Flight mode bit 2 *                                  |
+      | 23  | Flight mode bit 3 *                                  |
+      | 24  | FMS select bit 1 *                                   |
+      | 25  | FMS select bit 2 *                                   |
+      | 26  | Not used                                             |
+      | 27  | Not used                                             |
+      | 28  | Spare                                                |
+      | 29  | Spare                                                |
+
+- A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE
+    - Bool
+    - Analog signal sent by the manual partition of CPC1. True when FWC condition for "EXCESS CAB ALT" is met.
+
+- A32NX_PRESS_CPC_{number}_CABIN_ALTITUDE
+    - Arinc429Word<Feet>
+    - Number 1 or 2
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
 
-- A32NX_PRESS_CABIN_DELTA_PRESSURE
-    - PSI
+- A32NX_PRESS_MAN_CABIN_ALTITUDE
+    - Feet
+    - As above, but analog system transmitted by the manual partition of CPC1
+
+- A32NX_PRESS_CPC_{number}_CABIN_DELTA_PRESSURE
+    - Arinc429Word<PSI>
+    - Number 1 or 2
     - The difference in pressure between the cabin interior and the exterior air.
       Positive when cabin pressure is higher than external pressure.
 
-- A32NX_PRESS_CABIN_VS
-    - Feet per minute
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
+- A32NX_PRESS_CPC_{number}_CABIN_VS
+    - Arinc429Word<FPM>
+    - Number 1 or 2
     - Rate of pressurization or depressurization of the cabin expressed as altitude change
 
-- A32NX_PRESS_ACTIVE_CPC_SYS
-    - Number [0, 1, 2]
-    - Indicates which cabin pressure controller is active. 0 indicates neither is active.
+- A32NX_PRESS_MAN_CABIN_VS
+    - FPM
+    - As above, but analog system transmitted by the manual partition of CPC1
 
-- A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE
-    - Ratio
+- A32NX_PRESS_CPC_{number}_OUTFLOW_VALVE_OPEN_PERCENTAGE
+    - Arinc429Word<Percent>
+    - Number 1 or 2
     - Percent open of the cabin pressure outflow valve
 
+- A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE
+    - Percent
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
-    - Ratio
+    - Percent
     - Percent open of the cabin pressure safety valves
 
-- A32NX_PRESS_AUTO_LANDING_ELEVATION
-    - **Deprecated**, - ** Deprecated, see `A32NX_FM{number}_LANDING_ELEVATION`
-    - Feet
-    - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+- A32NX_PRESS_CPC_{number}_LANDING_ELEVATION
+    - Arinc429Word<Feet>
+    - Number 1 or 2
+    - Target landing elevation used by the pressurization system
 
 - A32NX_PRESS_EXCESS_CAB_ALT
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "EXCESS CAB ALT" is met
 
 - A32NX_PRESS_EXCESS_RESIDUAL_PR
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "EXCES RESIDUAL PR" is met
 
 - A32NX_PRESS_LOW_DIFF_PR
     - Bool
+    - **Deprecated in A32NX**
     - True when FWC condition for "LO DIFF PR" is met
 
 - A32NX_OVHD_PRESS_LDG_ELEV_KNOB
@@ -3147,7 +3239,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The V_3 / F-Speed.
     - Arinc429<Knots>
 
-- A32NX_FAC_{number}_V_3
+- A32NX_FAC_{number}_V_4
     - The V_4 / S-Speed.
     - Arinc429<Knots>
 

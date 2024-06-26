@@ -6,13 +6,11 @@ CMakeFiles/*
 cmake*
 fbw-a32nx/out/*
 fbw-a380x/out/*
-# TODO: these need to be more granular
-fbw-a32nx/src/base/*
-fbw-a380x/src/base/*
 fbw-a32nx/bundles/*
 fbw-a380x/bundles/*
 /bundles/*
 
+fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/math.js
 fbw-a32nx/src/systems/fmgc/src/flightplanning/DirectTo.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/FixNamingScheme.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/FlightPlanAsoboSync.ts
@@ -25,6 +23,7 @@ fbw-a32nx/src/systems/fmgc/src/flightplanning/ManagedFlightPlan.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/ProcedureDetails.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/RawDataMapper.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/SegmentedFlightPlan.ts
-fbw-a32nx/src/systems/fmgc/src/flightplanning/WaypointBuilder.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/WorldMagneticModel.ts
 fbw-a32nx/src/systems/fmgc/src/utils/LzUtf8.js
+fbw-a32nx/src/systems/fmgc/src/flightplanning/new/test/*
+fbw-a32nx/src/systems/fmgc/src/flightplanning/**/*.spec.ts

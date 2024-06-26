@@ -9,53 +9,53 @@ export type UpdateValueCallback = (x: number) => void;
  * as a user turns faster as opposed to always changing the heading by 1 degree.
  */
 export class RateMultiplierKnob {
-    private timeout: number;
+  private timeout: number;
 
-    private increment: number;
+  private increment: number;
 
-    private currentSpeed: number;
+  private currentSpeed: number;
 
-    private previousTimestamp: number;
+  private previousTimestamp: number;
 
-    public updateValue: UpdateValueCallback;
+  public updateValue: UpdateValueCallback;
 
-    /**
-     * @param timeout How long the user has to rotate before the rate is zeroed.
-     * @param increment How long to increment the rate at each click.
-     */
-    constructor(timeout = 300, increment = 0.20) {
-        this.timeout = timeout;
-        this.increment = increment;
-        this.currentSpeed = 0;
-        this.previousTimestamp = 0;
+  /**
+   * @param timeout How long the user has to rotate before the rate is zeroed.
+   * @param increment How long to increment the rate at each click.
+   */
+  constructor(timeout = 300, increment = 0.2) {
+    this.timeout = timeout;
+    this.increment = increment;
+    this.currentSpeed = 0;
+    this.previousTimestamp = 0;
+  }
+
+  /**
+   * Call this method every time the knob is increased (turned clockwise).
+   * If called within the timeout, the offset is steadily increased too.
+   */
+  increase() {
+    if (this.currentSpeed < 1 || Date.now() - this.previousTimestamp > this.timeout) {
+      this.currentSpeed = 1;
+    } else {
+      this.currentSpeed += this.increment;
     }
 
-    /**
-     * Call this method every time the knob is increased (turned clockwise).
-     * If called within the timeout, the offset is steadily increased too.
-     */
-    increase() {
-        if (this.currentSpeed < 1 || (Date.now() - this.previousTimestamp) > this.timeout) {
-            this.currentSpeed = 1;
-        } else {
-            this.currentSpeed += this.increment;
-        }
+    this.previousTimestamp = Date.now();
+    this.updateValue(Math.floor(this.currentSpeed));
+  }
 
-        this.previousTimestamp = Date.now();
-        this.updateValue(Math.floor(this.currentSpeed));
+  /**
+   * Same as increase, but in the opposite direction.
+   */
+  decrease() {
+    if (this.currentSpeed > -1 || Date.now() - this.previousTimestamp > this.timeout) {
+      this.currentSpeed = -1;
+    } else {
+      this.currentSpeed -= this.increment;
     }
 
-    /**
-     * Same as increase, but in the opposite direction.
-     */
-    decrease() {
-        if (this.currentSpeed > -1 || (Date.now() - this.previousTimestamp) > this.timeout) {
-            this.currentSpeed = -1;
-        } else {
-            this.currentSpeed -= this.increment;
-        }
-
-        this.previousTimestamp = Date.now();
-        this.updateValue(Math.ceil(this.currentSpeed));
-    }
+    this.previousTimestamp = Date.now();
+    this.updateValue(Math.ceil(this.currentSpeed));
+  }
 }

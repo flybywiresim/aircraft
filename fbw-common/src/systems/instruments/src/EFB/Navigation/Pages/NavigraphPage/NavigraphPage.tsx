@@ -6,7 +6,7 @@ import { NavigraphAuthUIWrapper } from '../../../Apis/Navigraph/Components/Authe
 import { NavigraphChartUI } from './NavigraphChartUI';
 
 export const NavigraphPage = () => (
-    <NavigraphAuthUIWrapper showLogin={false}>
-        <NavigraphChartUI />
-    </NavigraphAuthUIWrapper>
+  <NavigraphAuthUIWrapper showLogin={false}>
+    <NavigraphChartUI />
+  </NavigraphAuthUIWrapper>
 );

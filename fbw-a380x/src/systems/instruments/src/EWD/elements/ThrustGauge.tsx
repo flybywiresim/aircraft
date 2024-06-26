@@ -7,8 +7,8 @@ import { Position, EngineNumber, FadecActive, n1Degraded } from '@instruments/co
 import React from 'react';
 
 const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y, engine, active, n1Degraded }) => {
-    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
-    const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 1000);
+    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'number', 100);
+    const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'number', 1000);
     const [Thrust] = useSimVar(`TURB ENG JET THRUST:${engine}`, 'pounds');
     const ThrustPercent = Math.round(((Thrust / 30000) * 100) * 2.8125 * 10) / 100; // Hack for now until real thrust values available
     const ThrustPercentSplit = splitDecimals(ThrustPercent);
