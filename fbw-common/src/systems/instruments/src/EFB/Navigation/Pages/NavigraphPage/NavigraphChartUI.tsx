@@ -110,7 +110,7 @@ export const NavigraphChartUI = () => {
   const simbriefDataLoaded = isSimbriefDataLoaded();
 
   return (
-    <div className="h-content-section-reduced flex w-full flex-row overflow-x-hidden rounded-lg">
+    <div className="flex h-content-section-reduced w-full flex-row overflow-x-hidden rounded-lg">
       <>
         {!isFullScreen && (
           <div className="shrink-0" style={{ width: '450px' }}>

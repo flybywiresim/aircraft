@@ -208,8 +208,8 @@ export const AircraftOptionsPinProgramsPage = () => {
           <SettingItem name={t('Settings.AutomaticCallOuts.Title')}>
             <Link
               to={`${basePinProgRoute}/${pathify('Automatic Call Outs')}`}
-              className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight
-                                rounded-md border-2 px-5 py-2.5 transition duration-100"
+              className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
             >
               {t('Settings.AircraftOptionsPinPrograms.Select')}
             </Link>
