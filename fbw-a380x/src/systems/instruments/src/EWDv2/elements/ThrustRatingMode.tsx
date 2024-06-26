@@ -34,8 +34,9 @@ export class N1Limit extends DisplayComponent<{
   private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
 
   private readonly displayFlexTemp = MappedSubject.create(
-    ([flexTemp, sat, N1LimitType, active]) =>
-      active && flexTemp !== 0 && flexTemp >= sat.value - 10 && N1LimitType === 3,
+    ([flexTemp, sat, N1LimitType, active]) => {
+      return active && flexTemp !== 0 && flexTemp >= sat.value - 10 && N1LimitType === 3;
+    },
     this.flexTemp,
     this.sat,
     this.N1LimitType,
@@ -73,21 +74,41 @@ export class N1Limit extends DisplayComponent<{
         >
           {this.N1LimitType.map((t) => this.thrustLimitTypeArray[t])}
         </text>
-        <text class="F26 End Green Spread" x={this.props.x + 69} y={this.props.y - 2}>
+        <text
+          class="F26 End Green Spread"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 69}
+          y={this.props.y - 2}
+        >
           {this.N1ThrustLimit.map((l) => splitDecimals(l)[0])}
         </text>
-        <text class="F26 End Green" x={this.props.x + 86} y={this.props.y - 2}>
+        <text
+          class="F26 End Green"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 86}
+          y={this.props.y - 2}
+        >
           .
         </text>
-        <text class="F20 End Green" x={this.props.x + 101} y={this.props.y - 2}>
+        <text
+          class="F20 End Green"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 101}
+          y={this.props.y - 2}
+        >
           {this.N1ThrustLimit.map((l) => splitDecimals(l)[1])}
         </text>
-        <text class="F20 End Cyan" x={this.props.x + 117} y={this.props.y - 2}>
+        <text
+          class="F20 End Cyan"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 117}
+          y={this.props.y - 2}
+        >
           %
         </text>
 
         <text
-          class={{ F20: true, Cyan: true, HiddenElement: this.displayFlexTemp }}
+          class={{ F20: true, Cyan: true, HiddenElement: this.displayFlexTemp.map((v) => !v) }}
           x={this.props.x + 154}
           y={this.props.y}
         >

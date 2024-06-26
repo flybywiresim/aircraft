@@ -21,7 +21,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly engineRunningOrIgnitionOn = MappedSubject.create(
     ([eng1, eng2, eng3, eng4, engSelectorPosition]) => {
-      const isAnyEngineRunning = eng1 !== 4 || eng2 !== 4 || eng3 !== 4 || eng4 !== 4; // TODO Implement FADEC SimVars once available
+      const isAnyEngineRunning = eng1 !== 0 || eng2 !== 0 || eng3 !== 0 || eng4 !== 0; // TODO Implement FADEC SimVars once available
 
       return !!(engSelectorPosition === 2 || isAnyEngineRunning);
     },
@@ -66,7 +66,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
         test={Subject.create(-1)}
         failed={Subject.create(false)}
       >
-        <svg class="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
+        <svg class="ewd-svg" version="1.1" viewBox="0 0 768 1024" xmlns="http://www.w3.org/2000/svg">
           <N1Limit x={330} y={30} active={this.engineRunningOrIgnitionOn} bus={this.props.bus} />
 
           {/* <EngineGauge x={93} y={126} engine={1} active={engineRunningOrIgnitionOn} n1Degraded={n1Degraded[0]} /> */}
