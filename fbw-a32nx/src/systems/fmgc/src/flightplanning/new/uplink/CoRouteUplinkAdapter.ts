@@ -332,6 +332,9 @@ export class CoRouteUplinkAdapter {
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
               );
 
+              // We cancel the airway entry and add the termination as a fix
+              plan.pendingAirways = undefined;
+
               await flightPlanService.nextWaypoint(
                 insertHead,
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
