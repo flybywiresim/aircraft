@@ -36,7 +36,7 @@ interface ReminderKeyEditCardProps {
 }
 
 const ReminderKeyEditCard = ({ reminderText, setter, index, keyArrLen }: ReminderKeyEditCardProps) => (
-  <div className="bg-theme-accent flex w-full flex-row items-center justify-between rounded-md p-4">
+  <div className="flex w-full flex-row items-center justify-between rounded-md bg-theme-accent p-4">
     <h1>{reminderText}</h1>
     <div className="flex flex-row">
       <div className="w-10">
@@ -106,14 +106,14 @@ export const RemindersWidget = () => {
           />
         </TooltipWrapper>
       </div>
-      <div className="h-content-section-reduced border-theme-accent relative mt-4 w-full rounded-lg border-2 p-6">
+      <div className="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
         <ScrollableContainer height={51}>
           <div className="flex flex-col space-y-4">{reminderKeyArr.map((key) => REMINDERS.get(key))}</div>
         </ScrollableContainer>
         <div
           className={`absolute inset-0 z-30 transition duration-100 ${reorderMode ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         >
-          <div className="bg-theme-body absolute inset-0 opacity-80" />
+          <div className="absolute inset-0 bg-theme-body opacity-80" />
           <div className="absolute inset-0">
             <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
               {reminderKeyArr.map((key, index) => (
