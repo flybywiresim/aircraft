@@ -125,10 +125,10 @@ export class AudioControlLocalVarPublisher extends SimVarPublisher<AudioControlL
       ['pa_receive', { name: `L:A380X_RMP_${rmpIndex}_PA_VOL_RX_SWITCH`, type: SimVarValueType.Number }],
       ['pa_transmit', { name: `L:A380X_RMP_${rmpIndex}_PA_TX`, type: SimVarValueType.Number }],
       ['pa_volume_knob', { name: `L:A380X_RMP_${rmpIndex}_PA_VOL`, type: SimVarValueType.Number }],
-      ['radio_nav_receive', { name: `L:A380X_RMP_${rmpIndex}_RAD_NAV_VOL_RX_SWITCH`, type: SimVarValueType.Number }],
-      ['radio_nav_filter', { name: `L:A380X_RMP_${rmpIndex}_RAD_NAV_FILTER`, type: SimVarValueType.Number }],
-      ['radio_nav_volume_knob', { name: `L:A380X_RMP_${rmpIndex}_RAD_NAV_VOL`, type: SimVarValueType.Number }],
-      ['radio_nav_selector_knob', { name: `L:A380X_RMP_${rmpIndex}_RAD_NAV_SELECT`, type: SimVarValueType.Enum }],
+      ['radio_nav_receive', { name: `L:A380X_RMP_${rmpIndex}_NAV_VOL_RX_SWITCH`, type: SimVarValueType.Number }],
+      ['radio_nav_filter', { name: `L:A380X_RMP_${rmpIndex}_NAV_FILTER`, type: SimVarValueType.Number }],
+      ['radio_nav_volume_knob', { name: `L:A380X_RMP_${rmpIndex}_NAV_VOL`, type: SimVarValueType.Number }],
+      ['radio_nav_selector_knob', { name: `L:A380X_RMP_${rmpIndex}_NAV_SELECT`, type: SimVarValueType.Enum }],
     ]);
 
     super(simvars, bus, pacer);

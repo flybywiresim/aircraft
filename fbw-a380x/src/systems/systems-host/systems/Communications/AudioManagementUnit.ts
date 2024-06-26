@@ -1,3 +1,6 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   ConsumerSubject,
   EventBus,
@@ -5,20 +8,18 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
-  SubscribableMapFunctions,
+  Subscribable
 } from '@microsoft/msfs-sdk';
-import { CameraEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
-import { RmpAmuBusEvents } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
+import { RadioNavSelectedNavaid, RmpAmuBusEvents } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
 export type AmuIndex = 1 | 2;
 
-enum SimTransmitStates {
-  Com1 = 0,
-  Com2 = 1,
-  Com3 = 2,
-  None = 4,
+export enum ComIndex {
+  Vhf1 = 1,
+  Vhf2 = 2,
+  Vhf3 = 3,
 }
 
 /**
@@ -26,32 +27,17 @@ enum SimTransmitStates {
  * AMU1 primarily covers the captain's side, while AMU2 covers the F/O's side.
  */
 export class AudioManagementUnit implements Instrument {
-  private readonly sub = this.bus.getSubscriber<CameraEvents & RmpAmuBusEvents>();
+  private readonly sub = this.bus.getSubscriber<RmpAmuBusEvents>();
 
   private readonly onsideRmpIndex = this.index;
   private readonly offsideRmpIndex = this.index === 2 ? 1 : 2;
 
   private readonly mainPowerVar = 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
 
-  private readonly isHealthy = Subject.create(false);
+  private readonly _isHealthy = Subject.create(false);
+  public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
 
   private readonly failureKey = this.index === 2 ? A380Failure.AudioManagementUnit2 : A380Failure.AudioManagementUnit1;
-
-  private readonly isPilotSittingFoSide = ConsumerSubject.create(this.sub.on('camera_pilot_in_fo_seat'), false);
-  private readonly isPilotSittingOurSide = this.isPilotSittingFoSide.map(
-    (v) => (this.index === 1 && !v) || (this.index === 2 && v),
-  );
-
-  private readonly isOutputActive = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.isPilotSittingOurSide,
-    this.isHealthy,
-  );
-
-  private readonly onsideTransmitEvent = this.index === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET';
-  private readonly offsideTransmitEvent = this.index === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET';
-
-  private simTransmitterState = SimTransmitStates.None;
 
   // TODO hook up
   private readonly onsideRmpSwitchedOn = Subject.create(true);
@@ -73,6 +59,11 @@ export class AudioManagementUnit implements Instrument {
   private readonly vhf2Volume = ConsumerSubject.create(null, 0);
   private readonly vhf3Volume = ConsumerSubject.create(null, 0);
 
+  private readonly navaidReceive = ConsumerSubject.create(null, false);
+  private readonly navaidVoiceFilter = ConsumerSubject.create(null, false);
+  private readonly navaidVolume = ConsumerSubject.create(null, 0);
+  private readonly navaidSelected = ConsumerSubject.create(null, RadioNavSelectedNavaid.Adf1);
+
   constructor(
     private readonly bus: EventBus,
     private readonly index: AmuIndex,
@@ -91,29 +82,10 @@ export class AudioManagementUnit implements Instrument {
       this.vhf1Volume.setConsumer(this.sub.on(`rmp_amu_vhf1_volume_${rmpIndex}`));
       this.vhf2Volume.setConsumer(this.sub.on(`rmp_amu_vhf2_volume_${rmpIndex}`));
       this.vhf3Volume.setConsumer(this.sub.on(`rmp_amu_vhf3_volume_${rmpIndex}`));
-    }, true);
-
-    // we need to only write the com states to the sim when the pilot is on our side of the cockpit
-    const activeSubs = [
-      this.vhf3Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com3), true, true),
-      this.vhf2Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com2), true, true),
-      this.vhf1Transmit.sub(this.onVhfTransmitStateChanged.bind(this, SimTransmitStates.Com1), true, true),
-      this.vhf3Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM3_RECEIVE_SELECT'), true, true),
-      this.vhf2Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM2_RECEIVE_SELECT'), true, true),
-      this.vhf1Receive.sub(this.onVhfReceiveStateChanged.bind(this, 'K:COM1_RECEIVE_SELECT'), true, true),
-      this.vhf3Volume.sub(this.onVhfVolumeChanged.bind(this, 'K:COM3_VOLUME_SET'), true, true),
-      this.vhf2Volume.sub(this.onVhfVolumeChanged.bind(this, 'K:COM2_VOLUME_SET'), true, true),
-      this.vhf1Volume.sub(this.onVhfVolumeChanged.bind(this, 'K:COM1_VOLUME_SET'), true, true),
-    ];
-
-    this.isOutputActive.sub((outputOn) => {
-      for (const sub of activeSubs) {
-        if (outputOn) {
-          sub.resume(true);
-        } else {
-          sub.pause();
-        }
-      }
+      this.navaidReceive.setConsumer(this.sub.on(`rmp_amu_nav_receive_${rmpIndex}`));
+      this.navaidVoiceFilter.setConsumer(this.sub.on(`rmp_amu_nav_filter_${rmpIndex}`));
+      this.navaidVolume.setConsumer(this.sub.on(`rmp_amu_nav_volume_${rmpIndex}`));
+      this.navaidSelected.setConsumer(this.sub.on(`rmp_amu_nav_sel_${rmpIndex}`));
     }, true);
 
     this.failuresConsumer.register(this.failureKey);
@@ -122,33 +94,58 @@ export class AudioManagementUnit implements Instrument {
   /** @inheritdoc */
   onUpdate(): void {
     const failed = this.failuresConsumer.isActive(this.failureKey);
-    const powered = SimVar.GetSimVarValue(this.mainPowerVar, SimVarValueType.Bool);
-    this.isHealthy.set(!failed && powered);
+    const powered = SimVar.GetSimVarValue(this.mainPowerVar, SimVarValueType.Bool) > 0;
+    this._isHealthy.set(!failed && powered);
   }
 
-  private onVhfReceiveStateChanged(kEvent: string, state: boolean): void {
-    if (this.isPilotSittingOurSide.get()) {
-      SimVar.SetSimVarValue(kEvent, SimVarValueType.Bool, state);
+  public getActiveNavAudio(): RadioNavSelectedNavaid {
+    return this.navaidSelected.get();
+  }
+
+  public isNavVoiceFiltered(): boolean {
+    return this.navaidVoiceFilter.get();
+  }
+
+  public isNavOutputOn(): boolean {
+    return this.navaidReceive.get();
+  }
+
+  public getNavVolume(): number {
+    return this.navaidVolume.get();
+  }
+
+  public getSelectedComTransmitter(): ComIndex | null {
+    switch (true) {
+      case this.vhf1Transmit.get():
+        return ComIndex.Vhf1;
+      case this.vhf2Transmit.get():
+        return ComIndex.Vhf2;
+      case this.vhf3Transmit.get():
+        return ComIndex.Vhf3;
+      default:
+        return null;
     }
   }
 
-  private onVhfVolumeChanged(kEvent: string, volume: number): void {
-    if (this.isPilotSittingOurSide.get()) {
-      SimVar.SetSimVarValue(kEvent, SimVarValueType.Number, volume);
+  public isComReceiveOn(index: ComIndex): boolean {
+    switch (index) {
+      case ComIndex.Vhf1:
+        return this.vhf1Receive.get();
+      case ComIndex.Vhf2:
+        return this.vhf2Receive.get();
+      case ComIndex.Vhf3:
+        return this.vhf3Receive.get();
     }
   }
 
-  private onVhfTransmitStateChanged(com: SimTransmitStates, transmitOn: boolean): void {
-    if (this.isPilotSittingOurSide.get()) {
-      if (transmitOn) {
-        SimVar.SetSimVarValue(this.onsideTransmitEvent, SimVarValueType.Enum, com);
-        this.simTransmitterState = com;
-      } else if (this.simTransmitterState === com) {
-        SimVar.SetSimVarValue(this.onsideTransmitEvent, SimVarValueType.Enum, SimTransmitStates.None);
-        this.simTransmitterState = SimTransmitStates.None;
-      }
-      // always clear the offside just to be sure, as MSFS actually ORs the two sides together for the simvar
-      SimVar.SetSimVarValue(this.offsideTransmitEvent, SimVarValueType.Enum, SimTransmitStates.None);
+  public getComVolume(index: ComIndex): number {
+    switch (index) {
+      case ComIndex.Vhf1:
+        return this.vhf1Volume.get();
+      case ComIndex.Vhf2:
+        return this.vhf2Volume.get();
+      case ComIndex.Vhf3:
+        return this.vhf3Volume.get();
     }
   }
 }

@@ -14,10 +14,8 @@
             <!--ANN_LT_POTENTIOMETER></ANN_LT_POTENTIOMETER-->
         </Parameters>
         <Parameters Type="Override">
-            <!-- FIXME use 1, 2, 3 rather than L, R, T everywhere! -->
             <Switch Param="RMP_ID">
                 <Case Value="1">
-                    <RMP_SIDE>L</RMP_SIDE>
                     <RMP_SCREEN_POT>80</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
@@ -25,7 +23,6 @@
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_1</INPUT_EVENT_ID_SOURCE>
                 </Case>
                 <Case Value="2">
-                    <RMP_SIDE>R</RMP_SIDE>
                     <RMP_SCREEN_POT>81</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
@@ -33,7 +30,6 @@
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_2</INPUT_EVENT_ID_SOURCE>
                 </Case>
                 <Case Value="3">
-                    <RMP_SIDE>O</RMP_SIDE>
                     <RMP_SCREEN_POT>82</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <!-- TODO find a pot for this and check elec supply -->
@@ -305,7 +301,7 @@
                 <UseTemplate Name="FBW_A380X_RMP_Button">
                     <NODE_ID>PUSH_RMP_#RMP_ID#_VOICE</NODE_ID>
                     <BUTTON_NAME>VOICE</BUTTON_NAME>
-                    <SEQ1_EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_RADIO_NAV_FILTER)</SEQ1_EMISSIVE_CODE>
+                    <SEQ1_EMISSIVE_CODE>(L:A380X_RMP_#RMP_ID#_NAV_FILTER)</SEQ1_EMISSIVE_CODE>
                     <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                     <POTENTIOMETER_SEQ2>#RMP_INTEG_POT#</POTENTIOMETER_SEQ2>
                 </UseTemplate>
@@ -517,7 +513,7 @@
                     <RX_IE_NAME>#KNOB_NAME#_#ID#_PUSH</RX_IE_NAME>
                 </True>
                 <False>
-                    <IE_NAME>#KNOB_NAME#_PB</IE_NAME>
+                    <IE_NAME>#KNOB_NAME#_KNOB</IE_NAME>
                     <PART_ID>KNOB_RMP_#RMP_ID#_#KNOB_NAME#</PART_ID>
                     <VOLUME_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#</VOLUME_LOCAL_VAR>
                     <RX_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX_SWITCH</RX_LOCAL_VAR>
@@ -602,19 +598,19 @@
             <KNOB_TYPE>X_STATES</KNOB_TYPE>
             <NUM_STATES>6</NUM_STATES>
             <GET_STATE_EXTERNAL>(L:#LOCAL_VAR#)</GET_STATE_EXTERNAL>
-            <SET_STATE_EXTERNAL>(&gt;L:#LOCAL_VAR#)</SET_STATE_EXTERNAL>
+            <SET_STATE_EXTERNAL>p0 (&gt;L:#LOCAL_VAR#)</SET_STATE_EXTERNAL>
             <LOCAL_VAR_TO_WATCH_0>#LOCAL_VAR#</LOCAL_VAR_TO_WATCH_0>
-            <TT_VALUE_0>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_ADF_1</TT_VALUE_0>
+            <TT_VALUE_0>A380X.TOOLTIPS.RMP_NAV_SEL_ADF_1</TT_VALUE_0>
             <STR_STATE_0>ADF_1</STR_STATE_0>
-            <TT_VALUE_1>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_ADF_2</TT_VALUE_1>
+            <TT_VALUE_1>A380X.TOOLTIPS.RMP_NAV_SEL_ADF_2</TT_VALUE_1>
             <STR_STATE_1>ADF_2</STR_STATE_1>
-            <TT_VALUE_2>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_LS</TT_VALUE_2>
+            <TT_VALUE_2>A380X.TOOLTIPS.RMP_NAV_SEL_LS</TT_VALUE_2>
             <STR_STATE_2>LS</STR_STATE_2>
-            <TT_VALUE_3>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_VOR_1</TT_VALUE_3>
+            <TT_VALUE_3>A380X.TOOLTIPS.RMP_NAV_SEL_VOR_1</TT_VALUE_3>
             <STR_STATE_3>VOR_1</STR_STATE_3>
-            <TT_VALUE_4>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_VOR_2</TT_VALUE_4>
+            <TT_VALUE_4>A380X.TOOLTIPS.RMP_NAV_SEL_VOR_2</TT_VALUE_4>
             <STR_STATE_4>VOR_2</STR_STATE_4>
-            <TT_VALUE_5>A380X.TOOLTIPS.RMP_RAD_NAV_SEL_MKR</TT_VALUE_5>
+            <TT_VALUE_5>A380X.TOOLTIPS.RMP_NAV_SEL_MKR</TT_VALUE_5>
             <STR_STATE_5>MKR</STR_STATE_5>
         </UseTemplate>
     </Template>

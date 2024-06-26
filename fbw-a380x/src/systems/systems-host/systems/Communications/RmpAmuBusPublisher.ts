@@ -10,6 +10,15 @@ import {
   SimVarValueType,
 } from '@microsoft/msfs-sdk';
 
+export enum RadioNavSelectedNavaid {
+  Adf1 = 0,
+  Adf2 = 1,
+  Ls = 2,
+  Vor1 = 3,
+  Vor2 = 4,
+  Mkr = 5,
+}
+
 interface BaseRmpAmuBusEvents {
   rmp_amu_vhf1_transmit: boolean;
   rmp_amu_vhf2_transmit: boolean;
@@ -21,7 +30,7 @@ interface BaseRmpAmuBusEvents {
   rmp_amu_int_transmit: boolean;
   rmp_amu_cab_transmit: boolean;
   rmp_amu_pa_transmit: boolean;
-  rmp_amu_rad_nav_filter: boolean;
+  rmp_amu_nav_filter: boolean;
 
   rmp_amu_vhf1_receive: boolean;
   rmp_amu_vhf2_receive: boolean;
@@ -33,7 +42,7 @@ interface BaseRmpAmuBusEvents {
   rmp_amu_int_receive: boolean;
   rmp_amu_cab_receive: boolean;
   rmp_amu_pa_receive: boolean;
-  rmp_amu_rad_nav_receive: boolean;
+  rmp_amu_nav_receive: boolean;
 
   rmp_amu_vhf1_volume: number;
   rmp_amu_vhf2_volume: number;
@@ -45,7 +54,9 @@ interface BaseRmpAmuBusEvents {
   rmp_amu_int_volume: number;
   rmp_amu_cab_volume: number;
   rmp_amu_pa_volume: number;
-  rmp_amu_rad_nav_volume: number;
+  rmp_amu_nav_volume: number;
+
+  rmp_amu_nav_sel: RadioNavSelectedNavaid;
 }
 
 type RmpAmuBusIndexedEvents = {
@@ -73,8 +84,8 @@ export class RmpAmuBusPublisher extends SimVarPublisher<RmpAmuBusEvents> {
       ['rmp_amu_cab_transmit', { name: `L:A380X_RMP_#index#_CAB_TX`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_pa_transmit', { name: `L:A380X_RMP_#index#_PA_TX`, type: SimVarValueType.Bool, indexed: true }],
       [
-        'rmp_amu_rad_nav_filter',
-        { name: `L:A380X_RMP_#index#_RAD_NAV_FILTER`, type: SimVarValueType.Bool, indexed: true },
+        'rmp_amu_nav_filter',
+        { name: `L:A380X_RMP_#index#_NAV_FILTER`, type: SimVarValueType.Bool, indexed: true },
       ],
 
       ['rmp_amu_vhf1_receive', { name: `L:A380X_RMP_#index#_VHF_VOL_RX_1`, type: SimVarValueType.Bool, indexed: true }],
@@ -87,7 +98,7 @@ export class RmpAmuBusPublisher extends SimVarPublisher<RmpAmuBusEvents> {
       ['rmp_amu_int_receive', { name: `L:A380X_RMP_#index#_INT_VOL_RX`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_cab_receive', { name: `L:A380X_RMP_#index#_CAB_VOL_RX`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_pa_receive', { name: `L:A380X_RMP_#index#_PA_VOL_RX`, type: SimVarValueType.Bool, indexed: true }],
-      ['rmp_amu_rad_nav_receive', { name: `L:A380X_RMP_#index#_NAV_VOL_RX`, type: SimVarValueType.Bool, indexed: true }],
+      ['rmp_amu_nav_receive', { name: `L:A380X_RMP_#index#_NAV_VOL_RX`, type: SimVarValueType.Bool, indexed: true }],
 
       ['rmp_amu_vhf1_volume', { name: `L:A380X_RMP_#index#_VHF_VOL_1`, type: SimVarValueType.Number, indexed: true }],
       ['rmp_amu_vhf2_volume', { name: `L:A380X_RMP_#index#_VHF_VOL_2`, type: SimVarValueType.Number, indexed: true }],
@@ -99,10 +110,9 @@ export class RmpAmuBusPublisher extends SimVarPublisher<RmpAmuBusEvents> {
       ['rmp_amu_int_volume', { name: `L:A380X_RMP_#index#_INT_VOL`, type: SimVarValueType.Number, indexed: true }],
       ['rmp_amu_cab_volume', { name: `L:A380X_RMP_#index#_CAB_VOL`, type: SimVarValueType.Number, indexed: true }],
       ['rmp_amu_pa_volume', { name: `L:A380X_RMP_#index#_PA_VOL`, type: SimVarValueType.Number, indexed: true }],
-      [
-        'rmp_amu_rad_nav_volume',
-        { name: `L:A380X_RMP_#index#_RAD_NAV_VOL`, type: SimVarValueType.Number, indexed: true },
-      ],
+      ['rmp_amu_nav_volume', { name: `L:A380X_RMP_#index#_NAV_VOL`, type: SimVarValueType.Number, indexed: true }],
+
+      ['rmp_amu_nav_sel', { name: `L:A380X_RMP_#index#_NAV_SEL`, type :SimVarValueType.Enum, indexed: true }],
     ]);
 
     super(simvars, bus, pacer);

@@ -100,7 +100,7 @@ export class VhfRadio implements Instrument {
 
       if (this.isMsfsRadioOn.get()) {
         this.frequencyTuned.setValueSsm(
-          RadioUtils.packBcd32VhfFrequencyToArinc(SimVar.GetSimVarValue(this.frequencyVar, 'frequency bcd32')),
+          RadioUtils.packBcd32VhfComFrequencyToArinc(SimVar.GetSimVarValue(this.frequencyVar, 'frequency bcd32')),
           Arinc429SignStatusMatrix.NormalOperation,
         );
       } else {

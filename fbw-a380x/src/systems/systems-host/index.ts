@@ -26,6 +26,7 @@ import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBu
 import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
+import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -63,6 +64,7 @@ class SystemsHost extends BaseInstrument {
   // TODO powered subs
   private readonly amu1 = new AudioManagementUnit(this.bus, 1, this.failuresConsumer);
   private readonly amu2 = new AudioManagementUnit(this.bus, 2, this.failuresConsumer);
+  private readonly simAudioManager = new SimAudioManager(this.bus, this.amu1, this.amu2);
 
   private readonly xpdr1 = new Transponder(
     this.bus,
@@ -97,6 +99,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Vhf3', this.vhf3, true);
     this.backplane.addInstrument('Amu1', this.amu1, true);
     this.backplane.addInstrument('Amu2', this.amu2, true);
+    this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);

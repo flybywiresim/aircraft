@@ -67,7 +67,7 @@ export class AudioControlManager implements Instrument {
       state: Subject.create(false),
     },
     [SystemKeys.Voice]: {
-      localVar: `L:A380X_RMP_${this.rmpIndex}_RADIO_NAV_FILTER`,
+      localVar: `L:A380X_RMP_${this.rmpIndex}_NAV_FILTER`,
       state: Subject.create(false),
     },
   };
@@ -115,7 +115,7 @@ export class AudioControlManager implements Instrument {
     },
     {
       switchTopic: 'radio_nav_receive',
-      rxLocalVar: `L:A380X_RMP_${this.rmpIndex}_RADIO_NAV_VOL_RX`,
+      rxLocalVar: `L:A380X_RMP_${this.rmpIndex}_NAV_VOL_RX`,
     },
   ];
 
