@@ -1669,7 +1669,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fm_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.selected_approach_type = fmgc_approach_type::None;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_loc_distance = 0;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFlightGuidanceAvailable->get();
@@ -1678,7 +1678,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFlightGuidanceCrossTrackError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFlightGuidanceTrackAngleError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_limit_deg = idFlightGuidancePhiLimit->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.direct_to_nav_engage = false;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.direct_to_nav_engage = simInputAutopilot.DIR_TO_trigger;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vertical_flight_plan_valid =
       idFlightGuidanceAvailable->get();  // TODO add proper variable here
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.final_app_can_engage = idFmFinalCanEngage->get();
