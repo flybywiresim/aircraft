@@ -4,7 +4,7 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@flybywiresim/fbw-sdk';
+import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk';
 import { t } from '../../../Localization/translation';
 import {
   addPinnedChart,
@@ -12,6 +12,7 @@ import {
   editPinnedChart,
   editTabProperty,
   isChartPinned,
+  LocalChartCategoryToIndex,
   NavigationTab,
   removedPinnedChart,
   setBoundingBox,
@@ -27,7 +28,7 @@ export type LocalFileChart = {
 };
 
 export type LocalFileOrganizedCharts = {
-  name: string;
+  name: LocalChartCategory;
   alias: string;
   charts: LocalFileChart[];
 };
@@ -39,7 +40,7 @@ interface LocalFileChartSelectorProps {
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
   const dispatch = useAppDispatch();
 
-  const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+  const { chartId, selectedTabType } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
   const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
   if (loading) {
@@ -138,7 +139,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                       chartName: { light: '', dark: '' },
                       title: chart.fileName,
                       subTitle: '',
-                      tabIndex: selectedTabIndex,
+                      tabIndex: LocalChartCategoryToIndex[selectedTabType],
                       timeAccessed: 0,
                       tag: chart.type,
                       provider: ChartProvider.LOCAL_FILES,
