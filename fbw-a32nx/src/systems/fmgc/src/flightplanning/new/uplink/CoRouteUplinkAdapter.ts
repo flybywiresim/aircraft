@@ -312,10 +312,14 @@ export class CoRouteUplinkAdapter {
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
                 FlightPlanIndex.Uplink,
               );
-              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
 
-              insertHead += 2;
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                // It's possible we already have a disco here, if the start of the airway was not found
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
 
+              insertHead++;
               break;
             }
 
@@ -340,10 +344,14 @@ export class CoRouteUplinkAdapter {
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
                 FlightPlanIndex.Uplink,
               );
-              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
 
-              insertHead += 2;
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                // It's possible we already have a disco here, if the start of the airway was not found
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
 
+              insertHead++;
               break;
             }
           } else {

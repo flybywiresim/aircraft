@@ -396,12 +396,12 @@ export class SimBriefUplinkAdapter {
 
           if (fixes.length > 0) {
             if (!plan.pendingAirways) {
+              // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
+              // we add the termination fix with a disco in between
               console.warn(
-                `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk.`,
+                `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
               );
 
-              // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
-              // just add the termination as a fix
               await flightPlanService.nextWaypoint(
                 insertHead,
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
