@@ -33,7 +33,7 @@ interface ServiceButtonWrapperProps {
 // This groups buttons and sets a border and divider line
 const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
   <div
-    className={`divide-theme-accent border-theme-accent flex flex-col divide-y-2 overflow-hidden rounded-xl border-2 ${className}`}
+    className={`flex flex-col divide-y-2 divide-theme-accent overflow-hidden rounded-xl border-2 border-theme-accent ${className}`}
     style={{ position: 'absolute', left: xl, right: xr, top: y }}
   >
     {children}
@@ -524,13 +524,13 @@ export const A380Services: React.FC = () => {
   const doorOpenCss = 'text-2xl font-bold text-utility-green w-min';
 
   return (
-    <div className="h-content-section-reduced relative">
+    <div className="relative h-content-section-reduced">
       <A380GroundServiceOutline
         main1LeftStatus={main1LeftDoorOpen >= 1.0}
         main2LeftStatus={main2LeftDoorOpen >= 1.0}
         main4RightStatus={main4RightDoorOpen >= 1.0}
         upper1LeftStatus={upper1LeftDoorOpen >= 1.0}
-        className="text-theme-text inset-x-0 mx-auto h-full w-full"
+        className="inset-x-0 mx-auto h-full w-full text-theme-text"
       />
 
       <ServiceButtonWrapper xr={930} y={24}>

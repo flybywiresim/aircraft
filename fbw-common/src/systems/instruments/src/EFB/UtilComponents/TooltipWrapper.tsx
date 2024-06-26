@@ -20,7 +20,7 @@ export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, re
     <div
       key={text}
       ref={ref}
-      className={`border-theme-secondary bg-theme-accent pointer-events-none absolute z-50 whitespace-nowrap rounded-md border px-2 transition duration-100 ${shown ? 'opacity-100' : 'opacity-0'}`}
+      className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-md border border-theme-secondary bg-theme-accent px-2 transition duration-100 ${shown ? 'opacity-100' : 'opacity-0'}`}
       style={{ top: `${posY + offsetY}px`, left: `${posX}px` }}
     >
       {text}
