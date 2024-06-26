@@ -298,6 +298,7 @@ export const TakeoffWidget = () => {
 
   const handleICAOChange = (icao: string) => {
     dispatch(clearTakeoffValues());
+    setWindInput('');
 
     dispatch(setTakeoffValues({ icao }));
     if (isValidIcao(icao)) {
@@ -492,6 +493,7 @@ export const TakeoffWidget = () => {
 
   const handleClearInputs = (): void => {
     dispatch(clearTakeoffValues());
+    setWindInput('');
   };
 
   const isWindMagnitudeOnly = (input: string): boolean => {
@@ -879,8 +881,6 @@ export const TakeoffWidget = () => {
                         Units.celsiusToFahrenheit,
                       )}
                       placeholder={`°${temperatureUnit}`}
-                      min={temperatureUnit === 'C' ? -55 : -67}
-                      max={temperatureUnit === 'C' ? 55 : 131}
                       decimalPrecision={1}
                       onChange={handleTemperatureChange}
                       number
@@ -935,8 +935,6 @@ export const TakeoffWidget = () => {
                         Units.kilogramToPound,
                       )}
                       placeholder={weightUnit}
-                      min={weightUnit === 'kg' ? 41000 : 90389}
-                      max={weightUnit === 'kg' ? 100000 : 220462}
                       decimalPrecision={0}
                       onChange={handleWeightChange}
                       number
