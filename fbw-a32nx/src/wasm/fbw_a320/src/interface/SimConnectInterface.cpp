@@ -359,6 +359,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NDB_PUSH, "A32NX.FCU_EFIS_R_NDB_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_ARPT_PUSH, "A32NX.FCU_EFIS_R_ARPT_PUSH", false);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
 
@@ -2076,6 +2078,12 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::A32NX_FCU_EFIS_R_ARPT_PUSH: {
       fcuEfisPanelInputs[1].arpt_button_pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_ARPT_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
+      simInputAutopilot.DIR_TO_trigger = 1;
+      std::cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << std::endl;
       break;
     }
 
