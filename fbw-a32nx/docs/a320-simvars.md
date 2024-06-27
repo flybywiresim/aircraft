@@ -4159,7 +4159,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
     - Enum
-    - Deprecated, provided by FCU shim
     - Provides the selected NAVAIDs for display on the EFIS
       Value | Meaning
       --- | ---
@@ -4172,7 +4171,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_EFIS_{side}_ND_MODE
     - Enum
-    - Deprecated, provided by FCU shim
     - Provides the selected navigation display mode for the EFIS
       Value | Meaning
       --- | ---
@@ -4187,7 +4185,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_EFIS_{side}_ND_RANGE
     - Enum
-    - Deprecated, provided by FCU shim
     - Provides the selected navigation display range for the EFIS
       Value | Meaning
       --- | ---
@@ -4203,7 +4200,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_EFIS_{side}_OPTION
     - Enum
-    - Deprecated, provided by FCU shim
     - Provides the selected EFIS option/overlay
       Value | Meaning
       --- | ---
@@ -4216,3 +4212,138 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {side}
         - L
         - R
+
+- A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
+    - Percent over 100
+    - Steering demand from autopilot to BSCU [-1;1] -1 left, 0 middle
+
+- A32NX_FMA_LATERAL_MODE
+    - Enum
+    - Indicates **engaged** lateral mode of the Flight Director / Autopilot
+      Mode | Value
+      --- | ---
+      NONE | 0
+      HDG | 10
+      TRACK | 11
+      NAV | 20
+      LOC_CPT | 30
+      LOC_TRACK | 31
+      LAND | 32
+      FLARE | 33
+      ROLL_OUT | 34
+      RWY | 40
+      RWY_TRACK | 41
+      GA_TRACK | 50
+
+- A32NX_FMA_LATERAL_ARMED
+    - Bitmask
+    - Indicates **armed** lateral mode of the Flight Director / Autopilot
+      Mode | Bit
+      --- | ---
+      NAV | 0
+      LOC | 1
+
+- A32NX_FMA_VERTICAL_MODE
+    - Enum
+    - Indicates **engaged** vertical mode of the Flight Director / Autopilot
+      Mode | Value
+      --- | ---
+      NONE | 0
+      ALT | 10
+      ALT_CPT | 11
+      OP_CLB | 12
+      OP_DES | 13
+      VS | 14
+      FPA | 15
+      ALT_CST | 20
+      ALT_CST_CPT | 21
+      CLB | 22
+      DES | 23
+      FINAL | 24
+      GS_CPT | 30
+      GS_TRACK | 31
+      LAND | 32
+      FLARE | 33
+      ROLL_OUT | 34
+      SRS | 40
+      SRS_GA | 41
+      TCAS | 50
+
+- A32NX_FMA_VERTICAL_ARMED
+    - Bitmask
+    - Indicates **armed** vertical mode of the Flight Director / Autopilot
+      Mode | Bit
+      --- | ---
+      ALT | 0
+      ALT_CST | 1
+      CLB | 2
+      DES | 3
+      GS | 4
+      FINAL | 5
+      TCAS | 6
+
+- A32NX_FMA_EXPEDITE_MODE
+    - Boolean
+    - Indicates if expedite mode is engaged
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
+
+- A32NX_AUTOPILOT_AUTOLAND_WARNING
+    - Boolean
+    - Indicates if Autoland warning light is illuminated
+    - Possible values:
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
+
+- A32NX_AUTOPILOT_ACTIVE
+    - Boolean
+    - Indicates if any Autopilot is engaged
+    - Possible values:
+      State | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED | 1
+
+- A32NX_AUTOPILOT_{index}_ACTIVE
+    - Boolean
+    - Indicates if Autopilot {index} is enaged, first Autopilot has the index 1
+    - Possible values:
+      State | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED | 1
+
+- A32NX_AUTOPILOT_H_DOT_RADIO
+    - Number (Feet per minute)
+    - Indicates the current estimated vertical speed relative to the runway
+    - Important: the signal is only usable above the runway and is not to be used elsewhere
+
+- A32NX_AUTOTHRUST_STATUS
+    - Enum
+    - Indicates the current status of the ATHR system
+      Mode | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED_ARMED | 1
+      ENGAGED_ACTIVE | 2
+
+- A32NX_AUTOTHRUST_MODE
+    - Enum
+    - Indicates the current thrust mode of the ATHR system
+      Mode | Value
+      --- | ---
+      NONE | 0
+      A_FLOOR | 13
+
+
+- A32NX_AUTOTHRUST_MODE_MESSAGE
+    - Enum
+    - Indicates ATHR related message to be displayed on the PFD
+      Mode | Value
+      --- | ---
+      NONE | 0
+      LVR_CLB | 3
