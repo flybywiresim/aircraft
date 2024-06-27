@@ -65,7 +65,7 @@ export const Failures = () => {
         </div>
       </div>
 
-      <div className="h-content-section-reduced border-theme-accent mt-4 space-y-4 rounded-lg border-2 p-4">
+      <div className="mt-4 h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
         <div className="flex flex-row space-x-4">
           <SimpleInput
             placeholder={t('Failures.Search')}
