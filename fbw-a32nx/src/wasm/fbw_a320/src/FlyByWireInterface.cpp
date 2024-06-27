@@ -119,6 +119,8 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   result &= updateFcu(calculatedSampleTime);
 
+  result &= updateFcuShim();
+
   for (int i = 0; i < 2; i++) {
     result &= updateFmgc(calculatedSampleTime, i);
   }
@@ -715,6 +717,18 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // FCU Lvars
   idLightsTest = std::make_unique<LocalVariable>("A32NX_OVHD_INTLT_ANN");
+
+  // FCU Shim LVars
+  idFcuShimLeftNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_L_NAVAID_1_MODE");
+  idFcuShimLeftNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_L_NAVAID_2_MODE");
+  idFcuShimLeftNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_MODE");
+  idFcuShimLeftNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_RANGE");
+  idFcuShimLeftNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_L_OPTION");
+  idFcuShimRightNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_1_MODE");
+  idFcuShimRightNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_2_MODE");
+  idFcuShimRightNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_MODE");
+  idFcuShimRightNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_RANGE");
+  idFcuShimRightNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_OPTION");
 
   idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_FCU_SELECTED_HEADING");
   idFcuSelectedAltitude = std::make_unique<LocalVariable>("A32NX_FCU_SELECTED_ALTITUDE");
@@ -1882,6 +1896,110 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuAfsDisplayLvlChManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
   idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+
+  return true;
+}
+
+bool FlyByWireInterface::updateFcuShim() {
+  // update the FCU Shim EFIS Lvars
+  auto getNavaidMode = [](bool adfBit, bool vorBit) {
+    if (adfBit) {
+      return 1;
+    } else if (vorBit) {
+      return 2;
+    } else {
+      return 0;
+    }
+  };
+
+  auto getNdMode = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    if (bit5) {
+      return 0;
+    } else if (bit4) {
+      return 1;
+    } else if (bit3) {
+      return 2;
+    } else if (bit2) {
+      return 3;
+    } else if (bit1) {
+      return 4;
+    } else {
+      // We should never be getting here anyways
+      return 0;
+    }
+  };
+
+  auto getNdRange = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    if (bit1) {
+      return 0;
+    } else if (bit2) {
+      return 1;
+    } else if (bit3) {
+      return 2;
+    } else if (bit4) {
+      return 3;
+    } else if (bit5) {
+      return 4;
+    } else {
+      return 5;
+    }
+  };
+
+  auto getNdFilter = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    if (bit1) {
+      return 1;
+    } else if (bit2) {
+      return 3;
+    } else if (bit3) {
+      return 2;
+    } else if (bit4) {
+      return 4;
+    } else if (bit5) {
+      return 5;
+    } else {
+      return 0;
+    }
+  };
+
+  idFcuShimLeftNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 24, false),
+                                              Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 26, true)));
+  idFcuShimLeftNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 25, true),
+                                              Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 27, false)));
+  idFcuShimLeftNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 11, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 12, true),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 13, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 14, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 15, false)));
+  idFcuShimLeftNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_left, 25, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_left, 26, true),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_left, 27, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_left, 28, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_left, 29, false)));
+  idFcuShimLeftNdFilterOption->set(getNdFilter(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 17, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 18, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 19, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 20, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 21, false)));
+
+  idFcuShimRightNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 24, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 26, true)));
+  idFcuShimRightNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 25, true),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 27, false)));
+  idFcuShimRightNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 11, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 12, true),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 13, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 14, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 15, false)));
+  idFcuShimRightNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_right, 25, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_right, 26, true),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_right, 27, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_right, 28, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_1_right, 29, false)));
+  idFcuShimRightNdFilterOption->set(getNdFilter(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 17, false),
+                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 18, false),
+                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 19, false),
+                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 20, false),
+                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 21, false)));
 
   return true;
 }

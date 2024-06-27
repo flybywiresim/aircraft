@@ -559,6 +559,18 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idLightsTest;
 
+  // These variables are legacy variables and are driven by a shim from the new FCU to the old vars.
+  std::unique_ptr<LocalVariable> idFcuShimLeftNavaid1Mode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNavaid2Mode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdMode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdRange;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdFilterOption;
+  std::unique_ptr<LocalVariable> idFcuShimRightNavaid1Mode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNavaid2Mode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdMode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdRange;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdFilterOption;
+
   std::unique_ptr<LocalVariable> idFcuSelectedHeading;
   std::unique_ptr<LocalVariable> idFcuSelectedAltitude;
   std::unique_ptr<LocalVariable> idFcuSelectedAirspeed;
@@ -657,6 +669,8 @@ class FlyByWireInterface {
   bool updateFmgc(double sampleTime, int fmgcIndex);
 
   bool updateFcu(double sampleTime);
+
+  bool updateFcuShim();
 
   bool updateFac(double sampleTime, int facIndex);
 
