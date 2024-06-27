@@ -1,16 +1,17 @@
 import React, { FC } from 'react';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export enum AileronSide {
-    Left,
-    Right,
+    Left = 'LEFT',
+    Right = 'RIGHT',
 }
 
 export enum AileronPosition {
-    Inboard,
-    Mid,
-    Outboard,
+    Inboard = 'INWARD',
+    Mid = 'MIDDLE',
+    Outboard = 'OUTWARD',
 }
 
 interface AileronProps {
@@ -18,11 +19,12 @@ interface AileronProps {
     y: number,
     side: AileronSide,
     position: AileronPosition,
+    onGround: boolean,
 }
 
-export const Aileron: FC<AileronProps> = ({ x, y, side, position }) => {
+export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) => {
     const deflectionInfoValid = true;
-    const aileronDeflection = 0;
+    const [aileronDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_AILERON_${side}_${position}_DEFLECTION`, 'number', 100);
 
     const powerSource1Avail = true;
     const powerSource2Avail = true;
@@ -55,8 +57,9 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position }) => {
             <VerticalDeflectionIndication
                 powerAvail={powerSource1Avail || powerSource2Avail}
                 deflectionInfoValid={deflectionInfoValid}
-                deflection={aileronDeflection}
+                deflection={aileronDeflection * MIN_VERTICAL_DEFLECTION}
                 showAileronDroopSymbol
+                onGround={onGround}
             />
 
             <ActuatorIndication

@@ -1,22 +1,24 @@
 import React, { FC } from 'react';
 import { EbhaActuatorIndication, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
+import { HORIZONTAL_MAX_DEFLECTION, HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
 import { RudderTrim } from './RudderTrim';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export enum RudderPosition {
-    Upper,
-    Lower,
+    Upper = 'UPPER',
+    Lower = 'LOWER',
 }
 
 interface RudderProps {
     x: number,
     y: number,
     position: RudderPosition,
+    onGround: boolean,
 }
 
-export const Rudder: FC<RudderProps> = ({ x, y, position }) => {
+export const Rudder: FC<RudderProps> = ({ x, y, position, onGround }) => {
     const deflectionInfoValid = true;
-    const rudderDeflection = 0;
+    const [rudderDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_${position}_RUDDER_DEFLECTION`, 'number', 100);
 
     const powerSource1Avail = true;
     const powerSource2Avail = true;
@@ -26,8 +28,9 @@ export const Rudder: FC<RudderProps> = ({ x, y, position }) => {
             <HorizontalDeflectionIndication
                 powerAvail={powerSource1Avail || powerSource2Avail}
                 deflectionInfoValid={deflectionInfoValid}
-                deflection={rudderDeflection}
+                deflection={rudderDeflection * HORIZONTAL_MAX_DEFLECTION}
                 position={position}
+                onGround={onGround}
             />
 
             <EbhaActuatorIndication

@@ -4,6 +4,7 @@ import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './Actuat
 interface PitchTrimProps {
     x: number,
     y: number,
+    onGround: boolean,
 }
 
 export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {

@@ -1,15 +1,16 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export enum ElevatorSide {
-    Left,
-    Right,
+    Left = 'LEFT',
+    Right = 'RIGHT',
 }
 
 export enum ElevatorPosition {
-    Inboard,
-    Outboard,
+    Inboard = 'INWARD',
+    Outboard = 'OUTWARD',
 }
 
 interface ElevatorProps {
@@ -17,11 +18,12 @@ interface ElevatorProps {
     y: number,
     side: ElevatorSide,
     position: ElevatorPosition,
+    onGround: boolean,
 }
 
-export const Elevator: FC<ElevatorProps> = ({ x, y, side, position }) => {
+export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) => {
+    const [elevatorDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side}_${position}_DEFLECTION`, 'number', 100);
     const deflectionInfoValid = true;
-    const elevatorDeflection = 0;
 
     const powerSource1Avail = true;
     const powerSource2Avail = true;
@@ -42,7 +44,8 @@ export const Elevator: FC<ElevatorProps> = ({ x, y, side, position }) => {
             <VerticalDeflectionIndication
                 powerAvail={powerSource1Avail || powerSource2Avail}
                 deflectionInfoValid={deflectionInfoValid}
-                deflection={elevatorDeflection}
+                deflection={elevatorDeflection * MIN_VERTICAL_DEFLECTION}
+                onGround={onGround}
             />
 
             <ActuatorIndication

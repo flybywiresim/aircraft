@@ -1,10 +1,11 @@
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 
 const SCALE_HEIGHT = -35;
 
 export enum SpoilerSide {
-    Left,
-    Right,
+    Left = 'LEFT',
+    Right = 'RIGHT',
 }
 
 interface SpoilerProps {
@@ -12,6 +13,7 @@ interface SpoilerProps {
     y: number,
     side: SpoilerSide,
     position: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8,
+    onGround: boolean,
 }
 
 export function deflectionToYOffset(deflection: number, maxDeflection: number): number {
@@ -20,12 +22,13 @@ export function deflectionToYOffset(deflection: number, maxDeflection: number): 
     return normalizedDeflection * SCALE_HEIGHT;
 }
 
-export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position }) => {
+export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) => {
     const deflectionInfoValid = true;
-    const spoilerDeflection = 0;
+
+    const [spoilerDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_SPOILER_${position}_${side}_DEFLECTION`, 'number', 100);
     const maxDeflection = position >= 3 ? 50 : 30;
 
-    const deflectionYVal = deflectionToYOffset(spoilerDeflection, maxDeflection);
+    const deflectionYVal = deflectionToYOffset(spoilerDeflection * 50, maxDeflection);
 
     const powerSource1Avail = true;
     const powerSource2Avail = true;
@@ -40,8 +43,6 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position }) => {
     } else {
         yOffset = -12;
     }
-
-    const onGround = true;
 
     const powerAvail = powerSource1Avail || powerSource2Avail;
 
