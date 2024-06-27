@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 interface PitchTrimProps {
     x: number,
@@ -11,14 +12,14 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
     const positionInfoValid = true;
     const thsPosition = 0;
 
-    const powerSource1Avail = true;
-    const powerSource2Avail = true;
+    const [hydGreenAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [hydYellowAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
     const thsJam = false;
 
     const [pitchIntegral, pitchFractional] = Math.abs(thsPosition).toFixed(1).split('.');
 
-    const hydraulicAvailableClass = powerSource1Avail || powerSource2Avail ? 'Green' : 'Amber';
-    const pitchTrimTitleClass = (powerSource1Avail || powerSource2Avail) && !thsJam ? 'White' : 'Amber';
+    const hydraulicAvailableClass = hydGreenAvailable || hydYellowAvailable ? 'Green' : 'Amber';
+    const pitchTrimTitleClass = (hydGreenAvailable || hydYellowAvailable) && !thsJam ? 'White' : 'Amber';
 
     return (
         <g id='ths' transform={`translate(${x} ${y})`}>
@@ -61,12 +62,14 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
                 y={24}
                 type={ActuatorType.Conventional}
                 powerSource={HydraulicPowerSource.Green}
+                powerSourceAvailable={hydGreenAvailable}
             />
             <ActuatorIndication
                 x={-63}
                 y={66}
                 type={ActuatorType.Conventional}
                 powerSource={HydraulicPowerSource.Yellow}
+                powerSourceAvailable={hydYellowAvailable}
             />
         </g>
     );

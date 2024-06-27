@@ -6,26 +6,33 @@ export enum ActuatorType {
 }
 
 export enum HydraulicPowerSource {
-    Green,
-    Yellow,
+    Green = 'GREEN',
+    Yellow = 'YELLOW',
 }
 
 export enum ElecPowerSource {
-    AcEss,
-    AcEha,
-    Ac1,
+    AcEss = 'AC_ESS',
+    AcEha  = 'AC_EHA',
+    Ac1 = 'AC_1',
+    Ac2 = 'AC_2',
+    Ac3 = 'AC_3',
+    Ac4 = 'AC_4',
+}
+
+export function powerSourceIsHydraulic(v: any): v is HydraulicPowerSource {
+    return (v === 'GREEN' || v === 'YELLOW');
 }
 
 interface ActuatorIndicationProps {
     x: number,
     y: number,
     type: ActuatorType,
-    powerSource: HydraulicPowerSource | ElecPowerSource
+    powerSource: HydraulicPowerSource | ElecPowerSource,
+    powerSourceAvailable: boolean,
 }
 
-export const ActuatorIndication: FC<ActuatorIndicationProps> = ({ x, y, type, powerSource }) => {
+export const ActuatorIndication: FC<ActuatorIndicationProps> = ({ x, y, type, powerSource, powerSourceAvailable }) => {
     const powerSourceInfoAvail = true;
-    const powerSourceFailed = false;
     const actuatorFailed = false;
 
     return (
@@ -35,7 +42,7 @@ export const ActuatorIndication: FC<ActuatorIndicationProps> = ({ x, y, type, po
 
             {type === ActuatorType.Conventional && (
                 <text
-                    className={`F26 ${powerSourceFailed ? 'Amber' : 'Green'} ${powerSourceInfoAvail ? '' : 'Hide'}`}
+                    className={`F26 ${!powerSourceAvailable ? 'Amber' : 'Green'} ${powerSourceInfoAvail ? '' : 'Hide'}`}
                     x='6'
                     y='23'
                 >
@@ -43,7 +50,7 @@ export const ActuatorIndication: FC<ActuatorIndicationProps> = ({ x, y, type, po
                 </text>
             )}
             {type === ActuatorType.EHA && (
-                <path className={`SW4 LineRound LineJoinRound ${powerSourceFailed ? 'Amber' : 'Green'}`} d='m17,6 l -7,7 h 7 l-7,7' />
+                <path className={`SW4 LineRound LineJoinRound ${!powerSourceAvailable ? 'Amber' : 'Green'}`} d='m17,6 l -7,7 h 7 l-7,7' />
             )}
         </g>
     );
@@ -54,11 +61,12 @@ interface EbhaActuatorIndicationProps {
     y: number,
     hydraulicPowerSource: HydraulicPowerSource,
     elecPowerSource: ElecPowerSource,
+    hydPowerAvailable: boolean,
+    elecPowerAvailable: boolean,
 }
 
-export const EbhaActuatorIndication: FC<EbhaActuatorIndicationProps> = ({ x, y, hydraulicPowerSource, elecPowerSource }) => {
+export const EbhaActuatorIndication: FC<EbhaActuatorIndicationProps> = ({ x, y, hydraulicPowerSource, elecPowerSource, hydPowerAvailable, elecPowerAvailable }) => {
     const powerSourceInfoAvail = true;
-    const powerSourceFailed = false;
     const actuatorHydPartFailed = false;
     const actuatorElecPartFailed = false;
 
@@ -69,14 +77,14 @@ export const EbhaActuatorIndication: FC<EbhaActuatorIndicationProps> = ({ x, y, 
             <path className={`Amber SW3 LineRound ${actuatorElecPartFailed ? '' : 'Hide'}`} d='m20,0 h 20 v 25 h-20' />
 
             <text
-                className={`F26 ${powerSourceFailed ? 'Amber' : 'Green'} ${powerSourceInfoAvail ? '' : 'Hide'}`}
+                className={`F26 ${!hydPowerAvailable ? 'Amber' : 'Green'} ${powerSourceInfoAvail ? '' : 'Hide'}`}
                 x='3'
                 y='23'
             >
                 {hydraulicPowerSource === HydraulicPowerSource.Green ? 'G' : 'Y'}
             </text>
 
-            <path className={`SW4 LineRound LineJoinRound ${powerSourceFailed ? 'Amber' : 'Green'}`} d='m34,6 l -7,7 h 7 l-7,7' />
+            <path className={`SW4 LineRound LineJoinRound ${!elecPowerAvailable ? 'Amber' : 'Green'}`} d='m34,6 l -7,7 h 7 l-7,7' />
 
         </g>
     );

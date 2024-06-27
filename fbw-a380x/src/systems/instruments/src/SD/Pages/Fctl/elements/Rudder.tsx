@@ -23,6 +23,12 @@ export const Rudder: FC<RudderProps> = ({ x, y, position, onGround }) => {
     const powerSource1Avail = true;
     const powerSource2Avail = true;
 
+    const [hydGreenAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [hydYellowAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [elecAc1Available]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_ELEC_AC_1_BUS_IS_POWERED`, 'boolean', 1000);
+    const [elecAc3Available]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_ELEC_AC_3_BUS_IS_POWERED`, 'boolean', 1000);
+    const [elecAcEssAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED`, 'boolean', 1000);
+
     return (
         <g id={`rudder-${position}`} transform={`translate(${x} ${y})`}>
             <HorizontalDeflectionIndication
@@ -38,12 +44,16 @@ export const Rudder: FC<RudderProps> = ({ x, y, position, onGround }) => {
                 y={position === RudderPosition.Upper ? -39 : -2}
                 hydraulicPowerSource={position === RudderPosition.Upper ? HydraulicPowerSource.Yellow : HydraulicPowerSource.Green}
                 elecPowerSource={ElecPowerSource.AcEss}
+                hydPowerAvailable={position === RudderPosition.Upper ? hydYellowAvailable : hydGreenAvailable}
+                elecPowerAvailable={elecAcEssAvailable}
             />
             <EbhaActuatorIndication
                 x={-60}
                 y={position === RudderPosition.Upper ? -8 : 30}
                 hydraulicPowerSource={position === RudderPosition.Upper ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow}
-                elecPowerSource={position === RudderPosition.Upper ? ElecPowerSource.AcEha : ElecPowerSource.Ac1}
+                elecPowerSource={position === RudderPosition.Upper ? ElecPowerSource.Ac3 : ElecPowerSource.Ac1}
+                hydPowerAvailable={position === RudderPosition.Upper ? hydGreenAvailable : hydYellowAvailable}
+                elecPowerAvailable={position === RudderPosition.Upper ? elecAc3Available : elecAc1Available}
             />
         </g>
     );

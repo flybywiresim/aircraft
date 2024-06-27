@@ -21,28 +21,35 @@ interface ElevatorProps {
     onGround: boolean,
 }
 
+function wardToBoard(ward: string) {
+    return ward.replace('WARD', 'BOARD');
+}
+
 export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) => {
     const [elevatorDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side}_${position}_DEFLECTION`, 'number', 100);
-    const deflectionInfoValid = true;
 
-    const powerSource1Avail = true;
-    const powerSource2Avail = true;
+    const hydSystem = side === ElevatorSide.Left ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow;
+    const deflectionInfoValid = true;
 
     let elecPowerSource: ElecPowerSource;
     let actuatorIndicationX: number;
     if ((side === ElevatorSide.Left && position === ElevatorPosition.Outboard)
         || (side === ElevatorSide.Right && position === ElevatorPosition.Inboard)) {
-        elecPowerSource = ElecPowerSource.AcEha;
+        elecPowerSource = ElecPowerSource.Ac3;
         actuatorIndicationX = -13;
     } else {
         elecPowerSource = ElecPowerSource.AcEss;
         actuatorIndicationX = -2;
     }
 
+
+    const [hydPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_${hydSystem}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [elecPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_ELEC_${elecPowerSource}_BUS_IS_POWERED`, 'boolean', 1000);
+
     return (
         <g id={`elevator-${side}-${position}`} transform={`translate(${x} ${y})`}>
             <VerticalDeflectionIndication
-                powerAvail={powerSource1Avail || powerSource2Avail}
+                powerAvail={hydPowerAvailable || elecPowerAvailable}
                 deflectionInfoValid={deflectionInfoValid}
                 deflection={elevatorDeflection * MIN_VERTICAL_DEFLECTION}
                 onGround={onGround}
@@ -52,13 +59,15 @@ export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) 
                 x={actuatorIndicationX}
                 y={131}
                 type={ActuatorType.Conventional}
-                powerSource={side === ElevatorSide.Left ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow}
+                powerSource={hydSystem}
+                powerSourceAvailable={hydPowerAvailable}
             />
             <ActuatorIndication
                 x={actuatorIndicationX}
                 y={161}
                 type={ActuatorType.EHA}
                 powerSource={elecPowerSource}
+                powerSourceAvailable={elecPowerAvailable}
             />
         </g>
     );

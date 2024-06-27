@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
+import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource, powerSourceIsHydraulic } from './ActuatorIndication';
 import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 
@@ -26,20 +26,17 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) =>
     const deflectionInfoValid = true;
     const [aileronDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_AILERON_${side}_${position}_DEFLECTION`, 'number', 100);
 
-    const powerSource1Avail = true;
-    const powerSource2Avail = true;
-
-    let acutator1PowerSource: HydraulicPowerSource;
-    let acutator2PowerSource: HydraulicPowerSource | ElecPowerSource;
+    let actuator1PowerSource: HydraulicPowerSource;
+    let actuator2PowerSource: HydraulicPowerSource | ElecPowerSource;
     if (position === AileronPosition.Outboard) {
-        acutator1PowerSource = HydraulicPowerSource.Green;
-        acutator2PowerSource = HydraulicPowerSource.Yellow;
+        actuator1PowerSource = HydraulicPowerSource.Green;
+        actuator2PowerSource = HydraulicPowerSource.Yellow;
     } else if (position === AileronPosition.Mid) {
-        acutator1PowerSource = HydraulicPowerSource.Yellow;
-        acutator2PowerSource = ElecPowerSource.AcEss;
+        actuator1PowerSource = HydraulicPowerSource.Yellow;
+        actuator2PowerSource = ElecPowerSource.AcEss;
     } else {
-        acutator1PowerSource = HydraulicPowerSource.Green;
-        acutator2PowerSource = ElecPowerSource.AcEha;
+        actuator1PowerSource = HydraulicPowerSource.Green;
+        actuator2PowerSource = ElecPowerSource.Ac3;
     }
 
     let actuatorIndicationX: number;
@@ -51,6 +48,9 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) =>
     } else {
         actuatorIndicationX = 2;
     }
+
+    const [powerSource1Avail]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_${actuator1PowerSource}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [powerSource2Avail]: [boolean, (v: boolean) => void] = useSimVar((powerSourceIsHydraulic(actuator2PowerSource)) ? `L:A32NX_HYD_${actuator2PowerSource}_SYSTEM_1_SECTION_PRESSURE_SWITCH` : `L:A32NX_ELEC_${actuator2PowerSource}_BUS_IS_POWERED`, 'boolean', 1000);
 
     return (
         <g id={`aileron-${side}-${position}`} transform={`translate(${x} ${y})`}>
@@ -66,13 +66,15 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) =>
                 x={actuatorIndicationX}
                 y={128}
                 type={ActuatorType.Conventional}
-                powerSource={acutator1PowerSource}
+                powerSource={actuator1PowerSource}
+                powerSourceAvailable={powerSource1Avail}
             />
             <ActuatorIndication
                 x={actuatorIndicationX}
                 y={159}
                 type={position === AileronPosition.Outboard ? ActuatorType.Conventional : ActuatorType.EHA}
-                powerSource={acutator2PowerSource}
+                powerSource={actuator2PowerSource}
+                powerSourceAvailable={powerSource2Avail}
             />
         </g>
     );
