@@ -42,7 +42,7 @@ interface LabelProps {
 
 const Label: FC<LabelProps> = ({ text, className, children }) => (
   <div className="flex flex-row items-center justify-between">
-    <p className={`text-theme-text mr-4 ${className}`}>{text}</p>
+    <p className={`mr-4 text-theme-text ${className}`}>{text}</p>
     {children}
   </div>
 );
@@ -668,7 +668,7 @@ export const TakeoffWidget = () => {
   };
 
   return (
-    <div className="h-content-section-reduced flex flex-row justify-between space-x-10 overflow-hidden">
+    <div className="flex h-content-section-reduced flex-row justify-between space-x-10 overflow-hidden">
       <div className="w-full">
         <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
@@ -678,7 +678,7 @@ export const TakeoffWidget = () => {
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
                       onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                      className={`text-theme-body border-theme-highlight bg-theme-highlight flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 px-8 py-2 outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
+                      className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:bg-theme-body hover:text-theme-highlight'}`}
                       type="button"
                     >
                       <CloudArrowDown size={26} />
@@ -1090,7 +1090,7 @@ export const TakeoffWidget = () => {
             <div className="mt-14 flex flex-row space-x-8">
               <button
                 onClick={handleCalculateTakeoff}
-                className={`bg-theme-highlight border-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 py-2 outline-none ${!areInputsValid() && 'pointer-events-none cursor-not-allowed opacity-50'}`}
+                className={`flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight bg-theme-highlight py-2 text-theme-body outline-none hover:bg-theme-body hover:text-theme-highlight ${!areInputsValid() && 'pointer-events-none cursor-not-allowed opacity-50'}`}
                 type="button"
                 disabled={!areInputsValid()}
               >
@@ -1099,7 +1099,7 @@ export const TakeoffWidget = () => {
               </button>
               <button
                 onClick={handleClearInputs}
-                className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 py-2 outline-none"
+                className="flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
                 type="button"
               >
                 <Trash size={26} />
