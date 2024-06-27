@@ -85,6 +85,9 @@ class FlyByWireInterface {
   bool autolandWarningLatch = false;
   bool autolandWarningTriggered = false;
 
+  double hDotFilterPrevU = 0;
+  double hDotFilterPrevY = 0;
+
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
@@ -535,6 +538,23 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
+  // FMGC legacy/shim Lvars
+  std::unique_ptr<LocalVariable> idAutopilotShimNosewheelDemand;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralMode;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralArmed;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalMode;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalArmed;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaExpediteModeActive;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaTripleClick;
+  std::unique_ptr<LocalVariable> idAutopilotShimAutolandWarning;
+  std::unique_ptr<LocalVariable> idAutopilotShimActiveAny;
+  std::unique_ptr<LocalVariable> idAutopilotShimActive_1;
+  std::unique_ptr<LocalVariable> idAutopilotShimActive_2;
+  std::unique_ptr<LocalVariable> idAutopilotShim_H_dot_radio;
+  std::unique_ptr<LocalVariable> idAutothrustShimStatus;
+  std::unique_ptr<LocalVariable> idAutothrustShimMode;
+  std::unique_ptr<LocalVariable> idAutothrustShimModeMessage;
+
   // FMGC discrete output Lvars
   std::unique_ptr<LocalVariable> idFmgcHealthy[2];
   std::unique_ptr<LocalVariable> idFmgcAthrEngaged[2];
@@ -667,6 +687,8 @@ class FlyByWireInterface {
   bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateFmgc(double sampleTime, int fmgcIndex);
+
+  bool updateFmgcShim(double sampleTime);
 
   bool updateFcu(double sampleTime);
 
