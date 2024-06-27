@@ -16,9 +16,12 @@
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
   - [Autoflight (ATA 22)](#autoflight-ata-22)
-    - [FMGC](#flight-management-and-guidance-computer-fmgc-flight-guidance-section)
-    - [FCU](#flight-control-unit-fcu)
-    - [FAC](#flight-augmentation-computer-fac)
+    - [Flight Management and Guidance Computer (FMGC, Flight Guidance Section)](#flight-management-and-guidance-computer-fmgc-flight-guidance-section)
+    - [Flight Control Unit (FCU)](#flight-control-unit-fcu)
+      - [FCU EFIS CP](#fcu-efis-cp)
+      - [FCU AFS CP](#fcu-afs-cp)
+      - [FCU Output Bus](#fcu-output-bus)
+    - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
@@ -27,6 +30,7 @@
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
   - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
+- [Deprecated](#deprecated)
 
 ## Uncategorized
 
@@ -4139,3 +4143,65 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - -1.0
         - 1.0
+
+# Deprecated
+
+- A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
+    - Enum
+    - Deprecated, provided by FCU shim
+    - Provides the selected NAVAIDs for display on the EFIS
+      Value | Meaning
+      --- | ---
+      0 | Off
+      1 | ADF
+      2 | VOR
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_MODE
+    - Enum
+    - Deprecated, provided by FCU shim
+    - Provides the selected navigation display mode for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | ROSE ILS
+      1 | ROSE VOR
+      2 | ROSE NAV
+      3 | ARC
+      4 | PLAN
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_RANGE
+    - Enum
+    - Deprecated, provided by FCU shim
+    - Provides the selected navigation display range for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | 10
+      1 | 20
+      2 | 40
+      3 | 80
+      4 | 160
+      5 | 320
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_OPTION
+    - Enum
+    - Deprecated, provided by FCU shim
+    - Provides the selected EFIS option/overlay
+      Value | Meaning
+      --- | ---
+      0 | None
+      1 | Constraints
+      2 | VOR/DMEs
+      3 | Waypoints
+      4 | NDBs
+      5 | Airports
+    - {side}
+        - L
+        - R
