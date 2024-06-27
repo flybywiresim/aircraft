@@ -51,8 +51,8 @@ enum class efis_filter_selection
 enum class efis_navaid_selection
   : int32_T {
   NONE = 0,
-  VOR,
-  ADF
+  ADF,
+  VOR
 };
 
 #endif
