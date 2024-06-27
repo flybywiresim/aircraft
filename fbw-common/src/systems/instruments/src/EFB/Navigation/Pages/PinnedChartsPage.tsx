@@ -10,8 +10,10 @@ import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
   ChartProvider,
+  ChartTabTypeIndices,
   editPinnedChart,
   editTabProperty,
+  LocalChartTabTypeIndices,
   NavigationTab,
   PinnedChart,
   removedPinnedChart,
@@ -88,11 +90,24 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
           className={`${showDelete && 'rounded-t-none'} bg-theme-accent relative flex flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 ${className}`}
           onClick={() => {
             dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
-            dispatch(editTabProperty({ tab, chartLinks: { light: '', dark: '' } }));
+            dispatch(
+              editTabProperty({
+                tab,
+                chartLinks: { light: pinnedChart.chartLinks?.light ?? '', dark: pinnedChart.chartLinks?.dark ?? '' },
+              }),
+            );
             dispatch(editTabProperty({ tab, chartName }));
             dispatch(editTabProperty({ tab, chartId }));
             dispatch(editTabProperty({ tab, searchQuery: title }));
-            dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
+            dispatch(
+              editTabProperty({
+                tab,
+                selectedTabType:
+                  provider === ChartProvider.NAVIGRAPH
+                    ? ChartTabTypeIndices[tabIndex]
+                    : LocalChartTabTypeIndices[tabIndex],
+              }),
+            );
             dispatch(editTabProperty({ tab, chartRotation: 0 }));
             dispatch(editTabProperty({ tab, currentPage: 1 }));
             dispatch(setBoundingBox(undefined));

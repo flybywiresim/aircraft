@@ -280,7 +280,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
   get tropopause() {
     const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   get tropopauseIsPilotEntered() {
@@ -319,7 +319,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get thrustReductionAltitude() {
     const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -346,7 +346,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get accelerationAltitude() {
     const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -373,7 +373,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get engineOutAccelerationAltitude() {
     const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -400,7 +400,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get missedThrustReductionAltitude() {
     const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -427,7 +427,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get missedAccelerationAltitude() {
     const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -454,7 +454,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get missedEngineOutAccelerationAltitude() {
     const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -479,7 +479,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get transitionAltitude() {
     const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, -1) : null;
+    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
   }
 
   /**
@@ -504,7 +504,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   get transitionLevel() {
     const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
-    return rawLevel !== null ? MathUtils.round(rawLevel, 0) : null;
+    return rawLevel !== null ? MathUtils.round(rawLevel, 1) : null;
   }
 
   /**

@@ -3948,9 +3948,10 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Set an ILS course
      * @param {number | null} course null to clear
+     * @param {boolean} backcourse Whether the course is a backcourse/backbeam.
      */
-    setIlsCourse(course) {
-        return this.navigation.getNavaidTuner().setIlsCourse(course);
+    setIlsCourse(course, backcourse = false) {
+        return this.navigation.getNavaidTuner().setIlsCourse(course, backcourse);
     }
 
     getAdfTuningData(index) {
