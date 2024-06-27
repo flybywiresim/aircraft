@@ -178,6 +178,22 @@ export const soundList: Record<string, LegacySound> = {
         name: 'new_100',
         length: 0.6,
     },
+    alt_90: {
+        name: '90_380',
+        length: 0.4,
+    },
+    alt_80: {
+        name: '80_380',
+        length: 0.4,
+    },
+    alt_70: {
+        name: '70_380',
+        length: 0.4,
+    },
+    alt_60: {
+        name: '60_380',
+        length: 0.4,
+    },
     alt_50: {
         name: '50_380',
         length: 0.4,
