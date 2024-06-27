@@ -39,8 +39,8 @@ const QuickSettingsButton: FC<QuickSettingsButtonProps> = forwardRef<HTMLButtonE
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`bg-theme-body text-theme-text hover:border-theme-highlight flex h-12 w-12
-                    items-center justify-center rounded-full transition duration-100 hover:border-4
+      className={`flex h-12 w-12 items-center justify-center rounded-full
+                    bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                     ${className ?? ''}`}
       {...rest}
     >
@@ -61,8 +61,8 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`bg-theme-body text-theme-text hover:border-theme-highlight flex flex-col
-                   items-center justify-center rounded-md transition duration-100 hover:border-4
+      className={`flex flex-col items-center justify-center rounded-md
+                   bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                    ${className ?? ''}`}
       style={{ width: '130px', height: '100px' }}
       {...rest}
@@ -199,12 +199,12 @@ export const QuickControlsPane = ({
   return (
     <>
       <div
-        className="bg-theme-body absolute left-0 top-0 z-30 h-screen w-screen opacity-70"
+        className="absolute left-0 top-0 z-30 h-screen w-screen bg-theme-body opacity-70"
         onMouseDown={() => setShowQuickControlsPane(false)}
       />
 
       <div
-        className="border-theme-secondary bg-theme-accent absolute z-40 rounded-md border p-6 transition duration-100"
+        className="absolute z-40 rounded-md border border-theme-secondary bg-theme-accent p-6 transition duration-100"
         style={{ top: '40px', right: '50px', width: '620px' }}
       >
         <div className="mb-5 flex flex-row items-center justify-end">
@@ -265,7 +265,7 @@ export const QuickControlsPane = ({
         <div className="flex flex-row items-center justify-between">
           <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
             <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-              <div className="text-theme-text mr-4 flex w-[80px] flex-row items-center">
+              <div className="mr-4 flex w-[80px] flex-row items-center text-theme-text">
                 <BrightnessHighFill size={24} />
                 <span className="pointer-events-none ml-2 text-inherit">
                   {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
@@ -293,9 +293,9 @@ export const QuickControlsPane = ({
             <button
               type="button"
               onClick={handleAutoBrightness}
-              className={`bg-theme-body text-theme-text hover:border-theme-highlight ml-4 flex
-                                                    items-center justify-center rounded-md transition
-                                                    duration-100 hover:border-4 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+              className={`ml-4 flex items-center justify-center rounded-md
+                                                    bg-theme-body text-theme-text transition duration-100
+                                                    hover:border-4 hover:border-theme-highlight ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
               style={{ width: '80px', height: '50px' }}
             >
               <BrightnessHigh size={24} />

@@ -2056,6 +2056,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates whether to trigger a step deleted message on the MCDU
 
+- `A32NX_FM{number}_BACKBEAM_SELECTED`
+    - Bool
+    - Indicates to the FG that a localiser back beam is tuned.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

@@ -69,8 +69,8 @@ export const SelectInput = (props: SelectInputProps) => {
   return (
     <div className="flex flex-row">
       <div
-        className={`border-theme-accent relative ${props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} rounded-md border-2 ${props.className} ${' '}
-                ${showDropdown && (props.dropdownOnTop ? 'border-t-theme-body rounded-t-none' : 'border-b-theme-body rounded-b-none')}`}
+        className={`relative ${props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} rounded-md border-2 border-theme-accent ${props.className} ${' '}
+                ${showDropdown && (props.dropdownOnTop ? 'rounded-t-none border-t-theme-body' : 'rounded-b-none border-b-theme-body')}`}
         onClick={handleToggleDropdown}
       >
         <div className="relative flex px-3 py-1.5">
@@ -82,7 +82,7 @@ export const SelectInput = (props: SelectInputProps) => {
         </div>
         {showDropdown && (
           <div
-            className={`border-theme-accent bg-theme-body absolute -inset-x-0.5 z-10 flex overflow-hidden border-2 pb-2 pr-2 ${' '}
+            className={`absolute -inset-x-0.5 z-10 flex overflow-hidden border-2 border-theme-accent bg-theme-body pb-2 pr-2 ${' '}
                         ${
                           props.dropdownOnTop
                             ? 'top-0 -translate-y-full flex-col-reverse rounded-t-md border-b-0'
@@ -97,7 +97,7 @@ export const SelectInput = (props: SelectInputProps) => {
                   (option.tooltip ? (
                     <TooltipWrapper key={option.value} text={option.tooltip}>
                       <div
-                        className="hover:bg-theme-highlight/5 hover:text-theme-body px-3 py-1.5 transition duration-300"
+                        className="hover:bg-theme-highlight/5 px-3 py-1.5 transition duration-300 hover:text-theme-body"
                         onClick={() => onOptionClicked(option)}
                       >
                         {option.displayValue}
@@ -106,7 +106,7 @@ export const SelectInput = (props: SelectInputProps) => {
                   ) : (
                     <div
                       key={option.value}
-                      className="hover:bg-theme-highlight/5 hover:text-theme-body px-3 py-1.5 transition duration-300"
+                      className="hover:bg-theme-highlight/5 px-3 py-1.5 transition duration-300 hover:text-theme-body"
                       onClick={() => onOptionClicked(option)}
                     >
                       {option.displayValue}

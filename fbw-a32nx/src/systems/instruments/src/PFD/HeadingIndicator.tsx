@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   HEvent,
@@ -69,7 +70,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
 
   private ILSCourse = Subject.create(0);
 
-  private lsPressed = Subject.create(false);
+  private lsPressed = ConsumerSubject.create(null, false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -98,11 +99,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
         this.ILSCourse.set(n);
       });
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        this.lsPressed.set(!this.lsPressed.get());
-      }
-    });
+    this.lsPressed.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
   }
 
   render(): VNode {

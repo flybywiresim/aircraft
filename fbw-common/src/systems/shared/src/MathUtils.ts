@@ -132,6 +132,22 @@ export class MathUtils {
   }
 
   /**
+   * Corrects an MSFS localiser radial error to give the correct deviations on the back beam.
+   * @param radialError Radial error from simvar NAV RADIAL ERROR in degrees.
+   * @returns The corrected localiser angular deviation in degrees.
+   */
+  public static correctMsfsLocaliserError(radialError: number): number {
+    const normalisedError = MathUtils.normalise180(radialError);
+    if (normalisedError < -90) {
+      return -180 - normalisedError;
+    }
+    if (normalisedError > 90) {
+      return 180 - normalisedError;
+    }
+    return normalisedError;
+  }
+
+  /**
    * Gets the smallest angle between two angles
    * @param angle1 First angle in degrees
    * @param angle2 Second angle in degrees
@@ -527,12 +543,12 @@ export class MathUtils {
   }
 
   /**
-   * Returns a value rounded to the given number of decimal precission.
-   * @param value
-   * @param decimalPrecision
+   * Round a number to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
    */
-  public static round(value: number, decimalPrecision: number) {
-    const shift = 10 ** decimalPrecision;
-    return Math.round((value + Number.EPSILON) * shift) / shift;
+  public static round(value: number, quantum = 1): number {
+    return Math.round(value / quantum) * quantum;
   }
 }
