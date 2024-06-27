@@ -12,6 +12,8 @@ export * from './FmMessages';
 export * from './GenericDataListenerSync';
 export * from './MathUtils';
 export * from './PathVector';
+export * from './RadioTypes';
+export * from './RadioUtils';
 export * from './RunwayUtils';
 export * from './UpdateThrottler';
 export * from './UniversalConfigProvider';

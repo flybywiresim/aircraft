@@ -15,4 +15,14 @@
             </Extend>
         </Presets>
     </InputEvent>
+
+    <InputEvent ID="A380X_OVHD_RMP_3">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A380X_OVHD_RMP_3</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
 </ModelBehaviors>
