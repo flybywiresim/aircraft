@@ -33,7 +33,7 @@ import {
   initialState,
   setTakeoffValues,
 } from '../../Store/features/performance';
-import { PerformanceCalculatorContext } from '../../AircraftContext';
+import { AircraftContext } from '../../AircraftContext';
 
 interface LabelProps {
   className?: string;
@@ -53,7 +53,7 @@ export const TakeoffWidget = () => {
 
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(PerformanceCalculatorContext);
+  const calculators = useContext(AircraftContext).performanceCalculators;
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
   const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');

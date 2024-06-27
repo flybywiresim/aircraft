@@ -24,7 +24,7 @@ import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
-import { PerformanceCalculatorContext } from '../../AircraftContext';
+import { AircraftContext } from '../../AircraftContext';
 
 interface OutputDisplayProps {
   label: string;
@@ -57,7 +57,7 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(PerformanceCalculatorContext);
+  const calculators = useContext(AircraftContext).performanceCalculators;
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');

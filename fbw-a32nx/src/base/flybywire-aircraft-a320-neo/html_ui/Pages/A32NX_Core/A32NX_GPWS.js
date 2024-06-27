@@ -2,7 +2,7 @@
 // Please do not edit here unless copying from there.
 
 /** Bit flags for the radio auto call outs (for CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS). */
-const RadioAutoCallOutFlags = Object.freeze({
+const A32NXRadioAutoCallOutFlags = Object.freeze({
     TwoThousandFiveHundred: 1 << 0,
     TwentyFiveHundred: 1 << 1,
     TwoThousand: 1 << 2,
@@ -22,9 +22,9 @@ const RadioAutoCallOutFlags = Object.freeze({
 });
 
 /** The default (Airbus basic configuration) radio altitude auto call outs. */
-const DEFAULT_RADIO_AUTO_CALL_OUTS = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.OneThousand | RadioAutoCallOutFlags.FourHundred
-    | RadioAutoCallOutFlags.Fifty | RadioAutoCallOutFlags.Forty | RadioAutoCallOutFlags.Thirty | RadioAutoCallOutFlags.Twenty
-    | RadioAutoCallOutFlags.Ten | RadioAutoCallOutFlags.Five;
+const DEFAULT_RADIO_AUTO_CALL_OUTS = A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred | A32NXRadioAutoCallOutFlags.OneThousand | A32NXRadioAutoCallOutFlags.FourHundred
+    | A32NXRadioAutoCallOutFlags.Fifty | A32NXRadioAutoCallOutFlags.Forty | A32NXRadioAutoCallOutFlags.Thirty | A32NXRadioAutoCallOutFlags.Twenty
+    | A32NXRadioAutoCallOutFlags.Ten | A32NXRadioAutoCallOutFlags.Five;
 
 class A32NX_GPWS {
     constructor(_core) {
@@ -477,7 +477,7 @@ class A32NX_GPWS {
                 if (radioAlt > 12) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 6) {
-                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & RadioAutoCallOutFlags.Five)) {
+                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Five)) {
                         this.core.soundManager.tryPlaySound(soundList.alt_5);
                     }
                     this.AltCallState.action("down");
@@ -487,7 +487,7 @@ class A32NX_GPWS {
                 if (radioAlt > 22) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 12) {
-                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & RadioAutoCallOutFlags.Ten)) {
+                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Ten)) {
                         this.core.soundManager.tryPlaySound(soundList.alt_10);
                     }
                     this.AltCallState.action("down");
@@ -497,7 +497,7 @@ class A32NX_GPWS {
                 if (radioAlt > 32) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 22) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Twenty) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Twenty) {
                         this.core.soundManager.tryPlaySound(soundList.alt_20);
                     }
                     this.AltCallState.action("down");
@@ -507,7 +507,7 @@ class A32NX_GPWS {
                 if (radioAlt > 42) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 32) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Thirty) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Thirty) {
                         this.core.soundManager.tryPlaySound(soundList.alt_30);
                     }
                     this.AltCallState.action("down");
@@ -517,7 +517,7 @@ class A32NX_GPWS {
                 if (radioAlt > 53) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 42) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Forty) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Forty) {
                         this.core.soundManager.tryPlaySound(soundList.alt_40);
                     }
                     this.AltCallState.action("down");
@@ -527,7 +527,7 @@ class A32NX_GPWS {
                 if (radioAlt > 110) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 53) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Fifty) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.Fifty) {
                         this.core.soundManager.tryPlaySound(soundList.alt_50);
                     }
                     this.AltCallState.action("down");
@@ -537,7 +537,7 @@ class A32NX_GPWS {
                 if (radioAlt > 210) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 110) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.OneHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.OneHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_100);
                     }
                     this.AltCallState.action("down");
@@ -547,7 +547,7 @@ class A32NX_GPWS {
                 if (radioAlt > 310) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 210) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.TwoHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_200);
                     }
                     this.AltCallState.action("down");
@@ -557,7 +557,7 @@ class A32NX_GPWS {
                 if (radioAlt > 410) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 310) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.ThreeHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.ThreeHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_300);
                     }
                     this.AltCallState.action("down");
@@ -567,7 +567,7 @@ class A32NX_GPWS {
                 if (radioAlt > 513) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 410) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.FourHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.FourHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_400);
                     }
                     this.AltCallState.action("down");
@@ -577,7 +577,7 @@ class A32NX_GPWS {
                 if (radioAlt > 1020) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 513) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.FiveHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.FiveHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_500);
                     }
                     this.AltCallState.action("down");
@@ -587,7 +587,7 @@ class A32NX_GPWS {
                 if (radioAlt > 2020) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 1020) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.OneThousand) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.OneThousand) {
                         this.core.soundManager.tryPlaySound(soundList.alt_1000);
                     }
                     this.AltCallState.action("down");
@@ -597,7 +597,7 @@ class A32NX_GPWS {
                 if (radioAlt > 2530) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 2020) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousand) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.TwoThousand) {
                         this.core.soundManager.tryPlaySound(soundList.alt_2000);
                     }
                     this.AltCallState.action("down");
@@ -605,9 +605,9 @@ class A32NX_GPWS {
                 break;
             case "over2500":
                 if (radioAlt <= 2530) {
-                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousandFiveHundred) {
+                    if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_2500);
-                    } else if (this.autoCallOutPins & RadioAutoCallOutFlags.TwentyFiveHundred) {
+                    } else if (this.autoCallOutPins & A32NXRadioAutoCallOutFlags.TwentyFiveHundred) {
                         this.core.soundManager.tryPlaySound(soundList.alt_2500b);
                     }
                     this.AltCallState.action("down");

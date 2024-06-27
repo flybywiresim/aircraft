@@ -9,10 +9,10 @@ import { TODCalculator } from '../TODCalculator/TODCalculator';
 import { LandingWidget } from './Widgets/LandingWidget';
 import { TakeoffWidget } from './Widgets/TakeoffWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
-import { PerformanceCalculatorContext } from '../AircraftContext';
+import { AircraftContext } from '../AircraftContext';
 
 export const Performance = () => {
-  const calculators = useContext(PerformanceCalculatorContext);
+  const calculators = useContext(AircraftContext).performanceCalculators;
 
   const tabs: PageLink[] = [
     calculators.takeoff

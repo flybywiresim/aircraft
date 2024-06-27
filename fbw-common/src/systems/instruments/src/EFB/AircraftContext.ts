@@ -9,7 +9,22 @@ interface PerformanceCalculators {
   takeoff: TakeoffPerformanceCalculator | null;
   landing: LandingPerformanceCalculator | null;
 }
-export const PerformanceCalculatorContext = createContext<PerformanceCalculators>({
-  takeoff: null,
-  landing: null,
+
+interface SettingsPages {
+  autoCalloutsPage: React.ComponentType<any>;
+}
+
+interface AircraftEfbContext {
+  performanceCalculators: PerformanceCalculators;
+  settingsPages: SettingsPages;
+}
+
+export const AircraftContext = createContext<AircraftEfbContext>({
+  performanceCalculators: {
+    takeoff: null,
+    landing: null,
+  },
+  settingsPages: {
+    autoCalloutsPage: null,
+  },
 });
