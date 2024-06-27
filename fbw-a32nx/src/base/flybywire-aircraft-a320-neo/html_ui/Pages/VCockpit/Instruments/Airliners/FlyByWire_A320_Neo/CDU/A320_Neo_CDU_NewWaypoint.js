@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUNewWaypoint {
     /**
      * Callback when a new waypoint has been created, or aborted
@@ -7,7 +11,6 @@ class CDUNewWaypoint {
      */
     /**
      * New Waypoint Page
-     * @param {A320_CDU_MainDisplay} mcdu
      * @param {NewWaypointDoneCallback} doneCallback callback when the user is finished with the page
      * @param {any} _inProgressData private data used by the page
      */
@@ -36,21 +39,21 @@ class CDUNewWaypoint {
 
         switch (_inProgressData.type) {
             case StoredWaypointType.LatLon:
-                template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}`;
+                template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.location)}{end}`;
                 template[5].length = 0;
                 template[6].length = 0;
                 template[7].length = 0;
                 template[8].length = 0;
                 break;
             case StoredWaypointType.Pbd:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.location)}{end}{end}`;
                 template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
                 template[6][0] = `{cyan}${_inProgressData.place.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing)}/${_inProgressData.distance.toFixed(1)}{end}`;
                 template[7].length = 0;
                 template[8].length = 0;
                 break;
             case StoredWaypointType.Pbx:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.location)}{end}{end}`;
                 template[5].length = 0;
                 template[6].length = 0;
                 template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
@@ -89,13 +92,13 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isLatLonFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                 try {
-                    const coordinates = mcdu.parseLatLon(value);
+                    const coordinates = Fmgc.WaypointEntryUtils.parseLatLon(value);
                     mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                         ident: _inProgressData.ident,
                         type: StoredWaypointType.LatLon,
-                        wp: mcdu.dataManager.createLatLonWaypoint(coordinates, false, _inProgressData.ident),
+                        wp: mcdu.dataManager.createLatLonWaypoint(coordinates, false, _inProgressData.ident).waypoint,
                         coordinates,
                     }));
                 } catch (err) {
@@ -126,13 +129,13 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isPbdFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isPbdFormat(value)) {
                 try {
-                    mcdu.parsePbd(value).then(([place, bearing, distance]) => {
+                    Fmgc.WaypointEntryUtils.parsePbd(mcdu, value).then(([place, bearing, distance]) => {
                         mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                             ident: _inProgressData.ident,
                             type: StoredWaypointType.Pbd,
-                            wp: mcdu.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, false, _inProgressData.ident),
+                            wp: mcdu.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, false, _inProgressData.ident).waypoint,
                             place,
                             bearing,
                             distance,
@@ -166,13 +169,13 @@ class CDUNewWaypoint {
                 return scratchpadCallback();
             }
 
-            if (mcdu.isPbxFormat(value)) {
+            if (Fmgc.WaypointEntryUtils.isPbxFormat(value)) {
                 try {
-                    mcdu.parsePbx(value).then(([place1, bearing1, place2, bearing2]) => {
+                    Fmgc.WaypointEntryUtils.parsePbx(mcdu, value).then(([place1, bearing1, place2, bearing2]) => {
                         mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                             ident: _inProgressData.ident,
                             type: StoredWaypointType.Pbx,
-                            wp: mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, false, _inProgressData.ident),
+                            wp: mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, false, _inProgressData.ident).waypoint,
                             place1,
                             bearing1,
                             place2,
@@ -195,16 +198,16 @@ class CDUNewWaypoint {
 
         if (_inProgressData !== undefined) {
             mcdu.onRightInput[5] = () => {
-                let wp;
+                let stored;
                 switch (_inProgressData.type) {
                     case StoredWaypointType.LatLon:
-                        wp = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
+                        stored = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
                         break;
                     case StoredWaypointType.Pbd:
-                        wp = mcdu.dataManager.createPlaceBearingDistWaypoint(_inProgressData.place, _inProgressData.bearing, _inProgressData.distance, true, _inProgressData.ident);
+                        stored = mcdu.dataManager.createPlaceBearingDistWaypoint(_inProgressData.place, _inProgressData.bearing, _inProgressData.distance, true, _inProgressData.ident);
                         break;
                     case StoredWaypointType.Pbx:
-                        wp = mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(_inProgressData.place1, _inProgressData.bearing1, _inProgressData.place2, _inProgressData.bearing2, true, _inProgressData.ident);
+                        stored = mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(_inProgressData.place1, _inProgressData.bearing1, _inProgressData.place2, _inProgressData.bearing2, true, _inProgressData.ident);
                         break;
                     default:
                         mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
@@ -212,9 +215,9 @@ class CDUNewWaypoint {
                 }
                 mcdu.requestCall(() => {
                     if (doneCallback !== undefined) {
-                        doneCallback(wp);
+                        doneCallback(stored.waypoint);
                     } else {
-                        CDUPilotsWaypoint.ShowPage(mcdu, wp.additionalData.storedIndex);
+                        CDUPilotsWaypoint.ShowPage(mcdu, stored.storedIndex);
                     }
                 });
             };

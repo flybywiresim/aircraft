@@ -27,23 +27,23 @@ class CDUPilotsWaypoint {
             ['', `{${confirmDeleteAll ? 'amber' : 'cyan'}}DELETE ALL${confirmDeleteAll ? '*' : '}'}{end}`]
         ];
 
-        const wp = mcdu.dataManager.storedWaypoints[index];
-        if (wp !== undefined) {
-            template[2][0] = `{green}${wp.ident}{end}`;
+        const storedWp = mcdu.dataManager.storedWaypoints[index];
+        if (storedWp !== undefined) {
+            template[2][0] = `{green}${storedWp.waypoint.ident}{end}`;
 
-            switch (wp.additionalData.storedType) {
+            switch (storedWp.type) {
                 case StoredWaypointType.LatLon:
-                    template[4][0] = `{green}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}`;
+                    template[4][0] = `{green}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}`;
                     break;
                 case StoredWaypointType.Pbd:
-                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
+                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
                     template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-                    template[6][0] = `{green}${wp.additionalData.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbdBearing)}/${wp.additionalData.pbdDistance.toFixed(1)}{end}`;
+                    template[6][0] = `{green}${storedWp.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbdBearing)}/${storedWp.pbdDistance.toFixed(1)}{end}`;
                     break;
                 case StoredWaypointType.Pbx:
-                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
+                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
                     template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-                    template[8][0] = `{green}${wp.additionalData.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing1)}\xa0/${wp.additionalData.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing2)}{end}`;
+                    template[8][0] = `{green}${storedWp.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbxBearing1)}\xa0/${storedWp.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbxBearing2)}{end}`;
                     break;
                 default:
             }
@@ -54,14 +54,15 @@ class CDUPilotsWaypoint {
         // delete the waypoint on ident LSK
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
-                const deleted = mcdu.dataManager.deleteStoredWaypoint(index);
-                if (!deleted) {
-                    mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
-                } else if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
-                    CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
-                } else {
-                    CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex());
-                }
+                mcdu.dataManager.deleteStoredWaypoint(index).then((deleted) => {
+                    if (!deleted) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
+                    } else if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
+                        CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
+                    } else {
+                        CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex());
+                    }
+                });
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 scratchpadCallback();
@@ -79,11 +80,13 @@ class CDUPilotsWaypoint {
         // DELETE ALL
         mcdu.onRightInput[5] = () => {
             if (confirmDeleteAll) {
-                const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
-                if (!allDeleted) {
-                    mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
-                }
-                CDUPilotsWaypoint.ShowPage(mcdu, index);
+                mcdu.dataManager.deleteAllStoredWaypoints().then((allDeleted) => {
+                    if (!allDeleted) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
+                    }
+
+                    CDUPilotsWaypoint.ShowPage(mcdu, index);
+                });
             } else {
                 CDUPilotsWaypoint.ShowPage(mcdu, index, true);
             }
@@ -112,7 +115,7 @@ class CDUPilotsWaypoint {
     }
 
     static formatBearing(wp, bearing) {
-        const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+        const magVar = Facilities.getMagVar(wp.location.lat, wp.location.long);
         return `${A32NX_Util.trueToMagnetic(bearing, magVar).toFixed(0).padStart(3, '0')}°`;
     }
 }

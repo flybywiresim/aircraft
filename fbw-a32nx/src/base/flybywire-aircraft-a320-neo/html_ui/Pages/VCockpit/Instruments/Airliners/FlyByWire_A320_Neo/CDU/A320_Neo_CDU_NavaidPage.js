@@ -21,7 +21,7 @@ const VorType = Object.freeze({
 class CDUNavaidPage {
     /**
      * @param {A320_Neo_CDU_MainDisplay} mcdu MCDU
-     * @param {RawVor | RawNdb | undefined} facility MSFS facility to show
+     * @param {import('msfs-navdata').VhfNavaid | import('msfs-navdata').NdbNavaid | undefined} facility MSFS facility to show
      * @param {any} returnPage Callback for the RETURN LSK... only for use by SELECTED NAVAIDS
      */
     static ShowPage(mcdu, facility, returnPage) {
@@ -48,10 +48,10 @@ class CDUNavaidPage {
         ];
 
         if (facility) {
-            template[2][0] = `{cyan}${WayPoint.formatIdentFromIcao(facility.icao)}{end}`;
+            template[2][0] = `{cyan}${WayPoint.formatIdentFromIcao(facility.databaseId)}{end}`;
 
             template[3][0] = '\xa0\xa0\xa0\xa0LAT/LONG';
-            template[4][0] = `${new LatLong(facility.lat, facility.lon).toShortDegreeString()}[color]green`;
+            template[4][0] = `${new LatLong(facility.location.lat, facility.location.long).toShortDegreeString()}[color]green`;
 
             template[5][0] = '\xa0FREQ';
             template[6][0] = `{green}${CDUNavaidPage.formatFrequency(facility)}{end}`;
@@ -71,9 +71,9 @@ class CDUNavaidPage {
         mcdu.setTemplate(template);
 
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-            mcdu.getOrSelectWaypointByIdent(value, res => {
+            mcdu.getOrSelectNavaidsByIdent(value, res => {
                 if (res) {
-                    CDUNavaidPage.ShowPage(mcdu, res.additionalData.facility, returnPage);
+                    CDUNavaidPage.ShowPage(mcdu, res, returnPage);
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
@@ -83,31 +83,31 @@ class CDUNavaidPage {
     }
 
     /**
-     * @param {RawNdb | RawVor} facility Navaid
+     * @param {import('msfs-navdata').NdbNavaid | import('msfs-navdata').VhfNavaid} facility Navaid
      * @returns {string} formatted frequency
      */
     static formatFrequency(facility) {
-        if (facility.__Type === 'JS_FacilityNDB') {
-            return facility.freqMHz.toFixed(0);
+        if (facility.subSectionCode === 1) {
+            return facility.frequency.toFixed(0);
         }
-        return facility.freqMHz.toFixed(2);
+        return facility.frequency.toFixed(2);
     }
 
     /**
      * Format the figure of merit if possible
-     * @param {RawNdb | RawVor} facility Navaid
+     * @param {import('msfs-navdata').NdbNavaid | import('msfs-navdata').VhfNavaid} facility Navaid
      * @returns {string} formatted FoM or blank
      */
     static formatFigureOfMerit(facility) {
-        if (facility.__Type === 'JS_FacilityVOR' && facility.type === VorType.DME || facility.type === VorType.VOR || facility.type === VorType.VORDME || facility.type === VorType.VORTAC) {
-            switch (facility.vorClass) {
-                case VorClass.HighAlttitude:
+        if (facility.subSectionCode === 0 /* VhfNavaid */ && facility.type === 8 /* Dme */ || facility.type === 2 /* Vor */ || facility.type === 4 /* VorDme */ || facility.type === 32 /* Vortac */) {
+            switch (facility.class) {
+                case 8 /* HighAlt */:
                     return '3';
-                case VorClass.Unknown:
+                case 1 /* Unknown */:
                     return '2';
-                case VorClass.LowAltitude:
+                case 4 /* LowAlt */:
                     return '1';
-                case VorClass.Terminal:
+                case 2 /* Terminal */:
                     return '0';
             }
         }

@@ -95,6 +95,14 @@
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
 1. [EFB] Added simrate indicator to status bar - @2hwk (2Cas)
 1. [EFB] Added simrate and pause on TOD controls to control center - @2hwk (2Cas)
+1. [FMS] Implement missed approach route - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
+1. [AUTOFLIGHT] Implement NAV IN GA - @lukecologne (luke)
+1. [FMS] Implement ability to program alternate routing - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
+1. [FMS] Fix stringing logic between SID/STAR and enroute - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
+1. [FMS] Improve altitude/speed constraint robustness on procedures - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
+1. [ISIS] Fixed localiser deviation when on the back beam - @tracernz (Mike)
+1. [FMS/AP/ND/PFD] Added support for localiser back course approaches - @tracer (Mike)
+1. [ND] Fix color of navaids at the active leg termination - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
