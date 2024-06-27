@@ -66,6 +66,7 @@ export const TakeoffWidget = () => {
     icao,
     windDirection,
     windMagnitude,
+    windEntry,
     weight,
     takeoffCg,
     runwayBearing,
@@ -85,8 +86,6 @@ export const TakeoffWidget = () => {
     runwayCondition,
     cg,
   } = useAppSelector((state) => state.performance.takeoff);
-
-  const [windInput, setWindInput] = useState('');
 
   const selectedRunway =
     selectedRunwayIndex !== undefined && selectedRunwayIndex >= 0 ? availableRunways[selectedRunwayIndex] : undefined;
@@ -266,16 +265,17 @@ export const TakeoffWidget = () => {
     try {
       const magvar = await getAirportMagVar(icao);
       const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
 
       dispatch(
         setTakeoffValues({
           windDirection,
           windMagnitude: parsedMetar.wind.speed_kts,
+          windEntry,
           oat: parsedMetar.temperature.celsius,
           qnh: parsedMetar.barometer.mb,
         }),
       );
-      setWindInput(`${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`);
     } catch (err) {
       toast.error('Could not fetch airport');
     }
@@ -298,7 +298,6 @@ export const TakeoffWidget = () => {
 
   const handleICAOChange = (icao: string) => {
     dispatch(clearTakeoffValues());
-    setWindInput('');
 
     dispatch(setTakeoffValues({ icao }));
     if (isValidIcao(icao)) {
@@ -493,7 +492,6 @@ export const TakeoffWidget = () => {
 
   const handleClearInputs = (): void => {
     dispatch(clearTakeoffValues());
-    setWindInput('');
   };
 
   const isWindMagnitudeOnly = (input: string): boolean => {
@@ -510,7 +508,7 @@ export const TakeoffWidget = () => {
     clearResult();
 
     if (input === '0') {
-      dispatch(setTakeoffValues({ windMagnitude: 0, windDirection: undefined }));
+      dispatch(setTakeoffValues({ windMagnitude: 0, windDirection: undefined, windEntry: input }));
       return;
     }
 
@@ -520,12 +518,12 @@ export const TakeoffWidget = () => {
       switch (magnitudeOnlyMatch[1]) {
         case 'TL':
         case '-':
-          dispatch(setTakeoffValues({ windMagnitude: -windMagnitude, windDirection: undefined }));
+          dispatch(setTakeoffValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
           return;
         case 'HD':
         case '+':
         default:
-          dispatch(setTakeoffValues({ windMagnitude, windDirection: undefined }));
+          dispatch(setTakeoffValues({ windMagnitude, windDirection: undefined, windEntry: input }));
           return;
       }
     } else if (isWindMagnitudeAndDirection(input)) {
@@ -534,13 +532,12 @@ export const TakeoffWidget = () => {
         setTakeoffValues({
           windDirection: parseInt(directionMagnitudeMatch[1]),
           windMagnitude: parseFloat(directionMagnitudeMatch[2]),
+          windEntry: input,
         }),
       );
-      setWindInput(`${directionMagnitudeMatch[1].padStart(3, '0')}/${directionMagnitudeMatch[2]}`);
       return;
     }
-
-    dispatch(setTakeoffValues({ windMagnitude: undefined, windDirection: undefined }));
+    dispatch(setTakeoffValues({ windMagnitude: undefined, windDirection: undefined, windEntry: input }));
   };
 
   const areInputsValid = (): boolean =>
@@ -572,6 +569,7 @@ export const TakeoffWidget = () => {
         const newRunway = runways[runwayIndex];
         const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
         const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+        const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
 
         dispatch(
           setTakeoffValues({
@@ -585,12 +583,11 @@ export const TakeoffWidget = () => {
             weight: weightKgs,
             windDirection,
             windMagnitude: parsedMetar.wind.speed_kts,
+            windEntry,
             oat: parsedMetar.temperature.celsius,
             qnh: parsedMetar.barometer.mb,
           }),
         );
-
-        setWindInput(`${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`);
       } else {
         throw new Error('Failed to import OFP');
       }
@@ -864,7 +861,7 @@ export const TakeoffWidget = () => {
                 <Label text={t('Performance.Takeoff.Wind')}>
                   <SimpleInput
                     className="w-60"
-                    value={windInput}
+                    value={windEntry}
                     placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}
                     onChange={handleWindChange}
                     uppercase

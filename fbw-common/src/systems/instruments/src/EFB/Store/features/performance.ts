@@ -53,6 +53,7 @@ interface TPerformanceTakeoff {
   runwayCondition: RunwayCondition;
   windDirection?: number;
   windMagnitude?: number;
+  windEntry?: string;
   oat?: number;
   qnh?: number;
 
