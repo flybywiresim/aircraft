@@ -125,6 +125,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFmgc(calculatedSampleTime, i);
   }
 
+  result &= updateFmgcShim(calculatedSampleTime);
+
   for (int i = 0; i < 2; i++) {
     result &= updateElac(calculatedSampleTime, i);
   }
@@ -690,6 +692,23 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
+
+  // AP Shim LVars
+  idAutopilotShimNosewheelDemand = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
+  idAutopilotShimFmaLateralMode = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
+  idAutopilotShimFmaLateralArmed = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_ARMED");
+  idAutopilotShimFmaVerticalMode = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_MODE");
+  idAutopilotShimFmaVerticalArmed = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_ARMED");
+  idAutopilotShimFmaExpediteModeActive = std::make_unique<LocalVariable>("A32NX_FMA_EXPEDITE_MODE");
+  idAutopilotShimFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
+  idAutopilotShimAutolandWarning = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
+  idAutopilotShimActiveAny = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
+  idAutopilotShimActive_1 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_1_ACTIVE");
+  idAutopilotShimActive_2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_2_ACTIVE");
+  idAutopilotShim_H_dot_radio = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_H_DOT_RADIO");
+  idAutothrustShimStatus = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
+  idAutothrustShimMode = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
+  idAutothrustShimModeMessage = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
 
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
@@ -1775,6 +1794,189 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   if (fmgcIndex == 1) {
     idStickLockActive->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
   }
+
+  return true;
+}
+
+// Update the AP/FMGC shim Lvars. They are always driven by the master FMGC.
+bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
+  bool fmgc1Priority =
+      fmgcsDiscreteOutputs[0].ap_own_engaged || (!fmgcsDiscreteOutputs[1].ap_own_engaged && fmgcsDiscreteOutputs[0].fd_own_engaged) ||
+      (!fmgcsDiscreteOutputs[1].ap_own_engaged && !fmgcsDiscreteOutputs[1].fd_own_engaged && fmgcsDiscreteOutputs[0].athr_own_engaged) ||
+      (!fmgcsDiscreteOutputs[1].ap_own_engaged && !fmgcsDiscreteOutputs[1].fd_own_engaged && !fmgcsDiscreteOutputs[1].athr_own_engaged);
+  int fmgcPriorityIndex = fmgc1Priority ? 0 : 1;
+
+  int lateralMode = 0;
+  if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 16, false)) {
+    lateralMode = 10;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 17, false)) {
+    lateralMode = 11;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 12, false)) {
+    lateralMode = 20;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 13, false)) {
+    lateralMode = 30;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 14, false)) {
+    lateralMode = 31;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_4, 14, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 32;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 33;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 34;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 11, false) &&
+             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 20, false)) {
+    lateralMode = 40;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 11, false) &&
+             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 23, false)) {
+    lateralMode = 41;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 15, false)) {
+    lateralMode = 50;
+  }
+
+  bool navArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 14, false);
+  bool locArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 16, false);
+  int lateralArmed = navArmed | (locArmed << 1);
+
+  bool gsMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 22, false);
+  bool gsTrackMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 20, false);
+  bool gsCaptureMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 21, false);
+  bool expedMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 24, false);
+  bool descentMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 12, false);
+  bool climbMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 11, false);
+  bool pitchTakeoffMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 15, false);
+  bool pitchGoaroundMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 16, false);
+  bool openMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 14, false);
+  bool trackMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 20, false);
+  bool captureMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 21, false);
+  bool altMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 19, false);
+  bool dashMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 26, false);
+  bool altConstraintValid = Arinc429Utils::isNo(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.fm_alt_constraint_ft);
+  bool fpaMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 18, false);
+  bool vsMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 17, false);
+  bool finalDesMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 23, false);
+  bool tcasMode = false;
+
+  bool navMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 12, false);
+
+  int verticalMode = 0;
+  if (trackMode && altMode && !dashMode && !altConstraintValid) {
+    verticalMode = 10;
+  } else if (captureMode && altMode && !dashMode && !altConstraintValid) {
+    verticalMode = 11;
+  } else if (climbMode && openMode) {
+    verticalMode = 12;
+  } else if (descentMode && openMode) {
+    verticalMode = 13;
+  } else if (vsMode) {
+    verticalMode = 14;
+  } else if (fpaMode) {
+    verticalMode = 15;
+  } else if (trackMode && altMode && !dashMode && altConstraintValid) {
+    verticalMode = 20;
+  } else if (captureMode && altMode && !dashMode && altConstraintValid) {
+    verticalMode = 21;
+  } else if (climbMode && !openMode) {
+    verticalMode = 22;
+  } else if (descentMode && !openMode) {
+    verticalMode = 23;
+  } else if (finalDesMode && !navMode) {
+    verticalMode = 24;
+  } else if (gsMode && gsCaptureMode) {
+    verticalMode = 30;
+  } else if (gsMode && gsTrackMode) {
+    verticalMode = 31;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_4, 14, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 32;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 33;
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+    lateralMode = 34;
+  } else if (pitchTakeoffMode) {
+    verticalMode = 40;
+  } else if (pitchGoaroundMode) {
+    verticalMode = 41;
+  } else if (tcasMode) {
+    verticalMode = 50;
+  }
+
+  bool altArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 12, false);
+  bool clbArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 24, false);
+  bool desArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 25, false);
+  bool gsArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 22, false);
+  bool finalArmed = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_3, 23, false);
+  bool tcasArmed = false;
+  int verticalArmed = altArmed | (clbArmed << 2) | (desArmed << 3) | (gsArmed << 4) | (finalArmed << 5) | (tcasArmed << 6);
+
+  bool atEngaged = Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_discrete_word, 13, false);
+  bool atActive = Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_discrete_word, 14, false);
+  int athrStatus = 0;
+  if (atEngaged && !atActive) {
+    athrStatus = 1;
+  } else if (atEngaged && atActive) {
+    athrStatus = 2;
+  }
+
+  int athrMode = 0;
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
+    athrMode = 13;
+  }
+
+  int athrModeMessage = 0;
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 22, false)) {
+    athrModeMessage = 3;
+  }
+
+  // Autoland warning
+  SimData simData = simConnectInterface.getSimData();
+
+  // if at least one AP engaged and LAND or FLARE mode -> latch
+  if (simData.H_radio_ft < 200 && (fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged) &&
+      (verticalMode == 32 || verticalMode == 33)) {
+    autolandWarningLatch = true;
+  } else if (simData.H_radio_ft >= 200 || (verticalMode != 32 && verticalMode != 33)) {
+    autolandWarningLatch = false;
+    autolandWarningTriggered = false;
+    idAutopilotShimAutolandWarning->set(0);
+  }
+
+  if (autolandWarningLatch && !autolandWarningTriggered) {
+    if (!(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged) ||
+        (simData.H_radio_ft > 15 && (abs(simData.nav_loc_error_deg) > 0.2 || simData.nav_loc_valid == false)) ||
+        (simData.H_radio_ft > 100 && (abs(simData.nav_gs_error_deg) > 0.4 || simData.nav_gs_valid == false))) {
+      autolandWarningTriggered = true;
+      idAutopilotShimAutolandWarning->set(1);
+    }
+  }
+
+  // Update H_dot_radio filter
+  const double filterConstant = 1. / 15.;
+  double hdotFilterY = 1 / (sampleTime + filterConstant) * (simData.H_radio_ft - hDotFilterPrevU + filterConstant * hDotFilterPrevY);
+  hDotFilterPrevU = simData.H_radio_ft;
+  hDotFilterPrevY = hdotFilterY;
+
+  idAutopilotShimNosewheelDemand->set(
+      Arinc429Utils::valueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.delta_nosewheel_voted_cmd_deg, 0));
+  idAutopilotShimFmaLateralMode->set(lateralMode);
+  idAutopilotShimFmaLateralArmed->set(lateralArmed);
+  idAutopilotShimFmaVerticalMode->set(verticalMode);
+  idAutopilotShimFmaVerticalArmed->set(verticalArmed);
+  idAutopilotShimFmaExpediteModeActive->set(
+      Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 24, false));
+  idAutopilotShimFmaTripleClick->set(
+      Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_4, 28, false));
+  idAutopilotShimActiveAny->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
+  idAutopilotShimActive_1->set(fmgcsDiscreteOutputs[0].ap_own_engaged);
+  idAutopilotShimActive_2->set(fmgcsDiscreteOutputs[1].ap_own_engaged);
+  idAutopilotShim_H_dot_radio->set(hdotFilterY * 60);
+  idAutothrustShimStatus->set(athrStatus);
+  idAutothrustShimMode->set(athrMode);
+  idAutothrustShimModeMessage->set(athrModeMessage);
 
   return true;
 }
