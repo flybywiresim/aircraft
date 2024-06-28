@@ -749,6 +749,14 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimRightNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_RANGE");
   idFcuShimRightNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_OPTION");
 
+  idFcuShimTrkFpaActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
+  idFcuShimHdgValue = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
+  idFcuShimShowHdg = std::make_unique<LocalVariable>("A320_FCU_SHOW_SELECTED_HEADING");
+  idFcuShimAltManaged = std::make_unique<LocalVariable>("A32NX_FCU_ALT_MANAGED");
+  idFcuShimVsValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
+  idFcuShimFpaValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
+  idFcuShimVsManaged = std::make_unique<LocalVariable>("A32NX_FCU_VS_MANAGED");
+
   idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_FCU_SELECTED_HEADING");
   idFcuSelectedAltitude = std::make_unique<LocalVariable>("A32NX_FCU_SELECTED_ALTITUDE");
   idFcuSelectedAirspeed = std::make_unique<LocalVariable>("A32NX_FCU_SELECTED_AIRSPEED");
@@ -2098,6 +2106,26 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuAfsDisplayLvlChManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
   idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+
+  // Update AFS CP variables (Sim AP vars and legacy Lvars)
+  idFcuShimTrkFpaActive->set(discreteOutputs.afs_outputs.trk_fpa_mode);
+
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::HEADING_BUG_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   discreteOutputs.afs_outputs.hdg_trk_value, 1);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_HEADING_SLOT_INDEX_SET, discreteOutputs.afs_outputs.hdg_trk_managed ? 2 : 1,
+                                SIMCONNECT_GROUP_PRIORITY_STANDARD);
+  idFcuShimHdgValue->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes);
+
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   discreteOutputs.afs_outputs.alt_value, 3);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_ALTITUDE_SLOT_INDEX_SET, discreteOutputs.afs_outputs.lvl_ch_managed ? 2 : 1,
+                                SIMCONNECT_GROUP_PRIORITY_STANDARD);
+  idFcuShimAltManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
+
+  idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   return true;
 }
