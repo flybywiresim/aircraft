@@ -4236,8 +4236,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
         })();
 
-        // TODO check if we need to handle SEC below
-
         if (_new > _old) {
             if (_new >= curPerfPagePhase) {
                 CDUPerformancePage.ShowPage(this, Fmgc.FlightPlanIndex.Active, _new);
