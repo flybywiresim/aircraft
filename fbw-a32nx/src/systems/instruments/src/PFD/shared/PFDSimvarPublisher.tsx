@@ -123,6 +123,7 @@ export type PFDSimvars = AdirsSimVars &
     xtk: number;
     ldevRequestLeft: boolean;
     ldevRequestRight: boolean;
+    vdev: number;
     landingElevation1Raw: number;
     landingElevation2Raw: number;
     fac1Healthy: boolean;
@@ -166,6 +167,8 @@ export type PFDSimvars = AdirsSimVars &
     fm2TransAltRaw: number;
     fm1TransLvlRaw: number;
     fm2TransLvlRaw: number;
+    fm1Backbeam: boolean;
+    fm2Backbeam: boolean;
   };
 
 export enum PFDVars {
@@ -278,6 +281,7 @@ export enum PFDVars {
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
   ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
   ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
+  vdev = 'L:A32NX_FM_VDEV',
   landingElevation1Raw = 'L:A32NX_FM1_LANDING_ELEVATION',
   landingElevation2Raw = 'L:A32NX_FM2_LANDING_ELEVATION',
   fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
@@ -323,6 +327,8 @@ export enum PFDVars {
   fm2TransAltRaw = 'L:A32NX_FM2_TRANS_ALT',
   fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
   fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
+  fm1Backbeam = 'L:A32NX_FM1_BACKBEAM_SELECTED',
+  fm2Backbeam = 'L:A32NX_FM2_BACKBEAM_SELECTED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -438,6 +444,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
     ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
     ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
+    ['vdev', { name: PFDVars.vdev, type: SimVarValueType.Number }],
     ['landingElevation1Raw', { name: PFDVars.landingElevation1Raw, type: SimVarValueType.Number }],
     ['landingElevation2Raw', { name: PFDVars.landingElevation2Raw, type: SimVarValueType.Number }],
     ['fac1Healthy', { name: PFDVars.fac1Healthy, type: SimVarValueType.Bool }],
@@ -481,6 +488,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2TransAltRaw', { name: PFDVars.fm2TransAltRaw, type: SimVarValueType.Number }],
     ['fm1TransLvlRaw', { name: PFDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
     ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
+    ['fm1Backbeam', { name: PFDVars.fm1Backbeam, type: SimVarValueType.Bool }],
+    ['fm2Backbeam', { name: PFDVars.fm2Backbeam, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: ArincEventBus) {

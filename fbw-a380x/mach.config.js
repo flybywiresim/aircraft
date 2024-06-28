@@ -1,5 +1,5 @@
 const imagePlugin = require('esbuild-plugin-inline-image');
-const postCssPlugin = require('esbuild-style-plugin');
+const postCssPlugin = require('esbuild-style-plugin-v2');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
@@ -28,16 +28,16 @@ module.exports = {
         typecheckingPlugin(),
     ],
     instruments: [
-        msfsAvionicsInstrument('PFD'),
-        msfsAvionicsInstrument('ND'),
         msfsAvionicsInstrument('Clock'),
+        msfsAvionicsInstrument('ND'),
+        msfsAvionicsInstrument('PFD'),
+        msfsAvionicsInstrument('RMP'),
 
         reactInstrument('BAT'),
         reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
         reactInstrument('EWD'),
         reactInstrument('MFD'),
         reactInstrument('OIT'),
-        reactInstrument('RMP'),
         reactInstrument('SD'),
     ],
 };

@@ -1,16 +1,16 @@
 // Copyright (c) 2022-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from '@fmgc/index';
+import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
+
+import { FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { VorType } from '@microsoft/msfs-sdk';
 
 export enum SelectedNavaidType {
   None,
@@ -35,7 +35,7 @@ export interface SelectedNavaid {
   mode: SelectedNavaidMode;
   ident: string | null;
   frequency: number | null;
-  facility: RawVor | null;
+  facility: VhfNavaid | NdbNavaid | IlsNavaid | null;
 }
 
 export class Navigation implements NavigationProvider {
@@ -89,16 +89,12 @@ export class Navigation implements NavigationProvider {
   }));
 
   constructor(
-    private flightPlanManager: FlightPlanManager,
+    private flightPlanService: FlightPlanService,
     private readonly facLoader: FacilityLoader,
   ) {
-    this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
-    this.navaidSelectionManager = new NavaidSelectionManager(this, this.flightPlanManager);
-    this.landingSystemSelectionManager = new LandingSystemSelectionManager(
-      this,
-      this.flightPlanManager,
-      this.facLoader,
-    );
+    this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
+    this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
+    this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);
     this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
   }
 
@@ -107,6 +103,7 @@ export class Navigation implements NavigationProvider {
   }
 
   update(deltaTime: number): void {
+    // TODO... why different to master...
     this.requiredPerformance.update(deltaTime);
 
     this.updateCurrentPerformance();
@@ -242,8 +239,8 @@ export class Navigation implements NavigationProvider {
           const selected = this.selectedNavaids[i + 1];
           selected.type = this.getSelectedNavaidType(dme);
           selected.mode = SelectedNavaidMode.Auto;
-          selected.ident = WayPoint.formatIdentFromIcao(dme.icao);
-          selected.frequency = dme.freqMHz;
+          selected.ident = dme.ident;
+          selected.frequency = dme.frequency;
           selected.facility = dme;
         }
       } else if (this.navaidSelectionManager.displayVorReason === VorSelectionReason.Navigation) {
@@ -251,8 +248,8 @@ export class Navigation implements NavigationProvider {
         const selected = this.selectedNavaids[1];
         selected.type = this.getSelectedNavaidType(navaid);
         selected.mode = SelectedNavaidMode.Auto;
-        selected.ident = WayPoint.formatIdentFromIcao(navaid.icao);
-        selected.frequency = navaid.freqMHz;
+        selected.ident = Icao.getIdent(navaid.databaseId);
+        selected.frequency = navaid.frequency;
         selected.facility = navaid;
         this.resetSelectedNavaid(2);
       } else {
@@ -262,7 +259,7 @@ export class Navigation implements NavigationProvider {
       const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
       if (mmrStatus.frequency !== null) {
         const selected = this.selectedNavaids[3];
-        selected.type = this.getSelectedNavaidType(mmrStatus.facility);
+        selected.type = SelectedNavaidType.Ils; // FIXME support other types
         selected.mode = mmrStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
         selected.ident = mmrStatus.ident;
         selected.frequency = mmrStatus.frequency;
@@ -288,22 +285,23 @@ export class Navigation implements NavigationProvider {
     return this.selectedNavaids;
   }
 
-  private getSelectedNavaidType(facility?: RawVor): SelectedNavaidType {
+  private getSelectedNavaidType(facility?: VhfNavaid): SelectedNavaidType {
     if (!facility) {
       return SelectedNavaidType.None;
     }
     switch (facility.type) {
-      case VorType.DME:
+      case VhfNavaidType.Dme:
         return SelectedNavaidType.Dme;
-      case VorType.VOR:
+      case VhfNavaidType.Vor:
         return SelectedNavaidType.Vor;
-      case VorType.VORDME:
+      case VhfNavaidType.VorDme:
         return SelectedNavaidType.VorDme;
-      case VorType.VORTAC:
+      case VhfNavaidType.Vortac:
         return SelectedNavaidType.VorTac;
-      case VorType.TACAN:
+      case VhfNavaidType.Tacan:
         return SelectedNavaidType.Tacan;
-      case VorType.ILS:
+      case VhfNavaidType.IlsTacan:
+      case VhfNavaidType.IlsDme:
         return SelectedNavaidType.Ils;
       default:
         return SelectedNavaidType.None;

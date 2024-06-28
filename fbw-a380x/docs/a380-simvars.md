@@ -7,6 +7,7 @@
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
+  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
@@ -512,6 +513,7 @@
         - APU
         - MLG
 
+
 - A32NX_FIRE_DETECTED_ENG{number}
     - Bool
     - True when fire is detected on engine
@@ -584,6 +586,36 @@
 - A32NX_FIRE_TEST_ENG1
     - Bool
     - True when the overhead fire test pushbutton is pressed
+
+
+## Flaps / Slats (ATA 27)
+
+- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |      Description A380X, if different     |
+      |:---:|:----------------------------------------:|
+      | 11  | Slat Data Valid                          |
+      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
+      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
+      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
+      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
+      | 16  | Slat WTB Engaged                         |
+      | 17  | Slat Fault                               |
+      | 18  | Flap Data Valid                          |
+      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
+      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
+      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
+      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
+      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
+      | 24  | Flap WTB engaged                         |
+      | 25  | Flap Fault                               |
+      | 26  | Spoiler Lift Demand                      |
+      | 27  | Spoiler Limit Demand                     |
+      | 28  | Slat System Jam                          |
+      | 29  | Flap System Jam                          |
+
 
 ## Indicating-Recording ATA 31
 

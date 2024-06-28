@@ -733,8 +733,7 @@ impl ZoneController {
             {
                 Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN
             } else {
-                let interpolation = (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
-                    - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
                     / (Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
                         - Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
                     * (zone_measured_temperature.get::<kelvin>()
@@ -742,8 +741,7 @@ impl ZoneController {
                             Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
                         )
                         .get::<kelvin>())
-                    + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
-                interpolation
+                    + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN
             },
         )
     }
@@ -766,8 +764,7 @@ impl ZoneController {
             {
                 Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN
             } else {
-                let interpolation = (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
-                    - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
                     / (Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
                         - Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
                     * (zone_measured_temperature.get::<kelvin>()
@@ -775,8 +772,7 @@ impl ZoneController {
                             Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
                         )
                         .get::<kelvin>())
-                    + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
-                interpolation
+                    + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN
             },
         )
     }
