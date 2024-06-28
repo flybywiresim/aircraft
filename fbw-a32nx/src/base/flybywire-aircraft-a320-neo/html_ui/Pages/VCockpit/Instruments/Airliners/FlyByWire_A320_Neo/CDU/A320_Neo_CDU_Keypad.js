@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class Keypad {
     constructor(mcdu) {
         this._mcdu = mcdu;
@@ -22,7 +26,7 @@ class Keypad {
                 if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
                     mcdu.flightPhaseManager.changePhase(FmgcFlightPhases.PREFLIGHT);
                 }
-                CDUPerformancePage.ShowPage(mcdu);
+                CDUPerformancePage.ShowPage(mcdu, Fmgc.FlightPlanIndex.Active);
             },
             "PROG": () => CDUProgressPage.ShowPage(mcdu),
             "RAD": () => CDUNavRadioPage.ShowPage(mcdu),

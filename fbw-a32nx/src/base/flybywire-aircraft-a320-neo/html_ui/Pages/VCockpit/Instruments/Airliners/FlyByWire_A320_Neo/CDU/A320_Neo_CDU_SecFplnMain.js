@@ -26,6 +26,9 @@ class CDUSecFplnMain {
         mcdu.onLeftInput[1] = () => {
             CDUFlightPlanPage.ShowPage(mcdu, 0, Fmgc.FlightPlanIndex.FirstSecondary);
         };
+        mcdu.onRightInput[1] = () => {
+            CDUPerformancePage.ShowPage(mcdu, Fmgc.FlightPlanIndex.FirstSecondary);
+        };
 
         mcdu.onLeftInput[2] = () => {
             mcdu.flightPlanService.secondaryReset(1);
@@ -38,9 +41,9 @@ class CDUSecFplnMain {
         mcdu.setTemplate([
             ["SEC INDEX"],
             [""],
-            ["{COPY ACTIVE[color]", "INIT>[color]"],
+            ["{COPY ACTIVE", "INIT>"],
             [""],
-            ["<SEC F-PLN[color]", "PERF>[color]inop"],
+            ["<SEC F-PLN", "PERF>"],
             [""],
             ["{DELETE SEC"],
             [""],

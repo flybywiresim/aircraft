@@ -674,7 +674,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 if (this.page.Current === this.page.PerformancePageTakeoff) {
-                    CDUPerformancePage.ShowTAKEOFFPage(this);
+                    CDUPerformancePage.ShowTAKEOFFPage(this, Fmgc.FlightPlanIndex.Active);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
                 }
@@ -4236,12 +4236,14 @@ class FMCMainDisplay extends BaseAirliners {
             }
         })();
 
+        // TODO check if we need to handle SEC below
+
         if (_new > _old) {
             if (_new >= curPerfPagePhase) {
-                CDUPerformancePage.ShowPage(this, _new);
+                CDUPerformancePage.ShowPage(this, Fmgc.FlightPlanIndex.Active, _new);
             }
         } else if (_old === curPerfPagePhase) {
-            CDUPerformancePage.ShowPage(this, _old);
+            CDUPerformancePage.ShowPage(this, Fmgc.FlightPlanIndex.Active, _old);
         }
     }
 
