@@ -372,9 +372,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_HEADING_SLOT_INDEX_SET, "HEADING_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_INC, "HEADING_BUG_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_DEC, "HEADING_BUG_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_SET, "HEADING_BUG_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALTITUDE_SLOT_INDEX_SET, "ALTITUDE_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_INC, "AP_ALT_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_DEC, "AP_ALT_VAR_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_SET, "AP_ALT_VAR_SET_ENGLISH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_SLOT_INDEX_SET, "VS_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_VAR_INC, "AP_VS_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_VAR_DEC, "AP_VS_VAR_DEC", true);
@@ -1075,6 +1077,26 @@ bool SimConnectInterface::sendEvent(Events eventId, DWORD data, DWORD priority) 
 
   // send event
   HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, eventId, data, priority, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+
+  // check result of data request
+  if (result != S_OK) {
+    // request failed
+    return false;
+  }
+
+  // success
+  return true;
+}
+
+bool SimConnectInterface::sendEventEx1(Events eventId, DWORD priority, DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4) {
+  // check if we are connected
+  if (!isConnected) {
+    return false;
+  }
+
+  // send event
+  HRESULT result = SimConnect_TransmitClientEvent_EX1(hSimConnect, 0, eventId, priority, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY, data0,
+                                                      data1, data2, data3, data4);
 
   // check result of data request
   if (result != S_OK) {
