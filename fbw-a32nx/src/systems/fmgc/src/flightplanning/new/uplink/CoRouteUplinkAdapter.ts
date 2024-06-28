@@ -360,7 +360,8 @@ export class CoRouteUplinkAdapter {
   static generateRouteInstructionsFromNavlog(ofp: CoRoute): OfpRouteChunk[] {
     const instructions: OfpRouteChunk[] = [];
 
-    for (let i = 0; i < ofp.navlog.length; i++) {
+    // `navlog` is undefined when the route is DCT
+    for (let i = 0; i < ofp.navlog?.length ?? 0; i++) {
       const lastFix = ofp.navlog[i - 1];
       const fix = ofp.navlog[i];
 
