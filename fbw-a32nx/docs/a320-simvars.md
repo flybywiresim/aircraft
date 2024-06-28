@@ -4100,6 +4100,31 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- A32NX_TRK_FPA_MODE_ACTIVE
+    - Bool
+    - True if TRK/FPA mode is active
+
+- A32NX_AUTOPILOT_HEADING_SELECTED
+    - Number (Degrees)
+    - Indicates the selected heading on the FCU, instantly updated
+    - In case of managed heading mode, the value is -1
+
+- A32NX_FCU_ALT_MANAGED
+    - Boolean
+    - Indicates if managed altitude mode is active (dot)
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_VS_MANAGED
+    - Boolean
+    - Indicates if managed VS/FPA mode is active
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
 - A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
     - Percent over 100
     - Steering demand from autopilot to BSCU [-1;1] -1 left, 0 middle
