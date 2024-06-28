@@ -1305,8 +1305,9 @@ class C2Cell extends DisplayComponent<CellProps> {
     } else if (navArmed && (finalArmed || finalActive)) {
       text = 'APP NAV';
     } else if (navArmed) {
-      return 'NAV';
+      text = 'NAV';
     }
+
     this.textSub.set(text);
   }
 
