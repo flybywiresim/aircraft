@@ -14,6 +14,7 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanUtils } from '@fmgc/flightplanning/new/FlightPlanUtils';
 
 const UPDATE_TIMER = 2_500;
 
@@ -204,16 +205,18 @@ export class EfisVectors {
 
     // ACTIVE
 
-    const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
-
-    const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+    const vectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, plan.activeLegIndex).filter((it) =>
+      EfisVectors.isVectorReasonable(it),
+    );
 
     // ACTIVE missed
 
     const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
 
     if (transmitMissed) {
-      const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
+      const missedVectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, 0, true).filter((it) =>
+        EfisVectors.isVectorReasonable(it),
+      );
 
       if (missedApproachGroup === mainGroup) {
         vectors.push(...missedVectors);

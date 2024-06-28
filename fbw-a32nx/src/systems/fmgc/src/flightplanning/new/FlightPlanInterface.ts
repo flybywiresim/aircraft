@@ -48,6 +48,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   get hasUplink(): boolean;
 
+  secondaryCopyFromActive(index?: number): Promise<void>;
+
   secondaryDelete(index: number): Promise<void>;
 
   secondaryReset(index: number): Promise<void>;

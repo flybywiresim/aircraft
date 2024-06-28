@@ -12,6 +12,7 @@ import {
 } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 
 export abstract class FlightPlanSegment {
   abstract class: SegmentClass;
@@ -61,8 +62,9 @@ export abstract class FlightPlanSegment {
    * Creates an identical copy of this segment
    *
    * @param forPlan the (new) flight plan for which the segment is being cloned
+   * @param options the copy options
    */
-  abstract clone(forPlan: BaseFlightPlan): FlightPlanSegment;
+  abstract clone(forPlan: BaseFlightPlan, options?: number): FlightPlanSegment;
 
   /**
    * Inserts an element at a specified index

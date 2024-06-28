@@ -24,11 +24,13 @@ export class EnrouteSegment extends FlightPlanSegment {
     this.allLegs.push(...elements);
   }
 
-  clone(forPlan: BaseFlightPlan): EnrouteSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): EnrouteSegment {
     const newSegment = new EnrouteSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
 
     return newSegment;
   }

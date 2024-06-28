@@ -98,11 +98,13 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
   }
 
-  clone(forPlan: BaseFlightPlan): ArrivalSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ArrivalSegment {
     const newSegment = new ArrivalSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.arrival = this.arrival;
 
     return newSegment;

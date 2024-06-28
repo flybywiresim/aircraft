@@ -83,11 +83,13 @@ export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
   }
 
-  clone(forPlan: BaseFlightPlan): ApproachViaSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ApproachViaSegment {
     const newSegment = new ApproachViaSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.approachVia = this.approachVia;
 
     return newSegment;

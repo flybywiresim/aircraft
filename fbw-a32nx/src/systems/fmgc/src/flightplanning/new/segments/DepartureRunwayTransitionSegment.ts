@@ -67,11 +67,13 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
     }
   }
 
-  clone(forPlan: BaseFlightPlan): DepartureRunwayTransitionSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): DepartureRunwayTransitionSegment {
     const newSegment = new DepartureRunwayTransitionSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.departureRunwayTransition = this.departureRunwayTransition;
 
     return newSegment;

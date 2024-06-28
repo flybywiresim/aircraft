@@ -95,6 +95,19 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.has(FlightPlanIndex.Uplink);
   }
 
+  /**
+   * Copies the active flight plan into a secondary flight plan
+   *
+   * @param index the 1-indexed index of the secondary flight plan
+   */
+  async secondaryCopyFromActive(index = 1) {
+    this.flightPlanManager.copy(
+      FlightPlanIndex.Active,
+      FlightPlanIndex.FirstSecondary + (index - 1),
+      CopyOptions.CopyPredictions,
+    );
+  }
+
   async secondaryDelete(index: number) {
     if (!this.hasSecondary(index)) {
       throw new Error('[FMS/FPS] Cannot delete secondary flight plan if none exists');

@@ -15,8 +15,7 @@ class CDUSecFplnMain {
         };
 
         mcdu.onLeftInput[0] = () => {
-            // TODO do not call this directly, it is private
-            mcdu.flightPlanService.flightPlanManager.copy(Fmgc.FlightPlanIndex.Active, Fmgc.FlightPlanIndex.FirstSecondary);
+            mcdu.flightPlanService.secondaryCopyFromActive(1);
             CDUFlightPlanPage.ShowPage(mcdu, 0, Fmgc.FlightPlanIndex.FirstSecondary);
         };
         mcdu.onRightInput[0] = () => {

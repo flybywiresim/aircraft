@@ -86,11 +86,13 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this);
   }
 
-  clone(forPlan: BaseFlightPlan): DepartureEnrouteTransitionSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): DepartureEnrouteTransitionSegment {
     const newSegment = new DepartureEnrouteTransitionSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.departureEnrouteTransition = this.departureEnrouteTransition;
 
     return newSegment;
