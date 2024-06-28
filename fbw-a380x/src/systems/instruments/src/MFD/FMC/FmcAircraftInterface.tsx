@@ -1171,7 +1171,7 @@ export class FmcAircraftInterface {
     }
   }
 
-  private cruiseFlightLevelTimeOut: NodeJS.Timeout | null = null;
+  private cruiseFlightLevelTimeOut: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
