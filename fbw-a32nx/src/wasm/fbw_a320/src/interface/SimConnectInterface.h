@@ -114,9 +114,11 @@ class SimConnectInterface {
     AP_HEADING_SLOT_INDEX_SET,
     HEADING_BUG_INC,
     HEADING_BUG_DEC,
+    HEADING_BUG_SET,
     AP_ALTITUDE_SLOT_INDEX_SET,
     AP_ALT_VAR_INC,
     AP_ALT_VAR_DEC,
+    AP_ALT_VAR_SET,
     AP_VS_SLOT_INDEX_SET,
     AP_VS_VAR_INC,
     AP_VS_VAR_DEC,
@@ -237,6 +239,8 @@ class SimConnectInterface {
   bool sendEvent(Events eventId, DWORD data);
 
   bool sendEvent(Events eventId, DWORD data, DWORD priority);
+
+  bool sendEventEx1(Events eventId, DWORD priority, DWORD data0, DWORD data1 = 0, DWORD data2 = 0, DWORD data3 = 0, DWORD data4 = 0);
 
   void resetSimInputRudderTrim();
 
