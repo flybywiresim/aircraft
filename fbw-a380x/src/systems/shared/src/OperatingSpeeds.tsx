@@ -9,6 +9,7 @@
 import { Feet, Knots } from 'msfs-geo';
 import { MathUtils, Units } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmo } from '@shared/PerformanceConstants';
+import { Common } from '@fmgc/guidance/vnav/common';
 
 // Maybe we need bilinear interpolation
 const vls = [
@@ -139,7 +140,7 @@ function greenDotSpeed(m: number, alt: number = SimVar.GetSimVarValue('PLANE ALT
         [1100, 228, 228, 255, 272, 272],
         [1200, 238, 238, 266, 262, 262],
     ];
-    return MathUtils.tableInterpolation(greenDotTable, m, alt);
+    return tableInterpolation(greenDotTable, m, alt);
 }
 
 /**
@@ -159,7 +160,7 @@ function vlsConf0(m: number, alt: Feet = SimVar.GetSimVarValue('PLANE ALTITUDE',
         [1100, 210, 216, 222, 226, 231, 239, 244, 247, 247, 247, 250, 250],
         [1200, 219, 229, 233, 238, 244, 254, 258, 258, 257, 262, 262, 262],
     ];
-    return MathUtils.tableInterpolation(vlsTable, m, alt);
+    return tableInterpolation(vlsTable, m, alt);
 }
 
 // FIXME these are from the A320
@@ -478,3 +479,46 @@ export class A380SpeedsUtils {
         return vls[conf][weightTableIndex](klb) / 1.5;
     }
 }
+
+/**
+   * Placeholder
+   * @param table
+   * @param i
+   * @param j
+   * @returns
+   */
+function tableInterpolation(table: number[][], i: number, j: number): number {
+    const numRows = table.length;
+    const numCols = table[0].length;
+    // Iterate through rows to find the upper bound to i
+    let r: number;
+    for (r = 1; r < numRows; r++) {
+      if (table[r][0] > i) {
+        break;
+      }
+    }
+    // Get lower bound to i
+    const r1 = Math.max(1, r - 1);
+    const r2 = Math.min(numRows - 1, r);
+    // Iterate through rows to find the upper bound to j
+    let c: number;
+    for (c = 1; c < numCols; c++) {
+      if (table[0][c] > j) {
+        break;
+      }
+    }
+    // Get the lower bound to j
+    const c1 = Math.max(1, c - 1);
+    const c2 = Math.min(numCols - 1, c);
+
+    const interpolatedRowAtC1 =
+      r1 === r2 ? table[r1][c1] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c1], table[r2][c1]);
+    const interpolatedRowAtC2 =
+      r1 === r2 ? table[r1][c2] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
+
+    if (c1 === c2) {
+      return interpolatedRowAtC1;
+    }
+
+    return Common.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
+  }
