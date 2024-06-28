@@ -77,6 +77,9 @@ dependencies:
   nanoid:
     specifier: ^3.3.1
     version: 3.3.7
+  navigraph:
+    specifier: ^1.2.35
+    version: 1.2.35
   network:
     specifier: ^0.6.1
     version: 0.6.1
@@ -260,8 +263,8 @@ devDependencies:
     specifier: ^4.6.0
     version: 4.6.0(eslint@8.56.0)
   eslint-plugin-tailwindcss:
-    specifier: ^3.13.0
-    version: 3.13.0(tailwindcss@3.3.6)
+    specifier: ^3.17.3
+    version: 3.17.3(tailwindcss@3.3.6)
   fs-extra:
     specifier: ^10.1.0
     version: 10.1.0
@@ -2496,6 +2499,31 @@ packages:
 
   /@microsoft/msfs-sdk@0.7.0:
     resolution: {integrity: sha512-IWPuI0cKrybcB1xScZx+hTekXyAMFb3wQLjcS6sLXyDygsitH4M0VvpuIfL3KCKRfUUaQRgFhZCXymJ28qWnqA==}
+    dev: false
+
+  /@navigraph/app@1.3.5:
+    resolution: {integrity: sha512-TyfqLvc9AsyXFSaExj0wpo80Qrl/uPYXs1PTx3zVRUSAoGAtsqawtKLC1AFGtfz2EzF/IAeQ3+RMSS24ykFWAA==}
+    dev: false
+
+  /@navigraph/auth@2.5.1:
+    resolution: {integrity: sha512-wM0UAlEtEyFT7lZMnLeSjOFt8GfsaJz41JePBVVgCauoRGZYcVxmkKz9IUMQVBgGsdCn5fOillT7LfpDqsUHQg==}
+    engines: {node: '>=10'}
+    dependencies:
+      '@navigraph/app': 1.3.5
+    dev: false
+
+  /@navigraph/charts@2.0.4:
+    resolution: {integrity: sha512-6KK4emnmKwsz8rpJAuo9L1wDbloyfztZKdxBb2Xa2djm0aFjonGAFgbb+04ZEfJ9zPFgXBz6b5apnLOJ/S9RfA==}
+    dependencies:
+      '@navigraph/app': 1.3.5
+      '@navigraph/auth': 2.5.1
+    dev: false
+
+  /@navigraph/packages@1.0.0:
+    resolution: {integrity: sha512-1JHR+BakEAFnIFd5YqMRMlLIu6TWyPVGTuvls0UGk8ylihHdX49EmCj0s2qv19mratjVaEjhiy5LSsNFst3few==}
+    dependencies:
+      '@navigraph/app': 1.3.5
+      '@navigraph/auth': 2.5.1
     dev: false
 
   /@navigraph/pkce@1.0.3:
@@ -5013,11 +5041,11 @@ packages:
       string.prototype.matchall: 4.0.10
     dev: true
 
-  /eslint-plugin-tailwindcss@3.13.0(tailwindcss@3.3.6):
-    resolution: {integrity: sha512-Fcep4KDRLWaK3KmkQbdyKHG0P4GdXFmXdDaweTIPcgOP60OOuWFbh1++dufRT28Q4zpKTKaHwTsXPJ4O/EjU2Q==}
-    engines: {node: '>=12.13.0'}
+  /eslint-plugin-tailwindcss@3.17.3(tailwindcss@3.3.6):
+    resolution: {integrity: sha512-DVMVVUFQ+lPraRSuUk2I41XMnusXT6b3WaQZYlUHduULnERaqe9sNfmpRY1IyxlzmKoQxSbZ8IHRhl9ePo8PeA==}
+    engines: {node: '>=18.12.0'}
     peerDependencies:
-      tailwindcss: ^3.3.2
+      tailwindcss: ^3.4.0
     dependencies:
       fast-glob: 3.3.2
       postcss: 8.4.32
@@ -6951,6 +6979,15 @@ packages:
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
+
+  /navigraph@1.2.35:
+    resolution: {integrity: sha512-ykcbI8J9mHQc0YIEZ1hNWUWg1toyHfcXi/bVnmpGeaLRWCboI4XfRS35WCHIR77QUywbUsegqy+5WQaEEmGr6g==}
+    dependencies:
+      '@navigraph/app': 1.3.5
+      '@navigraph/auth': 2.5.1
+      '@navigraph/charts': 2.0.4
+      '@navigraph/packages': 1.0.0
+    dev: false
 
   /needle@3.3.0:
     resolution: {integrity: sha512-Kaq820952NOrLY/LVbIhPZeXtCGDBAPVgT0BYnoT3p/Nr3nkGXdvWXXA3zgy7wpAgqRULu9p/NvKiFo6f/12fw==}

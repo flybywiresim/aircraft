@@ -1,12 +1,7 @@
-import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
-
-/** The default (Airbus basic configuration) radio altitude auto call outs. */
-const DEFAULT_RADIO_AUTO_CALL_OUTS = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.OneThousand | RadioAutoCallOutFlags.FourHundred
-    | RadioAutoCallOutFlags.ThreeHundred | RadioAutoCallOutFlags.TwoHundred | RadioAutoCallOutFlags.OneHundred
-    | RadioAutoCallOutFlags.Fifty | RadioAutoCallOutFlags.Forty | RadioAutoCallOutFlags.Thirty | RadioAutoCallOutFlags.Twenty
-    | RadioAutoCallOutFlags.Ten | RadioAutoCallOutFlags.Five;
+import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
 
 type ModesType = {
     current: number;
@@ -49,13 +44,9 @@ export class LegacyGpws {
 
     RetardState: LegacyStateMachine;
 
-    egpwsAlertDiscreteWord1 = Arinc429Word.empty();
-
-    egpwsAlertDiscreteWord2 = Arinc429Word.empty();
-
     // eslint-disable-next-line camelcase
     constructor(private soundManager: LegacySoundManager) {
-        this.autoCallOutPins = DEFAULT_RADIO_AUTO_CALL_OUTS;
+        this.autoCallOutPins = A380X_DEFAULT_RADIO_AUTO_CALL_OUTS;
 
         this.minimumsState = 0;
 
@@ -120,7 +111,7 @@ export class LegacyGpws {
                     {},
                 ],
                 onChange: (current) => {
-                    this.setGlideSlopeWarning(current >= 1);
+                    SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', current >= 1);
                 },
             },
         ];
@@ -133,51 +124,14 @@ export class LegacyGpws {
         this.RetardState.setState('landed');
     }
 
-    gpwsUpdateDiscreteWords() {
-        this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
-        this.egpwsAlertDiscreteWord1.setBitValue(11, this.modes[0].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[0].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(13, this.modes[1].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[1].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(14, this.modes[2].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(15, this.modes[3].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(16, this.modes[3].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(17, this.modes[3].current === 3);
-        this.egpwsAlertDiscreteWord1.setBitValue(18, this.modes[4].current === 1);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
-
-        this.egpwsAlertDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
-        this.egpwsAlertDiscreteWord2.setBitValue(14, false);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-    }
-
-    setGlideSlopeWarning(state: boolean) {
-        SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-        this.egpwsAlertDiscreteWord2.setBitValue(11, state);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-    }
-
-    setGpwsWarning(state: boolean) {
-        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-        this.egpwsAlertDiscreteWord2.setBitValue(12, state);
-        this.egpwsAlertDiscreteWord2.setBitValue(13, state);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-    }
-
     init() {
         console.log('A32NX_GPWS init');
 
-        this.setGlideSlopeWarning(false);
-        this.setGpwsWarning(false);
-        this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
-        this.egpwsAlertDiscreteWord1.setBitValue(12, false);
+        SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', 0);
 
         // eslint-disable-next-line max-len
-        NXDataStore.getAndSubscribe('CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)), DEFAULT_RADIO_AUTO_CALL_OUTS.toString());
+        NXDataStore.getAndSubscribe('CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS', (k, v) => k === 'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)), A380X_DEFAULT_RADIO_AUTO_CALL_OUTS.toString());
     }
 
     update(deltaTime) {
@@ -229,12 +183,11 @@ export class LegacyGpws {
                 this.Mode4MaxRAAlt = NaN;
             }
 
-            this.setGlideSlopeWarning(false);
-            this.setGpwsWarning(false);
+            SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', 0);
         }
 
         this.GPWSComputeLightsAndCallouts();
-        this.gpwsUpdateDiscreteWords();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhase.Approach)) {
             let minimumsDA; // MDA or DH
@@ -335,7 +288,7 @@ export class LegacyGpws {
         }
 
         const illuminateGpwsLight = activeTypes.some((type) => type.gpwsLight);
-        this.setGpwsWarning(illuminateGpwsLight);
+        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', illuminateGpwsLight);
     }
 
     /**
@@ -535,7 +488,7 @@ export class LegacyGpws {
             if (radioAlt > 12) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 6) {
-                if (this.RetardState.value !== 'retardPlaying' && (this.autoCallOutPins & RadioAutoCallOutFlags.Five)) {
+                if (this.RetardState.value !== 'retardPlaying' && (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Five)) {
                     this.soundManager.tryPlaySound(soundList.alt_5);
                 }
                 this.AltCallState.action('down');
@@ -545,7 +498,7 @@ export class LegacyGpws {
             if (radioAlt > 22) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 12) {
-                if (this.RetardState.value !== 'retardPlaying' && (this.autoCallOutPins & RadioAutoCallOutFlags.Ten)) {
+                if (this.RetardState.value !== 'retardPlaying' && (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Ten)) {
                     this.soundManager.tryPlaySound(soundList.alt_10);
                 }
                 this.AltCallState.action('down');
@@ -555,7 +508,7 @@ export class LegacyGpws {
             if (radioAlt > 32) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 22) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.Twenty) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Twenty) {
                     this.soundManager.tryPlaySound(soundList.alt_20);
                 }
                 this.AltCallState.action('down');
@@ -565,7 +518,7 @@ export class LegacyGpws {
             if (radioAlt > 42) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 32) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.Thirty) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Thirty) {
                     this.soundManager.tryPlaySound(soundList.alt_30);
                 }
                 this.AltCallState.action('down');
@@ -575,18 +528,58 @@ export class LegacyGpws {
             if (radioAlt > 53) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 42) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.Forty) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Forty) {
                     this.soundManager.tryPlaySound(soundList.alt_40);
                 }
                 this.AltCallState.action('down');
             }
             break;
         case 'over50':
-            if (radioAlt > 110) {
+            if (radioAlt > 65) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 53) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.Fifty) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Fifty) {
                     this.soundManager.tryPlaySound(soundList.alt_50);
+                }
+                this.AltCallState.action('down');
+            }
+            break;
+        case 'over60':
+            if (radioAlt > 75) {
+                this.AltCallState.action('up');
+            } else if (radioAlt <= 63) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Sixty) {
+                    this.soundManager.tryPlaySound(soundList.alt_60);
+                }
+                this.AltCallState.action('down');
+            }
+            break;
+        case 'over70':
+            if (radioAlt > 85) {
+                this.AltCallState.action('up');
+            } else if (radioAlt <= 73) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Seventy) {
+                    this.soundManager.tryPlaySound(soundList.alt_70);
+                }
+                this.AltCallState.action('down');
+            }
+            break;
+        case 'over80':
+            if (radioAlt > 95) {
+                this.AltCallState.action('up');
+            } else if (radioAlt <= 83) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Eighty) {
+                    this.soundManager.tryPlaySound(soundList.alt_80);
+                }
+                this.AltCallState.action('down');
+            }
+            break;
+        case 'over90':
+            if (radioAlt > 110) {
+                this.AltCallState.action('up');
+            } else if (radioAlt <= 93) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.Ninety) {
+                    this.soundManager.tryPlaySound(soundList.alt_90);
                 }
                 this.AltCallState.action('down');
             }
@@ -595,7 +588,7 @@ export class LegacyGpws {
             if (radioAlt > 210) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 110) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.OneHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.OneHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_100);
                 }
                 this.AltCallState.action('down');
@@ -605,7 +598,7 @@ export class LegacyGpws {
             if (radioAlt > 310) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 210) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.TwoHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_200);
                 }
                 this.AltCallState.action('down');
@@ -615,7 +608,7 @@ export class LegacyGpws {
             if (radioAlt > 410) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 310) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.ThreeHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.ThreeHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_300);
                 }
                 this.AltCallState.action('down');
@@ -625,7 +618,7 @@ export class LegacyGpws {
             if (radioAlt > 513) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 410) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.FourHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.FourHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_400);
                 }
                 this.AltCallState.action('down');
@@ -635,7 +628,7 @@ export class LegacyGpws {
             if (radioAlt > 1020) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 513) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.FiveHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.FiveHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_500);
                 }
                 this.AltCallState.action('down');
@@ -645,7 +638,7 @@ export class LegacyGpws {
             if (radioAlt > 2020) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 1020) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.OneThousand) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.OneThousand) {
                     this.soundManager.tryPlaySound(soundList.alt_1000);
                 }
                 this.AltCallState.action('down');
@@ -655,7 +648,7 @@ export class LegacyGpws {
             if (radioAlt > 2530) {
                 this.AltCallState.action('up');
             } else if (radioAlt <= 2020) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousand) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.TwoThousand) {
                     this.soundManager.tryPlaySound(soundList.alt_2000);
                 }
                 this.AltCallState.action('down');
@@ -663,9 +656,9 @@ export class LegacyGpws {
             break;
         case 'over2500':
             if (radioAlt <= 2530) {
-                if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousandFiveHundred) {
+                if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.TwoThousandFiveHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_2500);
-                } else if (this.autoCallOutPins & RadioAutoCallOutFlags.TwentyFiveHundred) {
+                } else if (this.autoCallOutPins & A380XRadioAutoCallOutFlags.TwentyFiveHundred) {
                     this.soundManager.tryPlaySound(soundList.alt_2500b);
                 }
                 this.AltCallState.action('down');
@@ -759,14 +752,38 @@ const AltCallStateMachine = {
     },
     over100: {
         transitions: {
-            down: { target: 'over50' },
+            down: { target: 'over90' },
             up: { target: 'over200' },
+        },
+    },
+    over90: {
+        transitions: {
+            down: { target: 'over80' },
+            up: { target: 'over100' },
+        },
+    },
+    over80: {
+        transitions: {
+            down: { target: 'over70' },
+            up: { target: 'over90' },
+        },
+    },
+    over70: {
+        transitions: {
+            down: { target: 'over60' },
+            up: { target: 'over80' },
+        },
+    },
+    over60: {
+        transitions: {
+            down: { target: 'over50' },
+            up: { target: 'over70' },
         },
     },
     over50: {
         transitions: {
             down: { target: 'over40' },
-            up: { target: 'over100' },
+            up: { target: 'over60' },
         },
     },
     over40: {
