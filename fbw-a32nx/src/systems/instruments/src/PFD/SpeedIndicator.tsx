@@ -979,7 +979,7 @@ interface SpeedStateInfo {
   pfdTargetSpeed: Arinc429WordData;
   fcuSelectedSpeed: Arinc429WordData;
   speed: Arinc429WordData;
-  fmgcDiscreteWord5: Arinc429WordData;
+  fmgcDiscreteWord5: Arinc429Word;
 }
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
