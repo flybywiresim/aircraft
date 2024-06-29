@@ -21,10 +21,6 @@ interface ElevatorProps {
     onGround: boolean,
 }
 
-function wardToBoard(ward: string) {
-    return ward.replace('WARD', 'BOARD');
-}
-
 export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) => {
     const [elevatorDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side}_${position}_DEFLECTION`, 'number', 100);
 

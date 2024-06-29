@@ -23,15 +23,13 @@ export function deflectionToYOffset(deflection: number, maxDeflection: number): 
 }
 
 export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) => {
-    const deflectionInfoValid = true;
-
     const [spoilerDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_SPOILER_${position}_${side}_DEFLECTION`, 'number', 100);
     const maxDeflection = position >= 3 ? 50 : 30;
 
     const deflectionYVal = deflectionToYOffset(spoilerDeflection * 50, maxDeflection);
 
-    const powerSource1Avail = true;
-    const powerSource2Avail = true;
+    const [hydPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'boolean', 1000);
+    const [elecPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'boolean', 1000);
 
     let yOffset: number;
     if (position <= 2) {
@@ -44,7 +42,9 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) =>
         yOffset = -12;
     }
 
-    const powerAvail = powerSource1Avail || powerSource2Avail;
+    // On ground, elec motors only active if G HYD system is pressurized
+    const powerAvail = onGround ? hydPowerAvailable : hydPowerAvailable || elecPowerAvailable;
+    const deflectionInfoValid = powerAvail;
 
     const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail && position >= 3;
 
@@ -61,14 +61,6 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) =>
             <path className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`} d={`m0,0 h15 v${deflectionYVal} h-16 z`} />
 
             <path className={`Amber SW4 LineRound ${!deflectionInfoValid ? '' : 'Hide'}`} d='m1,-2 v-31 M14,-2 v-31' />
-
-            <text
-                x={-1}
-                y={0}
-                className={`Amber F32 ${!deflectionInfoValid ? '' : 'Hide'}`}
-            >
-                X
-            </text>
         </g>
     );
 };
