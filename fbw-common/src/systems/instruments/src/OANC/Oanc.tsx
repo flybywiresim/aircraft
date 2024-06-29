@@ -897,10 +897,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
+    const distToArpt = this.ppos && this.arpCoordinates ? distanceTo(this.ppos, this.arpCoordinates) : 9999;
+
+    // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
+    const airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
+
     if (this.arpCoordinates) {
-      this.airportWithinRange.set(
-        distanceTo(this.ppos, this.arpCoordinates) < this.props.zoomValues[this.zoomLevelIndex.get()] + 1,
-      ); // Add 1nm for airport dimension
+      this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
       this.airportBearing.set(bearingTo(this.ppos, this.arpCoordinates));
     }
 
@@ -953,8 +956,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
     this.arpReferencedMapParams.compute(this.arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
 
-    // eslint-disable-next-line prefer-const
-    let [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
+    let [offsetX, offsetY]: [number, number] = [0, 0];
+    if (airportTooFarAwayAndInArcMode) {
+      const shiftBy = 5 * Math.max(this.canvasWidth.get(), this.canvasHeight.get());
+      [offsetX, offsetY] = [shiftBy, shiftBy];
+    } else {
+      [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
+    }
+    console.log(offsetX, offsetY);
 
     [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
