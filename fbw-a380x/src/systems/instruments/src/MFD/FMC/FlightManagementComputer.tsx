@@ -10,7 +10,15 @@ import {
   getFlightPhaseManager,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
-import { ArraySubject, ClockEvents, EventBus, Subject, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  EventBus,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -21,6 +29,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import {
   DatabaseItem,
   EfisSide,
+  FailuresConsumer,
   Fix,
   NXDataStore,
   UpdateThrottler,
@@ -42,6 +51,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
+import { A380Failure } from '@failures';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -104,7 +114,7 @@ export class FlightManagementComputer implements FmcInterface {
     R: new EfisInterface('R', this.flightPlanService),
   };
 
-  #guidanceController: GuidanceController;
+  #guidanceController!: GuidanceController;
 
   get guidanceController() {
     return this.#guidanceController;
@@ -124,7 +134,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation);
 
-  private efisSymbols: EfisSymbols<number>;
+  private efisSymbols!: EfisSymbols<number>;
 
   private flightPhaseManager = getFlightPhaseManager();
 
@@ -142,7 +152,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   // TODO make private, and access methods through FmcInterface
-  public acInterface: FmcAircraftInterface;
+  public acInterface!: FmcAircraftInterface;
 
   public revisedWaypointIndex = Subject.create<number | null>(null);
 
@@ -152,45 +162,92 @@ export class FlightManagementComputer implements FmcInterface {
 
   public enginesWereStarted = Subject.create<boolean>(false);
 
+  private readonly failureKey =
+    this.instance === FmcIndex.FmcA
+      ? A380Failure.FmcA
+      : this.instance === FmcIndex.FmcB
+        ? A380Failure.FmcB
+        : A380Failure.FmcC;
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
-    private bus: EventBus,
+    private readonly bus: EventBus,
+    private readonly isPowered: Subscribable<boolean>,
     mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
-    this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
+    // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
+    if (this.instance === FmcIndex.FmcA) {
+      this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
-    this.flightPlanService.createFlightPlans();
-    this.#guidanceController = new GuidanceController(
-      this.fmgc,
-      this.flightPlanService,
-      this.efisInterfaces,
-      a380EfisRangeSettings,
-      A380AircraftConfig,
-    );
-    this.efisSymbols = new EfisSymbols(
-      this.#guidanceController,
-      this.flightPlanService,
-      this.navaidTuner,
-      this.efisInterfaces,
-      a380EfisRangeSettings,
-    );
+      this.flightPlanService.createFlightPlans();
+      this.#guidanceController = new GuidanceController(
+        this.fmgc,
+        this.flightPlanService,
+        this.efisInterfaces,
+        a380EfisRangeSettings,
+        A380AircraftConfig,
+      );
+      this.efisSymbols = new EfisSymbols(
+        this.#guidanceController,
+        this.flightPlanService,
+        this.navaidTuner,
+        this.efisInterfaces,
+        a380EfisRangeSettings,
+      );
 
-    this.navaidTuner.init();
-    this.efisSymbols.init();
-    this.flightPhaseManager.init();
-    this.#guidanceController.init();
-    this.fmgc.guidanceController = this.#guidanceController;
+      this.navaidTuner.init();
+      this.efisSymbols.init();
+      this.flightPhaseManager.init();
+      this.#guidanceController.init();
+      this.fmgc.guidanceController = this.#guidanceController;
+
+      this.initSimVars();
+
+      this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
+
+      const sub = bus.getSubscriber<ClockEvents & MfdSimvars>();
+
+      this.subs.push(
+        sub
+          .on('realTime')
+          .atFrequency(1)
+          .handle((_t) => {
+            if (this.enginesWereStarted.get() === false) {
+              const flightPhase = this.fmgc.getFlightPhase();
+              const oneEngineWasStarted =
+                SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||
+                SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20 ||
+                SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20 ||
+                SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20;
+              this.enginesWereStarted.set(
+                flightPhase >= FmgcFlightPhase.Takeoff ||
+                  (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted),
+              );
+            }
+          }),
+      );
+
+      this.subs.push(
+        this.enginesWereStarted.sub((val) => {
+          if (
+            val === true &&
+            this.flightPlanService.hasActive &&
+            !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
+          ) {
+            this.flightPlanService.active.setPerformanceData('costIndex', 0);
+          }
+        }),
+      );
+    }
+
+    this.failuresConsumer.register(this.failureKey);
 
     let lastUpdateTime = Date.now();
-
-    this.initSimVars();
-
-    this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
-
     setInterval(() => {
       const now = Date.now();
       const dt = now - lastUpdateTime;
@@ -200,39 +257,7 @@ export class FlightManagementComputer implements FmcInterface {
       lastUpdateTime = now;
     }, 100);
 
-    const sub = bus.getSubscriber<ClockEvents & MfdSimvars>();
-
-    this.subs.push(
-      sub
-        .on('realTime')
-        .atFrequency(1)
-        .handle((_t) => {
-          if (this.enginesWereStarted.get() === false) {
-            const flightPhase = this.fmgc.getFlightPhase();
-            const oneEngineWasStarted =
-              SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||
-              SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20 ||
-              SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20 ||
-              SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20;
-            this.enginesWereStarted.set(
-              flightPhase >= FmgcFlightPhase.Takeoff ||
-                (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted),
-            );
-          }
-        }),
-    );
-
-    this.subs.push(
-      this.enginesWereStarted.sub((val) => {
-        if (
-          val === true &&
-          this.flightPlanService.hasActive &&
-          !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
-        ) {
-          this.flightPlanService.active.setPerformanceData('costIndex', 0);
-        }
-      }),
-    );
+    console.log(`${FmcIndex[this.instance]} initialized.`);
   }
 
   public revisedWaypoint(): Fix | undefined {
@@ -918,6 +943,26 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
+    if (!this.isPowered.get() || this.failuresConsumer.isActive(this.failureKey)) {
+      SimVar.SetSimVarValue(
+        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+        SimVarValueType.Bool,
+        false,
+      );
+      return;
+    } else {
+      SimVar.SetSimVarValue(
+        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+        SimVarValueType.Bool,
+        true,
+      );
+    }
+
+    // Stop early, if not FmcA
+    if (this.instance !== FmcIndex.FmcA) {
+      return;
+    }
+
     this.flightPhaseManager.shouldActivateNextPhase(dt);
     this.navaidSelectionManager.update(dt);
     this.landingSystemSelectionManager.update(dt);

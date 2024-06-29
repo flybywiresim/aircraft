@@ -23,6 +23,12 @@ export type MfdSimvars = {
   gpwsSysOff: boolean;
   gpwsGsInhibit: boolean;
   gpwsFlapsInhibit: boolean;
+  dcBusEss: boolean;
+  dcBus1: boolean;
+  dcBus2: boolean;
+  fmcAIsHealthy: boolean;
+  fmcBIsHealthy: boolean;
+  fmcCIsHealthy: boolean;
 };
 
 export type InternalKccuKeyEvent = {
@@ -52,6 +58,12 @@ export enum MfdVars {
   gpwsSysOff = 'L:A32NX_GPWS_SYS_OFF',
   gpwsGsInhibit = 'L:A32NX_GPWS_GS_OFF',
   gpwsFlapsInhibit = 'L:A32NX_GPWS_FLAPS_OFF',
+  dcBusEss = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED',
+  dcBus1 = 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED',
+  dcBus2 = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
+  fmcAIsHealthy = 'L:A32NX_FMC_A_IS_HEALTHY',
+  fmcBIsHealthy = 'L:A32NX_FMC_B_IS_HEALTHY',
+  fmcCIsHealthy = 'L:A32NX_FMC_C_IS_HEALTHY',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -79,6 +91,12 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['gpwsSysOff', { name: MfdVars.gpwsSysOff, type: SimVarValueType.Bool }],
     ['gpwsGsInhibit', { name: MfdVars.gpwsGsInhibit, type: SimVarValueType.Bool }],
     ['gpwsFlapsInhibit', { name: MfdVars.gpwsFlapsInhibit, type: SimVarValueType.Bool }],
+    ['dcBusEss', { name: MfdVars.dcBusEss, type: SimVarValueType.Bool }],
+    ['dcBus1', { name: MfdVars.dcBus1, type: SimVarValueType.Bool }],
+    ['dcBus2', { name: MfdVars.dcBus2, type: SimVarValueType.Bool }],
+    ['fmcAIsHealthy', { name: MfdVars.fmcAIsHealthy, type: SimVarValueType.Bool }],
+    ['fmcBIsHealthy', { name: MfdVars.fmcBIsHealthy, type: SimVarValueType.Bool }],
+    ['fmcCIsHealthy', { name: MfdVars.fmcCIsHealthy, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

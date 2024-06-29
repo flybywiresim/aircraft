@@ -4,10 +4,12 @@ import {
   ClockEvents,
   ComponentProps,
   Consumer,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
   HEvent,
+  MappedSubject,
   Subject,
   Subscribable,
   VNode,
@@ -64,6 +66,8 @@ export enum InteractionMode {
 }
 
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+
   #uiService = new MfdUiService(this.props.captOrFo);
 
   get uiService() {
@@ -74,11 +78,44 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
-  private displayBrightness = Subject.create(0);
+  private readonly displayBrightness = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged(),
+    70,
+  );
 
-  private displayPowered = Subject.create(false);
+  private readonly displayPowered = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'elec' : 'elecFo').whenChanged(),
+    false,
+  );
 
-  private activeFmsSource = Subject.create<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>('FMS 1');
+  private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob').whenChanged(), 0);
+
+  private readonly fmcAIsHealthy = ConsumerSubject.create(this.sub.on('fmcAIsHealthy').whenChanged(), true);
+
+  private readonly fmcBIsHealthy = ConsumerSubject.create(this.sub.on('fmcBIsHealthy').whenChanged(), true);
+
+  private readonly fmcCIsHealthy = ConsumerSubject.create(this.sub.on('fmcCIsHealthy').whenChanged(), true);
+
+  private readonly activeFmsSource = MappedSubject.create(
+    ([knob, a, b]) => {
+      const capt = a ? 'FMS 1' : 'FMS 1-C';
+      const fo = b ? 'FMS 2' : 'FMS 2-C';
+
+      switch (knob) {
+        case 0:
+          return fo;
+        case 1:
+          return this.props.captOrFo === 'CAPT' ? capt : fo;
+        case 2:
+          return capt;
+        default:
+          return 'FMS 1';
+      }
+    },
+    this.fmsDataKnob,
+    this.fmcAIsHealthy,
+    this.fmcBIsHealthy,
+  );
 
   private mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
@@ -237,41 +274,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             default:
               break;
           }
-        }
-      });
-
-    const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
-
-    sub
-      .on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayBrightness.set(value);
-      });
-
-    sub
-      .on(isCaptainSide ? 'elec' : 'elecFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayPowered.set(value);
-      });
-
-    sub
-      .on('fmsDataKnob')
-      .whenChanged()
-      .handle((val) => {
-        switch (val) {
-          case 0:
-            this.activeFmsSource.set('FMS 2');
-            break;
-          case 1:
-            this.activeFmsSource.set(isCaptainSide ? 'FMS 1' : 'FMS 2');
-            break;
-          case 2:
-            this.activeFmsSource.set('FMS 1');
-            break;
-          default:
-            this.activeFmsSource.set('FMS 1-C');
         }
       });
 
