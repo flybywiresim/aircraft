@@ -28,6 +28,14 @@ const Time = Object.freeze({
 class CDUFlightPlanPage {
 
     static ShowPage(mcdu, offset = 0, forPlan = 0) {
+        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+            mcdu.onUnload = () => {
+                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+            };
+        }
 
         // INIT
         function addLskAt(index, delay, callback) {

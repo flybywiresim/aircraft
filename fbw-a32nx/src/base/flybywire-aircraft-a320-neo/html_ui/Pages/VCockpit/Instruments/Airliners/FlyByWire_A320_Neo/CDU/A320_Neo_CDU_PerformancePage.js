@@ -4,6 +4,15 @@
 
 class CDUPerformancePage {
     static ShowPage(mcdu, forPlan, _phase = undefined) {
+        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+            mcdu.onUnload = () => {
+                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+            };
+        }
+
         mcdu.activeSystem = 'FMGC';
 
         switch (_phase || mcdu.flightPhaseManager.phase) {

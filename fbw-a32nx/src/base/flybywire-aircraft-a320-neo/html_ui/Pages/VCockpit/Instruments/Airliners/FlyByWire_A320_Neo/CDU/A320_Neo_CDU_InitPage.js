@@ -8,6 +8,15 @@ class CDUInitPage {
      * @param forPlan {number}
      */
     static ShowPage1(mcdu, forPlan = Fmgc.FlightPlanIndex.Active) {
+        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+            mcdu.onUnload = () => {
+                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+            };
+        }
+
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu, forPlan);
@@ -363,23 +372,32 @@ class CDUInitPage {
             mcdu._zeroFuelWeightZFWCGEntered &&
             (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
     }
-    static trySetFuelPred(mcdu) {
+    static trySetFuelPred(mcdu, forPlan) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
             setTimeout(() => {
                 if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) { //Double check as user can clear block fuel during timeout
                     mcdu._fuelPredDone = true;
                     if (mcdu.page.Current === mcdu.page.InitPageB) {
-                        CDUInitPage.ShowPage2(mcdu);
+                        CDUInitPage.ShowPage2(mcdu, forPlan);
                     }
                 }
             }, mcdu.getDelayFuelPred());
         }
     }
-    static ShowPage2(mcdu) {
+    static ShowPage2(mcdu, forPlan) {
+        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+            mcdu.onUnload = () => {
+                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+            };
+        }
+
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
         mcdu.activeSystem = 'FMGC';
-        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
+        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu, forPlan);
 
         const alternate = mcdu.flightPlanService.active ? mcdu.flightPlanService.active.alternateDestinationAirport : undefined;
 
@@ -425,8 +443,8 @@ class CDUInitPage {
             } else {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
-                    CDUInitPage.trySetFuelPred(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
+                    CDUInitPage.trySetFuelPred(mcdu, forPlan);
                 } else {
                     scratchpadCallback();
                 }
@@ -443,15 +461,15 @@ class CDUInitPage {
             if (mcdu._zeroFuelWeightZFWCGEntered && value !== mcdu.clrValue) { //Simulate delay if calculating trip data
                 if (await mcdu.trySetBlockFuel(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
-                    CDUInitPage.trySetFuelPred(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
+                    CDUInitPage.trySetFuelPred(mcdu, forPlan);
                 } else {
                     scratchpadCallback();
                 }
             } else {
                 if (await mcdu.trySetBlockFuel(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
                 } else {
                     scratchpadCallback();
                 }
@@ -467,7 +485,7 @@ class CDUInitPage {
             mcdu.onRightInput[2] = async () => {
                 if (await mcdu.tryFuelPlanning()) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
                 }
             };
         }
@@ -477,7 +495,7 @@ class CDUInitPage {
             mcdu.onRightInput[2] = async () => {
                 if (await mcdu.tryFuelPlanning()) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
                     CDUInitPage.trySetFuelPred(mcdu);
                 }
             };
@@ -501,7 +519,7 @@ class CDUInitPage {
                     if (mcdu.trySetTaxiFuelWeight(value)) {
                         CDUInitPage.updateTowIfNeeded(mcdu);
                         if (mcdu.page.Current === mcdu.page.InitPageB) {
-                            CDUInitPage.ShowPage2(mcdu);
+                            CDUInitPage.ShowPage2(mcdu, forPlan);
                         }
                     } else {
                         scratchpadCallback();
@@ -510,7 +528,7 @@ class CDUInitPage {
             } else {
                 if (mcdu.trySetTaxiFuelWeight(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
                 } else {
                     scratchpadCallback();
                 }
@@ -529,7 +547,7 @@ class CDUInitPage {
         }
         mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
             if (await mcdu.trySetRouteReservedPercent(value)) {
-                CDUInitPage.ShowPage2(mcdu);
+                CDUInitPage.ShowPage2(mcdu, forPlan);
             } else {
                 scratchpadCallback();
             }
@@ -548,7 +566,7 @@ class CDUInitPage {
         }
         mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
             if (await mcdu.trySetRouteFinalTime(value)) {
-                CDUInitPage.ShowPage2(mcdu);
+                CDUInitPage.ShowPage2(mcdu, forPlan);
             } else {
                 scratchpadCallback();
             }
@@ -567,7 +585,7 @@ class CDUInitPage {
 
             mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
                 if (await mcdu.trySetAverageWind(value)) {
-                    CDUInitPage.ShowPage2(mcdu);
+                    CDUInitPage.ShowPage2(mcdu, forPlan);
                 } else {
                     scratchpadCallback();
                 }
@@ -605,7 +623,7 @@ class CDUInitPage {
                     setTimeout(async () => {
                         if (await mcdu.trySetRouteFinalFuel(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
+                                CDUInitPage.ShowPage2(mcdu, forPlan);
                             }
                         } else {
                             scratchpadCallback();
@@ -637,7 +655,7 @@ class CDUInitPage {
                     setTimeout(async () => {
                         if (await mcdu.trySetRouteAlternateFuel(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
+                                CDUInitPage.ShowPage2(mcdu, forPlan);
                             }
                         } else {
                             scratchpadCallback();
@@ -676,7 +694,7 @@ class CDUInitPage {
                     setTimeout(async () => {
                         if (await mcdu.trySetRouteReservedFuel(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
+                                CDUInitPage.ShowPage2(mcdu, forPlan);
                             }
                         } else {
                             scratchpadCallback();
@@ -699,7 +717,7 @@ class CDUInitPage {
                     setTimeout(async () => {
                         if (await mcdu.trySetAverageWind(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
+                                CDUInitPage.ShowPage2(mcdu, forPlan);
                             }
                         } else {
                             scratchpadCallback();
@@ -717,7 +735,7 @@ class CDUInitPage {
                     setTimeout(async () => {
                         if (await mcdu.trySetMinDestFob(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
+                                CDUInitPage.ShowPage2(mcdu, forPlan);
                             }
                         } else {
                             scratchpadCallback();
