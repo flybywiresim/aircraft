@@ -3,8 +3,7 @@
 
 // This rule just informs about a possible optimization
 /* eslint-disable no-await-in-loop */
-import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
-import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Coordinates, bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 // FIXME remove msfs-sdk dep
 import { AirportClassMask } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';

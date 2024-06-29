@@ -311,13 +311,13 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       <p key="wu" className="absolute top-0 font-mono text-sm font-medium" style={weightUnits}>
         {usingMetric ? 'x 1000 kgs' : 'x 1000 lbs'}
       </p>
-      <p key="mtow" className="text-theme-highlight absolute top-0 font-mono font-medium drop-shadow" style={mtow}>
+      <p key="mtow" className="absolute top-0 font-mono font-medium text-theme-highlight drop-shadow" style={mtow}>
         {flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}
       </p>
       <p key="mldw" className="absolute top-0 font-mono font-medium text-lime-500" style={mlw}>
         MLDW
       </p>
-      <p key="mzfw" className="text-theme-text absolute top-0 font-mono font-medium" style={mzfw}>
+      <p key="mzfw" className="absolute top-0 font-mono font-medium text-theme-text" style={mzfw}>
         MZFW
       </p>
     </div>

@@ -16,6 +16,7 @@ import {
   VhfNavaidType,
 } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 
 interface NavRadioTuningStatus {
   frequency: number | null;
@@ -259,6 +260,12 @@ export class NavaidTuner {
 
   private readonly flightPhaseManager: FlightPhaseManager;
 
+  /** FM 1 and 2 backbeam selection LVAR output. */
+  private readonly backbeamOutput = [
+    { selected: Subject.create(false), localVar: 'L:A32NX_FM1_BACKBEAM_SELECTED' },
+    { selected: Subject.create(false), localVar: 'L:A32NX_FM2_BACKBEAM_SELECTED' },
+  ];
+
   /** Whether the tuning event blocked message has been shown before. It is only shown once. */
   private blockEventMessageShown = false;
 
@@ -279,6 +286,10 @@ export class NavaidTuner {
     // FIXME use the framework manager when the framework is updated
     Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
     NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.call('INTERCEPT_KEY_EVENT', key, 1));
+
+    for (const backbeam of this.backbeamOutput) {
+      backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -405,9 +416,12 @@ export class NavaidTuner {
     for (const [i, mmr] of this.mmrTuningStatus.entries()) {
       const autoFacility = this.landingSystemSelectionManager.selectedIls ?? undefined;
       const autoCourse = this.landingSystemSelectionManager.selectedLocCourse;
+      const autoBackcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
       if (
         !mmr.manual &&
-        mmr.facility?.databaseId !== autoFacility?.databaseId &&
+        (mmr.facility?.databaseId !== autoFacility?.databaseId ||
+          mmr.course !== autoCourse ||
+          mmr.backcourse !== autoBackcourse) &&
         (autoCourse !== null || autoFacility === undefined)
       ) {
         mmr.databaseCourse = autoCourse;
@@ -422,7 +436,7 @@ export class NavaidTuner {
       }
 
       this.tuneMmrIlsFrequency((i + 1) as 1 | 2, mmr.frequency);
-      this.tuneMmrCourse((i + 1) as 1 | 2, mmr.course);
+      this.tuneMmrCourse((i + 1) as 1 | 2, mmr.course, mmr.backcourse);
     }
 
     for (const [i, adf] of this.adfTuningStatus.entries()) {
@@ -505,7 +519,7 @@ export class NavaidTuner {
    * @param frequency ILS course in degrees
    * @returns promise resolved when the tuning is complete
    */
-  private async tuneMmrCourse(index: 1 | 2, course: number | null): Promise<unknown> {
+  private async tuneMmrCourse(index: 1 | 2, course: number | null, backcourse = false): Promise<unknown> {
     if (this.isMmrTuningLocked()) {
       return false;
     }
@@ -515,6 +529,7 @@ export class NavaidTuner {
       this.lastMmrCourses[index - 1] = course;
       return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index + 2}_SET`, true, course ?? 0, 0, 0);
     }
+    this.backbeamOutput[index - 1].selected.set(backcourse);
     return false;
   }
 

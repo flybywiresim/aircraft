@@ -27,12 +27,12 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
   return (
     <Link
       to={`/failures/comfort/${pathify(ataNumber.toString())}`}
-      className="hover:border-theme-highlight flex flex-row space-x-4 rounded-md border-2 border-transparent p-2 transition duration-100"
+      className="flex flex-row space-x-4 rounded-md border-2 border-transparent p-2 transition duration-100 hover:border-theme-highlight"
     >
-      <div className="bg-theme-accent font-title flex w-1/5 items-center justify-center rounded-md text-5xl font-bold">
+      <div className="flex w-1/5 items-center justify-center rounded-md bg-theme-accent font-title text-5xl font-bold">
         {`ATA ${ataNumber}`}
 
-        <div className="text-utility-red relative -right-7 bottom-16 inline-block h-0 w-0 fill-current">
+        <div className="relative -right-7 bottom-16 inline-block h-0 w-0 fill-current text-utility-red">
           {hasActiveFailure && (
             <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
               <circle cx={10} cy={10} r={5} />
@@ -70,7 +70,7 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
       </ScrollableContainer>
       {filteredChapters.length === 0 && (
         <div
-          className="border-theme-accent mt-4 flex items-center justify-center rounded-md border-2"
+          className="mt-4 flex items-center justify-center rounded-md border-2 border-theme-accent"
           style={{ height: '48rem' }}
         >
           <p>{t('Failures.NoItemsFound')}</p>

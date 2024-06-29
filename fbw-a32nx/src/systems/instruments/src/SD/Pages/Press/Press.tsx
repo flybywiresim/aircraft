@@ -155,7 +155,7 @@ export const PressPage: FC = () => {
             textNudgeX={5}
           />
           <GaugeMarkerComponent
-            value={MathUtils.clamp(MathUtils.round(deltaPsi, 1), -1, 9)}
+            value={MathUtils.clamp(MathUtils.round(deltaPsi, 0.1), -1, 9)}
             x={dpx}
             y={y}
             min={-1}
