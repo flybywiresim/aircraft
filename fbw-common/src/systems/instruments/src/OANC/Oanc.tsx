@@ -963,7 +963,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     } else {
       [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
     }
-    console.log(offsetX, offsetY);
 
     [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
