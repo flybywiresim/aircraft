@@ -67,19 +67,19 @@ export const PromptModal: FC<PromptModalProps> = ({
   };
 
   return (
-    <div className="border-theme-accent bg-theme-body w-5/12 rounded-xl border-2 p-8">
+    <div className="w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
       <h1 className="font-bold">{title}</h1>
       <p className="mt-4">{bodyText}</p>
 
       <div className="mt-8 flex flex-row space-x-4">
         <div
-          className="border-theme-accent bg-theme-accent text-theme-text hover:border-theme-highlight hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+          className="flex w-full items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent px-8 py-2 text-center text-theme-text transition duration-100 hover:border-theme-highlight hover:bg-theme-body hover:text-theme-highlight"
           onClick={handleCancel}
         >
           {cancelText ?? t('Modals.Cancel')}
         </div>
         <div
-          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+          className="flex w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
           onClick={handleConfirm}
         >
           {confirmText ?? t('Modals.Confirm')}
@@ -98,11 +98,11 @@ export const AlertModal: FC<AlertModalProps> = ({ title, bodyText, onAcknowledge
   };
 
   return (
-    <div className="border-theme-accent bg-theme-body w-5/12 rounded-xl border-2 p-8">
+    <div className="w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
       <h1 className="font-bold">{title}</h1>
       <p className="mt-4">{bodyText}</p>
       <div
-        className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight mt-8 flex w-full items-center justify-center rounded-md border-2 px-8 py-2 text-center transition duration-100"
+        className="mt-8 flex w-full items-center justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-center text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
         onClick={handleAcknowledge}
       >
         {acknowledgeText ?? t('Modals.Okay')}
@@ -118,7 +118,7 @@ export const ModalContainer = () => {
     <div
       className={`fixed inset-0 z-50 transition duration-200 ${modal ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
     >
-      <div className="bg-theme-body absolute inset-0 opacity-75" />
+      <div className="absolute inset-0 bg-theme-body opacity-75" />
       <div className="absolute inset-0 flex flex-col items-center justify-center">{modal}</div>
     </div>
   );

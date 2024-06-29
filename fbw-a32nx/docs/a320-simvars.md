@@ -2056,6 +2056,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates whether to trigger a step deleted message on the MCDU
 
+- `A32NX_FM{number}_BACKBEAM_SELECTED`
+    - Bool
+    - Indicates to the FG that a localiser back beam is tuned.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -2841,7 +2845,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       |:---:|:----------------------------------------------------:|
       | 11  | System in control                                    |
       | 12  | System status - fail                                 |
-      | 13  | Excessive residual pressure - warn                   |
+      | 13  | Not used                                             |
       | 14  | Excessive cabin altitude - warn                      |
       | 15  | Low differential pressure - warn                     |
       | 16  | Preplanned desc inf - too quick *                    |
@@ -2916,7 +2920,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_PRESS_EXCESS_RESIDUAL_PR
     - Bool
-    - **Deprecated in A32NX**
     - True when FWC condition for "EXCES RESIDUAL PR" is met
 
 - A32NX_PRESS_LOW_DIFF_PR
