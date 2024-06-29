@@ -2,14 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  Clock,
-  FSComponent,
-  HEventPublisher,
-  InstrumentBackplane,
-  StallWarningPublisher,
-  Subject,
-} from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
@@ -50,8 +43,6 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
 
-  private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 1);
-
   private readonly fwcPublisher = new FwcPublisher(this.bus);
 
   /**
@@ -72,7 +63,6 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('Dmc', this.dmcPublisher);
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
-    this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
   }
 
