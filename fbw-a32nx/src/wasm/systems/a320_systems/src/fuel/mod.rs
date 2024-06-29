@@ -48,7 +48,7 @@ pub struct A320Fuel {
     fuel_system: FuelSystem<5>,
 }
 impl A320Fuel {
-    pub const A320_FUEL: [FuelInfo<'_>; 5] = [
+    pub const A320_FUEL: [FuelInfo<'static>; 5] = [
         FuelInfo {
             fuel_tank_id: "FUEL TANK CENTER QUANTITY",
             position: (-4.5, 0., 1.),

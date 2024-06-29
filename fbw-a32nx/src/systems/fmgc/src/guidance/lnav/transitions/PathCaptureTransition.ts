@@ -37,13 +37,18 @@ import {
 } from 'msfs-geo';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { isCourseReversalLeg } from '@fmgc/guidance/lnav/legs';
+import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
+import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
+import { RFLeg } from '../legs/RF';
 
-export type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
+export type PrevLeg = AFLeg | CALeg | CDLeg | CRLeg | FALeg | FDLeg | HALeg | HFLeg | HMLeg | RFLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
-export type NextLeg = AFLeg | CFLeg | /* FALeg | */ TFLeg;
+export type NextLeg = AFLeg | CFLeg | FDLeg | FALeg | FMLeg | TFLeg;
 type NextReversionLeg = PILeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));
@@ -114,14 +119,13 @@ export class PathCaptureTransition extends Transition {
     this.computedTurnDirection = TurnDirection.Either;
     this.computedTargetTrack = this.nextLeg.inboundCourse;
 
-    let prevLegTermFix: LatLongAlt | Coordinates;
+    let prevLegTermFix: Coordinates;
     if (this.previousLeg instanceof AFLeg) {
       prevLegTermFix = this.previousLeg.arcEndPoint;
+    } else if ('lat' in this.previousLeg.terminationWaypoint) {
+      prevLegTermFix = this.previousLeg.terminationWaypoint;
     } else {
-      prevLegTermFix =
-        this.previousLeg.terminationWaypoint instanceof WayPoint
-          ? this.previousLeg.terminationWaypoint.infos.coordinates
-          : this.previousLeg.terminationWaypoint;
+      prevLegTermFix = this.previousLeg.terminationWaypoint.location;
     }
 
     // Start the transition before the termination fix if we are reverted because of an overshoot
@@ -133,8 +137,8 @@ export class PathCaptureTransition extends Transition {
 
       // If we are inbound of a TF leg, we use getIntermediatePoint in order to get more accurate results
       if ('from' in this.previousLeg) {
-        const start = this.previousLeg.from.infos.coordinates;
-        const end = this.previousLeg.to.infos.coordinates;
+        const start = (this.previousLeg as TFLeg).from.location;
+        const end = this.previousLeg.to.location;
         const length = distanceTo(start, end);
 
         const ratio = (length - this.tad) / length;
@@ -242,7 +246,7 @@ export class PathCaptureTransition extends Transition {
         const intersects = smallCircleGreatCircleIntersection(
           turnCenter,
           radius,
-          this.nextLeg.from.infos.coordinates,
+          this.nextLeg.from.location,
           this.nextLeg.outboundCourse,
         );
 
@@ -276,7 +280,7 @@ export class PathCaptureTransition extends Transition {
         const bearingTcFtp = bearingTo(turnCenter, intercept);
 
         const angleToLeg = MathUtils.diffAngle(
-          Avionics.Utils.clampAngle(bearingTcFtp - (turnDirection > 0 ? -90 : 90)),
+          MathUtils.normalise360(bearingTcFtp - (turnDirection > 0 ? -90 : 90)),
           this.nextLeg.outboundCourse,
         );
 
@@ -350,8 +354,8 @@ export class PathCaptureTransition extends Transition {
     if ('from' in this.nextLeg) {
       const intersections = placeBearingIntersection(
         finalTurningPoint,
-        Avionics.Utils.clampAngle(targetTrack + courseChange),
-        this.nextLeg.from.infos.coordinates,
+        MathUtils.normalise360(targetTrack + courseChange),
+        this.nextLeg.from.location,
         this.nextLeg.outboundCourse,
       );
 
@@ -517,9 +521,7 @@ export class PathCaptureTransition extends Transition {
     return `PATH CAPTURE(${this.previousLeg.repr} TO ${this.nextLeg.repr})`;
   }
 
-  // This is for VNAV to estimate the amount of track miles left
-  // TODO: I'm not sure this is really used IRL. I think it does it through the direct distance to fix and TAE.
-  getActualDistanceToGo(ppos: LatLongData, trueTrack: number): NauticalMiles {
+  getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles {
     let dtg = 0;
 
     for (const path of this.predictedPath) {

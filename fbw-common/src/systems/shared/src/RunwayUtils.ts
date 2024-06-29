@@ -4,11 +4,21 @@
 import { RunwayDesignatorChar } from './navdata';
 
 export class RunwayUtils {
-  public static runwayString(runwayNumber: number, runwayDesignator: RunwayDesignatorChar): string {
-    if (runwayNumber > 0) {
-      return `${runwayNumber.toFixed(0).padStart(2, '0')}${RunwayUtils.designatorString(runwayDesignator)}`;
+  public static runwayString(runwayIdent: string): string {
+    const regex = /\w{4}(\d{2})([LCRTABW])?/;
+    const match = regex.exec(runwayIdent);
+
+    if (!match) {
+      return '';
     }
-    return '';
+
+    const [, number, designator] = match;
+
+    if (number === '00') {
+      return '';
+    }
+
+    return `${number}${designator ?? ''}`;
   }
 
   public static designatorString(runwayDesignator: RunwayDesignatorChar): string {
