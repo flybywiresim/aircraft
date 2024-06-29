@@ -22,6 +22,7 @@ import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanUtils } from './flightplanning/new/FlightPlanUtils';
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,
@@ -45,6 +46,7 @@ export {
   NavigationDatabaseBackend,
   NavigationDatabaseService,
   FlightPlanIndex,
+  FlightPlanUtils,
   FlightPhaseManager,
   getFlightPhaseManager,
   GuidanceController,

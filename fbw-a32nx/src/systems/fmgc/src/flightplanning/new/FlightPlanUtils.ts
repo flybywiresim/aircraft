@@ -4,6 +4,7 @@
 
 import { PathVector } from '@flybywiresim/fbw-sdk';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
 
 export class FlightPlanUtils {
   public static getAllPathVectorsInFlightPlan(
@@ -24,5 +25,21 @@ export class FlightPlanUtils {
     }
 
     return array;
+  }
+
+  /**
+   * Checks if two flight plan elements are the same, meaning they are either both discontinuities, or have the same UUID.
+   *
+   * A leg shared a UUID with another leg if one was created during a clone of the other.
+   *
+   * @param a the first element
+   * @param b the second element
+   */
+  public static areFlightPlanElementsSame(a: ReadonlyFlightPlanElement, b: ReadonlyFlightPlanElement) {
+    if (a.isDiscontinuity === true && b.isDiscontinuity === true) {
+      return true;
+    }
+
+    return a.isDiscontinuity === false && b.isDiscontinuity === false && a.uuid === b.uuid;
   }
 }

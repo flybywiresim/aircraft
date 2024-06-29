@@ -42,7 +42,6 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   createFlightPlans() {
     this.flightPlanManager.create(FlightPlanIndex.Active);
     this.flightPlanManager.create(FlightPlanIndex.Uplink);
-    this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
   }
 
   get(index: number) {
@@ -95,12 +94,15 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.has(FlightPlanIndex.Uplink);
   }
 
-  /**
-   * Copies the active flight plan into a secondary flight plan
-   *
-   * @param index the 1-indexed index of the secondary flight plan
-   */
-  async secondaryCopyFromActive(index = 1) {
+  async secondaryInit(index: number) {
+    if (this.flightPlanManager.has(FlightPlanIndex.FirstSecondary + index - 1)) {
+      return;
+    }
+
+    this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+  }
+
+  async secondaryCopyFromActive(index: number) {
     this.flightPlanManager.copy(
       FlightPlanIndex.Active,
       FlightPlanIndex.FirstSecondary + (index - 1),
@@ -122,6 +124,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+  }
+
+  async secondaryActivate(index: number) {
+    this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
+  }
+
+  async activeAndSecondarySwap(secIndex: number): Promise<void> {
+    this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
   }
 
   async temporaryInsert(): Promise<void> {

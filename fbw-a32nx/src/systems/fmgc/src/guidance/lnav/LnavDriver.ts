@@ -22,7 +22,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
-import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
+import { FlightPlanUtils } from '@fmgc/flightplanning/new/FlightPlanUtils';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -511,8 +511,9 @@ export class LnavDriver implements GuidanceComponent {
 
     // We see if what used to be the FROM/TO pair in the active plan is currently the FROM/TO in the secondary plan
     const shouldSequence =
-      this.areFlightPlanElementsSame(secFromLeg, activeFromLeg) &&
-      this.areFlightPlanElementsSame(secToLeg, activeToLeg);
+      secPlan.activeLegIndex === activePlan.activeLegIndex - 1 &&
+      FlightPlanUtils.areFlightPlanElementsSame(secFromLeg, activeFromLeg) &&
+      FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
 
     if (!shouldSequence) {
       if (LnavConfig.DEBUG_GUIDANCE) {
@@ -540,22 +541,6 @@ export class LnavDriver implements GuidanceComponent {
     }
 
     secPlan.sequence();
-  }
-
-  /**
-   * Checks if two flight plan elements are the same, meaning they are either both discontinuities, or have the same UUID.
-   *
-   * A leg shared a UUID with another leg if one was created during a clone of the other.
-   *
-   * @param a the first element
-   * @param b the second element
-   */
-  private areFlightPlanElementsSame(a: ReadonlyFlightPlanElement, b: ReadonlyFlightPlanElement) {
-    if (a.isDiscontinuity === true && b.isDiscontinuity === true) {
-      return true;
-    }
-
-    return a.isDiscontinuity === false && b.isDiscontinuity === false && a.uuid === b.uuid;
   }
 
   sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {

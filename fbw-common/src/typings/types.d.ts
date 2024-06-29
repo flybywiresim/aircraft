@@ -4,6 +4,7 @@ import {
     SelectedNavaidType as SelectedNavaidType_,
     SelectedNavaidMode as SelectedNavaidMode_,
     A320FlightPlanPerformanceData as A320FlightPlanPerformanceData_,
+    FlightPlanUtils as FlightPlanUtils_,
 } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
 import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
@@ -87,6 +88,8 @@ declare global {
         const FlightPlanIndex: typeof Index
 
         const FlightPhaseManager: typeof FlightPhaseManager_
+
+        const FlightPlanUtils: typeof FlightPlanUtils_
 
         const WaypointFactory: typeof WaypointFactory_
 

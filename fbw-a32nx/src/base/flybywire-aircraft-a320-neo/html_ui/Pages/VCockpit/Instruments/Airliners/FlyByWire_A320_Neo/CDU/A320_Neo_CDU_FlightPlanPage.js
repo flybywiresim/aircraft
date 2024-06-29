@@ -28,15 +28,6 @@ const Time = Object.freeze({
 class CDUFlightPlanPage {
 
     static ShowPage(mcdu, offset = 0, forPlan = 0) {
-        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
-            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
-            mcdu.onUnload = () => {
-                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
-            };
-        }
-
         // INIT
         function addLskAt(index, delay, callback) {
             mcdu.leftInputDelay[index] = (typeof delay === 'function') ? delay : () => delay;
@@ -56,6 +47,18 @@ class CDUFlightPlanPage {
             CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
         };
         mcdu.activeSystem = 'FMGC';
+
+        if (forPlan >= Fmgc.FlightPlanIndex.FirstSecondary) {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+            mcdu.onUnload = () => {
+                mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+                mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+            };
+        } else {
+            mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+            mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        }
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
