@@ -14,7 +14,12 @@ export class FlightPlanUtils {
   ) {
     const array: PathVector[] = []; // TODO optim alloc
 
-    for (let i = activeLegIndex; i < (missedApproach ? plan.legCount : plan.firstMissedApproachLegIndex); i++) {
+    const start = missedApproach
+      ? Math.max(plan.activeLegIndex, plan.firstMissedApproachLegIndex)
+      : plan.activeLegIndex;
+    const end = missedApproach ? plan.legCount : plan.firstMissedApproachLegIndex;
+
+    for (let i = start; i < end; i++) {
       const element = plan.elementAt(i);
 
       if (element.isDiscontinuity === true) {
