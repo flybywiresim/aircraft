@@ -572,14 +572,12 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1000.))
     }
 
-    pub fn is_excessive_residual_pressure(&self) -> bool {
-        self.cabin_delta_p() > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
-    }
-
     pub fn is_low_diff_pressure(&self) -> bool {
+        // Only emit the signal if delta pressure information is valid
         self.cabin_delta_p() < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
             && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
+            && self.adirs_data_is_valid
     }
 
     fn cabin_delta_p_out(&self) -> Pressure {
