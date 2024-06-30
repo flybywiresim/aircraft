@@ -96,8 +96,6 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
   }
 
   updateCgStatus() {
-    console.log('status | trim | cg | target', this.cgStatus.get(), this.trimPosition.get(), this.cgPercent.get(), this.cgToPitchTrim(this.cgPercent.get()));
-
     this.cgValue.instance.classList.remove(...this.cgValue.instance.classList);
     this.arrowRef.instance.classList.remove(...this.cgValue.instance.classList);
 
@@ -132,7 +130,6 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
     super.onAfterRender(node);
 
     this.cgStatus.sub(() => this.updateCgStatus(), true);
-    this.trimPosition.sub((it) => console.log(it));
   }
 
   render(): VNode {
