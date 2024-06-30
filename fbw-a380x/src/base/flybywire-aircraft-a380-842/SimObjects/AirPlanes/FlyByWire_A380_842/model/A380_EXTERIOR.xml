@@ -207,19 +207,19 @@
                 <!-- Inboard -->
                 <UseTemplate Name="FBW_Control_Surface_Template">
                     <ANIM_NAME>l_aileron1_percent_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION, number) -1 *</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- Middle -->
                 <UseTemplate Name="FBW_Control_Surface_Template">
                     <ANIM_NAME>l_aileron2_percent_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_MIDDLE_DEFLECTION, number) -1 *</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_MIDDLE_DEFLECTION, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- Outboard -->
                 <UseTemplate Name="FBW_Control_Surface_Template">
                     <ANIM_NAME>l_aileron3_percent_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_OUTWARD_DEFLECTION, number) -1 *</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_AILERON_LEFT_OUTWARD_DEFLECTION, number)</DEFLECTION_CODE>
                 </UseTemplate>
             </Component>
 

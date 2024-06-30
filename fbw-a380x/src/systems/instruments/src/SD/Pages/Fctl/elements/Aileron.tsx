@@ -57,7 +57,7 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) =>
             <VerticalDeflectionIndication
                 powerAvail={powerSource1Avail || powerSource2Avail}
                 deflectionInfoValid={deflectionInfoValid}
-                deflection={aileronDeflection * MIN_VERTICAL_DEFLECTION}
+                deflection={(side === AileronSide.Left ? -aileronDeflection : aileronDeflection) * MIN_VERTICAL_DEFLECTION}
                 showAileronDroopSymbol
                 onGround={onGround}
             />
