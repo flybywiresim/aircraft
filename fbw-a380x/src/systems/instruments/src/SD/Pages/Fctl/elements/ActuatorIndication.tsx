@@ -12,9 +12,8 @@ export enum HydraulicPowerSource {
 
 export enum ElecPowerSource {
     AcEss = 'AC_ESS',
-    AcEha  = 'AC_EHA', // FIXME implement EHA AC in systems
+    AcEha  = '247XP',
     Ac1 = 'AC_1',
-    Ac3 = 'AC_3',
 }
 
 export function powerSourceIsHydraulic(v: any): v is HydraulicPowerSource {

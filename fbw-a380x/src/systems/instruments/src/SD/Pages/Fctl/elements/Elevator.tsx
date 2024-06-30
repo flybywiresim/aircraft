@@ -31,7 +31,7 @@ export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) 
     let actuatorIndicationX: number;
     if ((side === ElevatorSide.Left && position === ElevatorPosition.Outboard)
         || (side === ElevatorSide.Right && position === ElevatorPosition.Inboard)) {
-        elecPowerSource = ElecPowerSource.Ac3;
+        elecPowerSource = ElecPowerSource.AcEha;
         actuatorIndicationX = -13;
     } else {
         elecPowerSource = ElecPowerSource.AcEss;

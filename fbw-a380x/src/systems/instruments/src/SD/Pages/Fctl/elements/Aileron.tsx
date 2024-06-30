@@ -36,7 +36,7 @@ export const Aileron: FC<AileronProps> = ({ x, y, side, position, onGround }) =>
         actuator2PowerSource = ElecPowerSource.AcEss;
     } else {
         actuator1PowerSource = HydraulicPowerSource.Green;
-        actuator2PowerSource = ElecPowerSource.Ac3;
+        actuator2PowerSource = ElecPowerSource.AcEha;
     }
 
     let actuatorIndicationX: number;
