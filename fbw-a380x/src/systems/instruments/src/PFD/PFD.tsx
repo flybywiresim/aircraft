@@ -15,6 +15,7 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 import './style.scss';
+import { PitchTrimIndicator } from 'instruments/src/PFD/PitchTrimIndicator';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -56,6 +57,8 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
   private radioAltitudeFilter = new LagFilter(5);
 
   private failuresConsumer;
+
+  private pitchTrimIndicatorVisible = Subject.create(true);
 
   constructor(props: PFDProps) {
     super(props);
@@ -173,8 +176,9 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           <MachNumber bus={this.props.bus} />
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
 
-          <LowerArea bus={this.props.bus} />
+          <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} />
         </svg>
+        <PitchTrimIndicator bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
       </CdsDisplayUnit>
     );
   }

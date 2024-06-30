@@ -1,8 +1,9 @@
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
-export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
+export class LowerArea extends DisplayComponent<{ bus: ArincEventBus, pitchTrimIndicatorVisible: Subscribable<boolean> }> {
   render(): VNode {
     return (
       <g>
@@ -10,8 +11,9 @@ export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
         <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
         <Memos />
-        <Limitations />
         <FlapsIndicator bus={this.props.bus} />
+
+        <Limitations visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
       </g>
     );
   }
@@ -25,17 +27,17 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private targetText = Subject.create('');
 
-    private readonly targetVisible = Subject.create('hidden');
+  private readonly targetVisible = Subject.create('hidden');
 
-    private readonly slatExtensionVisible = Subject.create('hidden');
+  private readonly slatExtensionVisible = Subject.create('hidden');
 
-    private readonly flapExtensionVisible = Subject.create('hidden');
+  private readonly flapExtensionVisible = Subject.create('hidden');
 
-    private slatIndexClass = Subject.create('');
+  private slatIndexClass = Subject.create('');
 
-    private flapIndexClass = Subject.create('');
+  private flapIndexClass = Subject.create('');
 
-    private targetBoxVisible = Subject.create('hidden');
+  private targetBoxVisible = Subject.create('hidden');
 
   private slatsTargetPos = Subject.create(0);
 
@@ -49,17 +51,17 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private flapsPath = Subject.create('');
 
-    private readonly alphaLockEngaged = Subject.create(false);
+  private readonly alphaLockEngaged = Subject.create(false);
 
-    private readonly flapReliefEngaged = Subject.create(false);
+  private readonly flapReliefEngaged = Subject.create(false);
 
-    private readonly flapsFault = Subject.create(false);
+  private readonly flapsFault = Subject.create(false);
 
-    private readonly flapsDataValid = Subject.create(true);
+  private readonly flapsDataValid = Subject.create(true);
 
-    private readonly slatsFault = Subject.create(false);
+  private readonly slatsFault = Subject.create(false);
 
-    private readonly slatsDataValid = Subject.create(true);
+  private readonly slatsDataValid = Subject.create(true);
 
   private configClean: boolean = false;
 
@@ -339,33 +341,10 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-// THS indications waiting for systems implementations
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus }> {
+class Limitations extends DisplayComponent<{ visible: Subscribable<boolean> }> {
   render(): VNode {
     return (
-      <>
-        <g>
-          <text x={68.7} y={186.5} class="FontSmallest White">
-            T.O THS FOR
-          </text>
-          <text x={101} y={186.5} class="FontIntermediate White">
-            42.6
-          </text>
-          <text x={115} y={186.5} class="FontSmallest Cyan">
-            %
-          </text>
-          <image xlinkHref="/Images/TRIM_INDICATOR.png" x={106} y={158.6} width={49} height={52} />
-        </g>
-      </>
-    );
-  }
-}
-
-class Limitations extends DisplayComponent<{}> {
-  render(): VNode {
-    return (
-      <g>
+      <g visibility={this.props.visible.map((it) => it ? 'visible' : 'hidden')}>
         <text x={76} y={184} class="FontIntermediate Amber">
           LIMITATIONS NOT AVAIL
         </text>
