@@ -1,5 +1,5 @@
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@shared/MathUtils';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 enum PitchTrimStatus {
