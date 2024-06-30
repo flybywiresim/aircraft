@@ -2210,6 +2210,8 @@ bool FlyByWireInterface::updateFcuShim() {
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 19, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 20, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 21, false)));
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
 
   idFcuShimRightNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 24, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 26, true)));
