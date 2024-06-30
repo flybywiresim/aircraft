@@ -1,7 +1,8 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#pragma once
+#ifndef FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP
+#define FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP
 
 #include <cmath>
 #include <ratio>
@@ -42,7 +43,7 @@ class Quantity {
                                    std::ratio_divide<A, std::ratio<2>>>
   sqrt() const {
     return Quantity<std::ratio_divide<M, std::ratio<2>>, std::ratio_divide<L, std::ratio<2>>, std::ratio_divide<T, std::ratio<2>>,
-                    std::ratio_divide<A, std::ratio<2>>>(std::sqrtf(this->m_value));
+                    std::ratio_divide<A, std::ratio<2>>>(std::sqrt(this->m_value));
   }
   [[nodiscard]] constexpr Quantity<M, L, T, A> abs() const { return Quantity<M, L, T, A>(std::abs(this->m_value)); }
 };
@@ -347,4 +348,4 @@ constexpr AngularAcceleration operator"" _degps2(unsigned long long int value) {
   return static_cast<float>(value) * degree / (second * second);
 }
 
-#pragma clang diagnostic pop
+#endif  // FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP
