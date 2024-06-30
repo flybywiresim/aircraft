@@ -1,6 +1,6 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';
 
 interface PitchTrimProps {
     x: number,
@@ -10,7 +10,8 @@ interface PitchTrimProps {
 
 export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
     const positionInfoValid = true;
-    const thsPosition = 0;
+    const [thsPositionRadians] = useSimVar(`ELEVATOR TRIM POSITION`, 'number', 1000);
+    const thsPosition = thsPositionRadians * MathUtils.RADIANS_TO_DEGREES;
 
     const [hydGreenAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
     const [hydYellowAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
@@ -23,7 +24,7 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
 
     return (
         <g id='ths' transform={`translate(${x} ${y})`}>
-            <path className={`${hydraulicAvailableClass} SW2 LineRound LineJoinRound`} d='m-5,98 l-21,-11 v23 l21,-11 z' />
+            <path className={`${hydraulicAvailableClass} SW2 LineRound LineJoinRound`} d='m-5,98 l-21,-11 v23 l21,-11 z' transform={`translate (0 ${-thsPosition * 10})`} />
             <path className='White SW4 LineRound' d='m0,0 v119 M-10,0 h20 M-10,118 h20 M-10,98 h20' />
 
             <text x={57} y={-6} className={`F22 ${pitchTrimTitleClass} MiddleAlign LS1`}>
