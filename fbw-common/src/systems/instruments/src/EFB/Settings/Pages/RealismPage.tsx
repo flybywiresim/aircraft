@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import {
+  usePersistentBooleanProperty,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
@@ -20,9 +25,9 @@ export const RealismPage = () => {
   const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
   const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
   const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-  const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
+  const [mcduInput, setMcduInput] = usePersistentBooleanProperty('MCDU_KB_INPUT', false);
   const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
-  const [pauseAtTod, setPauseAtTod] = usePersistentProperty('PAUSE_AT_TOD', 'DISABLED');
+  const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
   const [todOffset, setTodOffset] = usePersistentNumberProperty('PAUSE_AT_TOD_DISTANCE', 10);
   const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
   const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
@@ -108,17 +113,17 @@ export const RealismPage = () => {
 
       <SettingGroup>
         <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic groupType="parent">
-          <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+          <Toggle value={mcduInput} onToggle={(value) => setMcduInput(value)} />
         </SettingItem>
 
-        {mcduInput === 'ENABLED' && (
+        {mcduInput && (
           <SettingItem name={t('Settings.Realism.McduFocusTimeout')} groupType="sub">
             <SimpleInput
               className="w-30 text-center"
               value={mcduTimeout}
               min={5}
               max={120}
-              disabled={mcduInput !== 'ENABLED'}
+              disabled={!mcduInput}
               onChange={(event) => {
                 if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
                   setMcduTimeout(event.trim());
@@ -143,19 +148,16 @@ export const RealismPage = () => {
 
       <SettingGroup>
         <SettingItem name={t('Settings.Realism.PauseAtTod')} unrealistic groupType="parent">
-          <Toggle
-            value={pauseAtTod === 'ENABLED'}
-            onToggle={(value) => setPauseAtTod(value ? 'ENABLED' : 'DISABLED')}
-          />
+          <Toggle value={pauseAtTod} onToggle={(value) => setPauseAtTod(value)} />
         </SettingItem>
-        {pauseAtTod === 'ENABLED' && (
+        {pauseAtTod && (
           <SettingItem name={t('Settings.Realism.PauseAtTodDistance')} groupType="sub">
             <SimpleInput
               className="w-30 text-center"
               value={todOffset}
               min={0}
               max={50.0}
-              disabled={pauseAtTod !== 'ENABLED'}
+              disabled={!pauseAtTod}
               onChange={(event) => {
                 if (!Number.isNaN(event) && parseInt(event) >= 0 && parseInt(event) <= 50.0) {
                   setTodOffset(parseFloat(event.trim()));
