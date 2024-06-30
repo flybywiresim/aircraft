@@ -534,7 +534,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
 
   return (
     <div>
-      <div className="h-content-section-reduced relative">
+      <div className="relative h-content-section-reduced">
         <div className="mb-10">
           <div className="relative flex flex-col">
             <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
@@ -619,9 +619,9 @@ export const A320Payload: React.FC<PayloadProps> = ({
               {showSimbriefButton && (
                 <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                   <div
-                    className={`border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex
-                                                       h-auto items-center justify-center
-                                                       rounded-md rounded-l-none border-2 px-2 transition duration-100`}
+                    className={`flex h-auto items-center justify-center rounded-md rounded-l-none
+                                                       border-2 border-theme-highlight bg-theme-highlight
+                                                       px-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight`}
                     onClick={setSimBriefValues}
                   >
                     <CloudArrowDown size={26} />
@@ -679,7 +679,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
               <div className="pl-2 pt-6">{t('Ground.Payload.GSXPayloadSyncEnabled')}</div>
             )}
           </div>
-          <div className="col-1 border-theme-accent border">
+          <div className="col-1 border border-theme-accent">
             <ChartWidget
               width={525}
               height={511}

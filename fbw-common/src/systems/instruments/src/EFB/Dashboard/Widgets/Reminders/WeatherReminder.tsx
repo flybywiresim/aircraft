@@ -15,7 +15,7 @@ export const WeatherReminder = () => {
     <RemindersSection title={t('Dashboard.ImportantInformation.Weather.Title')} noLink>
       <div className="space-y-6">
         <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
-        <div className="bg-theme-accent h-1 w-full rounded-full" />
+        <div className="h-1 w-full rounded-full bg-theme-accent" />
         <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
       </div>
     </RemindersSection>

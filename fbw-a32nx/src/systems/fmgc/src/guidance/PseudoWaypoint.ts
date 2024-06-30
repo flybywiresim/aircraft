@@ -90,6 +90,4 @@ export interface PseudoWaypointFlightPlanInfo {
   speed: Knots;
 
   secondsFromPresent: Seconds;
-
-  distanceFromLastFix?: NauticalMiles;
 }

@@ -1,5 +1,5 @@
-//  Copyright (c) 2022 FlyByWire Simulations
-//  SPDX-License-Identifier: GPL-3.0
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Common } from './common';

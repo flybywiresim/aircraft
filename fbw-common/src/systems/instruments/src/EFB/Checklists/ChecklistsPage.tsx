@@ -10,7 +10,7 @@ import { CompletionButton } from './CompletionButton';
 export const ChecklistPage = () => {
   const { selectedChecklistIndex, aircraftChecklists } = useAppSelector((state) => state.trackingChecklists);
   return (
-    <div className="border-theme-accent flex w-full flex-col justify-between overflow-visible rounded-lg border-2 p-8">
+    <div className="flex w-full flex-col justify-between overflow-visible rounded-lg border-2 border-theme-accent p-8">
       <ScrollableContainer innerClassName="space-y-4" height={46}>
         {aircraftChecklists[selectedChecklistIndex].items.map((it, index) => (
           <ChecklistItemComponent key={it.item} item={it} index={index} />

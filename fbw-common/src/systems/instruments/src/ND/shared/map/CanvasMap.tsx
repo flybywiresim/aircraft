@@ -193,17 +193,44 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     sub.on('vectorsActive').handle((data: PathVector[]) => {
       this.vectors[EfisVectorsGroup.ACTIVE].length = 0;
-      this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
+      if (data) {
+        this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
+      }
     });
 
     sub.on('vectorsDashed').handle((data: PathVector[]) => {
       this.vectors[EfisVectorsGroup.DASHED].length = 0;
-      this.vectors[EfisVectorsGroup.DASHED].push(...data);
+      if (data) {
+        this.vectors[EfisVectorsGroup.DASHED].push(...data);
+      }
     });
 
     sub.on('vectorsTemporary').handle((data: PathVector[]) => {
       this.vectors[EfisVectorsGroup.TEMPORARY].length = 0;
-      this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
+      if (data) {
+        this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
+      }
+    });
+
+    sub.on('vectorsMissed').handle((data: PathVector[]) => {
+      this.vectors[EfisVectorsGroup.MISSED].length = 0;
+      if (data) {
+        this.vectors[EfisVectorsGroup.MISSED].push(...data);
+      }
+    });
+
+    sub.on('vectorsAlternate').handle((data: PathVector[]) => {
+      this.vectors[EfisVectorsGroup.ALTERNATE].length = 0;
+      if (data) {
+        this.vectors[EfisVectorsGroup.ALTERNATE].push(...data);
+      }
+    });
+
+    sub.on('vectorsSecondary').handle((data: PathVector[]) => {
+      this.vectors[EfisVectorsGroup.SECONDARY].length = 0;
+      if (data) {
+        this.vectors[EfisVectorsGroup.SECONDARY].push(...data);
+      }
     });
 
     sub.on('traffic').handle((data: NdTraffic[]) => {
@@ -442,6 +469,18 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
       case EfisVectorsGroup.TEMPORARY:
         context.strokeStyle = '#ffff00';
         context.setLineDash(DASHES);
+        break;
+      case EfisVectorsGroup.MISSED:
+        context.strokeStyle = '#00ffff';
+        context.setLineDash(NO_DASHES);
+        break;
+      case EfisVectorsGroup.ALTERNATE:
+        context.strokeStyle = '#00ffff';
+        context.setLineDash(DASHES);
+        break;
+      case EfisVectorsGroup.SECONDARY:
+        context.strokeStyle = '#ffffff';
+        context.setLineDash(NO_DASHES);
         break;
       default:
         context.strokeStyle = '#f00';

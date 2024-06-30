@@ -121,10 +121,10 @@ class CDUAtcLatRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.directTo = null;
             } else if (value) {
-                if (mcdu.isLatLonFormat(value)) {
+                if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
-                        mcdu.parseLatLon(value);
+                        Fmgc.WaypointEntryUtils.parseLatLon(value);
                         data.directTo = value;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {

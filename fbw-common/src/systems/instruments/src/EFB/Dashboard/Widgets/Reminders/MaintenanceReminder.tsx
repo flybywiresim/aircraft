@@ -23,7 +23,7 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
   return (
     <div
-      className="border-theme-accent bg-theme-accent hover:border-theme-highlight mr-4 mt-4 flex flex-col flex-wrap rounded-md border-2 p-2"
+      className="mr-4 mt-4 flex flex-col flex-wrap rounded-md border-2 border-theme-accent bg-theme-accent p-2 hover:border-theme-highlight"
       onClick={() => {
         dispatch(setSearchQuery(name.toUpperCase()));
 

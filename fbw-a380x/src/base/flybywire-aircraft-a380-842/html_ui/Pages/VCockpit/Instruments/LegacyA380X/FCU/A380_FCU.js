@@ -532,6 +532,8 @@ class A320_Neo_FCU_Autopilot extends A320_Neo_FCU_Component {
             SimVar.SetSimVarValue('K:A32NX.FCU_APPR_PUSH', 'number', 0);
         } else if (_event === 'EXPED_PUSH') {
             SimVar.SetSimVarValue('K:A32NX.FCU_EXPED_PUSH', 'number', 0);
+        } else if (_event === 'TRUEMAG_PUSH') {
+          SimVar.SetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'bool', !SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'bool'));
         }
     }
 

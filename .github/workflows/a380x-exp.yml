@@ -80,8 +80,8 @@ jobs:
       - name: Create .env file
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
-          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
-          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env

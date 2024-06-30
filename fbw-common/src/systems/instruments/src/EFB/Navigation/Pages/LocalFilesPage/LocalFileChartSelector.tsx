@@ -4,7 +4,7 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@flybywiresim/fbw-sdk';
+import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk';
 import { t } from '../../../Localization/translation';
 import {
   addPinnedChart,
@@ -12,6 +12,7 @@ import {
   editPinnedChart,
   editTabProperty,
   isChartPinned,
+  LocalChartCategoryToIndex,
   NavigationTab,
   removedPinnedChart,
   setBoundingBox,
@@ -27,7 +28,7 @@ export type LocalFileChart = {
 };
 
 export type LocalFileOrganizedCharts = {
-  name: string;
+  name: LocalChartCategory;
   alias: string;
   charts: LocalFileChart[];
 };
@@ -39,13 +40,13 @@ interface LocalFileChartSelectorProps {
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
   const dispatch = useAppDispatch();
 
-  const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+  const { chartId, selectedTabType } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
   const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
   if (loading) {
     return (
       <div
-        className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
+        className="flex h-full items-center justify-center rounded-md border-2 border-theme-accent"
         style={{ height: '42.75rem' }}
       >
         <CloudArrowDown className="animate-bounce" size={40} />
@@ -56,7 +57,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
   if (!selectedTab.charts.length) {
     return (
       <div
-        className="border-theme-accent flex h-full items-center justify-center rounded-md border-2"
+        className="flex h-full items-center justify-center rounded-md border-2 border-theme-accent"
         style={{ height: '42.75rem' }}
       >
         <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
@@ -110,7 +111,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     <div className="space-y-4">
       {selectedTab.charts.map((chart) => (
         <div
-          className="bg-theme-accent flex w-full flex-row overflow-hidden rounded-md"
+          className="flex w-full flex-row overflow-hidden rounded-md bg-theme-accent"
           onClick={() => handleChartClick(chart)}
           key={chart.fileName}
         >
@@ -121,7 +122,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
               }`}
             />
             <div
-              className="hover:bg-theme-highlight hover:text-theme-body flex h-full items-center px-2 transition duration-100"
+              className="flex h-full items-center px-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
               onClick={(event) => {
                 event.stopPropagation();
 
@@ -138,7 +139,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                       chartName: { light: '', dark: '' },
                       title: chart.fileName,
                       subTitle: '',
-                      tabIndex: selectedTabIndex,
+                      tabIndex: LocalChartCategoryToIndex[selectedTabType],
                       timeAccessed: 0,
                       tag: chart.type,
                       provider: ChartProvider.LOCAL_FILES,
@@ -173,7 +174,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
           </div>
           <div className="m-2 flex flex-col">
             <span>{chart.fileName}</span>
-            <span className="bg-theme-secondary text-theme-text mr-auto rounded-sm px-2 text-sm">{chart.type}</span>
+            <span className="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">{chart.type}</span>
           </div>
         </div>
       ))}

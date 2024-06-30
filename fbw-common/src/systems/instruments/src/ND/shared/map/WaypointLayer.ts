@@ -89,7 +89,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
 
-      PaintUtils.paintText(true, context, x + 13, y + 35 + 18 * i, line, '#ff94ff');
+      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
     }
   }
 
@@ -116,17 +116,13 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    let mainColor;
+    let mainColor = '#000';
     if (isColorLayer) {
-      if (symbol.type & NdSymbolTypeFlags.ActiveLegTermination) {
-        mainColor = '#fff';
-      } else if (symbol.type & NdSymbolTypeFlags.Tuned) {
+      if (symbol.type & NdSymbolTypeFlags.Tuned) {
         mainColor = '#0ff';
       } else {
         mainColor = '#ff94ff';
       }
-    } else {
-      mainColor = '#000';
     }
 
     if (symbol.type & NdSymbolTypeFlags.VorDme) {

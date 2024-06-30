@@ -82,7 +82,7 @@ export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
         ))}
         {failures.length === 0 && (
           <div
-            className="border-theme-accent flex items-center justify-center rounded-md border-2"
+            className="flex items-center justify-center rounded-md border-2 border-theme-accent"
             style={{ height: '48rem' }}
           >
             <p>{t('Failures.NoItemsFound')}</p>

@@ -78,15 +78,15 @@ export const LoadSheetWidget = () => {
   const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
   return (
-    <div className="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">
+    <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
       {isSimbriefDataLoaded() ? (
         <>
-          <div className="bg-theme-secondary absolute right-16 top-6 overflow-hidden rounded-md">
+          <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
             <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
               <button
                 type="button"
                 onClick={handleFontDecrease}
-                className="hover:bg-theme-highlight hover:text-theme-body px-3 py-2 transition duration-100"
+                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
               >
                 <ZoomOut size={30} />
               </button>
@@ -96,7 +96,7 @@ export const LoadSheetWidget = () => {
               <button
                 type="button"
                 onClick={handleFontIncrease}
-                className="hover:bg-theme-highlight hover:text-theme-body px-3 py-2 transition duration-100"
+                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
               >
                 <ZoomIn size={30} />
               </button>

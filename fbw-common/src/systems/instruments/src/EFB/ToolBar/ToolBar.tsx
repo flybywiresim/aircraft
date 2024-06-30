@@ -30,7 +30,7 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) =>
     <NavLink
       to={to}
       activeClassName="bg-theme-accent !text-theme-text"
-      className="text-theme-unselected hover:bg-theme-accent hover:text-theme-text flex items-center justify-center rounded-md p-3.5 transition duration-100"
+      className="flex items-center justify-center rounded-md p-3.5 text-theme-unselected transition duration-100 hover:bg-theme-accent hover:text-theme-text"
     >
       {children}
     </NavLink>
@@ -70,7 +70,7 @@ export const ToolBar = () => (
     </div>
 
     <div className="flex flex-col items-center">
-      <div className="bg-theme-accent my-4 h-1.5 w-14 rounded-full" />
+      <div className="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
       <ToolBarButton to="/settings" tooltipText={t('Settings.Title')}>
         <Gear color="currentColor" size={35} />
       </ToolBarButton>

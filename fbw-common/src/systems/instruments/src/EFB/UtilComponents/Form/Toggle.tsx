@@ -15,7 +15,7 @@ export const Toggle = ({ value, onToggle, disabled }: ToggleProps) => (
     onClick={() => !disabled && onToggle(!value)}
   >
     <div
-      className={`mx-1.5 h-6 w-6 rounded-full bg-white transition duration-200 ${value && '!bg-theme-highlight translate-x-5'}`}
+      className={`mx-1.5 h-6 w-6 rounded-full bg-white transition duration-200 ${value && 'translate-x-5 !bg-theme-highlight'}`}
     />
   </div>
 );

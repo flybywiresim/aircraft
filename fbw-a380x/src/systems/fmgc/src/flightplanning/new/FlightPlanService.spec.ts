@@ -26,7 +26,7 @@ describe('the flight plan service', () => {
     it('deletes the temporary flight plan properly', async () => {
         await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
 
-        await FlightPlanService.setOriginRunway('RW06R');
+        await FlightPlanService.setOriginRunway('CYUL06R');
 
         FlightPlanService.temporaryDelete();
 
@@ -37,12 +37,12 @@ describe('the flight plan service', () => {
     it('inserts the temporary flight plan properly', async () => {
         await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
 
-        await FlightPlanService.setOriginRunway('RW06R');
+        await FlightPlanService.setOriginRunway('CYUL06R');
 
         FlightPlanService.temporaryInsert();
 
         expect(FlightPlanService.hasTemporary).toBeFalsy();
-        expect(FlightPlanService.activeOrTemporary.originRunway).toEqual(expect.objectContaining({ ident: 'RW06R' }));
+        expect(FlightPlanService.activeOrTemporary.originRunway).toEqual(expect.objectContaining({ ident: 'CYUL06R' }));
     });
 
     describe('performing revisions', () => {
@@ -50,10 +50,10 @@ describe('the flight plan service', () => {
             beforeEach(async () => {
                 await FlightPlanService.newCityPair('CYUL', 'CYYZ');
 
-                await FlightPlanService.setOriginRunway('RW06R');
+                await FlightPlanService.setOriginRunway('CYUL06R');
                 await FlightPlanService.setDepartureProcedure('CYUL1');
 
-                await FlightPlanService.setDestinationRunway('RW05');
+                await FlightPlanService.setDestinationRunway('CYYZ05');
                 await FlightPlanService.setApproach('I05');
             });
 
@@ -98,7 +98,7 @@ describe('the flight plan service', () => {
             beforeEach(async () => {
                 await FlightPlanService.newCityPair('CYYZ', 'CYVR');
 
-                await FlightPlanService.setOriginRunway('RW06R');
+                await FlightPlanService.setOriginRunway('CYUL06R');
                 await FlightPlanService.setDepartureProcedure('AVSEP6');
 
                 FlightPlanService.temporaryInsert();
@@ -135,7 +135,7 @@ describe('the flight plan service', () => {
         it('does create a temporary flight plan when changing procedure details', async () => {
             await FlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO');
 
-            await FlightPlanService.setOriginRunway('RW06R');
+            await FlightPlanService.setOriginRunway('CYUL06R');
             expect(FlightPlanService.hasTemporary).toBeTruthy();
             FlightPlanService.temporaryInsert();
 
@@ -147,7 +147,7 @@ describe('the flight plan service', () => {
             expect(FlightPlanService.hasTemporary).toBeTruthy();
             FlightPlanService.temporaryInsert();
 
-            await FlightPlanService.setDestinationRunway('RW34');
+            await FlightPlanService.setDestinationRunway('LGKR34');
             expect(FlightPlanService.hasTemporary).toBeTruthy();
             FlightPlanService.temporaryInsert();
 
@@ -177,7 +177,7 @@ describe('the flight plan service', () => {
         it('does not create a temporary flight plan when changing procedure details', async () => {
             await FlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO', FlightPlanIndex.FirstSecondary);
 
-            await FlightPlanService.setOriginRunway('RW06R', FlightPlanIndex.FirstSecondary);
+            await FlightPlanService.setOriginRunway('CYUL06R', FlightPlanIndex.FirstSecondary);
             expect(FlightPlanService.hasTemporary).toBeFalsy();
 
             await FlightPlanService.setDepartureProcedure('AVSEP6', FlightPlanIndex.FirstSecondary);
@@ -186,7 +186,7 @@ describe('the flight plan service', () => {
             await FlightPlanService.setDepartureEnrouteTransition('OTNIK', FlightPlanIndex.FirstSecondary);
             expect(FlightPlanService.hasTemporary).toBeFalsy();
 
-            await FlightPlanService.setDestinationRunway('RW34', FlightPlanIndex.FirstSecondary);
+            await FlightPlanService.setDestinationRunway('LGKR34', FlightPlanIndex.FirstSecondary);
             expect(FlightPlanService.hasTemporary).toBeFalsy();
 
             await FlightPlanService.setArrival('PARA1J', FlightPlanIndex.FirstSecondary);

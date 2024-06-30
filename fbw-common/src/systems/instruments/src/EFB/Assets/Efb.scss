@@ -248,6 +248,20 @@
     src: url("/Fonts/fbw-a32nx/NotoSansDevanagari-Bold.ttf") format("truetype");
   }
 
+  @font-face {
+    src: url("/Fonts/fbw-a32nx/HoneywellMCDU.ttf") format("truetype");
+    font-family: "HoneywellMCDU";
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  @font-face {
+    src: url("/Fonts/fbw-a32nx/HoneywellMCDUSmall.ttf") format("truetype");
+    font-family: "HoneywellMCDUSmall";
+    font-style: normal;
+    font-weight: 900;
+  }
+
   html body {
     @apply font-body;
   }
@@ -373,4 +387,15 @@
       transform: translate(1px, -2px) rotate(-1deg);
     }
   }
+}
+
+.mcdu-big {
+  font-family: 'HoneywellMCDU';
+  font-size: 24px;
+}
+
+.mcdu-sml {
+  font-family: 'HoneywellMCDUSmall';
+  line-height: 1.25;
+  font-size: 24px;
 }

@@ -4,15 +4,18 @@
 export interface ISimbriefData {
   origin: IAirportInfo;
   destination: IAirportInfo;
-  airline: string;
+  airline: string | object;
   flightNumber: string;
+  callsign: string;
   aircraftReg: string;
   aircraftIcao: string;
   cruiseAltitude: number;
   costIndex: string;
   route: string;
+  navlog: INavlogFix[];
   distance: string;
   flightETAInSeconds: string;
+  averageTropopause: string;
   weights: IWeights;
   fuel: IFuel;
   units: string;
@@ -23,6 +26,61 @@ export interface ISimbriefData {
   text: string;
 }
 
+interface INavlogFix {
+  ident: string;
+  name: string;
+  type: string;
+  frequency: string;
+  pos_lat: string;
+  pos_long: string;
+  stage: string;
+  via_airway: string;
+  is_sid_star: string;
+  distance: string;
+  track_true: string;
+  track_mag: string;
+  heading_true: string;
+  heading_mag: string;
+  altitude_feet: string;
+  ind_airsspeed: string;
+  true_airspeed: string;
+  mach: string;
+  mach_thousandths: string;
+  wind_component: string;
+  groundspeed: string;
+  time_leg: string;
+  time_total: string;
+  fuel_flow: string;
+  fuel_leg: string;
+  fuel_totalused: string;
+  fuel_min_onboard: string;
+  fuel_plan_onboard: string;
+  oat: string;
+  oat_isa_dev: string;
+  wind_dir: string;
+  wind_spd: string;
+  shear: string;
+  tropopause_feet: string;
+  ground_height: string;
+  mora: string;
+  fir: 'string';
+  fir_units: string;
+  fir_valid_levels: string;
+  wind_data: IFixWind;
+  fir_crossing: any;
+}
+
+interface IFixWind {
+  level: IWindLevel[];
+}
+
+interface IWindLevel {
+  altitude: string;
+  wind_dir: string;
+  wind_spd: string;
+  oat: string;
+}
+
 interface IAirportInfo {
   icao: string;
   runway: string;
@@ -31,6 +89,8 @@ interface IAirportInfo {
   posLat: number;
   posLong: number;
   metar: string;
+  transAlt: number;
+  transLevel: number;
 }
 
 export interface IWeights {
@@ -68,6 +128,10 @@ interface IAlternate {
   burn: number;
   icao: string;
   iata: string;
+  transAlt: number;
+  transLevel: number;
+  averageWindDirection: number;
+  averageWindSpeed: number;
 }
 
 interface ITimes {

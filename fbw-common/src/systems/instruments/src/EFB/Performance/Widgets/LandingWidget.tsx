@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
@@ -11,18 +11,20 @@ import {
   usePersistentProperty,
   parseMetar,
   ConfigWeatherMap,
+  LandingFlapsConfig,
+  LandingRunwayConditions,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
+import { AircraftContext } from '../../AircraftContext';
 
 interface OutputDisplayProps {
   label: string;
@@ -45,15 +47,17 @@ interface LabelProps {
 
 const Label: FC<LabelProps> = ({ text, className, children }) => (
   <div className="flex flex-row items-center justify-between">
-    <p className={`text-theme-text mr-4 ${className}`}>{text}</p>
+    <p className={`mr-4 text-theme-text ${className}`}>{text}</p>
     {children}
   </div>
 );
 
+// TODO F-LD and LD
+
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculator: LandingCalculator = new LandingCalculator();
+  const calculators = useContext(AircraftContext).performanceCalculators;
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -91,7 +95,7 @@ export const LandingWidget = () => {
 
   const handleCalculateLanding = (): void => {
     if (!areInputsValid()) return;
-    const landingDistances = calculator.calculateLandingDistances(
+    const landingDistances = calculators.landing.calculateLandingDistances(
       weight ?? 0,
       flaps ?? LandingFlapsConfig.Full,
       runwayCondition,
@@ -294,7 +298,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwaySlopeChange = (value: string): void => {
-    let slope: number | undefined = parseInt(value);
+    let slope: number | undefined = parseFloat(value);
 
     if (Number.isNaN(slope)) {
       slope = undefined;
@@ -439,7 +443,7 @@ export const LandingWidget = () => {
   };
 
   return (
-    <div className="h-content-section-reduced flex flex-row justify-between space-x-10 overflow-hidden">
+    <div className="flex h-content-section-reduced flex-row justify-between space-x-10 overflow-hidden">
       <div className="w-full">
         <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
@@ -457,8 +461,8 @@ export const LandingWidget = () => {
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
                       onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                      className={`border-theme-highlight bg-theme-highlight text-theme-body flex flex-row items-center justify-center 
-                                            space-x-4 rounded-md rounded-r-none border-2 px-8 py-2 outline-none 
+                      className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none
+                                            border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none
                                             transition duration-100 ${
                                               !isAutoFillIcaoValid()
                                                 ? 'opacity-50'
@@ -741,8 +745,8 @@ export const LandingWidget = () => {
             <div className="mt-14 flex flex-row space-x-8">
               <button
                 onClick={handleCalculateLanding}
-                className={`border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full flex-row items-center 
-                                justify-center space-x-4 rounded-md border-2 py-2 outline-none 
+                className={`flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight
+                                bg-theme-highlight py-2 text-theme-body outline-none hover:bg-theme-body hover:text-theme-highlight
                                 ${!areInputsValid() && 'pointer-events-none opacity-50'}`}
                 type="button"
                 disabled={!areInputsValid()}
@@ -752,8 +756,8 @@ export const LandingWidget = () => {
               </button>
               <button
                 onClick={handleClearInputs}
-                className="border-utility-red bg-utility-red text-theme-body hover:bg-theme-body hover:text-utility-red flex w-full flex-row items-center
-                                justify-center space-x-4 rounded-md border-2 py-2 outline-none"
+                className="flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red
+                                bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
                 type="button"
               >
                 <Trash size={26} />
@@ -761,7 +765,7 @@ export const LandingWidget = () => {
               </button>
             </div>
           </div>
-          <div className="divide-theme-accent border-theme-accent flex w-full flex-row divide-x-2 overflow-hidden rounded-lg border-2">
+          <div className="flex w-full flex-row divide-x-2 divide-theme-accent overflow-hidden rounded-lg border-2 border-theme-accent">
             <OutputDisplay
               label={t('Performance.Landing.MaximumManual')}
               value={

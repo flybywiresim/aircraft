@@ -174,7 +174,9 @@ export default new TaskOfTasks("all", [
                 'npm run build-a380x:systems-host',
                 [
                     'fbw-a380x/src/systems/systems-host',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/SystemsHost'
+                    'fbw-a380x/src/systems/shared/src',
+                    'fbw-common/src/systems/shared/src',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/SystemsHost',
                 ]
             ),
             new TaskOfTasks("instruments", getA380InstrumentsIgniterTasks(), true),

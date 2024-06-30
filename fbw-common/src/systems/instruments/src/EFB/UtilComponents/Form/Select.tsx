@@ -31,7 +31,7 @@ export const SelectItem: React.FC<SelectItemProps> = ({ children, className, dis
 
 export const SelectGroup: React.FC<{ className?: string }> = ({ children, className }) => (
   <div
-    className={`border-theme-accent divide-theme-accent flex flex-row justify-between divide-x overflow-hidden rounded-md border ${className}`}
+    className={`flex flex-row justify-between divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent ${className}`}
   >
     {children}
   </div>
@@ -39,7 +39,7 @@ export const SelectGroup: React.FC<{ className?: string }> = ({ children, classN
 
 export const VerticalSelectGroup: React.FC<{ className?: string }> = ({ children, className }) => (
   <div
-    className={`divide-theme-accent border-theme-accent flex flex-col divide-y overflow-hidden rounded-md border ${className}`}
+    className={`flex flex-col divide-y divide-theme-accent overflow-hidden rounded-md border border-theme-accent ${className}`}
   >
     {children}
   </div>

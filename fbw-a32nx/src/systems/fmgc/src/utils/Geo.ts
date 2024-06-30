@@ -7,20 +7,10 @@ import { computeDestinationPoint as geolibDestPoint } from 'geolib';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import {
-  bearingTo,
-  distanceTo,
-  placeBearingDistance,
-  smallCircleGreatCircleIntersection,
-  placeBearingIntersection,
-} from 'msfs-geo';
+import { distanceTo, smallCircleGreatCircleIntersection, placeBearingIntersection } from 'msfs-geo';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
-
-const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
-
-const asin = (input: Degrees) => Math.asin(input) * (180 / Math.PI);
 
 export class Geo {
   static computeDestinationPoint(
@@ -40,18 +30,18 @@ export class Geo {
   static distanceToLeg(from: Coordinates, leg: Leg): NauticalMiles {
     const intersections1 = placeBearingIntersection(
       from,
-      Avionics.Utils.clampAngle(leg.outboundCourse - 90),
+      MathUtils.normalise360(leg.outboundCourse - 90),
       leg.initialLegTermPoint,
-      Avionics.Utils.clampAngle(leg.outboundCourse - 180),
+      MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
-    const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections1[0]);
-    const d2 = Avionics.Utils.computeGreatCircleDistance(from, intersections1[1]);
+    const d1 = distanceTo(from, intersections1[0]);
+    const d2 = distanceTo(from, intersections1[1]);
 
     let legStartReference;
 
     if (leg instanceof TFLeg) {
-      legStartReference = leg.from.infos.coordinates;
+      legStartReference = leg.from.location;
     } else {
       legStartReference = leg.getPathStartPoint();
     }
@@ -65,13 +55,13 @@ export class Geo {
 
     const intersections2 = placeBearingIntersection(
       from,
-      Avionics.Utils.clampAngle(leg.outboundCourse - 90),
+      MathUtils.normalise360(leg.outboundCourse - 90),
       legStartReference,
-      Avionics.Utils.clampAngle(leg.outboundCourse - 180),
+      MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
-    const d3 = Avionics.Utils.computeGreatCircleDistance(from, intersections2[0]);
-    const d4 = Avionics.Utils.computeGreatCircleDistance(from, intersections2[1]);
+    const d3 = distanceTo(from, intersections2[0]);
+    const d4 = distanceTo(from, intersections2[1]);
 
     return Math.min(d1, d2, d3, d4);
   }
@@ -80,8 +70,8 @@ export class Geo {
     if (leg instanceof AFLeg) {
       const intersections = smallCircleGreatCircleIntersection(leg.centre, leg.radius, from, bearing);
 
-      const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections[0]);
-      const d2 = Avionics.Utils.computeGreatCircleDistance(from, intersections[1]);
+      const d1 = distanceTo(from, intersections[0]);
+      const d2 = distanceTo(from, intersections[1]);
 
       return d1 > d2 ? intersections[1] : intersections[0];
     }
@@ -92,9 +82,9 @@ export class Geo {
 
     const intersections1 = placeBearingIntersection(
       from,
-      Avionics.Utils.clampAngle(bearing),
-      leg instanceof XFLeg ? leg.fix.infos.coordinates : leg.getPathEndPoint(),
-      Avionics.Utils.clampAngle(leg.outboundCourse - 180),
+      MathUtils.normalise360(bearing),
+      leg instanceof XFLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
+      MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
     const d1 = distanceTo(from, intersections1[0]);
@@ -109,13 +99,13 @@ export class Geo {
 
     const intersections2 = placeBearingIntersection(
       from,
-      Avionics.Utils.clampAngle(bearing),
+      MathUtils.normalise360(bearing),
       leg.getPathStartPoint(),
-      Avionics.Utils.clampAngle(leg.outboundCourse - 180),
+      MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
-    const d3 = Avionics.Utils.computeGreatCircleDistance(from, intersections2[0]);
-    const d4 = Avionics.Utils.computeGreatCircleDistance(from, intersections2[1]);
+    const d3 = distanceTo(from, intersections2[0]);
+    const d4 = distanceTo(from, intersections2[1]);
 
     const smallest = Math.min(d1, d2, d3, d4);
 
@@ -132,31 +122,5 @@ export class Geo {
     }
 
     return intersections2[1];
-  }
-
-  static placeBearingPlaceDistanceIntercept(
-    bearingPoint: Coordinates,
-    distancePoint: Coordinates,
-    bearing: DegreesTrue,
-    distance: NauticalMiles,
-  ): Coordinates {
-    const relativeBearing = bearingTo(bearingPoint, distancePoint);
-    const distanceBetween = distanceTo(bearingPoint, distancePoint);
-    const angleA = Math.abs(MathUtils.diffAngle(relativeBearing, bearing));
-    const angleC =
-      angleA > 90
-        ? asin(distanceBetween * (sin(angleA) / distance))
-        : 180 - asin(distanceBetween * (sin(angleA) / distance));
-    const angleB = 180 - angleA - angleC;
-    return placeBearingDistance(bearingPoint, bearing, Math.abs(sin(angleB) * (distance / sin(angleA))));
-  }
-
-  static doublePlaceBearingIntercept(
-    pointA: Coordinates,
-    pointB: Coordinates,
-    bearingA: DegreesTrue,
-    bearingB: DegreesTrue,
-  ): Coordinates {
-    return A32NX_Util.greatCircleIntersection(pointA, bearingA, pointB, bearingB);
   }
 }

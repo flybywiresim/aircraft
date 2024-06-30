@@ -211,7 +211,7 @@ export const BoardingInput: React.FC<BoardingInputProps> = ({
     <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
       <button
         type="button"
-        className={`text-theme-highlight ml-1 flex h-12 w-16 items-center justify-center rounded-lg bg-current ${((totalPax === 0 && totalCargo === 0) || boardingStarted) && 'pointer-events-none opacity-20'}`}
+        className={`ml-1 flex h-12 w-16 items-center justify-center rounded-lg bg-current text-theme-highlight ${((totalPax === 0 && totalCargo === 0) || boardingStarted) && 'pointer-events-none opacity-20'}`}
         onClick={() => handleDeboarding()}
       >
         <div className="text-theme-body">
@@ -445,8 +445,8 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = ({
             <div className="ml-auto">
               <button
                 type="button"
-                className={`text-theme-highlight ml-auto flex h-8 w-12 items-center justify-center
-                                                        rounded-lg bg-current`}
+                className={`ml-auto flex h-8 w-12 items-center justify-center rounded-lg
+                                                        bg-current text-theme-highlight`}
                 onClick={() => setDisplayZfw(!displayZfw)}
               >
                 <div className="text-theme-body">

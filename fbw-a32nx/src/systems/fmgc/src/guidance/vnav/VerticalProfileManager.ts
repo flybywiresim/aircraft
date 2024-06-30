@@ -38,6 +38,7 @@ import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileI
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import {
   isApproachCheckpoint,
   isSpeedChangePoint,
@@ -72,6 +73,7 @@ export class VerticalProfileManager {
   expediteProfile: SelectedGeometryProfile | undefined;
 
   constructor(
+    private readonly flightPlanService: FlightPlanService,
     private guidanceController: GuidanceController,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
@@ -96,6 +98,13 @@ export class VerticalProfileManager {
     this.fcuModes = new FcuModeObserver(observer);
   }
 
+  reset() {
+    this.descentProfile = undefined;
+    this.ndProfile = undefined;
+    this.mcduProfile = undefined;
+    this.expediteProfile = undefined;
+  }
+
   // PROFILE COMPUTATIONS
 
   computeTacticalMcduPath(): void {
@@ -109,7 +118,7 @@ export class VerticalProfileManager {
     const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
 
     const mcduProfile = new NavGeometryProfile(
-      this.guidanceController,
+      this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
     );
@@ -175,7 +184,7 @@ export class VerticalProfileManager {
 
   computeDescentPath(): void {
     const descentProfile = new NavGeometryProfile(
-      this.guidanceController,
+      this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
     );
@@ -260,7 +269,7 @@ export class VerticalProfileManager {
     const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.guidanceController, this.constraintReader, this.atmosphericConditions)
+      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
       : new SelectedGeometryProfile();
 
     let speedProfile: SpeedProfile;

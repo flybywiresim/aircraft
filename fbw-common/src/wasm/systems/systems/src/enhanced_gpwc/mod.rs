@@ -217,6 +217,7 @@ mod tests {
         heading: Arinc429Word<Angle>,
         vertical_speed: Arinc429Word<Velocity>,
         altitude: Arinc429Word<Length>,
+        angle_of_attack: Arinc429Word<Angle>,
     }
     impl TestAdirs {
         fn new() -> Self {
@@ -227,6 +228,7 @@ mod tests {
                 heading: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
                 vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
                 altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
+                angle_of_attack: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
             }
         }
 
@@ -244,6 +246,8 @@ mod tests {
             );
             self.altitude =
                 Arinc429Word::new(Length::new::<foot>(15000.0), SignStatus::NormalOperation);
+            self.angle_of_attack =
+                Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::NormalOperation);
         }
     }
     impl AdirsMeasurementOutputs for TestAdirs {
@@ -273,6 +277,10 @@ mod tests {
 
         fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
             self.altitude
+        }
+
+        fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            self.angle_of_attack
         }
     }
 

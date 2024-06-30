@@ -14,14 +14,19 @@ class CDUAocRequestsAtis {
             sendStatus: ""
         };
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            retval.departure = mcdu.flightPlanManager.getOrigin().ident;
+        const activePlan = mcdu.flightPlanService.active;
+
+        if (activePlan.originAirport) {
+            retval.departure = activePlan.originAirport.ident;
+
             if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.departure;
             }
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            retval.arrival = mcdu.flightPlanManager.getDestination().ident;
+
+        if (activePlan.destinationAirport) {
+            retval.arrival = activePlan.destinationAirport.ident;
+
             if (mcdu.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.arrival;
             }
@@ -96,7 +101,7 @@ class CDUAocRequestsAtis {
                 store.selected = "";
                 CDUAocRequestsAtis.ShowPage(mcdu, store);
             } else if (value) {
-                mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
                     if (airport) {
                         store.selected = value;
                         store.manual = true;

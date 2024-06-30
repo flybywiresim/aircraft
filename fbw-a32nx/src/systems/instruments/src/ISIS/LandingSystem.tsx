@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import { useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
 
 type DeviationIndicatorProps = {
   deviation: number;
@@ -55,7 +55,10 @@ export const LandingSystem: React.FC = () => {
     lsActive && (
       <g id="LandingSystem">
         <g transform="translate(166.869 376.62)">
-          <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
+          <DeviationIndicator
+            deviation={MathUtils.correctMsfsLocaliserError(lsDeviation) / 2}
+            available={lsAvailable}
+          />
         </g>
         <g transform="translate(340.133 180.869) rotate(90 0 0)">
           <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />

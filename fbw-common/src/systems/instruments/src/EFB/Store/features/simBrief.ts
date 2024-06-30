@@ -161,7 +161,7 @@ export async function fetchSimbriefDataAction(
   const returnedSimbriefData = await getSimbriefData(navigraphUsername, overrideSimbriefID);
 
   return setSimbriefData({
-    airline: returnedSimbriefData.airline,
+    airline: typeof returnedSimbriefData.airline === 'string' ? returnedSimbriefData.airline : '',
     flightNum: returnedSimbriefData.flightNumber,
     departingAirport: returnedSimbriefData.origin.icao,
     departingRunway: returnedSimbriefData.origin.runway,

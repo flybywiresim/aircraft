@@ -483,6 +483,8 @@ struct base_elac_logic_outputs
   real_T total_sidestick_pitch_command;
   real_T total_sidestick_roll_command;
   boolean_T ap_authorised;
+  boolean_T ap_1_control;
+  boolean_T ap_2_control;
   boolean_T protection_ap_disconnect;
   boolean_T high_alpha_prot_active;
   real_T alpha_prot_deg;

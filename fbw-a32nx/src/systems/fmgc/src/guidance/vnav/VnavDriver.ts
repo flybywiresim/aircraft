@@ -1,9 +1,8 @@
-//  Copyright (c) 2021 FlyByWire Simulations
+//  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { VerticalMode, LateralMode, isArmed, ArmedLateralMode } from '@shared/autopilot';
 import {
   VerticalProfileComputationParameters,
@@ -21,7 +20,7 @@ import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory'
 import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import {
@@ -31,9 +30,13 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
+
+  private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   private currentMcduSpeedProfile: McduSpeedProfile;
 
@@ -66,16 +69,16 @@ export class VnavDriver implements GuidanceComponent {
   private requestDescentProfileRecomputation: boolean = false;
 
   constructor(
+    private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
     private readonly atmosphericConditions: AtmosphericConditions,
     private readonly windProfileFactory: WindProfileFactory,
-    private readonly flightPlanManager: FlightPlanManager,
   ) {
-    this.headingProfile = new NavHeadingProfile(flightPlanManager);
+    this.headingProfile = new NavHeadingProfile(flightPlanService);
     this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
-    this.constraintReader = new ConstraintReader(guidanceController);
+    this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
 
     this.aircraftToDescentProfileRelation = new AircraftToDescentProfileRelation(this.computationParametersObserver);
     this.descentGuidance = VnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
@@ -93,6 +96,7 @@ export class VnavDriver implements GuidanceComponent {
         );
 
     this.profileManager = new VerticalProfileManager(
+      this.flightPlanService,
       this.guidanceController,
       this.computationParametersObserver,
       this.atmosphericConditions,
@@ -113,13 +117,15 @@ export class VnavDriver implements GuidanceComponent {
 
   update(deltaTime: number): void {
     try {
-      const { presentPosition, flightPhase } = this.computationParametersObserver.get();
+      const { flightPhase } = this.computationParametersObserver.get();
+
+      this.updateDebugInformation();
+      this.updateDistanceToDestination();
 
       if (flightPhase >= FmgcFlightPhase.Takeoff) {
-        this.constraintReader.updateDistanceToEnd(presentPosition);
         this.updateHoldSpeed();
         this.updateDescentSpeedGuidance();
-        this.descentGuidance.update(deltaTime, this.constraintReader.distanceToEnd);
+        this.descentGuidance.update(deltaTime, this.guidanceController.alongTrackDistanceToDestination);
       }
     } catch (e) {
       console.error('[FMS] Failed to calculate vertical profile. See exception below.');
@@ -128,18 +134,25 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   recompute(geometry: Geometry): void {
+    this.constraintReader.updateFlightPlan();
+
     if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
+      this.reset();
       return;
     }
 
     const newParameters = this.computationParametersObserver.get();
 
-    this.constraintReader.updateGeometry(geometry, newParameters.presentPosition);
     this.windProfileFactory.updateAircraftDistanceFromStart(this.constraintReader.distanceToPresentPosition);
     this.headingProfile.updateGeometry(geometry);
     this.currentMcduSpeedProfile?.update(this.constraintReader.distanceToPresentPosition);
 
-    this.profileManager.computeTacticalMcduPath();
+    // No predictions in go around phase
+    if (newParameters.flightPhase !== FmgcFlightPhase.GoAround) {
+      this.profileManager.computeTacticalMcduPath();
+    } else if (this.mcduProfile?.isReadyToDisplay) {
+      this.mcduProfile.invalidate();
+    }
 
     const newLegs = new Map(geometry?.legs ?? []);
     if (this.shouldUpdateDescentProfile(newParameters, newLegs) || this.requestDescentProfileRecomputation) {
@@ -163,6 +176,22 @@ export class VnavDriver implements GuidanceComponent {
     this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
 
     this.version++;
+  }
+
+  private reset() {
+    if (this.version !== 0) {
+      this.version = 0;
+      this.profileManager.reset();
+      this.constraintReader.reset();
+      this.aircraftToDescentProfileRelation.reset();
+      this.descentGuidance.reset();
+      this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
+      this.decelPoint = null;
+      this.lastParameters = null;
+      this.oldLegs.clear();
+      this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
+      this.previousManagedDescentSpeedTarget = undefined;
+    }
   }
 
   isLatAutoControlActive(): boolean {
@@ -351,7 +380,7 @@ export class VnavDriver implements GuidanceComponent {
     return (
       newParameters.flightPhase < FmgcFlightPhase.Descent ||
       newParameters.flightPhase > FmgcFlightPhase.Approach ||
-      (!this.flightPlanManager.isCurrentFlightPlanTemporary() && this.didLegsChange(this.oldLegs, newLegs)) ||
+      (!this.flightPlanService.hasTemporary && this.didLegsChange(this.oldLegs, newLegs)) ||
       numberOrNanChanged(this.lastParameters.cruiseAltitude, newParameters.cruiseAltitude) ||
       numberOrNanChanged(this.lastParameters.managedDescentSpeed, newParameters.managedDescentSpeed) ||
       numberOrNanChanged(this.lastParameters.managedDescentSpeedMach, newParameters.managedDescentSpeedMach) ||
@@ -385,7 +414,9 @@ export class VnavDriver implements GuidanceComponent {
    * Compute predictions for EFOB, ETE, etc. at destination
    */
   public getDestinationPrediction(): VerticalWaypointPrediction | null {
-    return this.profileManager.mcduProfile?.waypointPredictions?.get(this.flightPlanManager.getDestinationIndex());
+    const destLegIndex = this.flightPlanService.active.destinationLegIndex;
+
+    return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
   }
 
   /**
@@ -411,10 +442,6 @@ export class VnavDriver implements GuidanceComponent {
       distanceFromPresentPosition: todOrStep.distanceFromStart - this.constraintReader.distanceToPresentPosition,
       secondsFromPresent: todOrStep.secondsFromPresent,
     };
-  }
-
-  public get distanceToEnd(): NauticalMiles {
-    return this.constraintReader.distanceToEnd;
   }
 
   public findNextSpeedChange(): NauticalMiles | null {
@@ -506,43 +533,20 @@ export class VnavDriver implements GuidanceComponent {
 
     const geometry = this.guidanceController.activeGeometry;
     const activeLegIndex = this.guidanceController.activeLegIndex;
-    let distanceFromAircraft = this.guidanceController.activeLegCompleteLegPathDtg;
-    const tacticalDistanceFromStart = this.constraintReader.distanceToPresentPosition;
 
     for (let i = activeLegIndex; geometry.legs.get(i) || geometry.legs.get(i + 1); i++) {
       const leg = geometry.legs.get(i);
-
       if (!leg) {
+        continue;
+      } else if (!leg.calculated) {
+        leg.predictedTas = undefined;
+        leg.predictedGs = undefined;
+
         continue;
       }
 
-      if (i > activeLegIndex) {
-        if (leg instanceof IFLeg) {
-          const previousTermination = geometry.legs.get(i - 1).getPathEndPoint();
-          if (previousTermination && leg?.fix?.infos?.coordinates) {
-            distanceFromAircraft += Avionics.Utils.computeGreatCircleDistance(
-              previousTermination,
-              leg.fix.infos.coordinates,
-            );
-          }
-        } else {
-          const inboundTransition = geometry.transitions.get(i - 1);
-          const outboundTransition = geometry.transitions.get(i);
-
-          const [inboundLength, legDistance, outboundLength] = Geometry.completeLegPathLengths(
-            leg,
-            inboundTransition?.isNull || !inboundTransition?.isComputed ? null : inboundTransition,
-            outboundTransition?.isNull || !outboundTransition?.isComputed ? null : outboundTransition,
-          );
-
-          const correctedInboundLength = Number.isNaN(inboundLength) ? 0 : inboundLength;
-          const totalLegLength = legDistance + correctedInboundLength + outboundLength;
-          distanceFromAircraft += totalLegLength;
-        }
-      }
-
       const prediction = this.profileManager.mcduProfile.interpolateEverythingFromStart(
-        tacticalDistanceFromStart + distanceFromAircraft,
+        leg.calculated.cumulativeDistanceWithTransitions,
       );
       const tasPrediction = this.atmosphericConditions.computeTasFromCas(prediction.altitude, prediction.speed);
 
@@ -552,6 +556,75 @@ export class VnavDriver implements GuidanceComponent {
       leg.predictedTas = tasPrediction;
       leg.predictedGs = gsPrediction;
     }
+  }
+
+  updateDebugInformation() {
+    if (!VnavConfig.DEBUG_GUIDANCE) {
+      return;
+    }
+
+    this.listener.triggerToAllSubscribers(
+      'A32NX_FM_DEBUG_VNAV_STATUS',
+      'A32NX FMS VNAV STATUS\n' +
+        `DTG ${this.guidanceController.activeLegAlongTrackCompletePathDtg?.toFixed(2) ?? '---'} NM\n` +
+        `DIST TO DEST ${this.guidanceController.alongTrackDistanceToDestination?.toFixed(2) ?? '---'} NM\n` +
+        `DIST FROM START ${this.constraintReader.distanceToPresentPosition?.toFixed(2) ?? '---'} NM\n` +
+        `TOTAL DIST ${this.constraintReader.totalFlightPlanDistance?.toFixed(2) ?? '---'} NM\n` +
+        '---\n' +
+        `MODE ${this.descentGuidance.getDesSubmode()} \n` +
+        `VDEV ${this.descentGuidance.getLinearDeviation()?.toFixed(0) ?? '---'} FT\n` +
+        `VS ${this.descentGuidance.getTargetVerticalSpeed()?.toFixed(0) ?? '---'} FT/MIN\n`,
+    );
+  }
+
+  private updateDistanceToDestination(): void {
+    const geometry = this.guidanceController.activeGeometry;
+    if (!geometry || geometry.legs.size <= 0) {
+      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      this.guidanceController.alongTrackDistanceToDestination = undefined;
+
+      return;
+    }
+
+    // TODO: Proper navigation
+    const ppos = this.guidanceController.lnavDriver.ppos;
+    const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
+
+    const activeLegIndx = this.guidanceController.activeLegIndex;
+    const activeLeg = geometry.legs.get(activeLegIndx);
+
+    let referenceLegIndex = activeLegIndx;
+    if (!activeLeg) {
+      referenceLegIndex = activeLegIndx + 1;
+    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
+      referenceLegIndex = activeLegIndx + 2;
+    }
+    const referenceLeg = geometry.legs.get(referenceLegIndex);
+
+    if (!referenceLeg) {
+      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      this.guidanceController.alongTrackDistanceToDestination = undefined;
+
+      return;
+    }
+
+    const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
+    const outboundTransition = geometry.transitions.get(referenceLegIndex);
+
+    const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+      ppos,
+      trueTrack,
+      referenceLeg,
+      inboundTransition,
+      outboundTransition,
+    );
+
+    this.guidanceController.activeLegAlongTrackCompletePathDtg = completeLegAlongTrackPathDtg;
+    this.guidanceController.alongTrackDistanceToDestination = Number.isFinite(
+      referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions,
+    )
+      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
+      : undefined;
   }
 }
 

@@ -1,0 +1,90 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+.frequency-page {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr 4px 1fr 4px 1fr;
+  grid-template-columns: 595px 440px 595px;
+}
+
+.frequency-page > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.frequency-page > div:not(.divider) {
+  margin-top: 54px;
+}
+
+.frequency-page .divider {
+  background: $display-white;
+  grid-column: span 3;
+}
+
+.frequency-page .transceiver-ident-cell {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 30px;
+}
+
+.frequency-page .active-frequency {
+  padding-top: 10px;
+}
+
+.frequency-page .loudspeaker-symbol {
+  width: 58px;
+  height: 89px;
+  fill: $display-white;
+}
+
+.frequency-page .loudspeaker-symbol svg {
+  position: absolute;
+}
+
+.frequency-page .loudspeaker-symbol .no-reception {
+  fill: none;
+  stroke: $display-amber;
+  stroke-width: 6px;
+}
+
+.frequency-page .transceiver-ident {
+  padding: 6px 0 0 12px;
+}
+
+.frequency-page .transceiver-ident.reverse-video {
+  background: $display-green;
+  color: $display-background;
+}
+
+.frequency-page .stby-frequency-cell {
+  border: 4px solid transparent;
+  margin: 2px 0 2px 64px !important;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.frequency-page .stby-frequency-cell.selected {
+  color: $display-cyan;
+  border-color: $display-cyan;
+}
+
+.frequency-page .stby-frequency-cell.amber {
+  color: $display-amber;
+}
+
+.frequency-page .stby-frequency {
+  height: 120px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-evenly;
+}

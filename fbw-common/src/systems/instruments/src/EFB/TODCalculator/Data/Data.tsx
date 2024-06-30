@@ -130,7 +130,7 @@ export const Data = ({ className }: { className: string }) => {
           >
             <button
               onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
-              className={`border-theme-highlight text-theme-highlight flex h-auto items-center rounded-md rounded-l-none border-2 px-3 transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
+              className={`flex h-auto items-center rounded-md rounded-l-none border-2 border-theme-highlight px-3 text-theme-highlight transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
               type="button"
             >
               <p className="text-current">SYNC</p>
@@ -150,7 +150,7 @@ export const Data = ({ className }: { className: string }) => {
         />
       </div>
 
-      <div className="bg-theme-accent h-1 w-full rounded-full" />
+      <div className="h-1 w-full rounded-full bg-theme-accent" />
 
       {calculationTypes.map(
         ({ label, placeholder, type, syncValue }) =>
@@ -173,7 +173,7 @@ export const Data = ({ className }: { className: string }) => {
                 {inputValid(type, syncValue) && (
                   <button
                     type="button"
-                    className={`border-theme-highlight text-theme-highlight flex items-center rounded-md rounded-l-none border-2 px-3 transition duration-100 ${calculationInputSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
+                    className={`flex items-center rounded-md rounded-l-none border-2 border-theme-highlight px-3 text-theme-highlight transition duration-100 ${calculationInputSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
                     onClick={() =>
                       dispatch(
                         setTodData({
@@ -191,7 +191,7 @@ export const Data = ({ className }: { className: string }) => {
                 {!!calculationInput && !calculationInputSyncEnabled && (
                   <button
                     type="button"
-                    className="border-utility-red text-utility-red hover:bg-utility-red hover:text-theme-body flex items-center rounded-md rounded-l-none border-2 px-3 transition duration-100"
+                    className="flex items-center rounded-md rounded-l-none border-2 border-utility-red px-3 text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
                     onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                   >
                     X

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -18,8 +18,6 @@ export type NDSimvars = AdirsSimVars &
     potentiometerCaptain: number;
     potentiometerFo: number;
     ilsCourse: number;
-    selectedWaypointLat: Degrees;
-    selectedWaypointLong: Degrees;
     selectedHeading: Degrees;
     showSelectedHeading: boolean;
     pposLat: Degrees;
@@ -33,8 +31,6 @@ export enum NDVars {
   potentiometerCaptain = 'LIGHT POTENTIOMETER:89',
   potentiometerFo = 'LIGHT POTENTIOMETER:91',
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
-  selectedWaypointLat = 'L:A32NX_SELECTED_WAYPOINT_LAT',
-  selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',
   selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
   showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
   pposLat = 'PLANE LATITUDE', // TODO replace with fm position
@@ -52,8 +48,6 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
     ['potentiometerCaptain', { name: NDVars.potentiometerCaptain, type: SimVarValueType.Number }],
     ['potentiometerFo', { name: NDVars.potentiometerFo, type: SimVarValueType.Number }],
     ['ilsCourse', { name: NDVars.ilsCourse, type: SimVarValueType.Number }],
-    ['selectedWaypointLat', { name: NDVars.selectedWaypointLat, type: SimVarValueType.Degree }],
-    ['selectedWaypointLong', { name: NDVars.selectedWaypointLong, type: SimVarValueType.Degree }],
     ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
     ['showSelectedHeading', { name: NDVars.showSelectedHeading, type: SimVarValueType.Bool }],
     ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],

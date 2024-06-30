@@ -550,7 +550,7 @@ export class LegsProcedure {
       const facility = this._facilities.get(leg.fixIcao);
       const waypoint = RawDataMapper.toWaypoint(facility, this._instrument);
 
-      const magVar = Facilities.getMagVar(facility.lat, facility.lon);
+      const magVar = Facilities.getMagVar(facility.lat, facility.long);
 
       (waypoint.additionalData.defaultHold as HoldData) = {
           inboundMagneticCourse: leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course,

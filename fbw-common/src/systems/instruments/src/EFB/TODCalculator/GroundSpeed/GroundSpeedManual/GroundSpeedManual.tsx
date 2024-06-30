@@ -83,7 +83,7 @@ export const GroundSpeedManual = () => {
 
         <div className="flex flex-row space-x-2">
           <button
-            className={`border-utility-red bg-utility-red text-theme-body w-full rounded-md border-2 py-2 transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-utility-red'}`}
+            className={`w-full rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-utility-red'}`}
             type="button"
             onClick={() => dispatch(removeTodGroundSpeed(groundSpeed.length - 1))}
             disabled={groundSpeed.length <= 1}
@@ -92,7 +92,7 @@ export const GroundSpeedManual = () => {
           </button>
 
           <button
-            className={`bg-colors-lime-500 border-colors-lime-500 text-theme-body w-full rounded-md border-2 py-2 transition duration-100 ${groundSpeed.length >= 6 ? 'opacity-60' : 'hover:text-colors-lime-500 hover:bg-theme-body'}`}
+            className={`bg-colors-lime-500 border-colors-lime-500 w-full rounded-md border-2 py-2 text-theme-body transition duration-100 ${groundSpeed.length >= 6 ? 'opacity-60' : 'hover:text-colors-lime-500 hover:bg-theme-body'}`}
             type="button"
             onClick={() => dispatch(addTodGroundSpeed({ from: -1, groundSpeed: -1 }))}
             disabled={groundSpeed.length >= 6}
@@ -104,7 +104,7 @@ export const GroundSpeedManual = () => {
 
       <button
         type="button"
-        className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight hover:text-theme-body flex w-full justify-center rounded-md border-2 p-3 transition duration-100"
+        className="flex w-full justify-center rounded-md border-2 border-theme-highlight p-3 text-theme-highlight transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
         onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
       >
         <p className="text-current">{t('Performance.TopOfDescent.GroundSpeed.Sync')}</p>

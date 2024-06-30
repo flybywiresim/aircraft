@@ -28,16 +28,16 @@ module.exports = {
         typecheckingPlugin(),
     ],
     instruments: [
-        msfsAvionicsInstrument('PFD'),
-        msfsAvionicsInstrument('ND'),
         msfsAvionicsInstrument('Clock'),
+        msfsAvionicsInstrument('ND'),
+        msfsAvionicsInstrument('PFD'),
+        msfsAvionicsInstrument('RMP'),
 
         reactInstrument('BAT'),
         reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
         reactInstrument('EWD'),
         reactInstrument('MFD'),
         reactInstrument('OIT'),
-        reactInstrument('RMP'),
         reactInstrument('SD'),
     ],
 };

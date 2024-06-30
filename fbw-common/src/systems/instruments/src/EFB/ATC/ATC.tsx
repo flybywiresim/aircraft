@@ -31,25 +31,25 @@ interface FrequencyCardProps {
 
 const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, setStandby }: FrequencyCardProps) => (
   <div className={className}>
-    <div className="bg-theme-secondary relative w-full overflow-hidden rounded-md p-6">
+    <div className="relative w-full overflow-hidden rounded-md bg-theme-secondary p-6">
       <h2 className="font-bold">{callsign}</h2>
       <h2>{frequency}</h2>
 
       <div className="absolute inset-0 flex flex-row opacity-0 transition duration-100 hover:opacity-100">
         <div
-          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center border-2 px-2 text-center font-bold transition duration-100"
+          className="flex w-full items-center justify-center border-2 border-theme-highlight bg-theme-highlight px-2 text-center font-bold text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
           onClick={setActive}
         >
           <h2 className="text-current">{t('AirTrafficControl.SetActive')}</h2>
         </div>
         <div
-          className="border-utility-amber bg-utility-amber text-theme-body hover:bg-theme-body hover:text-utility-amber flex w-full items-center justify-center border-2 px-2 text-center font-bold transition duration-100"
+          className="flex w-full items-center justify-center border-2 border-utility-amber bg-utility-amber px-2 text-center font-bold text-theme-body transition duration-100 hover:bg-theme-body hover:text-utility-amber"
           onClick={setStandby}
         >
           <h2 className="text-current">{t('AirTrafficControl.SetStandby')}</h2>
         </div>
         <div
-          className="border-theme-text bg-theme-text text-theme-body hover:bg-theme-body hover:text-theme-text flex w-1/4 items-center justify-center border-2 font-bold transition duration-100"
+          className="flex w-1/4 items-center justify-center border-2 border-theme-text bg-theme-text font-bold text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-text"
           onClick={setCurrent}
         >
           <InfoCircle size={35} />
@@ -213,7 +213,7 @@ export const ATC = () => {
         </h1>
       </div>
       {atisSource === 'IVAO' || atisSource === 'VATSIM' ? (
-        <div className="h-content-section-reduced mt-4 w-full">
+        <div className="mt-4 h-content-section-reduced w-full">
           <div className="relative space-y-4">
             <div className="flex flex-row items-center space-x-3">
               <TooltipWrapper text={t('AirTrafficControl.TT.AtcCallSignSearch')}>
@@ -226,7 +226,7 @@ export const ATC = () => {
                   />
                   <button
                     type="button"
-                    className="border-utility-red text-utility-red hover:bg-utility-red hover:text-theme-body flex items-center rounded-md rounded-l-none border-2 px-3 transition duration-100"
+                    className="flex items-center rounded-md rounded-l-none border-2 border-utility-red px-3 text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
                     onClick={() => setControllerCallSignFilter('')}
                   >
                     X
@@ -271,24 +271,24 @@ export const ATC = () => {
             </ScrollableContainer>
 
             <div
-              className={`border-theme-accent bg-theme-body absolute inset-0 top-10 flex items-center justify-center rounded-md border-2 transition duration-200
+              className={`absolute inset-0 top-10 flex items-center justify-center rounded-md border-2 border-theme-accent bg-theme-body transition duration-200
                             ${atcDataPending ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
             >
               {atcDataPending && <CloudArrowDown className="animate-bounce" size={40} />}
             </div>
           </div>
 
-          <div className="divide-theme-accent border-theme-accent mt-4 flex h-64 flex-row divide-x-2 rounded-lg border-2">
+          <div className="mt-4 flex h-64 flex-row divide-x-2 divide-theme-accent rounded-lg border-2 border-theme-accent">
             <div className="flex flex-col justify-between p-4">
               <div>
                 <p>{t('AirTrafficControl.Active')}</p>
-                <div className="h-18 border-theme-accent font-rmp text-theme-highlight mt-2 flex w-72 items-center justify-center rounded-lg border-2 text-6xl">
+                <div className="h-18 mt-2 flex w-72 items-center justify-center rounded-lg border-2 border-theme-accent font-rmp text-6xl text-theme-highlight">
                   {displayedActiveFrequency && displayedActiveFrequency}
                 </div>
               </div>
               <div>
                 <p>{t('AirTrafficControl.Standby')}</p>
-                <div className="h-18 border-theme-accent font-rmp text-utility-amber mt-2 flex w-72 items-center justify-center rounded-lg border-2 text-6xl">
+                <div className="h-18 mt-2 flex w-72 items-center justify-center rounded-lg border-2 border-theme-accent font-rmp text-6xl text-utility-amber">
                   {displayedStandbyFrequency && displayedStandbyFrequency}
                 </div>
               </div>
@@ -305,12 +305,12 @@ export const ATC = () => {
           </div>
         </div>
       ) : (
-        <div className="h-content-section-reduced border-theme-accent mt-4 flex items-center justify-center rounded-lg border-2">
+        <div className="mt-4 flex h-content-section-reduced items-center justify-center rounded-lg border-2 border-theme-accent">
           <div className="max-w-4xl space-y-8">
             <h1 className="text-center">{t('AirTrafficControl.SelectCorrectATISATCSource')}</h1>
             <Link
               to={`/settings/${pathify('ATSU / AOC')}`}
-              className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-full items-center justify-center space-x-4 rounded-md border-2 p-2 transition duration-100"
+              className="flex w-full items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight bg-theme-highlight p-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
             >
               <Gear size={26} />
               <p className="text-current">{t('AirTrafficControl.ChangeATISATCSourceButton')}</p>

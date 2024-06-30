@@ -159,6 +159,10 @@ export class PseudoFWC {
 
   private readonly excessPressure = Subject.create(false);
 
+  private readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
+
+  private readonly excessResidualPrConfirm = new NXLogicConfirmNode(5);
+
   private readonly excessResidualPr = Subject.create(false);
 
   private readonly lowDiffPress = Subject.create(false);
@@ -1358,7 +1362,14 @@ export class PseudoFWC {
 
     const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
     this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
-    this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
+
+    const eng1And2NotRunning = !this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get();
+    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && eng1And2NotRunning, deltaTime);
+    const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
+    this.excessResidualPr.set(
+      this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
+    );
+
     this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
 
     this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));

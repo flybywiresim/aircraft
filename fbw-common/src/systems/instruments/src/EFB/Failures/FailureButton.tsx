@@ -30,7 +30,7 @@ export const FailureButton: FC<FailureButtonProps> = ({
       onClick={onClick}
       type="button"
       disabled={isChanging}
-      className={`bg-theme-accent flex rounded-md border-t-4 px-2 pb-2 pt-3 text-left ${color} ${className}`}
+      className={`flex rounded-md border-t-4 bg-theme-accent px-2 pb-2 pt-3 text-left ${color} ${className}`}
     >
       {highlightedTerm ? (
         <h2>

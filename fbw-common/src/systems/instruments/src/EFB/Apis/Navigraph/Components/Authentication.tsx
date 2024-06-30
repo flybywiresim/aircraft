@@ -4,12 +4,16 @@
 import { useInterval } from '@flybywiresim/react-components';
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
-import { toast } from 'react-toastify';
+import { DeviceFlowParams } from 'navigraph/auth';
 import QRCode from 'qrcode.react';
-import { NavigraphClient, NavigraphSubscriptionStatus, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
-import { useNavigraph } from '../Navigraph';
+import { useNavigraphAuth } from '../../../../react/navigraph';
+import { CancelToken } from '@navigraph/auth';
+
+const NAVIGRAPH_SUBSCRIPTION_CHARTS = 'charts';
+const NAVIGRAPH_SUBSCRIPTION_FMSDATA = 'fmsdata';
 
 export type NavigraphAuthInfo =
   | {
@@ -24,48 +28,49 @@ export type NavigraphAuthInfo =
     };
 
 export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
-  const navigraph = useNavigraph();
+  const [info, setInfo] = useState<NavigraphAuthInfo>({ loggedIn: false });
 
-  const [tokenAvail, setTokenAvail] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<NavigraphSubscriptionStatus>(
-    NavigraphSubscriptionStatus.Unknown,
-  );
-  const [username] = usePersistentProperty('NAVIGRAPH_USERNAME');
+  const navigraphAuth = useNavigraphAuth();
 
-  useInterval(
-    () => {
-      if (tokenAvail !== navigraph.hasToken && navigraph.hasToken) {
-        navigraph
-          .fetchSubscriptionStatus()
-          .then(setSubscriptionStatus)
-          .catch(() => setSubscriptionStatus(NavigraphSubscriptionStatus.Unknown));
-      } else if (!navigraph.hasToken) {
-        setSubscriptionStatus(NavigraphSubscriptionStatus.None);
-      }
-
-      setTokenAvail(navigraph.hasToken);
-    },
-    1000,
-    { runOnStart: true },
-  );
-
-  if (tokenAvail) {
-    return { loggedIn: tokenAvail, username, subscriptionStatus };
+  if (navigraphAuth.user && info.loggedIn === false) {
+    setInfo({
+      loggedIn: true,
+      username: navigraphAuth.user.preferred_username,
+      subscriptionStatus: [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) =>
+        navigraphAuth.user.subscriptions.includes(it),
+      )
+        ? NavigraphSubscriptionStatus.Unlimited
+        : NavigraphSubscriptionStatus.Unknown,
+    });
+  } else if (!navigraphAuth.user && info.loggedIn === true) {
+    setInfo({ loggedIn: false });
   }
-  return { loggedIn: false };
+
+  return info;
 };
 
-const Loading = () => {
-  const navigraph = useNavigraph();
-  const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
+interface LoadingProps {
+  onNewDeviceFlowParams: (params: DeviceFlowParams) => void;
+}
+
+const Loading: React.FC<LoadingProps> = ({ onNewDeviceFlowParams }) => {
+  const navigraph = useNavigraphAuth();
   const [showResetButton, setShowResetButton] = useState(false);
+  const [cancelToken] = useState(CancelToken.source());
 
   const handleResetRefreshToken = () => {
-    setRefreshToken('');
-    navigraph.authenticate();
+    cancelToken.cancel('reset requested by user');
+
+    navigraph.signIn((params) => {
+      onNewDeviceFlowParams(params);
+    });
   };
 
   useEffect(() => {
+    navigraph.signIn((params) => {
+      onNewDeviceFlowParams(params);
+    }, cancelToken.token);
+
     const timeout = setTimeout(() => {
       setShowResetButton(true);
     }, 2_000);
@@ -76,14 +81,14 @@ const Loading = () => {
   return (
     <div className="flex flex-col items-center justify-center">
       <div
-        className="bg-theme-secondary flex items-center justify-center rounded-md"
+        className="flex items-center justify-center rounded-md bg-theme-secondary"
         style={{ width: '400px', height: '400px' }}
       >
         <CloudArrowDown className="animate-bounce" size={40} />
       </div>
       <button
         type="button"
-        className={`bg-theme-highlight mt-6 flex items-center justify-center rounded-md p-2 opacity-0 transition duration-200 focus:outline-none ${showResetButton && 'opacity-100'}`}
+        className={`mt-6 flex items-center justify-center rounded-md bg-theme-highlight p-2 opacity-0 transition duration-200 focus:outline-none ${showResetButton && 'opacity-100'}`}
         style={{ width: '400px' }}
         onClick={handleResetRefreshToken}
       >
@@ -94,43 +99,20 @@ const Loading = () => {
 };
 
 export const NavigraphAuthUI = () => {
-  const navigraph = useNavigraph();
+  const [params, setParams] = useState<DeviceFlowParams | null>(null);
+
   const [displayAuthCode, setDisplayAuthCode] = useState(t('NavigationAndCharts.Navigraph.LoadingMsg').toUpperCase());
 
   useInterval(() => {
-    if (navigraph.auth.code) {
-      setDisplayAuthCode(navigraph.auth.code);
+    if (params?.user_code) {
+      setDisplayAuthCode(params.user_code);
     }
   }, 1000);
 
-  const hasQr = !!navigraph.auth.qrLink;
-
-  useInterval(async () => {
-    if (!navigraph.hasToken) {
-      try {
-        await navigraph.getToken();
-      } catch (e) {
-        toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-      }
-    }
-  }, navigraph.auth.interval * 1000);
-
-  useInterval(async () => {
-    try {
-      await navigraph.getToken();
-    } catch (e) {
-      toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-    }
-  }, navigraph.tokenRefreshInterval * 1000);
-
-  useEffect(() => {
-    if (!navigraph.hasToken) {
-      navigraph.authenticate();
-    }
-  }, []);
+  const hasQr = !!params?.verification_uri_complete;
 
   return (
-    <div className="bg-theme-accent flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg p-6">
+    <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
       <div className="flex flex-col items-center justify-center">
         <ShieldLock className="mr-2" size={40} />
 
@@ -140,12 +122,12 @@ export const NavigraphAuthUI = () => {
 
         <p className="mt-6 w-2/3 text-center">
           {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
-          <span className="text-theme-highlight">{navigraph.auth.link}</span>{' '}
+          <span className="text-theme-highlight">{params?.verification_uri_complete ?? ''}</span>{' '}
           {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
         </p>
 
         <h1
-          className="border-theme-highlight bg-theme-secondary mt-4 flex h-16 items-center rounded-md border-2 px-4 text-4xl font-bold tracking-wider"
+          className="mt-4 flex h-16 items-center rounded-md border-2 border-theme-highlight bg-theme-secondary px-4 text-4xl font-bold tracking-wider"
           style={{ minWidth: '200px' }}
         >
           {displayAuthCode}
@@ -154,10 +136,10 @@ export const NavigraphAuthUI = () => {
         <div className="mt-16">
           {hasQr ? (
             <div className="rounded-md bg-white p-3">
-              <QRCode value={navigraph.auth.qrLink} size={400} />
+              <QRCode value={params.verification_uri_complete} size={400} />
             </div>
           ) : (
-            <Loading />
+            <Loading onNewDeviceFlowParams={setParams} />
           )}
         </div>
       </div>
@@ -175,24 +157,20 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({
   onSuccessfulLogin,
   children,
 }) => {
-  const [tokenAvail, setTokenAvail] = useState(false);
-
-  const navigraph = useNavigraph();
+  const navigraph = useNavigraphAuth();
 
   useInterval(
     () => {
-      if (!tokenAvail && navigraph.hasToken) {
+      if (navigraph.user) {
         onSuccessfulLogin?.();
       }
-
-      setTokenAvail(navigraph.hasToken);
     },
     1000,
     { runOnStart: true },
   );
 
   let ui: React.ReactNode;
-  if (tokenAvail) {
+  if (navigraph.user) {
     ui = children;
   } else if (showLogin) {
     ui = <NavigraphAuthUI />;
@@ -200,10 +178,10 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({
     ui = <NavigraphAuthRedirectUI />;
   }
 
-  return NavigraphClient.hasSufficientEnv ? (
+  return NavigraphKeys.hasSufficientEnv ? (
     <>{ui}</>
   ) : (
-    <div className="h-content-section-reduced mr-4 flex w-full items-center justify-center overflow-x-hidden">
+    <div className="mr-4 flex h-content-section-reduced w-full items-center justify-center overflow-x-hidden">
       <p className="mb-6 pt-6 text-3xl">{t('NavigationAndCharts.Navigraph.InsufficientEnv')}</p>
     </div>
   );
@@ -217,15 +195,15 @@ export const NavigraphAuthRedirectUI = () => {
   };
 
   return (
-    <div className="h-content-section-reduced border-theme-accent flex items-center justify-center rounded-lg border-2">
+    <div className="flex h-content-section-reduced items-center justify-center rounded-lg border-2 border-theme-accent">
       <div className="flex flex-col items-center justify-center space-y-4">
         <h1>{t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Title')}</h1>
 
         <button
           type="button"
-          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight flex w-52
-                         items-center justify-center space-x-4 rounded-md border-2
-                         py-2 transition duration-100"
+          className="flex w-52 items-center justify-center space-x-4 rounded-md border-2
+                         border-theme-highlight bg-theme-highlight py-2 text-theme-body transition
+                         duration-100 hover:bg-theme-body hover:text-theme-highlight"
           onClick={handleGoToThirdPartySettings}
         >
           {t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Button')}

@@ -70,7 +70,9 @@ export class ClimbPhase extends Phase {
   shouldActivateNextPhase(_deltaTime) {
     const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
     const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
-    return fl >= cruiseFl;
+
+    // If no cruise alt has been entered, cruiseFl is 0. We don't want to switch to cruise phase in that case
+    return cruiseFl > 0 && fl >= cruiseFl;
   }
 }
 

@@ -63,9 +63,9 @@ export const CompletionButton = () => {
     if (selectedChecklistIndex < checklists.length - 1) {
       return (
         <div
-          className="border-theme-highlight bg-theme-body text-theme-highlight hover:bg-theme-highlight hover:text-theme-body flex w-full
-                               items-center justify-center rounded-md border-2 py-2 text-center font-bold
-                               transition duration-100"
+          className="flex w-full items-center justify-center rounded-md border-2 border-theme-highlight
+                               bg-theme-body py-2 text-center font-bold text-theme-highlight transition duration-100
+                               hover:bg-theme-highlight hover:text-theme-body"
           onClick={() => {
             dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
           }}
@@ -77,8 +77,8 @@ export const CompletionButton = () => {
 
     return (
       <div
-        className="border-theme-highlight bg-theme-body text-theme-highlight flex w-full items-center justify-center
-                           rounded-md border-2 py-2 text-center font-bold"
+        className="flex w-full items-center justify-center rounded-md border-2 border-theme-highlight
+                           bg-theme-body py-2 text-center font-bold text-theme-highlight"
       >
         {t('Checklists.TheLastChecklistIsComplete')}
       </div>
@@ -89,9 +89,9 @@ export const CompletionButton = () => {
   if (firstIncompleteIdx !== -1) {
     return (
       <div
-        className="border-utility-green bg-theme-body text-utility-green hover:bg-utility-green hover:text-theme-body flex w-full
-                           items-center justify-center rounded-md border-2 py-2 text-center font-bold
-                           transition duration-100"
+        className="flex w-full items-center justify-center rounded-md border-2 border-utility-green
+                           bg-theme-body py-2 text-center font-bold text-utility-green transition duration-100
+                           hover:bg-utility-green hover:text-theme-body"
         onClick={() => {
           dispatch(
             setChecklistItemCompletion({
@@ -111,9 +111,9 @@ export const CompletionButton = () => {
   if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
     return (
       <div
-        className="border-utility-green bg-theme-body text-utility-green hover:bg-utility-green hover:text-theme-body flex w-full
-                           items-center justify-center rounded-md border-2 py-2 text-center font-bold
-                           transition duration-100"
+        className="flex w-full items-center justify-center rounded-md border-2 border-utility-green
+                           bg-theme-body py-2 text-center font-bold text-utility-green transition duration-100
+                           hover:bg-utility-green hover:text-theme-body"
         onClick={() => {
           dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
         }}
@@ -126,8 +126,8 @@ export const CompletionButton = () => {
   // If there are remaining autofill checklist items that have not yet been completed, show a message.
   return (
     <div
-      className="border-utility-green bg-theme-body text-utility-green flex w-full items-center justify-center
-                       rounded-md border-2 py-2 text-center font-bold"
+      className="flex w-full items-center justify-center rounded-md border-2 border-utility-green
+                       bg-theme-body py-2 text-center font-bold text-utility-green"
     >
       {t('Checklists.ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted')}
     </div>

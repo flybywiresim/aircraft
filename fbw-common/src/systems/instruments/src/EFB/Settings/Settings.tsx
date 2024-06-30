@@ -34,7 +34,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
       <Link
         key={tab.name}
         to={`settings/${pathify(tab.name)}`}
-        className="bg-theme-accent hover:border-theme-highlight flex items-center justify-between rounded-md border-2 border-transparent p-6 transition duration-100"
+        className="flex items-center justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
       >
         <p className="text-2xl">{tab.alias ?? tab.name}</p>
         <ChevronRight size={30} />
@@ -80,7 +80,7 @@ type SettingsPageProps = {
 export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children }) => (
   <div>
     <Link to={backRoute ?? '/settings'} className="mb-4 inline-block">
-      <div className="hover:text-theme-highlight flex flex-row items-center space-x-3 transition duration-100">
+      <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
         <ArrowLeft size={30} />
         <h1 className="font-bold text-current">
           {t('Settings.Title')}
@@ -89,9 +89,9 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
         </h1>
       </div>
     </Link>
-    <div className="h-content-section-reduced border-theme-accent w-full rounded-lg border-2 px-6 py-2">
+    <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">
       <ScrollableContainer height={54} innerClassName="h-full">
-        <div className="divide-theme-accent h-full divide-y-2">{children}</div>
+        <div className="h-full divide-y-2 divide-theme-accent">{children}</div>
       </ScrollableContainer>
     </div>
   </div>
@@ -100,7 +100,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
 export const FullscreenSettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
   <div>
     <Link to="/settings" className="mb-4 inline-block">
-      <div className="hover:text-theme-highlight flex flex-row items-center space-x-3 transition duration-100">
+      <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
         <ArrowLeft size={30} />
         <h1 className="font-bold text-current">
           {t('Settings.Title')}
@@ -109,7 +109,7 @@ export const FullscreenSettingsPage: FC<SettingsPageProps> = ({ name, children }
         </h1>
       </div>
     </Link>
-    <div className="h-content-section-reduced border-theme-accent w-full rounded-lg border-2 px-6 py-2">{children}</div>
+    <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">{children}</div>
   </div>
 );
 
@@ -125,7 +125,7 @@ type SettingItemProps = {
 };
 
 export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType, disabled, children }) => {
-  const UnrealisticHint = () => <span className="text-theme-highlight ml-2"> ({t('Settings.Unrealistic')})</span>;
+  const UnrealisticHint = () => <span className="ml-2 text-theme-highlight"> ({t('Settings.Unrealistic')})</span>;
 
   return (
     <div className={`flex flex-row items-center justify-between ${(groupType === undefined && 'py-4') || 'h-12'}`}>

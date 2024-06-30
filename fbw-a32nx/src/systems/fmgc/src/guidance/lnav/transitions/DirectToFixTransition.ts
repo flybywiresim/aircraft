@@ -13,10 +13,12 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { CILeg } from '../legs/CI';
 import {
   arcDistanceToGo,
@@ -24,22 +26,28 @@ import {
   arcLength,
   courseToFixDistanceToGo,
   courseToFixGuidance,
+  getRollAnticipationDistance,
   maxBank,
 } from '../CommonGeometry';
 import { CRLeg } from '../legs/CR';
+import { CDLeg } from '../legs/CD';
 
 type PrevLeg =
   | CALeg
-  | /* CDLeg | */ CFLeg
+  | CDLeg
+  | CFLeg
   | CILeg
   | CRLeg
   | DFLeg
-  | /* FALeg | FMLeg | */ HALeg
+  | FDLeg
+  | FALeg
+  | FMLeg
+  | HALeg
   | HFLeg
   | HMLeg
   | TFLeg
   | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
-type NextLeg = CFLeg | DFLeg; /* | FALeg | FMLeg */
+type NextLeg = CFLeg | DFLeg | FALeg | FMLeg;
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
 const acos = (input: Degrees) => Math.acos(input) * (180 / Math.PI);
@@ -120,7 +128,7 @@ export class DirectToFixTransition extends Transition {
     const termFix = this.previousLeg.getPathEndPoint();
 
     // FIXME fix for FX legs
-    const nextFix = this.nextLeg.fix.infos.coordinates;
+    const nextFix = this.nextLeg.fix.location;
 
     this.radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
 
@@ -142,7 +150,7 @@ export class DirectToFixTransition extends Transition {
 
     const currentRollAngle = isActive ? -SimVar.GetSimVarValue('PLANE BANK DEGREES', 'degrees') : 0;
     const rollAngleChange = Math.abs(turnDirectionSign * maxBank(tas, true) - currentRollAngle);
-    const rollAnticipationDistance = Geometry.getRollAnticipationDistance(gs, 0, rollAngleChange);
+    const rollAnticipationDistance = getRollAnticipationDistance(gs, 0, rollAngleChange);
 
     let itp =
       rollAnticipationDistance >= 0.05
@@ -305,7 +313,7 @@ export class DirectToFixTransition extends Transition {
 
       dtg += straightDtg;
 
-      if (dtg >= straightDist) {
+      if (dtg - straightDist > 0.01) {
         return false;
       }
     }
@@ -385,7 +393,7 @@ export class DirectToFixTransition extends Transition {
           bankNext = this.arcSweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, false);
         }
 
-        const rad = Geometry.getRollAnticipationDistance(tas, 0, bankNext);
+        const rad = getRollAnticipationDistance(tas, 0, bankNext);
 
         if (dtg <= rad) {
           params.phiCommand = bankNext;

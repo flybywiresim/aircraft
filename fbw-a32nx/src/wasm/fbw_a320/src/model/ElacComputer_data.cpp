@@ -38,6 +38,8 @@ base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct{
   false,
   false,
   false,
+  false,
+  false,
   0.0,
   0.0,
   false,
@@ -1812,6 +1814,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
       false,
       false,
       false,
+      false,
+      false,
       0.0,
       0.0,
       false,
@@ -2153,12 +2157,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   0.017453292519943295,
 
 
-  { 0.82, 0.82, 0.85, 0.85 },
-
-
-  { -4.0, -3.0, -1.0, 0.0 },
-
-
   { 350.0, 350.0, 356.0, 356.0 },
 
 
@@ -2166,6 +2164,12 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
 
   { 0.82, 0.82, 0.83, 0.83 },
+
+
+  { -4.0, -3.0, -1.0, 0.0 },
+
+
+  { 0.82, 0.82, 0.85, 0.85 },
 
 
   { -4.0, -3.0, -1.0, 0.0 },

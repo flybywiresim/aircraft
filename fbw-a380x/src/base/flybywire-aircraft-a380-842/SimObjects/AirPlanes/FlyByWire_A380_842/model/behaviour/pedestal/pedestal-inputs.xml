@@ -1,0 +1,26 @@
+<!-- Copyright (c) 2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Include ModelBehaviorFile="ASOBO\Inputs\Helpers.xml"/>
+
+    <InputEvent ID="A380X_PED_RMP_1">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_1</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
+
+    <InputEvent ID="A380X_PED_RMP_2">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_2</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
+</ModelBehaviors>

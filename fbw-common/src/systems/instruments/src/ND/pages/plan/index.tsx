@@ -18,9 +18,9 @@ import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
-import { NDSimvars } from '../../NDSimvarPublisher';
 import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
+import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
 export interface PlanModePageProps<T extends number> extends ComponentProps {
   bus: EventBus;
@@ -33,7 +33,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
   private readonly controlPublisher = this.props.bus.getPublisher<NDControlEvents>();
 
-  private readonly subs = this.props.bus.getSubscriber<NDControlEvents & NDSimvars & GenericAdirsEvents>();
+  private readonly subs = this.props.bus.getSubscriber<NDControlEvents & GenericAdirsEvents & GenericFmsEvents>();
 
   private readonly pposLatSub = ConsumerSubject.create(this.subs.on('latitude').whenChanged(), -1);
 
@@ -49,15 +49,13 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
   private readonly mapRangeRadiusSub = ConsumerSubject.create(this.subs.on('set_map_range_radius').whenChanged(), -1);
 
-  private readonly selectedWaypointLatSub = ConsumerSubject.create(
-    this.subs.on('selectedWaypointLat').whenChanged(),
-    -1,
-  );
+  private readonly selectedWaypointLatRegister = Arinc429Register.empty();
 
-  private readonly selectedWaypointLongSub = ConsumerSubject.create(
-    this.subs.on('selectedWaypointLong').whenChanged(),
-    -1,
-  );
+  private readonly selectedWaypointLatSub = ConsumerSubject.create(this.subs.on('mrpLat').whenChanged(), -1);
+
+  private readonly selectedWaypointLongRegister = Arinc429Register.empty();
+
+  private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('mrpLong').whenChanged(), -1);
 
   private readonly mapRangeSub = ConsumerSubject.create(
     this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(),
@@ -173,13 +171,18 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   }
 
   private handleSelectedWaypointPos() {
-    const lat = this.selectedWaypointLatSub.get();
-    const long = this.selectedWaypointLongSub.get();
+    this.selectedWaypointLatRegister.set(this.selectedWaypointLatSub.get());
+    this.selectedWaypointLongRegister.set(this.selectedWaypointLongSub.get());
 
-    if (this.isVisible.get()) {
+    // FIXME what to do when the selected waypoint is not valid?
+    if (
+      this.isVisible.get() &&
+      this.selectedWaypointLatRegister.isNormalOperation() &&
+      this.selectedWaypointLongRegister.isNormalOperation()
+    ) {
       this.controlPublisher.pub('set_show_map', true);
-      this.controlPublisher.pub('set_map_center_lat', lat);
-      this.controlPublisher.pub('set_map_center_lon', long);
+      this.controlPublisher.pub('set_map_center_lat', this.selectedWaypointLatRegister.value);
+      this.controlPublisher.pub('set_map_center_lon', this.selectedWaypointLongRegister.value);
       this.controlPublisher.pub('set_map_up_course', 0);
     }
   }

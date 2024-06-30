@@ -501,6 +501,10 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
         self.adirus[adiru_number - 1].altitude()
     }
+
+    fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].angle_of_attack()
+    }
 }
 
 struct AirDataInertialReferenceUnit {
@@ -667,6 +671,10 @@ impl AirDataInertialReferenceUnit {
 
     fn ambient_static_pressure(&self) -> Arinc429Word<Pressure> {
         self.adr.corrected_average_static_pressure()
+    }
+
+    fn angle_of_attack(&self) -> Arinc429Word<Angle> {
+        self.adr.angle_of_attack()
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -1133,6 +1141,10 @@ impl AirDataReference {
         } else {
             self.vmo
         }
+    }
+
+    fn angle_of_attack(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.angle_of_attack.value(), self.angle_of_attack.ssm())
     }
 }
 impl TrueAirspeedSource for AirDataReference {

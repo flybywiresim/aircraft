@@ -38,12 +38,12 @@ const ChecklistReminderCard = ({ checklist, checklistIndex, className }: Checkli
   return (
     <Link
       to="/checklists"
-      className={`bg-theme-accent relative mt-4 flex flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 ${color} ${className}`}
+      className={`relative mt-4 flex flex-col flex-wrap overflow-hidden rounded-md bg-theme-accent px-2 pb-2 pt-3 ${color} ${className}`}
       onClick={() => {
         dispatch(setSelectedChecklistIndex(checklistIndex));
       }}
     >
-      <div className="bg-theme-secondary absolute left-0 top-0 h-1.5 w-full flex-row text-current">
+      <div className="absolute left-0 top-0 h-1.5 w-full flex-row bg-theme-secondary text-current">
         <div
           className="h-full bg-current text-current"
           style={{
