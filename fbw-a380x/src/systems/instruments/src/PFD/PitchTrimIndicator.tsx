@@ -53,6 +53,9 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
     return ((10 - deg) * 17.25) + 103.5;
   }
 
+  /** in pixels, where magenta GW CG box is */
+  private readonly gwCgPosition = MappedSubject.create(([pitch, optimal]) => (pitch - optimal) * 17.25, this.trimPosition, this.optimalPitchTrim);
+
   /** in pixels, where upper magenta box starts */
   private readonly optimalPitchTrimUpperBoxStart = this.optimalPitchTrim.map((it) => this.degreesToPixel(Math.min(it + 1.5, 5.8)));
 
@@ -189,7 +192,7 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
                 RANGE
               </text>
             </g>
-            <g ref={this.gwCgGroup}>
+            <g ref={this.gwCgGroup} transform={this.gwCgPosition.map((it) => `translate(0 ${it - 5})`)}>
               <rect x={357} y={117} width={75} height={30} stroke="#ff94ff" stroke-width={2} />
               <text x={362} y={140} font-size={21.7} class="Magenta">
                 {this.cgPercent.map((it) => it.toFixed(1))}
@@ -206,14 +209,14 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
           <g clip-path="url(#cut-left)">
             <g transform={this.trimPosition.map((it) => `translate(276 ${-(this.degreesToPixel(it) - 103.5) + 23})`)}> {/* 276 23 */}
               <rect width="28" height="414" x="0" y="0" stroke="black" fill="#555f72" />
-              <rect width="30" height="207" x="0" y="103.5" fill="none" stroke="white" stroke-width="1" />
-              <rect width="24" height="103.5" x="3" y="175.95" fill="none" stroke="#00ff00" stroke-width="4" />
+              <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="white" stroke-width="2" />
+              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#00ff00" stroke-width="4" />
 
-              <rect width="16" height={this.optimalPitchTrimUpperBoxHeight} x="7" y={this.optimalPitchTrimUpperBoxStart} fill="none" stroke="#ff94ff" stroke-width="4" visibility={this.fwcFlightPhase.map((it) => it > 9 ? 'hidden' : 'visible')} />
-              <rect width="16" height={this.optimalPitchTrimLowerBoxHeight} x="7" y={this.optimalPitchTrimCenter} fill="none" stroke="#ff94ff" stroke-width="4" visibility={this.fwcFlightPhase.map((it) => it > 9 ? 'hidden' : 'visible')} />
+              <rect width="16" height={this.optimalPitchTrimUpperBoxHeight} x="6" y={this.optimalPitchTrimUpperBoxStart} fill="none" stroke="#ff94ff" stroke-width="4" visibility={this.fwcFlightPhase.map((it) => it > 9 ? 'hidden' : 'visible')} />
+              <rect width="16" height={this.optimalPitchTrimLowerBoxHeight} x="6" y={this.optimalPitchTrimCenter} fill="none" stroke="#ff94ff" stroke-width="4" visibility={this.fwcFlightPhase.map((it) => it > 9 ? 'hidden' : 'visible')} />
               <rect width="20" height="4" x="5" y="274" fill="white" visibility={this.fwcFlightPhase.map((it) => it > 9 ? 'visible' : 'hidden')} />
             </g>
-            <rect x="275" y="23" width="28" height="207" fill="url(#shadowGradient)" />
+            <rect x="275" y="23" width="30" height="207" fill="url(#shadowGradient)" />
           </g>
           <polygon points="265,115 265,138 277,126.5" ref={this.arrowRef} />
           <rect x="277" y="118" width="28" height="5" fill="url(#markerGradient)" />
