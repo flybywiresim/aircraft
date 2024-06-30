@@ -44,7 +44,8 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) =>
 
     // On ground, elec motors only active if G HYD system is pressurized
     const powerAvail = onGround ? hydPowerAvailable : hydPowerAvailable || elecPowerAvailable;
-    const deflectionInfoValid = powerAvail;
+    const spoilersFailed = !powerAvail;
+    const deflectionInfoValid = true;
 
     const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail && position >= 3;
 
@@ -60,7 +61,15 @@ export const Spoiler: FC<SpoilerProps> = ({ x, y, side, position, onGround }) =>
 
             <path className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`} d={`m0,0 h15 v${deflectionYVal} h-16 z`} />
 
-            <path className={`Amber SW4 LineRound ${!deflectionInfoValid ? '' : 'Hide'}`} d='m1,-2 v-31 M14,-2 v-31' />
+            <path className={`Amber SW4 LineRound ${spoilersFailed ? '' : 'Hide'}`} d='m1,-2 v-31 M14,-2 v-31' />
+
+            <text
+                x={-1}
+                y={0}
+                className={`Amber F32 ${!deflectionInfoValid ? '' : 'Hide'}`}
+            >
+                X
+            </text>
         </g>
     );
 };
