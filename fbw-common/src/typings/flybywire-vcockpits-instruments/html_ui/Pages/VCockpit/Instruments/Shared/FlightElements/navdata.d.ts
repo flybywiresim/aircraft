@@ -371,27 +371,38 @@ declare global {
     }
 
     interface RawRunway {
-        // denotes the subclass of this instance
-        __Type: string;
-        // [0-9]{2}[LCR](\-[0-9]{2}[LCR])?
-        designation: string;
-        designatorCharPrimary: RunwayDesignatorChar;
-        designatorCharSecondary: RunwayDesignatorChar;
-        // degrees
-        direction: number;
-        // metres
-        elevation: number;
-        latitude: number;
-        // metres
-        length: number;
-        lighting: RunwayLighting;
-        longitude: number;
-        // these don't seem to be filled on almost all runways, but a curious few are...
-        primaryILSFrequency: RawFrequency;
-        secondaryILSFrequency: RawFrequency;
-        surface: RunwaySurface;
-        // metres
-        width: number;
+        __Type: 'JS_Runway',
+        /** runway designation numbers only, split by - */
+        designation: string,
+        designatorCharPrimary: RunwayDesignatorChar,
+        designatorCharSecondary: RunwayDesignatorChar,
+        /** runway bearing in true degrees */
+        direction: number,
+        /** runway elevation in metres */
+        elevation: number,
+        /** latitude of the centre of the runway */
+        latitude: number,
+        /** runway length in metres */
+        length: number,
+        /** seems to always be 0 */
+        lighting: RunwayLighting,
+        /** longitude of the centre of the runway */
+        longitude: number,
+        /** primary elevation in metres... not sure if threshold or end */
+        primaryElevation: number,
+        /** ils frequency for the primary end... not always filled */
+        primaryILSFrequency: JS_Frequency,
+        /** offset of the primary end threshold in metres */
+        primaryThresholdLength: number,
+        /** secondary elevation in metres... not sure if threshold or end */
+        secondaryElevation: number,
+        /** ils frequency for the secondary end... not always filled */
+        secondaryILSFrequency: JS_Frequency,
+        /** offset of the secondary end threshold in metres */
+        secondaryThresholdLength: number,
+        surface: RunwaySurface,
+        /** runway width in metres */
+        width: number,
     }
 
     interface NearestSearch {

@@ -60,6 +60,16 @@
             <TOOLTIPID>%((A:AUTOPILOT MANAGED SPEED IN MACH, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
         </UseTemplate>
 
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
+            <NODE_ID>PUSH_FCU_TRUEMAG</NODE_ID>
+            <TOOLTIPID>%((L:A32NX_PUSH_TRUE_REF, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+
+            <NO_INDICATOR>True</NO_INDICATOR>
+            <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_TRUEMAG_PUSH)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+
         <!-- LOC pb -->
         <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
             <NODE_ID>PUSH_FCU_LOC</NODE_ID>

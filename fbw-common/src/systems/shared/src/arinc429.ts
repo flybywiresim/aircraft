@@ -107,11 +107,12 @@ export class Arinc429Register implements Arinc429WordData {
     this.set(0);
   }
 
-  set(word: number) {
+  set(word: number): Arinc429Register {
     this.word = word;
     this.u32View[0] = (word & 0xffffffff) >>> 0;
     this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
     this.value = this.f32View[0];
+    return this;
   }
 
   setFromSimVar(name: string): void {
