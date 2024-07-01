@@ -3,27 +3,12 @@
 
 // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
 
-import { getTailWind } from './CommonCalculations';
-
-export enum LandingRunwayConditions {
-  Dry,
-  Good,
-  GoodMedium,
-  Medium,
-  MediumPoor,
-  Poor,
-}
-
-export enum LandingFlapsConfig {
-  Conf3,
-  Full,
-}
-
-export enum AutobrakeMode {
-  Low,
-  Medium,
-  Max, // Manual brake is the same as max auto
-}
+import {
+  AutobrakeMode,
+  LandingPerformanceCalculator,
+  LandingFlapsConfig,
+  LandingRunwayConditions,
+} from '@flybywiresim/fbw-sdk';
 
 /**
  * Landing data for a specific aircraft configuration with a specific runway condition
@@ -588,7 +573,19 @@ const getInterpolatedVlsTableValue = (mass: number, vlsSpeedTable: number[]): nu
   return lower + oneTonSpeedIncrement * (mass % 5);
 };
 
-export class LandingCalculator {
+function getTailWind(windDirection: number, windMagnitude: number, runwayHeading: number): number {
+  const windDirectionRelativeToRwy = windDirection - runwayHeading;
+  const windDirectionRelativeToRwyRadians = toRadians(windDirectionRelativeToRwy);
+
+  const tailWind = Math.cos(Math.PI - windDirectionRelativeToRwyRadians) * windMagnitude;
+  return tailWind;
+}
+
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
+export class A320251NLandingCalculator implements LandingPerformanceCalculator {
   /**
    * Calculates the landing distances for each autobrake mode for the given conditions
    * @param weight Aircraft weight in KGs

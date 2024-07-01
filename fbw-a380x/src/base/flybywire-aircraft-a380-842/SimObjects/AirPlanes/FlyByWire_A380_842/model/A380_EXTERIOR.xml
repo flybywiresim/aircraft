@@ -420,7 +420,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M1L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M2L -->
 
         <Component ID="ANIM_DOOR_M2L" Node="ANIM_DOOR_M2L_CLICK">
@@ -430,7 +430,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M2L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M3L -->
 
         <Component ID="ANIM_DOOR_M3L" Node="ANIM_DOOR_M3L_CLICK">
@@ -440,7 +440,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M3L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M4L -->
 
         <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
@@ -450,7 +450,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M5L -->
 
         <Component ID="ANIM_DOOR_M5L" Node="ANIM_DOOR_M5L_CLICK">
@@ -460,7 +460,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M5L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M1R -->
 
         <Component ID="ANIM_DOOR_M1R" Node="ANIM_DOOR_M1R_CLICK">
@@ -470,7 +470,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M1R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M2R -->
 
         <Component ID="ANIM_DOOR_M2R" Node="ANIM_DOOR_M2R_CLICK">
@@ -480,7 +480,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M2R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M3R -->
 
         <Component ID="ANIM_DOOR_M3R" Node="ANIM_DOOR_M3R_CLICK">
@@ -490,7 +490,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M3R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M4R -->
 
         <Component ID="ANIM_DOOR_M4R" Node="ANIM_DOOR_M4R_CLICK">
@@ -500,7 +500,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M4R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M5R -->
 
         <Component ID="ANIM_DOOR_M5R" Node="ANIM_DOOR_M5R_CLICK">

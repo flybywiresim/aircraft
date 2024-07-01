@@ -4149,17 +4149,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
     }
-    _getV1Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v1;
-    }
-
-    _getVRSpeed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).vr;
-    }
-
-    _getV2Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v2;
-    }
 
     /**
      * Called after Flaps or THS change
