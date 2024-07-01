@@ -398,6 +398,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
         let mut gear_compression = Ratio::new::<ratio>(0.5);
         if on_ground {
             gear_compression = Ratio::new::<ratio>(0.8);
+            self.write_by_name(UpdateContext::ALT_ABOVE_GROUND_KEY, 0.);
         }
 
         self.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
