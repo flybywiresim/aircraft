@@ -548,6 +548,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.aocTimes.out) {
             const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
             if (this.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
+                // Clear all times from previous leg
+                // Do not check if any times were set to try to catch dirty data states
+                this.resetAocTimes();
                 // Out: is when you set the brakes to off
                 this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
@@ -579,8 +582,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
         }
-    }
 
+        function resetAocTimes() {
+            mcdu.aocTimes = {
+                doors: 0,
+                off: 0,
+                out: 0,
+                on: 0,
+                in: 0,
+            };
+        }
+    }
     /* END OF MCDU UPDATE */
     /* MCDU INTERFACE/LAYOUT */
 

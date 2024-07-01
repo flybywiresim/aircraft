@@ -84,6 +84,7 @@ class CDUAocInit {
         };
         mcdu.onRightInput[4] = () => {
             getSimBriefOfp(mcdu, updateView);
+            resetAocTimes();
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -96,6 +97,16 @@ class CDUAocInit {
         mcdu.onNextPage = () => {
             CDUAocInit.ShowPage2(mcdu);
         };
+
+        function resetAocTimes() {
+            mcdu.aocTimes = {
+                doors: 0,
+                off: 0,
+                out: 0,
+                on: 0,
+                in: 0,
+            };
+        }
     }
 
     static ShowPage2(mcdu) {

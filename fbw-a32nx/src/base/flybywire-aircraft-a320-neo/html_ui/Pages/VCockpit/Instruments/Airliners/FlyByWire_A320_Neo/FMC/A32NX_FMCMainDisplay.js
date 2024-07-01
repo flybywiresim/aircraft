@@ -413,19 +413,13 @@ class FMCMainDisplay extends BaseAirliners {
             taxiFuel: "",
             tripFuel: "",
         };
+        this.initAocTimes();
         this.aocWeight = {
             blockFuel: undefined,
             estZfw: undefined,
             taxiFuel: undefined,
             tripFuel: undefined,
             payload: undefined,
-        };
-        this.aocTimes = {
-            doors: 0,
-            off: 0,
-            out: 0,
-            on: 0,
-            in: 0,
         };
         this.winds = {
             climb: [],
@@ -1987,6 +1981,26 @@ class FMCMainDisplay extends BaseAirliners {
     resetCoroute() {
         this.coRoute.routeNumber = undefined;
         this.coRoute.routes = [];
+    }
+
+    /*Init aocTimes on first start, do not clear them here after landing
+    after flight this.aocTimes is not undefined, therefore the values will
+    stay present until manual reset is performed via resetAocTimes() */
+    initAocTimes() {
+        if (this.aocTimes == undefined) {
+            this.resetAocTimes();
+        }
+    }
+
+    /* Resest aocTimes*/
+    resetAocTimes() {
+        this.aocTimes = {
+            doors: 0,
+            off: 0,
+            out: 0,
+            on: 0,
+            in: 0,
+        };
     }
 
     /** MCDU Init page method for FROM/TO, NOT for programmatic use */
