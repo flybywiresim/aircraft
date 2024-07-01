@@ -17,7 +17,7 @@
 class AircraftPresetProcedures_A380X {
  public:
   const inline static PresetProceduresDefinition aircraftProcedureDefinition{
-      // clang-format off
+  // clang-format off
       // @formatter:off
 
       .POWERED_CONFIG_ON {
@@ -267,7 +267,7 @@ class AircraftPresetProcedures_A380X {
       }
 
       // @formatter:on
-      // clang-format on
+  // clang-format on
   };
 };
 

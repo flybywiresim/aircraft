@@ -101,9 +101,9 @@ class Logger {
 
  public:
   // disallow copies
-  Logger(Logger const&) = delete;              // copy
-  Logger& operator=(const Logger&) = delete;   // copy assignment
-  Logger(Logger const&&) = delete;             // move
+  Logger(Logger const&)             = delete;  // copy
+  Logger& operator=(const Logger&)  = delete;  // copy assignment
+  Logger(Logger const&&)            = delete;  // move
   Logger& operator=(const Logger&&) = delete;  // move assignment
 
   void critical(const std::string& msg) { std::cerr << "critical: " + msg; }

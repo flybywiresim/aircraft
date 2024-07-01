@@ -265,8 +265,8 @@ class Polynomial_A380X {
     // data or a mathematical model of the engine's behavior.
     // The choice to use different decay rates and steady state temperatures based on the previous
     // EGT suggests that the engine's shutdown behavior changes at this threshold.
-    double threshold = ambientTemp + 140;
-    double decayRate = previousEGT > threshold ? 0.0257743 : 0.00072756;
+    double threshold       = ambientTemp + 140;
+    double decayRate       = previousEGT > threshold ? 0.0257743 : 0.00072756;
     double steadyStateTemp = previousEGT > threshold ? 135 + ambientTemp : 30 + ambientTemp;
     return steadyStateTemp + (previousEGT - steadyStateTemp) * exp(-decayRate * deltaTime);
   }

@@ -30,23 +30,22 @@ class Tables1502_A32NX {
    * @return A 2D array representing the CN2 - correctedN1 pairs.
    */
   static constexpr double table1502[13][4] = {
-      {18.20, 0.00, 0.00, 17.00},       // CN2 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
-      {22.00, 1.90, 1.90, 17.40},       // CN2 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
-      {26.00, 2.50, 2.50, 18.20},       // CN2 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
-      {57.00, 12.80, 12.80, 27.00},     // CN2 = 57.00, correctedN1 = [12.80, 12.80] at Mach 0.2, correctedN1 = 27.00 at Mach 0.9
-      {68.20, 19.60, 19.60, 34.83},     // CN2 = 68.20, correctedN1 = [19.60, 19.60] at Mach 0.2, correctedN1 = 34.83 at Mach 0.9
-      {77.00, 26.00, 26.00, 40.84},     // CN2 = 77.00, correctedN1 = [26.00, 26.00] at Mach 0.2, correctedN1 = 40.84 at Mach 0.9
-      {83.00, 31.42, 31.42, 44.77},     // CN2 = 83.00, correctedN1 = [31.42, 31.42] at Mach 0.2, correctedN1 = 44.77 at Mach 0.9
-      {89.00, 40.97, 40.97, 50.09},     // CN2 = 89.00, correctedN1 = [40.97, 40.97] at Mach 0.2, correctedN1 = 50.09 at Mach 0.9
-      {92.80, 51.00, 51.00, 55.04},     // CN2 = 92.80, correctedN1 = [51.00, 51.00] at Mach 0.2, correctedN1 = 55.04 at Mach 0.9
-      {97.00, 65.00, 65.00, 65.00},     // CN2 = 97.00, correctedN1 = [65.00, 65.00] at Mach 0.2, correctedN1 = 65.00 at Mach 0.9
-      {100.00, 77.00, 77.00, 77.00},    // CN2 = 100.00, correctedN1 = [77.00, 77.00] at Mach 0.2, correctedN1 = 77.00 at Mach 0.9
-      {104.00, 85.00, 85.00, 85.50},    // CN2 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
+      {18.20,  0.00,   0.00,   17.00 }, // CN2 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
+      {22.00,  1.90,   1.90,   17.40 }, // CN2 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
+      {26.00,  2.50,   2.50,   18.20 }, // CN2 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
+      {57.00,  12.80,  12.80,  27.00 }, // CN2 = 57.00, correctedN1 = [12.80, 12.80] at Mach 0.2, correctedN1 = 27.00 at Mach 0.9
+      {68.20,  19.60,  19.60,  34.83 }, // CN2 = 68.20, correctedN1 = [19.60, 19.60] at Mach 0.2, correctedN1 = 34.83 at Mach 0.9
+      {77.00,  26.00,  26.00,  40.84 }, // CN2 = 77.00, correctedN1 = [26.00, 26.00] at Mach 0.2, correctedN1 = 40.84 at Mach 0.9
+      {83.00,  31.42,  31.42,  44.77 }, // CN2 = 83.00, correctedN1 = [31.42, 31.42] at Mach 0.2, correctedN1 = 44.77 at Mach 0.9
+      {89.00,  40.97,  40.97,  50.09 }, // CN2 = 89.00, correctedN1 = [40.97, 40.97] at Mach 0.2, correctedN1 = 50.09 at Mach 0.9
+      {92.80,  51.00,  51.00,  55.04 }, // CN2 = 92.80, correctedN1 = [51.00, 51.00] at Mach 0.2, correctedN1 = 55.04 at Mach 0.9
+      {97.00,  65.00,  65.00,  65.00 }, // CN2 = 97.00, correctedN1 = [65.00, 65.00] at Mach 0.2, correctedN1 = 65.00 at Mach 0.9
+      {100.00, 77.00,  77.00,  77.00 }, // CN2 = 100.00, correctedN1 = [77.00, 77.00] at Mach 0.2, correctedN1 = 77.00 at Mach 0.9
+      {104.00, 85.00,  85.00,  85.50 }, // CN2 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
       {116.50, 101.00, 101.00, 101.00}  // CN2 = 116.50, correctedN1 = [101.00, 101.00] at Mach 0.2, correctedN1 = 101.00 at Mach 0.9
   };
 
-  public:
-
+ public:
   /**
    * @brief Calculates the expected CN2 at idle.
    *
@@ -79,8 +78,8 @@ class Tables1502_A32NX {
     }
 
     // Retrieve the lower and upper bounds of the CN2 value and the correctedN1 value at Mach 0.2 and Mach 0.9
-    const double cn2lo = table1502[i - 1][0];
-    const double cn2hi = table1502[i][0];
+    const double cn2lo   = table1502[i - 1][0];
+    const double cn2hi   = table1502[i][0];
     const double cn1lolo = table1502[i - 1][1];
     const double cn1hilo = table1502[i][1];
     const double cn1lohi = table1502[i - 1][3];

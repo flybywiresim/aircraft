@@ -5,8 +5,8 @@
 #define FLYBYWIRE_AIRCRAFT_SCOPEDTIMER_HPP
 
 #include <chrono>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string_view>
 
 /**
@@ -33,7 +33,7 @@ class ScopedTimer {
   using ClockType = std::chrono::high_resolution_clock;
 
  private:
-  const std::string_view _timerName{};
+  const std::string_view      _timerName{};
   const ClockType::time_point _start{};
 
  public:
@@ -49,15 +49,16 @@ class ScopedTimer {
    */
   ~ScopedTimer() {
     using namespace std::chrono;
-    const auto stop = ClockType::now();
-    const auto duration = (stop - _start);
+    const auto stop           = ClockType::now();
+    const auto duration       = (stop - _start);
     const auto duration_micro = duration_cast<microseconds>(duration).count();
-    std::cout << "Timer: " << std::setw(10) << std::right << duration_micro << " microseconds" << " for " << _timerName << std::endl;
+    std::cout << "Timer: " << std::setw(10) << std::right << duration_micro << " microseconds"
+              << " for " << _timerName << std::endl;
   }
 
-  ScopedTimer(const ScopedTimer&) = delete;
-  ScopedTimer(ScopedTimer&&) = delete;
-  auto operator=(const ScopedTimer&) -> ScopedTimer& = delete;
+  ScopedTimer(const ScopedTimer&)                     = delete;
+  ScopedTimer(ScopedTimer&&)                          = delete;
+  auto operator=(const ScopedTimer&) -> ScopedTimer&  = delete;
   auto operator=(const ScopedTimer&&) -> ScopedTimer& = delete;
 };
 

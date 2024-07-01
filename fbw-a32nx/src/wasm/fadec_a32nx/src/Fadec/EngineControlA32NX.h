@@ -40,11 +40,11 @@ class EngineControl_A32NX {
   FuelConfiguration_A32NX fuelConfiguration{};
 
   // previous time the fuel levels were saved to file
-  double lastFuelSaveTime = 0.0;
+  double                  lastFuelSaveTime   = 0.0;
   static constexpr double FUEL_SAVE_INTERVAL = 5.0;  // seconds
 
   // some pump timings - unclear why these are needed
-  double pumpStateLeftTimeStamp = 0.0;
+  double pumpStateLeftTimeStamp  = 0.0;
   double pumpStateRightTimeStamp = 0.0;
 
   bool isTransitionActive = false;
@@ -52,19 +52,19 @@ class EngineControl_A32NX {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature = 0.0;
-  double prevThrustLimitType = 0.0;
-  double prevEngineMasterPos[2] = {0, 0};
-  bool prevEngineStarterState[2] = {false, false};
+  double prevFlexTemperature       = 0.0;
+  double prevThrustLimitType       = 0.0;
+  double prevEngineMasterPos[2]    = {0, 0};
+  bool   prevEngineStarterState[2] = {false, false};
 
   // FLX->CLB thrust limit transition
   double transitionStartTime;
   double transitionFactor;
-  bool wasFlexActive = false;
+  bool   wasFlexActive = false;
 
   // additional constants
-  static constexpr int MAX_OIL = 200;
-  static constexpr int MIN_OIL = 140;
+  static constexpr int    MAX_OIL             = 200;
+  static constexpr int    MIN_OIL             = 140;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
@@ -78,11 +78,11 @@ class EngineControl_A32NX {
    * @var SHUTTING The engine is in the process of shutting down.
    */
   enum EngineState {
-    OFF = 0,
-    ON = 1,
-    STARTING = 2,
+    OFF        = 0,
+    ON         = 1,
+    STARTING   = 2,
     RESTARTING = 3,
-    SHUTTING = 4,
+    SHUTTING   = 4,
   };
 
 #ifdef PROFILING
@@ -209,12 +209,12 @@ class EngineControl_A32NX {
    * @return The current state of the engine as an enum of type EngineState.
    * @see EngineState
    */
-  EngineControl_A32NX::EngineState engineStateMachine(int engine,
+  EngineControl_A32NX::EngineState engineStateMachine(int    engine,
                                                       double engineIgniter,
-                                                      bool engineStarter,
-                                                      bool engineStarterTurnedOff,
-                                                      bool engineMasterTurnedOn,
-                                                      bool engineMasterTurnedOff,
+                                                      bool   engineStarter,
+                                                      bool   engineStarterTurnedOff,
+                                                      bool   engineMasterTurnedOn,
+                                                      bool   engineMasterTurnedOff,
                                                       double simN2,
                                                       double idleN2,
                                                       double ambientTemperature);
@@ -233,14 +233,14 @@ class EngineControl_A32NX {
    *
    * @see EngineState
    */
-  void engineStartProcedure(int engine,
+  void engineStartProcedure(int         engine,
                             EngineState engineState,
-                            double imbalance,
-                            double deltaTime,
-                            double engineTimer,
-                            double simN2,
-                            double pressureAltitude,
-                            double ambientTemperature);
+                            double      imbalance,
+                            double      deltaTime,
+                            double      engineTimer,
+                            double      simN2,
+                            double      pressureAltitude,
+                            double      ambientTemperature);
 
   /**
    * @brief This function manages the engine shutdown procedure.
@@ -266,7 +266,7 @@ class EngineControl_A32NX {
    * @param ambientPressure The current ambient pressure in hPa.
    * @return The updated fuel flow as a double.
    */
-  double updateFF(int engine,                 //
+  double updateFF(int    engine,              //
                   double imbalance,           //
                   double simCN1,              //
                   double mach,                //
@@ -301,16 +301,16 @@ class EngineControl_A32NX {
    *
    * @see EngineState
    */
-  void updateEGT(int engine,
-                 double imbalance,
-                 double deltaTime,
-                 double simOnGround,
+  void updateEGT(int         engine,
+                 double      imbalance,
+                 double      deltaTime,
+                 double      simOnGround,
                  EngineState engineState,
-                 double simCN1,
-                 double customFuelFlow,
-                 double mach,
-                 double pressureAltitude,
-                 double ambientTemperature);
+                 double      simCN1,
+                 double      customFuelFlow,
+                 double      mach,
+                 double      pressureAltitude,
+                 double      ambientTemperature);
 
   /**
    * @brief FBW Fuel Consumption and Tanking. Updates Fuel Consumption with realistic values
@@ -338,9 +338,9 @@ class EngineControl_A32NX {
                           double ambientPressure,
                           double mach,
                           double simN1highest,
-                          int packs,
-                          int nai,
-                          int wai);
+                          int    packs,
+                          int    nai,
+                          int    wai);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H

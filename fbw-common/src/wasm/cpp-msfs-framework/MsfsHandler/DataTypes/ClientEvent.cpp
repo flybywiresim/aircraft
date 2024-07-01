@@ -92,7 +92,7 @@ void ClientEvent::clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notifi
 }
 
 void ClientEvent::setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId,
-                                               DWORD notificationGroupPriority) const {
+                                               DWORD                            notificationGroupPriority) const {
   if (!SUCCEEDED(SimConnect_SetNotificationGroupPriority(hSimConnect, notificationGroupId, notificationGroupPriority))) {
     LOG_ERROR("Failed to set notification group " + std::to_string(notificationGroupId) + " to highest priority");
   }
@@ -114,7 +114,7 @@ void ClientEvent::trigger(DWORD data0) const {
     return;
   }
   LOG_VERBOSE("Triggered event " + clientEventName + " with client event " + std::to_string(clientEventId) + " with data " +
-            std::to_string(data0));
+              std::to_string(data0));
 }
 
 void ClientEvent::trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4) const {
@@ -129,8 +129,8 @@ void ClientEvent::trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3
     return;
   }
   LOG_VERBOSE("Triggered_ex1 event " + clientEventName + " with client ID " + std::to_string(clientEventId) + " with data " +
-            std::to_string(data0) + ", " + std::to_string(data1) + ", " + std::to_string(data2) + ", " + std::to_string(data3) + ", " +
-            std::to_string(data4));
+              std::to_string(data0) + ", " + std::to_string(data1) + ", " + std::to_string(data2) + ", " + std::to_string(data3) + ", " +
+              std::to_string(data4));
 }
 
 // =================================================================================================
@@ -174,11 +174,11 @@ void ClientEvent::processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data
 // Input Events
 // =================================================================================================
 
-void ClientEvent::mapInputDownUpEvent(const std::string& inputDefinition,
+void ClientEvent::mapInputDownUpEvent(const std::string&        inputDefinition,
                                       SIMCONNECT_INPUT_GROUP_ID inputGroupId,
-                                      DWORD downValue,
-                                      DWORD upValue,
-                                      bool maskable) {
+                                      DWORD                     downValue,
+                                      DWORD                     upValue,
+                                      bool                      maskable) {
   if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(hSimConnect, inputGroupId, inputDefinition.c_str(), getClientEventId(), downValue,
                                                        getClientEventId(), upValue, maskable))) {
     LOG_ERROR("Failed to map input down/up event " + inputDefinition + " to client event " + getClientEventName() + " (" +
@@ -189,10 +189,10 @@ void ClientEvent::mapInputDownUpEvent(const std::string& inputDefinition,
             std::to_string(getClientEventId()) + ")");
 }
 
-void ClientEvent::mapInputDownEvent(const std::string& inputDefinition,
+void ClientEvent::mapInputDownEvent(const std::string&        inputDefinition,
                                     SIMCONNECT_INPUT_GROUP_ID inputGroupId,
-                                    DWORD downValue,
-                                    bool maskable) const {
+                                    DWORD                     downValue,
+                                    bool                      maskable) const {
   SIMCONNECT_CLIENT_EVENT_ID upId = reinterpret_cast<SIMCONNECT_CLIENT_EVENT_ID>(SIMCONNECT_UNUSED);
   if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(hSimConnect, inputGroupId, inputDefinition.c_str(), getClientEventId(), downValue,
                                                        upId, 0, maskable))) {
@@ -204,10 +204,10 @@ void ClientEvent::mapInputDownEvent(const std::string& inputDefinition,
             std::to_string(getClientEventId()) + ")");
 }
 
-void ClientEvent::mapInputUpEvent(const std::string& inputDefinition,
+void ClientEvent::mapInputUpEvent(const std::string&        inputDefinition,
                                   SIMCONNECT_INPUT_GROUP_ID inputGroupId,
-                                  DWORD upValue,
-                                  bool maskable) const {
+                                  DWORD                     upValue,
+                                  bool                      maskable) const {
   SIMCONNECT_CLIENT_EVENT_ID downId = reinterpret_cast<SIMCONNECT_CLIENT_EVENT_ID>(SIMCONNECT_UNUSED);
   if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(hSimConnect, inputGroupId, inputDefinition.c_str(), downId, 0, getClientEventId(),
                                                        upValue, maskable))) {
