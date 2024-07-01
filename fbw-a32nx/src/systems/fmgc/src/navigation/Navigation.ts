@@ -1,4 +1,5 @@
-// Copyright (c) 2022-2023 FlyByWire Simulations
+// Copyright (c) 2022-2024 FlyByWire Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
@@ -88,10 +89,7 @@ export class Navigation implements NavigationProvider {
     facility: null,
   }));
 
-  constructor(
-    private flightPlanService: FlightPlanService,
-    private readonly facLoader: FacilityLoader,
-  ) {
+  constructor(private flightPlanService: FlightPlanService) {
     this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
     this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
     this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);
