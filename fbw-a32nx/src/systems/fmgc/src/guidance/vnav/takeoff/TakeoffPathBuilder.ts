@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
@@ -16,10 +17,10 @@ export class TakeoffPathBuilder {
     private atmosphericConditions: AtmosphericConditions,
   ) {}
 
-  buildTakeoffPath(profile: BaseGeometryProfile) {
+  buildTakeoffPath(profile: BaseGeometryProfile, config: AircraftConfig) {
     this.addTakeoffRollCheckpoint(profile);
-    this.buildPathToThrustReductionAltitude(profile);
-    this.buildPathToAccelerationAltitude(profile);
+    this.buildPathToThrustReductionAltitude(profile, config);
+    this.buildPathToAccelerationAltitude(profile, config);
   }
 
   private addTakeoffRollCheckpoint(profile: BaseGeometryProfile) {
@@ -36,7 +37,7 @@ export class TakeoffPathBuilder {
     });
   }
 
-  private buildPathToThrustReductionAltitude(profile: BaseGeometryProfile) {
+  private buildPathToThrustReductionAltitude(profile: BaseGeometryProfile, config: AircraftConfig) {
     const {
       perfFactor,
       zeroFuelWeight,
@@ -54,6 +55,7 @@ export class TakeoffPathBuilder {
     const speed = v2Speed + 10;
 
     const { fuelBurned, distanceTraveled, timeElapsed } = Predictions.altitudeStep(
+      config,
       startingAltitude,
       thrustReductionAltitude - startingAltitude,
       speed,
@@ -81,7 +83,7 @@ export class TakeoffPathBuilder {
     });
   }
 
-  private buildPathToAccelerationAltitude(profile: BaseGeometryProfile) {
+  private buildPathToAccelerationAltitude(profile: BaseGeometryProfile, config: AircraftConfig) {
     const lastCheckpoint = profile.lastCheckpoint;
     const { accelerationAltitude, v2Speed, zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } =
       this.observer.get();
@@ -99,6 +101,7 @@ export class TakeoffPathBuilder {
     );
 
     const { fuelBurned, distanceTraveled, timeElapsed } = Predictions.altitudeStep(
+      config,
       startingAltitude,
       accelerationAltitude - startingAltitude,
       speed,

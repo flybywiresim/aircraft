@@ -1,0 +1,56 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.mfd-fms-direct-to-wpt-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+.mfd-fms-direct-to-dropdown-div {
+  margin-left: 15px;
+}
+
+.mfd-fms-direct-to-wpt-info {
+  width: 65%;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-fms-direct-to-utc-label {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 10px;
+  margin-bottom: 10px;
+}
+
+.mfd-fms-direct-to-utc-value {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.mfd-fms-direct-to-options-box {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid grey;
+  padding: 5px 10px 35px 10px;
+  margin-top: 10px;
+}
+
+.mfd-fms-direct-to-options {
+  margin-left: 15px;
+  margin-top: 45px;
+}
+
+.mfd-fms-direct-to-erase-return-btn {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px;
+}

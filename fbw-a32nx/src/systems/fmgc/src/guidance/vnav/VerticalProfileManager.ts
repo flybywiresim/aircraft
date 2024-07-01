@@ -39,6 +39,7 @@ import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryPro
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import {
   isApproachCheckpoint,
   isSpeedChangePoint,
@@ -81,18 +82,24 @@ export class VerticalProfileManager {
     private headingProfile: NavHeadingProfile,
     private windProfileFactory: WindProfileFactory,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
+    private readonly acConfig: AircraftConfig,
   ) {
     this.takeoffPathBuilder = new TakeoffPathBuilder(observer, this.atmosphericConditions);
     this.climbPathBuilder = new ClimbPathBuilder(observer, this.atmosphericConditions);
     this.cruisePathBuilder = new CruisePathBuilder(observer, this.atmosphericConditions);
-    this.tacticalDescentPathBuilder = new TacticalDescentPathBuilder(this.observer, this.atmosphericConditions);
-    this.managedDescentPathBuilder = new DescentPathBuilder(observer, this.atmosphericConditions);
-    this.approachPathBuilder = new ApproachPathBuilder(observer, this.atmosphericConditions);
+    this.tacticalDescentPathBuilder = new TacticalDescentPathBuilder(
+      this.observer,
+      this.atmosphericConditions,
+      this.acConfig,
+    );
+    this.managedDescentPathBuilder = new DescentPathBuilder(observer, this.atmosphericConditions, this.acConfig);
+    this.approachPathBuilder = new ApproachPathBuilder(observer, this.atmosphericConditions, this.acConfig);
     this.cruiseToDescentCoordinator = new CruiseToDescentCoordinator(
       observer,
       this.cruisePathBuilder,
       this.managedDescentPathBuilder,
       this.approachPathBuilder,
+      this.acConfig,
     );
 
     this.fcuModes = new FcuModeObserver(observer);
@@ -110,8 +117,13 @@ export class VerticalProfileManager {
   computeTacticalMcduPath(): void {
     const { flightPhase, presentPosition, fuelOnBoard, approachSpeed, cruiseAltitude } = this.observer.get();
 
-    const managedClimbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions);
-    const stepDescentStrategy = new VerticalSpeedStrategy(this.observer, this.atmosphericConditions, -1000);
+    const managedClimbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
+    const stepDescentStrategy = new VerticalSpeedStrategy(
+      this.observer,
+      this.atmosphericConditions,
+      -1000,
+      this.acConfig,
+    );
 
     const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
     const cruiseWinds = new HeadwindProfile(this.windProfileFactory.getCruiseWinds(), this.headingProfile);
@@ -131,7 +143,7 @@ export class VerticalProfileManager {
     );
 
     if (flightPhase < FmgcFlightPhase.Climb) {
-      this.takeoffPathBuilder.buildTakeoffPath(mcduProfile);
+      this.takeoffPathBuilder.buildTakeoffPath(mcduProfile, this.acConfig);
     } else {
       mcduProfile.addPresentPositionCheckpoint(
         presentPosition,
@@ -144,6 +156,7 @@ export class VerticalProfileManager {
     if (flightPhase < FmgcFlightPhase.Cruise) {
       this.climbPathBuilder.computeClimbPath(
         mcduProfile,
+        this.acConfig,
         managedClimbStrategy,
         speedProfile,
         climbWinds,
@@ -238,7 +251,7 @@ export class VerticalProfileManager {
 
       const selectedSpeedProfile = new ExpediteSpeedProfile(greenDotSpeed);
       this.expediteProfile = new SelectedGeometryProfile();
-      const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions);
+      const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
       const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
       this.expediteProfile.addPresentPositionCheckpoint(
@@ -249,6 +262,7 @@ export class VerticalProfileManager {
       );
       this.climbPathBuilder.computeClimbPath(
         this.expediteProfile,
+        this.acConfig,
         climbStrategy,
         selectedSpeedProfile,
         climbWinds,
@@ -309,7 +323,14 @@ export class VerticalProfileManager {
       const climbStrategy = this.getClimbStrategyForVerticalMode();
       const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
-      this.climbPathBuilder.computeClimbPath(ndProfile, climbStrategy, speedProfile, climbWinds, fcuAltitude);
+      this.climbPathBuilder.computeClimbPath(
+        ndProfile,
+        this.acConfig,
+        climbStrategy,
+        speedProfile,
+        climbWinds,
+        fcuAltitude,
+      );
     } else if (this.fcuModes.isInDescentMode()) {
       const descentStrategy = this.getDescentStrategyForVerticalMode();
       const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
@@ -584,31 +605,51 @@ export class VerticalProfileManager {
     const { fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle } = this.observer.get();
 
     if (fcuVerticalMode === VerticalMode.VS) {
-      return new VerticalSpeedStrategy(this.observer, this.atmosphericConditions, Math.max(0, fcuVerticalSpeed));
+      return new VerticalSpeedStrategy(
+        this.observer,
+        this.atmosphericConditions,
+        Math.max(0, fcuVerticalSpeed),
+        this.acConfig,
+      );
     }
     if (fcuVerticalMode === VerticalMode.FPA) {
-      return new FlightPathAngleStrategy(this.observer, this.atmosphericConditions, Math.max(0, fcuFlightPathAngle));
+      return new FlightPathAngleStrategy(
+        this.observer,
+        this.atmosphericConditions,
+        Math.max(0, fcuFlightPathAngle),
+        this.acConfig,
+      );
     }
 
-    return new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions);
+    return new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
   }
 
   private getDescentStrategyForVerticalMode(): DescentStrategy {
     const { fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle } = this.observer.get();
 
     if (fcuVerticalMode === VerticalMode.VS) {
-      return new VerticalSpeedStrategy(this.observer, this.atmosphericConditions, Math.min(0, fcuVerticalSpeed));
+      return new VerticalSpeedStrategy(
+        this.observer,
+        this.atmosphericConditions,
+        Math.min(0, fcuVerticalSpeed),
+        this.acConfig,
+      );
     }
     if (fcuVerticalMode === VerticalMode.FPA) {
-      return new FlightPathAngleStrategy(this.observer, this.atmosphericConditions, Math.min(0, fcuFlightPathAngle));
+      return new FlightPathAngleStrategy(
+        this.observer,
+        this.atmosphericConditions,
+        Math.min(0, fcuFlightPathAngle),
+        this.acConfig,
+      );
     }
     if (fcuVerticalMode === VerticalMode.OP_DES) {
-      return new IdleDescentStrategy(this.observer, this.atmosphericConditions);
+      return new IdleDescentStrategy(this.observer, this.atmosphericConditions, this.acConfig);
     }
 
     // DES
     if (!this.aircraftToDescentProfileRelation.isValid) {
-      return new IdleDescentStrategy(this.observer, this.atmosphericConditions);
+      return new IdleDescentStrategy(this.observer, this.atmosphericConditions, this.acConfig);
     }
 
     return this.getDesModeStrategy();
@@ -623,11 +664,11 @@ export class VerticalProfileManager {
     const linearDeviation = this.aircraftToDescentProfileRelation.computeLinearDeviation();
 
     if (linearDeviation > 0 && this.aircraftToDescentProfileRelation.isPastTopOfDescent()) {
-      return DesModeStrategy.aboveProfile(this.observer, this.atmosphericConditions);
+      return DesModeStrategy.aboveProfile(this.observer, this.atmosphericConditions, this.acConfig);
     }
     if (this.aircraftToDescentProfileRelation.isOnGeometricPath()) {
       const fpaTarget = this.aircraftToDescentProfileRelation.currentTargetPathAngle() / 2;
-      return DesModeStrategy.belowProfileFpa(this.observer, this.atmosphericConditions, fpaTarget);
+      return DesModeStrategy.belowProfileFpa(this.observer, this.atmosphericConditions, fpaTarget, this.acConfig);
     }
 
     const vsTarget =
@@ -635,7 +676,7 @@ export class VerticalProfileManager {
       !this.aircraftToDescentProfileRelation.isCloseToAirfieldElevation()
         ? -1000
         : -500;
-    return DesModeStrategy.belowProfileVs(this.observer, this.atmosphericConditions, vsTarget);
+    return DesModeStrategy.belowProfileVs(this.observer, this.atmosphericConditions, vsTarget, this.acConfig);
   }
 
   private getVman(vApp: Knots): Knots {

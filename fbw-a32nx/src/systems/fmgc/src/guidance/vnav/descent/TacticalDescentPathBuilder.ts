@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -61,8 +62,9 @@ export class TacticalDescentPathBuilder {
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
     atmosphericConditions: AtmosphericConditions,
+    private readonly acConfig: AircraftConfig,
   ) {
-    this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0);
+    this.levelFlightStrategy = new VerticalSpeedStrategy(this.observer, atmosphericConditions, 0, this.acConfig);
   }
 
   /**

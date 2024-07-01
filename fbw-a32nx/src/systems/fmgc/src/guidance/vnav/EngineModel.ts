@@ -1,13 +1,11 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EngineModelParameters } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { Common } from './common';
 
 export class EngineModel {
-  // In pounds of force. Used as a multiplier for results of table 1506
-  static maxThrust = 27120;
-
   /**
    * Maximum N1 in CLB thrust
    * @param i row index (tat) in steps of 4°C
@@ -233,7 +231,7 @@ export class EngineModel {
    * @param alt altitude in feet
    * @returns fuel flow, in pounds per hour (per engine)
    */
-  static getCorrectedFuelFlow(cn1: number, mach: number, alt: number): number {
+  static getCorrectedFuelFlow(config: EngineModelParameters, cn1: number, mach: number, alt: number): number {
     const coefficients = [
       -639.6602981, 0.0, 1.03705e2, -2.23264e3, 5.70316e-3, -2.29404, 1.0823e2, 2.77667e-4, -6.1718e2, -7.20713e-2,
       2.19013e-7, 2.49418e-2, -7.31662e-1, -1.00003e-5, -3.79466e1, 1.34552e-3, 5.72612e-9, -2.7195e2, 8.58469e-2,
@@ -263,7 +261,7 @@ export class EngineModel {
       coefficients[19] * mach * alt ** 2 +
       coefficients[20] * alt ** 3;
 
-    return flow;
+    return config.fuelBurnFactor * flow;
   }
 
   // static getCN1fromUncorrectedThrust(thrust: number)
