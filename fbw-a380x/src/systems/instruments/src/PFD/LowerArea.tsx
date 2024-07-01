@@ -1,6 +1,6 @@
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export class LowerArea extends DisplayComponent<{ bus: ArincEventBus, pitchTrimIndicatorVisible: Subscribable<boolean> }> {
@@ -23,6 +23,8 @@ const circlePath = (r: number, cx: number, cy: number) =>
   `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
 class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars>();
+
   private targetClass = Subject.create('');
 
   private targetText = Subject.create('');
@@ -32,6 +34,17 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly slatExtensionVisible = Subject.create('hidden');
 
   private readonly flapExtensionVisible = Subject.create('hidden');
+
+  // FIXME don't use commanded position from just one spoiler + figure out whether it's averaged, or max-ed
+  private readonly spoilersCommandedPosition = ConsumerSubject.create(this.sub.on('spoilersCommanded').whenChanged(), 0);
+
+  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
+
+  private readonly spoilerExtensionVisible = MappedSubject.create(([pos, armed]) => pos > 0.05 || armed ? 'visible' : 'hidden', this.spoilersCommandedPosition, this.spoilersArmed);
+
+  private readonly speedBrakesStillExtended = Subject.create(false);
+
+  private readonly speedBrakesPosDisagree = Subject.create(false);
 
   private slatIndexClass = Subject.create('');
 
@@ -82,9 +95,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values>();
-
-    sub
+    this.sub
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
@@ -121,7 +132,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             }
         });
 
-    sub
+      this.sub
       .on('slatsPosition')
       .whenChanged()
       .handle((s) => {
@@ -164,7 +175,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         }
       });
 
-    sub
+    this.sub
       .on('flapsPosition')
       .whenChanged()
       .handle((s) => {
@@ -223,31 +234,35 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         }
       });
 
-        sub.on('realTime').handle((_t) => {
-            const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
-            this.targetVisible.set((this.slatsOut || this.flapsOut || !this.configClean) ? 'visible' : 'hidden');
-            this.flapExtensionVisible.set(((this.flapsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
-            this.slatExtensionVisible.set(((this.slatsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
+      this.sub.on('realTime').handle((_t) => {
+          const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
+          this.targetVisible.set((this.slatsOut || this.flapsOut || !this.configClean) ? 'visible' : 'hidden');
+          this.flapExtensionVisible.set(((this.flapsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
+          this.slatExtensionVisible.set(((this.slatsOut || !this.configClean) && this.flapsDataValid.get()) ? 'visible' : 'hidden');
 
-            if (this.slatsFault.get()) {
-                this.slatIndexClass.set('NormalStroke Amber CornerRound');
-            } else if (this.slatsOut || this.flapsOut || !this.configClean) {
-                this.slatIndexClass.set('NormalStroke Green CornerRound');
-            } else {
-                this.slatIndexClass.set('NormalStroke White CornerRound');
-            }
+          if (this.slatsFault.get()) {
+              this.slatIndexClass.set('NormalStroke Amber CornerRound');
+          } else if (this.slatsOut || this.flapsOut || !this.configClean) {
+              this.slatIndexClass.set('NormalStroke Green CornerRound');
+          } else {
+              this.slatIndexClass.set('NormalStroke White CornerRound');
+          }
 
-            if (this.flapsFault.get()) {
-                this.flapIndexClass.set('NormalStroke Amber CornerRound');
-            } else if (this.slatsOut || this.flapsOut || !this.configClean) {
-                this.flapIndexClass.set('NormalStroke Green CornerRound');
-            } else {
-                this.flapIndexClass.set('NormalStroke White CornerRound');
-            }
+          if (this.flapsFault.get()) {
+              this.flapIndexClass.set('NormalStroke Amber CornerRound');
+          } else if (this.slatsOut || this.flapsOut || !this.configClean) {
+              this.flapIndexClass.set('NormalStroke Green CornerRound');
+          } else {
+              this.flapIndexClass.set('NormalStroke White CornerRound');
+          }
 
-            this.targetClass.set(inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign');
-            this.targetBoxVisible.set(inMotion ? 'visible' : 'hidden');
-        });
+          this.targetClass.set(inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign');
+          this.targetBoxVisible.set(inMotion ? 'visible' : 'hidden');
+      });
+    }
+
+    spoilersLogFn(x: number) {
+      return Math.min(90, (90/(1+Math.exp(-x + 17)**0.28)));
     }
 
     render(): VNode {
@@ -303,11 +318,31 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
                 <path class={this.flapIndexClass} d={this.flapsPath} visibility={this.flapsDataValid.map((v) => (v ? 'visible' : 'hidden'))} />
                 <path class={this.flapIndexClass} d={this.flapsLinePath} />
 
-        <path
-          class="NormalStroke White CornerRound"
-          d="M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z"
-        />
+                <path
+                  class="NormalStroke White CornerRound"
+                  d="M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z"
+                />
 
+                <g visibility={this.spoilerExtensionVisible}>
+                  <path
+                      d="M 25.3 187.5 l 2.1 -3"
+                      class={this.speedBrakesPosDisagree.map((it) => it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound')}
+                  />
+                  <path
+                      d="M 27.5 189 l 3.1 -1.8"
+                      class={this.speedBrakesPosDisagree.map((it) => it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound')}
+                  />
+                  <path
+                      d={this.spoilersCommandedPosition.map((p) => `M 23 191.6 l ${5 * Math.cos(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)} ${-5 * Math.sin(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)}`)}
+                      class={this.speedBrakesStillExtended.map((it) => it ? 'NormalStroke Amber CornerRound' : 'NormalStroke Green CornerRound')}
+                      visibility={this.spoilersCommandedPosition.map((p) => p >= 0.05 ? 'inherit' : 'hidden')}
+                  />
+                  <path
+                      d="M 22 183.5 h 3 l -1.5 3 z"
+                      class='Fill Stroke NormalStroke Cyan CornerRound'
+                      visibility={this.spoilersArmed.map((a) => a ? 'inherit' : 'hidden')}
+                  />
+                </g>
         <GearIndicator bus={this.props.bus} />
       </g>
     );

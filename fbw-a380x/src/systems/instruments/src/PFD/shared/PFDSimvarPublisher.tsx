@@ -159,6 +159,8 @@ export interface PFDSimvars {
   slatPosLeft: number;
   trimPosition: number;
   cgPercent: number;
+  spoilersCommanded: number;
+  spoilersArmed: boolean;
 }
 
 export enum PFDVars {
@@ -318,6 +320,8 @@ export enum PFDVars {
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
   cgPercent = 'CG PERCENT',
+  spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
+  spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -479,6 +483,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ['trimPosition', { name: PFDVars.trimPosition, type: SimVarValueType.Number }],
     ['cgPercent', { name: PFDVars.cgPercent, type: SimVarValueType.Number }],
+    ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
+    ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
