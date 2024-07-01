@@ -45,7 +45,7 @@ export const PitchTrim: FC<PitchTrimProps> = ({ x, y }) => {
                     visibility={Math.abs(thsPosition) > 0.05 ? 'visible' : 'hidden'}
                     className={`${hydraulicAvailableClass} F26`}
                 >
-                    {Math.sign(thsPosition) === 1 ? 'DN' : 'UP'}
+                    {Math.sign(thsPosition) === 1 ? 'UP' : 'DN'}
                 </text>
             </g>
 
