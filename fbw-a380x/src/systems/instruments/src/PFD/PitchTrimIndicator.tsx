@@ -158,9 +158,14 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
             <stop offset="90%" stop-color="black" stop-opacity="0" />
             <stop offset="100%" stop-color="black" stop-opacity="1" />
           </linearGradient>
-          <linearGradient id="markerGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+          <linearGradient id="markerGradient1" x1="0%" x2="0%" y1="0%" y2="100%">
             <stop offset="0%" stop-color="#8fadc0" />
             <stop offset="90%" stop-color="#6387a1" />
+          </linearGradient>
+          <linearGradient id="markerGradient2" x1="0%" x2="0%" y1="0%" y2="100%">
+            <stop offset="0%" stop-color="#8fadc0" />
+            <stop offset="60%" stop-color="#444444" />
+            <stop offset="100%" stop-color="#8fadc0" />
           </linearGradient>
           <clipPath id="cut-right">
             <rect x="319" y="23" width="16" height="207" />
@@ -219,8 +224,10 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus, visibl
             <rect x="275" y="23" width="30" height="207" fill="url(#shadowGradient)" />
           </g>
           <polygon points="265,115 265,138 277,126.5" ref={this.arrowRef} />
-          <rect x="277" y="118" width="28" height="5" fill="url(#markerGradient)" />
-          <rect x="277" y="130" width="28" height="5" fill="url(#markerGradient)" />
+          <rect x="277" y="118" width="28" height="4" fill="url(#markerGradient1)" />
+          <rect x="277" y="130" width="28" height="4" fill="url(#markerGradient1)" />
+          <rect x="318" y="113" width="2" height="25" fill="url(#markerGradient2)" />
+          <rect x="334" y="113" width="2" height="25" fill="url(#markerGradient2)" />
         </svg>
       </div>
     );
