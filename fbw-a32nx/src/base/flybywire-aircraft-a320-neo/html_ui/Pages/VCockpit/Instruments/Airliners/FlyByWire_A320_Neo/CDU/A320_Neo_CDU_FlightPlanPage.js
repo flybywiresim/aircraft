@@ -1076,10 +1076,10 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
     let isFl = false;
     if (useTransAlt) {
         const transAlt = activePlan.performanceData.transitionAltitude;
-        isFl = transAlt !== undefined && alt > transAlt;
+        isFl = transAlt !== null && alt > transAlt;
     } else {
         const transLevel = activePlan.performanceData.transitionLevel;
-        isFl = transLevel !== undefined && alt >= (transLevel * 100);
+        isFl = transLevel !== null && alt >= (transLevel * 100);
     }
 
     if (isFl) {
