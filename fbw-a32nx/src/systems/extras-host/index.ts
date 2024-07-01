@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+/* eslint-disable no-await-in-loop */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -5,6 +10,7 @@ import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
 import { NotificationManager } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
+import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
@@ -41,6 +47,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly keyInterceptor: KeyInterceptor;
 
+  private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
+
   private readonly aircraftSync: AircraftSync;
 
   public readonly xmlConfig: Document;
@@ -64,6 +72,8 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+    this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
+
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
@@ -88,6 +98,7 @@ class ExtrasHost extends BaseInstrument {
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
     this.keyInterceptor.connectedCallback();
+    this.flightPlanAsoboSync.connectedCallback();
     this.aircraftSync.connectedCallback();
   }
 
@@ -106,6 +117,7 @@ class ExtrasHost extends BaseInstrument {
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
         this.simVarPublisher.startPublish();
+        this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
       }
       this.gameState = gs;

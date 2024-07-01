@@ -1,5 +1,12 @@
 class A320_Neo_CDU_SelectWptPage {
-    static ShowPage(mcdu, waypoints, callback, page = 0) {
+    /**
+     * @param mcdu
+     * @param fixes {Array.<import('msfs-navdata').Fix | import('msfs-navdata').IlsNavaid>}
+     * @param callback
+     * @param page
+     * @constructor
+     */
+    static ShowPage(mcdu, fixes, callback, page = 0) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.SelectWptPage;
         const rows = [
@@ -16,31 +23,32 @@ class A320_Neo_CDU_SelectWptPage {
             [""],
             ["<RETURN"]
         ];
+
+        /**
+         * @param w {import('msfs-navdata').Fix | import('msfs-navdata').IlsNavaid}
+         * @returns {NauticalMiles}
+         */
         function calculateDistance(w) {
             const planeLla = new LatLongAlt(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-            return Avionics.Utils.computeGreatCircleDistance(planeLla, w.infos.coordinates);
+            return Avionics.Utils.computeGreatCircleDistance(planeLla, w.locLocation ? w.locLocation : w.location);
         }
 
-        const orderedWaypoints = [...waypoints].sort((a, b) => calculateDistance(a) - calculateDistance(b));
+        const orderedWaypoints = [...fixes].sort((a, b) => calculateDistance(a) - calculateDistance(b));
 
         for (let i = 0; i < 5; i++) {
             const w = orderedWaypoints[i + 5 * page];
             if (w) {
-                let t = "";
                 let freq = "";
-                if (w.icao[0] === "V") {
-                    t = " VOR";
-                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
-                } else if (w.icao[0] === "N") {
-                    t = " NDB";
-                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
-                } else if (w.icao[0] === "A") {
-                    t = " AIRPORT";
-                    freq = " ";
+
+                if (w.databaseId[0] === "V" || w.databaseId[0] === "N") {
+                    freq = w.frequency ? fastToFixed(w.frequency, 2) : " ";
                 }
 
-                const latString = `${Math.abs(w.infos.coordinates.lat).toFixed(0).padStart(2, "0")}${w.infos.coordinates.lat >= 0 ? 'N' : 'S'}`;
-                const longString = `${Math.abs(w.infos.coordinates.long).toFixed(0).padStart(3, "0")}${w.infos.coordinates.long >= 0 ? 'E' : 'W'}`;
+                const lat = w.locLocation ? w.locLocation.lat : w.location.lat;
+                const long = w.locLocation ? w.locLocation.long : w.location.long;
+
+                const latString = `${Math.abs(lat).toFixed(0).padStart(2, "0")}${lat >= 0 ? 'N' : 'S'}`;
+                const longString = `${Math.abs(long).toFixed(0).padStart(3, "0")}${long >= 0 ? 'E' : 'W'}`;
 
                 const dist = Math.min(calculateDistance(w), 9999);
 
@@ -72,7 +80,7 @@ class A320_Neo_CDU_SelectWptPage {
             }
         };
         mcdu.onNextPage = () => {
-            if (page < Math.floor(waypoints.length / 5)) {
+            if (page < Math.floor(fixes.length / 5)) {
                 A320_Neo_CDU_SelectWptPage.ShowPage(mcdu, orderedWaypoints, callback, page + 1);
             }
         };

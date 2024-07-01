@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAocRequestsWeather {
     static CreateDataBlock(mcdu) {
         const retval = {
@@ -7,14 +11,18 @@ class CDUAocRequestsWeather {
             requestId: 0
         };
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            retval.airports[0] = mcdu.flightPlanManager.getOrigin().ident;
+        const activePlan = mcdu.flightPlanService.active;
+
+        if (activePlan.originAirport) {
+            retval.airports[0] = activePlan.originAirport.ident;
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            retval.airports[1] = mcdu.flightPlanManager.getDestination().ident;
+
+        if (activePlan.destinationAirport) {
+            retval.airports[1] = activePlan.destinationAirport.ident;
         }
-        if (mcdu.altDestination && mcdu.altDestination.ident) {
-            retval.airports[2] = mcdu.altDestination.ident;
+
+        if (activePlan.alternateDestinationAirport) {
+            retval.airports[2] = activePlan.alternateDestinationAirport.ident;
         }
 
         return retval;
@@ -78,7 +86,7 @@ class CDUAocRequestsWeather {
                     if (!/^[A-Z0-9]{4}$/.test(value)) {
                         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
-                        mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                        mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
                             if (airport) {
                                 data.airports[i] = value;
                                 data.managed[i] = false;
