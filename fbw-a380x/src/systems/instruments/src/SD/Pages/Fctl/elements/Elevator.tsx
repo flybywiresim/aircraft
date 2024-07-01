@@ -1,15 +1,16 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export enum ElevatorSide {
-    Left,
-    Right,
+    Left = 'LEFT',
+    Right = 'RIGHT',
 }
 
 export enum ElevatorPosition {
-    Inboard,
-    Outboard,
+    Inboard = 'INWARD',
+    Outboard = 'OUTWARD',
 }
 
 interface ElevatorProps {
@@ -17,14 +18,14 @@ interface ElevatorProps {
     y: number,
     side: ElevatorSide,
     position: ElevatorPosition,
+    onGround: boolean,
 }
 
-export const Elevator: FC<ElevatorProps> = ({ x, y, side, position }) => {
-    const deflectionInfoValid = true;
-    const elevatorDeflection = 0;
+export const Elevator: FC<ElevatorProps> = ({ x, y, side, position, onGround }) => {
+    const [elevatorDeflection]: [number, (v: number) => void] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side}_${position}_DEFLECTION`, 'number', 100);
 
-    const powerSource1Avail = true;
-    const powerSource2Avail = true;
+    const hydSystem = side === ElevatorSide.Left ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow;
+    const deflectionInfoValid = true;
 
     let elecPowerSource: ElecPowerSource;
     let actuatorIndicationX: number;
@@ -37,25 +38,32 @@ export const Elevator: FC<ElevatorProps> = ({ x, y, side, position }) => {
         actuatorIndicationX = -2;
     }
 
+
+    const [hydPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_HYD_${hydSystem}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 1000);
+    const [elecPowerAvailable]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_ELEC_${elecPowerSource}_BUS_IS_POWERED`, 'boolean', 1000);
+
     return (
         <g id={`elevator-${side}-${position}`} transform={`translate(${x} ${y})`}>
             <VerticalDeflectionIndication
-                powerAvail={powerSource1Avail || powerSource2Avail}
+                powerAvail={hydPowerAvailable || elecPowerAvailable}
                 deflectionInfoValid={deflectionInfoValid}
-                deflection={elevatorDeflection}
+                deflection={elevatorDeflection * MIN_VERTICAL_DEFLECTION}
+                onGround={onGround}
             />
 
             <ActuatorIndication
                 x={actuatorIndicationX}
                 y={131}
                 type={ActuatorType.Conventional}
-                powerSource={side === ElevatorSide.Left ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow}
+                powerSource={hydSystem}
+                powerSourceAvailable={hydPowerAvailable}
             />
             <ActuatorIndication
                 x={actuatorIndicationX}
                 y={161}
                 type={ActuatorType.EHA}
                 powerSource={elecPowerSource}
+                powerSourceAvailable={elecPowerAvailable}
             />
         </g>
     );
