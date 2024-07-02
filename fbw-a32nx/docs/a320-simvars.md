@@ -2088,6 +2088,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number in ft
     - Used for managed climb/descend
     - Indicates an altitude constraint to follow
+    - Internal to FM/FG communication, other avionics should use the FG bus var
 
 - A32NX_FG_TARGET_ALTITUDE
     - Number in ft
@@ -2880,6 +2881,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 24  | LAND 3 FAIL PASSIVE Capacity      |
       | 25  | LAND 3 FAIL OP Capacity           |
       | 26  | RWY Heading memorized             |
+
+- A32NX_FMGC_{number}_FM_ALTITUDE_CONSTRAINT
+    - Arinc429<Feet>
+    - Next applicable altitude constraint
+    - NCD if no constraint is applicable
 
 - A32NX_FMGC_{number}_ATS_DISCRETE_WORD
     - Arinc429<Discrete>

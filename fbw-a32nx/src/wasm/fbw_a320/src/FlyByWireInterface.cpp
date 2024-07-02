@@ -724,6 +724,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcABusYawFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_YAW_FD_COMMAND");
     idFmgcABusDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_5");
     idFmgcABusDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_4");
+    idFmgcABusFmAltConstraint[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_FM_ALTITUDE_CONSTRAINT");
     idFmgcABusAtsDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ATS_DISCRETE_WORD");
     idFmgcABusAtsFmaDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ATS_FMA_DISCRETE_WORD");
     idFmgcABusDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_3");
@@ -1795,6 +1796,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcABusYawFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.yaw_fd_command));
   idFmgcABusDiscreteWord5[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_5));
   idFmgcABusDiscreteWord4[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_4));
+  idFmgcABusFmAltConstraint[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.fm_alt_constraint_ft));
   idFmgcABusAtsDiscreteWord[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.ats_discrete_word));
   idFmgcABusAtsFmaDiscreteWord[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.ats_fma_discrete_word));
   idFmgcABusDiscreteWord3[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_3));
