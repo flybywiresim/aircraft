@@ -996,6 +996,7 @@ export class PseudoFWC {
           console.log('PseudoFWC startup completed.');
         }, PseudoFWC.FWC_STARTUP_TIME);
       } else {
+        this.startupTimer.clear();
         this.startupCompleted.set(false);
         console.log('PseudoFWC shut down.');
       }
