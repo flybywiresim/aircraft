@@ -743,11 +743,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimLeftNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_MODE");
   idFcuShimLeftNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_RANGE");
   idFcuShimLeftNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_L_OPTION");
+  idFcuShimLeftLsActive = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idFcuShimLeftBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro1_Mode");
   idFcuShimRightNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_1_MODE");
   idFcuShimRightNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_2_MODE");
   idFcuShimRightNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_MODE");
   idFcuShimRightNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_RANGE");
   idFcuShimRightNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_OPTION");
+  idFcuShimRightLsActive = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idFcuShimRightBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro2_Mode");
 
   idFcuShimTrkFpaActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuShimHdgValue = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
@@ -2191,6 +2195,18 @@ bool FlyByWireInterface::updateFcuShim() {
     }
   };
 
+  auto getBaroMode = [](bool bit1, bool bit2) {
+    if (bit1) {
+      return 3;
+    } else if (bit2) {
+      return 1;
+    } else {
+      return 2;
+    }
+  };
+
+  SimData simData = simConnectInterface.getSimData();
+
   idFcuShimLeftNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 24, false),
                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 26, true)));
   idFcuShimLeftNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 25, true),
@@ -2210,8 +2226,15 @@ bool FlyByWireInterface::updateFcuShim() {
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 19, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 20, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 21, false)));
+  idFcuShimLeftLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 22, true));
+  bool fd1Active = !Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_2, 26, false);
+  if (simData.ap_fd_1_active != fd1Active) {
+    simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1, SIMCONNECT_GROUP_PRIORITY_STANDARD);
+  }
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
+  idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true),
+                                         Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 29, false)));
 
   idFcuShimRightNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 24, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 26, true)));
@@ -2232,6 +2255,13 @@ bool FlyByWireInterface::updateFcuShim() {
                                                 Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 19, false),
                                                 Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 20, false),
                                                 Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 21, false)));
+  idFcuShimRightLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 22, true));
+  bool fd2Active = !Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_2, 27, false);
+  if (simData.ap_fd_2_active != fd2Active) {
+    simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2, SIMCONNECT_GROUP_PRIORITY_STANDARD);
+  }
+  idFcuShimRightBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 28, true),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 29, false)));
 
   return true;
 }
