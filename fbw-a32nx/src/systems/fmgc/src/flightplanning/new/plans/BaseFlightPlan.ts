@@ -1365,6 +1365,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     segment.insertAfter(indexInSegment, { isDiscontinuity: true });
 
     this.incrementVersion();
+
+    // Make sure we don't have a TF leg after the disco
+    this.adjustIFLegs();
+
+    this.incrementVersion();
   }
 
   editLegDefinition(index: number, changes: Partial<FlightPlanLegDefinition>, notify = true): void {
