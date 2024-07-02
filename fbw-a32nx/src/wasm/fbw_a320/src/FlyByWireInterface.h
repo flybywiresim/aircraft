@@ -568,6 +568,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcABusYawFdCommand[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord5[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFmgcABusFmAltConstraint[2];
   std::unique_ptr<LocalVariable> idFmgcABusAtsDiscreteWord[2];
   std::unique_ptr<LocalVariable> idFmgcABusAtsFmaDiscreteWord[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord3[2];
