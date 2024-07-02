@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -22,6 +22,7 @@ import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { A320AircraftConfig } from '@fmgc/flightplanning/new/A320AircraftConfig';
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,
@@ -64,4 +65,5 @@ export {
   DataManager,
   EventBus,
   a320EfisRangeSettings,
+  A320AircraftConfig,
 };

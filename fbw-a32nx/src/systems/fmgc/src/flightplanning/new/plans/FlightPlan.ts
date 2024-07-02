@@ -435,14 +435,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
     } else {
-      plan.setPerformanceData('defaultThrustReductionAltitude', undefined);
-      plan.setPerformanceData('defaultAccelerationAltitude', undefined);
-      plan.setPerformanceData('defaultEngineOutAccelerationAltitude', undefined);
+      plan.setPerformanceData('defaultThrustReductionAltitude', null);
+      plan.setPerformanceData('defaultAccelerationAltitude', null);
+      plan.setPerformanceData('defaultEngineOutAccelerationAltitude', null);
     }
 
-    plan.setPerformanceData('pilotThrustReductionAltitude', undefined);
-    plan.setPerformanceData('pilotAccelerationAltitude', undefined);
-    plan.setPerformanceData('pilotEngineOutAccelerationAltitude', undefined);
+    plan.setPerformanceData('pilotThrustReductionAltitude', null);
+    plan.setPerformanceData('pilotAccelerationAltitude', null);
+    plan.setPerformanceData('pilotEngineOutAccelerationAltitude', null);
   }
 
   /**
@@ -471,14 +471,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
     } else {
-      plan.setPerformanceData('defaultMissedThrustReductionAltitude', undefined);
-      plan.setPerformanceData('defaultMissedAccelerationAltitude', undefined);
-      plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', undefined);
+      plan.setPerformanceData('defaultMissedThrustReductionAltitude', null);
+      plan.setPerformanceData('defaultMissedAccelerationAltitude', null);
+      plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', null);
     }
 
-    plan.setPerformanceData('pilotMissedThrustReductionAltitude', undefined);
-    plan.setPerformanceData('pilotMissedAccelerationAltitude', undefined);
-    plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', undefined);
+    plan.setPerformanceData('pilotMissedThrustReductionAltitude', null);
+    plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
+    plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
   }
 
   static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
@@ -520,7 +520,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   setPerformanceData<k extends keyof (P & FlightPlanPerformanceDataProperties) & string>(
     key: k,
-    value: P[k],
+    value: P[k] | null,
     notify = true,
   ) {
     this.performanceData[key] = value;
@@ -543,19 +543,20 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
+      this.performanceData.thrustReductionAltitude !== null &&
       this.performanceData.thrustReductionAltitude > lowestClimbConstraint
     ) {
       this.setPerformanceData(
         'defaultThrustReductionAltitude',
-        this.performanceData.defaultThrustReductionAltitude !== undefined
+        this.performanceData.defaultThrustReductionAltitude !== null
           ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint)
-          : undefined,
+          : null,
       );
       this.setPerformanceData(
         'pilotThrustReductionAltitude',
-        this.performanceData.pilotThrustReductionAltitude !== undefined
+        this.performanceData.pilotThrustReductionAltitude !== null
           ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint)
-          : undefined,
+          : null,
       );
 
       return true;
@@ -570,18 +571,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   reconcileAccelerationWithConstraints(): boolean {
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
-    if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
+    if (
+      Number.isFinite(lowestClimbConstraint) &&
+      this.performanceData.accelerationAltitude !== null &&
+      this.performanceData.accelerationAltitude > lowestClimbConstraint
+    ) {
       this.setPerformanceData(
         'defaultAccelerationAltitude',
-        this.performanceData.defaultAccelerationAltitude !== undefined
+        this.performanceData.defaultAccelerationAltitude !== null
           ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint)
-          : undefined,
+          : null,
       );
       this.setPerformanceData(
         'pilotAccelerationAltitude',
-        this.performanceData.pilotAccelerationAltitude !== undefined
+        this.performanceData.pilotAccelerationAltitude !== null
           ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint)
-          : undefined,
+          : null,
       );
 
       return true;
