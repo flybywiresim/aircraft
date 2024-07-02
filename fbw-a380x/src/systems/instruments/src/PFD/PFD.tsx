@@ -1,5 +1,5 @@
 import { A380Failure } from '@flybywiresim/failures';
-import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
 import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
@@ -15,6 +15,8 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 import './style.scss';
+import { PitchTrimIndicator } from 'instruments/src/PFD/PitchTrimIndicator';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -39,6 +41,8 @@ interface PFDProps extends ComponentProps {
 }
 
 export class PFDComponent extends DisplayComponent<PFDProps> {
+  private sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
+
   private headingFailed = Subject.create(true);
 
   private displayFailed = Subject.create(false);
@@ -57,6 +61,15 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private failuresConsumer;
 
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
+
+  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed').whenChanged(), 0);
+
+  private readonly raHeight = ConsumerSubject.create(this.sub.on('chosenRa').whenChanged(), Arinc429Word.empty());
+
+  // FIXME add touch&go condition
+  private pitchTrimIndicatorVisible = MappedSubject.create(([flightPhase, gs, raHeight]) => (flightPhase >= 9 && gs < 30) || (flightPhase < 6 && raHeight.valueOr(0) < 50), this.fwcFlightPhase, this.groundSpeed, this.raHeight);
+
   constructor(props: PFDProps) {
     super(props);
     this.failuresConsumer = new FailuresConsumer('A32NX');
@@ -67,23 +80,23 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     this.failuresConsumer.register(getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents>();
 
-    sub.on('headingAr').handle((h) => {
+
+    this.sub.on('headingAr').handle((h) => {
       if (this.headingFailed.get() !== h.isNormalOperation()) {
         this.headingFailed.set(!h.isNormalOperation());
       }
     });
 
-    sub.on('rollAr').handle((r) => {
+    this.sub.on('rollAr').handle((r) => {
       this.roll = r;
     });
 
-    sub.on('pitchAr').handle((p) => {
+    this.sub.on('pitchAr').handle((p) => {
       this.pitch = p;
     });
 
-    sub
+    this.sub
       .on('realTime')
       .atFrequency(1)
       .handle((_t) => {
@@ -111,7 +124,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         }
       });
 
-    sub.on('chosenRa').handle((ra) => {
+      this.sub.on('chosenRa').handle((ra) => {
       this.ownRadioAltitude = ra;
       const filteredRadioAltitude = this.radioAltitudeFilter.step(
         this.ownRadioAltitude.value,
@@ -173,8 +186,9 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           <MachNumber bus={this.props.bus} />
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
 
-          <LowerArea bus={this.props.bus} />
+          <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} />
         </svg>
+        <PitchTrimIndicator bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
       </CdsDisplayUnit>
     );
   }
