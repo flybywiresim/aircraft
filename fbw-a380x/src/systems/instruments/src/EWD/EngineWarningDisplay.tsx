@@ -3,7 +3,6 @@ import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyC
 import { useSimVar } from '@instruments/common/simVars';
 import { EngineGauge } from './elements/EngineGauge';
 import ThrustRatingMode from './elements/ThrustRatingMode';
-import PseudoFWC from './elements/PseudoFWC';
 import EWDMemo from './elements/EWDMemo';
 // import { Checklist } from './elements/Checklist';
 
@@ -56,8 +55,8 @@ export const EngineWarningDisplay: React.FC = () => {
             <path stroke="white" strokeWidth={2} d="m 49 436.3 h 193" /> */}
 
             {/* <Checklist x={47} y={467} /> */}
-            <EWDMemo x={395} y={414} active={displayMemo} />
-            <PseudoFWC />
+            <EWDMemo x={25} y={414} active={displayMemo} side='LEFT' />
+            <EWDMemo x={450} y={414} active={displayMemo} side='RIGHT' />
         </LegacyCdsDisplayUnit>
     );
 };
