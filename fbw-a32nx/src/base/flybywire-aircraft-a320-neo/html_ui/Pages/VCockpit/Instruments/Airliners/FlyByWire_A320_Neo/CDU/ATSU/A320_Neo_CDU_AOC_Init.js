@@ -51,6 +51,7 @@ class CDUAocInit {
             ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
         if (mcdu.isAnEngineOn()) {
+            //should only get if an engine running
             const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
             if (currentFob) {
                 fob = `{small}${currentFob}{end}[color]green`;

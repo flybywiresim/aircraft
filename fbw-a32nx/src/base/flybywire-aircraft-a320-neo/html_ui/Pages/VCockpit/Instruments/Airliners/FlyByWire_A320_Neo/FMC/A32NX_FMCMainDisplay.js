@@ -5002,7 +5002,7 @@ class FMCMainDisplay extends BaseAirliners {
     getGW() {
         let fmGW = 0;
         //Simplified to just checking fuelWeight as GetFOB handles what fuel level to use (block vs tank reading)
-        if (isFinite(this.zeroFuelWeight)) {
+        if (isFinite(this.zeroFuelWeight) && this.blockFuel) {
             fmGW = (this.getFOB() + this.zeroFuelWeight);
         } else {
             fmGW = 0;
