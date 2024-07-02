@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 // TODO remove this once Rust implementation is up and running
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 enum FwcFlightPhase {
     ElecPwr = 1,
@@ -168,6 +168,7 @@ export class LegacyFwc {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._updateAltitudeWarning();
+        this.updateRowRopWarnings();
     }
 
     _updateButtons(_deltaTime: number) {
@@ -488,6 +489,30 @@ export class LegacyFwc {
             return false;
         }
         return true;
+    }
+
+    updateRowRopWarnings() {
+        const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
+
+        // ROW
+        SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_RWY_TOO_SHORT', 'bool', w.getBitValueOr(15, false));
+
+        // ROP
+        // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
+        const maxBrakingSet = SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 || SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
+        const maxBraking = w.getBitValueOr(13, false) && !maxBrakingSet;
+        SimVar.SetSimVarValue('L:A32NX_AUDIO_ROP_MAX_BRAKING', 'bool', maxBraking);
+
+        // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
+        const maxReverseSet = SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1 && SimVar.GetSimVarValue('L:XMLVAR_Throttle3Position', 'number') < 0.1;
+        const maxReverse = (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)) && !maxReverseSet;
+        SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_SET_MAX_REVERSE', 'bool', !maxBraking && maxReverse);
+
+        // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
+        const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
+        SimVar.SetSimVarValue('L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE', 'bool', (ias <= 80 && ias > 4) && (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)));
+
+
     }
 }
 
