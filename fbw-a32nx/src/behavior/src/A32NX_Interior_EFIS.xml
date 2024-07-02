@@ -198,7 +198,11 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_Code">
-                <LEFT_SINGLE_CODE>(L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG)</LEFT_SINGLE_CODE>
+                <!-- TODO unsync Baro unit selector -->
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FCU_EFIS_L_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_L_BARO_IS_INHG)
+                    (L:A32NX_FCU_EFIS_R_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_R_BARO_IS_INHG)
+                </LEFT_SINGLE_CODE>
                 <ANIM_CODE>(L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! 100 *</ANIM_CODE>
             </UseTemplate>
         </Component>

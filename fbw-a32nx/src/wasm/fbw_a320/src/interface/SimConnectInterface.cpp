@@ -1990,26 +1990,31 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
+    // TODO Unsync EFIS baro
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
       fcuEfisPanelInputs[0].baro_knob.turns = 1;
+      fcuEfisPanelInputs[1].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
       fcuEfisPanelInputs[0].baro_knob.turns = -1;
+      fcuEfisPanelInputs[1].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_DEC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PUSH: {
       fcuEfisPanelInputs[0].baro_knob.pushed = true;
+      fcuEfisPanelInputs[1].baro_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PULL: {
       fcuEfisPanelInputs[0].baro_knob.pulled = true;
+      fcuEfisPanelInputs[1].baro_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PULL" << std::endl;
       break;
     }
@@ -2056,26 +2061,31 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
+    // TODO Unsync EFIS baro
     case Events::A32NX_FCU_EFIS_R_BARO_INC: {
       fcuEfisPanelInputs[1].baro_knob.turns = 1;
+      fcuEfisPanelInputs[0].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_INC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_DEC: {
       fcuEfisPanelInputs[1].baro_knob.turns = -1;
+      fcuEfisPanelInputs[0].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_DEC" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PUSH: {
       fcuEfisPanelInputs[1].baro_knob.pushed = true;
+      fcuEfisPanelInputs[0].baro_knob.pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PULL: {
       fcuEfisPanelInputs[1].baro_knob.pulled = true;
+      fcuEfisPanelInputs[0].baro_knob.pulled = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PULL" << std::endl;
       break;
     }
