@@ -599,19 +599,19 @@
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
