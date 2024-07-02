@@ -585,11 +585,15 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuShimLeftNdMode;
   std::unique_ptr<LocalVariable> idFcuShimLeftNdRange;
   std::unique_ptr<LocalVariable> idFcuShimLeftNdFilterOption;
+  std::unique_ptr<LocalVariable> idFcuShimLeftLsActive;
+  std::unique_ptr<LocalVariable> idFcuShimLeftBaroMode;
   std::unique_ptr<LocalVariable> idFcuShimRightNavaid1Mode;
   std::unique_ptr<LocalVariable> idFcuShimRightNavaid2Mode;
   std::unique_ptr<LocalVariable> idFcuShimRightNdMode;
   std::unique_ptr<LocalVariable> idFcuShimRightNdRange;
   std::unique_ptr<LocalVariable> idFcuShimRightNdFilterOption;
+  std::unique_ptr<LocalVariable> idFcuShimRightLsActive;
+  std::unique_ptr<LocalVariable> idFcuShimRightBaroMode;
 
   std::unique_ptr<LocalVariable> idFcuShimTrkFpaActive;
   std::unique_ptr<LocalVariable> idFcuShimHdgValue;
