@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
@@ -27,6 +28,7 @@ import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
@@ -241,7 +243,7 @@ export class GuidanceController {
       // Don't compute distance and ETA for XM legs
       const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-      const efisEta = isXMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination);
+      const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
 
       // FIXME should be NCD if no FM position
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
@@ -264,6 +266,7 @@ export class GuidanceController {
     private readonly flightPlanService: FlightPlanService,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
     private readonly efisNDRangeValues: number[],
+    private readonly acConfig: AircraftConfig,
   ) {
     this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(
       fmgc,
@@ -273,13 +276,14 @@ export class GuidanceController {
 
     this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-    this.lnavDriver = new LnavDriver(flightPlanService, this);
+    this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,
       this.atmosphericConditions,
       this.windProfileFactory,
+      this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
     this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterfaces);
