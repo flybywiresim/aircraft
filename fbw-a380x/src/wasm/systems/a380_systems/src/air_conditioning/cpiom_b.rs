@@ -20,6 +20,8 @@ use systems::{
     },
 };
 
+use crate::avionics_data_communication_network::A380AvionicsDataCommunicationNetworkMessageData;
+
 use super::local_controllers::{
     outflow_valve_control_module::{CpcsShared, OcsmShared},
     trim_air_drive_device::TaddShared,
@@ -65,7 +67,8 @@ impl CoreProcessingInputOutputModuleB {
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
         cargo_door_open: &impl CargoDoorLocked,
-        cpiom_b: [&CoreProcessingInputOutputModule; 4],
+        cpiom_b: [&CoreProcessingInputOutputModule<A380AvionicsDataCommunicationNetworkMessageData>;
+            4],
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
