@@ -39,8 +39,7 @@ class A32NX_GPWS {
 
         this.Mode3MaxBaroAlt = NaN;
 
-        this.Mode4MaxRAAlt = NaN;
-        this.hasEnteredGoAroundPhase = false;
+        this.Mode4MaxRAAlt = 0;
 
         this.Mode2BoundaryLeaveAlt = NaN;
         this.Mode2NumTerrain = 0;
@@ -111,6 +110,24 @@ class A32NX_GPWS {
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
         this.RetardState.setState("landed");
 
+        // TODO: Update in .flt files
+        this.isAirVsGroundMode = SimVar.GetSimVarValue("L:A32NX_GPWS_GROUND_STATE", "Bool") !== 1;
+        this.airborneFor5s = new NXLogic_ConfirmNode(5);
+        this.airborneFor10s = new NXLogic_ConfirmNode(10);
+
+        // TODO: Update in .flt files
+        this.isApproachVsTakeoffState = SimVar.GetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool") === 1; ;
+
+        this.isOverflightDetected = new NXLogic_TriggeredMonostableNode(60, true);
+        // Only relevant if alternate mode 4b is enabled
+        this.isMode4aInhibited = false;
+
+        // PIN PROGs
+        this.isAudioDeclutterEnabled = false;
+        this.isAlternateMode4bEnabled = false;
+        this.isTerrainClearanceFloorEnabled = true;
+        this.isTerrainAwarenessEnabled = true;
+
         this.egpwsAlertDiscreteWord1 = Arinc429Word.empty();
         this.egpwsAlertDiscreteWord2 = Arinc429Word.empty();
     }
@@ -166,38 +183,55 @@ class A32NX_GPWS {
     }
     gpws(deltaTime) {
         // EGPWS receives ADR1 only
-        const baroAlt = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1`);
-        const radioAlt1 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_1_RADIO_ALTITUDE`);
-        const radioAlt2 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_2_RADIO_ALTITUDE`);
+        const baroAlt = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1");
+        const computedAirspeed = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED");
+        const pitch = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_PITCH");
+        const inertialVs = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_VERTICAL_SPEED");
+        const barometricVs = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED");
+        const radioAlt1 = Arinc429Word.fromSimVarValue("L:A32NX_RA_1_RADIO_ALTITUDE");
+        const radioAlt2 = Arinc429Word.fromSimVarValue("L:A32NX_RA_2_RADIO_ALTITUDE");
         const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
         const radioAltValid = radioAlt.isNormalOperation();
-        const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+        const isOnGround = !this.isAirVsGroundMode;
+
+        const isGpwsSysOff = SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool") === 1;
+        const isTerrModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_TERR_OFF", "Bool") === 1;
+        const isFlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool") === 1;
+        const isLdgFlap3On = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") === 1;
+
+        // TODO Use actual flap position from SFCC instead of the handle index
+        const flapsPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
+        const areFlapsInLandingConfig = isFlapModeOff || (isLdgFlap3On ? (flapsPosition === 3) : (flapsPosition === 4));
+        const isGearDownLocked = SimVar.GetSimVarValue("L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED", "Bool") === 1;
+
+        // TODO only use this in the air
+        const isNavAccuracyHigh = SimVar.GetSimVarValue("L:A32NX_FMGC_L_NAV_ACCURACY_HIGH", "Bool") === 1;
+        const isTcfOperational = this.isTerrainClearanceFloorOperational(isTerrModeOff, radioAlt, isNavAccuracyHigh);
+        const isTafOperational = this.isTerrainAwarenessOperational(isTerrModeOff);
 
         this.UpdateAltState(radioAltValid ? radioAlt.value : NaN);
         this.differentiate_radioalt(radioAltValid ? radioAlt.value : NaN, deltaTime);
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
-        const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
+        // const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
-        if (
-            radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450 &&
-            !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")
+        this.update_maxRA(radioAlt, isOnGround);
+        const isOverflightDetected = this.updateOverflightState(deltaTime);
+        this.updateMode4aInhibited(isGearDownLocked, areFlapsInLandingConfig);
+
+        this.updateAirGroundState(deltaTime, computedAirspeed, radioAlt, pitch);
+        this.updateApproachTakeoffState(computedAirspeed, radioAlt, isGearDownLocked, areFlapsInLandingConfig, isTcfOperational, isTafOperational, isOverflightDetected);
+
+        if (!isGpwsSysOff && radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450
         ) { //Activate between 10 - 2450 radio alt unless SYS is off
-            const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
-            const FlapPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
-            const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
-            const vSpeed = Simplane.getVerticalSpeed();
-            const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
-            const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
+            const altRate = this.selectAltitudeRate(inertialVs, barometricVs);
 
-            this.update_maxRA(radioAlt.value, onGround, phase);
-
-            this.GPWSMode1(this.modes[0], radioAlt.value, vSpeed);
+            this.GPWSMode1(this.modes[0], radioAlt.value, altRate);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
-            //this.GPWSMode2(this.modes[1], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
-            this.GPWSMode3(this.modes[2], radioAlt.value, phase);
-            this.GPWSMode4(this.modes[3], radioAlt.value, Airspeed, FlapsInLandingConfig, gearExtended, phase);
+            //this.GPWSMode2(this.modes[1], radioAlt, computedAirspeed, areFlapsInLandingConfig, isGearDownLocked);
+            this.GPWSMode3(this.modes[2], baroAlt, radioAlt.value, altRate, areFlapsInLandingConfig, isGearDownLocked);
+            this.GPWSMode4(this.modes[3], radioAlt.value, computedAirspeed, areFlapsInLandingConfig, isGearDownLocked, isTcfOperational, isTafOperational, isOverflightDetected);
             this.GPWSMode5(this.modes[4], radioAlt.value);
 
         } else {
@@ -207,15 +241,6 @@ class A32NX_GPWS {
 
             this.Mode3MaxBaroAlt = NaN;
 
-            // ensures switch from Mode 4C to Mode 4A and 4B
-            if (phase === FmgcFlightPhases.CRUISE) {
-                this.Mode4MaxRAAlt = 2450;
-            }
-
-            if (onGround || (radioAltValid && radioAlt < 10)) {
-                this.Mode4MaxRAAlt = NaN;
-            }
-
             this.setGlideSlopeWarning(false);
             this.setGpwsWarning(false);
         }
@@ -223,7 +248,7 @@ class A32NX_GPWS {
         this.GPWSComputeLightsAndCallouts();
         this.gpwsUpdateDiscreteWords();
 
-        if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
+        if ((mda !== 0 || (dh !== -1 && dh !== -2) && this.isApproachVsTakeoffState)) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             if (dh >= 0) {
@@ -257,33 +282,12 @@ class A32NX_GPWS {
         }
     }
 
-    update_maxRA(radioAlt, onGround, phase) {
+    update_maxRA(radioAlt, isOnGround) {
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
-        if (onGround) {
-
-            this.Mode4MaxRAAlt = NaN;
-
-            // resets the GA phase flag when on the ground
-            this.hasEnteredGoAroundPhase = false;
-        } else {
-
-            // checks if in GA phase and resets the MaxRAAlt
-            if (phase === FmgcFlightPhases.GOAROUND && !this.hasEnteredGoAroundPhase) {
-
-                this.Mode4MaxRAAlt = NaN;
-
-                this.hasEnteredGoAroundPhase = true;
-            }
-
-            if (phase !== FmgcFlightPhases.GOAROUND) {
-                // resets the GA phase flag when exiting the GA phase
-                this.hasEnteredGoAroundPhase = false;
-            }
-
-            // updates the Mode4MaxRAAlt
-            if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
-                this.Mode4MaxRAAlt = radioAlt;
-            }
+        if (isOnGround || this.isApproachVsTakeoffState) {
+            this.Mode4MaxRAAlt = 0;
+        } else if (radioAlt.isNormalOperation()) {
+            this.Mode4MaxRAAlt = Math.max(this.Mode4MaxRAAlt, 0.75 * radioAlt.value);
         }
     }
 
@@ -350,12 +354,12 @@ class A32NX_GPWS {
      * Compute the GPWS Mode 1 state.
      * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
-     * @param vSpeed - Vertical speed, in feet/min, should be inertial vertical speed, not sure if simconnect provides that
+     * @param vSpeed - Vertical speed, in feet/min, NaN if not available
      */
     GPWSMode1(mode, radioAlt, vSpeed) {
         const sinkrate = -vSpeed;
 
-        if (sinkrate <= 1000) {
+        if (!Number.isFinite(sinkrate) || sinkrate <= 1000) {
             mode.current = 0;
             return;
         }
@@ -376,22 +380,26 @@ class A32NX_GPWS {
      * Compute the GPWS Mode 2 state.
      * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
-     * @param speed - Airspeed in knots.
-     * @param FlapsInLandingConfig - If flaps is in landing config
+     * @param computedAirspeed - Arinc429 value of the computed airspeed in knots.
+     * @param areFlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is deployed
      */
-    GPWSMode2(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
+    GPWSMode2(mode, radioAlt, computedAirspeed, areFlapsInLandingConfig, gearExtended) {
+        if (!computedAirspeed.isNormalOperation()) {
+            return false;
+        }
+
         let IsInBoundary = false;
         const UpperBoundaryRate = -this.RadioAltRate < 3500 ? 0.7937 * -this.RadioAltRate - 1557.5 : 0.19166 * -this.RadioAltRate + 610;
-        const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * speed - 305.555));
+        const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * computedAirspeed.value - 305.555));
 
-        if (!FlapsInLandingConfig && -this.RadioAltRate > 2000) {
+        if (!areFlapsInLandingConfig && -this.RadioAltRate > 2000) {
             if (radioAlt < UpperBoundarySpeed && radioAlt < UpperBoundaryRate) {
                 this.Mode2NumFramesInBoundary += 1;
             } else {
                 this.Mode2NumFramesInBoundary = 0;
             }
-        } else if (FlapsInLandingConfig && -this.RadioAltRate > 2000) {
+        } else if (areFlapsInLandingConfig && -this.RadioAltRate > 2000) {
             if (radioAlt < 775 && radioAlt < UpperBoundaryRate && -this.RadioAltRate < 10000) {
                 this.Mode2NumFramesInBoundary += 1;
             } else {
@@ -427,27 +435,27 @@ class A32NX_GPWS {
 
     /**
      * Compute the GPWS Mode 3 state.
-     * @param mode - The mode object which stores the state.
-     * @param radioAlt - Radio altitude in feet
-     * @param phase - Flight phase index
-     * @param FlapsInLandingConfig - If flaps is in landing config
-     * @constructor
+     * @param {*} mode - The mode object which stores the state.
+     * @param {*} baroAlt - Arinc429 value of the barometric altitude in feet.
+     * @param {*} radioAlt - Radio altitude in feet
+     * @param {*} altRate - Altitude rate in feet per minute
+     * @param {*} areFlapsInLandingConfig - True if flaps is in landing config
+     * @param {*} isGearDownLocked - True if the gear is down and locked
      */
-    GPWSMode3(mode, radioAlt, phase) {
-        if (!(phase === FmgcFlightPhases.TAKEOFF || phase === FmgcFlightPhases.GOAROUND) || radioAlt > 1500 || radioAlt < 10) {
+    GPWSMode3(mode, baroAlt, radioAlt, altRate, areFlapsInLandingConfig, isGearDownLocked) {
+        if ((isGearDownLocked && areFlapsInLandingConfig) || this.isApproachVsTakeoffState || radioAlt > 1500 || radioAlt < 10 || !baroAlt.isNormalOperation()) {
             this.Mode3MaxBaroAlt = NaN;
             mode.current = 0;
             return;
         }
 
-        const baroAlt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-
         const maxAltLoss = 0.09 * radioAlt + 7.1;
+        const hasPositiveAltRate = Number.isFinite(altRate) && altRate > 0;
 
-        if (baroAlt > this.Mode3MaxBaroAlt || isNaN(this.Mode3MaxBaroAlt)) {
-            this.Mode3MaxBaroAlt = baroAlt;
+        if (baroAlt.value > this.Mode3MaxBaroAlt || isNaN(this.Mode3MaxBaroAlt)) {
+            this.Mode3MaxBaroAlt = baroAlt.value;
             mode.current = 0;
-        } else if ((this.Mode3MaxBaroAlt - baroAlt) > maxAltLoss) {
+        } else if (!hasPositiveAltRate && (this.Mode3MaxBaroAlt - baroAlt.value) > maxAltLoss) {
             mode.current = 1;
         } else {
             mode.current = 0;
@@ -458,42 +466,48 @@ class A32NX_GPWS {
      * Compute the GPWS Mode 4 state.
      * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
-     * @param speed - Airspeed in knots.
-     * @param FlapsInLandingConfig - If flaps is in landing config
+     * @param computedAirspeed - ARINC value of the computed airspeed in knots.
+     * @param areFlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is extended
+     * @param tcfOperational - If the terrain clearance floor is operational
+     * @param tafOperational - If the terrain awareness floor is operational
+     * @param isOverflightDetected - If an overflight is detected
      * @constructor
      */
-    GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
+    GPWSMode4(mode, radioAlt, computedAirspeed, areFlapsInLandingConfig, gearExtended, tcfOperational, tafOperational, isOverflightDetected) {
         mode.current = 0;
 
-        if (radioAlt < 30 || radioAlt > 1000) {
+        if (!computedAirspeed.isNormalOperation() || radioAlt < 30 || radioAlt > 1000 || !this.isAirVsGroundMode) {
             return;
         }
 
-        const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
+        const isMode4cEnabled = !this.isApproachVsTakeoffState && (!areFlapsInLandingConfig || !gearExtended) && this.isAirVsGroundMode;
 
         // Mode 4 A
-        if (!gearExtended && (!FlapsInLandingConfig && !FlapModeOff) && this.Mode4MaxRAAlt >= 2400) {
-            if (speed < 190 && radioAlt < 500) {
-                mode.current = 1;
-            } else if (speed >= 190) {
-                const maxWarnAlt = Math.min(8.333 * speed - 1083.333, 1000);
-                mode.current = radioAlt < maxWarnAlt ? 3 : 0; // TOO LOW TERRAIN
+        if (this.isApproachVsTakeoffState && !gearExtended && !this.isMode4aInhibited) {
+            const boundary = this.mode4aUpperBoundary(computedAirspeed.value, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected);
+
+            if (computedAirspeed.value < 190 && radioAlt < 500) {
+                mode.current = 1; // TOO LOW GEAR
+            } else if (computedAirspeed.value >= 190 && radioAlt < boundary) {
+                mode.current = areFlapsInLandingConfig ? 1 : 3; // TOO LOW GEAR or TOO LOW TERRAIN
             }
         // Mode 4 B
-        } else if (((!FlapsInLandingConfig && !FlapModeOff) || !gearExtended) && this.Mode4MaxRAAlt >= 2400) {
-            if (speed < 159 && radioAlt < 245) {
-                mode.current = !gearExtended ? 1 : 2;
-            } else if (speed >= 159) {
-                const maxWarnAlt = 8.2967 * speed - 1074.18;
-                mode.current = radioAlt < maxWarnAlt ? 3 : 0;
+        } else if (this.isApproachVsTakeoffState && (!areFlapsInLandingConfig || !gearExtended)) {
+            // Normal 4b mode, flaps down, what is the boundary?
+            const boundary = this.mode4bUpperBoundary(computedAirspeed.value, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected);
+
+            if (computedAirspeed.value < 159 && radioAlt < 245) {
+                mode.current = !gearExtended ? 1 : 2; // TOO LOW GEAR or TOO LOW FLAPS
+            } else if (computedAirspeed.value >= 159 && radioAlt < boundary) {
+                mode.current = this.isMode4aInhibited ? 1 : 3; // TOO LOW GEAR or TOO LOW TERRAIN
             }
         // Mode 4 C
-        } else if ((!FlapsInLandingConfig && !FlapModeOff) || !gearExtended) {
-            const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
-            const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
+        } else if (isMode4cEnabled) {
+            const maximumFloor = this.mode4cUpperBoundary(computedAirspeed.value);
+            const maximumFilterValue = Math.min(maximumFloor, this.Mode4MaxRAAlt);
 
-            if (this.Mode4MaxRAAlt > 100 && this.Mode4MaxRAAlt < 2400 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {
+            if (radioAlt < maximumFilterValue) {
                 mode.current = 3;
             }
         }
@@ -709,6 +723,129 @@ class A32NX_GPWS {
                 }
                 break;
         }
+    }
+
+    updateAirGroundState(deltaTime, computedAirspeed, radioAlt, pitchAngle) {
+        if (!computedAirspeed.isNormalOperation() || !radioAlt.isNormalOperation()) {
+            // Stay in current state
+            return;
+        }
+
+        this.airborneFor5s.write(computedAirspeed.value > 90 && radioAlt.value > 25 && pitchAngle.isNormalOperation() && pitchAngle.value > 5, deltaTime);
+        this.airborneFor10s.write(computedAirspeed.value > 90 && radioAlt.value > 25, deltaTime);
+
+        if (this.isAirVsGroundMode) {
+            if (radioAlt.value < 25) {
+                this.isAirVsGroundMode = false;
+                SimVar.SetSimVarValue("L:A32NX_GPWS_GROUND_STATE", "Bool", 1);
+            }
+        } else {
+            if (this.airborneFor5s.read() || this.airborneFor5s.read()) {
+                this.isAirVsGroundMode = true;
+                SimVar.SetSimVarValue("L:A32NX_GPWS_GROUND_STATE", "Bool", 0);
+            }
+        }
+    }
+
+    updateApproachTakeoffState(computedAirspeed, radioAlt, isGearDown, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+        // TODO: what do we do if computedAirspeed is not NO?
+        if (!computedAirspeed.isNormalOperation()) {
+            return;
+        }
+
+        if (this.isApproachVsTakeoffState) {
+            // Switch to TO if we pass below 245 ft mode 4b floor without an alert (i.e gear down and flaps in landing config)
+            if (radioAlt.isNormalOperation() && radioAlt.value < 245 && isGearDown && isFlapsInLandingConfig) {
+                this.isApproachVsTakeoffState = false;
+                SimVar.SetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool", 0);
+            }
+        } else {
+            const isFirstAlgorithmSatisfied = false;
+            // - 4C filter value exceeds 4A alert boundary
+            const isSecondAlgorithmSatisfied = this.Mode4MaxRAAlt > this.mode4aUpperBoundary(computedAirspeed.value, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected);
+
+            if ((isFirstAlgorithmSatisfied || !this.isAudioDeclutterEnabled) && isSecondAlgorithmSatisfied) {
+                this.isApproachVsTakeoffState = true;
+                SimVar.SetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool", 1);
+            }
+        }
+    }
+
+    mode4aUpperBoundary(computedAirspeed, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+        let expandedBoundary = 1000;
+        if (isFlapsInLandingConfig || tcfOperational || tafOperational) {
+            expandedBoundary = 500;
+        } else if (isOverflightDetected) {
+            expandedBoundary = 800;
+        }
+
+        return Math.max(500, Math.min(expandedBoundary, 8.333 * computedAirspeed - 1083.33));
+    }
+
+    mode4bUpperBoundary(computedAirspeed, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+        let expandedBoundary = 1000;
+        if (isFlapsInLandingConfig || tcfOperational || tafOperational) {
+            expandedBoundary = 245;
+        } else if (isOverflightDetected) {
+            expandedBoundary = 800;
+        }
+
+        return Math.max(245, Math.min(expandedBoundary, 8.333 * computedAirspeed - 1083.33));
+    }
+
+    mode4cUpperBoundary(computedAirspeed) {
+        return Math.max(500, Math.min(1000, 8.3333 * computedAirspeed.value - 1083.33));
+    }
+
+    updateOverflightState(deltaTime) {
+        return this.isOverflightDetected.write(this.RadioAltRate < -2200, deltaTime);
+    }
+
+    isTerrainClearanceFloorOperational(terrPbOff, radioAlt, fmcNavAccuracyHigh) {
+        // TODO when ground speed is below 60 kts, always consider fms nav accuracy high
+        // where does GS come from?
+        return this.isTerrainAwarenessEnabled && !terrPbOff && radioAlt.isNormalOperation() && fmcNavAccuracyHigh;
+    }
+
+    isTerrainAwarenessOperational(terrPbOff) {
+        const doesTerrainAwarenessUseGeometricAltitude = true;
+        const isGeometricAltitudeVfomValid = true;
+        const isGeometricAltitudeHilValid = true;
+        const geometricAltitudeVfom = 0;
+        const isRaimFailureDetected = false;
+
+        return this.isTerrainAwarenessEnabled
+            && !terrPbOff &&
+            !doesTerrainAwarenessUseGeometricAltitude &&
+            isGeometricAltitudeVfomValid &&
+            isGeometricAltitudeHilValid &&
+            !isRaimFailureDetected &&
+            geometricAltitudeVfom < 200;
+    }
+
+    updateMode4aInhibited(isGearDownLocked, isFlapsInLandingConfig) {
+        if (this.isMode4aInhibited) {
+            if (!this.isAirVsGroundMode || !this.isApproachVsTakeoffState) {
+                // Reset
+                this.isMode4aInhibited = false;
+            }
+        } else if (this.isAlternateMode4bEnabled) {
+            if (isGearDownLocked || isFlapsInLandingConfig) {
+                this.isMode4aInhibited = true;
+            }
+        }
+    }
+
+    selectAltitudeRate(inertialVs, baroVs) {
+        if (inertialVs.isNormalOperation()) {
+            return inertialVs.value;
+        } else if (Number.isFinite(this.RadioAltRate)) {
+            return this.RadioAltRate;
+        } else if (baroVs.isNormalOperation()) {
+            return baroVs.value;
+        }
+
+        return NaN;
     }
 }
 
