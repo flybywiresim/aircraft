@@ -563,6 +563,7 @@ class FlyByWireInterface {
 
   // FMGC A Bus output Lvars
   std::unique_ptr<LocalVariable> idFmgcABusPfdSelectedSpeed[2];
+  std::unique_ptr<LocalVariable> idFmgcABusRwyHdgMemo[2];
   std::unique_ptr<LocalVariable> idFmgcABusRollFdCommand[2];
   std::unique_ptr<LocalVariable> idFmgcABusPitchFdCommand[2];
   std::unique_ptr<LocalVariable> idFmgcABusYawFdCommand[2];
