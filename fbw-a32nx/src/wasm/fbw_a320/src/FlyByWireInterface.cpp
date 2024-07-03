@@ -719,6 +719,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcApEngaged[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_AP_ENGAGED");
 
     idFmgcABusPfdSelectedSpeed[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PFD_SELECTED_SPEED");
+    idFmgcABusRwyHdgMemo[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_RWY_HDG_MEMO");
     idFmgcABusRollFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ROLL_FD_COMMAND");
     idFmgcABusPitchFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PITCH_FD_COMMAND");
     idFmgcABusYawFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_YAW_FD_COMMAND");
@@ -1791,6 +1792,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcApEngaged[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].ap_own_engaged);
 
   idFmgcABusPfdSelectedSpeed[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.pfd_sel_spd_kts));
+  idFmgcABusRwyHdgMemo[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.runway_hdg_memorized_deg));
   idFmgcABusRollFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.roll_fd_command));
   idFmgcABusPitchFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.pitch_fd_command));
   idFmgcABusYawFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.yaw_fd_command));
