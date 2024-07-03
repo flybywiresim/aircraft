@@ -2861,6 +2861,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The PFD target speed (managed or selected)
     - Arinc429<Degrees>
 
+- A32NX_FMGC_{number}_RWY_HDG_MEMO
+    - The FG memorized runway heading
+    - Runway heading is memorized below 700ft during precision approach
+    - Arinc429<Degrees>
+
 - A32NX_FMGC_{number}_ROLL_FD_COMMAND
     - The Roll FD command
     - Arinc429<Degrees>
