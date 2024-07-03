@@ -98,7 +98,7 @@ class A32NX_GPWS {
                     {},
                 ],
                 onChange: (current, _) => {
-                    this.setGlideSlopeWarning(current >= 1);
+                    SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", current >= 1);
                 }
             }
         ];
@@ -109,44 +109,6 @@ class A32NX_GPWS {
         this.AltCallState.setState("ground");
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
         this.RetardState.setState("landed");
-
-        this.egpwsAlertDiscreteWord1 = Arinc429Word.empty();
-        this.egpwsAlertDiscreteWord2 = Arinc429Word.empty();
-    }
-
-    gpwsUpdateDiscreteWords() {
-        this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
-        this.egpwsAlertDiscreteWord1.setBitValue(11, this.modes[0].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[0].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(13, this.modes[1].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[1].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(14, this.modes[2].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(15, this.modes[3].current === 1);
-        this.egpwsAlertDiscreteWord1.setBitValue(16, this.modes[3].current === 2);
-        this.egpwsAlertDiscreteWord1.setBitValue(17, this.modes[3].current === 3);
-        this.egpwsAlertDiscreteWord1.setBitValue(18, this.modes[4].current === 1);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
-
-        this.egpwsAlertDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
-        this.egpwsAlertDiscreteWord2.setBitValue(14, false);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-    }
-
-    setGlideSlopeWarning(state) {
-        SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-        this.egpwsAlertDiscreteWord2.setBitValue(11, state);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-    }
-
-    setGpwsWarning(state) {
-        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-        this.egpwsAlertDiscreteWord2.setBitValue(12, state);
-        this.egpwsAlertDiscreteWord2.setBitValue(13, state);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
     }
 
     init() {
@@ -154,8 +116,8 @@ class A32NX_GPWS {
 
         this.radnav.init(NavMode.FOUR_SLOTS);
 
-        this.setGlideSlopeWarning(false);
-        this.setGpwsWarning(false);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
 
         NXDataStore.getAndSubscribe('CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = v), DEFAULT_RADIO_AUTO_CALL_OUTS);
     }
@@ -209,12 +171,11 @@ class A32NX_GPWS {
                 this.Mode4MaxRAAlt = NaN;
             }
 
-            this.setGlideSlopeWarning(false);
-            this.setGpwsWarning(false);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
         }
 
         this.GPWSComputeLightsAndCallouts();
-        this.gpwsUpdateDiscreteWords();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH
@@ -315,7 +276,7 @@ class A32NX_GPWS {
         }
 
         const illuminateGpwsLight = activeTypes.some((type) => type.gpwsLight);
-        this.setGpwsWarning(illuminateGpwsLight);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", illuminateGpwsLight);
     }
 
     /**

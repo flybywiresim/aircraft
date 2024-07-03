@@ -115,22 +115,6 @@ export class Arinc429Register implements Arinc429WordData {
     return this;
   }
 
-  setValue(value: typeof this.value): void {
-    this.value = value;
-  }
-
-  setBitValue(bit: number, value: boolean): void {
-    if (value) {
-      this.value |= 1 << (bit - 1);
-    } else {
-      this.value &= ~(1 << (bit - 1));
-    }
-  }
-
-  setSsm(ssm: typeof this.ssm): void {
-    this.ssm = ssm;
-  }
-
   setFromSimVar(name: string): void {
     this.set(SimVar.GetSimVarValue(name, 'number'));
   }
