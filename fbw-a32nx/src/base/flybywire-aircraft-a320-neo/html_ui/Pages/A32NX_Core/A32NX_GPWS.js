@@ -115,7 +115,6 @@ class A32NX_GPWS {
         this.airborneFor5s = new NXLogic_ConfirmNode(5);
         this.airborneFor10s = new NXLogic_ConfirmNode(10);
 
-        // TODO: Update in .flt files
         this.isApproachVsTakeoffState = SimVar.GetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool") === 1; ;
 
         this.isOverflightDetected = new NXLogic_TriggeredMonostableNode(60, true);
@@ -199,9 +198,11 @@ class A32NX_GPWS {
         const isFlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool") === 1;
         const isLdgFlap3On = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") === 1;
 
-        // TODO Use actual flap position from SFCC instead of the handle index
-        const flapsPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
-        const areFlapsInLandingConfig = isFlapModeOff || (isLdgFlap3On ? (flapsPosition === 3) : (flapsPosition === 4));
+        const sfccPositionWord = Arinc429Word.fromSimVarValue("L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
+        const isFlapsFull = sfccPositionWord.getBitValueOr(22, false);
+        const isFlaps3 = sfccPositionWord.getBitValueOr(21, false) && !isFlapsFull;
+
+        const areFlapsInLandingConfig = !sfccPositionWord.isNormalOperation() || isFlapModeOff || (isLdgFlap3On ? isFlaps3 : isFlapsFull);
         const isGearDownLocked = SimVar.GetSimVarValue("L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED", "Bool") === 1;
 
         // TODO only use this in the air
@@ -747,7 +748,7 @@ class A32NX_GPWS {
         }
     }
 
-    updateApproachTakeoffState(computedAirspeed, radioAlt, isGearDown, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+    updateApproachTakeoffState(computedAirspeed, radioAlt, isGearDown, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
         // TODO: what do we do if computedAirspeed is not NO?
         if (!computedAirspeed.isNormalOperation()) {
             return;
@@ -755,14 +756,14 @@ class A32NX_GPWS {
 
         if (this.isApproachVsTakeoffState) {
             // Switch to TO if we pass below 245 ft mode 4b floor without an alert (i.e gear down and flaps in landing config)
-            if (radioAlt.isNormalOperation() && radioAlt.value < 245 && isGearDown && isFlapsInLandingConfig) {
+            if (radioAlt.isNormalOperation() && radioAlt.value < 245 && isGearDown && areFlapsInLandingConfig) {
                 this.isApproachVsTakeoffState = false;
                 SimVar.SetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool", 0);
             }
         } else {
             const isFirstAlgorithmSatisfied = false;
             // - 4C filter value exceeds 4A alert boundary
-            const isSecondAlgorithmSatisfied = this.Mode4MaxRAAlt > this.mode4aUpperBoundary(computedAirspeed.value, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected);
+            const isSecondAlgorithmSatisfied = this.Mode4MaxRAAlt > this.mode4aUpperBoundary(computedAirspeed.value, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected);
 
             if ((isFirstAlgorithmSatisfied || !this.isAudioDeclutterEnabled) && isSecondAlgorithmSatisfied) {
                 this.isApproachVsTakeoffState = true;
@@ -771,9 +772,9 @@ class A32NX_GPWS {
         }
     }
 
-    mode4aUpperBoundary(computedAirspeed, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+    mode4aUpperBoundary(computedAirspeed, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
         let expandedBoundary = 1000;
-        if (isFlapsInLandingConfig || tcfOperational || tafOperational) {
+        if (areFlapsInLandingConfig || tcfOperational || tafOperational) {
             expandedBoundary = 500;
         } else if (isOverflightDetected) {
             expandedBoundary = 800;
@@ -782,9 +783,9 @@ class A32NX_GPWS {
         return Math.max(500, Math.min(expandedBoundary, 8.333 * computedAirspeed - 1083.33));
     }
 
-    mode4bUpperBoundary(computedAirspeed, isFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
+    mode4bUpperBoundary(computedAirspeed, areFlapsInLandingConfig, tcfOperational, tafOperational, isOverflightDetected) {
         let expandedBoundary = 1000;
-        if (isFlapsInLandingConfig || tcfOperational || tafOperational) {
+        if (areFlapsInLandingConfig || tcfOperational || tafOperational) {
             expandedBoundary = 245;
         } else if (isOverflightDetected) {
             expandedBoundary = 800;
