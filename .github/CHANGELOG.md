@@ -102,7 +102,6 @@
 1. [ND] Fix color of navaids at the active leg termination - @BlueberryKing (BlueberryKing)
 1. [EFB] Added a takeoff performance calculator - @donstim (donbikes), @tracernz (Mike)
 1. [MCDU] Removed V-speed auto-fill function - @tracernz (Mike)
-1. [PFD] Implement alerts within artificial horizon (ROP, ROW, OANS, stall, windshear) @flogross89 (Flo)
 
 ## 0.11.0
 

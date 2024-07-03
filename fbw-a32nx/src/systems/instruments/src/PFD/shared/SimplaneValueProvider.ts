@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Instrument, Publisher } from '@microsoft/msfs-sdk';
+import { Publisher } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 export type SimplaneBaroMode = 'QNH' | 'QFE' | 'STD';
@@ -17,20 +17,14 @@ export interface SimplaneValues {
   selectedAltitude: number;
   baroMode: SimplaneBaroMode;
 }
-export class SimplaneValueProvider implements Instrument {
+export class SimplaneValueProvider {
   private publisher: Publisher<SimplaneValues>;
 
   constructor(private readonly bus: ArincEventBus) {
     this.publisher = this.bus.getPublisher<SimplaneValues>();
   }
 
-  /** @inheritdoc */
-  public init(): void {
-    // noop
-  }
-
-  /** @inheritdoc */
-  public onUpdate(): void {
+  public onUpdate() {
     const units = Simplane.getPressureSelectedUnits();
     const pressure = Simplane.getPressureValue(units);
     const isSelected = Simplane.getAutoPilotAirspeedSelected();
