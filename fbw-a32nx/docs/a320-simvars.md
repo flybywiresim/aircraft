@@ -3981,7 +3981,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_GPWS_APPROACH_STATE
     - Boolean
-    - Indicates whether the GPWS is in Approach vs Takefoff mode
+    - Indicates whether the GPWS is in Approach vs Takeoff mode
 
 ## ROW / ROP / OANS (ATA 34)
 
