@@ -66,6 +66,7 @@ class FmgcComputer final
     real32_T pU_c;
     boolean_T Delay_DSTATE_p;
     boolean_T Delay_DSTATE_k;
+    boolean_T DelayInput1_DSTATE_f;
     boolean_T Delay_DSTATE_c;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_g;
@@ -220,6 +221,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_d3;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_mb;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_f;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_e5p;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_ga;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_d;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_kq;
@@ -681,6 +683,7 @@ class FmgcComputer final
     boolean_T PulseNode1_isRisingEdge_m;
     boolean_T PulseNode2_isRisingEdge_n;
     boolean_T PulseNode3_isRisingEdge_a;
+    boolean_T PulseNode4_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge_h;
     boolean_T PulseNode_isRisingEdge_p;
     boolean_T ConfirmNode_isRisingEdge_c;
@@ -758,7 +761,7 @@ class FmgcComputer final
     boolean_T PulseNode3_isRisingEdge_k;
     boolean_T PulseNode1_isRisingEdge_kl;
     boolean_T PulseNode2_isRisingEdge_f;
-    boolean_T PulseNode4_isRisingEdge;
+    boolean_T PulseNode4_isRisingEdge_a;
     boolean_T ConfirmNode_isRisingEdge_ch;
     boolean_T PulseNode6_isRisingEdge;
     boolean_T PulseNode5_isRisingEdge;
@@ -776,6 +779,7 @@ class FmgcComputer final
     boolean_T PulseNode_isRisingEdge_fz;
     boolean_T ConfirmNode_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_cs;
+    boolean_T DetectChange_vinit_c;
     int8_T CompareToConstant_const_b;
     int8_T CompareToConstant_const_cq;
     int8_T CompareToConstant_const_j;
@@ -888,6 +892,7 @@ class FmgcComputer final
     boolean_T Logic_table_d3[16];
     boolean_T Logic_table_fi[16];
     boolean_T Logic_table_bs[16];
+    boolean_T Constant_Value_k;
     boolean_T Logic_table_kg[16];
     boolean_T Logic_table_ds[16];
     boolean_T Delay_InitialCondition_a;
