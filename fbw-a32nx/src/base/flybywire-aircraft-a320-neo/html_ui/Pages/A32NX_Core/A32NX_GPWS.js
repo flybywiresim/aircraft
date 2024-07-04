@@ -115,7 +115,7 @@ class A32NX_GPWS {
     }
 
     gpwsUpdateDiscreteWords() {
-        this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        this.egpwsAlertDiscreteWord1.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
         this.egpwsAlertDiscreteWord1.setBitValue(11, this.modes[0].current === 1);
         this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[0].current === 2);
         this.egpwsAlertDiscreteWord1.setBitValue(13, this.modes[1].current === 1);
@@ -128,7 +128,7 @@ class A32NX_GPWS {
         Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
         Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_1', this.egpwsAlertDiscreteWord1.value, this.egpwsAlertDiscreteWord1.ssm);
 
-        this.egpwsAlertDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+        this.egpwsAlertDiscreteWord2.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
         this.egpwsAlertDiscreteWord2.setBitValue(14, false);
         Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
         Arinc429Word.toSimVarValue('L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2', this.egpwsAlertDiscreteWord2.value, this.egpwsAlertDiscreteWord2.ssm);
