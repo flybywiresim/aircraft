@@ -560,6 +560,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcAthrEngaged[2];
   std::unique_ptr<LocalVariable> idFmgcFdEngaged[2];
   std::unique_ptr<LocalVariable> idFmgcApEngaged[2];
+  std::unique_ptr<LocalVariable> idFmgcIlsTuneInhibit[2];
 
   // FMGC A Bus output Lvars
   std::unique_ptr<LocalVariable> idFmgcABusPfdSelectedSpeed[2];
