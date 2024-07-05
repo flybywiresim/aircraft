@@ -1735,7 +1735,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.alt_profile_tgt_ft = idFlightGuidanceTargetAltitude->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vs_target_ft_min = idFlightGuidanceTargetVerticalSpeed->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_2_kts = idFmgcV2->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV2->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV_APP->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmsManagedSpeedTarget->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flex_temp_deg_c = idFmgcFlexTemperature->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
@@ -1823,32 +1823,32 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   int fmgcPriorityIndex = fmgc1Priority ? 0 : 1;
 
   int lateralMode = 0;
-  if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 16, false)) {
+  if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 16, false)) {
     lateralMode = 10;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 17, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 17, false)) {
     lateralMode = 11;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 12, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 12, false)) {
     lateralMode = 20;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 13, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 13, false)) {
     lateralMode = 30;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 14, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 14, false)) {
     lateralMode = 31;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_4, 14, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_4, 14, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 32;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 33;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 34;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 11, false) &&
-             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 20, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 11, false) &&
+             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 20, false)) {
     lateralMode = 40;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 11, false) &&
-             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 23, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 11, false) &&
+             Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 23, false)) {
     lateralMode = 41;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 15, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 15, false)) {
     lateralMode = 50;
   }
 
@@ -1904,14 +1904,14 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
     verticalMode = 30;
   } else if (gsMode && gsTrackMode) {
     verticalMode = 31;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_4, 14, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_4, 14, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 32;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_1, 25, false) &&
-             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
+             !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 33;
-  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgc1Priority].fmgc_a_bus.discrete_word_2, 26, false)) {
+  } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
     lateralMode = 34;
   } else if (pitchTakeoffMode) {
     verticalMode = 40;
@@ -2134,6 +2134,17 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+
+  // Shim Hevents
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 13, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_AP_DEC_ALT)", nullptr, nullptr, nullptr);
+  }
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 17, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
+  }
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 18, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
+  }
 
   return true;
 }
