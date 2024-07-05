@@ -717,6 +717,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcAthrEngaged[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ATHR_ENGAGED");
     idFmgcFdEngaged[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_FD_ENGAGED");
     idFmgcApEngaged[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_AP_ENGAGED");
+    idFmgcIlsTuneInhibit[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ILS_TUNE_INHIBIT");
 
     idFmgcABusPfdSelectedSpeed[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PFD_SELECTED_SPEED");
     idFmgcABusRwyHdgMemo[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_RWY_HDG_MEMO");
@@ -1790,6 +1791,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcAthrEngaged[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].athr_own_engaged);
   idFmgcFdEngaged[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].fd_own_engaged);
   idFmgcApEngaged[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].ap_own_engaged);
+  idFmgcIlsTuneInhibit[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].ils_test_inhibit);
 
   idFmgcABusPfdSelectedSpeed[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.pfd_sel_spd_kts));
   idFmgcABusRwyHdgMemo[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.runway_hdg_memorized_deg));
