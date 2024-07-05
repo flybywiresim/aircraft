@@ -2858,6 +2858,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates if the AP of this FMGC is engaged
     - Boolean
 
+- A32NX_FMGC_{number}_ILS_TUNE_INHIBIT
+    - Indicates if the ILS TUNE INHIBT discrete output of the FMGC is GND.
+    - This is the case in LAND mode arm/active, below 700ft RA.
+    - Boolean
+
 - A32NX_FMGC_{number}_PFD_SELECTED_SPEED
     - The PFD target speed (managed or selected)
     - Arinc429<Degrees>
