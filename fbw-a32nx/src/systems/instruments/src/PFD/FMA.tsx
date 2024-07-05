@@ -1091,7 +1091,7 @@ class B2Cell extends DisplayComponent<CellProps> {
 
     let text1: string;
     let color1 = 'Cyan';
-    if (altAcqArmed && this.altConstraint.isNormalOperation()) {
+    if (altAcqArmed && !clbArmed && this.altConstraint.isNormalOperation()) {
       text1 = 'ALT';
       color1 = 'Magenta';
     } else if (altAcqArmed && !clbArmed && !this.altConstraint.isNormalOperation()) {
