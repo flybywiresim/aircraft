@@ -45,7 +45,8 @@ class FmgcComputer final
     real_T u;
     real_T u_l;
     real_T u_ly;
-    real32_T u_lyj;
+    real_T u_lyj;
+    real32_T u_lyjj;
   };
 
   struct D_Work_FmgcComputer_T {
@@ -56,6 +57,8 @@ class FmgcComputer final
     real_T DelayInput1_DSTATE_n;
     real_T Delay_DSTATE_i;
     real_T Delay_DSTATE_f;
+    real_T vMemoEo;
+    real_T vMemoGa;
     real_T pY;
     real_T pY_d;
     real_T pU;
@@ -113,6 +116,8 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_kr;
     boolean_T Memory_PreviousInput_km;
     boolean_T icLoad;
+    boolean_T vMemoEo_not_empty;
+    boolean_T vMemoGa_not_empty;
     boolean_T pLand3FailOp;
     boolean_T pLand3FailPass;
     boolean_T pY_not_empty;
@@ -132,6 +137,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_dtd;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_jc;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_hjm;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_dq;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_hkc;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_lr;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_mrn;
@@ -399,8 +405,12 @@ class FmgcComputer final
     real_T CompareToConstant_const_f;
     real_T CompareToConstant1_const_a;
     real_T CompareToConstant_const_om;
+    real_T CompareToConstant2_const_d;
     real_T CompareToConstant_const_lz;
     real_T CompareToConstant1_const_p;
+    real_T CompareToConstant2_const_a;
+    real_T CompareToConstant2_const_e;
+    real_T CompareToConstant2_const_l;
     real_T CompareToConstant1_const_n2;
     real_T CompareToConstant2_const_iq;
     real_T CompareToConstant2_const_h;
@@ -412,7 +422,7 @@ class FmgcComputer final
     real_T CompareToConstant3_const_j;
     real_T CompareToConstant1_const_m;
     real_T CompareToConstant_const_hq;
-    real_T CompareToConstant2_const_d;
+    real_T CompareToConstant2_const_di;
     real_T CompareToConstant1_const_h4;
     real_T CompareToConstant3_const_d;
     real_T CompareToConstant4_const_p;
@@ -520,6 +530,7 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant_Value_c;
     fmgc_flight_phase EnumeratedConstant1_Value_c5;
     fmgc_flight_phase EnumeratedConstant_Value_ad;
+    fmgc_flight_phase EnumeratedConstant_Value_n;
     fmgc_flight_phase EnumeratedConstant_Value_by;
     fmgc_flight_phase EnumeratedConstant1_Value_e;
     real32_T ScheduledGain1_BreakpointsForDimension1[5];
@@ -570,18 +581,22 @@ class FmgcComputer final
     real32_T A429ValueOrDefault7_defaultValue;
     real32_T A429ValueOrDefault_defaultValue_et;
     real32_T A429ValueOrDefault1_defaultValue_oj;
+    real32_T A429ValueOrDefault5_defaultValue_c;
     real32_T A429ValueOrDefault4_defaultValue;
     real32_T A429ValueOrDefault2_defaultValue_jt;
     real32_T A429ValueOrDefault3_defaultValue_os;
     real32_T A429ValueOrDefault_defaultValue_h;
     real32_T A429ValueOrDefault1_defaultValue_n;
     real32_T A429ValueOrDefault2_defaultValue_j4;
+    real32_T A429ValueOrDefault5_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_nh;
     real32_T A429ValueOrDefault1_defaultValue_mc;
+    real32_T A429ValueOrDefault5_defaultValue_k;
     real32_T A429ValueOrDefault2_defaultValue_cj;
     real32_T A429ValueOrDefault3_defaultValue_b;
     real32_T A429ValueOrDefault_defaultValue_mo;
     real32_T A429ValueOrDefault1_defaultValue_b5;
+    real32_T A429ValueOrDefault5_defaultValue_m;
     real32_T A429ValueOrDefault_defaultValue_ht;
     real32_T A429ValueOrDefault1_defaultValue_d2;
     real32_T A429ValueOrDefault2_defaultValue_e;
@@ -600,6 +615,11 @@ class FmgcComputer final
     real32_T A429ValueOrDefault2_defaultValue_b;
     real32_T A429ValueOrDefault1_defaultValue_l;
     real32_T A429ValueOrDefault3_defaultValue_h;
+    real32_T A429ValueOrDefault4_defaultValue_c;
+    real32_T A429ValueOrDefault5_defaultValue_j;
+    real32_T A429ValueOrDefault2_defaultValue_m;
+    real32_T A429ValueOrDefault1_defaultValue_i;
+    real32_T A429ValueOrDefault3_defaultValue_cz;
     real32_T A429ValueOrDefault4_defaultValue_h;
     real32_T A429ValueOrDefault5_defaultValue_p;
     real32_T A429ValueOrDefault6_defaultValue_i;
@@ -624,7 +644,7 @@ class FmgcComputer final
     real32_T A429ValueOrDefault9_defaultValue;
     real32_T A429ValueOrDefault3_defaultValue_bv;
     real32_T A429ValueOrDefault1_defaultValue_fg;
-    real32_T A429ValueOrDefault2_defaultValue_m;
+    real32_T A429ValueOrDefault2_defaultValue_mp;
     real32_T A429ValueOrDefault6_defaultValue_e;
     real32_T A429ValueOrDefault7_defaultValue_e;
     real32_T DetectDecrease_vinit;
@@ -772,6 +792,7 @@ class FmgcComputer final
     boolean_T PulseNode_isRisingEdge_jp;
     boolean_T PulseNode4_isRisingEdge_n;
     boolean_T ConfirmNode_isRisingEdge_h2;
+    boolean_T PulseNode6_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_c2;
     boolean_T PulseNode3_isRisingEdge_ng;
     boolean_T PulseNode_isRisingEdge_o;
@@ -802,7 +823,7 @@ class FmgcComputer final
     real_T Constant_Value_h;
     real_T Y_Y0;
     real_T Y_Y0_h;
-    real_T Constant_Value_i;
+    real_T Y_Y0_g;
     real_T Y_Y0_c;
     real_T Gain_Gain_h;
     real_T Gain1_Gain;
