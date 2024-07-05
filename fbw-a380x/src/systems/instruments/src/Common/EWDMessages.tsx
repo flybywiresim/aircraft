@@ -357,12 +357,13 @@ const EcamMemos: { [n: string]: string }  = {
   '290012801': '\x1b<4m\x1b4mHYD\x1bm G RSVR OVHT',
   '290012802': '\x1b<5m -PTU................OFF',
   '290012803': '\x1b<5m -GREEN ENG 1 PUMP...OFF',
-  '308118601': '\x1b<4m\x1b4mSEVERE ICE\x1bm DETECTED',
-  '308118602': '\x1b5m -WING ANTI ICE.......ON',
-  '308118603': '\x1b5m -ENG MOD SEL........IGN',
+  '308118601': '\x1b<4m\x1b4mANTI ICE\x1bm SEVERE ICE DETECTED', //test
+  '308118602': '\x1b5m -ENG 1 A-ICE.......ON', //if the associated engine is running
+  '308118603': '\x1b5m -ENG 2 A-ICE.......ON',
+  '308118604': '\x1b5m -ENG 3 A-ICE.......ON',
+  '308118605': '\x1b5m -ENG 4 A-ICE.......ON',
+  '308118606': '\x1b5mWING A-ICE===.......ON',
   '308128001': '\x1b<4m\x1b4mANTI ICE\x1bm ICE DETECTED',
-  '308128002': '\x1b5m -ENG 1 ANTI ICE......ON',
-  '308128003': '\x1b5m -ENG 2 ANTI ICE......ON',
   '320001001': '\x1b<4m\x1b4mBRAKES\x1bm HOT',
   '320001002': '\x1b<7m   .IF PERF PERMITS :',
   '320001003': '\x1b<5m -PARK BRK:PREFER CHOCKS',
