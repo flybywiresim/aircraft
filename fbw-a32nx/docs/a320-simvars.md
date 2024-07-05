@@ -2915,6 +2915,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 24  | LAND 3 FAIL PASSIVE Capacity      |
       | 25  | LAND 3 FAIL OP Capacity           |
       | 26  | RWY Heading memorized             |
+      | 28  | AP/FD Mode reversion              |
+      | 29  | V/S Target not held               |
 
 - A32NX_FMGC_{number}_FM_ALTITUDE_CONSTRAINT
     - Arinc429<Feet>
@@ -2947,11 +2949,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 15  | THR Display                       |
       | 16  | IDLE Display                      |
       | 17  | A.FLOOR Display                   |
-      | 18  | SPEED Display                     |
-      | 19  | MACH Display                      |
-      | 20  | ASYM Display                      |
-      | 21  | CLB Demand Display                |
-      | 22  | MCT Demand Display                |
+      | 18  | TO/GA LK Display                  |
+      | 19  | SPEED Display                     |
+      | 20  | MACH Display                      |
+      | 21  | ASYM Display                      |
+      | 22  | CLB Demand Display                |
+      | 23  | MCT Demand Display                |
 
 - A32NX_FMGC_{number}_DISCRETE_WORD_3
     - Arinc429<Discrete>
