@@ -357,6 +357,8 @@ struct base_afs_logic_outputs
 struct base_fcu_efis_logic_outputs
 {
   boolean_T fd_on;
+  boolean_T fd_auto_activate;
+  boolean_T fd_auto_deactivate;
   boolean_T ls_on;
   efis_filter_selection efis_filter;
   boolean_T baro_std;
