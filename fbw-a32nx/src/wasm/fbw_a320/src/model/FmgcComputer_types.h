@@ -42,41 +42,6 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
-#define DEFINED_TYPEDEF_FOR_lateral_law_
-
-enum class lateral_law
-  : int32_T {
-  NONE = 0,
-  HDG,
-  TRACK,
-  HPATH,
-  LOC_CPT,
-  LOC_TRACK,
-  ROLL_OUT
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
-#define DEFINED_TYPEDEF_FOR_vertical_law_
-
-enum class vertical_law
-  : int32_T {
-  NONE = 0,
-  ALT_HOLD,
-  ALT_ACQ,
-  SPD_MACH,
-  VS,
-  FPA,
-  GS,
-  FLARE,
-  SRS,
-  VPATH
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 
@@ -113,6 +78,41 @@ struct base_ils_bus
   base_arinc_429 ils_frequency_mhz;
   base_arinc_429 localizer_deviation_deg;
   base_arinc_429 glideslope_deviation_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
+#define DEFINED_TYPEDEF_FOR_lateral_law_
+
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
+#define DEFINED_TYPEDEF_FOR_vertical_law_
+
+enum class vertical_law
+  : int32_T {
+  NONE = 0,
+  ALT_HOLD,
+  ALT_ACQ,
+  SPD_MACH,
+  VS,
+  FPA,
+  GS,
+  FLARE,
+  SRS,
+  VPATH
 };
 
 #endif
