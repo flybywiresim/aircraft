@@ -25,18 +25,22 @@ class FcuComputer final
     efis_filter_selection pEfisFilter;
   };
 
-  struct rtDW_MATLABFunction_FcuComputer_b_T {
+  struct rtDW_MATLABFunction_FcuComputer_d_T {
     boolean_T std_active;
     boolean_T qnh_active;
     boolean_T qfe_active;
   };
 
-  struct rtDW_MATLABFunction1_FcuComputer_b_T {
+  struct rtDW_MATLABFunction1_FcuComputer_j_T {
     real_T pValueHpa;
     real_T pValueInhg;
   };
 
-  struct rtDW_MATLABFunction_FcuComputer_l_T {
+  struct rtDW_MATLABFunction_FcuComputer_gf_T {
+    boolean_T fdActive;
+  };
+
+  struct rtDW_MATLABFunction_FcuComputer_k_T {
     boolean_T pY;
     boolean_T pY_not_empty;
   };
@@ -59,39 +63,39 @@ class FcuComputer final
     boolean_T prevTrkFpaActive_not_empty_c;
     boolean_T pValue_not_empty_m;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_je;
-    rtDW_MATLABFunction_FcuComputer_l_T sf_MATLABFunction_hk;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ja0;
-    rtDW_MATLABFunction_FcuComputer_l_T sf_MATLABFunction_ja;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_gx;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ng;
-    rtDW_MATLABFunction1_FcuComputer_b_T sf_MATLABFunction1_e3;
-    rtDW_MATLABFunction_FcuComputer_b_T sf_MATLABFunction_jp;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_cb;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_df;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hlu;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ec;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_fiq;
-    rtDW_EFISFilterLogic_FcuComputer_T sf_EFISFilterLogic_h;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_jr;
-    rtDW_MATLABFunction_FcuComputer_l_T sf_MATLABFunction_kc;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ik;
-    rtDW_MATLABFunction_FcuComputer_l_T sf_MATLABFunction_mb;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_b3;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hc;
-    rtDW_MATLABFunction1_FcuComputer_b_T sf_MATLABFunction1_h;
-    rtDW_MATLABFunction_FcuComputer_b_T sf_MATLABFunction_pr;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_bpf;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_gb;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_id;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_nz;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_he;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kj;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hd;
+    rtDW_MATLABFunction_FcuComputer_k_T sf_MATLABFunction_ho3;
+    rtDW_MATLABFunction_FcuComputer_gf_T sf_MATLABFunction_bx;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_f0;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_aa0;
+    rtDW_MATLABFunction1_FcuComputer_j_T sf_MATLABFunction1_g;
+    rtDW_MATLABFunction_FcuComputer_d_T sf_MATLABFunction_o3;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_dp;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_m2;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_am;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_mav;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ai;
+    rtDW_EFISFilterLogic_FcuComputer_T sf_EFISFilterLogic_k;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_np;
+    rtDW_MATLABFunction_FcuComputer_k_T sf_MATLABFunction_bs;
+    rtDW_MATLABFunction_FcuComputer_gf_T sf_MATLABFunction_ml;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_fv;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hk;
+    rtDW_MATLABFunction1_FcuComputer_j_T sf_MATLABFunction1_ou;
+    rtDW_MATLABFunction_FcuComputer_d_T sf_MATLABFunction_ofc;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_gi;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_cl;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ome;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_lq;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_e1;
     rtDW_EFISFilterLogic_FcuComputer_T sf_EFISFilterLogic;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kw;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ch;
     rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1_o;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_hh;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hb;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ma;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_a4;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kl;
@@ -130,8 +134,10 @@ class FcuComputer final
   };
 
   struct Parameters_FcuComputer_T {
-    real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel2_bit;
+    real_T BitfromLabel_bit;
+    real_T BitfromLabel1_bit_e;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel6_bit;
@@ -140,7 +146,7 @@ class FcuComputer final
     real_T BitfromLabel7_bit;
     real_T BitfromLabel9_bit;
     real_T BitfromLabel10_bit;
-    real_T BitfromLabel2_bit;
+    real_T BitfromLabel2_bit_k;
     real_T BitfromLabel1_bit_l;
     real_T BitfromLabel2_bit_l;
     real_T BitfromLabel12_bit;
@@ -166,6 +172,7 @@ class FcuComputer final
     real_T BitfromLabel5_bit_p;
     real_T BitfromLabel4_bit_o;
     real_T BitfromLabel3_bit_f;
+    real_T BitfromLabel2_bit_o;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode1_isRisingEdge;
     real_T MTrigNode2_isRisingEdge;
@@ -275,36 +282,34 @@ class FcuComputer final
     real32_T A429ValueOrDefault5_defaultValue;
     real32_T A429ValueOrDefault6_defaultValue;
     real32_T DetectChange_vinit;
-    boolean_T TFlipFlop_init;
     boolean_T TFlipFlop1_init;
-    boolean_T TFlipFlop_init_f;
-    boolean_T TFlipFlop1_init_a;
+    boolean_T TFlipFlop1_init_c;
     boolean_T PulseNode_isRisingEdge;
-    boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
-    boolean_T PulseNode3_isRisingEdge;
-    boolean_T PulseNode4_isRisingEdge;
-    boolean_T PulseNode_isRisingEdge_n;
-    boolean_T PulseNode_isRisingEdge_nj;
-    boolean_T PulseNode_isRisingEdge_a;
-    boolean_T PulseNode1_isRisingEdge_h;
-    boolean_T PulseNode_isRisingEdge_m;
-    boolean_T PulseNode1_isRisingEdge_k;
-    boolean_T PulseNode2_isRisingEdge_a;
-    boolean_T PulseNode3_isRisingEdge_g;
-    boolean_T PulseNode4_isRisingEdge_a;
-    boolean_T PulseNode_isRisingEdge_i;
-    boolean_T PulseNode_isRisingEdge_h;
-    boolean_T PulseNode_isRisingEdge_o;
-    boolean_T PulseNode1_isRisingEdge_f;
-    boolean_T PulseNode_isRisingEdge_oa;
-    boolean_T PulseNode1_isRisingEdge_ke;
+    boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_l;
     boolean_T PulseNode1_isRisingEdge_d;
-    boolean_T PulseNode_isRisingEdge_hz;
+    boolean_T PulseNode_isRisingEdge_h;
     boolean_T PulseNode1_isRisingEdge_e;
     boolean_T PulseNode2_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_d;
+    boolean_T PulseNode_isRisingEdge_i;
+    boolean_T PulseNode_isRisingEdge_g;
+    boolean_T PulseNode1_isRisingEdge_i;
+    boolean_T PulseNode2_isRisingEdge_m;
+    boolean_T PulseNode3_isRisingEdge;
+    boolean_T PulseNode4_isRisingEdge;
+    boolean_T PulseNode_isRisingEdge_i1;
+    boolean_T PulseNode_isRisingEdge_gp;
+    boolean_T PulseNode1_isRisingEdge_j;
+    boolean_T PulseNode_isRisingEdge_o;
+    boolean_T PulseNode1_isRisingEdge_n;
+    boolean_T PulseNode2_isRisingEdge_i;
+    boolean_T PulseNode3_isRisingEdge_m;
+    boolean_T PulseNode4_isRisingEdge_m;
+    boolean_T PulseNode_isRisingEdge_b;
+    boolean_T PulseNode_isRisingEdge_p;
+    boolean_T PulseNode1_isRisingEdge_o;
     int8_T CompareToConstant_const;
     int8_T CompareToConstant_const_p;
     int8_T CompareToConstant_const_pg;
@@ -367,17 +372,21 @@ class FcuComputer final
   static void FcuComputer_EFISFilterLogic_Reset(rtDW_EFISFilterLogic_FcuComputer_T *localDW);
   static void FcuComputer_EFISFilterLogic(boolean_T rtu_cstr, boolean_T rtu_wpt, boolean_T rtu_vord, boolean_T rtu_ndb,
     boolean_T rtu_arpt, efis_filter_selection *rty_efisFilter, rtDW_EFISFilterLogic_FcuComputer_T *localDW);
-  static void FcuComputer_MATLABFunction_j_Init(rtDW_MATLABFunction_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction_a_Reset(rtDW_MATLABFunction_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction_p(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T *rty_std,
-    boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction1_i_Init(rtDW_MATLABFunction1_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction1_c_Reset(rtDW_MATLABFunction1_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction1_h(boolean_T rtu_std_active, boolean_T rtu_inhg_active, real_T rtu_click_count,
-    real_T *rty_value_hpa, real_T *rty_value_inhg, rtDW_MATLABFunction1_FcuComputer_b_T *localDW);
-  static void FcuComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FcuComputer_l_T *localDW);
-  static void FcuComputer_MATLABFunction_mb(boolean_T rtu_u, boolean_T *rty_y, boolean_T rtp_init,
-    rtDW_MATLABFunction_FcuComputer_l_T *localDW);
+  static void FcuComputer_MATLABFunction_f_Init(rtDW_MATLABFunction_FcuComputer_d_T *localDW);
+  static void FcuComputer_MATLABFunction_e_Reset(rtDW_MATLABFunction_FcuComputer_d_T *localDW);
+  static void FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T *rty_std,
+    boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW);
+  static void FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
+  static void FcuComputer_MATLABFunction1_d_Reset(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
+  static void FcuComputer_MATLABFunction1_o(boolean_T rtu_std_active, boolean_T rtu_inhg_active, real_T rtu_click_count,
+    real_T *rty_value_hpa, real_T *rty_value_inhg, rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
+  static void FcuComputer_MATLABFunction_p_Init(rtDW_MATLABFunction_FcuComputer_gf_T *localDW);
+  static void FcuComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FcuComputer_gf_T *localDW);
+  static void FcuComputer_MATLABFunction_ml(boolean_T rtu_fdButton, boolean_T rtu_autoActivate, boolean_T
+    rtu_autoDeactivate, boolean_T *rty_y, rtDW_MATLABFunction_FcuComputer_gf_T *localDW);
+  static void FcuComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_FcuComputer_k_T *localDW);
+  static void FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_T *rty_y, boolean_T rtp_init,
+    rtDW_MATLABFunction_FcuComputer_k_T *localDW);
   static void FcuComputer_MATLABFunction_e(const boolean_T rtu_u[19], real32_T *rty_y);
   static void FcuComputer_MATLABFunction_n(const base_fcu_efis_logic_outputs *rtu_logic, const
     base_fcu_efis_panel_inputs *rtu_data, int8_T *rty_baroValueMode, real32_T *rty_baroValue, int8_T *rty_baroMode);
