@@ -2,7 +2,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-/** All MEMOs should be here */
+/** All MEMOs should be here, EWD and PFD. */
 const EcamMemos: { [n: string]: string } = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
@@ -419,12 +419,6 @@ const EcamMemos: { [n: string]: string } = {
   '770064703': '\x1b<5m -THR LEVERS.....TO/GA',
 };
 
-enum AlertType {
-  Independent,
-  Primary,
-  Secondary,
-}
-
 interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
   name: string;
@@ -447,79 +441,91 @@ interface AbnormalProcedure {
   title: string;
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
-  /** An array of possible checklist items */
-  items: { [n: number]: (ChecklistAction | ChecklistCondition) & AbstractChecklistItem };
+  /** An array of possible checklist items. Key represents the message ID, which should be unique. */
+  items: ((ChecklistAction | ChecklistCondition) & AbstractChecklistItem)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
 
 /** All normal procedures (checklists, via ECL) should be here. */
-const EcamNormalProcedures: { [n: string]: string } = {};
+const EcamNormalProcedures: { [n: number]: void } = {};
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
   280013001: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
     sensed: true,
-    items: {
-      280013002: {
+    items: [
+      {
         name: 'IF NO FUEL LEAK:',
         sensed: false,
       },
-      280013003: {
+      {
         name: 'ALL CROSSFEEDs',
         sensed: true,
         labelNotCompleted: 'ON',
         level: 1,
       },
-      280013004: {
+      {
         name: 'IF GRAVITY XFER FROM TRIM TK IN PROGRESS:',
         sensed: true,
         level: 2,
       },
-      280013005: {
+      {
         name: 'TRIM TK FEED',
         sensed: true,
         labelNotCompleted: 'AUTO',
         level: 3,
       },
-      280013006: {
+      {
         name: 'FOR XFER TKs CONTAINING FUEL',
         sensed: true,
         level: 2,
       },
-      280013007: {
+      {
         name: 'OUTR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
         level: 3,
       },
-      280013008: {
+      {
         name: 'IF AT LEAST ONE TRIM TK PUMP RUNNING:',
         sensed: true,
         level: 3,
       },
-      280013009: {
+      {
         name: 'TRIM TK XFR',
         sensed: true,
         labelNotCompleted: 'FWD',
         level: 4,
       },
-      280013010: {
+      {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
         level: 3,
       },
-      280013011: {
+      {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
         level: 3,
       },
-    },
+    ],
   },
 };
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
+
+/** All possible INFOs (e.g. CAT 3 SINLE ONLY), with special formatting characters. */
+const Infos: { [n: string]: string } = {};
+
+/** All possible INOP sys, with special formatting characters. */
+const InopSys: { [n: string]: string } = {};
+
+
+  '221070001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS TOO LOW',
+  '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
+  '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
+  '221072001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
