@@ -161,6 +161,12 @@ struct SimInputAutopilot {
   double APPR_push;
   double EXPED_push;
   double DIR_TO_trigger;
+  double baro_left_set;
+  double baro_right_set;
+  double SPD_MACH_set;
+  double HDG_TRK_set;
+  double ALT_set;
+  double VS_FPA_set;
 };
 
 struct SimInputThrottles {
