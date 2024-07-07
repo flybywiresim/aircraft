@@ -326,6 +326,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH, "A32NX.FCU_TRK_FPA_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_TOGGLE, "A32NX.FCU_ALT_INCREMENT_TOGGLE", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_SET, "A32NX.FCU_ALT_INCREMENT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PULL, "A32NX.FCU_ALT_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_METRIC_ALT_TOGGLE_PUSH, "A32NX.FCU_METRIC_ALT_TOGGLE_PUSH", false);
@@ -1917,6 +1919,26 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       fcuAfsPanelInputs.alt_knob.turns = -1;
 
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE: {
+      execute_calculator_code("(L:A32NX_FCU_ALT_INCREMENT_1000, bool) ! (>L:A32NX_FCU_ALT_INCREMENT_1000)", nullptr, nullptr, nullptr);
+      std::cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_TOGGLE" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_ALT_INCREMENT_SET: {
+      long value = static_cast<long>(data0);
+      if (value == 100 || value == 1000) {
+        std::ostringstream stringStream;
+        stringStream << (value == 1000 ? 1 : 0);
+        stringStream << " (>L:A32NX_FCU_ALT_INCREMENT_1000)";
+        execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
+        std::cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_SET: " << value << std::endl;
+      } else {
+        std::cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_SET with invalid value: " << value << std::endl;
+      }
       break;
     }
 
