@@ -59,6 +59,8 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store if XBOX compatibility should be disabled for rudder axis plus/minus
     this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
     this->enableRudder2AxisMode = enableRudder2AxisMode;
+    // register local variables
+    idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
     prepareResult &= prepareSimInputSimConnectDataDefinitions();
@@ -2041,12 +2043,18 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::A32NX_FCU_EFIS_L_FD_PUSH: {
       fcuEfisPanelInputs[0].fd_button_pushed = true;
+      if (idSyncFoEfisEnabled->get()) {
+        fcuEfisPanelInputs[1].fd_button_pushed = true;
+      }
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_FD_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_LS_PUSH: {
       fcuEfisPanelInputs[0].ls_button_pushed = true;
+      if (idSyncFoEfisEnabled->get()) {
+        fcuEfisPanelInputs[1].ls_button_pushed = true;
+      }
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_LS_PUSH" << std::endl;
       break;
     }
@@ -2119,12 +2127,18 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::A32NX_FCU_EFIS_R_FD_PUSH: {
       fcuEfisPanelInputs[1].fd_button_pushed = true;
+      if (idSyncFoEfisEnabled->get()) {
+        fcuEfisPanelInputs[0].fd_button_pushed = true;
+      }
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_FD_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_LS_PUSH: {
       fcuEfisPanelInputs[1].ls_button_pushed = true;
+      if (idSyncFoEfisEnabled->get()) {
+        fcuEfisPanelInputs[0].ls_button_pushed = true;
+      }
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_LS_PUSH" << std::endl;
       break;
     }
