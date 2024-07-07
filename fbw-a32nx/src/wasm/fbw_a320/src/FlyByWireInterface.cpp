@@ -757,7 +757,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimRightBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro2_Mode");
 
   idFcuShimTrkFpaActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
-  idFcuShimHdgValue = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
+  idFcuShimHdgValue1 = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
+  idFcuShimHdgValue2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
   idFcuShimShowHdg = std::make_unique<LocalVariable>("A320_FCU_SHOW_SELECTED_HEADING");
   idFcuShimAltManaged = std::make_unique<LocalVariable>("A32NX_FCU_ALT_MANAGED");
   idFcuShimVsValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
@@ -2126,13 +2127,18 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   // Update AFS CP variables (Sim AP vars and legacy Lvars)
+  idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
+  idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed);
+  idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+
   idFcuShimTrkFpaActive->set(discreteOutputs.afs_outputs.trk_fpa_mode);
 
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::HEADING_BUG_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    discreteOutputs.afs_outputs.hdg_trk_value, 1);
   simConnectInterface.sendEvent(SimConnectInterface::Events::AP_HEADING_SLOT_INDEX_SET, discreteOutputs.afs_outputs.hdg_trk_managed ? 2 : 1,
                                 SIMCONNECT_GROUP_PRIORITY_STANDARD);
-  idFcuShimHdgValue->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimHdgValue1->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimHdgValue2->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
   idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes);
 
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
@@ -2143,7 +2149,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
 
   idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
-  idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+  idFcuShimVsManaged->set(!discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   // Shim Hevents
   if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 13, false)) {
