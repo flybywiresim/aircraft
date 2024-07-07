@@ -460,6 +460,8 @@ class SimConnectInterface {
   double rudderLeftAxis = -1;
   double rudderRightAxis = -1;
 
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
   bool prepareSimDataSimConnectDataDefinitions();
 
   bool prepareSimInputSimConnectDataDefinitions();
