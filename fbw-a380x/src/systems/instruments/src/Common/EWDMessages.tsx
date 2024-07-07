@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /** All MEMOs should be here */
-const EcamMemos: { [n: string]: string }  = {
+const EcamMemos: { [n: string]: string } = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
   '000001002': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
@@ -418,9 +419,107 @@ const EcamMemos: { [n: string]: string }  = {
   '770064703': '\x1b<5m -THR LEVERS.....TO/GA',
 };
 
-/** All normal procedures (checklists) should be here. Don't start for now, format needs to be defined. */
-const EcamNormalProcedures: { [n: string]: string }  = { };
-/** All abnormal sensed procedures (checklists) should be here. Don't start for now, format needs to be defined. */
-const EcamAbnormalSensedProcedures: { [n: string]: string }  = { };
-/** All abnormal non-sensed procedures (checklists) should be here. Don't start for now, format needs to be defined. */
-const EcamAbnormalNonSensedProcedures: { [n: string]: string }  = { };
+enum AlertType {
+  Independent,
+  Primary,
+  Secondary,
+}
+
+interface AbstractChecklistItem {
+  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
+  name: string;
+  /** sensed or not sensed item. Sensed items are automatically checked. */
+  sensed: boolean;
+  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
+  level?: number;
+}
+interface ChecklistAction {
+  /** Label at the end of the line if action is not completed. */
+  labelNotCompleted: string;
+  /** Label after "name" if action is completed. Optional, only fill if different from "labelNotCompleted". */
+  labelCompleted?: string;
+}
+
+interface ChecklistCondition {}
+
+interface AbnormalProcedure {
+  /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
+  title: string;
+  /** sensed or not sensed abnormal procedure */
+  sensed: boolean;
+  /** An array of possible checklist items */
+  items: { [n: number]: (ChecklistAction | ChecklistCondition) & AbstractChecklistItem };
+  /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
+  recommendation?: 'LAND ASAP' | 'LAND ANSA';
+}
+
+/** All normal procedures (checklists, via ECL) should be here. */
+const EcamNormalProcedures: { [n: string]: string } = {};
+
+/** All abnormal sensed procedures (alerts, via ECL) should be here. */
+const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
+  280013001: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
+    sensed: true,
+    items: {
+      280013002: {
+        name: 'IF NO FUEL LEAK:',
+        sensed: false,
+      },
+      280013003: {
+        name: 'ALL CROSSFEEDs',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      280013004: {
+        name: 'IF GRAVITY XFER FROM TRIM TK IN PROGRESS:',
+        sensed: true,
+        level: 2,
+      },
+      280013005: {
+        name: 'TRIM TK FEED',
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 3,
+      },
+      280013006: {
+        name: 'FOR XFER TKs CONTAINING FUEL',
+        sensed: true,
+        level: 2,
+      },
+      280013007: {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      280013008: {
+        name: 'IF AT LEAST ONE TRIM TK PUMP RUNNING:',
+        sensed: true,
+        level: 3,
+      },
+      280013009: {
+        name: 'TRIM TK XFR',
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 4,
+      },
+      280013010: {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      280013011: {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+    },
+  },
+};
+
+/** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
+const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
