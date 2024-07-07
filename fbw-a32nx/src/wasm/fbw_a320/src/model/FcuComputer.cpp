@@ -178,27 +178,35 @@ void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_
 
 void FcuComputer::FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW)
 {
-  localDW->pValueHpa = 1013.0;
-  localDW->pValueInhg = 29.92;
+  localDW->pValueHpa = 1013.0F;
+  localDW->pValueInhg = 29.92F;
 }
 
 void FcuComputer::FcuComputer_MATLABFunction1_d_Reset(rtDW_MATLABFunction1_FcuComputer_j_T *localDW)
 {
-  localDW->pValueHpa = 1013.0;
-  localDW->pValueInhg = 29.92;
+  localDW->pValueHpa = 1013.0F;
+  localDW->pValueInhg = 29.92F;
 }
 
 void FcuComputer::FcuComputer_MATLABFunction1_o(boolean_T rtu_std_active, boolean_T rtu_inhg_active, real_T
-  rtu_click_count, real_T *rty_value_hpa, real_T *rty_value_inhg, rtDW_MATLABFunction1_FcuComputer_j_T *localDW)
+  rtu_click_count, real32_T rtu_sim_sync, real32_T *rty_value_hpa, real32_T *rty_value_inhg,
+  rtDW_MATLABFunction1_FcuComputer_j_T *localDW)
 {
   boolean_T tmp;
+  if (rtu_sim_sync != -1.0F) {
+    localDW->pValueHpa = rtu_sim_sync;
+    localDW->pValueInhg = rtu_sim_sync * 0.02953F;
+  }
+
   tmp = !rtu_std_active;
   if (tmp && (!rtu_inhg_active)) {
-    localDW->pValueHpa = std::fmax(std::fmin(localDW->pValueHpa + rtu_click_count, 1100.0), 745.0);
-    localDW->pValueInhg = std::round(localDW->pValueHpa * 0.02953 * 100.0) / 100.0;
+    localDW->pValueHpa = std::fmax(std::fmin(localDW->pValueHpa + static_cast<real32_T>(rtu_click_count), 1100.0F),
+      745.0F);
+    localDW->pValueInhg = std::round(localDW->pValueHpa * 0.02953F * 100.0F) / 100.0F;
   } else if (tmp && rtu_inhg_active) {
-    localDW->pValueInhg = std::fmax(std::fmin(rtu_click_count * 0.01 + localDW->pValueInhg, 32.48), 22.0);
-    localDW->pValueHpa = localDW->pValueInhg * 33.863867253640365;
+    localDW->pValueInhg = std::fmax(std::fmin(static_cast<real32_T>(rtu_click_count) * 0.01F + localDW->pValueInhg,
+      32.48F), 22.0F);
+    localDW->pValueHpa = localDW->pValueInhg * 33.8638687F;
     localDW->pValueHpa = std::round(localDW->pValueHpa);
   }
 
@@ -310,8 +318,6 @@ void FcuComputer::step()
   base_fcu_efis_logic_outputs rtb_BusAssignment_b_logic_capt_efis;
   base_fcu_efis_logic_outputs rtb_BusAssignment_b_logic_fo_efis;
   fcu_outputs rtb_BusAssignment_m;
-  real_T rtb_DataTypeConversion2;
-  real_T rtb_DataTypeConversion3;
   real32_T rtb_BusAssignment_d_baro_value_inhg;
   real32_T rtb_y;
   uint32_T rtb_Switch1_oa;
@@ -729,6 +735,10 @@ void FcuComputer::step()
       FcuComputer_DWork.pValue_not_empty_l = true;
     }
 
+    if (FcuComputer_U.in.sim_input.spd_mach != -1.0F) {
+      FcuComputer_DWork.pValue_e = FcuComputer_U.in.sim_input.spd_mach;
+    }
+
     if (FcuComputer_DWork.prevMachActive) {
       FcuComputer_DWork.pValue_e = rtb_y;
     }
@@ -765,6 +775,10 @@ void FcuComputer::step()
     if (!FcuComputer_DWork.prevTrkFpaActive_not_empty_c) {
       FcuComputer_DWork.prevTrkFpaActive_a = FcuComputer_DWork.p_trk_fpa_active;
       FcuComputer_DWork.prevTrkFpaActive_not_empty_c = true;
+    }
+
+    if (FcuComputer_U.in.sim_input.hdg_trk != -1.0F) {
+      FcuComputer_DWork.pValue_j = FcuComputer_U.in.sim_input.hdg_trk;
     }
 
     if (FcuComputer_DWork.prevTrkFpaActive_a != FcuComputer_DWork.p_trk_fpa_active) {
@@ -812,6 +826,10 @@ void FcuComputer::step()
     if (!FcuComputer_DWork.pValue_not_empty_m) {
       FcuComputer_DWork.pValue_n = rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.alt_ft;
       FcuComputer_DWork.pValue_not_empty_m = true;
+    }
+
+    if (FcuComputer_U.in.sim_input.alt != -1.0F) {
+      FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.alt;
     }
 
     if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_increment_1000) {
@@ -864,6 +882,10 @@ void FcuComputer::step()
       } else {
         FcuComputer_DWork.pValue = rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.vs_ft_min;
       }
+    }
+
+    if (FcuComputer_U.in.sim_input.vs_fpa != -1.0F) {
+      FcuComputer_DWork.pValue = FcuComputer_U.in.sim_input.vs_fpa;
     }
 
     if (rtb_Equal6 || rtb_Equal8) {
@@ -943,14 +965,13 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_y_d, &rtb_qfe,
       &FcuComputer_DWork.sf_MATLABFunction_ofc);
     FcuComputer_MATLABFunction1_o(rtb_Equal9, FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_is_inhg,
-      static_cast<real_T>(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.turns), &rtb_DataTypeConversion3,
-      &rtb_DataTypeConversion2, &FcuComputer_DWork.sf_MATLABFunction1_ou);
+      static_cast<real_T>(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.turns),
+      FcuComputer_U.in.sim_input.left_baro_setting_hpa, &rtb_y, &rtb_BusAssignment_d_baro_value_inhg,
+      &FcuComputer_DWork.sf_MATLABFunction1_ou);
     rtb_BusAssignment_d_fd_on = rtb_DataTypeConversion_e;
     rtb_BusAssignment_d_ls_on = rtb_Equal6;
     rtb_BusAssignment_d_baro_std = rtb_Equal9;
     rtb_BusAssignment_b_logic_capt_efis.baro_qfe = rtb_qfe;
-    rtb_y = static_cast<real32_T>(rtb_DataTypeConversion3);
-    rtb_BusAssignment_d_baro_value_inhg = static_cast<real32_T>(rtb_DataTypeConversion2);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.cstr_button_pushed,
       FcuComputer_P.PulseNode_isRisingEdge_o, &rtb_Equal9, &FcuComputer_DWork.sf_MATLABFunction_ai);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.wpt_button_pushed,
@@ -977,10 +998,9 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_qnh, &rtb_qfe,
       &FcuComputer_DWork.sf_MATLABFunction_o3);
     FcuComputer_MATLABFunction1_o(rtb_Equal9, FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_is_inhg, static_cast<
-      real_T>(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_knob.turns), &rtb_DataTypeConversion3,
-      &rtb_DataTypeConversion2, &FcuComputer_DWork.sf_MATLABFunction1_g);
-    FcuComputer_Y.out.discrete_outputs.capt_efis_outputs.baro_value = static_cast<real32_T>(rtb_DataTypeConversion3);
-    FcuComputer_Y.out.bus_outputs.eis_discrete_word_2_left.Data = static_cast<real32_T>(rtb_DataTypeConversion2);
+      real_T>(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_knob.turns),
+      FcuComputer_U.in.sim_input.right_baro_setting_hpa, &rtb_BusAssignment_b_logic_fo_efis.baro_value_hpa,
+      &rtb_BusAssignment_b_logic_fo_efis.baro_value_inhg, &FcuComputer_DWork.sf_MATLABFunction1_g);
     rtb_BusAssignment_b_logic_capt_efis.fd_on = rtb_BusAssignment_d_fd_on;
     rtb_BusAssignment_b_logic_capt_efis.fd_auto_activate = rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate;
     rtb_BusAssignment_b_logic_capt_efis.fd_auto_deactivate = FcuComputer_P.Constant1_Value.capt_efis.fd_auto_deactivate;
@@ -998,8 +1018,6 @@ void FcuComputer::step()
     rtb_BusAssignment_b_logic_fo_efis.baro_std = rtb_Equal9;
     rtb_BusAssignment_b_logic_fo_efis.baro_qnh = rtb_qnh;
     rtb_BusAssignment_b_logic_fo_efis.baro_qfe = rtb_qfe;
-    rtb_BusAssignment_b_logic_fo_efis.baro_value_hpa = static_cast<real32_T>(rtb_DataTypeConversion3);
-    rtb_BusAssignment_b_logic_fo_efis.baro_value_inhg = static_cast<real32_T>(rtb_DataTypeConversion2);
     FcuComputer_MATLABFunction_n(&rtb_BusAssignment_b_logic_capt_efis,
       &FcuComputer_U.in.discrete_inputs.capt_efis_inputs,
       &FcuComputer_Y.out.discrete_outputs.capt_efis_outputs.baro_value_mode,
@@ -1334,13 +1352,13 @@ void FcuComputer::step()
     FcuComputer_Y.out.bus_outputs.baro_setting_left_hpa.Data = rtb_y;
     FcuComputer_Y.out.bus_outputs.baro_setting_right_hpa.SSM = static_cast<uint32_T>
       (FcuComputer_P.EnumeratedConstant1_Value);
-    FcuComputer_Y.out.bus_outputs.baro_setting_right_hpa.Data = static_cast<real32_T>(rtb_DataTypeConversion3);
+    FcuComputer_Y.out.bus_outputs.baro_setting_right_hpa.Data = rtb_BusAssignment_b_logic_fo_efis.baro_value_hpa;
     FcuComputer_Y.out.bus_outputs.baro_setting_left_inhg.SSM = static_cast<uint32_T>
       (FcuComputer_P.EnumeratedConstant1_Value);
     FcuComputer_Y.out.bus_outputs.baro_setting_left_inhg.Data = rtb_BusAssignment_d_baro_value_inhg;
     FcuComputer_Y.out.bus_outputs.baro_setting_right_inhg.SSM = static_cast<uint32_T>
       (FcuComputer_P.EnumeratedConstant1_Value);
-    FcuComputer_Y.out.bus_outputs.baro_setting_right_inhg.Data = static_cast<real32_T>(rtb_DataTypeConversion2);
+    FcuComputer_Y.out.bus_outputs.baro_setting_right_inhg.Data = rtb_BusAssignment_b_logic_fo_efis.baro_value_inhg;
     FcuComputer_Y.out.bus_outputs.fcu_discrete_word_2.SSM = static_cast<uint32_T>
       (FcuComputer_P.EnumeratedConstant1_Value);
     FcuComputer_Y.out.bus_outputs.fcu_discrete_word_1.SSM = static_cast<uint32_T>

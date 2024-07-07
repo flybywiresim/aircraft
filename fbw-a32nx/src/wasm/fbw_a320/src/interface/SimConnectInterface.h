@@ -54,16 +54,19 @@ class SimConnectInterface {
     A32NX_FCU_ATHR_DISCONNECT_PUSH,
     A32NX_FCU_SPD_INC,
     A32NX_FCU_SPD_DEC,
+    A32NX_FCU_SPD_SET,
     A32NX_FCU_SPD_PUSH,
     A32NX_FCU_SPD_PULL,
     A32NX_FCU_SPD_MACH_TOGGLE_PUSH,
     A32NX_FCU_HDG_INC,
     A32NX_FCU_HDG_DEC,
+    A32NX_FCU_HDG_SET,
     A32NX_FCU_HDG_PUSH,
     A32NX_FCU_HDG_PULL,
     A32NX_FCU_TRK_FPA_TOGGLE_PUSH,
     A32NX_FCU_ALT_INC,
     A32NX_FCU_ALT_DEC,
+    A32NX_FCU_ALT_SET,
     A32NX_FCU_ALT_PUSH,
     A32NX_FCU_ALT_PULL,
     A32NX_FCU_ALT_INCREMENT_TOGGLE,
@@ -71,6 +74,7 @@ class SimConnectInterface {
     A32NX_FCU_METRIC_ALT_TOGGLE_PUSH,
     A32NX_FCU_VS_INC,
     A32NX_FCU_VS_DEC,
+    A32NX_FCU_VS_SET,
     A32NX_FCU_VS_PUSH,
     A32NX_FCU_VS_PULL,
     A32NX_FCU_LOC_PUSH,
@@ -80,6 +84,7 @@ class SimConnectInterface {
     A32NX_FCU_EFIS_L_LS_PUSH,
     A32NX_FCU_EFIS_L_BARO_INC,
     A32NX_FCU_EFIS_L_BARO_DEC,
+    A32NX_FCU_EFIS_L_BARO_SET,
     A32NX_FCU_EFIS_L_BARO_PUSH,
     A32NX_FCU_EFIS_L_BARO_PULL,
     A32NX_FCU_EFIS_L_CSTR_PUSH,
@@ -91,6 +96,7 @@ class SimConnectInterface {
     A32NX_FCU_EFIS_R_LS_PUSH,
     A32NX_FCU_EFIS_R_BARO_INC,
     A32NX_FCU_EFIS_R_BARO_DEC,
+    A32NX_FCU_EFIS_R_BARO_SET,
     A32NX_FCU_EFIS_R_BARO_PUSH,
     A32NX_FCU_EFIS_R_BARO_PULL,
     A32NX_FCU_EFIS_R_CSTR_PUSH,
@@ -453,10 +459,6 @@ class SimConnectInterface {
   bool enableRudder2AxisMode = false;
   double rudderLeftAxis = -1;
   double rudderRightAxis = -1;
-
-  std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
-  std::unique_ptr<LocalVariable> idFcuEventSetHDG;
-  std::unique_ptr<LocalVariable> idFcuEventSetVS;
 
   bool prepareSimDataSimConnectDataDefinitions();
 
