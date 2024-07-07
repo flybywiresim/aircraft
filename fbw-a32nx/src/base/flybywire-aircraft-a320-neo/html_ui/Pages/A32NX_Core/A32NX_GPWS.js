@@ -110,12 +110,11 @@ class A32NX_GPWS {
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
         this.RetardState.setState("landed");
 
-        // TODO: Update in .flt files
         this.isAirVsGroundMode = SimVar.GetSimVarValue("L:A32NX_GPWS_GROUND_STATE", "Bool") !== 1;
         this.airborneFor5s = new NXLogic_ConfirmNode(5);
         this.airborneFor10s = new NXLogic_ConfirmNode(10);
 
-        this.isApproachVsTakeoffState = SimVar.GetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool") === 1; ;
+        this.isApproachVsTakeoffState = SimVar.GetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool") === 1;
 
         this.isOverflightDetected = new NXLogic_TriggeredMonostableNode(60, true);
         // Only relevant if alternate mode 4b is enabled
