@@ -30,6 +30,7 @@ import {
 import { VerticalMode } from '@shared/autopilot';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { EcamMemos } from '@instruments/common/EWDMessages';
 
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -62,7 +63,7 @@ interface EWDItem {
 }
 
 interface EWDMessageDict {
-  [key: string]: EWDItem;
+  [key: keyof typeof EcamMemos]: EWDItem;
 }
 
 enum FwcAuralWarning {
@@ -2563,34 +2564,12 @@ export class PseudoFWC {
 
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
-    2210700: {
-      // TO SPEEDS TOO LOW
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: this.toSpeedsTooLowWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['221070001', '221070002'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: -1,
-      side: 'LEFT',
-    },
-    2210710: {
-      // TO V1/VR/V2 DISAGREE
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: this.toV2VRV2DisagreeWarning,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['221071001'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: -1,
-      side: 'LEFT',
-    },
-    2210720: {
+    221800007: {
       // TO SPEEDS NOT INSERTED
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: this.toSpeedsNotInsertedWarning,
       whichCodeToReturn: () => [0],
-      codesToReturn: ['221072001'],
+      codesToReturn: ['221800007'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
@@ -4607,12 +4586,12 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000567': {
+    '230000015': {
       // VHF3 VOICE
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.voiceVhf3.map((v) => v !== 0),
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000056701'],
+      codesToReturn: ['230000015'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,

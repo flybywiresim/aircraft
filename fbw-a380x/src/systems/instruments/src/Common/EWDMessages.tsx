@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+// Convention for IDs:
+// First two digits: ATA chapter
+// Third digit: Sub chapter, if needed
+// Fourth digit: 0 for MEMO, 1 for checklists, 2 for infos, 3 for INOP sys, 8 for ABN sensed, 9 for ABN non-sensed
+
 /** All MEMOs should be here, EWD and PFD. */
-const EcamMemos: { [n: string]: string } = {
+export const EcamMemos: { [n: string]: string } = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
   '000001002': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
@@ -79,7 +84,6 @@ const EcamMemos: { [n: string]: string } = {
   '000015001': '\x1b<6mLDG INHIBIT',
   '000030501': '\x1b<3mGPWS FLAP MODE OFF',
   '000066001': '\x1b<3mGSM DISC < 4MN',
-  '000056501': '\x1b<3mATC DATALINK STBY',
   '000016001': '\x1b<3mHYD PTU',
   '000017001': '\x1b<3mAPU AVAIL',
   '000018001': '\x1b<3mAPU BLEED',
@@ -107,7 +111,6 @@ const EcamMemos: { [n: string]: string } = {
   '000055201': '\x1b<3mCOMPANY MSG',
   '000056001': '\x1b<3mHI ALT SET',
   '000068001': '\x1b<3mADIRS SWTG',
-  '000056701': '\x1b<3mVHF3 VOICE',
   '213122101': '\x1b<2m\x1b4mCAB PR\x1bm EXCESS CAB ALT',
   '213122102': '\x1b<5m -CREW OXY MASKS.....USE',
   '213122103': '\x1b<5m -SIGNS...............ON',
@@ -194,10 +197,24 @@ const EcamMemos: { [n: string]: string } = {
   '216330503': '\x1b<4m -FWD CAB TRIM VALVE',
   '216330504': '\x1b<4m -AFT CAB TRIM VALVE',
   '216330505': '\x1b<4m -TRIM AIR HI PR',
-  '221070001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS TOO LOW',
-  '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
-  '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
-  '221072001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
+  '220000001': '\x1b<2mAP OFF',
+  '220000002': '\x1b<4mA/THR OFF',
+  '221000001': '\x1b<3mFMS SWTG',
+  '230000001': '\x1b<3mCAPT ON RMP 3',
+  '230000002': '\x1b<3mF/O ON RMP 3',
+  '230000003': '\x1b<3mCAPT+F/O ON RMP 3',
+  '230000004': '\x1b<3mCABIN READY',
+  '230000005': '\x1b<3mCPNY DTLNK NOT AVAIL',
+  '230000006': '\x1b<3mGND HF DATALINK OVRD',
+  '230000007': '\x1b<3mHF VOICE',
+  '230000008': '\x1b<3mPA IN USE',
+  '230000009': '\x1b<3mRMP 1+2+3 OFF',
+  '230000010': '\x1b<3mRMP 1+3 OFF',
+  '230000011': '\x1b<3mRMP 2+3 OFF',
+  '230000012': '\x1b<3mRMP 3 OFF',
+  '230000013': '\x1b<3mSATCOM ALERT',
+  '230000014': '\x1b<3mVHF DTLNK MAN SCAN',
+  '230000015': '\x1b<3mVHF VOICE',
   '260001001': '\x1b<2m\x1b4mENG 1 FIRE\x1bm',
   '260001002': '\x1b<5m -THR LEVER 1.......IDLE',
   '260001003': '\x1b<5m -THR LEVERS........IDLE',
@@ -448,10 +465,246 @@ interface AbnormalProcedure {
 }
 
 /** All normal procedures (checklists, via ECL) should be here. */
-const EcamNormalProcedures: { [n: number]: void } = {};
+export const EcamNormalProcedures: { [n: number]: void } = {};
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
+export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
+  // ATA 21: FG / FMS
+  220800001: {
+    title: '\x1b<2m\x1b4mAUTO FLT\x1bm AP OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800002: {
+    title: '\x1b<2mAUTOLAND',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800003: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR LIMITED',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800004: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800005: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800006: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm APPROACH CAPABILITY DOWNGRADED',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800007: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL+CAPT BKUP CTL FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800008: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL+F/O BKUP CTL FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800009: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 1 A/THR OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800010: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 2 A/THR OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800011: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 3 A/THR OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800012: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 4 A/THR OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800013: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm ROLL OUT FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800014: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm TCAS MODE FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  220800015: {
+    title: '\x1b<4m\x1b4mCDS & AUTO FLT\x1bm FCU SWITCHED OFF',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800001: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-A FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800002: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-B FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800003: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-C FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800004: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 1 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800005: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800006: {
+    title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 1+2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  221800007: {
+    title: '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800001: {
+    title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS 1+2+3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800002: {
+    title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS CABIN COM FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800003: {
+    title: '\x1b<4m\x1b4mCAB COM\x1bm COM DEGRADED',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800004: {
+    title: '\x1b<4m\x1b4mCOM\x1bm CAPT PTT STUCK',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800005: {
+    title: '\x1b<4m\x1b4mCOM\x1bm F/O PTT STUCK',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800006: {
+    title: '\x1b<4m\x1b4mCOM\x1bm THIRD OCCUPANT PTT STUCK',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800007: {
+    title: '\x1b<4m\x1b4mCOM\x1bm DATALINK FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800008: {
+    title: '\x1b<4m\x1b4mCOM\x1bm HF 1 DATALINK FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800009: {
+    title: '\x1b<4m\x1b4mCOM\x1bm HF 2 DATALINK FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800010: {
+    title: '\x1b<4m\x1b4mCOM\x1bm HF 1 EMITTING',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800011: {
+    title: '\x1b<4m\x1b4mCOM\x1bm HF 2 EMITTING',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800012: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 1 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800013: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800014: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800015: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800016: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800017: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 2+3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800018: {
+    title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+2+3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800019: {
+    title: '\x1b<4m\x1b4mCOM\x1bm SATCOM DATALINK FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800020: {
+    title: '\x1b<4m\x1b4mCOM\x1bm SATCOM FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800021: {
+    title: '\x1b<4m\x1b4mCOM\x1bm SATCOM VOICE FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800022: {
+    title: '\x1b<4m\x1b4mCOM\x1bm VHF 1 EMITTING',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800023: {
+    title: '\x1b<4m\x1b4mCOM\x1bm VHF 2 EMITTING',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800024: {
+    title: '\x1b<4m\x1b4mCOM\x1bm VHF 3 EMITTING',
+    sensed: true,
+    items: [], // TODO
+  },
+  230800025: {
+    title: '\x1b<4m\x1b4mCOM\x1bm VHF 3 DATALINK FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
   280013001: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
     sensed: true,
@@ -516,16 +769,10 @@ const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
 };
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
 
 /** All possible INFOs (e.g. CAT 3 SINLE ONLY), with special formatting characters. */
-const Infos: { [n: string]: string } = {};
+export const Infos: { [n: number]: string } = {};
 
 /** All possible INOP sys, with special formatting characters. */
-const InopSys: { [n: string]: string } = {};
-
-
-  '221070001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS TOO LOW',
-  '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
-  '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
-  '221072001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
+export const InopSys: { [n: number]: string } = {};
