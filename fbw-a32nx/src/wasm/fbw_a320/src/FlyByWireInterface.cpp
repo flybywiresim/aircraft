@@ -2001,6 +2001,7 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
 
 bool FlyByWireInterface::updateFcu(double sampleTime) {
   SimData simData = simConnectInterface.getSimData();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
 
   fcu.modelInputs.in.time.dt = sampleTime;
   fcu.modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -2010,6 +2011,13 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   fcu.modelInputs.in.sim_data.pause_on = pauseDetected;
   fcu.modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   fcu.modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
+  fcu.modelInputs.in.sim_input.left_baro_setting_hpa = simInputAutopilot.baro_left_set;
+  fcu.modelInputs.in.sim_input.right_baro_setting_hpa = simInputAutopilot.baro_right_set;
+  fcu.modelInputs.in.sim_input.spd_mach = simInputAutopilot.SPD_MACH_set;
+  fcu.modelInputs.in.sim_input.hdg_trk = simInputAutopilot.HDG_TRK_set;
+  fcu.modelInputs.in.sim_input.alt = simInputAutopilot.ALT_set;
+  fcu.modelInputs.in.sim_input.vs_fpa = simInputAutopilot.VS_FPA_set;
 
   fcu.modelInputs.in.discrete_inputs.ap_1_engaged = fmgcsDiscreteOutputs[0].ap_own_engaged;
   fcu.modelInputs.in.discrete_inputs.fd_1_engaged = fmgcsDiscreteOutputs[0].fd_own_engaged;
