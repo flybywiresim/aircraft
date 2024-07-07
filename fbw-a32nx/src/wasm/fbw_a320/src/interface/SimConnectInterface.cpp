@@ -395,7 +395,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_HOLD, "AP_VS_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
@@ -485,6 +485,8 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
   result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+
+  result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:0", "BOOL");
 
   return result;
 }
@@ -1061,6 +1063,11 @@ bool SimConnectInterface::sendData(SimOutputSpoilers output) {
 bool SimConnectInterface::sendData(SimOutputAltimeter output) {
   // write data and return result
   return sendData(7, sizeof(output), &output);
+}
+
+bool SimConnectInterface::sendData(SimOutputAltimeter output, bool altimeter3) {
+  // write data and return result
+  return sendData(altimeter3 ? 7 : 8, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
