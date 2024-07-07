@@ -222,6 +222,16 @@
                 <ANIM_CODE>(L:A32NX_NOSE_WHEEL_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
+            <!-- PARK BRK EXT LT -->
+            <Component ID="Ext_Park_Brake_Light">
+                <UseTemplate Name="FBW_Potentiometer_Toggle">
+                    <!-- FIXME should also get a discrete from the hydraulic valve limit switch -->
+                    <TOGGLE_CONDITION>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 ==</TOGGLE_CONDITION>
+                    <!-- C/B 70GG (121VU M36) fed from 601PP -->
+                    <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
+                    <POTENTIOMETER>99</POTENTIOMETER>
+                </UseTemplate>
+            </Component>
         </Component>
         <Component ID="ENGINE">
             <UseTemplate Name="A32NX_ENGINE_Turbine_Template">

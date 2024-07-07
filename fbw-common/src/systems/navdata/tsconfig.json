@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+
+  "compilerOptions": {
+    "target": "ESNext",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+  }
+}

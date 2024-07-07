@@ -1,0 +1,133 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is part of the base flyPad configuration file for A380-842
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+//
+// NOTE: * This is currently a WIP * ! The override functionality has not been completed yet !
+//
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+//
+// Please follow the instructions in the documentation to create a new configuration file!
+// =======================================================================================
+// Last updated: 2 April 2024
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "_canvas": {
+        "width": 1000,
+        "height": 150,
+        "canvasX": 146,
+        "canvasY": 71
+    },
+    "chartLimits": {
+        "weight": {
+            "min": 235000,
+            "max": 550000,
+            "lines": 9,
+            "scale": 35000,
+            "values": [ 550, 480, 410, 340, 270 ]
+        },
+        "cg": {
+            "angleRad": 0.014025,
+            "min": 24,
+            "max": 54,
+            "overlap": 32,
+            "highlight": 5,
+            "lines": 30,
+            "scale": 1,
+            "values": [ 25, 30, 35, 40, 45, 50 ]
+        },
+        "labels": {
+            "mtow": { "x1": 0.75, "x2": 0.3, "y": 0.1 },
+            "mlw": { "x1": 0.75, "x2": 0.12, "y": 0.47 },
+            "mzfw": { "x1": 0.75, "x2": 0.12, "y": 0.57 }
+        }
+    },
+    "seatDisplay": [
+        {
+            // NarrowbodyEconomy
+            len: 25.4,
+            wid: 19.2,
+            padX: 6.8,
+            padY: 0,
+            imageX: 25.4,
+            imageY: 19.2,
+        },
+        {
+            // NarrowbodyEconomyEmergency
+            len: 25.4,
+            wid: 19.2,
+            padX: 13.8,
+            padY: 0,
+            imageX: 25.4,
+            imageY: 19.2,
+        },
+        {
+            // WidebodyEconomy
+            len: 16,
+            wid: 12.125,
+            padX: 2,
+            padY: 0,
+            imageX: 16,
+            imageY: 12.125,
+        },
+        {
+            // WidebodyEconomyEmergency
+            len: 16,
+            wid: 12.125,
+            padX: 2,
+            padY: 0,
+            imageX: 16,
+            imageY: 12.125,
+        },
+        {
+            // WidebodyBusinessFlatRight
+            len: 24,
+            wid: 23.22,
+            padX: 1,
+            padY: 0,
+            imageX: 24,
+            imageY: 23.22,
+        },
+        {
+            // WidebodyBusinessFlatLeft
+            len: 24,
+            wid: 23.22,
+            padX: 1,
+            padY: 0,
+            imageX: 24,
+            imageY: 23.22,
+        },
+        {
+            // WidebodySuiteRight
+            len: 35,
+            wid: 20,
+            padX: 2,
+            padY: 0,
+            imageX: 50,
+            imageY: 50,
+        },
+        {
+            // WidebodySuiteLeft
+            len: 35,
+            wid: 20,
+            padX: 5,
+            padY: 0,
+            imageX: 50,
+            imageY: 50,
+        },
+        {
+            // WidebodyPremiumEconomy
+            len: 18,
+            wid: 13.64,
+            padX: 2,
+            padY: 0,
+            imageX: 18,
+            imageY: 13.64,
+        }
+    ]
+}

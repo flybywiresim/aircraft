@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -97,12 +101,12 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectVORsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualVor(receiverIndex, navaid.additionalData.facility);
+                    mcdu.setManualVor(receiverIndex, navaid);
                     mcdu.requestCall(() => {
                         CDUNavRadioPage.ShowPage(mcdu);
                     });
@@ -137,7 +141,7 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0.\xa0]";
         }
 
-        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${vor.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`
+        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${vor.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`;
     }
 
     static handleVorCrsLsk(mcdu, receiverIndex, input, scratchpadCallback) {
@@ -207,12 +211,13 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectILSsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualIls(navaid.additionalData.facility).then(onDone);
+
+                    mcdu.setManualIls(navaid).then(onDone);
                 } else {
                     // FIXME new navaid page when it's built
                     mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -240,7 +245,7 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0\xa0\xa0]";
         }
 
-        return `{cyan}${identText}{${mmr.manual ? 'big' : 'small'}}/{end}${freqText}{end}`
+        return `{cyan}${identText}{${mmr.manual ? 'big' : 'small'}}/{end}${freqText}{end}`;
     }
 
     static handleMmrCrsLsk(mcdu, input, scratchpadCallback) {
@@ -258,20 +263,24 @@ class CDUNavRadioPage {
                 scratchpadCallback();
                 return;
             }
-        } else if (input.match(/^[BF]?\d{1,3}$/) !== null) {
-            // FIXME apparently entering just "B" or "F" when the course already exists changes between front and back
-            if (input.charAt(0) === 'B') {
-                mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-                scratchpadCallback();
+        } else if (input === 'F' || input === 'B') {
+            // change existing course between front course and back course
+            const mmr = mcdu.getMmrTuningData(1);
+            if (mmr.course === null) {
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 return;
             }
-            const course = input.charAt(0) === 'F' ? parseInt(input.slice(1)): parseInt(input);
+            const backcourse = input.charAt(0) === 'B';
+            mcdu.setIlsCourse(mmr.course, backcourse);
+        } else if (input.match(/^[BF]?\d{1,3}$/) !== null) {
+            const backcourse = input.charAt(0) === 'B';
+            const course = input.charAt(0) === 'F' || backcourse ? parseInt(input.slice(1)) : parseInt(input);
             if (course < 0 || course > 360) {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 scratchpadCallback();
                 return;
             }
-            mcdu.setIlsCourse(course % 360);
+            mcdu.setIlsCourse(course % 360, backcourse);
         } else {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
@@ -285,7 +294,7 @@ class CDUNavRadioPage {
 
     static showSlope(mcdu, mmr) {
         const takeoff = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF;
-        const ilsAppr = mcdu.flightPlanManager.getApproachType(FlightPlans.Active) === ApproachType.APPROACH_TYPE_ILS;
+        const ilsAppr = mcdu.flightPlanService.active.approach && mcdu.flightPlanService.active.approach.type === 5; // ILS
         return mmr.manual || (!takeoff && ilsAppr);
     }
 
@@ -335,12 +344,12 @@ class CDUNavRadioPage {
             // ident
             mcdu.getOrSelectNDBsByIdent(input, (navaid) => {
                 if (navaid) {
-                    if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(WayPoint.formatIdentFromIcao(navaid.icao)));
+                    if (mcdu.deselectedNavaids.find((databaseId) => databaseId === navaid.databaseId)) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident));
                         scratchpadCallback();
                         return;
                     }
-                    mcdu.setManualAdf(receiverIndex, navaid.additionalData.facility);
+                    mcdu.setManualAdf(receiverIndex, navaid);
                     mcdu.requestCall(() => {
                         CDUNavRadioPage.ShowPage(mcdu);
                     });
@@ -375,6 +384,6 @@ class CDUNavRadioPage {
             freqText = "[\xa0\xa0\xa0.]";
         }
 
-        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${adf.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`
+        return `{cyan}${receiverIndex === 2 ? freqText : identText}{${adf.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`;
     }
 }

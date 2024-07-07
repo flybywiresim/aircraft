@@ -6,7 +6,8 @@
 
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm/fbw_common"
+COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm"
+FBW_COMMON_DIR="${COMMON_DIR}/fbw_common"
 OUTPUT="${DIR}/../../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
 
 if [ "$1" == "--debug" ]; then
@@ -44,21 +45,26 @@ clang \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -mbulk-memory \
+  -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
-  -I "${COMMON_DIR}/src/zlib" \
-  "${COMMON_DIR}/src/zlib/adler32.c" \
-  "${COMMON_DIR}/src/zlib/crc32.c" \
-  "${COMMON_DIR}/src/zlib/deflate.c" \
-  "${COMMON_DIR}/src/zlib/gzclose.c" \
-  "${COMMON_DIR}/src/zlib/gzlib.c" \
-  "${COMMON_DIR}/src/zlib/gzread.c" \
-  "${COMMON_DIR}/src/zlib/gzwrite.c" \
-  "${COMMON_DIR}/src/zlib/infback.c" \
-  "${COMMON_DIR}/src/zlib/inffast.c" \
-  "${COMMON_DIR}/src/zlib/inflate.c" \
-  "${COMMON_DIR}/src/zlib/inftrees.c" \
-  "${COMMON_DIR}/src/zlib/trees.c" \
-  "${COMMON_DIR}/src/zlib/zutil.c"
+  -I "${FBW_COMMON_DIR}/src/zlib" \
+  "${FBW_COMMON_DIR}/src/zlib/adler32.c" \
+  "${FBW_COMMON_DIR}/src/zlib/crc32.c" \
+  "${FBW_COMMON_DIR}/src/zlib/deflate.c" \
+  "${FBW_COMMON_DIR}/src/zlib/gzclose.c" \
+  "${FBW_COMMON_DIR}/src/zlib/gzlib.c" \
+  "${FBW_COMMON_DIR}/src/zlib/gzread.c" \
+  "${FBW_COMMON_DIR}/src/zlib/gzwrite.c" \
+  "${FBW_COMMON_DIR}/src/zlib/infback.c" \
+  "${FBW_COMMON_DIR}/src/zlib/inffast.c" \
+  "${FBW_COMMON_DIR}/src/zlib/inflate.c" \
+  "${FBW_COMMON_DIR}/src/zlib/inftrees.c" \
+  "${FBW_COMMON_DIR}/src/zlib/trees.c" \
+  "${FBW_COMMON_DIR}/src/zlib/zutil.c"
 
 # compile c++ code
 clang++ \
@@ -79,10 +85,16 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fdata-sections \
+  -fno-stack-protector \
+  -fstack-size-section \
+  -mbulk-memory \
+  -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
-  -I "${COMMON_DIR}/src" \
-  -I "${COMMON_DIR}/src/inih" \
+  -I "${COMMON_DIR}/utils" \
+  -I "${FBW_COMMON_DIR}/src" \
+  -I "${FBW_COMMON_DIR}/src/inih" \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
   -I "${DIR}/src/busStructures" \
@@ -129,16 +141,16 @@ clang++ \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
-  -I "${COMMON_DIR}/src/zlib" \
-  "${COMMON_DIR}/src/zlib/zfstream.cc" \
+  -I "${FBW_COMMON_DIR}/src/zlib" \
+  "${FBW_COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
-  "${COMMON_DIR}/src/LocalVariable.cpp" \
-  "${COMMON_DIR}/src/InterpolatingLookupTable.cpp" \
+  "${FBW_COMMON_DIR}/src/LocalVariable.cpp" \
+  "${FBW_COMMON_DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
-  "${COMMON_DIR}/src/ThrottleAxisMapping.cpp" \
+  "${FBW_COMMON_DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 
