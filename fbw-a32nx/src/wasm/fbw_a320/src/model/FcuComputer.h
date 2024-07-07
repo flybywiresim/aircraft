@@ -32,8 +32,8 @@ class FcuComputer final
   };
 
   struct rtDW_MATLABFunction1_FcuComputer_j_T {
-    real_T pValueHpa;
-    real_T pValueInhg;
+    real32_T pValueHpa;
+    real32_T pValueInhg;
   };
 
   struct rtDW_MATLABFunction_FcuComputer_gf_T {
@@ -379,7 +379,8 @@ class FcuComputer final
   static void FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
   static void FcuComputer_MATLABFunction1_d_Reset(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
   static void FcuComputer_MATLABFunction1_o(boolean_T rtu_std_active, boolean_T rtu_inhg_active, real_T rtu_click_count,
-    real_T *rty_value_hpa, real_T *rty_value_inhg, rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
+    real32_T rtu_sim_sync, real32_T *rty_value_hpa, real32_T *rty_value_inhg, rtDW_MATLABFunction1_FcuComputer_j_T
+    *localDW);
   static void FcuComputer_MATLABFunction_p_Init(rtDW_MATLABFunction_FcuComputer_gf_T *localDW);
   static void FcuComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FcuComputer_gf_T *localDW);
   static void FcuComputer_MATLABFunction_ml(boolean_T rtu_fdButton, boolean_T rtu_autoActivate, boolean_T

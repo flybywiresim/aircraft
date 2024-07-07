@@ -386,6 +386,15 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
       },
 
       {
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F
+      },
+
+      {
         false,
         false,
         false,
