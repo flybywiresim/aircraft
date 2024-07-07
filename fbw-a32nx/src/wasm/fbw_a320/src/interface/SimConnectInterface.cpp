@@ -59,10 +59,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store if XBOX compatibility should be disabled for rudder axis plus/minus
     this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
     this->enableRudder2AxisMode = enableRudder2AxisMode;
-    // register local variables
-    idFcuEventSetSPEED = std::make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
-    idFcuEventSetHDG = std::make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
-    idFcuEventSetVS = std::make_unique<LocalVariable>("A320_Neo_FCU_VS_SET_DATA");
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
     prepareResult &= prepareSimInputSimConnectDataDefinitions();
@@ -316,16 +312,19 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ATHR_DISCONNECT_PUSH, "A32NX.FCU_ATHR_DISCONNECT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_INC, "A32NX.FCU_SPD_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_DEC, "A32NX.FCU_SPD_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_SET, "A32NX.FCU_SPD_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PUSH, "A32NX.FCU_SPD_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PULL, "A32NX.FCU_SPD_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH, "A32NX.FCU_SPD_MACH_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_INC, "A32NX.FCU_HDG_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_DEC, "A32NX.FCU_HDG_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_SET, "A32NX.FCU_HDG_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PUSH, "A32NX.FCU_HDG_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PULL, "A32NX.FCU_HDG_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH, "A32NX.FCU_TRK_FPA_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_SET, "A32NX.FCU_ALT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_TOGGLE, "A32NX.FCU_ALT_INCREMENT_TOGGLE", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_SET, "A32NX.FCU_ALT_INCREMENT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
@@ -333,6 +332,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_METRIC_ALT_TOGGLE_PUSH, "A32NX.FCU_METRIC_ALT_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_INC, "A32NX.FCU_VS_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_DEC, "A32NX.FCU_VS_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_SET, "A32NX.FCU_VS_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PUSH, "A32NX.FCU_VS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PULL, "A32NX.FCU_VS_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_LOC_PUSH, "A32NX.FCU_LOC_PUSH", false);
@@ -343,6 +343,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_LS_PUSH, "A32NX.FCU_EFIS_L_LS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_INC, "A32NX.FCU_EFIS_L_BARO_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_DEC, "A32NX.FCU_EFIS_L_BARO_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_SET, "A32NX.FCU_EFIS_L_BARO_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_PUSH, "A32NX.FCU_EFIS_L_BARO_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_BARO_PULL, "A32NX.FCU_EFIS_L_BARO_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_CSTR_PUSH, "A32NX.FCU_EFIS_L_CSTR_PUSH", false);
@@ -354,6 +355,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_LS_PUSH, "A32NX.FCU_EFIS_R_LS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_INC, "A32NX.FCU_EFIS_R_BARO_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_DEC, "A32NX.FCU_EFIS_R_BARO_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_SET, "A32NX.FCU_EFIS_R_BARO_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_PUSH, "A32NX.FCU_EFIS_R_BARO_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_BARO_PULL, "A32NX.FCU_EFIS_R_BARO_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_CSTR_PUSH, "A32NX.FCU_EFIS_R_CSTR_PUSH", false);
@@ -1162,6 +1164,12 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.APPR_push = 0;
   simInputAutopilot.EXPED_push = 0;
   simInputAutopilot.DIR_TO_trigger = 0;
+  simInputAutopilot.baro_left_set = -1;
+  simInputAutopilot.baro_right_set = -1;
+  simInputAutopilot.SPD_MACH_set = -1;
+  simInputAutopilot.HDG_TRK_set = -1;
+  simInputAutopilot.ALT_set = -1;
+  simInputAutopilot.VS_FPA_set = -1;
 }
 
 void SimConnectInterface::resetFcuFrontPanelInputs() {
@@ -1854,6 +1862,12 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
+    case Events::A32NX_FCU_SPD_SET: {
+      simInputAutopilot.SPD_MACH_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_SPD_SET: " << static_cast<long>(data0) << std::endl;
+      break;
+    }
+
     case Events::A32NX_FCU_SPD_PUSH:
     case Events::AP_AIRSPEED_ON: {
       fcuAfsPanelInputs.spd_knob.pushed = true;
@@ -1884,6 +1898,12 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::A32NX_FCU_HDG_DEC: {
       fcuAfsPanelInputs.hdg_trk_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_HDG_SET: {
+      simInputAutopilot.HDG_TRK_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_HDG_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -1919,6 +1939,12 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       fcuAfsPanelInputs.alt_knob.turns = -1;
 
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_ALT_SET: {
+      simInputAutopilot.ALT_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -1971,6 +1997,12 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::A32NX_FCU_VS_DEC: {
       fcuAfsPanelInputs.vs_fpa_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_VS_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_VS_SET: {
+      simInputAutopilot.VS_FPA_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_VS_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -2031,6 +2063,13 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       fcuEfisPanelInputs[0].baro_knob.turns = -1;
       fcuEfisPanelInputs[1].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_BARO_SET: {
+      simInputAutopilot.baro_left_set = data0;
+      simInputAutopilot.baro_right_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET" << std::endl;
       break;
     }
 
@@ -2102,6 +2141,13 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       fcuEfisPanelInputs[1].baro_knob.turns = -1;
       fcuEfisPanelInputs[0].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_DEC" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_BARO_SET: {
+      simInputAutopilot.baro_left_set = data0;
+      simInputAutopilot.baro_right_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET" << std::endl;
       break;
     }
 
