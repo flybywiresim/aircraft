@@ -89,9 +89,12 @@
 1. [GENERAL] Added environ AIRCRAFT_PROJECT_PREFIX to allow for custom aircraft project prefixes - @2hwk (2Cas)
 1. [EFB] Read from VFS JSON5 markup for Ground > Payload page - @2hwk (2Cas)
 1. [FADEC] Fadec rewrite/cleanup/commenting using cpp framework - @frankkopp (Frank Kopp)
+1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
+1. [EFB] Added simrate indicator to status bar - @2hwk (2Cas)
+1. [EFB] Added simrate and pause on TOD controls to control center - @2hwk (2Cas)
 1. [FMS] Implement missed approach route - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
 1. [AUTOFLIGHT] Implement NAV IN GA - @lukecologne (luke)
 1. [FMS] Implement ability to program alternate routing - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
@@ -157,7 +160,6 @@
 1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
-1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 
 ## 0.10.0
 

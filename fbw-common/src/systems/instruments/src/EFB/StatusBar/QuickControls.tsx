@@ -1,10 +1,13 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, forwardRef, useMemo, useRef, useState } from 'react';
+import React, { FC, forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import {
   BrightnessHigh,
   BrightnessHighFill,
+  ChevronCompactDown,
+  ChevronCompactUp,
+  ClockHistory,
   Compass,
   Gear,
   Keyboard,
@@ -20,6 +23,8 @@ import {
   useSimVar,
   ClientState,
   SimBridgeClientState,
+  usePersistentBooleanProperty,
+  useGlobalVar,
 } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
 import { useHistory } from 'react-router-dom';
@@ -27,6 +32,7 @@ import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
+import { PiAirplaneLandingFill } from 'react-icons/pi';
 
 interface QuickSettingsButtonProps {
   onClick: () => void;
@@ -53,10 +59,11 @@ interface QuickSettingsToggleProps {
   onClick: () => void;
   icon: React.ReactElement;
   className?: string;
+  width?: number;
 }
 
 const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonElement, QuickSettingsToggleProps>(
-  ({ onClick, icon, className, children, ...rest }, ref) => (
+  ({ onClick, icon, className, children, width, ...rest }, ref) => (
     <button
       ref={ref}
       type="button"
@@ -64,14 +71,97 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
       className={`flex flex-col items-center justify-center rounded-md
                    bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                    ${className ?? ''}`}
-      style={{ width: '130px', height: '100px' }}
+      style={{ width: `${width ?? 130}px`, height: '100px' }}
       {...rest}
     >
       {icon}
-      <div className="mt-1 text-sm text-inherit">{children}</div>
+      <div className="mt-1 flex flex-col items-center text-sm text-inherit">{children}</div>
     </button>
   ),
 );
+
+interface LargeQuickSettingsToggleProps {
+  onClick: () => void;
+  icon: React.ReactElement;
+  className?: string;
+  width?: number;
+  infoBox?: React.ReactElement;
+}
+
+const LargeQuickSettingsToggle: FC<LargeQuickSettingsToggleProps> = forwardRef<
+  HTMLButtonElement,
+  LargeQuickSettingsToggleProps
+>(({ onClick, icon, className, children, width, infoBox, ...rest }, ref) => (
+  <button
+    ref={ref}
+    type="button"
+    onClick={onClick}
+    className={`relative flex flex-col items-center justify-center
+                   rounded-md border-2 border-transparent bg-theme-body text-theme-text transition duration-100 hover:border-current
+                   ${className ?? ''}`}
+    style={{ width: `${width ?? 275}px`, height: '100px' }}
+    {...rest}
+  >
+    <div className="flex flex-row items-center justify-center">
+      <div className="mr-5 flex flex-col items-center justify-center">
+        {icon}
+        <div className="mt-1 text-sm text-inherit">{children}</div>
+      </div>
+      <div className="flex flex-col items-center justify-center">{infoBox}</div>
+    </div>
+  </button>
+));
+
+interface LargeQuickSettingsIncrementerProps {
+  onDownClick?: () => void;
+  onUpClick?: () => void;
+  icon: React.ReactElement;
+  className?: string;
+  width?: number;
+  infoBox?: React.ReactElement;
+}
+
+const LargeQuickSettingsIncrementer: FC<LargeQuickSettingsIncrementerProps> = forwardRef<
+  HTMLButtonElement,
+  LargeQuickSettingsIncrementerProps
+>(({ icon, className, children, width, infoBox, onDownClick, onUpClick, ...rest }, ref) => (
+  <div
+    className={`flex flex-col items-center justify-center
+                   rounded-md bg-theme-body text-theme-text transition duration-100
+                   ${className ?? ''}`}
+    style={{ width: `${width ?? 275}px`, height: '100px' }}
+    {...rest}
+  >
+    <div className="flex flex-row items-center justify-center">
+      <button
+        ref={ref}
+        type="button"
+        onClick={onDownClick}
+        className={`mr-5 flex flex-col items-center
+                        justify-center rounded-md border-2 border-transparent bg-theme-accent px-4 py-2 text-theme-text transition duration-100 hover:border-current
+                        ${className ?? ''}`}
+      >
+        <ChevronCompactDown size={24} />
+      </button>
+      <div className="mr-5 flex flex-col items-center justify-center">
+        {icon}
+        <div className="mt-1 text-sm text-inherit">{children}</div>
+      </div>
+      <div className="flex flex-col items-center justify-center">{infoBox}</div>
+
+      <button
+        ref={ref}
+        type="button"
+        onClick={onUpClick}
+        className={`ml-5 flex flex-col items-center justify-center
+                        rounded-md border-2 border-transparent bg-theme-accent px-4 py-2 text-theme-text transition duration-100 hover:border-current
+                        ${className ?? ''}`}
+      >
+        <ChevronCompactUp size={24} />
+      </button>
+    </div>
+  </div>
+));
 
 export const QuickControlsPane = ({
   setShowQuickControlsPane,
@@ -85,6 +175,13 @@ export const QuickControlsPane = ({
   const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
   const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
   const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
+  const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
+  const [todArmed] = useSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', 500);
+
+  const simRate = useGlobalVar('SIMULATION RATE', 'number', 500);
+
+  const decreaseSimrate = useCallback(() => SimVar.SetSimVarValue('K:SIM_RATE_DECR', 'bool', true), []);
+  const increaseSimrate = useCallback(() => SimVar.SetSimVarValue('K:SIM_RATE_INCR', 'bool', true), []);
 
   const [adirsAlignTimeSimVar, setAdirsAlignTimeSimVar] = useSimVar(
     'L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME',
@@ -161,6 +258,10 @@ export const QuickControlsPane = ({
     setAutoOSK(autoOSK === 0 ? 1 : 0);
   };
 
+  const handleTogglePauseAtTod = () => {
+    setPauseAtTod(!pauseAtTod);
+  };
+
   const simBridgeButtonStyle = useMemo<string>((): string => {
     switch (simBridgeClientState) {
       case SimBridgeClientState.CONNECTED:
@@ -186,6 +287,24 @@ export const QuickControlsPane = ({
         return t('QuickControls.SimBridgeOff');
     }
   }, [simBridgeClientState]);
+
+  const pauseAtTodStyle = useMemo<string>((): string => {
+    if (pauseAtTod && todArmed) {
+      return 'bg-utility-green';
+    } else if (pauseAtTod) {
+      return 'bg-utility-amber';
+    }
+  }, [pauseAtTod, todArmed]);
+
+  const pauseAtTodString = useMemo<string>((): string => {
+    if (pauseAtTod && todArmed) {
+      return t('QuickControls.PauseAtTodArmed');
+    } else if (pauseAtTod) {
+      return t('QuickControls.PauseAtTodStandby');
+    } else {
+      return t('QuickControls.PauseAtTodInactive');
+    }
+  }, [pauseAtTod, todArmed]);
 
   const oskButtonStyle = useMemo<string>(
     (): string => (autoOSK ? 'bg-utility-green text-theme-body' : 'text-theme-text'),
@@ -228,41 +347,7 @@ export const QuickControlsPane = ({
             </QuickSettingsButton>
           </TooltipWrapper>
         </div>
-
         <div className="mb-8 flex flex-row items-center justify-between">
-          <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
-            <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
-              {t('QuickControls.AlignAdirs')}
-            </QuickSettingsToggle>
-          </TooltipWrapper>
-
-          <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
-            <QuickSettingsToggle onClick={handleInstantBoarding} icon={<PersonCheck size={42} />}>
-              {t('QuickControls.FinishBoarding')}
-            </QuickSettingsToggle>
-          </TooltipWrapper>
-
-          <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
-            <QuickSettingsToggle
-              onClick={handleResetSimBridgeConnection}
-              icon={
-                simBridgeClientState === SimBridgeClientState.CONNECTED ? <Wifi size={42} /> : <WifiOff size={42} />
-              }
-              className={simBridgeButtonStyle}
-            >
-              {t('QuickControls.SimBridge')} <br />
-              {simBridgeButtonStateString}
-            </QuickSettingsToggle>
-          </TooltipWrapper>
-
-          <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
-            <QuickSettingsToggle onClick={handleToggleOsk} icon={<Keyboard size={42} />} className={oskButtonStyle}>
-              {t('QuickControls.OnScreenKeyboard')}
-            </QuickSettingsToggle>
-          </TooltipWrapper>
-        </div>
-
-        <div className="flex flex-row items-center justify-between">
           <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
             <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
               <div className="mr-4 flex w-[80px] flex-row items-center text-theme-text">
@@ -300,6 +385,61 @@ export const QuickControlsPane = ({
             >
               <BrightnessHigh size={24} />
             </button>
+          </TooltipWrapper>
+        </div>
+        {/* Quick Settings Button */}
+        {/* First Row */}
+        <div className="mb-5 flex flex-row items-center justify-between">
+          <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
+            <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
+              {t('QuickControls.AlignAdirs')}
+            </QuickSettingsToggle>
+          </TooltipWrapper>
+          <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
+            <QuickSettingsToggle onClick={handleInstantBoarding} icon={<PersonCheck size={42} />}>
+              {t('QuickControls.FinishBoarding')}
+            </QuickSettingsToggle>
+          </TooltipWrapper>
+          <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
+            <QuickSettingsToggle
+              onClick={handleResetSimBridgeConnection}
+              icon={
+                simBridgeClientState === SimBridgeClientState.CONNECTED ? <Wifi size={42} /> : <WifiOff size={42} />
+              }
+              className={simBridgeButtonStyle}
+            >
+              {t('QuickControls.SimBridge')} <br />
+              {simBridgeButtonStateString}
+            </QuickSettingsToggle>
+          </TooltipWrapper>
+
+          <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
+            <QuickSettingsToggle onClick={handleToggleOsk} icon={<Keyboard size={42} />} className={oskButtonStyle}>
+              {t('QuickControls.OnScreenKeyboard')}
+            </QuickSettingsToggle>
+          </TooltipWrapper>
+        </div>
+        {/* Second Row */}
+        <div className="flex flex-row items-center justify-between">
+          <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
+            <LargeQuickSettingsToggle
+              onClick={handleTogglePauseAtTod}
+              icon={<PiAirplaneLandingFill size={42} />}
+              className={pauseAtTodStyle}
+            >
+              {t('QuickControls.PauseAtTod')} <br />
+              {pauseAtTodString}
+            </LargeQuickSettingsToggle>
+          </TooltipWrapper>
+          <TooltipWrapper text={t('QuickControls.TT.Simrate')}>
+            <LargeQuickSettingsIncrementer
+              onDownClick={decreaseSimrate}
+              onUpClick={increaseSimrate}
+              icon={<ClockHistory size={42} />}
+              infoBox={<span>{`${simRate}x`}</span>}
+            >
+              {t('QuickControls.Simrate')}
+            </LargeQuickSettingsIncrementer>
           </TooltipWrapper>
         </div>
       </div>
