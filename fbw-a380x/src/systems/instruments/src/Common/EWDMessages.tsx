@@ -443,6 +443,8 @@ interface AbstractChecklistItem {
   sensed: boolean;
   /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
   level?: number;
+  /** Manually define color. standard (cyan when not completed, green when completed), or always cyan/green/amber. Standard, if not set. */
+  color?: 'standard' | 'cyan' | 'green' | 'amber';
 }
 interface ChecklistAction {
   /** Label at the end of the line if action is not completed. */
@@ -483,102 +485,273 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   220800003: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR LIMITED',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ALL THR LEVERS', // When all ENG operative
+        sensed: true,
+        labelNotCompleted: 'CLB',
+      },
+      {
+        name: 'THR LEVERS', // In case of ENG out
+        sensed: true,
+        labelNotCompleted: 'MCT',
+      },
+    ],
   },
   220800004: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR OFF',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ALL THR LEVERS',
+        sensed: true,
+        labelNotCompleted: 'MOVE',
+      },
+    ],
   },
   220800005: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'USE MFD FCU BKUP', // If FCU BKUP is avail on CAPT + F/O side
+        sensed: false,
+      },
+      {
+        name: 'Use CAPT MFD FCU BKUP', // If FCU BKUP is avail on CAPT / F/O side only
+        sensed: false,
+      },
+      {
+        name: 'Use F/O MFD FCU BKUP', // If FCU BKUP is avail on CAPT / F/O side only
+        sensed: false,
+      },
+    ],
   },
   220800006: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm APPROACH CAPABILITY DOWNGRADED',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   220800007: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL+CAPT BKUP CTL FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'Use F/O MFD FCU BKUP', // If FCU BKUP is avail on CAPT / F/O side only
+        sensed: false,
+      },
+    ],
   },
   220800008: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm AFS CTL PNL+F/O BKUP CTL FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'Use CAPT MFD FCU BKUP', // If FCU BKUP is avail on CAPT / F/O side only
+        sensed: false,
+      },
+    ],
   },
   220800009: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 1 A/THR OFF',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'THR LEVER 1', // If in flight
+        sensed: false,
+        labelNotCompleted: 'MAN ADJUST',
+      },
+    ],
   },
   220800010: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 2 A/THR OFF',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'THR LEVER 2', // If in flight
+        sensed: false,
+        labelNotCompleted: 'MAN ADJUST',
+      },
+    ],
   },
   220800011: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 3 A/THR OFF',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'THR LEVER 3', // If in flight
+        sensed: false,
+        labelNotCompleted: 'MAN ADJUST',
+      },
+    ],
   },
   220800012: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm ENG 4 A/THR OFF',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'THR LEVER 4', // If in flight
+        sensed: false,
+        labelNotCompleted: 'MAN ADJUST',
+      },
+    ],
   },
   220800013: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm ROLL OUT FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR AUTOLAND: MAN ROLL OUT ONLY', // Always completed
+        sensed: true,
+        color: 'green',
+      },
+    ],
   },
   220800014: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm TCAS MODE FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR TCAS ALERT', // Always completed
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'AP & FD', // Always completed
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        color: 'green',
+      },
+      {
+        name: 'FLY MANUALLY TCAS RA ORDER', // Always completed
+        sensed: true,
+        color: 'green',
+      },
+    ],
   },
   220800015: {
     title: '\x1b<4m\x1b4mCDS & AUTO FLT\x1bm FCU SWITCHED OFF',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   221800001: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-A FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+    ],
   },
   221800002: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-B FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+    ],
   },
   221800003: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMC-C FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+    ],
   },
   221800004: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FMC A+C FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMC A+B FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMC A FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'BOTH ON 2',
+      },
+    ],
   },
   221800005: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FMC A+B FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMC B+C FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMC B FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'BOTH ON 1',
+      },
+    ],
   },
   221800006: {
     title: '\x1b<4m\x1b4mAUTO FLT\x1bm FMS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ALL FMCs FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'FMS SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'FOR NAV: USE STBY INSTRUMENTS',
+        sensed: false,
+      },
+      {
+        name: 'FOR NAVAID TUNING: USE RMP',
+        sensed: false,
+      },
+      {
+        name: '[MFD SURV] TAWS FLAP MODE',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   221800007: {
     title: '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800001: {
     title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS 1+2+3 FAULT',
@@ -720,34 +893,19 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
         level: 1,
       },
       {
-        name: 'IF GRAVITY XFER FROM TRIM TK IN PROGRESS:',
-        sensed: true,
-        level: 2,
-      },
-      {
-        name: 'TRIM TK FEED',
+        name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
         level: 3,
       },
       {
-        name: 'FOR XFER TKs CONTAINING FUEL',
-        sensed: true,
-        level: 2,
-      },
-      {
-        name: 'OUTR TK XFR',
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel
         sensed: true,
         labelNotCompleted: 'MAN',
         level: 3,
       },
       {
-        name: 'IF AT LEAST ONE TRIM TK PUMP RUNNING:',
-        sensed: true,
-        level: 3,
-      },
-      {
-        name: 'TRIM TK XFR',
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
         sensed: true,
         labelNotCompleted: 'FWD',
         level: 4,
@@ -775,4 +933,36 @@ export const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure }
 export const Infos: { [n: number]: string } = {};
 
 /** All possible INOP sys, with special formatting characters. */
-export const InopSys: { [n: number]: string } = {};
+export const InopSys: { [n: number]: string } = {
+  220300001: '\x1b<4mA/THR',
+  220300002: '\x1b<4mCAT 3',
+  220300003: '\x1b<3mCAT 2 ONLY',
+  220300004: '\x1b<4mAFS CTL PNL',
+  220300005: '\x1b<4mAP 1',
+  220300006: '\x1b<4mAP 2',
+  220300007: '\x1b<4mAP 1+2',
+  220300008: '\x1b<4mCAT 3 DUAL',
+  220300009: '\x1b<4mCAT 2',
+  220300010: '\x1b<4mGLS AUTOLAND',
+  220300011: '\x1b<3mCAT 3 SINGLE ONLY',
+  220300012: '\x1b<4mCAPT AFS BKUP CTL',
+  220300013: '\x1b<4mF/O AFS BKUP CTL',
+  220300014: '\x1b<4mENG 1 A/THR',
+  220300015: '\x1b<4mENG 2 A/THR',
+  220300016: '\x1b<4mENG 3 A/THR',
+  220300017: '\x1b<4mENG 4 A/THR',
+  220300018: '\x1b<4mROLL OUT',
+  220300019: '\x1b<3mFOR AUTOLAND: MAN ROLL OUT ONLY',
+  220300020: '\x1b<4mAP/FD TCAS MODE',
+  221300001: '\x1b<4mFMC-A',
+  221300002: '\x1b<4mFMC-B',
+  221300003: '\x1b<4mFMC-C',
+  221300004: '\x1b<3mFMS 1 ON FMC-C',
+  221300005: '\x1b<3mFMS 2 ON FMC-C',
+  221300006: '\x1b<4mFMS 1',
+  221300007: '\x1b<4mFMS 2',
+  221300008: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
+  340300001: '\x1b<4mGPWS 1',
+  340300002: '\x1b<4mGPWS 2',
+  340300003: '\x1b<4mGPWS 1+2',
+};
