@@ -4089,7 +4089,7 @@ export class PseudoFWC {
       // NW STRG DISC
       flightPhaseInhib: [],
       simVarIsActive: this.nwSteeringDisc,
-      whichCodeToReturn: () => [this.engine1State.get() > 0 || this.engine2State.get() > 0 ? 1 : 0],
+      whichCodeToReturn: () => [[2, 3, 4, 5, 6, 7, 8, 9].includes(this.fwcFlightPhase.get()) ? 1 : 0],
       codesToReturn: ['000004001', '000004002'],
       memoInhibit: () => false,
       failure: 0,

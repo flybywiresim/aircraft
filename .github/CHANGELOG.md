@@ -102,6 +102,7 @@
 1. [ND] Fix color of navaids at the active leg termination - @BlueberryKing (BlueberryKing)
 1. [EFB] Added a takeoff performance calculator - @donstim (donbikes), @tracernz (Mike)
 1. [MCDU] Removed V-speed auto-fill function - @tracernz (Mike)
+1. [FWC] Fix NW STRG DISC turning amber too soon - @adoggman (Andrew)
 
 ## 0.11.0
 
