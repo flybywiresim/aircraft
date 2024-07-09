@@ -43,6 +43,7 @@ export class SpdDisplay extends DisplayComponent<{ x: number; y: number; bus: Ev
         this.machActive = value;
 
         this.handleSpeedDisplay();
+        this.handleLabels();
       });
 
     sub

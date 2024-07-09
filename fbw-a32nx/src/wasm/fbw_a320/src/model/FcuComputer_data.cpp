@@ -8,6 +8,8 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
 
   19.0,
 
+  19.0,
+
   20.0,
 
   14.0,
@@ -77,6 +79,8 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
   14.0,
 
   16.0,
+
+  28.0,
 
   16.0,
 
@@ -281,6 +285,10 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
   efis_range_selection::RANGE_80,
 
   efis_range_selection::RANGE_160,
+
+  0.0F,
+
+  0.0F,
 
   0.0F,
 
@@ -835,6 +843,7 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
         false,
         false,
         false,
+        false,
         0.0F,
         false,
         false,
@@ -1191,6 +1200,7 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
         0.0F,
         0.0F
       },
+      false,
       false,
       false,
       false,
@@ -1323,11 +1333,7 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
     false
   },
 
-  false,
-
-  true,
-
-  false,
+  0.0F,
 
   true,
 
