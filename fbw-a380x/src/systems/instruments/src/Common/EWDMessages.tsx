@@ -443,7 +443,7 @@ interface AbstractChecklistItem {
   sensed: boolean;
   /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
   level?: number;
-  /** Manually define color. standard (cyan when not completed, green when completed), or always cyan/green/amber. Standard, if not set. */
+  /** Manually define color. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   color?: 'standard' | 'cyan' | 'green' | 'amber';
 }
 interface ChecklistAction {
@@ -756,127 +756,270 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   230800001: {
     title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS 1+2+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800002: {
     title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS CABIN COM FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'UPPER DECK PA FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'MAIN DECK PA FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'LOWER DECK PA FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'CABIN INTERPHONE FAULT',
+        sensed: true,
+        color: 'amber',
+      },
+    ],
   },
   230800003: {
     title: '\x1b<4m\x1b4mCAB COM\x1bm COM DEGRADED',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'PA DEGRADED',
+        sensed: true,
+        color: 'amber',
+      },
+      {
+        name: 'CABIN INTERPHONE DEGRADED',
+        sensed: true,
+        color: 'amber',
+      },
+    ],
   },
   230800004: {
     title: '\x1b<4m\x1b4mCOM\x1bm CAPT PTT STUCK',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800005: {
     title: '\x1b<4m\x1b4mCOM\x1bm F/O PTT STUCK',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800006: {
     title: '\x1b<4m\x1b4mCOM\x1bm THIRD OCCUPANT PTT STUCK',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800007: {
     title: '\x1b<4m\x1b4mCOM\x1bm DATALINK FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+        color: 'cyan',
+      },
+      {
+        name: 'CPNY COM VOICE ONLY',
+        sensed: true,
+        color: 'cyan',
+      },
+    ],
   },
   230800008: {
     title: '\x1b<4m\x1b4mCOM\x1bm HF 1 DATALINK FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800009: {
     title: '\x1b<4m\x1b4mCOM\x1bm HF 2 DATALINK FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800010: {
     title: '\x1b<4m\x1b4mCOM\x1bm HF 1 EMITTING',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800011: {
     title: '\x1b<4m\x1b4mCOM\x1bm HF 2 EMITTING',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800012: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800013: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800014: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800015: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RMP 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800016: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RMP 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800017: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 2+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RMP 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   230800018: {
     title: '\x1b<4m\x1b4mCOM\x1bm RMP 1+2+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RMP 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RMP 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'NO VOICE COM AVAIL', // If SATCOM datalink avail
+        sensed: true,
+        color: 'cyan',
+      },
+      {
+        name: 'SATCOM DATALINK AVAIL', // If SATCOM datalink avail
+        sensed: true,
+        color: 'cyan',
+      },
+      {
+        name: 'NO COM AVAIL', // If SATCOM datalink not avail
+        sensed: true,
+        color: 'cyan',
+      },
+    ],
   },
   230800019: {
     title: '\x1b<4m\x1b4mCOM\x1bm SATCOM DATALINK FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800020: {
     title: '\x1b<4m\x1b4mCOM\x1bm SATCOM FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800021: {
     title: '\x1b<4m\x1b4mCOM\x1bm SATCOM VOICE FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   230800022: {
     title: '\x1b<4m\x1b4mCOM\x1bm VHF 1 EMITTING',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP TX KEY', // After 60s of VHF emitting
+        sensed: true,
+        labelNotCompleted: 'DESELECT',
+      },
+    ],
   },
   230800023: {
     title: '\x1b<4m\x1b4mCOM\x1bm VHF 2 EMITTING',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP TX KEY', // After 60s of VHF emitting
+        sensed: true,
+        labelNotCompleted: 'DESELECT',
+      },
+    ],
   },
   230800024: {
     title: '\x1b<4m\x1b4mCOM\x1bm VHF 3 EMITTING',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'RMP TX KEY', // After 60s of VHF emitting
+        sensed: true,
+        labelNotCompleted: 'DESELECT',
+      },
+    ],
   },
   230800025: {
     title: '\x1b<4m\x1b4mCOM\x1bm VHF 3 DATALINK FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   280013001: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
@@ -962,6 +1105,27 @@ export const InopSys: { [n: number]: string } = {
   221300006: '\x1b<4mFMS 1',
   221300007: '\x1b<4mFMS 2',
   221300008: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
+  230300001: '\x1b<4mCIDS 1+2+3',
+  230300002: '\x1b<4mUPPER DECK PA',
+  230300003: '\x1b<4mMAIN DECK PA',
+  230300004: '\x1b<4mLOWER DECK PA',
+  230300005: '\x1b<4mCABIN INTERPHONE',
+  230300006: '\x1b<4mDATALINK',
+  230300007: '\x1b<4mHF 1 DATALINK',
+  230300008: '\x1b<4mHF 2 DATALINK',
+  230300009: '\x1b<4mRMP 1',
+  230300010: '\x1b<4mRMP 2',
+  230300011: '\x1b<4mRMP 3',
+  230300012: '\x1b<4mRMP 1+2',
+  230300013: '\x1b<4mRMP 1+3',
+  230300014: '\x1b<4mRMP 2+3',
+  230300015: '\x1b<4mSTBY RAD NAV',
+  230300016: '\x1b<4mRMP 1+2+3',
+  230300017: '\x1b<4mVHF 1+2+3',
+  230300018: '\x1b<4mHF 1+2',
+  230300019: '\x1b<4mSATCOM',
+  230300020: '\x1b<4mSATCOM DATALINK',
+  230300021: '\x1b<4mVHF 3 DATALINK',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
