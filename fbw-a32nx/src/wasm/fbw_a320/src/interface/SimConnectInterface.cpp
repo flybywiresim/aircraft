@@ -367,6 +367,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_ARPT_PUSH, "A32NX.FCU_EFIS_R_ARPT_PUSH", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_MACH_MODE_ACTIVATE, "AP_MANAGED_SPEED_IN_MACH_ON", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_SPD_MODE_ACTIVATE, "AP_MANAGED_SPEED_IN_MACH_OFF", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_PRESET_SPD_ACTIVATE, "A32NX.FMS_PRESET_SPD_ACTIVATE", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
@@ -908,12 +911,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
 
-  // Struct size is 184 bytes due to struct padding. Thus, we cannot just give the correct datatypes, but instead just
-  // pass 23 8byte f64's.
-  for (int i = 0; i < 23; i++) {
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_FMS_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  }
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_FMS_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_fms_inputs));
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -1166,6 +1165,9 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.APPR_push = 0;
   simInputAutopilot.EXPED_push = 0;
   simInputAutopilot.DIR_TO_trigger = 0;
+  simInputAutopilot.mach_mode_activate = 0;
+  simInputAutopilot.spd_mode_activate = 0;
+  simInputAutopilot.preset_spd_activate = 0;
   simInputAutopilot.baro_left_set = -1;
   simInputAutopilot.baro_right_set = -1;
   simInputAutopilot.SPD_MACH_set = -1;
@@ -2212,6 +2214,24 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
       simInputAutopilot.DIR_TO_trigger = 1;
       std::cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FMGC_MACH_MODE_ACTIVATE: {
+      simInputAutopilot.mach_mode_activate = 1;
+      std::cout << "WASM: event triggered: A32NX_FMGC_MACH_MODE_ACTIVATE" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FMGC_SPD_MODE_ACTIVATE: {
+      simInputAutopilot.spd_mode_activate = 1;
+      std::cout << "WASM: event triggered: A32NX_FMGC_SPD_MODE_ACTIVATE" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FMGC_PRESET_SPD_ACTIVATE: {
+      simInputAutopilot.preset_spd_activate = 1;
+      std::cout << "WASM: event triggered: A32NX_FMGC_PRESET_SPD_ACTIVATE" << std::endl;
       break;
     }
 

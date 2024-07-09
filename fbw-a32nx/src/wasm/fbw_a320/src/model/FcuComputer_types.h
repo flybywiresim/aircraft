@@ -332,6 +332,7 @@ struct base_afs_logic_outputs
   boolean_T fmgc_1_has_priority;
   base_afs_fmgc_data chosen_fmgc_data;
   boolean_T any_ap_fd_engaged;
+  boolean_T mach_active;
   boolean_T trk_fpa_active;
   boolean_T metric_alt_active;
   boolean_T auto_speed_control;

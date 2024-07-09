@@ -319,6 +319,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
   idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
   idFmsManagedSpeedTarget = std::make_unique<LocalVariable>("A32NX_SPEEDS_MANAGED_PFD");
+  idFmsPresetMach = std::make_unique<LocalVariable>("A32NX_MachPreselVal");
+  idFmsPresetSpeed = std::make_unique<LocalVariable>("A32NX_SpeedPreselVal");
 
   idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   // FIXME consider FM1/FM2
@@ -1739,6 +1741,11 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_2_kts = idFmgcV2->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV_APP->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmsManagedSpeedTarget->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_kts = idFmsPresetSpeed->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_mach = idFmsPresetMach->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_mach_activate = simInputAutopilot.preset_spd_activate;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_spd_mode_activate = simInputAutopilot.spd_mode_activate;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_mach_mode_activate = simInputAutopilot.mach_mode_activate;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flex_temp_deg_c = idFmgcFlexTemperature->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_eo_ft = fmAccelerationAltitudeEngineOut->valueOr(0);

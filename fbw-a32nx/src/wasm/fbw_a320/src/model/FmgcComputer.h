@@ -421,6 +421,8 @@ class FmgcComputer final
     real_T CompareToConstant2_const_m;
     real_T CompareToConstant3_const_j;
     real_T CompareToConstant1_const_m;
+    real_T CompareToConstant1_const_b;
+    real_T CompareToConstant_const_l3;
     real_T CompareToConstant_const_hq;
     real_T CompareToConstant2_const_di;
     real_T CompareToConstant1_const_h4;
@@ -430,7 +432,11 @@ class FmgcComputer final
     real_T CompareToConstant5_const_av;
     real_T CompareToConstant7_const;
     real_T CompareToConstant_const_e3;
+    real_T CompareToConstant1_const_f;
+    real_T CompareToConstant2_const_j;
     real_T CompareToConstant_const_ce;
+    real_T CompareToConstant3_const_p;
+    real_T CompareToConstant4_const_n;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode_isRisingEdge_d;
     real_T MTrigNode_isRisingEdge_j;
@@ -540,7 +546,7 @@ class FmgcComputer final
     real32_T CompareToConstant2_const_b;
     real32_T CompareToConstant1_const_hi;
     real32_T CompareToConstant_const_mh;
-    real32_T CompareToConstant2_const_j;
+    real32_T CompareToConstant2_const_jy;
     real32_T CompareToConstant1_const_o;
     real32_T CompareToConstant2_const_g;
     real32_T A429ValueOrDefault3_defaultValue;
@@ -611,9 +617,9 @@ class FmgcComputer final
     real32_T A429ValueOrDefault6_defaultValue_d;
     real32_T A429ValueOrDefault4_defaultValue_b;
     real32_T A429ValueOrDefault5_defaultValue_f;
-    real32_T A429ValueOrDefault_defaultValue_b0;
+    real32_T A429ValueOrDefault3_defaultValue_a;
+    real32_T A429ValueOrDefault_defaultValue_mh;
     real32_T A429ValueOrDefault2_defaultValue_b;
-    real32_T A429ValueOrDefault1_defaultValue_l;
     real32_T A429ValueOrDefault3_defaultValue_h;
     real32_T A429ValueOrDefault4_defaultValue_c;
     real32_T A429ValueOrDefault5_defaultValue_j;
@@ -864,8 +870,6 @@ class FmgcComputer final
     real32_T Gain1_Gain_hk;
     real32_T Gain1_Gain_go;
     real32_T Gain2_Gain_o;
-    real32_T Constant19_Value;
-    real32_T Constant20_Value;
     real32_T Constant26_Value;
     real32_T Constant27_Value;
     real32_T Constant28_Value;
