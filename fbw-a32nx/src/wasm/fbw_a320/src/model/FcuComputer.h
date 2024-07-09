@@ -58,6 +58,7 @@ class FcuComputer final
     boolean_T p_trk_fpa_active;
     boolean_T pValue_not_empty_l;
     boolean_T prevMachActive;
+    boolean_T prevMachActive_not_empty;
     boolean_T pValue_not_empty_lk;
     boolean_T prevTrkFpaActive_a;
     boolean_T prevTrkFpaActive_not_empty_c;
@@ -136,10 +137,11 @@ class FcuComputer final
   struct Parameters_FcuComputer_T {
     real_T BitfromLabel1_bit;
     real_T BitfromLabel2_bit;
+    real_T BitfromLabel3_bit;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel4_bit;
-    real_T BitfromLabel3_bit;
+    real_T BitfromLabel3_bit_g;
     real_T BitfromLabel6_bit;
     real_T BitfromLabel5_bit;
     real_T BitfromLabel8_bit;
@@ -172,6 +174,7 @@ class FcuComputer final
     real_T BitfromLabel5_bit_p;
     real_T BitfromLabel4_bit_o;
     real_T BitfromLabel3_bit_f;
+    real_T BitfromLabel1_bit_g;
     real_T BitfromLabel2_bit_o;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode1_isRisingEdge;
@@ -281,6 +284,8 @@ class FcuComputer final
     real32_T A429ValueOrDefault4_defaultValue;
     real32_T A429ValueOrDefault5_defaultValue;
     real32_T A429ValueOrDefault6_defaultValue;
+    real32_T A429ValueOrDefault_defaultValue_d;
+    real32_T A429ValueOrDefault1_defaultValue_n;
     real32_T DetectChange_vinit;
     boolean_T TFlipFlop1_init;
     boolean_T TFlipFlop1_init_c;
@@ -321,10 +326,8 @@ class FcuComputer final
     base_fcu_bus Constant2_Value;
     base_fcu_logic_outputs Constant1_Value;
     base_fcu_discrete_outputs Constant3_Value;
-    boolean_T Constant15_Value;
+    real32_T Constant_Value;
     boolean_T Constant1_Value_i;
-    boolean_T Constant1_Value_d;
-    boolean_T Constant_Value;
     boolean_T Constant10_Value;
     boolean_T Constant10_Value_a;
     boolean_T Constant10_Value_p;

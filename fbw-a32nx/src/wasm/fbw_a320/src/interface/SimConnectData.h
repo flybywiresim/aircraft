@@ -161,6 +161,9 @@ struct SimInputAutopilot {
   double APPR_push;
   double EXPED_push;
   double DIR_TO_trigger;
+  double mach_mode_activate;
+  double spd_mode_activate;
+  double preset_spd_activate;
   double baro_left_set;
   double baro_right_set;
   double SPD_MACH_set;
