@@ -31,6 +31,31 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+
+enum class fmgc_approach_type
+  : int32_T {
+  None = 0
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_fmgc_des_submode_
+#define DEFINED_TYPEDEF_FOR_fmgc_des_submode_
+
+enum class fmgc_des_submode
+  : int32_T {
+  None = 0,
+  SPEED_THRUST,
+  VPATH_THRUST,
+  VPATH_SPEED,
+  FPA_SPEED,
+  VS_SPEED
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
 #define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
@@ -38,33 +63,6 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-
-struct base_fmgc_b_bus
-{
-  base_arinc_429 fac_weight_lbs;
-  base_arinc_429 fm_weight_lbs;
-  base_arinc_429 fac_cg_percent;
-  base_arinc_429 fm_cg_percent;
-  base_arinc_429 fg_radio_height_ft;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 approach_spd_target_kn;
-  base_arinc_429 delta_p_ail_cmd_deg;
-  base_arinc_429 delta_p_splr_cmd_deg;
-  base_arinc_429 delta_r_cmd_deg;
-  base_arinc_429 delta_nose_wheel_cmd_deg;
-  base_arinc_429 delta_q_cmd_deg;
-  base_arinc_429 n1_left_percent;
-  base_arinc_429 n1_right_percent;
 };
 
 #endif
@@ -117,63 +115,29 @@ enum class vertical_law
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
-#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 
-enum class fmgc_approach_type
-  : int32_T {
-  None = 0
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_fmgc_des_submode_
-#define DEFINED_TYPEDEF_FOR_fmgc_des_submode_
-
-enum class fmgc_des_submode
-  : int32_T {
-  None = 0,
-  SPEED_THRUST,
-  VPATH_THRUST,
-  VPATH_SPEED,
-  FPA_SPEED,
-  VS_SPEED
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fms_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fms_inputs_
-
-struct base_fms_inputs
+struct base_fmgc_b_bus
 {
-  boolean_T fm_valid;
-  fmgc_flight_phase fms_flight_phase;
-  fmgc_approach_type selected_approach_type;
-  real_T fms_loc_distance;
-  real_T fms_weight_lbs;
-  real_T fms_cg_percent;
-  boolean_T lateral_flight_plan_valid;
-  boolean_T nav_capture_condition;
-  real_T phi_c_deg;
-  real_T xtk_nmi;
-  real_T tke_deg;
-  real_T phi_limit_deg;
-  boolean_T direct_to_nav_engage;
-  boolean_T vertical_flight_plan_valid;
-  boolean_T final_app_can_engage;
-  real_T next_alt_cstr_ft;
-  fmgc_des_submode requested_des_submode;
-  real_T alt_profile_tgt_ft;
-  real_T vs_target_ft_min;
-  real_T v_2_kts;
-  real_T v_app_kts;
-  real_T v_managed_kts;
-  real_T flex_temp_deg_c;
-  real_T acceleration_alt_ft;
-  real_T acceleration_alt_eo_ft;
-  real_T thrust_reduction_alt_ft;
-  real_T cruise_alt_ft;
+  base_arinc_429 fac_weight_lbs;
+  base_arinc_429 fm_weight_lbs;
+  base_arinc_429 fac_cg_percent;
+  base_arinc_429 fm_cg_percent;
+  base_arinc_429 fg_radio_height_ft;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 approach_spd_target_kn;
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_nose_wheel_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+  base_arinc_429 n1_left_percent;
+  base_arinc_429 n1_right_percent;
 };
 
 #endif
@@ -243,6 +207,47 @@ struct base_fmgc_discrete_inputs
   boolean_T elac_own_ap_disc;
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fms_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fms_inputs_
+
+struct base_fms_inputs
+{
+  boolean_T fm_valid;
+  fmgc_flight_phase fms_flight_phase;
+  fmgc_approach_type selected_approach_type;
+  real_T fms_loc_distance;
+  real_T fms_weight_lbs;
+  real_T fms_cg_percent;
+  boolean_T lateral_flight_plan_valid;
+  boolean_T nav_capture_condition;
+  real_T phi_c_deg;
+  real_T xtk_nmi;
+  real_T tke_deg;
+  real_T phi_limit_deg;
+  boolean_T direct_to_nav_engage;
+  boolean_T vertical_flight_plan_valid;
+  boolean_T final_app_can_engage;
+  real_T next_alt_cstr_ft;
+  fmgc_des_submode requested_des_submode;
+  real_T alt_profile_tgt_ft;
+  real_T vs_target_ft_min;
+  real_T v_2_kts;
+  real_T v_app_kts;
+  real_T v_managed_kts;
+  real_T preset_spd_kts;
+  real_T preset_mach;
+  boolean_T preset_spd_mach_activate;
+  boolean_T fms_spd_mode_activate;
+  boolean_T fms_mach_mode_activate;
+  real_T flex_temp_deg_c;
+  real_T acceleration_alt_ft;
+  real_T acceleration_alt_eo_ft;
+  real_T thrust_reduction_alt_ft;
+  real_T cruise_alt_ft;
 };
 
 #endif

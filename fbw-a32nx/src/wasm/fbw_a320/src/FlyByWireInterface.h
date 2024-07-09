@@ -220,6 +220,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
   std::unique_ptr<LocalVariable> idFmsManagedSpeedTarget;
+  std::unique_ptr<LocalVariable> idFmsPresetMach;
+  std::unique_ptr<LocalVariable> idFmsPresetSpeed;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
