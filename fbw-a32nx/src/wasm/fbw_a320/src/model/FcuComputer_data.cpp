@@ -70,15 +70,19 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
 
   24.0,
 
-  14.0,
-
-  20.0,
-
   13.0,
 
   14.0,
 
   16.0,
+
+  14.0,
+
+  20.0,
+
+  23.0,
+
+  23.0,
 
   28.0,
 

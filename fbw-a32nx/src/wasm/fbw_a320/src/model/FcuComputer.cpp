@@ -333,6 +333,7 @@ void FcuComputer::step()
   boolean_T rtb_BusAssignment_d_fd_on;
   boolean_T rtb_BusAssignment_d_ls_on;
   boolean_T rtb_BusAssignment_jg_logic_afs_mach_active;
+  boolean_T rtb_BusAssignment_n_logic_afs_alt_value_changed;
   boolean_T rtb_BusAssignment_n_logic_afs_vpath_value_changed;
   boolean_T rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate;
   boolean_T rtb_DataTypeConversion_e;
@@ -340,7 +341,6 @@ void FcuComputer::step()
   boolean_T rtb_Equal8;
   boolean_T rtb_Equal9;
   boolean_T rtb_OR3_j;
-  boolean_T rtb_OR_o;
   boolean_T rtb_dashes;
   boolean_T rtb_fmgc1Priority;
   boolean_T rtb_qfe;
@@ -657,8 +657,7 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_a(rtb_Switch1_b_0, FcuComputer_P.BitfromLabel2_bit_a, &rtb_Switch1_oa);
     rtb_Equal6 = (rtb_Switch1_oa != 0U);
     FcuComputer_MATLABFunction_a(rtb_Switch1_b_0, FcuComputer_P.BitfromLabel1_bit_m, &rtb_Switch1_oa);
-    rtb_y_h = (rtb_Switch1_oa != 0U);
-    rtb_OR_o = (rtb_Equal6 || (rtb_Switch1_oa != 0U));
+    rtb_DataTypeConversion_e = (rtb_Equal6 || (rtb_Switch1_oa != 0U));
     if (rtb_fmgc1Priority) {
       rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_1;
     } else {
@@ -669,11 +668,24 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_dashes);
     rtb_BusAssignment_m.logic.afs.exped_active = ((rtb_Switch1_oa != 0U) && rtb_dashes);
     if (rtb_fmgc1Priority) {
+      rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_2;
+    } else {
+      rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_2_bus.discrete_word_2;
+    }
+
+    FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_dashes);
+    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel5_bit_p, &rtb_Switch1_oa);
+    rtb_Equal6 = (rtb_Switch1_oa != 0U);
+    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel4_bit_o, &rtb_Switch1_oa);
+    rtb_y_h = (rtb_Switch1_oa != 0U);
+    if (rtb_fmgc1Priority) {
       rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_3;
     } else {
       rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_2_bus.discrete_word_3;
     }
 
+    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel3_bit_f, &rtb_Switch1_oa);
+    rtb_Equal9 = (rtb_Equal6 || rtb_y_h || (rtb_Switch1_oa != 0U));
     FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_y_h);
     if (rtb_fmgc1Priority) {
       rtb_Switch1_b_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_4;
@@ -684,23 +696,23 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_a(rtb_Switch1_b_0, FcuComputer_P.BitfromLabel1_bit_i, &rtb_Switch1_oa);
     rtb_Equal6 = (rtb_Switch1_oa != 0U);
     FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel2_bit_g, &rtb_Switch1_oa);
-    FcuComputer_MATLABFunction_m(rtb_Switch1_b_0, &rtb_dashes);
-    rtb_Equal6 = ((rtb_Equal6 || (rtb_Switch1_oa != 0U)) && rtb_dashes && rtb_y_h);
+    rtb_Equal8 = (rtb_Equal6 || (rtb_Switch1_oa != 0U));
+    FcuComputer_MATLABFunction_m(rtb_Switch1_b_0, &rtb_Equal6);
+    rtb_Equal6 = (rtb_Equal8 && rtb_Equal6 && rtb_y_h);
+    rtb_BusAssignment_m.logic.afs.loc_only_active = (rtb_dashes && rtb_Equal9 && rtb_y_h && (!rtb_Equal6));
+    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel7_bit_b, &rtb_Switch1_oa);
+    rtb_Equal8 = (rtb_Switch1_oa != 0U);
     if (rtb_fmgc1Priority) {
-      rtb_Switch1_b_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_2;
+      rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_1;
     } else {
-      rtb_Switch1_b_0 = &FcuComputer_U.in.bus_inputs.fmgc_2_bus.discrete_word_2;
+      rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_2_bus.discrete_word_1;
     }
 
-    FcuComputer_MATLABFunction_m(rtb_Switch1_b_0, &rtb_dashes);
-    FcuComputer_MATLABFunction_a(rtb_Switch1_b_0, FcuComputer_P.BitfromLabel5_bit_p, &rtb_Switch1_oa);
-    rtb_DataTypeConversion_e = (rtb_Switch1_oa != 0U);
-    FcuComputer_MATLABFunction_a(rtb_Switch1_b_0, FcuComputer_P.BitfromLabel4_bit_o, &rtb_Switch1_oa);
-    rtb_Equal8 = (rtb_Switch1_oa != 0U);
-    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel3_bit_f, &rtb_Switch1_oa);
+    FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel8_bit_g, &rtb_Switch1_oa);
     rtb_Equal9 = (rtb_Switch1_oa != 0U);
-    rtb_BusAssignment_m.logic.afs.loc_only_active = (rtb_dashes && (rtb_DataTypeConversion_e || rtb_Equal8 ||
-      (rtb_Switch1_oa != 0U)) && rtb_y_h && (!rtb_Equal6));
+    FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_dashes);
+    rtb_BusAssignment_m.logic.afs.appr_active = (rtb_Equal6 || (rtb_y_h && (rtb_Equal8 || (rtb_Switch1_oa != 0U)) &&
+      rtb_dashes));
     rtb_BusAssignment_m.data = FcuComputer_U.in;
     rtb_BusAssignment_m.logic.afs.fmgc_1_has_priority = rtb_fmgc1Priority;
     rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.v_cas_kts = rtb_y;
@@ -720,7 +732,7 @@ void FcuComputer::step()
     rtb_BusAssignment_m.logic.afs.hdg_trk_dashes = FcuComputer_P.Constant1_Value.afs.hdg_trk_dashes;
     rtb_BusAssignment_m.logic.afs.alt_display_value = FcuComputer_P.Constant1_Value.afs.alt_display_value;
     rtb_BusAssignment_m.logic.afs.lvl_ch_managed = (rtb_AND2_m || (rtb_qnh && rtb_qfe));
-    rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa = (rtb_qfe && rtb_OR_o);
+    rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa = (rtb_qfe && rtb_DataTypeConversion_e);
     rtb_BusAssignment_m.logic.afs.vs_fpa_display_value = FcuComputer_P.Constant1_Value.afs.vs_fpa_display_value;
     rtb_BusAssignment_m.logic.afs.vs_fpa_dashes = FcuComputer_P.Constant1_Value.afs.vs_fpa_dashes;
     rtb_BusAssignment_m.logic.afs.lat_value_changed = FcuComputer_P.Constant1_Value.afs.lat_value_changed;
@@ -731,12 +743,11 @@ void FcuComputer::step()
     rtb_BusAssignment_m.logic.fo_efis = FcuComputer_P.Constant1_Value.fo_efis;
     rtb_BusAssignment_m.discrete_outputs = FcuComputer_P.Constant3_Value;
     rtb_BusAssignment_m.bus_outputs = FcuComputer_P.Constant2_Value;
-    rtb_BusAssignment_m.logic.afs.appr_active = rtb_Equal6;
     FcuComputer_MATLABFunction_d((rtb_AND_g || (!rtb_AND1_l)), FcuComputer_P.PulseNode_isRisingEdge_l, &rtb_Equal6,
       &FcuComputer_DWork.sf_MATLABFunction_kl);
     FcuComputer_MATLABFunction1(&rtb_BusAssignment_m, rtb_Equal6, (rtb_AND1_l ||
       (FcuComputer_U.in.discrete_inputs.afs_inputs.spd_knob.turns != FcuComputer_P.CompareToConstant_const_p0)),
-      &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction1_p);
+      &rtb_y_h, &FcuComputer_DWork.sf_MATLABFunction1_p);
     if (rtb_fmgc1Priority) {
       rtb_Switch_k_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.preset_mach_from_mcdu;
       rtb_Switch1_b_0 = &FcuComputer_U.in.bus_inputs.fmgc_1_bus.preset_speed_from_mcdu_kts;
@@ -785,7 +796,7 @@ void FcuComputer::step()
       }
     }
 
-    if (rtb_DataTypeConversion_e) {
+    if (rtb_y_h) {
       if (rtb_BusAssignment_jg_logic_afs_mach_active) {
         FcuComputer_DWork.pValue_e = rtb_y_e;
       } else {
@@ -810,7 +821,7 @@ void FcuComputer::step()
 
     FcuComputer_DWork.prevMachActive = rtb_BusAssignment_jg_logic_afs_mach_active;
     rtb_BusAssignment_m.logic.afs.spd_mach_display_value = FcuComputer_DWork.pValue_e;
-    rtb_BusAssignment_m.logic.afs.spd_mach_dashes = rtb_DataTypeConversion_e;
+    rtb_BusAssignment_m.logic.afs.spd_mach_dashes = rtb_y_h;
     rtb_Equal6 = !rtb_BusAssignment_m.logic.afs.hdg_trk_selected;
     FcuComputer_MATLABFunction_d((rtb_Equal6 && rtb_BusAssignment_m.logic.afs.any_ap_fd_engaged),
       FcuComputer_P.PulseNode1_isRisingEdge_d, &rtb_dashes, &FcuComputer_DWork.sf_MATLABFunction_du);
@@ -903,14 +914,13 @@ void FcuComputer::step()
     FcuComputer_DWork.pValue_n = std::fmax(std::fmin(FcuComputer_DWork.pValue_n, 49000.0F), 100.0F);
     rtb_BusAssignment_m.logic.afs.alt_display_value = FcuComputer_DWork.pValue_n;
     FcuComputer_MATLABFunction_d(((!rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa) &&
-      rtb_BusAssignment_m.logic.afs.any_ap_fd_engaged), FcuComputer_P.PulseNode1_isRisingEdge_e,
-      &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction_kw);
+      rtb_BusAssignment_m.logic.afs.any_ap_fd_engaged), FcuComputer_P.PulseNode1_isRisingEdge_e, &rtb_y_h,
+      &FcuComputer_DWork.sf_MATLABFunction_kw);
     rtb_OR3_j = !rtb_BusAssignment_m.logic.afs.any_ap_fd_engaged;
     rtb_Equal6 = (FcuComputer_U.in.discrete_inputs.afs_inputs.vs_fpa_knob.turns !=
                   FcuComputer_P.CompareToConstant_const_o);
-    FcuComputer_MATLABFunction1(&rtb_BusAssignment_m, rtb_DataTypeConversion_e,
-      (rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa || rtb_OR3_j || rtb_Equal6), &rtb_Equal8,
-      &FcuComputer_DWork.sf_MATLABFunction1_o);
+    FcuComputer_MATLABFunction1(&rtb_BusAssignment_m, rtb_y_h, (rtb_BusAssignment_m.logic.afs.lvl_ch_vs_fpa || rtb_OR3_j
+      || rtb_Equal6), &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction1_o);
     FcuComputer_MATLABFunction(rtb_BusAssignment_m.logic.afs.vs_fpa_buttons.pushed, FcuComputer_U.in.time.dt, &rtb_OR3_j,
       FcuComputer_P.MTrigNode_isRisingEdge_kt, FcuComputer_P.MTrigNode_retriggerable_m,
       FcuComputer_P.MTrigNode_triggerDuration_k, &FcuComputer_DWork.sf_MATLABFunction_hh);
@@ -977,7 +987,7 @@ void FcuComputer::step()
       FcuComputer_P.MTrigNode_retriggerable_k, FcuComputer_P.MTrigNode_triggerDuration_m,
       &FcuComputer_DWork.sf_MATLABFunction_av);
     FcuComputer_MATLABFunction((FcuComputer_DWork.pValue_n != FcuComputer_DWork.DelayInput1_DSTATE[1]),
-      FcuComputer_U.in.time.dt, &rtb_DataTypeConversion_e, FcuComputer_P.MTrigNode1_isRisingEdge_m,
+      FcuComputer_U.in.time.dt, &rtb_y_h, FcuComputer_P.MTrigNode1_isRisingEdge_m,
       FcuComputer_P.MTrigNode1_retriggerable_p, FcuComputer_P.MTrigNode1_triggerDuration_h,
       &FcuComputer_DWork.sf_MATLABFunction_p5r);
     FcuComputer_MATLABFunction((FcuComputer_DWork.pValue != FcuComputer_DWork.DelayInput1_DSTATE[2]),
@@ -994,7 +1004,7 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_d((rtb_Switch1_oa != 0U), FcuComputer_P.PulseNode_isRisingEdge_i, &rtb_OR3_j,
       &FcuComputer_DWork.sf_MATLABFunction_kj);
     rtb_AND2_m = rtb_Equal8;
-    rtb_OR_o = rtb_DataTypeConversion_e;
+    rtb_BusAssignment_n_logic_afs_alt_value_changed = rtb_y_h;
     rtb_BusAssignment_n_logic_afs_vpath_value_changed = rtb_Equal6;
     rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate = rtb_OR3_j;
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.cstr_button_pushed,
@@ -1002,16 +1012,16 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.wpt_button_pushed,
       FcuComputer_P.PulseNode1_isRisingEdge_i, &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction_lq);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.vord_button_pushed,
-      FcuComputer_P.PulseNode2_isRisingEdge_m, &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction_ome);
+      FcuComputer_P.PulseNode2_isRisingEdge_m, &rtb_y_h, &FcuComputer_DWork.sf_MATLABFunction_ome);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.ndb_button_pushed,
       FcuComputer_P.PulseNode3_isRisingEdge, &rtb_Equal6, &FcuComputer_DWork.sf_MATLABFunction_cl);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.arpt_button_pushed,
       FcuComputer_P.PulseNode4_isRisingEdge, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_gi);
-    FcuComputer_EFISFilterLogic(rtb_Equal9, rtb_Equal8, rtb_DataTypeConversion_e, rtb_Equal6, rtb_OR3_j,
-      &rtb_BusAssignment_d_efis_filter, &FcuComputer_DWork.sf_EFISFilterLogic);
+    FcuComputer_EFISFilterLogic(rtb_Equal9, rtb_Equal8, rtb_y_h, rtb_Equal6, rtb_OR3_j, &rtb_BusAssignment_d_efis_filter,
+      &FcuComputer_DWork.sf_EFISFilterLogic);
     FcuComputer_MATLABFunction_ml(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.fd_button_pushed,
       rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate, FcuComputer_P.Constant1_Value.capt_efis.fd_auto_deactivate,
-      &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction_ml);
+      &rtb_y_h, &FcuComputer_DWork.sf_MATLABFunction_ml);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.ls_button_pushed,
       FcuComputer_P.PulseNode_isRisingEdge_i1, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_np);
     FcuComputer_MATLABFunction_b(rtb_OR3_j, &rtb_Equal6, FcuComputer_P.TFlipFlop1_init,
@@ -1020,12 +1030,12 @@ void FcuComputer::step()
       FcuComputer_P.PulseNode_isRisingEdge_gp, &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction_hk);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.pulled,
       FcuComputer_P.PulseNode1_isRisingEdge_j, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_fv);
-    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_y_h, &rtb_qfe,
+    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_DataTypeConversion_e, &rtb_qfe,
       &FcuComputer_DWork.sf_MATLABFunction_ofc);
     FcuComputer_MATLABFunction1_o(rtb_Equal9, FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_is_inhg,
       static_cast<real_T>(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.turns),
       FcuComputer_U.in.sim_input.left_baro_setting_hpa, &rtb_y_m, &rtb_y_ig, &FcuComputer_DWork.sf_MATLABFunction1_ou);
-    rtb_BusAssignment_d_fd_on = rtb_DataTypeConversion_e;
+    rtb_BusAssignment_d_fd_on = rtb_y_h;
     rtb_BusAssignment_d_ls_on = rtb_Equal6;
     rtb_BusAssignment_d_baro_std = rtb_Equal9;
     rtb_BusAssignment_b_logic_capt_efis.baro_qfe = rtb_qfe;
@@ -1034,16 +1044,16 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.wpt_button_pushed,
       FcuComputer_P.PulseNode1_isRisingEdge_n, &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction_mav);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.vord_button_pushed,
-      FcuComputer_P.PulseNode2_isRisingEdge_i, &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction_am);
+      FcuComputer_P.PulseNode2_isRisingEdge_i, &rtb_y_h, &FcuComputer_DWork.sf_MATLABFunction_am);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.ndb_button_pushed,
       FcuComputer_P.PulseNode3_isRisingEdge_m, &rtb_Equal6, &FcuComputer_DWork.sf_MATLABFunction_m2);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.arpt_button_pushed,
       FcuComputer_P.PulseNode4_isRisingEdge_m, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_dp);
-    FcuComputer_EFISFilterLogic(rtb_Equal9, rtb_Equal8, rtb_DataTypeConversion_e, rtb_Equal6, rtb_OR3_j, &rtb_efisFilter,
+    FcuComputer_EFISFilterLogic(rtb_Equal9, rtb_Equal8, rtb_y_h, rtb_Equal6, rtb_OR3_j, &rtb_efisFilter,
       &FcuComputer_DWork.sf_EFISFilterLogic_k);
     FcuComputer_MATLABFunction_ml(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.fd_button_pushed,
       rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate, FcuComputer_P.Constant1_Value.fo_efis.fd_auto_deactivate,
-      &rtb_DataTypeConversion_e, &FcuComputer_DWork.sf_MATLABFunction_bx);
+      &rtb_y_h, &FcuComputer_DWork.sf_MATLABFunction_bx);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.ls_button_pushed,
       FcuComputer_P.PulseNode_isRisingEdge_b, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_hd);
     FcuComputer_MATLABFunction_b(rtb_OR3_j, &rtb_Equal6, FcuComputer_P.TFlipFlop1_init_c,
@@ -1064,10 +1074,10 @@ void FcuComputer::step()
     rtb_BusAssignment_b_logic_capt_efis.ls_on = rtb_BusAssignment_d_ls_on;
     rtb_BusAssignment_b_logic_capt_efis.efis_filter = rtb_BusAssignment_d_efis_filter;
     rtb_BusAssignment_b_logic_capt_efis.baro_std = rtb_BusAssignment_d_baro_std;
-    rtb_BusAssignment_b_logic_capt_efis.baro_qnh = rtb_y_h;
+    rtb_BusAssignment_b_logic_capt_efis.baro_qnh = rtb_DataTypeConversion_e;
     rtb_BusAssignment_b_logic_capt_efis.baro_value_hpa = rtb_y_m;
     rtb_BusAssignment_b_logic_capt_efis.baro_value_inhg = rtb_y_ig;
-    rtb_BusAssignment_b_logic_fo_efis.fd_on = rtb_DataTypeConversion_e;
+    rtb_BusAssignment_b_logic_fo_efis.fd_on = rtb_y_h;
     rtb_BusAssignment_b_logic_fo_efis.fd_auto_activate = rtb_BusAssignment_n_logic_capt_efis_fd_auto_activate;
     rtb_BusAssignment_b_logic_fo_efis.fd_auto_deactivate = FcuComputer_P.Constant1_Value.fo_efis.fd_auto_deactivate;
     rtb_BusAssignment_b_logic_fo_efis.ls_on = rtb_Equal6;
@@ -1188,7 +1198,7 @@ void FcuComputer::step()
     rtb_VectorConcatenate[16] = (FcuComputer_P.EnumeratedConstant11_Value ==
       FcuComputer_U.in.discrete_inputs.capt_efis_inputs.efis_navaid_2);
     rtb_VectorConcatenate[17] = rtb_BusAssignment_d_baro_std;
-    rtb_VectorConcatenate[18] = rtb_y_h;
+    rtb_VectorConcatenate[18] = rtb_DataTypeConversion_e;
     FcuComputer_MATLABFunction_e(rtb_VectorConcatenate, &rtb_y);
     rtb_VectorConcatenate[0] = (FcuComputer_U.in.discrete_inputs.fo_efis_inputs.efis_mode ==
       FcuComputer_P.EnumeratedConstant2_Value_a);
@@ -1207,7 +1217,7 @@ void FcuComputer::step()
     rtb_VectorConcatenate[9] = (rtb_efisFilter == FcuComputer_P.EnumeratedConstant9_Value_o);
     rtb_VectorConcatenate[10] = (rtb_efisFilter == FcuComputer_P.EnumeratedConstant10_Value_e);
     rtb_VectorConcatenate[11] = rtb_Equal6;
-    rtb_Equal8 = !rtb_DataTypeConversion_e;
+    rtb_Equal8 = !rtb_y_h;
     rtb_VectorConcatenate[12] = rtb_Equal8;
     rtb_VectorConcatenate[13] = (FcuComputer_U.in.discrete_inputs.fo_efis_inputs.efis_navaid_1 ==
       FcuComputer_P.EnumeratedConstant12_Value_a);
@@ -1242,7 +1252,7 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_e(rtb_VectorConcatenate, &FcuComputer_Y.out.bus_outputs.fcu_discrete_word_2.Data);
     rtb_VectorConcatenate[0] = rtb_BusAssignment_m.logic.afs.spd_mach_buttons.pushed;
     rtb_VectorConcatenate[1] = rtb_BusAssignment_m.logic.afs.spd_mach_buttons.pulled;
-    rtb_VectorConcatenate[2] = rtb_OR_o;
+    rtb_VectorConcatenate[2] = rtb_BusAssignment_n_logic_afs_alt_value_changed;
     rtb_VectorConcatenate[3] = rtb_BusAssignment_n_logic_afs_vpath_value_changed;
     rtb_VectorConcatenate[4] = rtb_AND1;
     rtb_VectorConcatenate[5] = rtb_BusAssignment_m.logic.afs.vs_fpa_buttons.pushed;
@@ -1302,7 +1312,7 @@ void FcuComputer::step()
     FcuComputer_Y.out.logic.afs.appr_pushed = rtb_BusAssignment_m.logic.afs.appr_pushed;
     FcuComputer_Y.out.logic.afs.spd_mach_switching_pushed = rtb_BusAssignment_m.logic.afs.spd_mach_switching_pushed;
     FcuComputer_Y.out.logic.afs.lat_value_changed = rtb_AND2_m;
-    FcuComputer_Y.out.logic.afs.alt_value_changed = rtb_OR_o;
+    FcuComputer_Y.out.logic.afs.alt_value_changed = rtb_BusAssignment_n_logic_afs_alt_value_changed;
     FcuComputer_Y.out.logic.afs.vpath_value_changed = rtb_BusAssignment_n_logic_afs_vpath_value_changed;
     FcuComputer_Y.out.logic.afs.spd_mach_value_changed = rtb_AND1;
     FcuComputer_Y.out.logic.capt_efis = rtb_BusAssignment_b_logic_capt_efis;
@@ -1319,7 +1329,7 @@ void FcuComputer::step()
       FcuComputer_P.EnumeratedConstant9_Value);
     FcuComputer_Y.out.discrete_outputs.capt_efis_outputs.arpt_light_on = (rtb_BusAssignment_d_efis_filter ==
       FcuComputer_P.EnumeratedConstant10_Value);
-    FcuComputer_Y.out.discrete_outputs.fo_efis_outputs.fd_light_on = rtb_DataTypeConversion_e;
+    FcuComputer_Y.out.discrete_outputs.fo_efis_outputs.fd_light_on = rtb_y_h;
     FcuComputer_Y.out.discrete_outputs.fo_efis_outputs.ls_light_on = rtb_Equal6;
     FcuComputer_Y.out.discrete_outputs.fo_efis_outputs.cstr_light_on = (rtb_efisFilter ==
       FcuComputer_P.EnumeratedConstant7_Value_b);
