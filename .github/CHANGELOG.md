@@ -109,6 +109,7 @@
 1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
 1. [FWC] Fix NW STRG DISC turning amber too soon - @adoggman (Andrew)
 1. [FMS] Fix VNAV crash for steep approaches - @BlueberryKing (BlueberryKing)
+1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
 
 ## 0.11.0
 
@@ -163,8 +164,6 @@
 1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
-1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
-1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
 
 ## 0.10.0
 
