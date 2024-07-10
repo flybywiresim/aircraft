@@ -169,11 +169,13 @@ class FcuComputer final
     real_T BitfromLabel2_bit_a;
     real_T BitfromLabel1_bit_m;
     real_T BitfromLabel6_bit_b;
-    real_T BitfromLabel1_bit_i;
-    real_T BitfromLabel2_bit_g;
     real_T BitfromLabel5_bit_p;
     real_T BitfromLabel4_bit_o;
     real_T BitfromLabel3_bit_f;
+    real_T BitfromLabel1_bit_i;
+    real_T BitfromLabel2_bit_g;
+    real_T BitfromLabel7_bit_b;
+    real_T BitfromLabel8_bit_g;
     real_T BitfromLabel1_bit_g;
     real_T BitfromLabel2_bit_o;
     real_T MTrigNode_isRisingEdge;
