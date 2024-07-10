@@ -662,6 +662,8 @@ export class PseudoFWC {
 
   private readonly N1IdleEng = Subject.create(0);
 
+  private readonly engineOnFor30Seconds = new NXLogicConfirmNode(30);
+
   // FIXME ECU should provide this in a discrete word
   private readonly engine1AboveIdle = MappedSubject.create(
     ([n1, idleN1]) => n1 > idleN1 + 2,
@@ -1064,6 +1066,7 @@ export class PseudoFWC {
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
+    this.engineOnFor30Seconds.write(this.engine1State.get() === 1 || this.engine2State.get() === 1, deltaTime);
 
     this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
     this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
@@ -4089,7 +4092,7 @@ export class PseudoFWC {
       // NW STRG DISC
       flightPhaseInhib: [],
       simVarIsActive: this.nwSteeringDisc,
-      whichCodeToReturn: () => [[2, 3, 4, 5, 6, 7, 8, 9].includes(this.fwcFlightPhase.get()) ? 1 : 0],
+      whichCodeToReturn: () => [this.engineOnFor30Seconds.read() ? 1 : 0],
       codesToReturn: ['000004001', '000004002'],
       memoInhibit: () => false,
       failure: 0,
