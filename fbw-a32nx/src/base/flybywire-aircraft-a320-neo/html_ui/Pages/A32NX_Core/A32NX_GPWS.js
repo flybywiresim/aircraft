@@ -116,15 +116,15 @@ class A32NX_GPWS {
 
         this.isApproachVsTakeoffState = SimVar.GetSimVarValue("L:A32NX_GPWS_APPROACH_STATE", "Bool") === 1;
 
-        this.isOverflightDetected = new NXLogic_TriggeredMonostableNode(60, true);
+        this.isOverflightDetected = new NXLogic_TriggeredMonostableNode(60, false);
         // Only relevant if alternate mode 4b is enabled
         this.isMode4aInhibited = false;
 
         // PIN PROGs
         this.isAudioDeclutterEnabled = false;
         this.isAlternateMode4bEnabled = false;
-        this.isTerrainClearanceFloorEnabled = true;
-        this.isTerrainAwarenessEnabled = true;
+        this.isTerrainClearanceFloorEnabled = false;
+        this.isTerrainAwarenessEnabled = false;
 
         this.egpwsAlertDiscreteWord1 = Arinc429Word.empty();
         this.egpwsAlertDiscreteWord2 = Arinc429Word.empty();
@@ -179,6 +179,7 @@ class A32NX_GPWS {
     update(deltaTime, _core) {
         this.gpws(deltaTime);
     }
+
     gpws(deltaTime) {
         // EGPWS receives ADR1 only
         const baroAlt = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1");
@@ -204,7 +205,7 @@ class A32NX_GPWS {
         const areFlapsInLandingConfig = !sfccPositionWord.isNormalOperation() || isFlapModeOff || (isLdgFlap3On ? isFlaps3 : isFlapsFull);
         const isGearDownLocked = SimVar.GetSimVarValue("L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED", "Bool") === 1;
 
-        // TODO only use this in the air
+        // TODO only use this in the air?
         const isNavAccuracyHigh = SimVar.GetSimVarValue("L:A32NX_FMGC_L_NAV_ACCURACY_HIGH", "Bool") === 1;
         const isTcfOperational = this.isTerrainClearanceFloorOperational(isTerrModeOff, radioAlt, isNavAccuracyHigh);
         const isTafOperational = this.isTerrainAwarenessOperational(isTerrModeOff);
@@ -214,9 +215,9 @@ class A32NX_GPWS {
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
-        // const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
         this.update_maxRA(radioAlt, isOnGround);
+
         const isOverflightDetected = this.updateOverflightState(deltaTime);
         this.updateMode4aInhibited(isGearDownLocked, areFlapsInLandingConfig);
 
@@ -798,7 +799,8 @@ class A32NX_GPWS {
     }
 
     updateOverflightState(deltaTime) {
-        return this.isOverflightDetected.write(this.RadioAltRate < -2200, deltaTime);
+        // Need -2200 ft/s to trigger an overflight state
+        return this.isOverflightDetected.write(this.RadioAltRate < -2200 * 60, deltaTime);
     }
 
     isTerrainClearanceFloorOperational(terrPbOff, radioAlt, fmcNavAccuracyHigh) {
@@ -808,6 +810,7 @@ class A32NX_GPWS {
     }
 
     isTerrainAwarenessOperational(terrPbOff) {
+        // TODO replace placeholders
         const doesTerrainAwarenessUseGeometricAltitude = true;
         const isGeometricAltitudeVfomValid = true;
         const isGeometricAltitudeHilValid = true;
