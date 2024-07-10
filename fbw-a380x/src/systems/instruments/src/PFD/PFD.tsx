@@ -1,5 +1,14 @@
 import { A380Failure } from '@flybywiresim/failures';
-import { ClockEvents, ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  ComponentProps,
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
 import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
@@ -68,7 +77,12 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
   private readonly raHeight = ConsumerSubject.create(this.sub.on('chosenRa').whenChanged(), Arinc429Word.empty());
 
   // FIXME add touch&go condition
-  private pitchTrimIndicatorVisible = MappedSubject.create(([flightPhase, gs, raHeight]) => (flightPhase >= 9 && gs < 30) || (flightPhase < 6 && raHeight.valueOr(0) < 50), this.fwcFlightPhase, this.groundSpeed, this.raHeight);
+  private pitchTrimIndicatorVisible = MappedSubject.create(
+    ([flightPhase, gs, raHeight]) => (flightPhase >= 9 && gs < 30) || (flightPhase < 6 && raHeight.valueOr(0) < 50),
+    this.fwcFlightPhase,
+    this.groundSpeed,
+    this.raHeight,
+  );
 
   constructor(props: PFDProps) {
     super(props);
@@ -79,8 +93,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     super.onAfterRender(node);
 
     this.failuresConsumer.register(getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay);
-
-
 
     this.sub.on('headingAr').handle((h) => {
       if (this.headingFailed.get() !== h.isNormalOperation()) {
@@ -124,7 +136,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         }
       });
 
-      this.sub.on('chosenRa').handle((ra) => {
+    this.sub.on('chosenRa').handle((ra) => {
       this.ownRadioAltitude = ra;
       const filteredRadioAltitude = this.radioAltitudeFilter.step(
         this.ownRadioAltitude.value,
