@@ -546,6 +546,11 @@
     "SimBridgeConnecting": "Connecting...",
     "SimBridgeOff": "Off",
     "SimBridgeOffline": "Not Available",
+    "Simrate": "Simrate",
+    "PauseAtTod": "Pause at Top of Descent",
+    "PauseAtTodArmed": "Armed",
+    "PauseAtTodStandby": "Standby",
+    "PauseAtTodInactive": "Inactive",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
@@ -555,6 +560,8 @@
       "PowerButton": "Power Off",
       "Settings": "Go to flyPad Settings page",
       "SimBridge": "Control SimBridge Connection",
+      "PauseAtTod": "Arm or Disarm pause at Top of Descent",
+      "Simrate": "Increase or Decrease Simulation Rate",
       "Sleep": "Standby"
     },
     "Title": "Quick Controls"
