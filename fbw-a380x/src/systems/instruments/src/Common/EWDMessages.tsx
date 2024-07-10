@@ -637,6 +637,238 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     sensed: true,
     items: [],
   },
+  // ATA 21: VENT
+  212800001: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800002: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800003: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL DEGRADED',
+    sensed: true,
+    items: [],
+  },
+  212800004: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800005: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL REDUNDANCY LOST',
+    sensed: true,
+    items: [],
+  },
+  212800006: {
+    title: '\x1b<4m\x1b4mCOND\x1bm AVNCS VENT CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800007: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800008: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800009: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL DEGRADED',
+    sensed: true,
+    items: [],
+  },
+  212800010: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800011: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL REDUNDANCY LOST',
+    sensed: true,
+    items: [],
+  },
+  212800012: {
+    title: '\x1b<4m\x1b4mCOND\x1bm PART SECONDARY CABIN FANS FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800013: {
+    title: '\x1b<4m\x1b4mCOND\x1bm SECONDARY CABIN FANS FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800014: {
+    title: '\x1b<4m\x1b4mVENT\x1bm AVNCS BLOWING FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800015: {
+    title: '\x1b<4m\x1b4mVENT\x1bm AVNCS EXTRACT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800016: {
+    title: '\x1b<4m\x1b4mVENT\x1bm AVNCS L BLOWING FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800017: {
+    title: '\x1b<4m\x1b4mVENT\x1bm AVNCS R BLOWING FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800018: {
+    title: '\x1b<4m\x1b4mVENT\x1bm AVNCS OVBD VLV FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800019: {
+    title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 1 OVHT',
+    sensed: true,
+    items: [],
+  },
+  212800020: {
+    title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 2 OVHT',
+    sensed: true,
+    items: [],
+  },
+  212800021: {
+    title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS PROT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800022: {
+    title: '\x1b<4m\x1b4mVENT\x1bm IFE BAY ISOL FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800023: {
+    title: '\x1b<4m\x1b4mVENT\x1bm IFE BAY VENT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800024: {
+    title: '\x1b<4m\x1b4mVENT\x1bm LAV & GALLEYS EXTRACT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800025: {
+    title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 1 VENT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800026: {
+    title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 2 VENT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800027: {
+    title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 1+2 VENT FAULT',
+    sensed: true,
+    items: [],
+  },
+  212800028: {
+    title: '\x1b<4m\x1b4mVENT\x1bm THS BAY VENT FAULT',
+    sensed: true,
+    items: [],
+  },
+  // ATA 21: PRESS
+  213800001: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS CAB ALT',
+    sensed: true,
+    items: [],
+  },
+  213800002: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS DIFF PRESS',
+    sensed: true,
+    items: [],
+  },
+  213800003: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS NEGATIVE DIFF PRESS',
+    sensed: true,
+    items: [],
+  },
+  213800004: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
+    sensed: true,
+    items: [],
+  },
+  213800005: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm AUTO CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800006: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm CTL REDUNDANCY LOST',
+    sensed: true,
+    items: [],
+  },
+  213800007: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm DIFF PRESS HI',
+    sensed: true,
+    items: [],
+  },
+  213800008: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm DIFF PRESS LO',
+    sensed: true,
+    items: [],
+  },
+  213800009: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm INHIBITED BY DOORS',
+    sensed: true,
+    items: [],
+  },
+  213800010: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm MAN CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800011: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800012: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800013: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL 3 FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800014: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL 4 FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800015: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800016: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm SENSORS FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800017: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm SYS FAULT',
+    sensed: true,
+    items: [],
+  },
+  213800018: {
+    title: '\x1b<4m\x1b4mCOND\x1bm CABIN AIR EXTRACT VLV FAULT',
+    sensed: true,
+    items: [],
+  },
   // ATA 22: FG / FMS
   220800001: {
     title: '\x1b<2m\x1b4mAUTO FLT\x1bm AP OFF',
