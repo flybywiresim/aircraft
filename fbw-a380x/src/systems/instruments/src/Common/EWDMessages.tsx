@@ -415,7 +415,229 @@ export const EcamNormalProcedures: { [n: number]: void } = {};
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
-  // ATA 21: FG / FMS
+  // ATA 21: AC
+  // TODO: items is not done yet for most abnormal procedures
+  211800001: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800002: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 CTL 2 FAULT ',
+    sensed: true,
+    items: [],
+  },
+  211800003: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 CTL 1 FAULT ',
+    sensed: true,
+    items: [],
+  },
+  211800004: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 CTL 2 FAULT   ',
+    sensed: true,
+    items: [],
+  },
+  211800005: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 CTL DEGRADED',
+    sensed: true,
+    items: [],
+  },
+  211800006: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 CTL DEGRADED  ',
+    sensed: true,
+    items: [],
+  },
+  211800007: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 CTL REDUNDANCY LOST  ',
+    sensed: true,
+    items: [],
+  },
+  211800008: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 CTL REDUNDANCY LOST ',
+    sensed: true,
+    items: [],
+  },
+  211800009: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800010: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800011: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 OFF ',
+    sensed: true,
+    items: [],
+  },
+  211800012: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 OFF ',
+    sensed: true,
+    items: [],
+  },
+  211800013: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 OVHT  ',
+    sensed: true,
+    items: [],
+  },
+  211800014: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 OVHT ',
+    sensed: true,
+    items: [],
+  },
+  211800015: {
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 REGUL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800016: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 REGUL FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800017: {
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 VLV 1 FAULT ',
+    sensed: true,
+    items: [],
+  },
+  211800018: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1 VLV 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800019: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 VLV 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800020: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 2 VLV 2 FAULT ',
+    sensed: true,
+    items: [],
+  },
+  211800021: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1+2 FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800022: {
+    title: '\x1b<4m\x1b4mAIR \x1bm PACK 1+2 REGUL REDUNDANCY FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800023: {
+    title: '\x1b<4m\x1b4mCOND \x1bm ALL PRIMARY CABIN FANS FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800024: {
+    title: '\x1b<4m\x1b4mCOND \x1bm BULK CARGO DUCT OVHT  ',
+    sensed: true,
+    items: [],
+  },
+  211800025: {
+    title: '\x1b<4m\x1b4mCOND \x1bm BULK CARGO HEATER FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800026: {
+    title: '\x1b<4m\x1b4mCOND \x1bm BULK CARGO ISOL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800027: {
+    title: '\x1b<4m\x1b4mCOND \x1bm BULK CARGO VENT FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800028: {
+    title: '\x1b<4m\x1b4mCOND \x1bm DUCT OVHT  ',
+    sensed: true,
+    items: [],
+  },
+  211800029: {
+    title: '\x1b<4m\x1b4mCOND \x1bm FWD CARGO ISOL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800030: {
+    title: '\x1b<4m\x1b4mCOND \x1bm FWD CARGO TEMP REGUL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800031: {
+    title: '\x1b<4m\x1b4mCOND\x1bm FWD CARGO VENT FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800032: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800033: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800034: {
+    title: '\x1b<4m\x1b4mCOND \x1bm MIXER PRESS REGUL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800035: {
+    title: '\x1b<4m\x1b4mCOND \x1bm ONE PRIMARY CABIN FAN FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800036: {
+    title: '\x1b<4m\x1b4mCOND \x1bm PURSER TEMP SEL FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800037: {
+    title: '\x1b<4m\x1b4mCOND \x1bm RAM AIR 1 FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800038: {
+    title: '\x1b<4m\x1b4mCOND \x1bm RAM AIR 2 FAULT ',
+    sensed: true,
+    items: [],
+  },
+  211800039: {
+    title: '\x1b<4m\x1b4mCOND \x1bm TEMP CTL 1 FAULT   ',
+    sensed: true,
+    items: [],
+  },
+  211800040: {
+    title: '\x1b<4m\x1b4mCOND \x1bm TEMP CTL 2 FAULT  ',
+    sensed: true,
+    items: [],
+  },
+  211800041: {
+    title: '\x1b<4m\x1b4mCOND \x1bm TEMP CTL FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800042: {
+    title: '\x1b<4m\x1b4mCOND \x1bm TEMP CTL REDUNDANCY LOST',
+    sensed: true,
+    items: [],
+  },
+  211800043: {
+    title: '\x1b<4m\x1b4mCOND \x1bm THREE PRIMARY CABIN FANS FAULT',
+    sensed: true,
+    items: [],
+  },
+  211800044: {
+    title: '\x1b<4m\x1b4mCOND \x1bm TWO PRIMARY CABIN FANS FAULT ',
+    sensed: true,
+    items: [],
+  },
+  // ATA 22: FG / FMS
   220800001: {
     title: '\x1b<2m\x1b4mAUTO FLT\x1bm AP OFF',
     sensed: true,
