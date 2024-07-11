@@ -167,7 +167,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_f0h;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_go;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_moh;
-    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_dba;
+    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_db;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_muf;
     rtDW_LagFilter_FmgcComputer_T sf_LagFilter_k;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_bs;
@@ -211,7 +211,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_kz1;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_mnt;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_jl;
-    rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_db;
+    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_ngt;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_fm;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_gk;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_fx;
@@ -242,8 +242,9 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_e5p;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_ga;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_d;
-    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_kq;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_jt;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_o;
+    rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_mn;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_kz;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_j3;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_jp;
@@ -453,7 +454,6 @@ class FmgcComputer final
     real_T CompareToConstant3_const_p;
     real_T CompareToConstant4_const_n;
     real_T MTrigNode_isRisingEdge;
-    real_T MTrigNode_isRisingEdge_d;
     real_T MTrigNode_isRisingEdge_j;
     real_T MTrigNode_isRisingEdge_g;
     real_T MTrigNode_isRisingEdge_k;
@@ -462,7 +462,6 @@ class FmgcComputer final
     real_T MTrigNode1_isRisingEdge;
     real_T RateLimiterVariableTs_lo;
     real_T MTrigNode_retriggerable;
-    real_T MTrigNode_retriggerable_m;
     real_T MTrigNode_retriggerable_p;
     real_T MTrigNode_retriggerable_f;
     real_T MTrigNode_retriggerable_pd;
@@ -472,8 +471,10 @@ class FmgcComputer final
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay_l;
+    real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode_timeDelay_i;
     real_T ConfirmNode_timeDelay_h;
+    real_T ConfirmNode1_timeDelay_e;
     real_T ConfirmNode_timeDelay_o;
     real_T ConfirmNode_timeDelay_f;
     real_T ConfirmNode_timeDelay_j;
@@ -481,8 +482,8 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay_l;
     real_T ConfirmNode1_timeDelay_d;
     real_T ConfirmNode_timeDelay_a;
-    real_T ConfirmNode2_timeDelay;
-    real_T ConfirmNode1_timeDelay_e;
+    real_T ConfirmNode2_timeDelay_b;
+    real_T ConfirmNode1_timeDelay_ef;
     real_T ConfirmNode1_timeDelay_dj;
     real_T ConfirmNode_timeDelay_n;
     real_T ConfirmNode_timeDelay_on;
@@ -517,7 +518,6 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay_ez;
     real_T ConfirmNode_timeDelay_br;
     real_T MTrigNode_triggerDuration;
-    real_T MTrigNode_triggerDuration_e;
     real_T MTrigNode_triggerDuration_n;
     real_T MTrigNode_triggerDuration_b;
     real_T MTrigNode_triggerDuration_bh;
@@ -724,13 +724,15 @@ class FmgcComputer final
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_n;
     boolean_T PulseNode_isRisingEdge_k;
-    boolean_T PulseNode1_isRisingEdge_m;
+    boolean_T ConfirmNode2_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge_h;
     boolean_T PulseNode2_isRisingEdge_n;
     boolean_T PulseNode3_isRisingEdge_a;
     boolean_T PulseNode4_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge_h;
     boolean_T PulseNode_isRisingEdge_p;
     boolean_T ConfirmNode_isRisingEdge_c;
+    boolean_T ConfirmNode1_isRisingEdge_f;
     boolean_T ConfirmNode_isRisingEdge_p;
     boolean_T ConfirmNode_isRisingEdge_l;
     boolean_T ConfirmNode_isRisingEdge_hu;
@@ -743,7 +745,7 @@ class FmgcComputer final
     boolean_T ConfirmNode1_isRisingEdge_g;
     boolean_T ConfirmNode_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_a;
-    boolean_T ConfirmNode2_isRisingEdge;
+    boolean_T ConfirmNode2_isRisingEdge_l;
     boolean_T ConfirmNode1_isRisingEdge_b;
     boolean_T ConfirmNode1_isRisingEdge_d;
     boolean_T ConfirmNode_isRisingEdge_le;
