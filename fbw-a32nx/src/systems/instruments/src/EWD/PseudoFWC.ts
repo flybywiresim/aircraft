@@ -12,10 +12,13 @@ import {
   ConsumerSubject,
   SimVarValueType,
   SubscribableMapFunctions,
+  StallWarningEvents,
 } from '@microsoft/msfs-sdk';
 
 import {
   Arinc429Register,
+  Arinc429RegisterSubject,
+  Arinc429SignStatusMatrix,
   Arinc429Word,
   NXDataStore,
   NXLogicClockNode,
@@ -30,6 +33,15 @@ import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPubl
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
+}
+
+/**
+ * Counts the number of truthy values in an array of booleans
+ * @param args
+ * @returns
+ */
+function countTrue(...args: boolean[]): number {
+  return args.reduce((accu, b) => (b ? accu + 1 : accu), 0);
 }
 
 interface EWDItem {
@@ -59,7 +71,9 @@ enum FwcAuralWarning {
 }
 
 export class PseudoFWC {
-  private readonly sub = this.bus.getSubscriber<EwdSimvars>();
+  private readonly sub = this.bus.getSubscriber<EwdSimvars & StallWarningEvents>();
+  /** Time to inhibit master warnings and cautions during startup in ms */
+  private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -88,6 +102,9 @@ export class PseudoFWC {
   );
 
   /* PSEUDO FWC VARIABLES */
+  private readonly startupTimer = new DebounceTimer();
+
+  private readonly startupCompleted = Subject.create(false);
 
   private readonly allCurrentFailures: string[] = [];
 
@@ -117,10 +134,13 @@ export class PseudoFWC {
 
   private nonCancellableWarningCount = 0;
 
+  private readonly stallWarning = Subject.create(false);
+
   private readonly masterWarningOutput = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.masterWarning,
     this.fireActive,
+    this.stallWarning,
   );
 
   private readonly auralCrcOutput = MappedSubject.create(
@@ -128,6 +148,8 @@ export class PseudoFWC {
     this.auralCrcActive,
     this.fireActive,
   );
+
+  private readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -584,7 +606,7 @@ export class PseudoFWC {
 
   /* LANDING GEAR AND LIGHTS */
 
-  private readonly aircraftOnGround = Subject.create(0);
+  private readonly aircraftOnGround = Subject.create(false);
 
   private readonly antiskidActive = Subject.create(false);
 
@@ -604,6 +626,10 @@ export class PseudoFWC {
 
   private readonly lgciu2DiscreteWord1 = Arinc429Register.empty();
 
+  private readonly lgciu1DiscreteWord2 = Arinc429Register.empty();
+
+  private readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
+
   private readonly nwSteeringDisc = Subject.create(false);
 
   private readonly parkBrake = Subject.create(false);
@@ -618,6 +644,28 @@ export class PseudoFWC {
 
   private readonly lgNotDownPulse2 = new NXLogicPulseNode();
 
+  private readonly lgciu1OnGroundDisagreeConf = new NXLogicConfirmNode(1, true);
+
+  private readonly lgciu1OnGroundAgreeConf = new NXLogicConfirmNode(0.5, true);
+
+  private readonly lgciu1OnGroundDisagreeMem = new NXLogicMemoryNode(true);
+
+  private readonly lgciu2OnGroundDisagreeConf = new NXLogicConfirmNode(1, true);
+
+  private readonly lgciu2OnGroundAgreeConf = new NXLogicConfirmNode(0.5, true);
+
+  private readonly lgciu2OnGroundDisagreeMem = new NXLogicMemoryNode(true);
+
+  private readonly ra1OnGroundMem = new NXLogicMemoryNode(true);
+
+  private readonly ra2OnGroundMem = new NXLogicMemoryNode(true);
+
+  private readonly ignoreRaOnGroundTrigger = new NXLogicTriggeredMonostableNode(10, true);
+
+  private readonly onGroundConf = new NXLogicConfirmNode(1, true);
+
+  private onGroundImmediate = false;
+
   /* NAVIGATION */
 
   private readonly adirsRemainingAlignTime = Subject.create(0);
@@ -628,9 +676,13 @@ export class PseudoFWC {
 
   private readonly adiru3State = Subject.create(0);
 
-  private readonly computedAirSpeed = Subject.create(Arinc429Word.empty());
+  private readonly adr1Cas = Subject.create(Arinc429Word.empty());
 
-  private readonly computedAirSpeedToNearest2 = this.computedAirSpeed.map((it) => Math.round(it.value / 2) * 2);
+  private readonly adr2Cas = Arinc429Register.empty();
+
+  private readonly adr3Cas = Arinc429Register.empty();
+
+  private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
 
   private readonly height1Failed = Subject.create(false);
 
@@ -641,6 +693,8 @@ export class PseudoFWC {
   private readonly overspeedWarning = Subject.create(false);
 
   private readonly flapsIndex = Subject.create(0);
+
+  private stallWarningRaw = ConsumerValue.create(this.sub.on('stall_warning_on'), false);
 
   /** ENGINE AND THROTTLE */
 
@@ -886,11 +940,13 @@ export class PseudoFWC {
     this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc));
 
     this.masterCaution.sub((caution) => {
-      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
+      // Inhibit master warning/cautions until FWC startup has been completed
+      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
     }, true);
 
     this.masterWarningOutput.sub((warning) => {
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
+      // Inhibit master warning/cautions until FWC startup has been completed
+      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', this.startupCompleted.get() ? warning : false);
     }, true);
 
     // L/G lever red arrow sinking outputs
@@ -899,6 +955,21 @@ export class PseudoFWC {
       SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
       SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
     }, true);
+
+    this.stallWarning.sub((v) => {
+      this.fwcOut126.setBitValue(17, v);
+      // set the sound on/off
+      SimVar.SetSimVarValue('L:A32NX_AUDIO_STALL_WARNING', 'bool', v);
+    }, true);
+    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
+
+    this.fwcOut126.sub((v) => {
+      Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
+      Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
+    }, true);
+
+    // FIXME depend on FWC state
+    this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
     const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
@@ -913,6 +984,25 @@ export class PseudoFWC {
     this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
     this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
     this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
+
+    // Inhibit single chimes for the first two seconds after power-on
+    this.auralSingleChimeInhibitTimer.schedule(
+      () => (this.auralSingleChimePending = false),
+      PseudoFWC.AURAL_SC_INHIBIT_TIME,
+    );
+
+    this.acESSBusPowered.sub((v) => {
+      if (v) {
+        this.startupTimer.schedule(() => {
+          this.startupCompleted.set(true);
+          console.log('PseudoFWC startup completed.');
+        }, PseudoFWC.FWC_STARTUP_TIME);
+      } else {
+        this.startupTimer.clear();
+        this.startupCompleted.set(false);
+        console.log('PseudoFWC shut down.');
+      }
+    });
   }
 
   mapOrder(array, order): [] {
@@ -1009,6 +1099,7 @@ export class PseudoFWC {
     this.flightPhase129.set([1, 2, 9].includes(this.fwcFlightPhase.get()));
     this.flightPhase67.set([6, 7].includes(this.fwcFlightPhase.get()));
     this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
+    const flightPhase567 = [5, 6, 7].includes(this.fwcFlightPhase.get());
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
@@ -1051,12 +1142,22 @@ export class PseudoFWC {
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
-    this.computedAirSpeed.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
+    this.adr1Cas.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
+    this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
+    this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
 
-    // needs to happen before dual eng failure check
-    this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+    // RA acquisition
+    this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
+    this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
 
-    /* ENGINE AND THROTTLE */
+    /* ELECTRICAL acquisition */
+    this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
+    this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
+    this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
+    this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
+    this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
+
+    /* ENGINE AND THROTTLE acquisition */
 
     this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
     this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
@@ -1065,6 +1166,7 @@ export class PseudoFWC {
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
+    // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
     this.engineOnFor30Seconds.write(this.engine1State.get() === 1 || this.engine2State.get() === 1, deltaTime);
 
@@ -1078,8 +1180,6 @@ export class PseudoFWC {
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
 
     this.radioAlt.set(SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet'));
-    this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
-    this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
@@ -1099,27 +1199,8 @@ export class PseudoFWC {
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
-    this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
-    // FIXME ECU doesn't have the necessary output words so we go purely on TLA
-    const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
-    const toPower =
-      this.throttle1Position.get() >= 45 ||
-      (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
-      this.throttle2Position.get() >= 45 ||
-      (this.throttle2Position.get() >= 35 && flexThrustLimit);
-    this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
-    const raAbove1500 = this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500;
-    this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
 
-    this.engDualFault.set(
-      !this.aircraftOnGround.get() &&
-        ((this.fireButton1.get() && this.fireButton2.get()) ||
-          (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
-          (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
-    );
-
-    /* HYDRAULICS */
+    /* HYDRAULICS acquisition */
 
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
     this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
@@ -1140,7 +1221,7 @@ export class PseudoFWC {
     const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
     const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
-    /* ADIRS */
+    /* ADIRS acquisition */
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -1158,32 +1239,11 @@ export class PseudoFWC {
     this.height1Failed.set(height1.isFailureWarning());
     this.height2Failed.set(height2.isFailureWarning());
     // overspeed
-    const adr3Cas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
-    let overspeedWarning = this.adr3OverspeedWarning.write(
-      adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && adr3Cas.value > adr3MaxCas.value + 8,
-      this.aircraftOnGround.get() ||
-        !(adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
-        adr3Cas.value < adr3MaxCas.value + 4,
-    );
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
-    if (
-      !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
-      !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())
-    ) {
-      const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
-      overspeedWarning ||= adr3Discrete1.getBitValueOr(9, false);
-    }
-    overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
-    this.overspeedWarning.set(overspeedWarning);
 
-    /* LANDING GEAR AND LIGHTS */
-
-    // const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
-    // const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
-    // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
-    // FIXME The landing gear triggers the dual engine failure on loading
+    /* LANDING GEAR AND LIGHTS acquisition */
 
     this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
     this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
@@ -1196,9 +1256,17 @@ export class PseudoFWC {
     this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
     this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
-    this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
+    this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
+    this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
+    this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
     this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+    const leftCompressedHardwireLgciu1 =
+      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
+    const leftCompressedHardwireLgciu2 =
+      this.dc2BusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
+
+    // General logic
     const mainGearDownlocked =
       (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false)) &&
       (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
@@ -1206,6 +1274,83 @@ export class PseudoFWC {
     const gearDownlocked =
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
+
+    // on ground logic
+    const lgciu1Disagree = xor(leftCompressedHardwireLgciu1, this.lgciu1DiscreteWord2.bitValue(13));
+    this.lgciu1OnGroundDisagreeConf.write(lgciu1Disagree, deltaTime);
+    this.lgciu1OnGroundAgreeConf.write(!lgciu1Disagree, deltaTime);
+    this.lgciu1OnGroundDisagreeMem.write(
+      (!this.lgciu1DiscreteWord2.isNormalOperation() && !this.lgciu1DiscreteWord2.isFunctionalTest()) ||
+        this.lgciu1OnGroundDisagreeConf.read(),
+      this.lgciu1OnGroundAgreeConf.read(),
+    );
+    const lgciu2Disagree = xor(leftCompressedHardwireLgciu2, this.lgciu2DiscreteWord2.bitValue(13));
+    this.lgciu2OnGroundDisagreeConf.write(lgciu2Disagree, deltaTime);
+    this.lgciu2OnGroundAgreeConf.write(!lgciu2Disagree, deltaTime);
+    this.lgciu2OnGroundDisagreeMem.write(
+      (!this.lgciu2DiscreteWord2.isNormalOperation() && !this.lgciu2DiscreteWord2.isFunctionalTest()) ||
+        this.lgciu2OnGroundDisagreeConf.read(),
+      this.lgciu2OnGroundAgreeConf.read(),
+    );
+    const lgciuOnGroundDisagree = this.lgciu1OnGroundDisagreeMem.read() || this.lgciu2OnGroundDisagreeMem.read();
+    const onGroundA =
+      leftCompressedHardwireLgciu1 &&
+      this.lgciu1DiscreteWord2.bitValue(13) &&
+      leftCompressedHardwireLgciu2 &&
+      this.lgciu2DiscreteWord2.bitValue(13);
+
+    // TODO some renaming
+    this.ignoreRaOnGroundTrigger.write(
+      this.radioHeight1.isNoComputedData() && this.radioHeight2.isNoComputedData() && !lgciuOnGroundDisagree,
+      deltaTime,
+    );
+    this.ra1OnGroundMem.write(
+      this.radioHeight1.value < 5,
+      !leftCompressedHardwireLgciu1 || !leftCompressedHardwireLgciu2,
+    );
+    this.ra2OnGroundMem.write(
+      this.radioHeight2.value < 5,
+      !leftCompressedHardwireLgciu1 || !leftCompressedHardwireLgciu2,
+    );
+    const ra1OnGround =
+      (this.radioHeight1.isNormalOperation() || this.radioHeight1.isFunctionalTest()) &&
+      (this.radioHeight1.value < 5 || this.ra1OnGroundMem.read());
+    const ra2OnGround =
+      (this.radioHeight2.isNormalOperation() || this.radioHeight2.isFunctionalTest()) &&
+      (this.radioHeight2.value < 5 || this.ra2OnGroundMem.read());
+    const onGroundCount = countTrue(
+      leftCompressedHardwireLgciu1,
+      leftCompressedHardwireLgciu2,
+      ra1OnGround,
+      ra2OnGround,
+    );
+    const raInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
+    this.onGroundImmediate =
+      (onGroundA && this.ignoreRaOnGroundTrigger.read()) ||
+      (onGroundCount > 2 && !raInvalid) ||
+      (onGroundCount > 1 && raInvalid);
+    this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
+
+    // Engine Logic
+    this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
+    // FIXME ECU doesn't have the necessary output words so we go purely on TLA
+    const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
+    const toPower =
+      this.throttle1Position.get() >= 45 ||
+      (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
+      this.throttle2Position.get() >= 45 ||
+      (this.throttle2Position.get() >= 35 && flexThrustLimit);
+    this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
+    const raAbove1500 = this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500;
+    this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+
+    this.engDualFault.set(
+      !this.aircraftOnGround.get() &&
+        ((this.fireButton1.get() && this.fireButton2.get()) ||
+          (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
+          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
+          (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
+    );
 
     /* 22 - AUTOFLIGHT */
     const fm1DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3');
@@ -1216,6 +1361,22 @@ export class PseudoFWC {
     } else if (this.toConfigTestRaw) {
       this.toConfigCheckedInPhase2Or3 = true;
     }
+
+    let overspeedWarning = this.adr3OverspeedWarning.write(
+      this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && this.adr3Cas.value > adr3MaxCas.value + 8,
+      this.aircraftOnGround.get() ||
+        !(this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
+        this.adr3Cas.value < adr3MaxCas.value + 4,
+    );
+    if (
+      !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
+      !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())
+    ) {
+      const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
+      overspeedWarning ||= adr3Discrete1.getBitValueOr(9, false);
+    }
+    overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
+    this.overspeedWarning.set(overspeedWarning);
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted =
@@ -1268,14 +1429,6 @@ export class PseudoFWC {
     const mcduToFlapPos2 = fm1DiscreteWord2.getBitValueOr(15, false) || fm2DiscreteWord2.getBitValueOr(15, false);
     /** MCDU TO CONF 3 selected */
     const mcduToFlapPos3 = fm1DiscreteWord2.getBitValueOr(16, false) || fm2DiscreteWord2.getBitValueOr(16, false);
-
-    /* ELECTRICAL */
-
-    this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
-    this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
-    this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
-    this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
-    this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -1929,6 +2082,20 @@ export class PseudoFWC {
       !((flightPhase6 && !bothRaInvalid) || flightPhase45) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
 
+    // 32 - Surveillance Logic
+    const isNormalLaw = fcdc1DiscreteWord1.getBitValue(11) || fcdc2DiscreteWord1.getBitValue(11);
+    // we need to check this since the MSFS SDK stall warning does not.
+    const isCasAbove60 =
+      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.valueOr(0) > 60 || this.adr3Cas.valueOr(0) > 60;
+    this.stallWarning.set(
+      !isNormalLaw &&
+        isCasAbove60 &&
+        this.stallWarningRaw.get() &&
+        flightPhase567 &&
+        this.radioHeight1.valueOr(Infinity) > 1500 &&
+        this.radioHeight2.valueOr(Infinity) > 1500,
+    );
+
     /* FIRE */
 
     this.fireButton1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
@@ -2327,6 +2494,38 @@ export class PseudoFWC {
         PseudoFWC.AURAL_SC_PLAY_TIME,
       );
     }
+
+    this.updateRowRopWarnings();
+  }
+
+  updateRowRopWarnings() {
+    const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
+
+    // ROW
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_RWY_TOO_SHORT', 'bool', w.getBitValueOr(15, false));
+
+    // ROP
+    // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
+    const maxBrakingSet =
+      SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
+      SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
+    const maxBraking = w.getBitValueOr(13, false) && !maxBrakingSet;
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_ROP_MAX_BRAKING', 'bool', maxBraking);
+
+    // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
+    const maxReverseSet =
+      SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
+      SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
+    const maxReverse = (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)) && !maxReverseSet;
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_SET_MAX_REVERSE', 'bool', !maxBraking && maxReverse);
+
+    // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
+    const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
+    SimVar.SetSimVarValue(
+      'L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
+      'bool',
+      ias <= 80 && ias > 4 && (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)),
+    );
   }
 
   ewdMessageFailures: EWDMessageDict = {
