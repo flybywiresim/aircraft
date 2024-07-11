@@ -27,6 +27,7 @@
   <CustomClientEvent Name="A32NX FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Altitude knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" SubCategory="A32NX FCU" IsGlobal="true" >Toggle Altitude increment on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU METRIC ALT TOGGLE PUSH" EventID="A32NX.FCU_METRIC_ALT_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push metric alt toggle on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS INC" EventID="A32NX.FCU_VS_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial V/S knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS DEC" EventID="A32NX.FCU_VS_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS SET" EventID="A32NX.FCU_VS_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set VS/FPA value on FCU</CustomClientEvent>
