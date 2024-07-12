@@ -222,7 +222,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new Fmgc.DataManager(this);
 
         this.efisInterfaces = { L: new Fmgc.EfisInterface('L', this.currFlightPlanService), R: new Fmgc.EfisInterface('R', this.currFlightPlanService) };
-        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings);
+        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings, Fmgc.A320AircraftConfig);
         this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(
             this.guidanceController,
@@ -4148,17 +4148,6 @@ class FMCMainDisplay extends BaseAirliners {
                 this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, activePlan.destinationRunway.magneticBearing);
             }
         }
-    }
-    _getV1Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v1;
-    }
-
-    _getVRSpeed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).vr;
-    }
-
-    _getV2Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v2;
     }
 
     /**
