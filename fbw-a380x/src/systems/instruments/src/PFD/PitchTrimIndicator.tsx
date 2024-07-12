@@ -238,11 +238,11 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
               </text>
             </g>
             <g ref={this.gwCgGroup} transform={this.gwCgPosition.map((it) => `translate(0 ${it - 5})`)}>
-              <rect x={357} y={117} width={75} height={30} stroke="#ff94ff" stroke-width={2} />
+              <rect x={360} y={117} width={71} height={30} stroke="#ff94ff" stroke-width={2} />
               <text x={362} y={140} font-size={21.7} class="Magenta">
                 {this.cgPercent.map((it) => it.toFixed(1))}
               </text>
-              <text x={415} y={140} font-size={21.7} class="Cyan">
+              <text x={416} y={140} font-size={21.7} class="Cyan">
                 %
               </text>
             </g>
