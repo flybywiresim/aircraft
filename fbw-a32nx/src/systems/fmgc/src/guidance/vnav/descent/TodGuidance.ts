@@ -145,7 +145,6 @@ export class TodGuidance {
     const tdReached =
       this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
       this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
-      Simplane.getAutoPilotAirspeedManaged() &&
       this.aircraftToDescentProfileRelation.isPastTopOfDescent();
 
     if (tdReached !== this.tdReached) {
