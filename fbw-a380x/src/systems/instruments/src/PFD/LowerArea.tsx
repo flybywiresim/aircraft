@@ -444,7 +444,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             visibility={this.spoilersCommandedPosition.map((p) => (p >= 0.05 ? 'inherit' : 'hidden'))}
           />
           <path
-            d="M 22 183.5 h 3 l -1.5 3 z"
+            d="M 21.6 183.5 h 3 l -1.5 3 z"
             class="Fill Stroke NormalStroke Cyan CornerRound"
             visibility={this.spoilersArmed.map((a) => (a ? 'inherit' : 'hidden'))}
           />

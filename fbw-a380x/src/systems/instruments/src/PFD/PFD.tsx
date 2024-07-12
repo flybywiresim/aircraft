@@ -5,7 +5,6 @@ import {
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
-  MappedSubject,
   Subject,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -74,19 +73,27 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private failuresConsumer;
 
-  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
-
   private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed').whenChanged(), 0);
 
-  private readonly raHeight = ConsumerSubject.create(this.sub.on('chosenRa').whenChanged(), Arinc429Word.empty());
+  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
-  // FIXME add touch&go condition
-  private pitchTrimIndicatorVisible = MappedSubject.create(
-    ([flightPhase, gs, raHeight]) => (flightPhase >= 9 && gs < 30) || (flightPhase < 6 && raHeight.valueOr(0) < 50),
-    this.fwcFlightPhase,
-    this.groundSpeed,
-    this.raHeight,
-  );
+  private readonly thrustTla = ConsumerSubject.create(this.sub.on('tla1').whenChanged(), 0);
+
+  private previousFlapHandlePosition = 0;
+
+  private readonly pitchTrimIndicatorVisible = Subject.create(false);
+
+  private updatePitchTrimVisible(flapsRetracted = false) {
+    const gs = new Arinc429Word(this.groundSpeed.get()).valueOr(0);
+    if (this.filteredRadioAltitude.get() > 50) {
+      this.pitchTrimIndicatorVisible.set(false);
+    } else if (gs < 30) {
+      this.pitchTrimIndicatorVisible.set(true);
+    } else if (gs < 80 && (this.spoilersArmed.get() === true || flapsRetracted === true || this.thrustTla.get() > 5)) {
+      // FIXME add "flight crew presses pitch trim switches"
+      this.pitchTrimIndicatorVisible.set(true);
+    }
+  }
 
   constructor(props: PFDProps) {
     super(props);
@@ -147,7 +154,21 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         this.props.instrument.deltaTime / 1000,
       );
       this.filteredRadioAltitude.set(filteredRadioAltitude);
+      this.updatePitchTrimVisible();
     });
+
+    this.sub
+      .on('flapHandleIndex')
+      .whenChanged()
+      .handle((fh) => {
+        if (this.previousFlapHandlePosition > fh) {
+          this.updatePitchTrimVisible(true);
+        }
+        this.previousFlapHandlePosition = fh;
+      });
+
+    this.groundSpeed.sub(() => this.updatePitchTrimVisible());
+    this.spoilersArmed.sub(() => this.updatePitchTrimVisible());
   }
 
   render(): VNode {
