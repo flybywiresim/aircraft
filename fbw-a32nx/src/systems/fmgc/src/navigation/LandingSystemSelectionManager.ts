@@ -12,8 +12,8 @@ import {
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { distanceTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
