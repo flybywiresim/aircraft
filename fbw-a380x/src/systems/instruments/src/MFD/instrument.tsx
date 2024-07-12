@@ -4,6 +4,7 @@ import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { A380Failure } from '@failures';
 
 class A380X_MFD extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -96,6 +97,10 @@ class A380X_MFD extends BaseInstrument {
 
     // Remove "instrument didn't load" text
     mfd?.querySelector(':scope > h1')?.remove();
+
+    this.failuresConsumer.register(A380Failure.FmcA);
+    this.failuresConsumer.register(A380Failure.FmcB);
+    this.failuresConsumer.register(A380Failure.FmcC);
   }
 
   public onInteractionEvent(args: string[]): void {

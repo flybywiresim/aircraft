@@ -245,8 +245,6 @@ export class FlightManagementComputer implements FmcInterface {
       );
     }
 
-    this.failuresConsumer.register(this.failureKey);
-
     let lastUpdateTime = Date.now();
     setInterval(() => {
       const now = Date.now();

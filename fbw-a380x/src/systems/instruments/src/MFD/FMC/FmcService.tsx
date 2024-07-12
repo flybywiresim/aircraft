@@ -44,7 +44,7 @@ export class FmcService implements FmcServiceInterface {
   }
 
   createFmc(mfdReference: (DisplayInterface & MfdDisplayInterface) | null): void {
-    // Only instantiate FMC-A for now, this takes up enough resources already
+    // Only FMC-A is operative for now, this takes up enough resources already
     // Before more FMC can be added, they have to be synced
     this.fmc.push(
       new FlightManagementComputer(

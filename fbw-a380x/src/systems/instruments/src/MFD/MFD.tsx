@@ -78,16 +78,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
-  private readonly displayBrightness = ConsumerSubject.create(
-    this.sub.on(this.props.captOrFo === 'CAPT' ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged(),
-    70,
-  );
-
-  private readonly displayPowered = ConsumerSubject.create(
-    this.sub.on(this.props.captOrFo === 'CAPT' ? 'elec' : 'elecFo').whenChanged(),
-    false,
-  );
-
   private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob').whenChanged(), 0);
 
   private readonly fmcAIsHealthy = ConsumerSubject.create(this.sub.on('fmcAIsHealthy').whenChanged(), true);
