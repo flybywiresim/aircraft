@@ -1403,7 +1403,7 @@ export class SquawkFormat implements DataEntryFormat<number> {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
-    return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
+    return [value.toFixed(0).padStart(this.maxDigits, '0'), null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
