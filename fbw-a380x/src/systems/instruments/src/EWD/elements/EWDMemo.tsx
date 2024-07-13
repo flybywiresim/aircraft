@@ -1,3 +1,4 @@
+import { EcamMemos } from '@instruments/common/EWDMessages';
 import FormattedFwcText from '../../Common/EWDMessageParser';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
@@ -31,7 +32,18 @@ export const EWDMemo: React.FC<EWDMemoProps> = ({ x, y, active, side }) => {
         EcamMemos[padEWDCode(line8)],
     ].join('\r');
 
-    const numMemos = side === 'LEFT' ? 0 : [line1, line2, line3, line4, line5, line6, line7, line8].filter(Boolean).length;
+    // Also count left side MEMOs for length of line
+    let leftMemoCount = 0;
+    if (side === 'RIGHT') {
+        for (let i = 1; i < 9; i++) {
+            const [lineX] = useSimVar(`L:A32NX_EWD_LOWER_LEFT_LINE_${i}`, 'number', 500);
+            if (lineX) {
+                leftMemoCount++;
+            }
+        }
+    }
+
+    const numMemos = side === 'LEFT' ? 0 : Math.max(leftMemoCount, [line1, line2, line3, line4, line5, line6, line7, line8].filter(Boolean).length);
 
     return (
         <g id={`EWDMemo${side}`} className={active ? 'Show' : 'Hide'}>
