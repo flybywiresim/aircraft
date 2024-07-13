@@ -1014,47 +1014,678 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   240800002: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        // on ground
+        name: 'LAST ENG SHUTDOWN : ENG 4',
+        sensed: false,
+        color: 'green',
+      },
+    ],
   },
   240800003: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 1+2 & DC BUS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+        color: 'cyan',
+      },
+      {
+        name: 'AP : SIDESTICK LOCKING DEVICE NOT AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      // Next two only if PRIM 2 Failed
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+    ],
   },
   240800004: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'GEN 1+2',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+
+      // if reset not successful
+      {
+        name: 'COMMERCIAL 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GEN 1+2',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+
+      // after landing
+      {
+        name: 'BEFORE LAST ENG SHUTDOWN :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 3 MODE SEL',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+        color: 'green',
+      },
+    ],
   },
   240800005: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+3 & DC BUS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'USE VHF 1',
+        sensed: false,
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+      },
+      {
+        name: 'AVOID ICING CONDs',
+        sensed: false,
+      },
+      {
+        name: 'FOR SD : SELECT "MAILBOX" ON CAPT KCCU',
+        sensed: false,
+      },
+      {
+        name: 'INR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+      },
+
+      {
+        name: 'TRIM TK NOT USABLE', // If trim tank fuel is not usable for engine feed and for CG management
+        sensed: false,
+      },
+      /*
+      If trim tank fuel is not usable for engine feed, but the flight crew can manually transfer
+      the trim tank fuel for CG management
+      */
+      {
+        name: 'TRIM TK NOT USABLE FOR ENG SUPPLY',
+        sensed: false,
+      },
+      {
+        name: 'OIS ON BAT',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FEED TK 4 : 1300 KG MAX NOT USABLE',
+        sensed: false,
+      },
+
+      // If flight time above FL 300 since departure is less than 30 min
+      {
+        name: 'DESCENT TO FL 50/MEA-MORA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 50/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'WHEN BELOW FL 50/MEA-MORA:',
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'AVOID NEG G LOAD',
+        sensed: false,
+      },
+      // If flight time above FL 300 since departure is greater than 30 min:
+      {
+        name: 'DESCENT TO FL 280',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 280',
+        sensed: false,
+      },
+      {
+        name: 'WHEN BELOW FL 280:',
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'AVOID NEG G LOAD',
+        sensed: false,
+      },
+      // If L/G is not down and locked:
+      {
+        name: 'L/G GRVTY EXTN ONLY',
+        sensed: false,
+      },
+      // If L/G is down and locked
+      {
+        name: 'NO L/G RETRACTION',
+        sensed: false,
+      },
+      // If fuel quantity in feed tanks 1 and 4 is below 19 000 kg
+      {
+        name: 'OUTR TKs PMPs',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
+        sensed: false,
+      },
+      // if soft ga lost
+      {
+        name: 'GA THR : TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+
+      // After landing, below 80 kt with at least one engine running:
+      {
+        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        sensed: false,
+      },
+      {
+        name: 'RESIDUAL DIFF PRESS',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVISE',
+      },
+    ],
   },
   240800006: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+4 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      // after landing
+      {
+        name: 'LAST ENG SHUTDOWN : ENG 1',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'ALL CROSSFEEDS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'A/THR',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // in flight
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS1',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS1',
+      },
+      {
+        name: 'INR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+      },
+
+      {
+        name: 'TRIM TK NOT USABLE', // If trim tank fuel is not usable for engine feed and for CG management
+        sensed: false,
+      },
+      /*
+      If trim tank fuel is not usable for engine feed, but the flight crew can manually transfer
+      the trim tank fuel for CG management
+      */
+      {
+        name: 'TRIM TK NOT USABLE FOR ENG SUPPLY',
+        sensed: false,
+      },
+
+      {
+        name: 'USE TRIM TK XFR FOR CG IF NECESSARY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FEED TK 1: 1300 KG MAX NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'FEED TK 4 : 1300 KG MAX NOT USABLE',
+        sensed: false,
+      },
+      // If flight time above FL 300 since departure is less than 30 min
+      {
+        name: 'DESCENT TO FL 50/MEA-MORA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 50/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'WHEN BELOW FL 50/MEA-MORA:',
+        sensed: false,
+      },
+      {
+        name: 'ALL CROSSFEEDS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'AVOID NEG G LOAD',
+        sensed: false,
+      },
+
+      // If flight time above FL 300 since departure is greater than 30 min:
+      {
+        name: 'DESCENT TO FL 280',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 280',
+        sensed: false,
+      },
+      {
+        name: 'WHEN BELOW FL 280:',
+        sensed: false,
+      },
+      {
+        name: 'ALL CROSSFEEDS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'AVOID NEG G LOAD',
+        sensed: false,
+      },
+
+      // if soft ga lost
+      {
+        name: 'GA THR : TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+
+      // If fuel quantity in feed tanks 1 and 4 is below 19 000 kg
+      {
+        name: 'OUTR TKs PMPs',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+    ],
   },
   240800007: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      //if three generators are failed and generator 4 is not available:
+      {
+        name: 'GEN 3+4',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      // IF RESET NOT SUCCESSFUL :
+      {
+        name: 'IF RESET NOT SUCCESFUL',
+        sensed: false,
+      },
+      {
+        name: 'COMMERCIAL 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GEN 3+4',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      // If three generators are failed and generator 4 is available:
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      // If the main pump of the feed tank 2 is inoperative
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // If the standby pump of the feed tank 3 is inoperative:
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // on the ground
+      {
+        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        sensed: false,
+      },
+      {
+        name: 'RESIDUAL DIFF PRESS',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVISE',
+      },
+    ],
   },
   240800008: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 3+4 & DC BUS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      // in flight
+      {
+        name: 'VENT AVNCS EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'F/O ON 3',
+      },
+      {
+        name: 'AIR DATA SWTG',
+        sensed: true,
+        labelNotCompleted: 'F/O ON 3',
+      },
+      {
+        name: 'F/O BARO REF : STD ONLY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'USE VHF 1 OR 3',
+        sensed: false,
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'DU RECONF PB AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'F/O KEYBOARD CURSOR CTL AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+
+      // Next two only if PRIM 3 Failed
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+
+      // After landing, below 80 kt with at least one engine running:
+      {
+        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        sensed: false,
+      },
+      {
+        name: 'RESIDUAL DIFF PRESS',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVISE',
+      },
+    ],
   },
   240800009: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 4 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'LAST ENG SHUTDOWN : ENG 1',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'VENT AVNCS EXTRACT', // in flight
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'AIR DATA SWTG',
+        sensed: true,
+        labelNotCompleted: 'F/O ON 3',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+    ],
   },
   240800010: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC EMER BUS FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'AIR DATA SWTG',
+        sensed: false,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: false,
+        labelNotCompleted: 'SYS 2 ',
+      },
+      // after landing
+      {
+        name: 'BEFORE LAST ENGINE SHUTDOWN',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 1 MODE SEL',
+        sensed: false,
+        color: 'green',
+      },
+    ],
   },
   240800011: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS ALTN',
@@ -1064,10 +1695,69 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   240800012: {
     title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS FAULT',
     sensed: true,
-    items: [], // TODo
+    items: [
+      {
+        name: 'AC ESS FEED',
+        sensed: true,
+        labelNotCompleted: 'ALTN',
+      },
+      {
+        name: 'IF NOT SUCCESSFUL',
+        sensed: false,
+      },
+
+      {
+        name: 'AIR DATA SWTG',
+        sensed: false,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'SYS 2 ',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: false,
+        labelNotCompleted: 'SYS 2 ',
+      },
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+
+      // after landing
+      {
+        name: 'BEFORE LAST ENGINE SHUTDOWN',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 1 MODE SEL',
+        sensed: false,
+        color: 'green',
+      },
+    ],
   },
   240800013: {
-    title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS FAULT',
+    title: '\x1b<4m\x1b4mELEC\x1bm APU BAT FAULT',
     sensed: true,
     items: [
       {
@@ -1190,32 +1880,540 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   240800026: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+      },
+      {
+        name: 'AP: SIDESTICK LOCKING DEVICE NOT AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+
+      // Next two only if PRIM 2 Failed
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+
+      // after landing
+      {
+        name: 'BEFORE LAST ENGINE SHUTDOWN',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 3 MODE SEL',
+        sensed: false,
+        color: 'green',
+      },
+    ],
   },
   240800027: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 +2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'SYS1',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: false,
+        labelNotCompleted: 'SYS1',
+      },
+      {
+        name: 'USE VHF1',
+        sensed: false,
+      },
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+      },
+      {
+        name: 'AVOID ICING CONDs',
+        sensed: false,
+      },
+      {
+        name: 'FOR SD : SELECT "MAILBOX" ON CAPT KCCU',
+        sensed: false,
+      },
+      {
+        name: 'OIS ON BAT',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'INR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+      },
+
+      {
+        name: 'TRIM TK NOT USABLE', // If trim tank fuel is not usable for engine feed and for CG management
+        sensed: false,
+      },
+      /*
+      If trim tank fuel is not usable for engine feed, but the flight crew can manually transfer
+      the trim tank fuel for CG management
+      */
+      {
+        name: 'TRIM TK NOT USABLE FOR ENG SUPPLY',
+        sensed: false,
+      },
+
+      {
+        name: 'USE TRIM TK XFR FOR CG IF NECESSARY',
+        sensed: false,
+        color: 'green',
+      },
+
+      // If L/G is not down and locked:
+      {
+        name: 'L/G GRVTY EXTN ONLY',
+        sensed: false,
+      },
+      // If L/G is down and locked
+      {
+        name: 'NO L/G RETRACTION',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
+        sensed: false,
+      },
+      // if soft ga lost
+      {
+        name: 'GA THR : TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+    ],
   },
   240800028: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1+ESS FAULT',
+    recommendation: 'LAND ANSA',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ALL CROSSFEEDS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: 'NO VOICE COM AVAIL',
+        sensed: false,
+      },
+      {
+        name: 'SATCOM DATALINK AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'F/O HEADSETS',
+        sensed: true,
+        labelNotCompleted: 'ON (FOR AUDIO ALERTS)',
+      },
+      {
+        name: 'SQUAWK AVAIL ON MFD SURV PAGE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'DU RECONF P/B AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'ECP KEYS NOT AVAIL :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FOR SYS PAGES : "ALL" AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'INR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'OUTR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'TRIM TK NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'FUEL QTY : 2000 KG NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'FOB & GW COMPUTED FROM FU',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+      {
+        name: ' LDG DIST AFFECTED',
+        sensed: false,
+      },
+    ],
   },
   240800029: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'AIR DATA SWTG',
+        sensed: true,
+        labelNotCompleted: 'F/O ON 3',
+      },
+      {
+        name: 'F/O BARO REF : STD ONLY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'USE VHF 1 OR 3',
+        sensed: false,
+      },
+      {
+        name: 'DU RECONF P/B AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'F/O KEYBOARD CURSOR CTL AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+
+      // Next two only if PRIM 3 Failed
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST: AFFECTED',
+        sensed: false,
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+    ],
   },
   240800030: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'AIR DATA SWTG',
+        sensed: true,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        name: 'CAPT BARO REF : STD ONLY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'HEADSETS',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'USE RMP 3',
+        sensed: false,
+      },
+      {
+        name: 'USE VHF 2 OR 3',
+        sensed: false,
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: 'SQUAWK AVAIL ON MFD SURV PAGE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'DU RECONF P/B AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'CAPT KEYBOARD CURSOR CTL AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'ECP KEYS NOT AVAIL :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FOR SYS PAGES : "ALL" AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+
+      // after landing
+      {
+        name: 'BEFORE LAST ENG SHUTDOWN :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 1 MODE SEL',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+        color: 'green',
+      },
+    ],
   },
   240800031: {
     title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS PART FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'AIR DATA SWTG',
+        sensed: true,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        name: 'HEADSETS',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: 'DU RECONF P/B AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'CAPT KEYBOARD CURSOR CTL AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+
+      {
+        name: 'ECP KEYS NOT AVAIL :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FOR SYS PAGES : "ALL" AVAIL',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      // If fuel quantity in feed tank 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'EXPECT FEED TKS IMBALANCE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'FUEL MAN BALANCING PROC',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+
+      // after landing
+      {
+        name: 'BEFORE LAST ENG SHUTDOWN :',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IR 1 MODE SEL',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+        color: 'green',
+      },
+    ],
   },
   240800032: {
     title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 DISC FAULT',
@@ -1481,7 +2679,165 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   240800055: {
     title: '\x1b<2m\x1b4mELEC\x1bm EMER CONFIG',
     sensed: true,
-    items: [], // TODO
+    recommendation: 'LAND ASAP',
+    items: [
+      {
+        name: 'RAT MAN ON',
+        sensed: true,
+        labelNotCompleted: 'PRESS',
+      },
+      {
+        name: ' MIN RAT SPEED : 140 KT',
+        sensed: false,
+      },
+      // if the flight crew did not activate the FIRE SMOKE/FUMES alert
+      {
+        name: 'ALL GENs',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      {
+        name: 'IF NOT SUCCESFUL',
+        sensed: false,
+      },
+      {
+        name: 'BUS TIE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ALL GENs',
+        sensed: true,
+        labelNotCompleted: 'OFF THEN ON',
+      },
+      // end of condition
+      {
+        name: 'USE VHF1 OR HF1',
+        sensed: false,
+      },
+      {
+        name: 'A/THR',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: false,
+      },
+      {
+        name: 'VENT AVNCS EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+      },
+
+      // If the alert triggers at or below FL 230:
+
+      // if the maximum flight level is not restricted below FL 200 by an other alert
+      {
+        name: 'DESCENT TO FL 200/MEA-MORA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 200/MEA-MORA',
+        sensed: false,
+      },
+
+      // If the flight crew did not activate the FIRE SMOKE/FUMES alert:
+      {
+        name: 'WHEN BELOW FL 200 : APU',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      // end of fl230 condition
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+      {
+        name: 'L/G GRVTY EXTN ONLY',
+        sensed: false,
+      },
+      {
+        name: 'AVOID ICING CONDs',
+        sensed: false,
+      },
+      {
+        name: 'FOR SD : SELECT "MAILBOX" ON CAPT KCCU',
+        sensed: false,
+      },
+      {
+        name: 'INR TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'MID TKs NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'FEED TK 1 : 1300 KG MAX NOT USABLE',
+        sensed: false,
+      },
+      {
+        name: 'FEED TK 4 : 1300 KG MAX NOT USABLE',
+        sensed: false,
+      },
+
+      //  If the alert triggers above FL 230 or the altitude is not valid:
+
+      // If the maximum flight level is not restricted below FL 200 by an other alert:
+      {
+        name: 'DESCENT TO FL 200/MEA-MORA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'MAX FL : 200/MEA-MORA',
+        sensed: false,
+      },
+
+      // If the flight crew did not activate the FIRE SMOKE/FUMES alert:
+      {
+        name: 'WHEN BELOW FL 200 : APU',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      // end of fl230 condition
+
+      /*
+      If the maximum flight level is restricted below FL 200 by an other alert, and the flight
+    crew did not activate FIRE SMOKE/FUMES alert:
+      */
+      {
+        name: 'APU',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'IF SEVERE ICE ACCRETION: FLAP LEVER 3 FOR LDG',
+        sensed: false,
+      },
+      {
+        name: 'LDG PERF AFFECTED',
+        sensed: false,
+      },
+
+      // When the fuel quantity in feed tanks 1 and 4 is below 19 000 kg
+      {
+        name: 'EMER OUTR TK XFR',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+    ],
   },
   240800056: {
     title: '\x1b<4m\x1b4mELEC\x1bm EXT PWR 1 FAULT',
@@ -2061,6 +3417,42 @@ export const InopSys: { [n: number]: string } = {
   230300019: '\x1b<4mSATCOM',
   230300020: '\x1b<4mSATCOM DATALINK',
   230300021: '\x1b<4mVHF 3 DATALINK',
+  240300001: '\x1b<4mAPU BAT',
+  240300002: '\x1b<4mAPU GEN A ',
+  240300003: '\x1b<4mAPU GEN B',
+  240300004: '\x1b<4mAPU TR',
+  240300005: '\x1b<4mBAT 1',
+  240300006: '\x1b<4mBAT 2',
+  240300007: '\x1b<4mBAT ESS',
+  240300008: '\x1b<4mBAT 1+2',
+  240300009: '\x1b<4mC/B MONITORING',
+  240300010: '\x1b<4mGEN 1',
+  240300011: '\x1b<4mGEN 2',
+  240300012: '\x1b<4mGEN 3',
+  240300013: '\x1b<4mGEN 4',
+  240300014: '\x1b<4mAPU GEN A',
+  240300015: '\x1b<4mAPU GEN B',
+  240300016: '\x1b<4mEXT PWR 1',
+  240300017: '\x1b<4mEXT PWR 2',
+  240300018: '\x1b<4mEXT PWR 3',
+  240300019: '\x1b<4mEXT PWR 4',
+  240300020: '\x1b<4mENMU 1',
+  240300021: '\x1b<4mENMU 2',
+  240300022: '\x1b<4mPART GALLEY',
+  240300023: '\x1b<4mEMER C/B MONITORING',
+  240300024: '\x1b<4mELEC LOAD MANAGT',
+  240300025: '\x1b<4mELEC PRIMARY CTR 1',
+  240300026: '\x1b<4mELEC PRIMARY CTR 2',
+  240300027: '\x1b<4mCOMMERCIAL',
+  240300028: '\x1b<4mPART COMMERCIAL',
+  240300029: '\x1b<4mRAT',
+  240300030: '\x1b<4mELEC SECONDARY CTR 1',
+  240300031: '\x1b<4mELEC SECONDARY CTR 2',
+  240300032: '\x1b<4mPART ELEC SEC CTR 1',
+  240300033: '\x1b<4mPART ELEC SEC CTR 2',
+  240300034: '\x1b<4mTR 1',
+  240300035: '\x1b<4mTR 2',
+  240300036: '\x1b<4mTR ESS',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
