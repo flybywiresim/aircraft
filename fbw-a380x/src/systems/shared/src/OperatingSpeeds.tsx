@@ -8,7 +8,7 @@
 
 import { Feet, Knots } from 'msfs-geo';
 import { MathUtils, Units } from '@flybywiresim/fbw-sdk';
-import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmo } from '@shared/PerformanceConstants';
+import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { Common } from '@fmgc/guidance/vnav/common';
 
 // Maybe we need bilinear interpolation
@@ -329,11 +329,11 @@ export class A380OperatingSpeeds {
         const klb = Math.min(1200, Math.max(Units.kilogramToPound(m * 1_000) / 1_000, 600));
 
         const cm = correctMass(klb);
-        this.vs = vls[fPos][cm](klb) / 1.2; // rough hack
+        this.vs = vls[fPos][cm](klb) / 1.23; // rough hack
         this.vls = vls[fPos][cm](klb);
         this.vapp = this.vls + addWindComponent(wind);
         this.f2 = f2[cm](klb);
-        this.f3 = f2[cm](klb);
+        this.f3 = f3[cm](klb);
         this.s = s[cm](klb);
         this.gd = greenDotSpeed(klb);
         this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
@@ -472,11 +472,17 @@ export class A380SpeedsUtils {
      * @param {number} conf 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
      * @param {boolean} gearDown true if the gear is down
      */
-    static getVs1g(mass: number, conf: number): Knots {
+    static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
         const klb = Units.kilogramToPound(mass) / 1000.0;
         const weightTableIndex = Math.max(0, Math.min(7, correctMass(klb)));
         // FIXME rough, dirty hack
-        return vls[conf][weightTableIndex](klb) / 1.5;
+        if (takeoff === true) {
+            return vls[conf][weightTableIndex](klb) / 1.15;
+        }
+        if (conf === 5) {
+            return Math.max(vls[conf][weightTableIndex](klb) / 1.18, Vmcl);
+        }
+        return Math.max(vls[conf][weightTableIndex](klb) / 1.23, Vmcl);
     }
 }
 

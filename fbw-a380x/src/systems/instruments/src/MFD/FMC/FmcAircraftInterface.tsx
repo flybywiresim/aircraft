@@ -4,7 +4,7 @@ import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOan
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmo, maxCertifiedAlt, maxGw, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, Vmo, maxCertifiedAlt, maxGw, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
@@ -244,7 +244,7 @@ export class FmcAircraftInterface {
       (this.flightPlanService.active.performanceData.v2 ?? Infinity) < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp)) ||
       (Number.isFinite(tow) &&
         (this.flightPlanService.active.performanceData.v2 ?? Infinity) <
-          Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get())))
+          Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get(), true)))
     );
   }
 
@@ -926,13 +926,22 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
 
-    if (this.fmgc.data.takeoffFlapsSetting.get() && this.fmgc.data.takeoffFlapsSetting.get() === FlapConf.CONF_3) {
-      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', speeds.f3);
-      this.fmgc.data.flapRetractionSpeed.set(Math.ceil(speeds.f3));
+    if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
+      const f = Math.max(speeds.f2, Vmcl + 5);
+      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+      this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
     } else {
-      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', speeds.f2);
-      this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.f2));
+      if (flaps === 2) {
+        const f = Math.max(speeds.f2, Vmcl + 15);
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+      } else if (flaps === 3) {
+        const f = Math.max(speeds.f3, Vmcl + 10);
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+      }
     }
+
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', speeds.s);
     this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', speeds.gd);
@@ -946,6 +955,10 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', speeds.vs * 1.1);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', speeds.vs * 1.03);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', speeds.vs * 1.03);
+
+    // Also update speeds for PFD display (replacing the PRIM FE while not in place)
+    // FIXME delete when PRIM FE implemented
   }
 
   /** Write gross weight to SimVar */
