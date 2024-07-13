@@ -51,12 +51,8 @@ export const EngineWarningDisplay: React.FC = () => {
 
             <path stroke='#8c8c8c' strokeWidth={4} d='m 8 375 h 750' />
 
-            {/* <text fontSize="25px" x={47} y={435} fill="white">BEFORE START</text>
-            <path stroke="white" strokeWidth={2} d="m 49 436.3 h 193" /> */}
-
-            {/* <Checklist x={47} y={467} /> */}
             <EWDMemo x={25} y={414} active={displayMemo} side='LEFT' />
-            <EWDMemo x={450} y={414} active={displayMemo} side='RIGHT' />
+            <EWDMemo x={395} y={414} active={displayMemo} side='RIGHT' />
         </LegacyCdsDisplayUnit>
     );
 };
