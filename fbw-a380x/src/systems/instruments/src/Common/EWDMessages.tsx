@@ -1005,6 +1005,700 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     sensed: true,
     items: [],
   },
+  // ATA 24
+  240800001: {
+    title: '\x1b<4m\x1b4mELEC\x1bm ABNORMAL FLIGHT OPS SUPPLY',
+    sensed: true,
+    items: [],
+  },
+  240800002: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 1 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800003: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 1+2 & DC BUS 1 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800004: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800005: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+3 & DC BUS 1+2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800006: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+4 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800007: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 3 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800008: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 3+4 & DC BUS 2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800009: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 4 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800010: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC EMER BUS FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800011: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS ALTN',
+    sensed: true,
+    items: [],
+  },
+  240800012: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS FAULT',
+    sensed: true,
+    items: [], // TODo
+  },
+  240800013: {
+    title: '\x1b<4m\x1b4mELEC\x1bm AC ESS BUS FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'APU BAT', // If the temperature of the battery is excessive
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800014: {
+    title: '\x1b<4m\x1b4mELEC\x1bm APU GEN A FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'APU GEN A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800015: {
+    title: '\x1b<4m\x1b4mELEC\x1bm APU GEN B FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'APU GEN B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800016: {
+    title: '\x1b<4m\x1b4mELEC\x1bm APU TR FAULT',
+    sensed: true,
+    items: [
+      // If the APU is off, and the APU battery is on
+      {
+        name: 'WHEN APU NOT RQRD:',
+        sensed: false,
+      },
+      {
+        name: 'APU BAT',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+    ],
+  },
+  240800017: {
+    title: '\x1b<4m\x1b4mELEC\x1bm BAT 1 (ESS) FAULT',
+    sensed: true,
+    items: [
+      // If the temperature of the battery is excessive
+      {
+        name: 'BAT 1(ESS)',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800018: {
+    title: '\x1b<4m\x1b4mELEC\x1bm BAT 2 (ESS) FAULT',
+    sensed: true,
+    items: [
+      // If the temperature of the battery is excessive
+      {
+        name: 'BAT 2(ESS)',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800019: {
+    title: '\x1b<4m\x1b4mELEC\x1bm BUS TIE OFF',
+    sensed: true,
+    items: [],
+  },
+  240800020: {
+    title: '\x1b<4m\x1b4mELEC\x1bm C/B MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800021: {
+    title: '\x1b<4m\x1b4mELEC\x1bm C/B TRIPPED',
+    sensed: true,
+    items: [],
+  },
+  240800022: {
+    title: '\x1b<4m\x1b4mELEC\x1bm CABIN L SUPPLY CENTER OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'COMMERCIAL 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800023: {
+    title: '\x1b<4m\x1b4mELEC\x1bm CABIN R SUPPLY CENTER OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'COMMERCIAL 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800024: {
+    title: '\x1b<4m\x1b4mELEC\x1bm CABIN L SUPPLY CENTER OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800025: {
+    title: '\x1b<4m\x1b4mELEC\x1bm CABIN R SUPPLY CENTER OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800026: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800027: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 +2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800028: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1+ESS FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800029: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 2 FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800030: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800031: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS PART FAULT',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800032: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 DISC FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800033: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 2 DISC FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800034: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 3 DISC FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800035: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 4 DISC FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800036: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 DISCONNECTED',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800037: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 2 DISCONNECTED',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800038: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 3 DISCONNECTED',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800039: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 4 DISCONNECTED',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800040: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 OIL LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800041: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 2 OIL LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800042: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 3 OIL LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800043: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 4 OIL LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800044: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 OIL OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 1',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800045: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 2 OIL OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 2',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800046: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 3 OIL OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 3',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800047: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 4 OIL OVHT',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 4',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800048: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 1 OIL PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 1',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800049: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 2 OIL PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 2',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800050: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 3 OIL PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 3',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800051: {
+    title: '\x1b<4m\x1b4mELEC\x1bm DRIVE 4 OIL PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'DRIVE 4',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'GEN 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800052: {
+    title: '\x1b<4m\x1b4mELEC\x1bm ELEC NETWORK MANAGEMENT 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 1+2 : KEEP ON',
+        sensed: false,
+      },
+    ],
+  },
+  240800053: {
+    title: '\x1b<4m\x1b4mELEC\x1bm ELEC NETWORK MANAGEMENT 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 3+4 : KEEP ON',
+        sensed: false,
+      },
+    ],
+  },
+  240800054: {
+    title: '\x1b<4m\x1b4mELEC\x1bm EMER C/B MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800055: {
+    title: '\x1b<2m\x1b4mELEC\x1bm EMER CONFIG',
+    sensed: true,
+    items: [], // TODO
+  },
+  240800056: {
+    title: '\x1b<4m\x1b4mELEC\x1bm EXT PWR 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'EXT PWR 1',
+        sensed: true,
+        labelNotCompleted: 'RECYCLE',
+      },
+    ],
+  },
+  240800057: {
+    title: '\x1b<4m\x1b4mELEC\x1bm EXT PWR 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'EXT PWR 2',
+        sensed: true,
+        labelNotCompleted: 'RECYCLE',
+      },
+    ],
+  },
+  240800058: {
+    title: '\x1b<4m\x1b4mELEC\x1bm EXT PWR 3 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'EXT PWR 3',
+        sensed: true,
+        labelNotCompleted: 'RECYCLE',
+      },
+    ],
+  },
+  240800059: {
+    title: '\x1b<4m\x1b4mELEC\x1bm EXT PWR 4 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'EXT PWR 4',
+        sensed: true,
+        labelNotCompleted: 'RECYCLE',
+      },
+    ],
+  },
+  240800060: {
+    title: '\x1b<4m\x1b4mELEC\x1bm  F/CTL ACTUATOR PWR SUPPLY FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800061: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800062: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800063: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 3 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 3',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800064: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 4 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'GEN 4',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800065: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 1 OFF',
+    sensed: true,
+    items: [],
+  },
+  240800066: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 2 OFF',
+    sensed: true,
+    items: [],
+  },
+  240800067: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 3 OFF',
+    sensed: true,
+    items: [],
+  },
+  240800068: {
+    title: '\x1b<4m\x1b4mELEC\x1bm GEN 4 OFF',
+    sensed: true,
+    items: [],
+  },
+  240800069: {
+    title: '\x1b<4m\x1b4mELEC\x1bm LOAD MANAGEMENT FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'ELMU',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800070: {
+    title: '\x1b<4m\x1b4mELEC\x1bm PRIMARY SUPPLY CENTER 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800071: {
+    title: '\x1b<4m\x1b4mELEC\x1bm PRIMARY SUPPLY CENTER 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800072: {
+    title: '\x1b<4m\x1b4mELEC\x1bm RAT FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800073: {
+    title: '\x1b<4m\x1b4mELEC\x1bm REMOTE C/B CTL ACTIVE',
+    sensed: true,
+    items: [
+      {
+        name: 'REMOTE C/B CTL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  240800074: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 1 DEGRADED',
+    sensed: true,
+    items: [],
+  },
+  240800075: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 2 DEGRADED',
+    sensed: true,
+    items: [],
+  },
+  240800076: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800077: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800078: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 1 REDUND LOST',
+    sensed: true,
+    items: [],
+  },
+  240800079: {
+    title: '\x1b<4m\x1b4mELEC\x1bm SECONDARY SUPPLY CENTER 2 REDUND LOST',
+    sensed: true,
+    items: [],
+  },
+  240800080: {
+    title: '\x1b<4m\x1b4mELEC\x1bm STATIC INV FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800081: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800082: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800083: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR ESS FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800084: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR 1 MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800085: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR 2 MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  240800086: {
+    title: '\x1b<4m\x1b4mELEC\x1bm TR ESS MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+
   280013001: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
     sensed: true,
