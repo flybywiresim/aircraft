@@ -7,10 +7,10 @@
 
 @mixin GenericPulsingStroke($color, $name) {
   @keyframes #{$name} {
-    0% {stroke: scale-color($color, $lightness: -30%);}
-    50% {stroke: scale-color($color, $lightness: -30%);}
-    51% {stroke: scale-color($color, $lightness: 30%);}
-    100% {stroke: scale-color($color, $lightness: 30%);}
+    0% {stroke: scale-color($color, $lightness: -50%);}
+    50% {stroke: scale-color($color, $lightness: -50%);}
+    51% {stroke: scale-color($color, $lightness: 50%);}
+    100% {stroke: scale-color($color, $lightness: 50%);}
   }
   animation-name: $name;
 }
@@ -73,5 +73,11 @@
 .InnerMarkerBlink {
   animation-name: blinking;
   animation-duration: 200ms;
+  animation-iteration-count: infinite;
+}
+
+.RwyAheadAnimation {
+  @include GenericPulsingStroke($display-yellow, pulse-yellow-stroke);
+  animation-duration: 1s;
   animation-iteration-count: infinite;
 }
