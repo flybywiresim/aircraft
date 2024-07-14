@@ -92,7 +92,11 @@ fn main() -> Result<(), std::io::Error> {
     };
 
     // Create Gzip Reader
-    let mut reader = GzDecoder::new(BufReader::new(in_file));
+    let mut reader: Box<dyn Read> = if args.no_compression {
+        Box::new(BufReader::new(in_file))
+    } else {
+        Box::new(GzDecoder::new(BufReader::new(in_file)))
+    };
 
     // Read file version
     let mut file_format_version = u64::default();
