@@ -254,6 +254,10 @@ export class TransitionPicker {
     if (to instanceof FALeg || to instanceof FMLeg) {
       return new FixedRadiusTransition(from, to);
     }
+    if (to instanceof TFLeg) {
+      // CI -> IF -> TF
+      return new FixedRadiusTransition(from, to);
+    }
 
     if (DEBUG) {
       console.error(`Illegal sequence CILeg -> ${to.constructor.name}`);

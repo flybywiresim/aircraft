@@ -41,6 +41,10 @@ function isGuidableCapturingPath(guidable: Guidable): boolean {
   );
 }
 
+function isCiIfXfSequence(leg: Leg, nextLeg: Leg, nextNextLeg: Leg): boolean {
+  return leg instanceof CILeg && nextLeg instanceof IFLeg && nextNextLeg instanceof XFLeg;
+}
+
 export class Geometry {
   constructor(
     /**
@@ -295,13 +299,19 @@ export class Geometry {
 
     // Compute leg and outbound if previous leg isn't null (we already computed 1 leg forward the previous iteration)
     if (!(prevLeg && prevLeg.isNull)) {
-      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition ?? nextLeg);
+      const shouldSkipNextLeg = isCiIfXfSequence(leg, nextLeg, nextNextLeg);
+      const chosenOutboundTransition = shouldSkipNextLeg
+        ? TransitionPicker.forLegs(leg, nextNextLeg)
+        : outboundTransition;
+      const chosenNextLeg = shouldSkipNextLeg ? nextNextLeg : nextLeg;
+
+      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition ?? chosenNextLeg);
       leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
 
-      if (outboundTransition && nextLeg) {
-        outboundTransition.setNeighboringGuidables(leg, nextLeg);
-        outboundTransition.setNeighboringLegs(leg, nextLeg);
-        outboundTransition.recomputeWithParameters(
+      if (chosenOutboundTransition && chosenNextLeg) {
+        chosenOutboundTransition.setNeighboringGuidables(leg, chosenNextLeg);
+        chosenOutboundTransition.setNeighboringLegs(leg, chosenNextLeg);
+        chosenOutboundTransition.recomputeWithParameters(
           activeLegIdx === index + 1,
           legPredictedTas,
           legPredictedGs,
@@ -310,7 +320,7 @@ export class Geometry {
         );
 
         // Since the outbound transition can have TAD, we recompute the leg again to make sure the end point is at the right place for this cycle
-        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition);
+        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition);
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
     }
