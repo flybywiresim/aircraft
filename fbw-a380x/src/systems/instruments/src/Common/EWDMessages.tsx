@@ -1419,7 +1419,7 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     sensed: true,
     items: [],
   },
-  // ATA 27
+  // ATA 27: F/CTL
   271800001: {
     title: '\x1b<4m\x1b4mCONFIG\x1bm L SIDESTICK FAULT (BY TAKE-OVER)',
     sensed: true,
@@ -1757,6 +1757,147 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   },
   271800068: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm STABILIZER FAULT',
+    sensed: true,
+    items: [],
+  },
+  // ATA 27: FLAPS/SLATS
+  272800001: {
+    title: '\x1b<4m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',
+    sensed: true,
+    items: [],
+  },
+  272800002: {
+    title: '\x1b<4m\x1b4mCONFIG\x1bm FLAPS NOT IN T.O CONFIG',
+    sensed: true,
+    items: [],
+  },
+  272800003: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
+    sensed: true,
+    items: [],
+  },
+  272800004: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800005: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP CTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800006: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800007: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800008: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 1+2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800009: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP 1 SAFETY TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800010: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP 2 SAFETY TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800011: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT 1 SAFETY TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800012: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT 2 SAFETY TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800013: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER OUT OF DETENT',
+    sensed: true,
+    items: [],
+  },
+  272800014: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER SYS 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800015: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER SYS 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800016: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LOCKED',
+    sensed: true,
+    items: [],
+  },
+  272800017: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
+    sensed: true,
+    items: [],
+  },
+  272800018: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
+    sensed: true,
+    items: [],
+  },
+  272800019: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT CTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800020: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT CTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800021: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800022: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800023: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 1+2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  272800024: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLATS LOCKED',
+    sensed: true,
+    items: [],
+  },
+  272800025: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLATS TIP BRK TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800026: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SLATS TIP BRK TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800027: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS TIP BRK TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  272800028: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm T.O FLAPS / FMS DISAGREE',
     sensed: true,
     items: [],
   },
