@@ -56,6 +56,30 @@ export function usePersistentNumberProperty(propertyName: string, defaultValue?:
   return [propertyValue, propertySetter];
 }
 
+/**
+ * This hook allows to read and set a persistent storage property as a boolean.
+ * Overloads are provided to absolve callers with defaults from dealing with possibly undefined
+ */
+export function usePersistentBooleanProperty(
+  propertyName: string,
+  defaultValue: boolean,
+): [boolean, (value: boolean) => void];
+export function usePersistentBooleanProperty(
+  propertyName: string,
+  defaultValue?: boolean,
+): [boolean | undefined, (value: boolean) => void];
+export function usePersistentBooleanProperty(propertyName: string, defaultValue?: boolean): any {
+  const [strPropertyValue, strPropertySetter] = usePersistentProperty(
+    propertyName,
+    defaultValue !== undefined ? `${defaultValue ? 'ENABLED' : 'DISABLED'}` : undefined,
+  );
+
+  const propertyValue = strPropertyValue !== undefined ? strPropertyValue === 'ENABLED' : undefined;
+  const propertySetter = (value: boolean) => strPropertySetter(value ? 'ENABLED' : 'DISABLED');
+
+  return [propertyValue, propertySetter];
+}
+
 const getLocalStorage = (propertyName: string, defaultValue?: string) => {
   const value: string | null = localStorage.getItem(propertyName);
   if (value) {

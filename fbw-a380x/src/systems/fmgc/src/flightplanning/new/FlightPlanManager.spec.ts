@@ -41,14 +41,14 @@ describe('FlightPlanManager', () => {
         const flightPlan = fpm.get(1);
 
         await flightPlan.setOriginAirport('CYYZ');
-        await flightPlan.setOriginRunway('RW06R');
+        await flightPlan.setOriginRunway('CYYZ06R');
 
         fpm.copy(1, 2);
 
         const copied = fpm.get(2);
 
         expect(copied.originAirport).toEqual(expect.objectContaining({ ident: 'CYYZ' }));
-        expect(copied.originRunway).toEqual(expect.objectContaining({ ident: 'RW06R' }));
+        expect(copied.originRunway).toEqual(expect.objectContaining({ ident: 'CYYZ06R' }));
     });
 
     it('can swap two flight plans', async () => {
@@ -59,25 +59,25 @@ describe('FlightPlanManager', () => {
         const flightPlanA = fpm.get(1);
 
         await flightPlanA.setOriginAirport('CYYZ');
-        await flightPlanA.setOriginRunway('RW06R');
+        await flightPlanA.setOriginRunway('CYYZ06R');
 
         fpm.create(2);
 
         const flightPlanB = fpm.get(2);
 
         await flightPlanB.setOriginAirport('LOWI');
-        await flightPlanB.setOriginRunway('RW26');
+        await flightPlanB.setOriginRunway('LOWI26');
 
         fpm.swap(1, 2);
 
         const newA = fpm.get(2);
 
         expect(newA.originAirport).toEqual(expect.objectContaining({ ident: 'CYYZ' }));
-        expect(newA.originRunway).toEqual(expect.objectContaining({ ident: 'RW06R' }));
+        expect(newA.originRunway).toEqual(expect.objectContaining({ ident: 'CYYZ06R' }));
 
         const newB = fpm.get(1);
 
         expect(newB.originAirport).toEqual(expect.objectContaining({ ident: 'LOWI' }));
-        expect(newB.originRunway).toEqual(expect.objectContaining({ ident: 'RW26' }));
+        expect(newB.originRunway).toEqual(expect.objectContaining({ ident: 'LOWI26' }));
     });
 });

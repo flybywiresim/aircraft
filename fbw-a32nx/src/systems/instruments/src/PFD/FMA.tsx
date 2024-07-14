@@ -1153,13 +1153,27 @@ class B2Cell extends DisplayComponent<CellProps> {
 }
 
 class C1Cell extends ShowForSecondsComponent<CellProps> {
-  private textSub = Subject.create('');
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-  private activeLateralMode = 0;
+  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), LateralMode.NONE);
 
-  private activeVerticalMode = 0;
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), VerticalMode.NONE);
 
-  private armedVerticalMode = 0;
+  private readonly armedVerticalMode = ConsumerSubject.create(this.sub.on('fmaVerticalArmed'), VerticalMode.NONE);
+
+  /**
+   * Whether LOC backbeam mode mode is selected.
+   * @todo Get this state from the FG.
+   */
+  private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
+
+  private readonly text = MappedSubject.create(
+    this.mapText.bind(this),
+    this.activeLateralMode,
+    this.activeVerticalMode,
+    this.armedVerticalMode,
+    this.backbeam,
+  );
 
   constructor(props: CellProps) {
     super(props, 10);
@@ -1168,96 +1182,49 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.activeLateralMode = lm;
-
-        const isShown = this.updateText();
-
-        if (isShown) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.activeVerticalMode = lm;
-
-        const isShown = this.updateText();
-
-        if (isShown) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((va) => {
-        this.armedVerticalMode = va;
-
-        const hasChanged = this.updateText();
-
-        if (hasChanged) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
+    this.text.sub((v) => {
+      this.isShown = v.length > 0;
+      this.displayModeChangedPath(!this.isShown);
+    });
   }
 
-  private updateText(): boolean {
-    const finalArmed = (this.armedVerticalMode >> 5) & 1;
+  private mapText([activeLateralMode, activeVerticalMode, armedVerticalMode, backbeam]: [
+    LateralMode,
+    VerticalMode,
+    VerticalMode,
+    boolean,
+  ]): string {
+    const finalArmed = (armedVerticalMode >> 5) & 1;
 
-    let text: string;
-    this.isShown = true;
-    if (this.activeLateralMode === LateralMode.GA_TRACK) {
-      text = 'GA TRK';
-    } else if (this.activeLateralMode === LateralMode.LOC_CPT) {
-      text = 'LOC *';
-    } else if (this.activeLateralMode === LateralMode.HDG) {
-      text = 'HDG';
-    } else if (this.activeLateralMode === LateralMode.RWY) {
-      text = 'RWY';
-    } else if (this.activeLateralMode === LateralMode.RWY_TRACK) {
-      text = 'RWY TRK';
-    } else if (this.activeLateralMode === LateralMode.TRACK) {
-      text = 'TRACK';
-    } else if (this.activeLateralMode === LateralMode.LOC_TRACK) {
-      text = 'LOC';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      !finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
-      text = 'NAV';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
-      text = 'APP NAV';
-    } else {
-      text = '';
-      this.isShown = false;
+    if (activeLateralMode === LateralMode.GA_TRACK) {
+      return 'GA TRK';
+    }
+    if (activeLateralMode === LateralMode.LOC_CPT) {
+      return backbeam ? 'LOC B/C*' : 'LOC *';
+    }
+    if (activeLateralMode === LateralMode.HDG) {
+      return 'HDG';
+    }
+    if (activeLateralMode === LateralMode.RWY) {
+      return 'RWY';
+    }
+    if (activeLateralMode === LateralMode.RWY_TRACK) {
+      return 'RWY TRK';
+    }
+    if (activeLateralMode === LateralMode.TRACK) {
+      return 'TRACK';
+    }
+    if (activeLateralMode === LateralMode.LOC_TRACK) {
+      return backbeam ? 'LOC B/C' : 'LOC';
+    }
+    if (activeLateralMode === LateralMode.NAV && !finalArmed && activeVerticalMode !== VerticalMode.FINAL) {
+      return 'NAV';
+    }
+    if (activeLateralMode === LateralMode.NAV && finalArmed && activeVerticalMode !== VerticalMode.FINAL) {
+      return 'APP NAV';
     }
 
-    const hasChanged = text.length > 0 && text !== this.textSub.get();
-
-    if (hasChanged || text.length === 0) {
-      this.textSub.set(text);
-    }
-    return hasChanged;
+    return '';
   }
 
   render(): VNode {
@@ -1291,7 +1258,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z"
         />
         <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">
-          {this.textSub}
+          {this.text}
         </text>
       </g>
     );
@@ -1299,71 +1266,56 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 class C2Cell extends DisplayComponent<CellProps> {
-  private fmaLateralArmed: number = 0;
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-  private fmaVerticalArmed: number = 0;
+  private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), LateralMode.NONE);
 
-  private activeVerticalMode: number = 0;
+  private readonly fmaVerticalArmed = ConsumerSubject.create(this.sub.on('fmaVerticalArmed'), LateralMode.NONE);
 
-  private textSub = Subject.create('');
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), LateralMode.NONE);
 
-  private getText() {
-    const navArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.NAV);
-    const locArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LOC);
+  /**
+   * Whether LOC backbeam mode mode is selected.
+   * @todo Get this state from the FG.
+   */
+  private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
 
-    const finalArmed = isArmed(this.fmaVerticalArmed, ArmedVerticalMode.FINAL);
+  private text = MappedSubject.create(
+    this.mapText.bind(this),
+    this.fmaLateralArmed,
+    this.fmaVerticalArmed,
+    this.activeVerticalMode,
+    this.backbeam,
+  );
 
-    let text: string = '';
+  private mapText([lateralArmed, verticalArmed, verticalActive, backbeam]: [
+    LateralMode,
+    VerticalMode,
+    VerticalMode,
+    boolean,
+  ]): string {
+    const navArmed = isArmed(lateralArmed, ArmedLateralMode.NAV);
+    const locArmed = isArmed(lateralArmed, ArmedLateralMode.LOC);
+
+    const finalArmed = isArmed(verticalArmed, ArmedVerticalMode.FINAL);
+
     if (locArmed) {
-      // case 1:
-      //     text = 'LOC B/C';
-      //     break;
-      text = 'LOC';
+      return backbeam ? 'LOC B/C' : 'LOC';
       // case 3:
       //     text = 'F-LOC';
       //     break;
-    } else if (navArmed && (finalArmed || this.activeVerticalMode === VerticalMode.FINAL)) {
-      text = 'APP NAV';
+    } else if (navArmed && (finalArmed || verticalActive === VerticalMode.FINAL)) {
+      return 'APP NAV';
     } else if (navArmed) {
-      text = 'NAV';
+      return 'NAV';
     }
-    this.textSub.set(text);
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub
-      .on('fmaLateralArmed')
-      .whenChanged()
-      .handle((fla) => {
-        this.fmaLateralArmed = fla;
-        this.getText();
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fva) => {
-        this.fmaVerticalArmed = fva;
-        this.getText();
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((avm) => {
-        this.activeVerticalMode = avm;
-        this.getText();
-      });
+    return '';
   }
 
   render(): VNode {
     return (
       <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
-        {this.textSub}
+        {this.text}
       </text>
     );
   }

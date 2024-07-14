@@ -16,13 +16,14 @@ import {
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { DescentStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { AltitudeConstraintType } from '@fmgc/guidance/lnav/legs';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { BisectionMethod, NonTerminationStrategy } from '@fmgc/guidance/vnav/BisectionMethod';
+import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
+import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
 
 class FlapConfigurationProfile {
   static getBySpeed(speed: Knots, parameters: VerticalProfileComputationParameters): FlapConf {
@@ -117,9 +118,10 @@ export class ApproachPathBuilder {
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
     atmosphericConditions: AtmosphericConditions,
+    private readonly acConfig: AircraftConfig,
   ) {
-    this.idleStrategy = new IdleDescentStrategy(observer, atmosphericConditions);
-    this.fpaStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, 0);
+    this.idleStrategy = new IdleDescentStrategy(observer, atmosphericConditions, this.acConfig);
+    this.fpaStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, 0, this.acConfig);
   }
 
   computeApproachPath(
@@ -235,18 +237,15 @@ export class ApproachPathBuilder {
     const { managedDescentSpeedMach, cleanSpeed } = this.observer.get();
     const { distanceFromStart, altitude } = sequence.lastCheckpoint;
 
+    const minimumAltitude = ConstraintUtils.minimumAltitude(constraint.constraint);
+
     if (
       distanceFromStart < constraint.distanceFromStart ||
-      constraint.constraint.type === AltitudeConstraintType.atOrBelow ||
-      altitude - constraint.constraint.altitude1 > -50 // If we are already above the constraint
+      !Number.isFinite(minimumAltitude) ||
+      altitude - minimumAltitude > -50 // If we are already above the constraint
     ) {
       return;
     }
-
-    const minimumAltitude =
-      constraint.constraint.type === AltitudeConstraintType.range
-        ? constraint.constraint.altitude2
-        : constraint.constraint.altitude1;
 
     // This should be positive
     const desiredDistanceToCover = distanceFromStart - constraint.distanceFromStart;
