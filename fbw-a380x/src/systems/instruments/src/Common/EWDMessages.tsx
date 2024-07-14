@@ -1902,98 +1902,6 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     items: [],
   },
   281800001: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
-    sensed: true,
-    items: [
-      {
-        name: 'IF NO FUEL LEAK:',
-        sensed: false,
-      },
-      {
-        name: 'ALL CROSSFEEDs',
-        sensed: true,
-        labelNotCompleted: 'ON',
-        level: 1,
-      },
-      {
-        name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
-        sensed: true,
-        labelNotCompleted: 'AUTO',
-        level: 3,
-      },
-      {
-        name: 'OUTR TK XFR', // For transfer tanks containing fuel
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-      {
-        name: 'TRIM TK XFR', // If at least one trim tank pump is running
-        sensed: true,
-        labelNotCompleted: 'FWD',
-        level: 4,
-      },
-      {
-        name: 'INR TK XFR',
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-      {
-        name: 'MID TK XFR',
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-    ],
-  },
-  281800002: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 3+4 LEVEL LO',
-    sensed: true,
-    items: [
-      {
-        name: 'IF NO FUEL LEAK:',
-        sensed: false,
-      },
-      {
-        name: 'ALL CROSSFEEDs',
-        sensed: true,
-        labelNotCompleted: 'ON',
-        level: 1,
-      },
-      {
-        name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
-        sensed: true,
-        labelNotCompleted: 'AUTO',
-        level: 3,
-      },
-      {
-        name: 'OUTR TK XFR', // For transfer tanks containing fuel
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-      {
-        name: 'TRIM TK XFR', // If at least one trim tank pump is running
-        sensed: true,
-        labelNotCompleted: 'FWD',
-        level: 4,
-      },
-      {
-        name: 'INR TK XFR',
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-      {
-        name: 'MID TK XFR',
-        sensed: true,
-        labelNotCompleted: 'MAN',
-        level: 3,
-      },
-    ],
-  },
-  281800001: {
     title: '\x1b<4m\x1b4mFUEL\x1bm ABNORM AUTO REFUEL DISTRIBUTION',
     sensed: true,
     items: [],
@@ -2495,6 +2403,103 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   },
   281800101: {
     title: '\x1b<4m\x1b4mFUEL\x1bm ZFW OR ZFCG FMS DISAGREE',
+    sensed: true,
+    items: [],
+  },
+  281800102: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'IF NO FUEL LEAK:',
+        sensed: false,
+      },
+      {
+        name: 'ALL CROSSFEEDs',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 3,
+      },
+      {
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      {
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 4,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+    ],
+  },
+  281800103: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 3+4 LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'IF NO FUEL LEAK:',
+        sensed: false,
+      },
+      {
+        name: 'ALL CROSSFEEDs',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 3,
+      },
+      {
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      {
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 4,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 3,
+      },
+    ],
+  },
+  334800101: {
+    title: '\x1b<4m\x1b4mCABIN\x1bm EMER EXIT LT FAULT',
     sensed: true,
     items: [],
   },
