@@ -162,17 +162,20 @@ fn main() -> Result<(), std::io::Error> {
         .has_headers(false)
         .from_writer(buf_writer);
 
+    // Lock the stdout to improve loop performance
+    let mut stdout = std::io::stdout().lock();
     while let Ok(()) = read_record(&mut reader, &mut buf) {
         writer.serialize(&buf)?;
 
         counter += 1;
 
         if counter % 1000 == 0 {
-            print!("Processed {} entries...\r", counter);
+            write!(stdout, "Processed {} entries...\r", counter)?;
+            stdout.flush()?;
         }
     }
 
-    println!("Processed {} entries...", counter);
+    write!(stdout, "Processed {} entries...\n", counter)?;
 
     Result::Ok(())
 }
