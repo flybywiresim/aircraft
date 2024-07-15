@@ -53,7 +53,7 @@ export class IFLeg extends XFLeg {
   /** @inheritdoc */
   setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
     if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
-      console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
+      console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor.name})`);
     }
     super.setNeighboringGuidables(inbound, outbound);
   }
