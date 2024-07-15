@@ -18,16 +18,22 @@ mod headers;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
+    /// Input file
     #[arg(short, long)]
     input: String,
+    /// Output file
     #[arg(short, long)]
     output: String,
+    /// Delimiter
     #[arg(short, long, default_value = ",")]
     delimiter: String,
+    /// Input file is not compressed
     #[arg(short, long, default_value_t = false)]
     no_compression: bool,
+    /// Print struct size
     #[arg(short, long, default_value_t = false)]
     print_struct_size: bool,
+    /// Print interface version of input file
     #[arg(short, long, default_value_t = false)]
     get_input_file_version: bool,
 }
@@ -162,20 +168,18 @@ fn main() -> Result<(), std::io::Error> {
         .has_headers(false)
         .from_writer(buf_writer);
 
-    // Lock the stdout to improve loop performance
-    let mut stdout = std::io::stdout().lock();
     while let Ok(()) = read_record(&mut reader, &mut buf) {
         writer.serialize(&buf)?;
 
         counter += 1;
 
         if counter % 1000 == 0 {
-            write!(stdout, "Processed {} entries...\r", counter)?;
-            stdout.flush()?;
+            print!("Processed {} entries...\r", counter);
+            std::io::stdout().flush()?;
         }
     }
 
-    write!(stdout, "Processed {} entries...\n", counter)?;
+    println!("Processed {} entries...", counter);
 
     Result::Ok(())
 }
