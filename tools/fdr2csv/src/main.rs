@@ -86,15 +86,8 @@ fn main() -> Result<(), std::io::Error> {
     let args = Args::parse();
 
     // Open the input file
-    let in_file = match File::open(args.input.trim()) {
-        Err(_) => {
-            return Result::Err(std::io::Error::new(
-                ErrorKind::NotFound,
-                "Failed to open input file!",
-            ));
-        }
-        Ok(f) => f,
-    };
+    let in_file = File::open(args.input.trim())
+        .map_err(|e| std::io::Error::new(e.kind(), "Failed to open input file!"))?;
 
     // Create Gzip Reader
     let mut reader: Box<dyn Read> = if args.no_compression {
@@ -110,13 +103,12 @@ fn main() -> Result<(), std::io::Error> {
     // Print or check file version
     if args.get_input_file_version {
         println!("Interface version is {}", file_format_version);
-        return Result::Ok(());
+        return Ok(());
     } else if INTERFACE_VERSION != file_format_version {
-        return Result::Err(std::io::Error::new(
+        return Err(std::io::Error::new(
             ErrorKind::InvalidInput,
             format!(
-                "Mismatch between converter and file version (expected {}, got {})",
-                INTERFACE_VERSION, file_format_version
+                "Mismatch between converter and file version (expected {INTERFACE_VERSION}, got {file_format_version})",
             ),
         ));
     }
@@ -128,20 +120,12 @@ fn main() -> Result<(), std::io::Error> {
     );
 
     // Open or create output file in truncate mode
-    let out_file = match OpenOptions::new()
+    let out_file = OpenOptions::new()
         .write(true)
         .truncate(true)
         .create(true)
         .open(args.output.trim())
-    {
-        Err(_) => {
-            return Result::Err(std::io::Error::new(
-                ErrorKind::NotFound,
-                "Failed to open output file!",
-            ));
-        }
-        Ok(f) => f,
-    };
+        .map_err(|e| std::io::Error::new(e.kind(), "Failed to open output file!"))?;
 
     let mut buf_writer = BufWriter::new(out_file);
 
@@ -150,15 +134,8 @@ fn main() -> Result<(), std::io::Error> {
     let mut buf = FdrData::default();
 
     // Generate and write the header
-    let header = match csv_header_serializer::to_string(&buf, args.delimiter) {
-        Ok(s) => s,
-        Err(_e) => {
-            return Err(std::io::Error::new(
-                ErrorKind::Other,
-                "Failed to generate header.",
-            ))
-        }
-    };
+    let header = csv_header_serializer::to_string(&buf, args.delimiter)
+        .map_err(|_| std::io::Error::new(ErrorKind::Other, "Failed to generate header."))?;
     buf_writer.write(header.as_bytes())?;
 
     // Create the CSV writer, and serialize the file.
@@ -173,12 +150,12 @@ fn main() -> Result<(), std::io::Error> {
         counter += 1;
 
         if counter % 1000 == 0 {
-            print!("Processed {} entries...\r", counter);
+            print!("Processed {counter} entries...\r");
             std::io::stdout().flush()?;
         }
     }
 
-    println!("Processed {} entries...", counter);
+    println!("Processed {counter} entries...");
 
     Result::Ok(())
 }
