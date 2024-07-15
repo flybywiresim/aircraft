@@ -93,7 +93,10 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
             dispatch(
               editTabProperty({
                 tab,
-                chartLinks: { light: pinnedChart.chartLinks?.light ?? chartName.light, dark: pinnedChart.chartLinks?.dark ?? chartName.dark },
+                chartLinks: {
+                  light: pinnedChart.chartLinks?.light ?? chartName.light,
+                  dark: pinnedChart.chartLinks?.dark ?? chartName.dark,
+                },
               }),
             );
             dispatch(editTabProperty({ tab, chartName }));
