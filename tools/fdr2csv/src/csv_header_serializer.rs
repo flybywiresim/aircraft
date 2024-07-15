@@ -7,14 +7,14 @@ use crate::error::{Error, Result};
 // Rust types the serializer is able to produce as output.
 //
 // This basic serializer supports only `to_string`.
-pub fn to_string<T>(value: &T, delimiter: &str) -> Result<String>
+pub fn to_string<T>(value: &T, delimiter: char) -> Result<String>
 where
     T: Serialize,
 {
     let mut serializer = CsvHeaderSerializer {
         output: String::new(),
         field_name_list: Vec::new(),
-        delimiter: delimiter.to_owned(),
+        delimiter,
     };
     value.serialize(&mut serializer)?;
 
@@ -31,7 +31,7 @@ pub struct CsvHeaderSerializer {
     // The field name list will keep track of the "higher" level field names
     field_name_list: Vec<String>,
 
-    delimiter: String,
+    delimiter: char,
 }
 
 impl CsvHeaderSerializer {
@@ -40,7 +40,7 @@ impl CsvHeaderSerializer {
     // and at the end the delimiter will be appended.
     fn serialize_scalar(&mut self) -> Result<()> {
         self.output += &self.field_name_list.join(".");
-        self.output += &self.delimiter;
+        self.output.push(self.delimiter);
 
         Ok(())
     }

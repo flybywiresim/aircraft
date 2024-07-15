@@ -1,4 +1,3 @@
-use bytemuck;
 use bytemuck::AnyBitPattern;
 use clap::Parser;
 use csv::WriterBuilder;
@@ -26,7 +25,7 @@ struct Args {
     output: String,
     /// Delimiter
     #[arg(short, long, default_value = ",")]
-    delimiter: String,
+    delimiter: char,
     /// Input file is not compressed
     #[arg(short, long, default_value_t = false)]
     no_compression: bool,
@@ -151,7 +150,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut buf = FdrData::default();
 
     // Generate and write the header
-    let header = match csv_header_serializer::to_string(&buf, &args.delimiter) {
+    let header = match csv_header_serializer::to_string(&buf, args.delimiter) {
         Ok(s) => s,
         Err(_e) => {
             return Err(std::io::Error::new(
@@ -164,7 +163,7 @@ fn main() -> Result<(), std::io::Error> {
 
     // Create the CSV writer, and serialize the file.
     let mut writer = WriterBuilder::new()
-        .delimiter(args.delimiter.as_bytes().get(0).unwrap().to_owned())
+        .delimiter(args.delimiter as u8)
         .has_headers(false)
         .from_writer(buf_writer);
 
