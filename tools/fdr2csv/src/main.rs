@@ -40,24 +40,19 @@ struct Args {
 const INTERFACE_VERSION: u64 = 25;
 
 // Read number of bytes specified by the size of T from the binary file
-fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read, data: &mut T) -> Result<(), Error> {
+fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
     let size = mem::size_of::<T>();
 
     // allocate the buffer that will hold the value read from the binary
     let mut buf = vec![0u8; size];
 
     // now read from the reader into the buffer
-    match reader.read_exact(&mut buf) {
-        Ok(()) => {
-            // If the read was successful, reinterpret the bytes as the struct, and write them
-            // into the input data
-            let res: &T = bytemuck::from_bytes(buf.as_slice());
-            *data = *res;
-            return Ok(());
-        }
-        // If the read was not successful (i.e. EOF reached), return Err.
-        Err(e) => return Err(e),
-    }
+    reader.read_exact(&mut buf)?;
+
+    // If the read was successful, reinterpret the bytes as the struct, and return
+    let res = bytemuck::from_bytes::<T>(buf.as_slice());
+
+    Ok(*res)
 }
 
 // A single FDR record
@@ -71,14 +66,14 @@ struct FdrData {
 }
 
 // These are helper functions to read in a whole FDR record.
-fn read_record(reader: &mut impl Read, data: &mut FdrData) -> Result<(), Error> {
-    read_bytes(reader, &mut data.ap_sm)?;
-    read_bytes(reader, &mut data.ap_law)?;
-    read_bytes(reader, &mut data.athr)?;
-    read_bytes(reader, &mut data.engine)?;
-    read_bytes(reader, &mut data.data)?;
-
-    Ok(())
+fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
+    Ok(FdrData {
+        ap_sm: read_bytes::<ap_sm_output>(reader)?,
+        ap_law: read_bytes::<ap_raw_output>(reader)?,
+        athr: read_bytes::<athr_out>(reader)?,
+        engine: read_bytes::<EngineData>(reader)?,
+        data: read_bytes::<AdditionalData>(reader)?,
+    })
 }
 
 fn main() -> Result<(), std::io::Error> {
@@ -97,8 +92,7 @@ fn main() -> Result<(), std::io::Error> {
     };
 
     // Read file version
-    let mut file_format_version = u64::default();
-    read_bytes(&mut reader, &mut file_format_version)?;
+    let file_format_version = read_bytes::<u64>(&mut reader)?;
 
     // Print or check file version
     if args.get_input_file_version {
@@ -131,10 +125,8 @@ fn main() -> Result<(), std::io::Error> {
 
     let mut counter = 0;
 
-    let mut buf = FdrData::default();
-
     // Generate and write the header
-    let header = csv_header_serializer::to_string(&buf, args.delimiter)
+    let header = csv_header_serializer::to_string(&FdrData::default(), args.delimiter)
         .map_err(|_| std::io::Error::new(ErrorKind::Other, "Failed to generate header."))?;
     buf_writer.write(header.as_bytes())?;
 
@@ -144,8 +136,8 @@ fn main() -> Result<(), std::io::Error> {
         .has_headers(false)
         .from_writer(buf_writer);
 
-    while let Ok(()) = read_record(&mut reader, &mut buf) {
-        writer.serialize(&buf)?;
+    while let Ok(fdr_data) = read_record(&mut reader) {
+        writer.serialize(&fdr_data)?;
 
         counter += 1;
 
