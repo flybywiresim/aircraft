@@ -65,19 +65,19 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read, data: &mut T) -> Result<
 #[derive(Serialize, Default)]
 struct FdrData {
     ap_sm: ap_sm_output,
-    ap_laws: ap_raw_output,
+    ap_law: ap_raw_output,
     athr: athr_out,
-    engine_data: EngineData,
-    additional_data: AdditionalData,
+    engine: EngineData,
+    data: AdditionalData,
 }
 
 // These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read, data: &mut FdrData) -> Result<(), Error> {
     read_bytes(reader, &mut data.ap_sm)?;
-    read_bytes(reader, &mut data.ap_laws)?;
+    read_bytes(reader, &mut data.ap_law)?;
     read_bytes(reader, &mut data.athr)?;
-    read_bytes(reader, &mut data.engine_data)?;
-    read_bytes(reader, &mut data.additional_data)?;
+    read_bytes(reader, &mut data.engine)?;
+    read_bytes(reader, &mut data.data)?;
 
     Ok(())
 }
