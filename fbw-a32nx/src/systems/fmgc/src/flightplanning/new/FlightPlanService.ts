@@ -6,7 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/new/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -197,9 +197,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     await this.flightPlanManager.get(planIndex).setOriginAirport(fromIcao);
     await this.flightPlanManager.get(planIndex).setDestinationAirport(toIcao);
+
     if (altnIcao) {
       await this.flightPlanManager.get(planIndex).setAlternateDestinationAirport(altnIcao);
     }
+
+    // Support code for TELEX API, should move somewhere else
+    NXDataStore.set('PLAN_ORIGIN', fromIcao);
+    NXDataStore.set('PLAN_DESTINATION', toIcao);
   }
 
   async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
@@ -402,7 +407,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async addOrEditManualHold(
     at: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
     planIndex = FlightPlanIndex.Active,
     alternate = false,

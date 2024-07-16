@@ -3,7 +3,14 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway } from '@flybywiresim/fbw-sdk';
+import {
+  UpdateThrottler,
+  Approach,
+  ApproachType,
+  IlsNavaid,
+  AirportSubsectionCode,
+  MathUtils,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
@@ -111,11 +118,10 @@ export class LandingSystemSelectionManager {
   }
 
   private async selectApproachIls(): Promise<boolean> {
-    const airport = this.flightPlanService.active.destinationAirport;
     const approach = this.flightPlanService.active.approach;
 
     if (this.isTunableApproach(approach?.type)) {
-      return this.setIlsFromApproach(airport, approach, true);
+      return this.setIlsFromApproach(approach);
     }
 
     // if we got here there wasn't a suitable ILS
@@ -124,76 +130,38 @@ export class LandingSystemSelectionManager {
   }
 
   /**
-   * Attempt to set the ILS from the runway data
-   * @param airport The airport
-   * @param runway The runway
-   * @param icao If specified, the facility will only be selected if it matches this icao
-   * @returns true on success
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async setIlsFromRunway(airport: Airport, runway?: Runway, icao?: string): Promise<boolean> {
-    if (!runway) {
-      return false;
-    }
-
-    const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(
-      airport.ident,
-      undefined,
-      icao,
-    );
-    const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
-
-    for (const frequency of runwayFrequencies) {
-      if (frequency.frequency > 0 && (!icao || frequency.databaseId === icao)) {
-        if (frequency.databaseId === this._selectedIls?.databaseId) {
-          return true;
-        }
-
-        this._selectedIls = frequency;
-        this._selectedLocCourse = frequency.locBearing !== -1 ? frequency.locBearing : null;
-        this._selectedGsSlope = Number.isFinite(frequency.gsSlope) ? frequency.gsSlope : null;
-
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
    * Attempt to set the ILS from approach data
-   * @param airport Airport the approach is to
    * @param approach The approach
-   * @param checkRunwayFrequencies if true, runway frequency data will be checked for course/gs information.
-   * This method is better if possible because it can get proper glideslope info.
-   * unfortunately many scenery developers break the runway <-> ILS links and the data is not available
    * @returns true on success
    */
-  private async setIlsFromApproach(
-    airport: Airport,
-    approach: Approach,
-    checkRunwayFrequencies = false,
-  ): Promise<boolean> {
+  private async setIlsFromApproach(approach: Approach): Promise<boolean> {
     const finalLeg = approach.legs[approach.legs.length - 1];
-
-    if ((finalLeg?.waypoint.databaseId.trim() ?? '').length === 0) {
+    if (!finalLeg || !finalLeg.recommendedNavaid || finalLeg.recommendedNavaid.databaseId.trim().length === 0) {
       return false;
     }
+    const recNavaid = finalLeg.recommendedNavaid;
+    const isBackcourse = approach.type === ApproachType.LocBackcourse;
 
-    if (finalLeg.waypoint.databaseId === this._selectedIls?.databaseId) {
+    if (recNavaid.databaseId === this._selectedIls?.databaseId && isBackcourse === this._selectedApproachBackcourse) {
       return true;
     }
 
-    if (checkRunwayFrequencies) {
-      const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
-      const runway = runways.find((it) => it.ident === approach.runwayIdent);
-
-      if (runway && (await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId))) {
-        return true;
-      }
+    const navaids = (await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([recNavaid.ident])).filter(
+      (n) => n.databaseId === finalLeg.recommendedNavaid.databaseId,
+    );
+    if (navaids.length !== 1 || navaids[0].subSectionCode !== AirportSubsectionCode.LocalizerGlideSlope) {
+      return false;
     }
+    const ils = navaids[0];
 
-    return false;
+    this._selectedApproachBackcourse = isBackcourse;
+    this._selectedIls = ils;
+    this._selectedLocCourse = MathUtils.normalise360(
+      this._selectedApproachBackcourse ? ils.locBearing + 180 : ils.locBearing,
+    );
+    this._selectedGsSlope = ils.gsSlope ?? null;
+
+    return true;
   }
 
   private resetSelectedIls(): void {
@@ -211,6 +179,7 @@ export class LandingSystemSelectionManager {
       case ApproachType.Ils:
       case ApproachType.Lda:
       case ApproachType.Loc:
+      case ApproachType.LocBackcourse:
       case ApproachType.Sdf:
         return true;
       default:

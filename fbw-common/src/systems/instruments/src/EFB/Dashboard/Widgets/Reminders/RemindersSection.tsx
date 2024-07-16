@@ -20,9 +20,9 @@ export const RemindersSection: FC<RemindersSectionProps> = ({ title, children, p
       {!noLink && (
         <Link
           to={pageLinkPath}
-          className="border-theme-highlight text-theme-highlight flex items-center border-b-2 opacity-80 transition duration-100 hover:opacity-100"
+          className="flex items-center border-b-2 border-theme-highlight text-theme-highlight opacity-80 transition duration-100 hover:opacity-100"
         >
-          <span className="font-manrope text-theme-highlight font-bold">
+          <span className="font-manrope font-bold text-theme-highlight">
             {t('Dashboard.ImportantInformation.GoToPage')}
           </span>
 

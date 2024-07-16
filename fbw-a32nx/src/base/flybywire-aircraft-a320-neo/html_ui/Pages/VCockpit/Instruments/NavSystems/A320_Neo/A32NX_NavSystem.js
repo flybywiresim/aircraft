@@ -438,7 +438,9 @@ class NavSystem extends BaseInstrument {
         }
         try {
             this.onUpdate(this.accumulatedDeltaTime);
-        } catch (e) {}
+        } catch (e) {
+            console.log("Uncaught exception", e);
+        }
         const t = performance.now() - t0;
         NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
         NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);

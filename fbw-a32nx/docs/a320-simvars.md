@@ -22,6 +22,8 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
+  - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
@@ -2056,6 +2058,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates whether to trigger a step deleted message on the MCDU
 
+- `A32NX_FM{number}_BACKBEAM_SELECTED`
+    - Bool
+    - Indicates to the FG that a localiser back beam is tuned.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -2841,7 +2847,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       |:---:|:----------------------------------------------------:|
       | 11  | System in control                                    |
       | 12  | System status - fail                                 |
-      | 13  | Excessive residual pressure - warn                   |
+      | 13  | Not used                                             |
       | 14  | Excessive cabin altitude - warn                      |
       | 15  | Low differential pressure - warn                     |
       | 16  | Preplanned desc inf - too quick *                    |
@@ -2916,7 +2922,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_PRESS_EXCESS_RESIDUAL_PR
     - Bool
-    - **Deprecated in A32NX**
     - True when FWC condition for "EXCES RESIDUAL PR" is met
 
 - A32NX_PRESS_LOW_DIFF_PR
@@ -3912,6 +3917,62 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+## GPWS / TAWS (ATA 34)
+- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_1`
+    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) and triggering aural warnings
+    - Arinc429<Discrete>
+    - | Bit |       Description      |
+      |:---:|:----------------------:|
+      | 11  | SINKRATE               |
+      | 12  | PULL UP                |
+      | 13  | TERRAIN                |
+      | 14  | DON'T SINK             |
+      | 15  | TOO LOW GEAR           |
+      | 16  | TOO LOW FLAPS          |
+      | 17  | TOO LOW TERRAIN        |
+      | 18  | GLIDESLOPE             |
+      | 20  | TERRAIN PULL UP        |
+      | 22  | TERRAIN AHEAD PULL UP  |
+      | 27  | TERRAIN AHEAD          |
+
+- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_2`
+    - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) or on the GPWS visual indicators on the A320
+    - Arinc429<Discrete>
+    - | Bit |          Description         |
+      |:---:|:----------------------------:|
+      | 11  | G/S CANCEL                   |
+      | 12  | GPWS ALERT                   |
+      | 13  | GPWS WARNING                 |
+      | 14  | GPWS INOP                    |
+      | 15  | W/S WARNING                  |
+      | 16  | AUDIO ON                     |
+      | 22  | TERRAIN AWARENESS WARNING    |
+      | 23  | TERRAIN AWARENESS CAUTION    |
+      | 24  | TERRAIN AWARENESS INOP       |
+      | 25  | EXTERNAL FAULT               |
+      | 26  | TERRAIN AWARENESS NOT AVAIL. |
+
+## ROW / ROP / OANS (ATA 34)
+
+- A32NX_ROW_ROP_WORD_1
+    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD.
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | ROW/ROP operative                 |
+      | 12  | ROP: Active with autobrake        |
+      | 13  | ROP: Active with manual braking   |
+      | 14  | ROW Wet: Runway too short         |
+      | 15  | ROW Dry: Runway too short         |
+
+- A32NX_OANS_WORD_1
+    - Data word for OANS functions. Used for displaying alerts on the PFD.
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | OANS: Runway ahead                |
+
 
 ## Electronic Flight Bag (ATA 46)
 

@@ -312,18 +312,48 @@ export class CoRouteUplinkAdapter {
                 fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
                 FlightPlanIndex.Uplink,
               );
-              await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
 
-              insertHead += 2;
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                // It's possible we already have a disco here, if the start of the airway was not found
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
 
+              insertHead++;
               break;
             }
 
             const tailAirway = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1].airway;
 
-            plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
+            const airwayFix = pickAirwayFix(tailAirway, fixes);
+            if (airwayFix) {
+              plan.pendingAirways.thenTo(airwayFix);
 
-            ensureAirwaysFinalized();
+              ensureAirwaysFinalized();
+            } else {
+              // Fixes with the name of the airway termination are found but they're not on that airway
+              console.warn(
+                `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
+              );
+
+              // We cancel the airway entry and add the termination as a fix
+              plan.pendingAirways = undefined;
+
+              await flightPlanService.nextWaypoint(
+                insertHead,
+                fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0],
+                FlightPlanIndex.Uplink,
+              );
+
+              if (plan.elementAt(insertHead).isDiscontinuity === false) {
+                // It's possible we already have a disco here, if the start of the airway was not found
+                await flightPlanService.insertDiscontinuityAfter(insertHead, FlightPlanIndex.Uplink);
+                insertHead++;
+              }
+
+              insertHead++;
+              break;
+            }
           } else {
             console.warn(
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
@@ -360,7 +390,8 @@ export class CoRouteUplinkAdapter {
   static generateRouteInstructionsFromNavlog(ofp: CoRoute): OfpRouteChunk[] {
     const instructions: OfpRouteChunk[] = [];
 
-    for (let i = 0; i < ofp.navlog.length; i++) {
+    // `navlog` is undefined when the route is DCT
+    for (let i = 0; i < ofp.navlog?.length ?? 0; i++) {
       const lastFix = ofp.navlog[i - 1];
       const fix = ofp.navlog[i];
 
