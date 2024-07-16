@@ -26,11 +26,12 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import {
+  globalSyncedSettings,
   migrateSettings,
-  readSettingsFromPersistentStorage,
   setAirframeInfo,
   setCabinInfo,
   setFlypadInfo,
+  syncSettingsFromPersistentStorage,
 } from '@flybywiresim/flypad';
 import { Error as ErrorIcon } from './Assets/Error';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
@@ -64,9 +65,10 @@ import { NavigraphAuthProvider } from '../react/navigraph';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
+  aircraftSetup?: () => void;
 }
 
-export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures }) => {
+export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup }) => {
   const setSessionId = () => {
     const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const SESSION_ID_LENGTH = 14;
@@ -102,7 +104,9 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures }) => {
   }, []);
 
   const setup = () => {
-    readSettingsFromPersistentStorage();
+    aircraftSetup?.();
+
+    syncSettingsFromPersistentStorage(globalSyncedSettings);
     migrateSettings();
     setSessionId();
 

@@ -17,6 +17,7 @@ interface SimpleInputProps {
   min?: number;
   max?: number;
   number?: boolean;
+  uppercase?: boolean;
   padding?: number;
   decimalPrecision?: number;
   fontSizeClassName?: string;
@@ -68,6 +69,10 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     if (props.number) {
       originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+    }
+
+    if (props.uppercase) {
+      originalValue = originalValue.toUpperCase();
     }
 
     if (props.maxLength) {
@@ -192,7 +197,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         className={`px-3 py-1.5 ${props.fontSizeClassName ?? 'text-lg'} rounded-md border-2 border-theme-accent bg-theme-accent
                     text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none
                     ${props.className}
-                    ${props.disabled && 'opacity-50'}`}
+                    ${props.disabled && 'cursor-not-allowed opacity-50'}`}
         value={displayValue}
         placeholder={props.placeholder}
         onChange={(e) => onChange(e.target.value)}
