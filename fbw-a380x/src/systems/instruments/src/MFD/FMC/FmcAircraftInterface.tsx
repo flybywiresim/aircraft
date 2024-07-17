@@ -1,4 +1,4 @@
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -923,9 +923,6 @@ export class FmcAircraftInterface {
     const speeds = new A380OperatingSpeeds(gw / 1000, flaps, gearPos);
     speeds.compensateForMachEffect(Math.round(Simplane.getAltitude() ?? 0));
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
-
     if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
       const f = Math.max(speeds.f2, Vmcl + 5);
       SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
@@ -953,12 +950,67 @@ export class FmcAircraftInterface {
     );
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', speeds.vmax);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', speeds.vs * 1.1);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', speeds.vs * 1.03);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', speeds.vs * 1.03);
 
-    // Also update speeds for PFD display (replacing the PRIM FE while not in place)
+    // Calculate alpha speeds according to https://safetyfirst.airbus.com/control-your-speed-in-cruise/
     // FIXME delete when PRIM FE implemented
+    const sim_stall_alpha = SimVar.GetSimVarValue('STALL ALPHA', SimVarValueType.Degree);
+    const sim_zero_lift_alpha = SimVar.GetSimVarValue('ZERO LIFT ALPHA', SimVarValueType.Degree);
+    const alpha_0 = sim_zero_lift_alpha; // AOA for lift coefficient of zero
+    const alpha_prot = sim_zero_lift_alpha + 0.85 * (sim_stall_alpha - sim_zero_lift_alpha); // AOA where alpha prot. becomes active
+    const alpha_max = sim_zero_lift_alpha + 0.95 * (sim_stall_alpha - sim_zero_lift_alpha); // Max. AOA which can be flown in normal law
+
+    // Retrieve AOA from ADRs
+    const aoa1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ANGLE_OF_ATTACK');
+    const aoa2 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ANGLE_OF_ATTACK');
+    const aoa3 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ANGLE_OF_ATTACK');
+    const cas1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED');
+    const cas2 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
+    const cas3 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
+    const adrOp = [aoa1.isNormalOperation(), aoa2.isNormalOperation(), aoa3.isNormalOperation()];
+    const casOp = [cas1.isNormalOperation(), cas2.isNormalOperation(), cas3.isNormalOperation()];
+
+    let aoa = 0;
+    let cas = 0;
+    if (adrOp.filter(Boolean).length === 3) {
+      const aoaSorted = [aoa1.value, aoa2.value, aoa3.value].sort((a, b) => a - b);
+      const casSorted = [cas1.value, cas2.value, cas3.value].sort((a, b) => a - b);
+      aoa = aoaSorted[1];
+      cas = casSorted[1];
+    } else if (adrOp.filter(Boolean).length === 2) {
+      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i] === true);
+      aoa = (aoas[0].value + aoas[1].value) / 2;
+
+      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i] === true);
+      cas = (cass[0].value + cass[1].value) / 2;
+    } else if (adrOp.filter(Boolean).length === 1) {
+      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i] === true);
+      aoa = aoas[0].value;
+
+      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i] === true);
+      cas = cass[0].value;
+    }
+
+    const v_a_max = cas * Math.sqrt((aoa - alpha_0) / (alpha_max - alpha_0));
+    const v_a_prot = cas * Math.sqrt((aoa - alpha_0) / (alpha_prot - alpha_0));
+    const v_a_sw = cas * Math.sqrt((aoa - alpha_0) / (sim_stall_alpha - alpha_0));
+    const vs_1_g = cas * Math.sqrt((aoa - alpha_0) / (sim_stall_alpha - alpha_0));
+    const vls = 1.23 * vs_1_g;
+
+    // console.log('FCOM lookup: ', `a prot: ${speeds.vs * 1.1}`, `a max: ${speeds.vs * 1.03}`, `vls: ${speeds.vls}`);
+    // console.log('AOA based: ', `a prot: ${v_a_prot}`, `a max: ${v_a_max}`, `vls: ${vls}`);
+
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', v_a_prot);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', v_a_max);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', v_a_sw);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', vs_1_g);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', vls);
+
+    // Put out alt. computation for comparison
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC_FCOM', 'number', speeds.vs * 1.1);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number', speeds.vs * 1.03);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN_FCOM', 'number', speeds.vs * 1.03);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS_FCOM', 'number', speeds.vs);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS_FCOM', 'number', speeds.vls);
   }
 
   /** Write gross weight to SimVar */

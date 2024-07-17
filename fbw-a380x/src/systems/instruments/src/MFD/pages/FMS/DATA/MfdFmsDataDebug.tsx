@@ -54,63 +54,30 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
   ];
 
   protected onNewData() {
-    this.tab1lineLabels[0].set('CLB SPEED LIMIT');
-    this.tab1lineValues[0].set(
-      `${this.props.fmcService.master?.fmgc.getClimbSpeedLimit().speed.toFixed(2)} U${this.props.fmcService.master?.fmgc.getClimbSpeedLimit().underAltitude.toFixed(0)}` ??
-        '',
+    this.tab1lineLabels[1].set('VLS (AOA)');
+    this.tab1lineValues[1].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number') as number).toFixed(2) ?? '');
+
+    this.tab1lineLabels[2].set('V_A_PROT (AOA)');
+    this.tab1lineValues[2].set(
+      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.tab1lineLabels[1].set('MANAGED CLB SPEED');
-    this.tab1lineValues[1].set(this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[2].set('MANAGED CLB MACH');
-    this.tab1lineValues[2].set(this.props.fmcService.master?.fmgc.getManagedClimbSpeedMach().toFixed(2) ?? '');
-
-    this.tab1lineLabels[3].set('PRESEL CLB SPEED');
-    this.tab1lineValues[3].set(this.props.fmcService.master?.fmgc.getPreSelectedClbSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[4].set('MANAGED CRZ SPEED');
-    this.tab1lineValues[4].set(this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[5].set('MANAGED CRZ MACH');
-    this.tab1lineValues[5].set(this.props.fmcService.master?.fmgc.getManagedCruiseSpeedMach().toFixed(2) ?? '');
-
-    this.tab1lineLabels[6].set('PRESEL CRZ SPEED');
-    this.tab1lineValues[6].set(this.props.fmcService.master?.fmgc.getPreSelectedCruiseSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[7].set('MANAGED DES SPEED');
-    this.tab1lineValues[7].set(this.props.fmcService.master?.fmgc.getManagedDescentSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[8].set('MANAGED DES MACH');
-    this.tab1lineValues[8].set(this.props.fmcService.master?.fmgc.getManagedDescentSpeedMach().toFixed(2) ?? '');
-
-    this.tab1lineLabels[9].set('PRESEL DES SPEED');
-    this.tab1lineValues[9].set(this.props.fmcService.master?.fmgc.getPreSelectedDescentSpeed().toFixed(2) ?? '');
-
-    this.tab1lineLabels[10].set('');
-    this.tab1lineValues[10].set('');
-
-    this.tab1lineLabels[11].set('A32NX_SPEEDS_VLS');
-    this.tab1lineValues[11].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number') as number).toFixed(2) ?? '');
-
-    this.tab1lineLabels[12].set('A32NX_SPEEDS_MANAGED_PFD');
-    this.tab1lineValues[12].set(
-      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'number') as number).toFixed(2) ?? '',
+    this.tab1lineLabels[3].set('V_A_MAX (AOA)');
+    this.tab1lineValues[3].set(
+      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.tab1lineLabels[13].set('A32NX_SPEEDS_MANAGED_ATHR');
-    this.tab1lineValues[13].set(
-      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'number') as number).toFixed(2) ?? '',
+    this.tab1lineLabels[5].set('VLS (FCOM)');
+    this.tab1lineValues[5].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS_FCOM', 'number') as number).toFixed(2) ?? '');
+
+    this.tab1lineLabels[6].set('V_A_PROT (FCOM)');
+    this.tab1lineValues[6].set(
+      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC_FCOM', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.tab1lineLabels[14].set('A32NX_PFD_LOWER_SPEED_MARGIN');
-    this.tab1lineValues[14].set(
-      (SimVar.GetSimVarValue('L:A32NX_PFD_LOWER_SPEED_MARGIN', 'number') as number).toFixed(2) ?? '',
-    );
-
-    this.tab1lineLabels[15].set('A32NX_PFD_UPPER_SPEED_MARGIN');
-    this.tab1lineValues[15].set(
-      (SimVar.GetSimVarValue('L:A32NX_PFD_UPPER_SPEED_MARGIN', 'number') as number).toFixed(2) ?? '',
+    this.tab1lineLabels[7].set('V_A_MAX (FCOM)');
+    this.tab1lineValues[7].set(
+      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number') as number).toFixed(2) ?? '',
     );
   }
 

@@ -21,7 +21,6 @@ export enum PfdSpeedsDropInVars {
   vLsRaw = 'L:A32NX_SPEEDS_VLS',
 }
 
-/** A publisher to poll and publish nav/com simvars. */
 export class PfdSpeedsDropInSimvarPublisher extends UpdatableSimVarPublisher<PfdSpeedsDropInSimvars> {
   private static simvars = new Map<keyof PfdSpeedsDropInSimvars, SimVarDefinition>([
     ['alphaProtRaw', { name: PfdSpeedsDropInVars.alphaProtRaw, type: SimVarValueType.Number }],
