@@ -2512,30 +2512,14 @@ export class PseudoFWC {
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
-
-      if (orderedFailureArrayRight.length === 0) {
         this.masterCaution.set(false);
         if (this.nonCancellableWarningCount === 0) {
           this.masterWarning.set(false);
         }
-      }
     }
 
     if (leftFailureSystemCount + rightFailureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
-    }
-
-    if (orderedFailureArrayRight.length > 0) {
-      // Right side failures need to be inserted between special lines
-      // and the rest of the memo
-      const specialLines = ['000014001', '000015001', '000035001', '000036001'];
-      const filteredMemo = orderedMemoArrayRight.filter((e) => !specialLines.includes(e));
-      const specLinesInMemo = orderedMemoArrayRight.filter((e) => specialLines.includes(e));
-      if (specLinesInMemo.length > 0) {
-        orderedMemoArrayRight = [...specLinesInMemo, ...orderedFailureArrayRight, ...filteredMemo];
-      } else {
-        orderedMemoArrayRight = [...orderedFailureArrayRight, ...orderedMemoArrayRight];
-      }
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
@@ -2594,50 +2578,6 @@ export class PseudoFWC {
 
   /** MEMOs on lower right side of EWD */
   ewdMemos: EwdMemoDict = {
-    2900310: {
-      // *HYD  - Blue
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(
-        ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) =>
-          !(blueRvrOvht || blueRvrLow || !blueElecPumpPBAuto) &&
-          (!dcESSBusPowered || !ac1BusPowered) &&
-          blueLP &&
-          !emergencyGeneratorOn,
-        this.blueRvrOvht,
-        this.blueRvrLow,
-        this.blueElecPumpPBAuto,
-        this.dcESSBusPowered,
-        this.ac1BusPowered,
-        this.blueLP,
-        this.emergencyGeneratorOn,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031001'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: 4,
-      side: 'RIGHT',
-    },
-    2900312: {
-      // *HYD  - Green Engine 1 //
-      flightPhaseInhib: [1, 2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) =>
-          greenLP &&
-          // && ENG 1 OUT - not implemented
-          eng1pumpPBisAuto &&
-          !emergencyGeneratorOn,
-        this.greenLP,
-        this.eng1pumpPBisAuto,
-        this.emergencyGeneratorOn,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031201'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: 4,
-      side: 'RIGHT',
-    },
     3200050: {
       // PK BRK ON
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
@@ -3309,6 +3249,50 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'LEFT',
+    },
+    2900310: {
+      // *HYD  - Blue
+      flightPhaseInhib: [1, 4, 5, 10],
+      simVarIsActive: MappedSubject.create(
+        ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) =>
+          !(blueRvrOvht || blueRvrLow || !blueElecPumpPBAuto) &&
+          (!dcESSBusPowered || !ac1BusPowered) &&
+          blueLP &&
+          !emergencyGeneratorOn,
+        this.blueRvrOvht,
+        this.blueRvrLow,
+        this.blueElecPumpPBAuto,
+        this.dcESSBusPowered,
+        this.ac1BusPowered,
+        this.blueLP,
+        this.emergencyGeneratorOn,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290031001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 4,
+      side: 'RIGHT',
+    },
+    2900312: {
+      // *HYD  - Green Engine 1 //
+      flightPhaseInhib: [1, 2, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) =>
+          greenLP &&
+          // && ENG 1 OUT - not implemented
+          eng1pumpPBisAuto &&
+          !emergencyGeneratorOn,
+        this.greenLP,
+        this.eng1pumpPBisAuto,
+        this.emergencyGeneratorOn,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290031201'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 4,
+      side: 'RIGHT',
     },
     // 34 - NAVIGATION & SURVEILLANCE
     3400170: {
