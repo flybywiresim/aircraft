@@ -32,7 +32,6 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { EcamMemos, pfdMemoExclusion } from '@instruments/common/EWDMessages';
 
-
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
 }
@@ -108,9 +107,7 @@ export class PseudoFWC {
     (_, i) => `L:A32NX_PFD_MEMO_LINE_${i + 1}`,
   );
 
-  private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
-    Subject.create(''),
-  );
+  private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
 
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
@@ -952,11 +949,12 @@ export class PseudoFWC {
       this.ewdToLdgMemos[key].codesToReturn.forEach((code) => {
         const found = ecamMemoKeys.find((it) => it === code);
         if (!found) {
-          console.log(`ECAM message from PseudoFWC not found in EcamMemos: ${key}.\nIf MEMO, delete from PseudoFWC. If ECAM alert / ABN proc, move to ABN procs in the future.`);
+          console.log(
+            `ECAM message from PseudoFWC not found in EcamMemos: ${key}.\nIf MEMO, delete from PseudoFWC. If ECAM alert / ABN proc, move to ABN procs in the future.`,
+          );
         }
-      })
-
-    })
+      });
+    });
   }
 
   init(): void {
@@ -1061,7 +1059,6 @@ export class PseudoFWC {
       Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_4`, dw.value, dw.ssm);
       Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_5`, dw.value, dw.ssm);
     });
-
   }
 
   mapOrder(array, order): [] {
@@ -2508,14 +2505,14 @@ export class PseudoFWC {
     }
 
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
-    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
+    const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
-        this.masterCaution.set(false);
-        if (this.nonCancellableWarningCount === 0) {
-          this.masterWarning.set(false);
-        }
+      this.masterCaution.set(false);
+      if (this.nonCancellableWarningCount === 0) {
+        this.masterWarning.set(false);
+      }
     }
 
     if (leftFailureSystemCount + rightFailureSystemCount === 0) {
@@ -2525,7 +2522,9 @@ export class PseudoFWC {
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     // TODO order by decreasing importance
-    this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => !pfdMemoExclusion.includes(it))[i]));
+    this.pfdMessageLines.forEach((l, i) =>
+      l.set(orderedMemoArrayRight.filter((it) => !pfdMemoExclusion.includes(it))[i]),
+    );
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!
@@ -3206,11 +3205,11 @@ export class PseudoFWC {
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 4 : 3,
         SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 6 : 5,
         (!SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') &&
-        SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
+          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
         (SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') &&
-        SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
-         ? 8
-         : 7,
+          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
+          ? 8
+          : 7,
         this.spoilersArmed.get() ? 10 : 9,
       ],
       codesToReturn: [
@@ -4613,5 +4612,4 @@ export class PseudoFWC {
       side: 'LEFT',
     },
   };
-
 }
